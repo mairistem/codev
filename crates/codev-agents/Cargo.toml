@@ -1,0 +1,17 @@
+[package]
+name = "codev-agents"
+description = "Génération des skills codev pour les agents de code — cible Claude Code"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+codev-core = { workspace = true }
+codev-engine = { workspace = true }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+serde_norway = { workspace = true }

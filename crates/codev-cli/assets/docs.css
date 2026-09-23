@@ -1,0 +1,193 @@
+/* codev-docs — CSS autonome pour la documentation HTML.
+ * Techdoc sobre. Serif pour le body (lecture confortable), sans-serif
+ * pour les headings, monospace pour code. Palette monochrome.
+ */
+
+:root {
+  --fg: #1d1d1f;
+  --fg-muted: #666;
+  --bg: #ffffff;
+  --border: #e5e5e5;
+  --code-bg: #f6f6f6;
+  --link: #0066cc;
+  --link-hover: #003d80;
+  --max-width: 780px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1.5rem 4rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.65;
+  color: var(--fg);
+  background: var(--bg);
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+header .title {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
+}
+
+header .version {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+main h1,
+main h2,
+main h3,
+main h4 {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-top: 2.2rem;
+  margin-bottom: 0.6rem;
+}
+
+main h1 {
+  font-size: 2.2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-top: 0;
+}
+
+main h2 {
+  font-size: 1.55rem;
+  margin-top: 2.6rem;
+}
+
+main h3 {
+  font-size: 1.2rem;
+}
+
+main h4 {
+  font-size: 1.05rem;
+  color: var(--fg-muted);
+}
+
+p {
+  margin: 0.8rem 0;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+ul,
+ol {
+  padding-left: 1.5rem;
+  margin: 0.8rem 0;
+}
+
+li {
+  margin: 0.35rem 0;
+}
+
+blockquote {
+  border-left: 3px solid var(--border);
+  padding: 0.2rem 1rem;
+  margin: 1rem 0;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--code-bg);
+  padding: 0.12em 0.35em;
+  border-radius: 3px;
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.88rem;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  font-size: 0.95rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--code-bg);
+  font-weight: 600;
+}
+
+@media print {
+  body {
+    max-width: none;
+    padding: 0;
+    font-size: 11pt;
+  }
+  header {
+    page-break-after: avoid;
+  }
+  main h2,
+  main h3 {
+    page-break-after: avoid;
+  }
+  pre {
+    page-break-inside: avoid;
+  }
+}

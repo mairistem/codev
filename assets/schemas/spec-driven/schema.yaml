@@ -1,0 +1,156 @@
+name: spec-driven
+version: 1
+description: Workflow codev par défaut — proposal → specs → design → tasks
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Ce qui est proposé, et pourquoi
+    template: proposal.md
+    requires: []
+    instruction: |
+      Rédige le document qui établit POURQUOI ce change est nécessaire.
+
+      Sections :
+      - **Pourquoi** : une ou deux phrases sur le problème ou l'opportunité.
+        Pourquoi maintenant ?
+      - **Ce qui change** : liste à puces, précise sur les capacités ajoutées,
+        modifiées ou retirées. Marque les ruptures de compatibilité par
+        **RUPTURE**.
+      - **Capacités** : identifie les specs qui vont être créées ou modifiées.
+        - *Nouvelles capacités* : chacune donnera un `specs/<chemin>/spec.md`.
+          Utilise du kebab-case pour les segments que tu introduis, et suis
+          l'organisation existante du projet.
+        - *Capacités modifiées* : uniquement celles dont les EXIGENCES changent,
+          pas celles dont seule l'implémentation change. Reprends le chemin
+          exact existant sous `_codev/specs/`.
+      - **Impact** : code, API, dépendances et systèmes affectés.
+
+      La section Capacités est le contrat entre cet artefact et les specs :
+      chaque capacité listée devra avoir son fichier de spec. Étudie les specs
+      existantes avant de la remplir.
+
+      Tout change doit soit déclarer au moins une capacité, soit renoncer
+      explicitement aux specs en posant `skip_specs: true` dans son
+      `change.yaml`. N'invente jamais une exigence pour satisfaire la
+      validation : les specs décrivent un comportement, donc si le comportement
+      ne change pas, aucune spec ne doit changer.
+
+      Reste concis. Le comment appartient à design.md.
+
+  - id: specs
+    generates: "specs/**/*.md"
+    description: Deltas de spec — ce que le système doit faire
+    template: spec.md
+    requires: [proposal]
+    instruction: |
+      Rédige les fichiers de spec qui définissent CE QUE le système doit faire.
+
+      Une spec est un contrat de comportement, pas un plan d'implémentation.
+
+      Ce qui a sa place dans une spec : le comportement observable dont
+      dépendent les utilisateurs ou les systèmes en aval, les entrées, les
+      sorties, les conditions d'erreur, les contraintes externes (sécurité,
+      confidentialité, fiabilité, compatibilité), et des scénarios vérifiables.
+
+      Ce qui n'y a pas sa place : les noms de classes ou de fonctions internes,
+      les choix de bibliothèque, les étapes d'implémentation, les plans
+      d'exécution.
+
+      Test rapide : si l'implémentation peut changer sans que le comportement
+      observable change, ça ne va pas dans la spec.
+
+      Un fichier par capacité listée dans les Capacités du proposal, à
+      `specs/<chemin>/spec.md`, en préservant le chemin exact. Il faut au moins
+      un fichier, sauf si le `change.yaml` pose `skip_specs: true`.
+
+      Opérations de delta, en titres de niveau 2 :
+      - `## ADDED Requirements` — comportement nouveau
+      - `## MODIFIED Requirements` — comportement changé ; le bloc DOIT être
+        recopié en entier depuis la spec principale, puis édité
+      - `## REMOVED Requirements` — avec **Raison** et **Migration**
+      - `## RENAMED Requirements` — au format `FROM:` / `TO:`
+
+      Format, et il est strict :
+      - une exigence : `### Requirement: <nom>` suivi de sa description
+      - emploie SHALL ou MUST pour les exigences normatives
+      - un scénario : `#### Scenario: <nom>` avec des lignes **WHEN** / **THEN**
+      - les scénarios DOIVENT porter exactement quatre dièses ; trois dièses ou
+        une liste à puces échouent silencieusement
+      - toute exigence a au moins un scénario
+
+      Nouvelle capacité uniquement : commence le delta par `## Purpose`, une ou
+      deux phrases sur ce à quoi sert la capacité. L'archive la recopie dans la
+      spec principale qu'elle crée. N'ajoute pas de `## Purpose` au delta d'une
+      capacité existante : elle en a déjà un, et celui du delta serait ignoré.
+
+      Piège courant : un `MODIFIED` au contenu partiel perd du détail au moment
+      de l'archive. Si tu ajoutes une préoccupation nouvelle sans changer le
+      comportement existant, utilise `ADDED`.
+
+  - id: design
+    generates: design.md
+    description: Approche technique et décisions
+    template: design.md
+    requires: [proposal]
+    instruction: |
+      Rédige le document qui explique COMMENT implémenter le change.
+
+      À ne créer que si l'un de ces cas s'applique : change transverse à
+      plusieurs modules ou services, nouveau motif d'architecture, nouvelle
+      dépendance externe, changement significatif du modèle de données, enjeu
+      de sécurité, de performance ou de migration, ou ambiguïté qu'il vaut mieux
+      trancher avant de coder.
+
+      Sections :
+      - **Contexte** : seulement l'état actuel et les contraintes nécessaires
+        pour comprendre l'approche. Renvoie au proposal pour la motivation
+        plutôt que de la répéter.
+      - **Objectifs / Hors objectifs** : les frontières de niveau conception.
+      - **Décisions** : les choix techniques avec leur justification, et les
+        alternatives considérées pour chacun.
+      - **Risques et compromis** : au format [Risque] → Atténuation.
+      - **Plan de migration** si applicable.
+      - **Questions ouvertes** : uniquement les inconnues réellement
+        reportables. Si une question changerait les specs, l'approche ou le
+        découpage des tâches, tranche-la maintenant — demande à l'utilisateur
+        plutôt que de deviner.
+
+      Avant de trancher quoi que ce soit, lis les décisions en vigueur dans
+      `_codev/decisions/`. Une décision acceptée ne se re-débat pas : ou tu la
+      suis, ou tu proposes explicitement de la remplacer.
+
+  - id: tasks
+    generates: tasks.md
+    description: Liste de tâches suivie par cases à cocher
+    template: tasks.md
+    requires: [specs, design]
+    instruction: |
+      Découpe le travail d'implémentation.
+
+      Avant d'écrire, relis les Questions ouvertes de design.md. Si l'une
+      d'elles change ce qui doit être construit, règle-la avec l'utilisateur
+      d'abord — n'enfouis pas une hypothèse tacite dans la liste de tâches.
+
+      Le format des cases à cocher est analysé pour suivre l'avancement : une
+      tâche qui n'utilise pas `- [ ]` ne sera pas suivie.
+
+      - regroupe les tâches sous des titres de niveau 2 numérotés
+      - une tâche : `- [ ] X.Y Description`
+      - une tâche doit tenir dans une session de travail
+      - ordonne par dépendance
+      - chaque tâche énonce comment vérifier qu'elle est faite : un test nommé,
+        une commande, un comportement observable ou un artefact livré. Réserve
+        une tâche de vérification distincte aux comportements qui traversent
+        plusieurs tâches.
+
+      Appuie-toi sur les specs pour ce qui doit être construit, sur le design
+      pour la manière.
+
+apply:
+  requires: [tasks]
+  tracks: tasks.md
+  instruction: |
+    Lis les artefacts du change, traite les tâches en attente, coche-les au fur
+    et à mesure. Arrête-toi si tu rencontres un blocage ou s'il te faut une
+    clarification.

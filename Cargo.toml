@@ -1,0 +1,36 @@
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "MIT"
+
+[workspace.dependencies]
+# Crates internes. Le graphe de dépendances est strictement acyclique et Cargo
+# le vérifie à la compilation : c'est notre application de la règle de
+# dépendance (cf. _codev/decisions/0002).
+codev-core = { path = "crates/codev-core" }
+codev-engine = { path = "crates/codev-engine" }
+codev-agents = { path = "crates/codev-agents" }
+
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+globset = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# serde_yaml est déprécié en amont ; serde_norway est le fork maintenu.
+# cf. _codev/decisions/0006
+serde_norway = "0.9"
+sha2 = "0.10"
+thiserror = "2"
+toml = "0.8"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"

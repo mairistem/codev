@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-09-09
+goal: Faire détecter à codev-propose les tickets Jira mentionnés en entrée (JVS-XXXX), appeler le MCP Atlassian pour récupérer leur contenu, l'injecter dans le contexte du proposal.

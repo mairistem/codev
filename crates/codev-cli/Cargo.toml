@@ -1,0 +1,25 @@
+[package]
+name = "codev-cli"
+description = "Le binaire codev : développement piloté par les specs pour Claude Code"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "codev"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+clap_complete = "4"
+codev-agents = { workspace = true }
+codev-core = { workspace = true }
+codev-engine = { workspace = true }
+open = "5"
+pulldown-cmark = "0.10"
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

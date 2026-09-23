@@ -1,0 +1,49 @@
+# Configuration de codev pour... codev lui-même.
+#
+# Ce dépôt utilise l'outil qu'il construit. C'est délibéré : le seul moyen fiable
+# de savoir si un format est agréable à écrire, c'est de l'écrire.
+schema: spec-driven
+
+workflows:
+  - propose
+  - explore
+  - apply
+  - sync
+  - archive
+  - update
+  - onboard
+
+# Le MCP Jira disponible dans notre environnement Claude Code. Injecté dans le
+# frontmatter des skills à l'install (voir `mcp__claude_ai_Atlassian_Rovo__*`
+# dans le tool listing d'une session récente).
+mcp:
+  jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
+
+context: |
+  Projet Rust, workspace Cargo à quatre crates : codev-core (pur, aucune I/O),
+  codev-engine (effets via ports), codev-agents (cible Claude Code), codev-cli
+  (coquille impérative). Le graphe de dépendances entre crates est acyclique et
+  fait office de règle de dépendance.
+
+  Cœur fonctionnel, coquille impérative : le cœur retourne des plans d'effets,
+  la coquille les exécute. Rien dans codev-core ne touche au disque.
+
+  Le contrat JSON de sortie est une API publique consommée par des skills déjà
+  installées : il vit dans codev-cli::contract::v1 et ne dérive jamais
+  directement du modèle de domaine.
+
+  Erreurs typées avec thiserror dans les bibliothèques, anyhow uniquement dans
+  le CLI. Commentaires en français, et ils expliquent le pourquoi.
+
+rules:
+  specs:
+    - Une spec décrit un comportement observable, jamais une implémentation. Si
+      le code peut changer sans que la spec change, la spec est au bon niveau.
+  design:
+    - Citer la ou les décisions de _codev/decisions/ qui contraignent l'approche,
+      plutôt que de re-débattre un choix déjà tranché.
+  tasks:
+    # Citée : un « : » suivi d'une espace dans un scalaire nu ferait de cette
+    # ligne une map aux yeux de YAML.
+    - "Chaque tâche énonce comment vérifier qu'elle est faite : un test nommé,
+       une commande, ou un comportement observable."

@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-09-09
+goal: Enrichir le bloc 'ici, tu as' de codev-onboard avec le nombre de changes archivés, et remplacer la suggestion 'une-idée' par une invitation à lire README.md avant de proposer.

@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-09-09
+goal: Extraire un bloc de décision d'un design.md de change et le promouvoir en ADR de premier ordre — scellé par K3, indexé, référencé depuis le design.

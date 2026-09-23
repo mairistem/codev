@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write # nécessaire pour publier une GitHub Release
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            target: aarch64-apple-darwin
+          - runner: macos-13
+            target: x86_64-apple-darwin
+          - runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install musl-tools (Linux)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Build release binary
+        run: cargo build --release --bin codev --target ${{ matrix.target }}
+
+      - name: Compute version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Package tarball
+        run: |
+          set -eu
+          version="${{ steps.version.outputs.version }}"
+          target="${{ matrix.target }}"
+          stage="codev-${version}-${target}"
+          mkdir -p "${stage}"
+          cp "target/${target}/release/codev" "${stage}/"
+          cp README.md LICENSE docs/codev.md "${stage}/" || true
+          tar czf "${stage}.tar.gz" "${stage}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codev-${{ steps.version.outputs.version }}-${{ matrix.target }}
+          path: codev-${{ steps.version.outputs.version }}-${{ matrix.target }}.tar.gz
+          retention-days: 1
+
+  release:
+    name: Publish GitHub Release
+    needs: [build]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Compute SHA-256 sums
+        working-directory: dist
+        run: |
+          set -eu
+          shasum -a 256 *.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
