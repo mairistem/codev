@@ -27,8 +27,15 @@ chat, et les skills pilotent le CLI.
 ```bash
 # Installation (sans Rust) — macOS ou Linux
 curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
+```
 
-# ou, en tant que contributeur :
+```powershell
+# Installation (sans Rust) — Windows, dans PowerShell
+iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+```
+
+```bash
+# ou, en tant que contributeur (n'importe quel OS) :
 cargo install --path crates/codev-cli
 
 cd mon-projet

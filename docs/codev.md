@@ -44,7 +44,7 @@ Ce qui est spécifique à codev :
 Trois voies. La première (curl \| sh) est la plus courte et **ne
 nécessite pas Rust**. Les deux suivantes servent des cas particuliers.
 
-### Voie recommandée : `install.sh` en une commande
+### Voie recommandée — macOS et Linux : `install.sh`
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
@@ -63,28 +63,62 @@ curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | \
   CODEV_VERSION=0.2.0 sh
 ```
 
+### Voie recommandée — Windows : `install.ps1`
+
+Dans PowerShell 5.1+ (ou PowerShell Core 7+) :
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+```
+
+Le script détecte l'architecture (x86_64 aujourd'hui), télécharge le
+`.zip` correspondant depuis GitHub Releases, vérifie son SHA-256 via
+`Get-FileHash`, et copie `codev.exe` dans
+`%LOCALAPPDATA%\Programs\codev\`. Il affiche à la fin la commande à
+taper pour ajouter le dossier au PATH utilisateur — il ne modifie
+**pas** ton PATH automatiquement (parti pris de symétrie avec
+`install.sh`).
+
+Pour épingler une version précise :
+
+```powershell
+$env:CODEV_VERSION = '0.2.0'
+iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+```
+
 ### Voie manuelle : téléchargement depuis GitHub Releases
 
-Si tu préfères ne pas piper un `curl` sur `sh` (audit avant exécution,
+Si tu préfères ne pas piper un script réseau (audit avant exécution,
 politique interne), télécharge à la main depuis
-`https://github.com/mairistem/codev/releases/latest` :
+`https://github.com/mairistem/codev/releases/latest`.
 
-1. Récupère le fichier `codev-<version>-<target>.tar.gz` correspondant
-   à ton OS/arch.
-2. Récupère aussi `SHA256SUMS` et vérifie l'intégrité :
+**Sur macOS/Linux** — récupère le fichier
+`codev-<version>-<target>.tar.gz` de ton OS/arch, puis :
 
-   ```bash
-   shasum -a 256 -c SHA256SUMS  # macOS
-   sha256sum -c SHA256SUMS      # Linux
-   ```
-3. Décompresse et copie `codev` dans un dossier sur ton `$PATH` :
+```bash
+shasum -a 256 -c SHA256SUMS   # macOS
+sha256sum -c SHA256SUMS       # Linux
+tar xzf codev-*.tar.gz
+mkdir -p ~/.local/bin
+cp codev-*/codev ~/.local/bin/
+chmod 755 ~/.local/bin/codev
+```
 
-   ```bash
-   tar xzf codev-*.tar.gz
-   mkdir -p ~/.local/bin
-   cp codev-*/codev ~/.local/bin/
-   chmod 755 ~/.local/bin/codev
-   ```
+**Sur Windows** — récupère le fichier
+`codev-<version>-x86_64-pc-windows-msvc.zip`, puis dans PowerShell :
+
+```powershell
+# Vérifie l'intégrité
+$expected = (Get-Content SHA256SUMS | Select-String 'codev-.*-msvc\.zip$').ToString().Split(' ')[0]
+$actual   = (Get-FileHash codev-*.zip -Algorithm SHA256).Hash
+if ($actual -ne $expected) { throw "SHA-256 divergent" }
+
+# Extrait et installe
+Expand-Archive codev-*.zip
+$dst = "$env:LOCALAPPDATA\Programs\codev"
+New-Item -ItemType Directory -Path $dst -Force | Out-Null
+Copy-Item codev-*/codev.exe $dst
+```
 
 ### Voie contributeur : `cargo install`
 
@@ -102,6 +136,8 @@ Le binaire arrive dans `~/.cargo/bin/codev`.
 
 ### Vérifier l'installation et le `$PATH`
 
+**Sur macOS/Linux** :
+
 ```bash
 which codev       # doit pointer vers ~/.local/bin/codev ou ~/.cargo/bin/codev
 codev --version   # affiche la version
@@ -115,6 +151,24 @@ export PATH="$HOME/.local/bin:$PATH"
 ```
 
 Puis ouvrir un nouveau shell (ou `source ~/.zshrc`).
+
+**Sur Windows** (PowerShell) :
+
+```powershell
+Get-Command codev  # doit pointer vers %LOCALAPPDATA%\Programs\codev\codev.exe
+codev --version    # affiche la version
+```
+
+Si `Get-Command codev` échoue avec « the term codev is not
+recognized », c'est que `%LOCALAPPDATA%\Programs\codev` n'est pas dans
+ton PATH utilisateur. Ajouter :
+
+```powershell
+setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\codev"
+```
+
+Puis ouvrir un **nouveau** PowerShell (le PATH n'est pris en compte
+qu'au démarrage d'un shell).
 
 ### Complétions shell
 
