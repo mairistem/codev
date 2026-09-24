@@ -8,6 +8,29 @@ versionnage [SemVer](https://semver.org/lang/fr/).
 Les notes détaillées de chaque version vivent dans la Release GitHub
 correspondante — cette page en donne la vue résumée.
 
+## [0.2.1] — 2026-09-24
+
+### Added
+
+- Documents standards de projet open source : `CONTRIBUTING.md`,
+  `CHANGELOG.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1 FR),
+  `SECURITY.md`, templates GitHub d'issues et de PR.
+- Crédit explicite à [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+  en tête de `README.md` et via une nouvelle sous-section « Origines »
+  de `docs/codev.md`.
+- `README.md` : 4 badges (release / latest / license / plateformes),
+  sommaire, section « Le cycle » avec schéma ASCII.
+
+### Fixed
+
+- Spec `distribution` — l'exigence « La documentation cite les
+  trois voies d'installation » avait perdu son scénario au moment
+  de l'ajout du support Windows, et sa dernière phrase était
+  tronquée. Réparée. `codev validate --strict` est désormais vert.
+
+Notes complètes :
+https://github.com/mairistem/codev/releases/tag/v0.2.1
+
 ## [0.2.0] — 2026-09-24
 
 ### Added
@@ -21,20 +44,6 @@ correspondante — cette page en donne la vue résumée.
   zsh, fish, powershell, elvish.
 - **`codev docs --write PATH`** pour diffusion ciblée (impression,
   hébergement statique, etc.).
-- Documents standards de projet open source : `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, templates
-  d'issues et de PR, section « Origines » qui crédite OpenSpec.
-
-### Fixed
-
-- Spec `distribution` — l'exigence « La documentation cite les
-  trois voies d'installation » avait perdu son scénario au moment
-  de l'ajout du support Windows. Réparée par un delta `MODIFIED`
-  qui reconstitue le bloc complet et ajoute deux scénarios
-  vérifiant l'ordre des voies dans la documentation et la présence
-  des one-liners dans le README. `codev validate --strict` est
-  désormais vert.
-
 Notes complètes :
 https://github.com/mairistem/codev/releases/tag/v0.2.0
 
