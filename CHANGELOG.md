@@ -8,6 +8,23 @@ versionnage [SemVer](https://semver.org/lang/fr/).
 Les notes détaillées de chaque version vivent dans la Release GitHub
 correspondante — cette page en donne la vue résumée.
 
+## [0.2.2] — 2026-09-24
+
+### Added
+
+- **`docs/codev.md` §3.5** — nouveau tutoriel « Ta première évolution,
+  en cinq minutes » : parcours complet propose → apply → valide →
+  archive sur un cas concret (`codev list --json`), avec les deux
+  voies (skill Claude Code et CLI pure) à chaque étape.
+- **Trois diagrammes Mermaid** dans `docs/codev.md` : machine à
+  états d'un change (§3), graphe de crates (§5), cycle de vie d'un
+  delta (§5). GitHub les rend nativement ; le HTML embarqué de
+  `codev docs` dégrade proprement en bloc de code (l'autonomie
+  hors-ligne du HTML est préservée).
+
+Notes complètes :
+https://github.com/mairistem/codev/releases/tag/v0.2.2
+
 ## [0.2.1] — 2026-09-24
 
 ### Added
