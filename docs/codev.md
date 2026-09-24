@@ -37,6 +37,64 @@ Ce qui est spécifique à codev :
   (numéros de tickets Jira) et enrichissent le contexte via un MCP
   configuré côté projet.
 
+### Origines
+
+codev est inspiré par [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+(MIT), l'outil TypeScript qui a popularisé l'idée d'un cycle de
+développement piloté par des specs pour agents. codev en reprend
+l'ossature, la reconstruit en Rust, et l'ajuste à ses propres partis
+pris.
+
+**Ce que codev doit à OpenSpec.**
+
+- Le cycle en trois temps — proposer, appliquer, archiver — et l'idée
+  qu'un `change` est l'unité de travail.
+- Les **deltas de spec** avec quatre opérations lisibles :
+  `ADDED`, `MODIFIED`, `REMOVED`, `RENAMED`. C'est ce qui rend
+  l'outil viable sur du code existant.
+- La notion de **capacité** comme regroupement de comportement
+  observable, plutôt que de fichier ou de module.
+- La forme des `ADR` — décisions d'architecture datées, justifiées,
+  numérotées.
+
+**Ce qui a été fait différemment.**
+
+- **Rust plutôt que TypeScript** — un binaire précompilé,
+  cross-plateforme, sans runtime à installer. `curl | sh` sur macOS /
+  Linux, `iwr | iex` sur Windows.
+- **`_codev/` visible plutôt que `.openspec/` caché** — les artefacts
+  de spec sont du code source de premier ordre : on les regarde, on
+  les diff, on les revoie. Ils méritent un dossier qui ne se cache
+  pas dans un `ls`.
+- **Cœur pur + coquille impérative** — le noyau (crate `codev-core`)
+  ne fait pas d'I/O. Toutes les décisions y sont testables sans
+  disque. La coquille (`codev-cli`, `codev-engine`) prend la charge
+  de l'I/O. OpenSpec fond les deux ; codev les sépare (cf. ADR
+  0001).
+
+**Ce qui est propre à codev.**
+
+- **Sceau K3** — les décisions acceptées sont scellées par leur
+  SHA-256 dans `_codev/decisions.lock`. Toute réécriture silencieuse
+  est détectée par `codev validate`.
+- **Dérives K6** — un change peut déclarer explicitement
+  `deviates_from: <ADR>` : la déviation est traçable, pas
+  clandestine.
+- **Promotion K7** — une décision prise pendant le `design.md` d'un
+  change peut être promue en ADR au moment de l'archivage.
+- **Sources héritées K5** — un projet peut hériter en lecture seule
+  des specs et ADR d'un autre dépôt, épinglé par SHA git.
+- **Extension MCP côté skill** — les skills détectent les motifs
+  externes (tickets Jira, etc.) et appellent le MCP configuré,
+  plutôt que de faire du CLI un client MCP.
+- **`codev docs`** — documentation embarquée dans le binaire, rendue
+  en HTML autonome et ouverte dans le navigateur, sans dépendance
+  réseau.
+- **Distribution précompilée multi-OS** — GitHub Actions publie
+  des binaires macOS (arm64 + Intel), Linux (musl), Windows à
+  chaque tag ; scripts `install.sh` et `install.ps1` vérifient le
+  SHA-256.
+
 ---
 
 ## 2. Installation

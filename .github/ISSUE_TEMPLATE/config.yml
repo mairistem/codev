@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions et discussions
+    url: https://github.com/mairistem/codev/discussions
+    about: Pour tout ce qui n'est pas un bug ou une demande de fonctionnalité.
+  - name: Guide de contribution
+    url: https://github.com/mairistem/codev/blob/main/CONTRIBUTING.md
+    about: Comment proposer un change codev.
