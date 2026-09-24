@@ -266,6 +266,32 @@ dossier de specs) et installe les skills par défaut dans
 
 Le cycle de codev s'articule autour de **quatre gestes** :
 
+```mermaid
+stateDiagram-v2
+    [*] --> proposed : propose
+    proposed --> applied : apply
+    applied --> synced : sync
+    applied --> archived : archive
+    synced --> archived : archive
+    archived --> [*]
+
+    note right of proposed
+        Planification :
+        proposal + design + tasks
+        (+ specs si !skip_specs)
+    end note
+
+    note left of applied
+        tasks.md tout coché
+        validate --strict vert
+    end note
+```
+
+`sync` est une variante d'`archive` qui **ne déplace pas** le dossier
+du change — utile pour rendre une capacité nouvelle disponible dans les
+specs principales avant même de classer le change (par exemple parce
+qu'un autre change en cours a besoin de la voir).
+
 ```
    ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐
    │  propose   │  │   apply    │  │    sync    │  │  archive   │
@@ -327,6 +353,141 @@ codev archive <nom>
 
 Refus strict si `codev validate <nom>` remonte des erreurs.
 
+### 3.5. Ta première évolution, en cinq minutes
+
+Le cycle est plus clair quand on le suit sur un cas concret. On va
+ajouter une option `--json` à `codev list` — change volontairement
+simple, qui parcourt tous les gestes.
+
+À chaque étape, deux voies : **Claude Code** (skill, recommandée) et
+**CLI pure** (utile hors de Claude Code, ou pour comprendre ce que la
+skill fait dessous).
+
+#### Étape 1 — créer le change
+
+Dans Claude Code :
+
+```text
+/codev-propose add-list-json
+```
+
+Ou en CLI pure :
+
+```bash
+codev new change add-list-json --goal "Ajouter --json à codev list"
+```
+
+Sortie attendue :
+
+```text
+Change « add-list-json » créé
+  Emplacement  <chemin>/_codev/changes/add-list-json
+  Schéma       spec-driven
+```
+
+#### Étape 2 — rédiger les artefacts
+
+La skill `/codev-propose` s'en charge automatiquement (elle lit les
+templates du schéma, produit `proposal.md`, `design.md`, `tasks.md`
+et les fichiers de delta).
+
+En CLI pure, tu édites toi-même les fichiers sous
+`_codev/changes/add-list-json/`. Le format des artefacts est décrit
+en §3.1. Squelette du delta `specs/cli-list/spec.md` :
+
+```markdown
+## MODIFIED Requirements
+
+### Requirement: `codev list` liste les changes actifs
+
+[recopier le bloc entier depuis la spec principale,
+ puis ajouter un scénario --json]
+
+#### Scenario: --json produit un tableau JSON valide
+
+- **WHEN** l'utilisateur lance `codev list --json`
+- **THEN** stdout porte un tableau JSON de la forme
+  `[{"name": "...", "goal": "...", …}, …]`
+- **AND** exit code 0
+```
+
+#### Étape 3 — vérifier la planification
+
+```bash
+codev status --change add-list-json
+```
+
+Sortie attendue :
+
+```text
+  [x] proposal
+  [x] specs
+  [x] design
+  [x] tasks
+Planification : 4/4 artefacts
+La planification est complète.
+```
+
+#### Étape 4 — implémenter
+
+Dans Claude Code :
+
+```text
+/codev-apply add-list-json
+```
+
+La skill lit `tasks.md`, traite chaque case dans l'ordre, coche à
+mesure, s'arrête au premier blocage. En manuel : tu ouvres le code
+(`crates/codev-cli/src/…`), tu ajoutes le drapeau `--json` à la
+sous-commande `list`, tu ajoutes un test, tu coches la case
+correspondante.
+
+#### Étape 5 — valider
+
+```bash
+codev validate add-list-json
+```
+
+Sortie attendue :
+
+```text
+change add-list-json — _codev/changes/add-list-json
+  ✓ aucun défaut
+```
+
+#### Étape 6 — archiver
+
+Dans Claude Code :
+
+```text
+/codev-archive add-list-json
+```
+
+Ou en CLI pure :
+
+```bash
+codev archive --change add-list-json
+```
+
+Sortie attendue (extrait `ArchiveReportV1`) :
+
+```text
+✓ Archive de « add-list-json » — 0 spec(s) créée(s), 1 mise(s) à
+jour, 0 inchangée(s).
+Déplacé vers : _codev/changes/archive/2026-09-24-add-list-json
+```
+
+#### Voilà
+
+Ce que tu viens de faire — proposer, implémenter, valider, archiver
+— se répète à l'identique pour toute évolution, du fix d'une ligne
+au refactor d'une capacité entière. Pour aller plus loin, la §5
+(Concepts) creuse la sémantique des deltas et des ADR ; la §6
+(CLI) est la référence complète des commandes.
+
+*La sortie exacte peut varier d'une version à l'autre — l'important
+est les gestes du cycle, pas les octets précis.*
+
 ---
 
 ## 4. Les 7 skills Claude Code
@@ -353,6 +514,39 @@ Claude Code.
 ---
 
 ## 5. Concepts
+
+### Architecture
+
+Codev est un workspace Cargo de quatre crates. Le graphe de
+dépendances entre elles matérialise le principe *cœur pur, coquille
+impérative* — et Cargo interdit tout cycle à la compilation.
+
+```mermaid
+graph LR
+    cli["codev-cli<br/>coquille impérative"]
+    engine["codev-engine<br/>effets via ports"]
+    agents["codev-agents<br/>cible Claude Code"]
+    core["codev-core<br/>pur, aucune I/O"]
+
+    cli --> engine
+    cli --> agents
+    engine --> core
+    agents --> core
+
+    style core fill:#e1f5ff,stroke:#0369a1,stroke-width:2px
+```
+
+Les flèches pointent vers les dépendances. `codev-core` (en bleu) ne
+touche jamais au disque : c'est un moteur pur qui retourne des *plans
+d'effets*. `codev-engine` exécute ces plans à travers des *ports*
+(traits Rust) que la couche externe implémente. `codev-cli` est la
+coquille — elle prend un `argv`, appelle `codev-engine`, rend un
+rapport. `codev-agents` génère les skills Claude Code à partir du
+noyau.
+
+Cette structure est la traduction concrète de l'ADR
+[0002](../_codev/decisions/0002-graphe-de-crates-comme-regle-de-dependance.md) :
+la **règle de dépendance** est appliquée par le graphe des crates.
 
 ### Capacité
 
@@ -419,6 +613,33 @@ Dans un delta de spec (dans `_codev/changes/<nom>/specs/<capa>/spec.md`) :
 Le merger (`codev-core::merge`) applique chaque opération au caractère
 près — le reste de la spec (commentaires, sections libres, espacement)
 reste identique.
+
+Le cycle de vie d'un delta traverse deux fichiers :
+
+```mermaid
+sequenceDiagram
+    actor Agent
+    participant CLI as codev-cli
+    participant Delta as spec du change
+    participant Main as spec principale
+
+    Agent->>CLI: propose add-list-json
+    CLI->>Delta: crée specs/cli-list/spec.md
+    Note over Delta: ## MODIFIED Requirements<br/>### Requirement: …<br/>#### Scenario: …
+
+    Agent->>CLI: apply add-list-json
+    Note over Agent: implémente le code<br/>et coche tasks.md
+
+    Agent->>CLI: archive add-list-json
+    CLI->>Main: fusion du delta<br/>(caractère près)
+    CLI-->>Agent: ArchiveReportV1
+    Note over Delta: dossier déplacé vers<br/>changes/archive/<date>-<nom>/
+```
+
+La spec principale n'est **jamais éditée directement** — elle reçoit
+ses modifications par fusion de deltas au moment de `sync` ou
+`archive`. C'est ce qui rend l'histoire relisable : chaque change
+raconte lisiblement ce qu'il a apporté à la spec principale.
 
 ---
 
