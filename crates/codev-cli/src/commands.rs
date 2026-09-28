@@ -92,14 +92,58 @@ pub struct SetupOutcome {
 
 /// Initialise codev dans un projet.
 ///
-/// Deux temps, et l'ordre compte : on écrit d'abord la structure — ce qui crée
-/// `config.yaml` s'il manque — puis on **relit** la configuration pour décider
-/// des skills. Un projet qui avait déjà choisi ses workflows garde donc son
-/// choix, puisque le scaffolding n'écrase rien.
-pub fn init(ctx: &Ctx, path: &str, force: bool) -> Result<SetupOutcome> {
-    let root = absolute(ctx, path)?;
-    let layout = Layout::new(&root);
+/// Trois temps, et l'ordre compte :
+///
+/// 1. **Sonde** (sauf `--no-detect`) : lecture des manifestes, MCPs, licence,
+///    CI — pas d'écriture.
+/// 2. **Prompts** (sauf `--yes` ou stdin non-TTY) : deux questions, plus une
+///    confirmation MCP éventuelle.
+/// 3. **Scaffolding + génération** : si `_codev/config.yaml` est absent, on
+///    l'écrit prérempli avec commentaires de provenance ; sinon on ne le
+///    touche pas (comportement idempotent). Puis on **relit** la
+///    configuration résolue pour installer les skills.
+///
+/// Un projet qui avait déjà choisi ses workflows garde donc son choix.
+pub fn init(
+    ctx: &Ctx,
+    path: &str,
+    force: bool,
+    opts: &crate::init_prompts::InitOptions,
+) -> Result<SetupOutcome> {
+    let root_path = absolute(ctx, path)?;
+    let layout = Layout::new(&root_path);
+    let config_path = layout.project_root().join("_codev").join("config.yaml");
 
+    // Écrit le config.yaml généré UNIQUEMENT si absent — on ne touche pas à
+    // un fichier existant, la configuration de l'utilisateur reste souveraine.
+    if !ctx.fs.exists(&config_path) {
+        let detected = if opts.no_detect {
+            codev_core::detect::Detected::empty()
+        } else {
+            codev_engine::detect::run(ctx.fs, ctx.env, layout.project_root())
+        };
+        let choices = crate::init_prompts::run(&detected, opts)
+            .map_err(|e| Failure::new("prompt_failed", e.to_string()))?;
+        let generated = codev_core::config::from_detected(&detected, &choices);
+        let yaml = codev_core::config::render(&generated);
+        if let Some(parent) = config_path.parent() {
+            ctx.fs
+                .create_dir_all(parent)
+                .map_err(|source| EngineError::Write {
+                    path: config_path.clone(),
+                    source,
+                })?;
+        }
+        ctx.fs
+            .write(&config_path, &yaml)
+            .map_err(|source| EngineError::Write {
+                path: config_path.clone(),
+                source,
+            })?;
+    }
+
+    // Scaffold pour créer les dossiers manquants (specs/, changes/, etc.) —
+    // il ne réécrit pas le config.yaml existant grâce à WriteMode::CreateOnly.
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
     let mut outcome = install_skills(ctx, &layout, force)?;
     outcome.absorb(scaffolded);
@@ -1043,6 +1087,17 @@ mod tests {
     use super::*;
     use codev_engine::ports::{FixedClock, FixedEnv, MemoryFileSystem};
 
+    /// Options d'`init` par défaut pour les tests : non-interactif (--yes),
+    /// sonde désactivée (résultats déterministes, pas de manifeste réel à
+    /// détecter dans un MemoryFileSystem par défaut).
+    fn test_init_opts() -> crate::init_prompts::InitOptions {
+        crate::init_prompts::InitOptions {
+            yes: true,
+            no_detect: true,
+            preset: None,
+        }
+    }
+
     struct Harnais {
         fs: MemoryFileSystem,
         env: FixedEnv,
@@ -1078,12 +1133,20 @@ mod tests {
     #[test]
     fn init_cree_la_structure_et_les_skills() {
         let h = Harnais::neuf();
-        let outcome = init(&h.ctx(), ".", false).unwrap();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
 
         assert_eq!(outcome.root, PathBuf::from("/p"));
         assert_eq!(
             outcome.skills,
-            ["codev-propose", "codev-explore", "codev-onboard"]
+            [
+                "codev-propose",
+                "codev-explore",
+                "codev-onboard",
+                "codev-apply",
+                "codev-sync",
+                "codev-archive",
+                "codev-update"
+            ]
         );
         assert!(h.fs.read("/p/_codev/config.yaml").is_some());
         assert!(h
@@ -1096,8 +1159,8 @@ mod tests {
     #[test]
     fn relancer_init_ne_change_rien() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
-        let second = init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let second = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         assert!(
             !second.changed_anything(),
             "créé : {:?}, mis à jour : {:?}",
@@ -1109,9 +1172,76 @@ mod tests {
     #[test]
     fn init_respecte_les_workflows_deja_configures() {
         let h = Harnais::neuf().avec("/p/_codev/config.yaml", "workflows:\n  - explore\n");
-        let outcome = init(&h.ctx(), ".", false).unwrap();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         assert_eq!(outcome.skills, ["codev-explore"]);
         assert!(h.fs.read("/p/.claude/skills/codev-propose/SKILL.md").is_none());
+    }
+
+    #[test]
+    fn init_yes_avec_sonde_genere_config_provenance() {
+        // Scénario réaliste : projet Rust workspace + .mcp.json Atlassian.
+        // `codev init --yes` (sans --no-detect) doit produire un
+        // _codev/config.yaml qui reflète la détection avec commentaires
+        // de provenance.
+        const CARGO_WS: &str = r#"
+[workspace]
+members = ["a", "b"]
+[workspace.package]
+edition = "2024"
+"#;
+        const MCP: &str = r#"{
+            "mcpServers": {
+                "claude.ai Atlassian Rovo": { "url": "https://mcp.atlassian.com/" }
+            }
+        }"#;
+        let h = Harnais::neuf()
+            .avec("/p/Cargo.toml", CARGO_WS)
+            .avec("/p/.mcp.json", MCP);
+
+        // --yes seul (pas --no-detect), pour que la sonde tourne.
+        let opts = crate::init_prompts::InitOptions {
+            yes: true,
+            no_detect: false,
+            preset: None,
+        };
+        let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
+
+        // 7 skills installées (défaut complet).
+        assert_eq!(outcome.skills.len(), 7);
+        assert!(outcome.skills.iter().any(|s| s == "codev-apply"));
+
+        // Le config.yaml existe et porte le tool MCP + le contexte détecté.
+        let cfg = h.fs.read("/p/_codev/config.yaml").expect("config.yaml écrit");
+        assert!(
+            cfg.contains("mcp__claude_ai_Atlassian_Rovo__getJiraIssue"),
+            "config doit contenir le tool_id normalisé : {cfg}"
+        );
+        assert!(
+            cfg.contains("détecté depuis .mcp.json"),
+            "config doit citer la provenance MCP : {cfg}"
+        );
+        assert!(
+            cfg.contains("Rust workspace"),
+            "config doit citer la stack détectée : {cfg}"
+        );
+        assert!(
+            cfg.contains("détecté depuis Cargo.toml"),
+            "config doit citer la provenance stack : {cfg}"
+        );
+    }
+
+    #[test]
+    fn init_yes_sans_detection_produit_config_minimale() {
+        // --no-detect court-circuite la sonde ; le config.yaml n'a que le
+        // schéma et les 7 workflows.
+        let h = Harnais::neuf();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        assert_eq!(outcome.skills.len(), 7);
+        let cfg = h.fs.read("/p/_codev/config.yaml").unwrap();
+        assert!(cfg.contains("schema: spec-driven"));
+        assert!(cfg.contains("- propose"));
+        assert!(!cfg.contains("mcp:"), "aucun mcp: sans détection : {cfg}");
+        assert!(!cfg.contains("context: |"), "aucun context sans détection");
     }
 
     #[test]
@@ -1126,7 +1256,7 @@ mod tests {
         // La tranche verticale du lot 1, de bout en bout : init, new change,
         // status, instructions.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
 
         let cree = new_change(&h.ctx(), "add-auth", None, Some("Ajouter l'auth".into())).unwrap();
         assert_eq!(cree.schema_name, "spec-driven");
@@ -1149,7 +1279,7 @@ mod tests {
     #[test]
     fn refuse_un_nom_de_change_invalide() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = new_change(&h.ctx(), "Add Auth", None, None).unwrap_err();
         assert_eq!(err.code, "invalid_change_id");
     }
@@ -1157,7 +1287,7 @@ mod tests {
     #[test]
     fn refuse_un_change_deja_existant() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         let err = new_change(&h.ctx(), "add-auth", None, None).unwrap_err();
         assert_eq!(err.code, "change_exists");
@@ -1166,7 +1296,7 @@ mod tests {
     #[test]
     fn refuse_un_schema_inconnu_avant_de_creer_le_dossier() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = new_change(&h.ctx(), "add-auth", Some("fantaisie"), None).unwrap_err();
         assert_eq!(err.code, "schema_not_found");
         assert!(
@@ -1178,7 +1308,7 @@ mod tests {
     #[test]
     fn status_sans_change_actif_oriente_vers_la_creation() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = status(&h.ctx(), None).unwrap_err();
         assert_eq!(err.code, "no_active_change");
         assert!(err.fix.is_some_and(|f| f.contains("codev new change")));
@@ -1187,7 +1317,7 @@ mod tests {
     #[test]
     fn status_avec_plusieurs_changes_refuse_de_deviner() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         new_change(&h.ctx(), "fix-bug", None, None).unwrap();
 
@@ -1199,7 +1329,7 @@ mod tests {
     #[test]
     fn liste_les_changes_et_les_specs() {
         let h = Harnais::neuf().avec("/p/_codev/specs/user-auth/spec.md", "# spec");
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
 
         let changes = list_changes(&h.ctx()).unwrap();
@@ -1215,7 +1345,7 @@ mod tests {
     #[test]
     fn liste_les_schemas_avec_leur_enchainement() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = list_schemas(&h.ctx()).unwrap();
 
         assert_eq!(outcome.schemas.len(), 1);
@@ -1231,7 +1361,7 @@ mod tests {
     fn sync_un_seul_change_actif_est_implicite() {
         // Un seul change actif → sync sans nom marche.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         write_helper(
             &h,
@@ -1246,7 +1376,7 @@ mod tests {
     #[test]
     fn archive_avec_validate_erreur_echoue_code_util() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "buggy", None, None).unwrap();
         write_helper(
             &h,
@@ -1264,7 +1394,7 @@ mod tests {
     #[test]
     fn validate_projet_propre_ne_produit_aucun_finding() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         // Un delta bien formé sous le change.
         write_helper(
@@ -1286,7 +1416,7 @@ mod tests {
     #[test]
     fn validate_attrape_les_findings_du_parseur_et_des_regles() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "buggy", None, None).unwrap();
         // Un delta où SHALL manque (règle E1) et le scénario est mal formé
         // (règle du parseur) : les deux findings doivent remonter.
@@ -1318,7 +1448,7 @@ mod tests {
     fn validate_zero_delta_sans_marqueur_echoue() {
         // La règle E3 : un change sans delta et sans skip_specs échoue.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "refactor", None, None).unwrap();
 
         let report = validate(&h.ctx(), ValidateArgs::Changes).unwrap();
@@ -1334,7 +1464,7 @@ mod tests {
         // Un change en erreur mais on demande seulement les specs : rien à
         // remonter, exit 0.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "refactor", None, None).unwrap(); // zero-delta
 
         let report = validate(&h.ctx(), ValidateArgs::Specs).unwrap();
@@ -1345,7 +1475,7 @@ mod tests {
     #[test]
     fn validate_item_inconnu_echoue_avec_code_utile() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = validate(&h.ctx(), ValidateArgs::Item("fantome".into())).unwrap_err();
         assert_eq!(err.code, "unknown_item");
         assert!(err.fix.is_some_and(|f| f.contains("codev list")));
@@ -1366,7 +1496,7 @@ mod tests {
             "/p/_codev/schemas/casse/schema.yaml",
             "name: casse\nartifacts:\n  - id: a\n    generates: a.md\n    requires: [fantome]\napply:\n  requires: [a]\n  tracks: a.md\n",
         );
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = list_schemas(&h.ctx()).unwrap();
 
         assert_eq!(outcome.schemas.len(), 1, "spec-driven reste listé");
@@ -1381,7 +1511,7 @@ mod tests {
         // Un `decision new` crée l'ADR ET l'entrée de sceau ; le hash
         // remonte dans l'outcome pour le contrat JSON.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
         assert!(outcome.body_sha256.is_some());
         assert!(outcome.body_sha256.as_ref().unwrap().starts_with("sha256:"));
@@ -1400,7 +1530,7 @@ mod tests {
         // Un statut `proposed` n'engage pas d'immutabilité — pas de sceau,
         // pas de hash dans l'outcome.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = decision_new(&h.ctx(), "Piste", "proposed").unwrap();
         assert!(outcome.body_sha256.is_none());
 
@@ -1415,7 +1545,7 @@ mod tests {
         // `decision new` scelle déjà l'ADR ; un `decision seal` juste
         // après doit être un no-op silencieux.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
         let outcome = decision_seal(&h.ctx(), "0001", false).unwrap();
         assert!(outcome.was_noop);
@@ -1425,7 +1555,7 @@ mod tests {
     #[test]
     fn decision_seal_refuse_sans_force_apres_modification_du_corps() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
 
         // On corrompt le corps de l'ADR après scellement.
@@ -1443,7 +1573,7 @@ mod tests {
     #[test]
     fn decision_seal_avec_force_reecrit_apres_modification() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
 
         use codev_engine::FileSystem;
@@ -1475,7 +1605,7 @@ Le rationale du choix.
     #[test]
     fn decision_promote_cree_un_adr_et_reference_le_design() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         // Un design.md avec un bloc de décision.
         use codev_engine::FileSystem;
@@ -1507,7 +1637,7 @@ Le rationale du choix.
     #[test]
     fn decision_promote_refuse_un_change_absent() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = decision_promote(&h.ctx(), "fantome", "X").unwrap_err();
         assert_eq!(err.code, "unknown_change");
     }
@@ -1515,7 +1645,7 @@ Le rationale du choix.
     #[test]
     fn decision_promote_refuse_un_design_absent() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         // Pas de design.md créé.
         let err = decision_promote(&h.ctx(), "add-auth", "X").unwrap_err();
@@ -1525,7 +1655,7 @@ Le rationale du choix.
     #[test]
     fn decision_promote_refuse_un_titre_absent() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         use codev_engine::FileSystem;
         h.fs
@@ -1546,7 +1676,7 @@ Le rationale du choix.
             "/p/_codev/changes/archive/2026-09-01-old/design.md",
             DESIGN_AVEC_BLOC,
         );
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = decision_promote(&h.ctx(), "old", "Utiliser JWT").unwrap_err();
         assert_eq!(err.code, "cannot_promote_from_archived");
     }
@@ -1570,7 +1700,7 @@ Le rationale du choix.
                 "/home/partage/_codev/decisions/0100.md",
                 &adr_heritee("0100"),
             );
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = decision_deviate(&h.ctx(), "path:~/partage/0100", "Notre alternative").unwrap();
 
         assert_eq!(outcome.target_qualified_id, "path:~/partage/0100");
@@ -1590,7 +1720,7 @@ Le rationale du choix.
     #[test]
     fn decision_deviate_refuse_une_locale_avec_renvoi_vers_supersede() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_new(&h.ctx(), "Un local", "accepted").unwrap();
         let err = decision_deviate(&h.ctx(), "projet/0001", "…").unwrap_err();
         assert_eq!(err.code, "cannot_deviate_from_local");
@@ -1600,7 +1730,7 @@ Le rationale du choix.
     #[test]
     fn decision_deviate_refuse_une_cible_inconnue() {
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = decision_deviate(&h.ctx(), "path:~/inconnue/0100", "…").unwrap_err();
         assert_eq!(err.code, "unknown_decision_id");
     }
@@ -1616,7 +1746,7 @@ Le rationale du choix.
                 "/home/partage/_codev/decisions/0100.md",
                 &adr_heritee("0100"),
             );
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_deviate(&h.ctx(), "path:~/partage/0100", "Notre alt").unwrap();
         let list = decision_list(&h.ctx()).unwrap();
 
@@ -1644,7 +1774,7 @@ Le rationale du choix.
         // Baseline pour le mode strict : sans finding, ni `has_errors`
         // ni `has_warnings` ne remontent.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         // Un seul artefact suffisant pour que validate_change ne remonte pas
         // d'erreur (proposal simple).
@@ -1675,7 +1805,7 @@ Le rationale du choix.
             "/p/_codev/decisions/0001.md",
             "---\nid: \"0001\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\nx\n",
         );
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
         assert!(!report.has_errors(), "warnings uniquement");
         assert!(report.has_warnings(), "au moins un warning attendu");
@@ -1685,7 +1815,7 @@ Le rationale du choix.
     fn validate_avec_seal_mismatch_a_erreur() {
         // Un mismatch est une erreur, indépendante du mode strict.
         let h = Harnais::neuf();
-        init(&h.ctx(), ".", false).unwrap();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
         // On corrompt le corps de l'ADR après scellement.
         use codev_engine::FileSystem;

@@ -17,6 +17,7 @@ pub mod config;
 pub mod decisions;
 pub mod decisions_actions;
 pub mod design;
+pub mod detect;
 pub mod error;
 pub mod instructions;
 pub mod metadata;

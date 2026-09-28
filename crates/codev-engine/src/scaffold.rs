@@ -2,6 +2,15 @@ use codev_core::{ChangeId, Layout, Plan, WriteMode};
 
 use crate::metadata::ChangeMetadata;
 
+/// Template de secours pour `_codev/config.yaml`.
+///
+/// **Rôle résiduel** — depuis le lot `init-interactive-with-detection`,
+/// `codev init` génère lui-même un `config.yaml` prérempli à partir de la
+/// sonde et des choix utilisateur (`codev-core::config::render`). Ce
+/// template ne sert plus qu'en filet de sécurité, lorsque le fichier a été
+/// supprimé à la main : `codev update` le régénère à l'identique de ce
+/// contenu, avec les workflows commentés (donc, à la relecture,
+/// `DEFAULT_WORKFLOWS` s'applique — les 7 skills).
 const DEFAULT_CONFIG: &str = r#"# Configuration de codev pour ce projet.
 schema: spec-driven
 

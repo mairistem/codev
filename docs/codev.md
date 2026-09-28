@@ -255,10 +255,42 @@ codev init
 ```
 
 crée `_codev/` (config, dossier de changes, dossier de décisions,
-dossier de specs) et installe les skills par défaut dans
-`.claude/skills/`. Le catalogue par défaut installe `propose`,
-`explore` et `onboard` — les autres skills (`apply`, `sync`, `archive`,
-`update`) sont opt-in via `_codev/config.yaml`.
+dossier de specs) et installe les **7 skills** par défaut dans
+`.claude/skills/` (`propose`, `explore`, `onboard`, `apply`, `sync`,
+`archive`, `update`). Un projet qui veut moins de skills déclare
+`workflows:` explicite avec un sous-ensemble (voie **opt-out**).
+
+### L'expérience `codev init`
+
+Sur un projet neuf, `codev init` fait trois choses dans l'ordre :
+
+1. **Sonde** silencieusement l'environnement — lit les manifestes
+   (`Cargo.toml`, `package.json`, `pyproject.toml`, `go.mod`,
+   `pom.xml`), la licence, la présence de `.github/workflows/`, et
+   les MCPs configurés (`.mcp.json` projet, `~/.claude.json`,
+   `.claude/settings.json`).
+2. **Pose au plus deux questions** interactives :
+   - « Quels workflows installer ? » — Complet (7, défaut), Minimal
+     (3), ou Personnalisé.
+   - « Contexte pour les skills » — texte libre. Entrée vide ouvre
+     `$EDITOR` sur un squelette prérempli issu de la stack détectée.
+   - Un MCP Jira détecté est **confirmé**, pas demandé (`✓ MCP Jira
+     détecté : mcp__…__getJiraIssue`).
+3. **Écrit** un `_codev/config.yaml` prérempli, avec **commentaires
+   de provenance** au-dessus de chaque champ (`# détecté depuis
+   Cargo.toml`, `# détecté depuis .mcp.json → serveur « … »`).
+
+Trois flags composables pour scripter :
+
+- `codev init --yes` — applique tous les défauts, aucun prompt.
+- `codev init --no-detect` — court-circuite la sonde (utile pour les
+  tests reproductibles).
+- `codev init --preset complet|minimal|personnalise` — préselectionne
+  la réponse à la question workflows.
+
+Sans TTY sur stdin (pipe, redirect, CI), `--yes` est implicite. Sur
+un projet qui a déjà un `_codev/config.yaml`, `codev init` ne
+regénère **pas** le fichier ; il installe seulement les skills.
 
 ---
 
@@ -497,10 +529,13 @@ est les gestes du cycle, pas les octets précis.*
 | `codev-propose` | Rédiger les 4 artefacts de planif | Bash(codev:*), Read, Write, Edit, Glob, Grep, + MCP Jira si configuré | ✓ |
 | `codev-explore` | Défricher une idée sans engager | Bash(codev:*), Read, Glob, Grep | ✓ |
 | `codev-onboard` | Présenter codev à un utilisateur qui découvre | Bash(codev:*), Read, Glob | ✓ |
-| `codev-apply` | Implémenter les tâches | Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash | opt-in |
-| `codev-sync` | Fusionner delta dans specs | Bash(codev:*), Read | opt-in |
-| `codev-archive` | Clore et déplacer | Bash(codev:*), Read | opt-in |
-| `codev-update` | Réviser un artefact de planif | Bash(codev:*), Read, Write, Edit, Glob, Grep | opt-in |
+| `codev-apply` | Implémenter les tâches | Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash | ✓ |
+| `codev-sync` | Fusionner delta dans specs | Bash(codev:*), Read | ✓ |
+| `codev-archive` | Clore et déplacer | Bash(codev:*), Read | ✓ |
+| `codev-update` | Réviser un artefact de planif | Bash(codev:*), Read, Write, Edit, Glob, Grep | ✓ |
+
+*Toutes les skills sont installées par défaut. Pour restreindre, déclare
+un `workflows:` explicite dans `_codev/config.yaml` (voie opt-out).*
 
 **Règle stricte** : seule `apply` a le `Bash` général — pour lancer
 les tests projet. Les autres skills se cantonnent à `Bash(codev:*)`
@@ -709,8 +744,11 @@ Voici la forme complète (tout est optionnel) :
 # Schéma de workflow utilisé par ce projet. Défaut : spec-driven.
 schema: spec-driven
 
-# Workflows à installer comme skills Claude Code. Absent, le
-# catalogue par défaut s'applique : propose, explore, onboard.
+# Workflows à installer comme skills Claude Code. Absent, le catalogue
+# par défaut s'applique — les 7 workflows (propose, explore, onboard,
+# apply, sync, archive, update). C'est la voie **opt-out** : déclarer
+# `workflows:` ici sert à RESTREINDRE la liste installée, pas à
+# l'étendre.
 workflows:
   - propose
   - explore

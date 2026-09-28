@@ -13,7 +13,9 @@
 //! des skills déjà installées ; elle a ses propres types dans
 //! `codev-cli::contract`, pour qu'un refactor interne ne la casse pas.
 
+pub mod config;
 pub mod decisions;
+pub mod detect;
 pub mod error;
 pub mod graph;
 pub mod id;

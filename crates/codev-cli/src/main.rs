@@ -7,9 +7,10 @@
 mod commands;
 mod contract;
 mod docs;
+mod init_prompts;
 mod render;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use codev_engine::{RealFileSystem, SystemClock, SystemEnv};
 use serde::Serialize;
 use serde_json::json;
@@ -41,6 +42,24 @@ struct Cli {
     command: Command,
 }
 
+/// Préset de workflows pour `codev init --preset`.
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum PresetArg {
+    Complet,
+    Minimal,
+    Personnalise,
+}
+
+impl PresetArg {
+    fn to_preset(self) -> init_prompts::Preset {
+        match self {
+            PresetArg::Complet => init_prompts::Preset::Complet,
+            PresetArg::Minimal => init_prompts::Preset::Minimal,
+            PresetArg::Personnalise => init_prompts::Preset::Personnalise,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum Command {
     /// Initialise codev dans un projet et installe les skills Claude Code
@@ -50,6 +69,15 @@ enum Command {
         /// Réécrit les skills même modifiées à la main
         #[arg(long)]
         force: bool,
+        /// Applique tous les défauts, aucun prompt (défauts + détection retenue)
+        #[arg(long, short = 'y')]
+        yes: bool,
+        /// Désactive la sonde d'environnement (utile pour les tests reproductibles)
+        #[arg(long)]
+        no_detect: bool,
+        /// Préselectionne la réponse à la question workflows
+        #[arg(long, value_enum)]
+        preset: Option<PresetArg>,
         #[arg(long)]
         json: bool,
     },
@@ -372,9 +400,21 @@ fn run(cli: Cli) -> i32 {
             0
         }
 
-        Command::Init { path, force, json } => {
+        Command::Init {
+            path,
+            force,
+            yes,
+            no_detect,
+            preset,
+            json,
+        } => {
             let path = path.unwrap_or_else(|| ".".to_string());
-            match commands::init(&ctx, &path, force) {
+            let init_opts = init_prompts::InitOptions {
+                yes,
+                no_detect,
+                preset: preset.map(PresetArg::to_preset),
+            };
+            match commands::init(&ctx, &path, force, &init_opts) {
                 Ok(outcome) => {
                     emit(json, setup_v1(&outcome), || render::setup(&outcome, true));
                     if !json {

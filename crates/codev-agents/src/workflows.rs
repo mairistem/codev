@@ -116,12 +116,16 @@ pub const CATALOG: &[Workflow] = &[
 
 /// Les workflows installés quand la configuration n'en désigne aucun.
 ///
-/// `onboard` est le seul workflow « d'accueil » : il fait partie du
-/// catalogue par défaut parce que sa raison d'être est de guider un
-/// utilisateur qui vient d'installer codev. Le cacher derrière un opt-in
-/// serait absurde : celui qui aurait besoin de le découvrir ne saurait
-/// pas l'activer.
-pub const DEFAULT_WORKFLOWS: &[&str] = &["propose", "explore", "onboard"];
+/// Le catalogue par défaut couvre l'**intégralité** du cycle codev : un
+/// utilisateur qui installe l'outil obtient d'un coup tout ce qu'il faut
+/// pour proposer, implémenter, valider et archiver. Un projet qui veut
+/// restreindre la liste déclare `workflows:` explicitement dans son
+/// `_codev/config.yaml` (voie opt-out). Le défaut initial n'incluait que
+/// `propose`, `explore` et `onboard`, ce qui cassait la découverte : un
+/// utilisateur qui tapait `/codev-apply` ne trouvait pas la skill.
+pub const DEFAULT_WORKFLOWS: &[&str] = &[
+    "propose", "explore", "onboard", "apply", "sync", "archive", "update",
+];
 
 pub fn find(id: &str) -> Option<&'static Workflow> {
     CATALOG.iter().find(|w| w.id == id)
@@ -282,21 +286,30 @@ mod tests {
 
     #[test]
     fn sans_demande_installe_le_catalogue_par_defaut() {
-        // `apply`, `sync`, `archive` et `update` n'entrent PAS dans
-        // DEFAULT_WORKFLOWS — décision assumée : le catalogue par défaut se
-        // limite à ce qui prépare le travail (`propose`, `explore`) et à
-        // l'accueil (`onboard`) ; le reste est opt-in projet par projet.
+        // Le catalogue par défaut couvre les 7 workflows du cycle codev :
+        // un utilisateur qui vient d'installer l'outil obtient d'un coup tout
+        // ce qu'il faut pour proposer, implémenter, valider et archiver. Un
+        // projet qui veut restreindre la liste passe par `workflows:`
+        // explicite dans `_codev/config.yaml` — voie opt-out.
         let (workflows, warnings) = select(None);
+        let ids: Vec<_> = workflows.iter().map(|w| w.id).collect();
         assert_eq!(
-            workflows.iter().map(|w| w.id).collect::<Vec<_>>(),
-            DEFAULT_WORKFLOWS
+            ids,
+            ["propose", "explore", "onboard", "apply", "sync", "archive", "update"]
         );
-        for opt_in in ["apply", "sync", "archive", "update"] {
-            assert!(
-                !DEFAULT_WORKFLOWS.contains(&opt_in),
-                "« {opt_in} » doit rester opt-in ; ajoute-le explicitement dans _codev/config.yaml"
-            );
-        }
+        assert_eq!(ids.as_slice(), DEFAULT_WORKFLOWS);
+        assert!(warnings.is_empty());
+    }
+
+    #[test]
+    fn restriction_opt_out_via_workflows_explicite() {
+        // Un projet qui déclare `workflows: [propose]` obtient uniquement
+        // `propose`, jamais les 6 autres. C'est la contrepartie du défaut
+        // large : opt-out par déclaration explicite.
+        let demande = vec!["propose".to_string()];
+        let (workflows, warnings) = select(Some(&demande));
+        let ids: Vec<_> = workflows.iter().map(|w| w.id).collect();
+        assert_eq!(ids, ["propose"]);
         assert!(warnings.is_empty());
     }
 
