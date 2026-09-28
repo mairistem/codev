@@ -8,6 +8,38 @@ versionnage [SemVer](https://semver.org/lang/fr/).
 Les notes détaillées de chaque version vivent dans la Release GitHub
 correspondante — cette page en donne la vue résumée.
 
+## [0.3.0] — 2026-09-28
+
+### Added
+
+- **`codev init` interactif avec auto-détection** — au premier init sur
+  un projet neuf, `codev init` sonde silencieusement l'environnement
+  (stack via `Cargo.toml`/`package.json`/`pyproject.toml`/`go.mod`/`pom.xml`,
+  licence, CI, MCPs configurés dans `.mcp.json`/`~/.claude.json`), puis
+  pose au plus **deux** questions (workflows, contexte projet), et
+  génère un `_codev/config.yaml` prérempli avec des **commentaires de
+  provenance** au-dessus de chaque champ détecté.
+- **Détection des MCPs Jira/Atlassian** — les serveurs déclarés dans
+  les fichiers Claude Code sont matchés par regex (`jira`, `atlassian`)
+  et convertis en tool_id via la convention Claude Code
+  (`mcp__<name_normalized>__getJiraIssue`).
+- **Flags CLI** — `codev init` accepte désormais `--yes` (`-y`),
+  `--no-detect`, et `--preset <complet|minimal|personnalise>`.
+  Sans TTY sur stdin, `--yes` est implicite (scriptabilité en CI).
+
+### Changed
+
+- **Défaut de `codev init` et `codev update`** : les **7 workflows**
+  sont installés par défaut (propose, explore, onboard, apply, sync,
+  archive, update), plus seulement les 3 premiers. Un projet qui veut
+  moins de skills déclare `workflows:` explicite avec un sous-ensemble
+  choisi (voie **opt-out**). Ce changement règle un problème de
+  découverte : l'ancien défaut cachait `/codev-apply` derrière un
+  opt-in que les nouveaux utilisateurs ne trouvaient jamais.
+
+Notes complètes :
+https://github.com/mairistem/codev/releases/tag/v0.3.0
+
 ## [0.2.2] — 2026-09-24
 
 ### Added
