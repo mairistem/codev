@@ -8,6 +8,23 @@ versionnage [SemVer](https://semver.org/lang/fr/).
 Les notes détaillées de chaque version vivent dans la Release GitHub
 correspondante — cette page en donne la vue résumée.
 
+## [0.3.2] — 2026-09-28
+
+### Fixed
+
+- **Détection `is_config_thin`** — la fonction ne regarde plus la
+  longueur du `context:` (souvent auto-remplie par la sonde de
+  `codev init`), et base sa décision uniquement sur `rules.is_empty()`.
+  Un projet TypeScript, Java Maven ou tout projet à stack riche
+  recevait un contexte auto-détecté de plus de 200 caractères qui
+  inhibait la nudge `/codev-configure` — alors qu'aucune règle
+  n'avait été rédigée. Désormais, la nudge apparaît systématiquement
+  tant que `rules:` est absente ou vide, et disparaît dès qu'une
+  entrée est écrite. Signature simplifiée : `is_config_thin(rules_empty: bool)`.
+
+Notes complètes :
+https://github.com/mairistem/codev/releases/tag/v0.3.2
+
 ## [0.3.1] — 2026-09-28
 
 ### Added
