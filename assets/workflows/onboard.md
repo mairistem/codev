@@ -75,10 +75,21 @@ cas s'applique** :
 | État | Recommandation |
 |---|---|
 | `_codev/` absent | `codev init` |
-| Aucun change actif | **Lire `README.md`** pour prendre le pouls, puis `/codev-propose <une-idée>` ; `/codev-explore <sujet>` en alternative |
+| Aucun change actif ET config thin (context < 200 chars, rules vides) | **`/codev-configure` en premier** — Claude enrichira ta config à partir du projet ; puis `/codev-propose <une-idée>` |
+| Aucun change actif, config non-thin | **Lire `README.md`** pour prendre le pouls, puis `/codev-propose <une-idée>` ; `/codev-explore <sujet>` en alternative |
 | Un seul change actif, planification incomplète | `/codev-propose <ce-nom>` pour poursuivre |
 | Un seul change actif, planification complète | `/codev-apply <ce-nom>` |
 | Plusieurs changes actifs | Les lister ; laisser l'utilisateur choisir la skill |
+
+Pour évaluer si la config est « thin », lis `_codev/config.yaml` et
+regarde deux champs :
+
+- **`context:`** — absent ou moins de 200 caractères ?
+- **`rules:`** — absent ou vide ?
+
+Si les **deux** conditions sont vraies, le YAML n'a pas encore été
+enrichi et `/codev-configure` a vraiment quelque chose à apporter.
+Sinon, on passe à la ligne suivante du tableau.
 
 Comment déterminer si la planification d'un change est complète :
 
@@ -90,8 +101,15 @@ La dernière ligne dit « Planification : N/N artefacts » et « La
 planification est complète. » quand tout est prêt.
 
 **Rends la suggestion actionnable** : cite la commande exacte à taper,
-pas juste « lance `codev-propose` ». Exemple utile sur un projet sans
-change actif :
+pas juste « lance `codev-propose` ». Exemple utile sur un projet neuf
+dont la config est thin :
+
+> **La suite** : ta config est peu remplie. Commence par
+> `/codev-configure` — Claude va lire le projet (README, docs,
+> échantillon de code) et enrichir `_codev/config.yaml`. Ensuite,
+> tape `/codev-propose <une-idée>` pour ta première évolution.
+
+Sur un projet dont la config est déjà bien remplie :
 
 > **La suite** : commence par lire `README.md` pour prendre le pouls
 > du projet. Puis, quand une idée émerge, tape

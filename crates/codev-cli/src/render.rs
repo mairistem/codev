@@ -73,17 +73,40 @@ pub fn setup(outcome: &SetupOutcome, initialise: bool) -> String {
     }
 
     if initialise && !outcome.skills.is_empty() {
-        let premiere = outcome
-            .skills
-            .iter()
-            .find(|s| s.ends_with("propose"))
-            .or_else(|| outcome.skills.first());
+        let has_configure = outcome.skills.iter().any(|s| s.ends_with("configure"));
         let _ = writeln!(out);
-        let _ = writeln!(
-            out,
-            "Redémarre Claude Code pour qu'il découvre les skills, puis tape /{}.",
-            premiere.map(String::as_str).unwrap_or("codev-propose")
-        );
+        if outcome.config_thin && has_configure {
+            // Call-to-action pour la config vide — c'est la porte d'entrée
+            // recommandée juste après un init sur un projet neuf.
+            let _ = writeln!(
+                out,
+                "→ Prochaine étape recommandée : dans Claude Code, tape /codev-configure."
+            );
+            let _ = writeln!(
+                out,
+                "  Claude analysera ton projet et enrichira _codev/config.yaml"
+            );
+            let _ = writeln!(
+                out,
+                "  (contexte, règles par artefact) — ~30 secondes."
+            );
+            let _ = writeln!(out);
+            let _ = writeln!(
+                out,
+                "  Ou saute cette étape et tape /codev-propose <une-idée> directement."
+            );
+        } else {
+            let premiere = outcome
+                .skills
+                .iter()
+                .find(|s| s.ends_with("propose"))
+                .or_else(|| outcome.skills.first());
+            let _ = writeln!(
+                out,
+                "Redémarre Claude Code pour qu'il découvre les skills, puis tape /{}.",
+                premiere.map(String::as_str).unwrap_or("codev-propose")
+            );
+        }
     }
     out
 }
@@ -758,5 +781,70 @@ apply:
             changes: Vec::new(),
         };
         assert!(changes(&outcome).contains("codev new change"));
+    }
+
+    fn setup_outcome(skills: &[&str], config_thin: bool) -> SetupOutcome {
+        SetupOutcome {
+            root: "/p".into(),
+            created: Vec::new(),
+            updated: Vec::new(),
+            untouched: Vec::new(),
+            preserved: Vec::new(),
+            skills: skills.iter().map(|s| s.to_string()).collect(),
+            warnings: Vec::new(),
+            config_thin,
+        }
+    }
+
+    #[test]
+    fn setup_config_thin_avec_configure_incite_a_configure() {
+        let outcome = setup_outcome(
+            &[
+                "codev-propose",
+                "codev-configure",
+                "codev-apply",
+            ],
+            true,
+        );
+        let rendu = setup(&outcome, true);
+        assert!(
+            rendu.contains("/codev-configure"),
+            "sortie thin doit citer /codev-configure : {rendu}"
+        );
+        assert!(
+            rendu.contains("~30 secondes"),
+            "sortie thin doit citer le temps estimé : {rendu}"
+        );
+        assert!(
+            rendu.contains("/codev-propose"),
+            "sortie doit garder /codev-propose en alternative : {rendu}"
+        );
+    }
+
+    #[test]
+    fn setup_config_non_thin_ne_cite_pas_configure() {
+        let outcome = setup_outcome(
+            &["codev-propose", "codev-configure"],
+            false,
+        );
+        let rendu = setup(&outcome, true);
+        assert!(
+            !rendu.contains("/codev-configure"),
+            "sortie non-thin ne doit PAS citer /codev-configure : {rendu}"
+        );
+        assert!(
+            rendu.contains("Redémarre Claude Code"),
+            "sortie non-thin garde la ligne courte : {rendu}"
+        );
+    }
+
+    #[test]
+    fn setup_thin_sans_configure_installe_retombe_sur_le_message_court() {
+        // Un projet qui a explicitement retiré `configure` de ses workflows
+        // ne doit pas voir la nudge — elle serait cassée (skill absente).
+        let outcome = setup_outcome(&["codev-propose", "codev-explore"], true);
+        let rendu = setup(&outcome, true);
+        assert!(!rendu.contains("/codev-configure"), "{rendu}");
+        assert!(rendu.contains("Redémarre Claude Code"), "{rendu}");
     }
 }

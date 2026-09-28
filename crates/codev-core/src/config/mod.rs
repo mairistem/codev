@@ -70,6 +70,24 @@ impl Default for GeneratedConfig {
     }
 }
 
+/// Un `_codev/config.yaml` est **thin** quand il ne porte pas encore
+/// d'indication utile pour piloter les skills : le `context:` est absent
+/// ou fait moins de 200 caractères, ET la clé `rules:` est vide.
+///
+/// Le seuil de 200 caractères est arbitraire mais éclairé : la sortie
+/// minimale de `codev init` sur un projet Rust nu produit `Projet Rust,
+/// 2024.` (22 caractères). 200 caractères laissent largement passer un
+/// contexte détaillé (stack + une phrase de projet) et coupent court aux
+/// stubs.
+///
+/// Cette fonction est le seul juge — les trois lieux de nudge
+/// (`codev init`, `codev status`, skill `onboard`) l'appellent avec les
+/// mêmes primitives, garantissant un comportement cohérent.
+pub fn is_config_thin(context: Option<&str>, rules_empty: bool) -> bool {
+    let context_len = context.map(str::len).unwrap_or(0);
+    context_len < 200 && rules_empty
+}
+
 /// Assemble un `GeneratedConfig` à partir de la détection et des choix.
 ///
 /// Règles :
@@ -358,6 +376,25 @@ workflows:
   - explore
   - onboard
 ";
+
+    #[test]
+    fn is_config_thin_vrai_quand_contexte_court_et_rules_vides() {
+        assert!(is_config_thin(Some("Projet Rust, 2024."), true));
+        assert!(is_config_thin(None, true));
+        assert!(is_config_thin(Some(""), true));
+    }
+
+    #[test]
+    fn is_config_thin_faux_quand_contexte_long() {
+        let long = "x".repeat(300);
+        assert!(!is_config_thin(Some(&long), true));
+    }
+
+    #[test]
+    fn is_config_thin_faux_quand_rules_presentes() {
+        assert!(!is_config_thin(Some("court"), false));
+        assert!(!is_config_thin(None, false));
+    }
 
     #[test]
     fn render_minimal_matche_golden() {

@@ -292,6 +292,15 @@ Sans TTY sur stdin (pipe, redirect, CI), `--yes` est implicite. Sur
 un projet qui a déjà un `_codev/config.yaml`, `codev init` ne
 regénère **pas** le fichier ; il installe seulement les skills.
 
+**Suite recommandée** : si la config générée est **thin** (contexte
+court, aucune `rules:`), la sortie humaine de `codev init` recommande
+explicitement `/codev-configure` comme prochaine étape. Cette skill
+laisse Claude lire le projet (README, CONTRIBUTING, docs, échantillon
+de code) et enrichir `_codev/config.yaml` avec un `context:` détaillé
+et des `rules:` par artefact — avec diff et confirmation obligatoire
+avant écriture. L'utilisateur peut suivre la recommandation ou taper
+directement `/codev-propose`.
+
 ---
 
 ## 3. Le cycle
@@ -522,13 +531,14 @@ est les gestes du cycle, pas les octets précis.*
 
 ---
 
-## 4. Les 7 skills Claude Code
+## 4. Les 8 skills Claude Code
 
 | Skill | Rôle | `allowed-tools` | Défaut |
 |---|---|---|---|
 | `codev-propose` | Rédiger les 4 artefacts de planif | Bash(codev:*), Read, Write, Edit, Glob, Grep, + MCP Jira si configuré | ✓ |
 | `codev-explore` | Défricher une idée sans engager | Bash(codev:*), Read, Glob, Grep | ✓ |
 | `codev-onboard` | Présenter codev à un utilisateur qui découvre | Bash(codev:*), Read, Glob | ✓ |
+| `codev-configure` | Enrichir `_codev/config.yaml` en analysant le projet | Bash(codev:*), Read, Write, Edit, Glob, Grep | ✓ |
 | `codev-apply` | Implémenter les tâches | Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash | ✓ |
 | `codev-sync` | Fusionner delta dans specs | Bash(codev:*), Read | ✓ |
 | `codev-archive` | Clore et déplacer | Bash(codev:*), Read | ✓ |

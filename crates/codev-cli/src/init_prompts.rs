@@ -48,9 +48,9 @@ pub fn should_prompt(opts: &InitOptions, stdin_is_tty: bool) -> bool {
 }
 
 const WORKFLOWS_COMPLET: &[&str] = &[
-    "propose", "explore", "onboard", "apply", "sync", "archive", "update",
+    "propose", "explore", "onboard", "apply", "sync", "archive", "update", "configure",
 ];
-const WORKFLOWS_MINIMAL: &[&str] = &["propose", "explore", "onboard"];
+const WORKFLOWS_MINIMAL: &[&str] = &["propose", "explore", "onboard", "configure"];
 
 /// Exécute les prompts et retourne les choix finaux.
 ///
@@ -104,8 +104,8 @@ fn pick_workflows(opts: &InitOptions, interactive: bool) -> Result<Vec<String>> 
     let choice = Select::with_theme(&theme)
         .with_prompt("Quels workflows installer ?")
         .items(&[
-            "Complet (7) — propose, explore, onboard, apply, sync, archive, update",
-            "Minimal (3) — propose, explore, onboard",
+            "Complet (8) — propose, explore, onboard, apply, sync, archive, update, configure",
+            "Minimal (4) — propose, explore, onboard, configure",
             "Personnalisé — te laisse choisir un par un",
         ])
         .default(0)
@@ -122,7 +122,7 @@ fn pick_workflows_custom() -> Result<Vec<String>> {
     let indices = MultiSelect::with_theme(&theme)
         .with_prompt("Sélectionne les workflows (espace pour cocher, Entrée pour valider)")
         .items(WORKFLOWS_COMPLET)
-        .defaults(&[true; 7])
+        .defaults(&[true; 8])
         .interact()?;
     Ok(indices
         .into_iter()
@@ -265,8 +265,9 @@ mod tests {
             preset: None,
         };
         let choices = run(&Detected::empty(), &opts).unwrap();
-        assert_eq!(choices.workflows.len(), 7);
+        assert_eq!(choices.workflows.len(), 8);
         assert!(choices.workflows.contains(&"apply".to_string()));
+        assert!(choices.workflows.contains(&"configure".to_string()));
         assert!(choices.context_addition.is_none());
         assert!(choices.jira_tool_confirmed.is_none());
     }
@@ -279,7 +280,10 @@ mod tests {
             preset: Some(Preset::Minimal),
         };
         let choices = run(&Detected::empty(), &opts).unwrap();
-        assert_eq!(choices.workflows, vec!["propose", "explore", "onboard"]);
+        assert_eq!(
+            choices.workflows,
+            vec!["propose", "explore", "onboard", "configure"]
+        );
     }
 
     #[test]

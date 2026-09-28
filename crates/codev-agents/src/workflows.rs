@@ -112,19 +112,33 @@ pub const CATALOG: &[Workflow] = &[
         allowed_tools: "Bash(codev:*), Read, Glob",
         body: include_str!("../../../assets/workflows/onboard.md"),
     },
+    Workflow {
+        id: "configure",
+        description: "Enrichir `_codev/config.yaml` d'un projet en analysant son code : lire \
+                      README, CONTRIBUTING, docs et un échantillon de sources, puis proposer un \
+                      `context:` détaillé et des `rules:` par artefact. Affiche un diff, écrit \
+                      uniquement sur confirmation. Ne touche jamais aux workflows, aux MCPs, ni \
+                      au schéma.",
+        // Édition ciblée d'un seul fichier (_codev/config.yaml) via Edit,
+        // avec Read/Glob/Grep pour explorer le projet. Pas de Bash général :
+        // la skill ne lance ni tests, ni git, ni outil externe — la règle
+        // « seule `apply` a le Bash général » reste vraie.
+        allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep",
+        body: include_str!("../../../assets/workflows/configure.md"),
+    },
 ];
 
 /// Les workflows installés quand la configuration n'en désigne aucun.
 ///
 /// Le catalogue par défaut couvre l'**intégralité** du cycle codev : un
 /// utilisateur qui installe l'outil obtient d'un coup tout ce qu'il faut
-/// pour proposer, implémenter, valider et archiver. Un projet qui veut
-/// restreindre la liste déclare `workflows:` explicitement dans son
-/// `_codev/config.yaml` (voie opt-out). Le défaut initial n'incluait que
-/// `propose`, `explore` et `onboard`, ce qui cassait la découverte : un
-/// utilisateur qui tapait `/codev-apply` ne trouvait pas la skill.
+/// pour proposer, implémenter, valider et archiver — plus `configure`,
+/// la porte d'entrée recommandée après `codev init` pour enrichir le
+/// `_codev/config.yaml`. Un projet qui veut restreindre la liste
+/// déclare `workflows:` explicitement dans son `_codev/config.yaml`
+/// (voie opt-out).
 pub const DEFAULT_WORKFLOWS: &[&str] = &[
-    "propose", "explore", "onboard", "apply", "sync", "archive", "update",
+    "propose", "explore", "onboard", "apply", "sync", "archive", "update", "configure",
 ];
 
 pub fn find(id: &str) -> Option<&'static Workflow> {
@@ -286,19 +300,40 @@ mod tests {
 
     #[test]
     fn sans_demande_installe_le_catalogue_par_defaut() {
-        // Le catalogue par défaut couvre les 7 workflows du cycle codev :
+        // Le catalogue par défaut couvre les 8 workflows du cycle codev :
         // un utilisateur qui vient d'installer l'outil obtient d'un coup tout
-        // ce qu'il faut pour proposer, implémenter, valider et archiver. Un
-        // projet qui veut restreindre la liste passe par `workflows:`
-        // explicite dans `_codev/config.yaml` — voie opt-out.
+        // ce qu'il faut pour proposer, implémenter, valider et archiver, plus
+        // `configure` pour enrichir la config. Un projet qui veut restreindre
+        // la liste passe par `workflows:` explicite dans `_codev/config.yaml`
+        // — voie opt-out.
         let (workflows, warnings) = select(None);
         let ids: Vec<_> = workflows.iter().map(|w| w.id).collect();
         assert_eq!(
             ids,
-            ["propose", "explore", "onboard", "apply", "sync", "archive", "update"]
+            [
+                "propose", "explore", "onboard", "apply", "sync", "archive", "update",
+                "configure"
+            ]
         );
         assert_eq!(ids.as_slice(), DEFAULT_WORKFLOWS);
         assert!(warnings.is_empty());
+    }
+
+    #[test]
+    fn configure_est_dans_le_catalogue_et_a_les_bons_outils() {
+        // `configure` a Write et Edit (elle modifie un fichier), mais PAS le
+        // Bash général — elle ne lance pas de tests, seule `apply` a ce droit.
+        let configure = find("configure").expect("configure doit être dans le CATALOG");
+        assert!(configure.allowed_tools.contains("Write"));
+        assert!(configure.allowed_tools.contains("Edit"));
+        assert!(!configure.allowed_tools.ends_with(", Bash"));
+        assert!(configure.allowed_tools.starts_with("Bash(codev:*)"));
+        // Le body doit citer explicitement les champs préservés — c'est la
+        // promesse structurelle de la skill.
+        assert!(
+            configure.body.contains("schema") && configure.body.contains("workflows"),
+            "le body doit énumérer les champs préservés (schema, workflows, mcp, inherits)"
+        );
     }
 
     #[test]
@@ -322,6 +357,17 @@ mod tests {
         assert!(!onboard.allowed_tools.contains("Write"));
         assert!(!onboard.allowed_tools.contains("Edit"));
         assert!(!onboard.allowed_tools.ends_with(", Bash"));
+        // Le body doit mentionner la branche « config thin →
+        // /codev-configure » — traceur qu'elle n'est pas retirée par
+        // accident d'une refonte.
+        assert!(
+            onboard.body.contains("/codev-configure"),
+            "le body onboard doit citer /codev-configure comme recommandation sur config thin"
+        );
+        assert!(
+            onboard.body.contains("thin") || onboard.body.contains("200"),
+            "le body onboard doit décrire la détection thin (contexte < 200)"
+        );
     }
 
     #[test]

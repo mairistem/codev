@@ -532,7 +532,18 @@ fn run(cli: Cli) -> i32 {
                 }
                 0
             }
-            Err(err) => fail(json, status_shape(), &err),
+            Err(err) => {
+                let exit = fail(json, status_shape(), &err);
+                // Nudge conditionnelle : sur `no_active_change` en sortie
+                // humaine, si la config est thin, on suggère
+                // `/codev-configure`. Le JSON reste strictement inchangé.
+                if !json && err.code == "no_active_change" && config_is_thin(&ctx) {
+                    eprintln!(
+                        "Astuce : config peu remplie — /codev-configure peut l'enrichir."
+                    );
+                }
+                exit
+            }
         },
 
         Command::Instructions {
@@ -1017,6 +1028,30 @@ fn emit<T: Serialize>(json: bool, payload: T, human: impl FnOnce() -> String) {
 
 /// Émet un échec, en respectant l'invariant du contrat : en mode JSON, stdout
 /// porte exactement un document, de la forme de la commande.
+/// Regarde silencieusement le `_codev/config.yaml` du projet courant et
+/// dit s'il est thin (contexte court, rules vides). Retourne `false` si
+/// le projet n'est pas initialisé ou si la config est illisible — on ne
+/// nudge que quand on est sûr d'être face à un vrai projet codev
+/// sous-configuré.
+fn config_is_thin(ctx: &commands::Ctx) -> bool {
+    let Ok(layout) = codev_engine::root::discover_from_cwd(ctx.fs, ctx.env) else {
+        return false;
+    };
+    let Ok(cfg) = codev_engine::config::resolve(ctx.fs, ctx.env, &layout) else {
+        return false;
+    };
+    let context_total: String = cfg
+        .context
+        .iter()
+        .map(|b| b.text.as_str())
+        .collect::<Vec<_>>()
+        .join("\n");
+    codev_core::config::is_config_thin(
+        (!context_total.is_empty()).then_some(context_total.as_str()),
+        cfg.rules.is_empty(),
+    )
+}
+
 fn fail(json: bool, shape: serde_json::Value, err: &Failure) -> i32 {
     if json {
         let payload = contract::failure(shape, &err.code, &err.message);

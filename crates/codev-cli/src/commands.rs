@@ -88,6 +88,10 @@ pub struct SetupOutcome {
     pub preserved: Vec<PathBuf>,
     pub skills: Vec<String>,
     pub warnings: Vec<Warning>,
+    /// Vrai si le `_codev/config.yaml` résolu est thin (contexte court +
+    /// pas de rules). Sert à décider la nudge en sortie humaine ;
+    /// n'apparaît pas dans le contrat JSON.
+    pub config_thin: bool,
 }
 
 /// Initialise codev dans un projet.
@@ -182,6 +186,19 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
     );
     let applied = apply::execute(&planned.plan, ctx.fs)?;
 
+    // Nudge indicator — évalué sur la config résolue. Sert à décider si la
+    // sortie humaine de `codev init` doit inciter à `/codev-configure`.
+    let context_total: String = config
+        .context
+        .iter()
+        .map(|b| b.text.as_str())
+        .collect::<Vec<_>>()
+        .join("\n");
+    let config_thin = codev_core::config::is_config_thin(
+        (!context_total.is_empty()).then_some(context_total.as_str()),
+        config.rules.is_empty(),
+    );
+
     let mut outcome = SetupOutcome {
         root: layout.project_root().to_path_buf(),
         created: Vec::new(),
@@ -193,6 +210,7 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
             .map(|w| ClaudeCode::skill_name(w.id))
             .collect(),
         warnings,
+        config_thin,
     };
     outcome.absorb(applied);
     Ok(outcome)
@@ -1145,7 +1163,8 @@ mod tests {
                 "codev-apply",
                 "codev-sync",
                 "codev-archive",
-                "codev-update"
+                "codev-update",
+                "codev-configure"
             ]
         );
         assert!(h.fs.read("/p/_codev/config.yaml").is_some());
@@ -1206,9 +1225,10 @@ edition = "2024"
         };
         let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
 
-        // 7 skills installées (défaut complet).
-        assert_eq!(outcome.skills.len(), 7);
+        // 8 skills installées (défaut complet — 7 workflows du cycle + configure).
+        assert_eq!(outcome.skills.len(), 8);
         assert!(outcome.skills.iter().any(|s| s == "codev-apply"));
+        assert!(outcome.skills.iter().any(|s| s == "codev-configure"));
 
         // Le config.yaml existe et porte le tool MCP + le contexte détecté.
         let cfg = h.fs.read("/p/_codev/config.yaml").expect("config.yaml écrit");
@@ -1236,7 +1256,7 @@ edition = "2024"
         // schéma et les 7 workflows.
         let h = Harnais::neuf();
         let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        assert_eq!(outcome.skills.len(), 7);
+        assert_eq!(outcome.skills.len(), 8);
         let cfg = h.fs.read("/p/_codev/config.yaml").unwrap();
         assert!(cfg.contains("schema: spec-driven"));
         assert!(cfg.contains("- propose"));
