@@ -8,6 +8,39 @@ versionnage [SemVer](https://semver.org/lang/fr/).
 Les notes détaillées de chaque version vivent dans la Release GitHub
 correspondante — cette page en donne la vue résumée.
 
+## [0.3.1] — 2026-09-28
+
+### Added
+
+- **Skill `/codev-configure`** — la 8ème skill du cycle, qui enrichit
+  `_codev/config.yaml` en analysant le projet. Elle lit `README.md`,
+  `CONTRIBUTING.md`, `docs/`, un échantillon des fichiers source les
+  plus édités, et rédige un patch pour `context:` (2-5 lignes) et
+  `rules:` par artefact. Elle **affiche un diff** et n'écrit qu'après
+  confirmation. Elle préserve strictement `schema`, `workflows`,
+  `mcp` et `inherits` — c'est le complément à la sonde de `codev
+  init`, pas son remplaçant.
+- **Nudges automatiques** — `codev init` et `codev status` (cas
+  « aucun change actif ») incitent explicitement à `/codev-configure`
+  quand la config est **thin** (contexte < 200 caractères, aucune
+  `rules:`). Détection uniforme via
+  `codev-core::config::is_config_thin`. La sortie JSON reste
+  inchangée — les nudges vivent en sortie humaine seulement.
+- **Onboard prend en compte la config thin** — la skill
+  `/codev-onboard` recommande `/codev-configure` en premier sur un
+  projet fraîchement initialisé dont la config n'a pas encore été
+  enrichie.
+
+### Changed
+
+- **Défaut de `codev init` et `codev update`** : passe de 7 à **8
+  workflows** avec l'ajout de `configure`. Un projet qui restreint
+  via `workflows:` explicite continue à obtenir seulement ce qu'il
+  a demandé.
+
+Notes complètes :
+https://github.com/mairistem/codev/releases/tag/v0.3.1
+
 ## [0.3.0] — 2026-09-28
 
 ### Added

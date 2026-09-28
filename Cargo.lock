@@ -149,7 +149,7 @@ checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
 name = "codev-agents"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "codev-core",
  "codev-engine",
@@ -158,7 +158,7 @@ dependencies = [
 
 [[package]]
 name = "codev-cli"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "codev-core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "globset",
  "serde",
@@ -188,7 +188,7 @@ dependencies = [
 
 [[package]]
 name = "codev-engine"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "codev-core",
  "serde",
