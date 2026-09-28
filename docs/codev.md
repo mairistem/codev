@@ -292,8 +292,8 @@ Sans TTY sur stdin (pipe, redirect, CI), `--yes` est implicite. Sur
 un projet qui a déjà un `_codev/config.yaml`, `codev init` ne
 regénère **pas** le fichier ; il installe seulement les skills.
 
-**Suite recommandée** : si la config générée est **thin** (contexte
-court, aucune `rules:`), la sortie humaine de `codev init` recommande
+**Suite recommandée** : si la config générée n'a pas encore de
+`rules:` par artefact, la sortie humaine de `codev init` recommande
 explicitement `/codev-configure` comme prochaine étape. Cette skill
 laisse Claude lire le projet (README, CONTRIBUTING, docs, échantillon
 de code) et enrichir `_codev/config.yaml` avec un `context:` détaillé

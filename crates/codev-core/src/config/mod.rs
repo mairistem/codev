@@ -71,21 +71,24 @@ impl Default for GeneratedConfig {
 }
 
 /// Un `_codev/config.yaml` est **thin** quand il ne porte pas encore
-/// d'indication utile pour piloter les skills : le `context:` est absent
-/// ou fait moins de 200 caractères, ET la clé `rules:` est vide.
+/// d'indication utile pour piloter les skills. Le seul critère retenu
+/// est **l'absence de `rules:`** — c'est le seul signal fiable
+/// d'intention utilisateur, parce que les règles par artefact ne sont
+/// jamais auto-détectées.
 ///
-/// Le seuil de 200 caractères est arbitraire mais éclairé : la sortie
-/// minimale de `codev init` sur un projet Rust nu produit `Projet Rust,
-/// 2024.` (22 caractères). 200 caractères laissent largement passer un
-/// contexte détaillé (stack + une phrase de projet) et coupent court aux
-/// stubs.
+/// La version précédente combinait « `context:` court » et « `rules:`
+/// vides », mais le contexte est rempli automatiquement par la sonde de
+/// `codev init` (stack, dépendances, licence, CI) et son volume ne dit
+/// donc rien sur ce que l'utilisateur a écrit — un projet TypeScript à
+/// dix dépendances dépassait facilement le seuil sans qu'aucune
+/// intention utilisateur n'ait été exprimée. Voir change
+/// `fix-thin-detection`.
 ///
 /// Cette fonction est le seul juge — les trois lieux de nudge
-/// (`codev init`, `codev status`, skill `onboard`) l'appellent avec les
-/// mêmes primitives, garantissant un comportement cohérent.
-pub fn is_config_thin(context: Option<&str>, rules_empty: bool) -> bool {
-    let context_len = context.map(str::len).unwrap_or(0);
-    context_len < 200 && rules_empty
+/// (`codev init`, `codev status`, skill `onboard`) l'appellent avec la
+/// même primitive, garantissant un comportement cohérent.
+pub fn is_config_thin(rules_empty: bool) -> bool {
+    rules_empty
 }
 
 /// Assemble un `GeneratedConfig` à partir de la détection et des choix.
@@ -378,22 +381,13 @@ workflows:
 ";
 
     #[test]
-    fn is_config_thin_vrai_quand_contexte_court_et_rules_vides() {
-        assert!(is_config_thin(Some("Projet Rust, 2024."), true));
-        assert!(is_config_thin(None, true));
-        assert!(is_config_thin(Some(""), true));
-    }
-
-    #[test]
-    fn is_config_thin_faux_quand_contexte_long() {
-        let long = "x".repeat(300);
-        assert!(!is_config_thin(Some(&long), true));
+    fn is_config_thin_vrai_quand_rules_vides() {
+        assert!(is_config_thin(true));
     }
 
     #[test]
     fn is_config_thin_faux_quand_rules_presentes() {
-        assert!(!is_config_thin(Some("court"), false));
-        assert!(!is_config_thin(None, false));
+        assert!(!is_config_thin(false));
     }
 
     #[test]

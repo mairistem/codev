@@ -75,21 +75,25 @@ cas s'applique** :
 | État | Recommandation |
 |---|---|
 | `_codev/` absent | `codev init` |
-| Aucun change actif ET config thin (context < 200 chars, rules vides) | **`/codev-configure` en premier** — Claude enrichira ta config à partir du projet ; puis `/codev-propose <une-idée>` |
+| Aucun change actif ET config thin (aucune entrée dans `rules:`) | **`/codev-configure` en premier** — Claude enrichira ta config à partir du projet ; puis `/codev-propose <une-idée>` |
 | Aucun change actif, config non-thin | **Lire `README.md`** pour prendre le pouls, puis `/codev-propose <une-idée>` ; `/codev-explore <sujet>` en alternative |
 | Un seul change actif, planification incomplète | `/codev-propose <ce-nom>` pour poursuivre |
 | Un seul change actif, planification complète | `/codev-apply <ce-nom>` |
 | Plusieurs changes actifs | Les lister ; laisser l'utilisateur choisir la skill |
 
 Pour évaluer si la config est « thin », lis `_codev/config.yaml` et
-regarde deux champs :
+regarde la clé `rules:` :
 
-- **`context:`** — absent ou moins de 200 caractères ?
-- **`rules:`** — absent ou vide ?
+- **`rules:` absente ou vide** → thin. `/codev-configure` a
+  vraiment quelque chose à apporter.
+- **`rules:` porte au moins une entrée** → non-thin. L'utilisateur a
+  déjà rédigé ses règles ; la nudge ne s'applique plus.
 
-Si les **deux** conditions sont vraies, le YAML n'a pas encore été
-enrichi et `/codev-configure` a vraiment quelque chose à apporter.
-Sinon, on passe à la ligne suivante du tableau.
+Le champ `context:` n'entre **pas** dans la décision. Il est
+généralement rempli par la sonde de `codev init` à partir des
+manifestes détectés, ce qui rend sa longueur ininterprétable — un
+projet TypeScript à plusieurs dépendances a un contexte long sans
+que l'utilisateur ait rien écrit.
 
 Comment déterminer si la planification d'un change est complète :
 

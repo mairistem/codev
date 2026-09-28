@@ -188,16 +188,10 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
 
     // Nudge indicator — évalué sur la config résolue. Sert à décider si la
     // sortie humaine de `codev init` doit inciter à `/codev-configure`.
-    let context_total: String = config
-        .context
-        .iter()
-        .map(|b| b.text.as_str())
-        .collect::<Vec<_>>()
-        .join("\n");
-    let config_thin = codev_core::config::is_config_thin(
-        (!context_total.is_empty()).then_some(context_total.as_str()),
-        config.rules.is_empty(),
-    );
+    // Base la décision uniquement sur l'absence de `rules:` : le
+    // `context:` est souvent auto-rempli par la sonde et n'est pas un
+    // signal fiable d'intention utilisateur.
+    let config_thin = codev_core::config::is_config_thin(config.rules.is_empty());
 
     let mut outcome = SetupOutcome {
         root: layout.project_root().to_path_buf(),

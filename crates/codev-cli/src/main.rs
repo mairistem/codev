@@ -1029,8 +1029,8 @@ fn emit<T: Serialize>(json: bool, payload: T, human: impl FnOnce() -> String) {
 /// Émet un échec, en respectant l'invariant du contrat : en mode JSON, stdout
 /// porte exactement un document, de la forme de la commande.
 /// Regarde silencieusement le `_codev/config.yaml` du projet courant et
-/// dit s'il est thin (contexte court, rules vides). Retourne `false` si
-/// le projet n'est pas initialisé ou si la config est illisible — on ne
+/// dit s'il est thin (aucune entrée `rules:`). Retourne `false` si le
+/// projet n'est pas initialisé ou si la config est illisible — on ne
 /// nudge que quand on est sûr d'être face à un vrai projet codev
 /// sous-configuré.
 fn config_is_thin(ctx: &commands::Ctx) -> bool {
@@ -1040,16 +1040,7 @@ fn config_is_thin(ctx: &commands::Ctx) -> bool {
     let Ok(cfg) = codev_engine::config::resolve(ctx.fs, ctx.env, &layout) else {
         return false;
     };
-    let context_total: String = cfg
-        .context
-        .iter()
-        .map(|b| b.text.as_str())
-        .collect::<Vec<_>>()
-        .join("\n");
-    codev_core::config::is_config_thin(
-        (!context_total.is_empty()).then_some(context_total.as_str()),
-        cfg.rules.is_empty(),
-    )
+    codev_core::config::is_config_thin(cfg.rules.is_empty())
 }
 
 fn fail(json: bool, shape: serde_json::Value, err: &Failure) -> i32 {

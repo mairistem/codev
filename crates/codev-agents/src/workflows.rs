@@ -365,8 +365,12 @@ mod tests {
             "le body onboard doit citer /codev-configure comme recommandation sur config thin"
         );
         assert!(
-            onboard.body.contains("thin") || onboard.body.contains("200"),
-            "le body onboard doit décrire la détection thin (contexte < 200)"
+            onboard.body.contains("thin"),
+            "le body onboard doit décrire la détection thin"
+        );
+        assert!(
+            !onboard.body.contains("200 caractères") && !onboard.body.contains("< 200"),
+            "le body onboard ne doit plus mentionner le seuil retiré des 200 caractères"
         );
     }
 

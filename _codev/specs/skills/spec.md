@@ -305,10 +305,10 @@ qui le découvre, en trois blocs :
 3. La prochaine action recommandée, adaptée à l'état :
    - `_codev/` absent → `codev init`.
    - Projet initialisé, aucun change, **et `_codev/config.yaml`
-     thin** (contexte < 200 caractères et `rules:` vides) →
-     `/codev-configure` en premier, avec une phrase qui explique le
-     bénéfice (« Claude enrichira ta config à partir du projet »),
-     puis `/codev-propose <idée>` en second.
+     thin** (aucune entrée dans `rules:`) → `/codev-configure` en
+     premier, avec une phrase qui explique le bénéfice (« Claude
+     enrichira ta config à partir du projet »), puis `/codev-propose
+     <idée>` en second.
    - Projet initialisé, aucun change, config non-thin → **inviter à
      lire `README.md` pour prendre le pouls du projet**, puis
      `/codev-propose <idée>` ; `/codev-explore <sujet>` reste
@@ -364,21 +364,19 @@ général.
 - **THEN** le bloc « ici, tu as » **n'affiche pas** de ligne
   « changes archivés » — la sortie reste courte et non polluée
 
-#### Scenario: Recommandation configure quand la config est thin
+#### Scenario: Recommandation configure quand la config n'a pas de règles
 
 - **GIVEN** un projet initialisé sans change actif, dont le
-  `_codev/config.yaml` a un `context:` inférieur à 200 caractères et
-  des `rules:` vides
+  `_codev/config.yaml` n'a aucune entrée dans `rules:`
 - **WHEN** l'utilisateur lance `/codev-onboard`
 - **THEN** le bloc « la suite » cite `/codev-configure` en premier,
   avec une phrase sur le bénéfice attendu
 - **AND** mentionne `/codev-propose <idée>` en second
 
-#### Scenario: Recommandation par défaut cite README.md quand la config n'est pas thin
+#### Scenario: Recommandation par défaut cite README.md quand la config a des règles
 
 - **GIVEN** un projet initialisé sans change actif dont le
-  `_codev/config.yaml` a un `context:` ≥ 200 caractères OU des `rules:`
-  non vides
+  `_codev/config.yaml` porte au moins une entrée dans `rules:`
 - **WHEN** l'utilisateur lance `/codev-onboard`
 - **THEN** le bloc « la suite » invite à lire `README.md` avant de
   créer un change
