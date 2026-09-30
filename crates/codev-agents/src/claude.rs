@@ -8,66 +8,63 @@ use crate::workflows::Workflow;
 
 /// Claude Code.
 ///
-/// Une skill déposée dans `.claude/skills/<nom>/SKILL.md` est découverte
-/// automatiquement **et** invocable par l'utilisateur en tapant `/<nom>`. C'est
-/// pourquoi codev ne génère pas de fichiers de commandes séparés : ils
-/// feraient deux fichiers à garder cohérents pour un seul workflow.
-/// Voir `_codev/decisions/0004-une-seule-identite-skill-et-commande.md`.
+/// A skill placed in `.claude/skills/<name>/SKILL.md` is discovered
+/// automatically **and** can be invoked by the user by typing `/<name>`. That
+/// is why codev does not generate separate command files: they would be two
+/// files to keep consistent for a single workflow.
+/// See `_codev/decisions/0004-une-seule-identite-skill-et-commande.md`.
 ///
-/// L'instance porte un `RenderCtx` : le CLI l'alimente depuis la config
-/// projet (`_codev/config.yaml.mcp.jira_tool`, …), et il alimente la
-/// substitution des placeholders au moment du rendering.
+/// The instance carries a `RenderCtx`: the CLI feeds it from the project
+/// config (`_codev/config.yaml.mcp.jira_tool`, …), and it feeds placeholder
+/// substitution at rendering time.
 #[derive(Debug, Default)]
 pub struct ClaudeCode {
     ctx: RenderCtx,
 }
 
 impl ClaudeCode {
-    /// Crée une instance avec un contexte de rendu vide — utilisé quand
-    /// aucune config projet n'est disponible (tests, chemin scaffolding
-    /// bas niveau).
+    /// Creates an instance with an empty render context — used when no
+    /// project config is available (tests, low-level scaffolding path).
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Crée une instance avec le contexte fourni. C'est le chemin
-    /// utilisé par le CLI, alimenté par `ResolvedConfig.mcp`.
+    /// Creates an instance with the given context. This is the path used by
+    /// the CLI, fed by `ResolvedConfig.mcp`.
     pub fn with_ctx(ctx: RenderCtx) -> Self {
         Self { ctx }
     }
 }
 
-/// Contexte de rendu du frontmatter d'une skill.
+/// Render context for a skill's frontmatter.
 ///
-/// Porte les informations projet-spécifiques dont la substitution des
-/// placeholders a besoin. Aujourd'hui : le nom du tool MCP Jira. Un
-/// futur MCP (Design, Confluence…) ajoutera son propre champ.
+/// Carries the project-specific information that placeholder substitution
+/// needs. Today: the name of the Jira MCP tool. A future MCP (Design,
+/// Confluence…) will add its own field.
 ///
-/// Un `Default` renvoie tous les champs `None` — utilisé par les tests
-/// et le chemin « projet sans MCP configuré ».
+/// `Default` returns all fields as `None` — used by the tests and the
+/// "project without a configured MCP" path.
 #[derive(Debug, Clone, Default)]
 pub struct RenderCtx {
-    /// Nom du tool MCP Jira à injecter dans les skills. Alimenté par
+    /// Name of the Jira MCP tool to inject into the skills. Fed by
     /// `_codev/config.yaml.mcp.jira_tool`.
     pub jira_mcp_tool: Option<String>,
 }
 
-/// Placeholder textuel à substituer dans `allowed_tools` et dans le
-/// body de chaque workflow. Choisi pour ne pas apparaître naturellement
-/// dans un body markdown.
+/// Text placeholder substituted in `allowed_tools` and in the body of each
+/// workflow. Chosen so that it does not occur naturally in a markdown body.
 const JIRA_MCP_PLACEHOLDER: &str = "{{JIRA_MCP_TOOL}}";
 
-/// Fallback affiché dans le body quand aucun MCP Jira n'est configuré —
-/// l'agent qui lit la skill voit clairement que la détection de tickets
-/// n'aboutira pas.
-const JIRA_MCP_FALLBACK_BODY: &str = "(MCP Jira non configuré)";
+/// Fallback shown in the body when no Jira MCP is configured — the agent
+/// reading the skill sees clearly that ticket detection will not succeed.
+const JIRA_MCP_FALLBACK_BODY: &str = "(Jira MCP not configured)";
 
-/// Substitue le placeholder `{{JIRA_MCP_TOOL}}` selon la config.
+/// Substitutes the `{{JIRA_MCP_TOOL}}` placeholder according to the config.
 ///
-/// Deux passes quand la config est absente : on retire d'abord
-/// `, {{JIRA_MCP_TOOL}}` (avec la virgule qui le précède, pour ne pas
-/// laisser `allowed_tools` finir par `", "`), puis on remplace ce qu'il
-/// reste par le fallback textuel (utile dans le body).
+/// Two passes when the config is absent: first remove
+/// `, {{JIRA_MCP_TOOL}}` (with the comma preceding it, so that
+/// `allowed_tools` does not end with `", "`), then replace whatever remains
+/// with the text fallback (useful in the body).
 pub fn substitute_jira_mcp(source: &str, jira_tool: Option<&str>) -> String {
     match jira_tool {
         Some(tool) => source.replace(JIRA_MCP_PLACEHOLDER, tool),
@@ -79,7 +76,7 @@ pub fn substitute_jira_mcp(source: &str, jira_tool: Option<&str>) -> String {
 
 const SKILLS_ROOT: &str = ".claude/skills";
 
-/// Préfixe des noms de skills. `propose` devient `codev-propose`, invocable
+/// Skill name prefix. `propose` becomes `codev-propose`, invocable as
 /// `/codev-propose`.
 const SKILL_PREFIX: &str = "codev";
 
@@ -99,12 +96,11 @@ impl ClaudeCode {
             .join("SKILL.md")
     }
 
-    /// Rend le `SKILL.md` complet : frontmatter engendré, corps tel quel.
+    /// Renders the complete `SKILL.md`: generated frontmatter, body as is.
     ///
-    /// `ctx` porte les substitutions projet-spécifiques (nom du MCP Jira,
-    /// …). Un `RenderCtx::default()` fait le rendu « sans MCP » — le
-    /// placeholder est retiré proprement et remplacé par un fallback
-    /// informatif dans le body.
+    /// `ctx` carries the project-specific substitutions (Jira MCP name, …).
+    /// A `RenderCtx::default()` renders "without MCP" — the placeholder is
+    /// removed cleanly and replaced by an informative fallback in the body.
     pub fn render(workflow: &Workflow, version: &str, ctx: &RenderCtx) -> String {
         let tools = substitute_jira_mcp(workflow.allowed_tools, ctx.jira_mcp_tool.as_deref());
         let body = substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref());
@@ -156,15 +152,15 @@ impl AgentTarget for ClaudeCode {
             let path = Self::skill_file(project_root, workflow.id);
             let desired = Self::render(workflow, version, &self.ctx);
 
-            // Même version inscrite, contenu différent : quelqu'un a édité le
-            // fichier à la main. L'écraser lui ferait perdre son travail sans
-            // prévenir ; on le signale et on passe.
-            let edite_a_la_main = !force
+            // Same stamped version, different content: someone edited the
+            // file by hand. Overwriting it would lose their work without
+            // warning; report it and move on.
+            let edited_by_hand = !force
                 && fs.exists(&path)
                 && fs.read_to_string(&path).is_ok_and(|current| {
                     current != desired && stamped_version(&current).as_deref() == Some(version)
                 });
-            if edite_a_la_main {
+            if edited_by_hand {
                 preserved.push(path);
                 continue;
             }
@@ -177,21 +173,20 @@ impl AgentTarget for ClaudeCode {
     }
 }
 
-/// Rend un scalaire sûr pour du frontmatter YAML.
+/// Renders a scalar that is safe for YAML frontmatter.
 ///
-/// Les descriptions contiennent des deux-points et des virgules, qui changent
-/// le sens d'un scalaire nu. On cite systématiquement plutôt que de deviner au
-/// cas par cas.
+/// Descriptions contain colons and commas, which change the meaning of a
+/// bare scalar. Always quote rather than guess case by case.
 fn yaml_scalar(raw: &str) -> String {
-    let echappe = raw.replace('\\', "\\\\").replace('"', "\\\"");
-    format!("\"{echappe}\"")
+    let escaped = raw.replace('\\', "\\\\").replace('"', "\\\"");
+    format!("\"{escaped}\"")
 }
 
-/// Extrait la version inscrite dans le frontmatter d'un `SKILL.md`.
+/// Extracts the version stamped in a `SKILL.md` frontmatter.
 ///
-/// C'est ce tampon qui distingue « fichier d'une version antérieure, à
-/// régénérer » de « fichier de la version courante que l'utilisateur a
-/// modifié, à préserver ».
+/// This stamp is what distinguishes "file from an earlier version, to
+/// regenerate" from "file of the current version that the user modified, to
+/// preserve".
 fn stamped_version(contents: &str) -> Option<String> {
     if !contents.starts_with("---") {
         return None;
@@ -218,7 +213,7 @@ mod tests {
     }
 
     #[test]
-    fn le_nom_de_la_skill_est_la_slash_command() {
+    fn the_skill_name_is_the_slash_command() {
         assert_eq!(ClaudeCode::skill_name("propose"), "codev-propose");
         assert_eq!(
             ClaudeCode::skill_file(Path::new("/p"), "propose"),
@@ -227,151 +222,163 @@ mod tests {
     }
 
     #[test]
-    fn le_frontmatter_est_complet_et_le_corps_intact() {
-        let rendu = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+    fn the_frontmatter_is_complete_and_the_body_intact() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
 
-        assert!(rendu.starts_with("---\n"));
-        assert!(rendu.contains("name: codev-propose\n"));
-        // Rendu sans MCP configuré : le placeholder et la virgule qui
-        // le précède ont été retirés.
-        assert!(rendu.contains("allowed-tools: \"Bash(codev:*), Read, Write, Edit, Glob, Grep\"\n"));
-        assert!(rendu.contains("  version: \"0.1.0\"\n"));
+        assert!(rendered.starts_with("---\n"));
+        assert!(rendered.contains("name: codev-propose\n"));
+        // Rendered without a configured MCP: the placeholder and the comma
+        // preceding it have been removed.
         assert!(
-            rendu.contains("Frontière de planification"),
-            "le corps du workflow doit être présent tel quel"
+            rendered.contains("allowed-tools: \"Bash(codev:*), Read, Write, Edit, Glob, Grep\"\n")
+        );
+        assert!(rendered.contains("  version: \"0.1.0\"\n"));
+        assert!(
+            rendered.contains("Planning boundary"),
+            "the workflow body must be present as is"
         );
     }
 
     #[test]
-    fn le_frontmatter_de_chaque_skill_est_du_yaml_valide() {
-        // Le garde-fou qui compte : une description contenant un deux-points,
-        // un tiret cadratin ou une apostrophe ne doit pas produire un
-        // frontmatter que Claude Code refusera de lire — et l'erreur serait
-        // silencieuse, la skill simplement absente.
+    fn every_skill_frontmatter_is_valid_yaml() {
+        // The guardrail that matters: a description containing a colon, an
+        // em dash or an apostrophe must not produce a frontmatter that
+        // Claude Code refuses to read — and the error would be silent, the
+        // skill simply missing.
         for workflow in workflows::CATALOG {
-            let rendu = ClaudeCode::render(workflow, VERSION, &RenderCtx::default());
-            let frontmatter = rendu
+            let rendered = ClaudeCode::render(workflow, VERSION, &RenderCtx::default());
+            let frontmatter = rendered
                 .split("---\n")
                 .nth(1)
-                .unwrap_or_else(|| panic!("« {} » n'a pas de frontmatter", workflow.id));
+                .unwrap_or_else(|| panic!("`{}` has no frontmatter", workflow.id));
 
-            let parse: serde_norway::Value = serde_norway::from_str(frontmatter)
-                .unwrap_or_else(|e| panic!("frontmatter de « {} » illisible : {e}", workflow.id));
+            let parsed: serde_norway::Value = serde_norway::from_str(frontmatter)
+                .unwrap_or_else(|e| panic!("unreadable frontmatter for `{}`: {e}", workflow.id));
 
             assert_eq!(
-                parse["name"].as_str(),
+                parsed["name"].as_str(),
                 Some(ClaudeCode::skill_name(workflow.id).as_str()),
-                "le nom de la skill doit correspondre à son dossier"
+                "the skill name must match its folder"
             );
-            assert_eq!(parse["metadata"]["version"].as_str(), Some(VERSION));
-            assert!(parse["description"].as_str().is_some_and(|d| d.len() > 60));
+            assert_eq!(parsed["metadata"]["version"].as_str(), Some(VERSION));
+            assert!(parsed["description"].as_str().is_some_and(|d| d.len() > 60));
         }
     }
 
     #[test]
-    fn la_description_est_citee_car_elle_contient_de_la_ponctuation_yaml() {
-        let rendu = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
-        let ligne = rendu
+    fn the_description_is_quoted_because_it_contains_yaml_punctuation() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        let line = rendered
             .lines()
             .find(|l| l.starts_with("description:"))
             .unwrap();
         assert!(
-            ligne.starts_with("description: \"") && ligne.ends_with('"'),
-            "{ligne}"
+            line.starts_with("description: \"") && line.ends_with('"'),
+            "{line}"
         );
     }
 
     #[test]
-    fn installe_les_skills_demandees() {
+    fn installs_the_requested_skills() {
         let fs = MemoryFileSystem::new();
         let workflows = vec![propose()];
-        let planifie = ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &workflows, VERSION, false);
+        let planned =
+            ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &workflows, VERSION, false);
 
-        assert_eq!(planifie.plan.writes.len(), 1);
+        assert_eq!(planned.plan.writes.len(), 1);
         assert_eq!(
-            planifie.plan.writes[0].path,
+            planned.plan.writes[0].path,
             PathBuf::from("/p/.claude/skills/codev-propose/SKILL.md")
         );
-        assert!(planifie.preserved.is_empty());
+        assert!(planned.preserved.is_empty());
     }
 
     #[test]
-    fn regenere_une_skill_dune_version_anterieure() {
-        let ancienne = ClaudeCode::render(propose(), "0.0.1", &RenderCtx::default());
-        let fs = MemoryFileSystem::new()
-            .with_file("/p/.claude/skills/codev-propose/SKILL.md", ancienne);
+    fn regenerates_a_skill_from_an_earlier_version() {
+        let older = ClaudeCode::render(propose(), "0.0.1", &RenderCtx::default());
+        let fs =
+            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", older);
 
-        let planifie = ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
+        let planned =
+            ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
 
-        assert_eq!(planifie.plan.writes.len(), 1, "la mise à jour doit écrire");
-        assert!(planifie.preserved.is_empty());
+        assert_eq!(planned.plan.writes.len(), 1, "the update must write");
+        assert!(planned.preserved.is_empty());
     }
 
     #[test]
-    fn preserve_une_skill_editee_a_la_main() {
-        let editee = format!(
-            "{}\n\nMa consigne maison ajoutée à la fin.\n",
+    fn preserves_a_skill_edited_by_hand() {
+        let edited = format!(
+            "{}\n\nMy own instruction added at the end.\n",
             ClaudeCode::render(propose(), VERSION, &RenderCtx::default())
         );
         let fs =
-            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", editee);
+            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", edited);
 
-        let planifie = ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
+        let planned =
+            ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
 
         assert!(
-            planifie.plan.writes.is_empty(),
-            "un fichier édité à la main ne doit pas être écrasé"
+            planned.plan.writes.is_empty(),
+            "a file edited by hand must not be overwritten"
         );
         assert_eq!(
-            planifie.preserved,
+            planned.preserved,
             [PathBuf::from("/p/.claude/skills/codev-propose/SKILL.md")]
         );
     }
 
     #[test]
-    fn force_ecrase_meme_une_skill_editee() {
-        let editee = format!(
-            "{}\n\nMa consigne.\n",
+    fn force_overwrites_even_an_edited_skill() {
+        let edited = format!(
+            "{}\n\nMy instruction.\n",
             ClaudeCode::render(propose(), VERSION, &RenderCtx::default())
         );
         let fs =
-            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", editee);
+            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", edited);
 
-        let planifie = ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, true);
+        let planned =
+            ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, true);
 
-        assert_eq!(planifie.plan.writes.len(), 1);
-        assert!(planifie.preserved.is_empty());
+        assert_eq!(planned.plan.writes.len(), 1);
+        assert!(planned.preserved.is_empty());
     }
 
     #[test]
-    fn une_skill_deja_conforme_est_replanifiee_sans_dommage() {
-        // Le plan la contient, mais l'exécution la reconnaîtra identique et
-        // n'écrira rien : c'est `apply::execute` qui tranche.
+    fn an_already_compliant_skill_is_replanned_harmlessly() {
+        // The plan contains it, but execution will recognize it as identical
+        // and write nothing: `apply::execute` is the one that decides.
         let fs = MemoryFileSystem::new().with_file(
             "/p/.claude/skills/codev-propose/SKILL.md",
             ClaudeCode::render(propose(), VERSION, &RenderCtx::default()),
         );
-        let planifie = ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
-        assert_eq!(planifie.plan.writes.len(), 1);
-        assert!(planifie.preserved.is_empty());
+        let planned =
+            ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
+        assert_eq!(planned.plan.writes.len(), 1);
+        assert!(planned.preserved.is_empty());
     }
 
     #[test]
-    fn lit_le_tampon_de_version() {
+    fn reads_the_version_stamp() {
         assert_eq!(
-            stamped_version(&ClaudeCode::render(propose(), "1.2.3", &RenderCtx::default())).as_deref(),
+            stamped_version(&ClaudeCode::render(
+                propose(),
+                "1.2.3",
+                &RenderCtx::default()
+            ))
+            .as_deref(),
             Some("1.2.3")
         );
-        assert_eq!(stamped_version("pas de frontmatter"), None);
+        assert_eq!(stamped_version("no frontmatter"), None);
         assert_eq!(
             stamped_version("---\nname: x\n---\nversion: 9.9.9\n"),
             None,
-            "une version hors frontmatter ne compte pas"
+            "a version outside the frontmatter does not count"
         );
     }
 
     #[test]
-    fn detecte_claude_code_a_ses_traces() {
+    fn detects_claude_code_from_its_traces() {
         let root = Path::new("/p");
         assert!(!ClaudeCode::new().detect(&MemoryFileSystem::new(), root));
         assert!(ClaudeCode::new().detect(
@@ -387,59 +394,59 @@ mod tests {
     // ─────────────── substitute_jira_mcp ───────────────
 
     #[test]
-    fn substitute_avec_tool_remplace_le_placeholder() {
+    fn substitute_with_tool_replaces_the_placeholder() {
         let src = "Bash(codev:*), Read, {{JIRA_MCP_TOOL}}";
         let out = substitute_jira_mcp(src, Some("mcp__foo__bar"));
         assert_eq!(out, "Bash(codev:*), Read, mcp__foo__bar");
     }
 
     #[test]
-    fn substitute_sans_tool_retire_placeholder_et_virgule_dans_allowed_tools() {
-        // La virgule qui précède doit partir aussi, sinon `allowed_tools`
-        // finirait par `", "` — malformé.
+    fn substitute_without_tool_removes_placeholder_and_comma_in_allowed_tools() {
+        // The preceding comma must go too, otherwise `allowed_tools` would
+        // end with `", "` — malformed.
         let src = "Bash(codev:*), Read, Write, Grep, {{JIRA_MCP_TOOL}}";
         let out = substitute_jira_mcp(src, None);
         assert_eq!(out, "Bash(codev:*), Read, Write, Grep");
     }
 
     #[test]
-    fn substitute_sans_tool_remplace_par_fallback_dans_le_body() {
-        // Sans virgule qui précède (cas typique du body), le placeholder
-        // est remplacé par la mention informative.
-        let src = "Appelle l'outil `{{JIRA_MCP_TOOL}}` avec l'id du ticket.";
+    fn substitute_without_tool_uses_the_fallback_in_the_body() {
+        // Without a preceding comma (the typical body case), the placeholder
+        // is replaced by the informative mention.
+        let src = "Call the `{{JIRA_MCP_TOOL}}` tool with the ticket id.";
         let out = substitute_jira_mcp(src, None);
         assert_eq!(
             out,
-            "Appelle l'outil `(MCP Jira non configuré)` avec l'id du ticket."
+            "Call the `(Jira MCP not configured)` tool with the ticket id."
         );
     }
 
     #[test]
-    fn substitute_sans_placeholder_ne_touche_a_rien() {
+    fn substitute_without_placeholder_changes_nothing() {
         let src = "Bash(codev:*), Read";
         assert_eq!(substitute_jira_mcp(src, None), src);
         assert_eq!(substitute_jira_mcp(src, Some("mcp__x__y")), src);
     }
 
     #[test]
-    fn render_avec_jira_tool_substitue_partout() {
+    fn render_with_jira_tool_substitutes_everywhere() {
         let ctx = RenderCtx {
             jira_mcp_tool: Some("mcp__x__y".into()),
         };
-        let rendu = ClaudeCode::render(propose(), VERSION, &ctx);
-        assert!(!rendu.contains("{{JIRA_MCP_TOOL}}"));
-        assert!(!rendu.contains("(MCP Jira non configuré)"));
-        assert!(rendu.contains("mcp__x__y"));
+        let rendered = ClaudeCode::render(propose(), VERSION, &ctx);
+        assert!(!rendered.contains("{{JIRA_MCP_TOOL}}"));
+        assert!(!rendered.contains("(Jira MCP not configured)"));
+        assert!(rendered.contains("mcp__x__y"));
     }
 
     #[test]
-    fn render_sans_jira_tool_retire_placeholder_et_utilise_fallback() {
-        let rendu = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
-        assert!(!rendu.contains("{{JIRA_MCP_TOOL}}"));
-        // Le body cite le fallback (au moins une occurrence).
-        assert!(rendu.contains("(MCP Jira non configuré)"));
-        // `allowed-tools` ne finit pas par une virgule orpheline.
-        let line = rendu
+    fn render_without_jira_tool_removes_placeholder_and_uses_fallback() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        assert!(!rendered.contains("{{JIRA_MCP_TOOL}}"));
+        // The body cites the fallback (at least one occurrence).
+        assert!(rendered.contains("(Jira MCP not configured)"));
+        // `allowed-tools` does not end with an orphan comma.
+        let line = rendered
             .lines()
             .find(|l| l.starts_with("allowed-tools:"))
             .unwrap();

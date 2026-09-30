@@ -1,8 +1,8 @@
-//! Le binaire `codev` : la coquille impérative.
+//! The `codev` binary: the imperative shell.
 //!
-//! Aucune décision ici — l'analyse des arguments, l'appel d'une commande, et le
-//! rendu. Deux sorties pour un même résultat : un texte pour un humain, un
-//! document JSON pour une skill.
+//! No decisions here — argument parsing, calling a command, and rendering.
+//! Two outputs for the same result: text for a human, a JSON document for a
+//! skill.
 
 mod commands;
 mod contract;
@@ -19,9 +19,9 @@ use commands::{Ctx, Failure};
 use contract::{
     ArchiveReportV1, ChangesV1, DecisionCreatedV1, DecisionDeviatedV1, DecisionListReportV1,
     DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1, DecisionSupersededV1, DecisionV1,
-    InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1, SealEntryV1,
-    SchemasV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1, SourcesUpdateReportV1,
-    SpecsV1, StatusV1, SyncReportV1, ValidateReportV1,
+    InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1, SchemasV1, SealEntryV1, SetupV1,
+    SourceDetailV1, SourceStateV1, SourcesListReportV1, SourcesUpdateReportV1, SpecsV1, StatusV1,
+    SyncReportV1, ValidateReportV1,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -30,74 +30,76 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[command(
     name = "codev",
     version,
-    about = "Développement piloté par les specs, pour Claude Code",
-    long_about = "codev ajoute à un dépôt une fine couche de specs pour que toi et ton agent \
-                  soyez d'accord sur ce qui doit être construit avant qu'une ligne de code ne \
-                  soit écrite.\n\nLes commandes ci-dessous s'exécutent dans ton terminal. Les \
-                  workflows, eux, s'invoquent dans le chat de Claude Code : /codev-propose, \
-                  /codev-explore."
+    about = "Spec-driven development for Claude Code",
+    long_about = "codev adds a thin layer of specs to a repository so that you and your agent \
+                  agree on what must be built before a single line of code is written.\n\n\
+                  The commands below run in your terminal. The workflows are invoked in the \
+                  Claude Code chat: /codev-propose, /codev-explore."
 )]
 struct Cli {
     #[command(subcommand)]
     command: Command,
 }
 
-/// Préset de workflows pour `codev init --preset`.
+/// Workflow preset for `codev init --preset`.
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum PresetArg {
-    Complet,
+    /// All 8 workflows
+    Full,
+    /// propose, explore, onboard, configure
     Minimal,
-    Personnalise,
+    /// Pick the workflows one by one
+    Custom,
 }
 
 impl PresetArg {
     fn to_preset(self) -> init_prompts::Preset {
         match self {
-            PresetArg::Complet => init_prompts::Preset::Complet,
+            PresetArg::Full => init_prompts::Preset::Full,
             PresetArg::Minimal => init_prompts::Preset::Minimal,
-            PresetArg::Personnalise => init_prompts::Preset::Personnalise,
+            PresetArg::Custom => init_prompts::Preset::Custom,
         }
     }
 }
 
 #[derive(Subcommand)]
 enum Command {
-    /// Initialise codev dans un projet et installe les skills Claude Code
+    /// Initialize codev in a project and install the Claude Code skills
     Init {
-        /// Dossier du projet (par défaut : le dossier courant)
+        /// Project folder (default: the current folder)
         path: Option<String>,
-        /// Réécrit les skills même modifiées à la main
+        /// Rewrite skills even if they were edited by hand
         #[arg(long)]
         force: bool,
-        /// Applique tous les défauts, aucun prompt (défauts + détection retenue)
+        /// Accept all defaults without prompting (defaults + detected values)
         #[arg(long, short = 'y')]
         yes: bool,
-        /// Désactive la sonde d'environnement (utile pour les tests reproductibles)
+        /// Disable the environment probe (useful for reproducible tests)
         #[arg(long)]
         no_detect: bool,
-        /// Préselectionne la réponse à la question workflows
+        /// Preselect the answer to the workflows question
         #[arg(long, value_enum)]
         preset: Option<PresetArg>,
         #[arg(long)]
         json: bool,
     },
 
-    /// Régénère les skills après une mise à jour de codev
+    /// Regenerate the skills after a codev upgrade
     Update {
-        /// Réécrit les skills même modifiées à la main
+        /// Rewrite skills even if they were edited by hand
         #[arg(long)]
         force: bool,
         #[arg(long)]
         json: bool,
     },
 
-    /// Crée un nouvel élément
+    /// Create a new item
     New {
         #[command(subcommand)]
         what: NewCommand,
     },
 
-    /// Liste les changes actifs, ou les capacités spécifiées avec --specs
+    /// List active changes, or specified capabilities with --specs
     List {
         #[arg(long)]
         specs: bool,
@@ -105,18 +107,18 @@ enum Command {
         json: bool,
     },
 
-    /// Affiche l'état des artefacts d'un change
+    /// Show the state of a change's artifacts
     Status {
-        /// Nom du change (déduit s'il n'y en a qu'un)
+        /// Change name (inferred when there is only one)
         #[arg(long)]
         change: Option<String>,
         #[arg(long)]
         json: bool,
     },
 
-    /// Donne tout ce qu'il faut pour écrire un artefact
+    /// Print everything needed to write an artifact
     Instructions {
-        /// Identifiant de l'artefact (par défaut : le prochain à écrire)
+        /// Artifact identifier (default: the next one to write)
         artifact: Option<String>,
         #[arg(long)]
         change: Option<String>,
@@ -124,93 +126,93 @@ enum Command {
         json: bool,
     },
 
-    /// Liste les schémas de workflow disponibles
+    /// List the available workflow schemas
     Schemas {
         #[arg(long)]
         json: bool,
     },
 
-    /// Crée, consulte et supersède les décisions d'architecture
+    /// Create, inspect and supersede architecture decisions
     Decision {
         #[command(subcommand)]
         what: DecisionCommand,
     },
 
-    /// Gère les sources héritées (path locales et git distantes)
+    /// Manage inherited sources (local paths and remote git repositories)
     Sources {
         #[command(subcommand)]
         what: SourcesCommand,
     },
 
-    /// Fusionne les deltas d'un change dans les specs principales sans archiver
+    /// Merge a change's deltas into the main specs without archiving
     Sync {
-        /// Nom du change (déduit s'il n'y en a qu'un)
+        /// Change name (inferred when there is only one)
         #[arg(long)]
         change: Option<String>,
         #[arg(long)]
         json: bool,
     },
 
-    /// Fusionne puis déplace un change vers l'archive datée
+    /// Merge, then move a change to the dated archive
     Archive {
-        /// Nom du change (déduit s'il n'y en a qu'un)
+        /// Change name (inferred when there is only one)
         #[arg(long)]
         change: Option<String>,
         #[arg(long)]
         json: bool,
     },
 
-    /// Ouvre la documentation codev dans le navigateur
+    /// Open the codev documentation in the browser
     ///
-    /// Trois formes :
+    /// Three forms:
     ///
-    /// - défaut : écrit `codev-docs-<version>.html` dans le dossier
-    ///   temporaire système et l'ouvre dans le navigateur ;
-    /// - `--write <PATH>` : écrit le HTML au chemin donné, n'ouvre
-    ///   rien (mode diffusion — email, Confluence, share drive) ;
-    /// - `--print` : imprime le markdown source sur stdout (pour
-    ///   pipeliner vers `less`, `bat` ou un LLM).
+    /// - default: writes `codev-docs-<version>.html` to the system temp
+    ///   folder and opens it in the browser;
+    /// - `--write <PATH>`: writes the HTML to the given path, opens
+    ///   nothing (for sharing — email, Confluence, shared drive);
+    /// - `--print`: prints the markdown source to stdout (to pipe into
+    ///   `less`, `bat` or an LLM).
     Docs {
-        /// Imprime le markdown source sur stdout (pas d'ouverture)
+        /// Print the markdown source to stdout (does not open anything)
         #[arg(long, conflicts_with = "write")]
         print: bool,
-        /// Écrit le HTML au chemin donné (pas d'ouverture)
+        /// Write the HTML to the given path (does not open anything)
         #[arg(long, value_name = "PATH")]
         write: Option<std::path::PathBuf>,
     },
 
-    /// Génère un script de complétion shell pour l'installation locale
+    /// Generate a shell completion script for local installation
     ///
-    /// La sortie va sur stdout — redirige-la vers ton dossier de
-    /// complétions selon ton shell. Procédures typiques :
+    /// The output goes to stdout — redirect it to your shell's completions
+    /// folder. Typical setups:
     ///
-    /// - bash    : `codev completions bash > ~/.local/share/bash-completion/completions/codev`
-    /// - zsh     : `codev completions zsh > "${fpath[1]}/_codev"` puis `compinit`
-    /// - fish    : `codev completions fish > ~/.config/fish/completions/codev.fish`
-    /// - powershell : `codev completions powershell | Out-String | Invoke-Expression`
+    /// - bash: `codev completions bash > ~/.local/share/bash-completion/completions/codev`
+    /// - zsh: `codev completions zsh > "${fpath[1]}/_codev"`, then `compinit`
+    /// - fish: `codev completions fish > ~/.config/fish/completions/codev.fish`
+    /// - powershell: `codev completions powershell | Out-String | Invoke-Expression`
     ///
-    /// La commande ne touche à aucun fichier ; elle ne lit pas non plus
-    /// `_codev/` et fonctionne dans n'importe quel répertoire.
+    /// The command touches no file; it does not read `_codev/` either and
+    /// works in any directory.
     Completions {
-        /// Shell cible : bash, zsh, fish, powershell, elvish
+        /// Target shell: bash, zsh, fish, powershell, elvish
         shell: clap_complete::Shell,
     },
 
-    /// Vérifie changes et specs pour erreurs structurelles et cohérence
+    /// Check changes and specs for structural errors and consistency
     Validate {
-        /// Nom d'un change ou d'une capacité de spec, précis
+        /// Name of a specific change or spec capability
         item: Option<String>,
-        /// Valider tous les changes actifs et toutes les specs principales
+        /// Validate all active changes and all main specs
         #[arg(long, conflicts_with_all = ["changes", "specs", "item"])]
         all: bool,
-        /// Valider tous les changes actifs
+        /// Validate all active changes
         #[arg(long, conflicts_with_all = ["all", "specs", "item"])]
         changes: bool,
-        /// Valider toutes les specs principales
+        /// Validate all main specs
         #[arg(long, conflicts_with_all = ["all", "changes", "item"])]
         specs: bool,
-        /// Traite tout finding (Warning inclus) comme un motif d'exit code
-        /// non-nul. Utile pour la CI et l'automation.
+        /// Treat any finding (warnings included) as a reason for a non-zero
+        /// exit code. Useful for CI and automation.
         #[arg(long)]
         strict: bool,
         #[arg(long)]
@@ -220,19 +222,19 @@ enum Command {
 
 #[derive(Subcommand)]
 enum SourcesCommand {
-    /// Liste toutes les sources déclarées avec leur état
+    /// List all declared sources with their state
     List {
         #[arg(long)]
         json: bool,
     },
-    /// Résout les refs, télécharge, met à jour `_codev/codev.lock`
+    /// Resolve refs, download, and update `_codev/codev.lock`
     Update {
         #[arg(long)]
         json: bool,
     },
-    /// Affiche les détails d'une source précise
+    /// Show the details of a specific source
     Show {
-        /// URL (source `git:`) ou chemin (source `path:`)
+        /// URL (`git:` source) or path (`path:` source)
         target: String,
         #[arg(long)]
         json: bool,
@@ -241,78 +243,78 @@ enum SourcesCommand {
 
 #[derive(Subcommand)]
 enum DecisionCommand {
-    /// Liste les décisions locales et héritées
+    /// List local and inherited decisions
     List {
         #[arg(long)]
         json: bool,
     },
-    /// Affiche une décision précise
+    /// Show a specific decision
     Show {
-        /// Identifiant court (`0007`) ou qualifié (`path:~/partage/0100`)
+        /// Short (`0007`) or qualified (`path:~/shared/0100`) identifier
         id: String,
         #[arg(long)]
         json: bool,
     },
-    /// Crée une nouvelle décision locale
+    /// Create a new local decision
     New {
-        /// Titre libre — sera slugifié pour le nom de fichier
+        /// Free-form title — slugified for the file name
         title: String,
-        /// Statut initial (accepted par défaut)
+        /// Initial status
         #[arg(long, default_value = "accepted")]
         status: String,
         #[arg(long)]
         json: bool,
     },
-    /// Supersède une décision : la marque `superseded` et en crée une nouvelle
+    /// Supersede a decision: mark it `superseded` and create a new one
     Supersede {
-        /// Identifiant de la décision à superseder (court ou qualifié)
+        /// Identifier of the decision to supersede (short or qualified)
         old_id: String,
-        /// Titre de la nouvelle décision
+        /// Title of the new decision
         new_title: String,
         #[arg(long)]
         json: bool,
     },
-    /// Ajoute ou réécrit le sceau d'une décision locale
+    /// Add or rewrite the seal of a local decision
     ///
-    /// Sans `--force` : refuse si un sceau existe et que le corps a changé.
-    /// Avec `--force` : réécrit le sceau (à utiliser après une édition
-    /// délibérée du corps).
+    /// Without `--force`: refuses if a seal exists and the body has changed.
+    /// With `--force`: rewrites the seal (use after a deliberate edit of the
+    /// body).
     Seal {
-        /// Identifiant court (`0007`) — l'hérité (`path:` / `git:`) est refusé
+        /// Short identifier (`0007`) — inherited ones (`path:` / `git:`) are refused
         id: String,
-        /// Réécrit un sceau existant même si le corps a changé
+        /// Rewrite an existing seal even if the body has changed
         #[arg(long)]
         force: bool,
         #[arg(long)]
         json: bool,
     },
-    /// Enregistre une dérive locale d'une décision héritée
+    /// Record a local deviation from an inherited decision
     ///
-    /// Crée un ADR local `accepted` qui référence explicitement l'héritée
-    /// dont on choisit de s'écarter. La décision héritée reste visible
-    /// dans `codev decision list`, mais disparaît des instructions
-    /// injectées à l'artefact `design`. Pour dévier d'une décision
-    /// locale, utilise `codev decision supersede`.
+    /// Creates a local `accepted` ADR that explicitly references the
+    /// inherited decision being departed from. The inherited decision stays
+    /// visible in `codev decision list`, but disappears from the
+    /// instructions injected into the `design` artifact. To deviate from a
+    /// local decision, use `codev decision supersede`.
     Deviate {
-        /// Identifiant qualifié de la décision héritée à écarter
+        /// Qualified identifier of the inherited decision to set aside
         ///
-        /// Exemple : `path:~/partage/0100` ou
+        /// Example: `path:~/shared/0100` or
         /// `git:git@github.com:acme/shared.git/0100`.
         target: String,
-        /// Titre libre de la dérive locale — sera slugifié
+        /// Free-form title of the local deviation — slugified
         new_title: String,
         #[arg(long)]
         json: bool,
     },
-    /// Promeut un bloc `### Décision : <titre>` d'un `design.md` en ADR
+    /// Promote a `### Decision: <title>` block of a `design.md` to an ADR
     ///
-    /// Extrait le contenu du bloc, crée un ADR local scellé par K3, et
-    /// remplace le corps du bloc par une référence textuelle vers le
-    /// nouvel ADR. Refuse un change archivé.
+    /// Extracts the block's content, creates a sealed local ADR, and
+    /// replaces the block's body with a textual reference to the new ADR.
+    /// Refuses an archived change.
     Promote {
-        /// Nom du change actif dont le `design.md` porte le bloc
+        /// Name of the active change whose `design.md` holds the block
         change: String,
-        /// Titre exact du bloc à promouvoir (ce qui suit `Décision : `)
+        /// Exact title of the block to promote (what follows `Decision: `)
         title: String,
         #[arg(long)]
         json: bool,
@@ -321,14 +323,14 @@ enum DecisionCommand {
 
 #[derive(Subcommand)]
 enum NewCommand {
-    /// Crée un change
+    /// Create a change
     Change {
-        /// Nom en kebab-case (`add-user-auth`)
+        /// Name in kebab-case (`add-user-auth`)
         name: String,
-        /// Schéma de workflow à utiliser
+        /// Workflow schema to use
         #[arg(long)]
         schema: Option<String>,
-        /// Objectif, conservé dans les métadonnées du change
+        /// Goal, kept in the change's metadata
         #[arg(long)]
         goal: Option<String>,
         #[arg(long)]
@@ -356,7 +358,7 @@ fn run(cli: Cli) -> i32 {
             if print {
                 use std::io::Write as _;
                 if let Err(e) = std::io::stdout().write_all(docs::MARKDOWN_SOURCE.as_bytes()) {
-                    eprintln!("Erreur : {e}");
+                    eprintln!("error: {e}");
                     return 1;
                 }
                 return 0;
@@ -364,25 +366,25 @@ fn run(cli: Cli) -> i32 {
             if let Some(path) = write {
                 match docs::write_to(&path, VERSION) {
                     Ok(()) => {
-                        eprintln!("Écrit : {}", path.display());
+                        eprintln!("Wrote {}", path.display());
                         0
                     }
                     Err(e) => {
-                        eprintln!("Erreur : écriture impossible : {e}");
+                        eprintln!("error: cannot write the file: {e}");
                         1
                     }
                 }
             } else {
                 match docs::open_default(VERSION) {
                     Ok(path) => {
-                        eprintln!("Ouvert : {}", path.display());
+                        eprintln!("Opened {}", path.display());
                         0
                     }
                     Err(e) => {
                         eprintln!(
-                            "Erreur : impossible d'ouvrir le navigateur : {e}\n\
-                             Correction : essaie `codev docs --print` ou \
-                             `codev docs --write <PATH>`."
+                            "error: cannot open the browser: {e}\n\
+                             help: try `codev docs --print` or \
+                             `codev docs --write <PATH>`"
                         );
                         1
                     }
@@ -391,9 +393,9 @@ fn run(cli: Cli) -> i32 {
         }
 
         Command::Completions { shell } => {
-            // Sortie du script sur stdout ; aucun état projet n'est lu.
-            // Cas d'exception au contrat JSON global : ce n'est pas du
-            // JSON qui sort ici, mais un script shell.
+            // Script output on stdout; no project state is read.
+            // An exception to the global JSON contract: what comes out here
+            // is not JSON, but a shell script.
             use clap::CommandFactory;
             let mut cmd = Cli::command();
             clap_complete::generate(shell, &mut cmd, "codev", &mut std::io::stdout());
@@ -498,11 +500,7 @@ fn run(cli: Cli) -> i32 {
                         emit(
                             json,
                             ChangesV1 {
-                                changes: outcome
-                                    .changes
-                                    .iter()
-                                    .map(ToString::to_string)
-                                    .collect(),
+                                changes: outcome.changes.iter().map(ToString::to_string).collect(),
                                 root: Some(outcome.root.display().to_string()),
                                 status: Vec::new(),
                             },
@@ -534,13 +532,11 @@ fn run(cli: Cli) -> i32 {
             }
             Err(err) => {
                 let exit = fail(json, status_shape(), &err);
-                // Nudge conditionnelle : sur `no_active_change` en sortie
-                // humaine, si la config est thin, on suggère
-                // `/codev-configure`. Le JSON reste strictement inchangé.
+                // Conditional hint: on `no_active_change` in human output,
+                // if the config is thin, suggest `/codev-configure`. The JSON
+                // stays strictly unchanged.
                 if !json && err.code == "no_active_change" && config_is_thin(&ctx) {
-                    eprintln!(
-                        "Astuce : config peu remplie — /codev-configure peut l'enrichir."
-                    );
+                    eprintln!("hint: the config is sparse — /codev-configure can enrich it");
                 }
                 exit
             }
@@ -565,7 +561,9 @@ fn run(cli: Cli) -> i32 {
 
         Command::Sync { change, json } => match commands::sync(&ctx, change.as_deref()) {
             Ok(outcome) => {
-                emit(json, SyncReportV1::from(&outcome), || render::sync(&outcome));
+                emit(json, SyncReportV1::from(&outcome), || {
+                    render::sync(&outcome)
+                });
                 0
             }
             Err(err) => fail(json, sync_shape(), &err),
@@ -598,8 +596,8 @@ fn run(cli: Cli) -> i32 {
             } else if let Some(name) = item {
                 commands::ValidateArgs::Item(name)
             } else {
-                // Sans flag ni nom : on valide tout, comme `--all` — c'est le
-                // cas le plus utile en pre-commit et pour le dogfooding.
+                // No flag and no name: validate everything, like `--all` —
+                // the most useful case for pre-commit hooks and dogfooding.
                 commands::ValidateArgs::All
             };
 
@@ -608,21 +606,17 @@ fn run(cli: Cli) -> i32 {
                     emit(json, ValidateReportV1::from(&report), || {
                         render::validate(&report)
                     });
-                    // Sans `--strict`, seul `Error` bascule l'exit code —
-                    // comportement historique. Avec `--strict`, tout
-                    // finding (Warning inclus) fait sortir en 1 : contrat
-                    // documenté pour les callers automatisés (CI, hooks,
-                    // futurs workflows MCP).
+                    // Without `--strict`, only `Error` flips the exit code —
+                    // the historical behavior. With `--strict`, any finding
+                    // (warnings included) exits with 1: a documented
+                    // contract for automated callers (CI, hooks, future MCP
+                    // workflows).
                     let has_fail = if strict {
                         report.has_errors() || report.has_warnings()
                     } else {
                         report.has_errors()
                     };
-                    if has_fail {
-                        1
-                    } else {
-                        0
-                    }
+                    if has_fail { 1 } else { 0 }
                 }
                 Err(err) => fail(json, validate_shape(), &err),
             }
@@ -1012,27 +1006,24 @@ fn instructions_shape() -> serde_json::Value {
     })
 }
 
-/// Émet le résultat : un document JSON, ou du texte.
+/// Emits the result: a JSON document, or text.
 fn emit<T: Serialize>(json: bool, payload: T, human: impl FnOnce() -> String) {
     if json {
-        // Un `unwrap` assumé : ces types sont les nôtres et n'ont aucun champ
-        // dont la sérialisation puisse échouer.
+        // A deliberate `unwrap`: these types are ours and have no field
+        // whose serialization can fail.
         println!(
             "{}",
-            serde_json::to_string_pretty(&payload).expect("le contrat JSON est sérialisable")
+            serde_json::to_string_pretty(&payload).expect("the JSON contract is serializable")
         );
     } else {
         print!("{}", human());
     }
 }
 
-/// Émet un échec, en respectant l'invariant du contrat : en mode JSON, stdout
-/// porte exactement un document, de la forme de la commande.
-/// Regarde silencieusement le `_codev/config.yaml` du projet courant et
-/// dit s'il est thin (aucune entrée `rules:`). Retourne `false` si le
-/// projet n'est pas initialisé ou si la config est illisible — on ne
-/// nudge que quand on est sûr d'être face à un vrai projet codev
-/// sous-configuré.
+/// Silently looks at the current project's `_codev/config.yaml` and tells
+/// whether it is thin (no `rules:` entry). Returns `false` if the project is
+/// not initialized or if the config is unreadable — the hint is only shown
+/// when we are sure to be facing a real, under-configured codev project.
 fn config_is_thin(ctx: &commands::Ctx) -> bool {
     let Ok(layout) = codev_engine::root::discover_from_cwd(ctx.fs, ctx.env) else {
         return false;
@@ -1043,17 +1034,19 @@ fn config_is_thin(ctx: &commands::Ctx) -> bool {
     codev_core::config::is_config_thin(cfg.rules.is_empty())
 }
 
+/// Emits a failure, honoring the contract's invariant: in JSON mode, stdout
+/// carries exactly one document, in the shape of the command.
 fn fail(json: bool, shape: serde_json::Value, err: &Failure) -> i32 {
     if json {
         let payload = contract::failure(shape, &err.code, &err.message);
         println!(
             "{}",
-            serde_json::to_string_pretty(&payload).expect("la forme d'échec est sérialisable")
+            serde_json::to_string_pretty(&payload).expect("the failure shape is serializable")
         );
     } else {
-        eprintln!("Erreur : {err}");
+        eprintln!("error: {err}");
         if let Some(fix) = &err.fix {
-            eprintln!("Correction : {fix}");
+            eprintln!("help: {fix}");
         }
     }
     1
@@ -1066,11 +1059,11 @@ mod completions_tests {
 
     use super::Cli;
 
-    /// Chaque shell supporté doit produire une sortie non vide qui cite
-    /// le binaire — traceur qu'un ajout de sous-commande ne casse pas
-    /// la génération, et que le nom `codev` reste bien injecté.
+    /// Every supported shell must produce non-empty output that names the
+    /// binary — a tracer that adding a subcommand does not break
+    /// generation, and that the `codev` name is still injected.
     #[test]
-    fn generation_pour_chaque_shell_est_non_vide_et_cite_codev() {
+    fn generation_for_each_shell_is_non_empty_and_names_codev() {
         let shells = [
             Shell::Bash,
             Shell::Zsh,
@@ -1082,15 +1075,15 @@ mod completions_tests {
             let mut cmd = Cli::command();
             let mut buf = Vec::new();
             clap_complete::generate(shell, &mut cmd, "codev", &mut buf);
-            let script = String::from_utf8(buf).expect("le script est de l'UTF-8");
+            let script = String::from_utf8(buf).expect("the script is UTF-8");
             assert!(
                 script.len() > 200,
-                "sortie pour {shell:?} suspicieusement courte : {} octets",
+                "output for {shell:?} is suspiciously short: {} bytes",
                 script.len()
             );
             assert!(
                 script.contains("codev"),
-                "sortie pour {shell:?} ne cite pas le nom du binaire"
+                "output for {shell:?} does not name the binary"
             );
         }
     }

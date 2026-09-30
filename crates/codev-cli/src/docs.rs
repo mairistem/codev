@@ -1,31 +1,31 @@
-//! `codev docs` : la documentation embarquée, rendue en HTML autonome.
+//! `codev docs`: the embedded documentation, rendered as standalone HTML.
 //!
-//! Trois formes :
-//! - défaut : écrit dans `temp_dir()/codev-docs-<version>.html` et
-//!   ouvre dans le navigateur système ;
-//! - `--write <PATH>` : écrit au chemin donné, n'ouvre pas ;
-//! - `--print` : imprime le markdown source sur stdout.
+//! Three forms:
+//! - default: writes to `temp_dir()/codev-docs-<version>.html` and opens
+//!   it in the system browser;
+//! - `--write <PATH>`: writes to the given path, does not open;
+//! - `--print`: prints the markdown source to stdout.
 //!
-//! Le HTML est **autonome** — CSS inline, pas de dépendance à un CDN,
-//! pas de JS obligatoire, ouvrable hors ligne. Alignement avec la
-//! philosophie codev : le binaire embarque ce qu'il faut pour
-//! fonctionner sans supposer un accès réseau à l'exécution.
+//! The HTML is **standalone** — inline CSS, no CDN dependency, no required
+//! JS, viewable offline. In line with the codev philosophy: the binary
+//! embeds what it needs to work without assuming network access at
+//! runtime.
 
 use std::io;
 use std::path::{Path, PathBuf};
 
-/// Le markdown source de la doc. Embarqué au build via `include_str!` :
-/// la doc suit toujours la version du binaire, aucune dépendance à un
-/// fichier externe à l'exécution.
+/// The markdown source of the docs. Embedded at build time via
+/// `include_str!`: the docs always match the binary's version, with no
+/// dependency on an external file at runtime.
 pub const MARKDOWN_SOURCE: &str = include_str!("../../../docs/codev.md");
 
-/// Le CSS embarqué, injecté inline dans chaque HTML rendu.
+/// The embedded CSS, injected inline into every rendered HTML page.
 const CSS: &str = include_str!("../assets/docs.css");
 
-/// Convertit le markdown source en HTML autonome, entoure du template
-/// HTML5 (doctype, `<head>`, CSS inline, `<header>` version).
+/// Converts the markdown source into standalone HTML, wrapped in the HTML5
+/// template (doctype, `<head>`, inline CSS, version `<header>`).
 pub fn render_html(md: &str, version: &str) -> String {
-    use pulldown_cmark::{html, Options, Parser};
+    use pulldown_cmark::{Options, Parser, html};
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
@@ -38,7 +38,7 @@ pub fn render_html(md: &str, version: &str) -> String {
 
     format!(
         "<!doctype html>\n\
-         <html lang=\"fr\">\n\
+         <html lang=\"en\">\n\
          <head>\n\
          <meta charset=\"utf-8\">\n\
          <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
@@ -61,25 +61,25 @@ pub fn render_html(md: &str, version: &str) -> String {
     )
 }
 
-/// Chemin par défaut où écrire le HTML — dans le répertoire système
-/// temporaire, avec la version dans le nom pour distinguer plusieurs
-/// binaires installés côte à côte.
+/// Default path to write the HTML to — in the system temp directory, with
+/// the version in the name to tell apart several binaries installed side by
+/// side.
 pub fn default_output_path(version: &str) -> PathBuf {
     std::env::temp_dir().join(format!("codev-docs-{version}.html"))
 }
 
-/// Écrit le HTML au chemin donné. Le parent du chemin doit exister —
-/// on ne crée pas d'arborescence profonde à la place de l'utilisateur.
+/// Writes the HTML to the given path. The path's parent must exist — we do
+/// not create a deep directory tree on the user's behalf.
 pub fn write_to(path: &Path, version: &str) -> io::Result<()> {
     let html = render_html(MARKDOWN_SOURCE, version);
     std::fs::write(path, html)
 }
 
-/// Écrit dans `default_output_path(version)` puis délègue à
-/// `open::that(...)` pour ouvrir dans le navigateur système.
+/// Writes to `default_output_path(version)`, then delegates to
+/// `open::that(...)` to open it in the system browser.
 ///
-/// Retourne le chemin écrit — le CLI l'affiche à l'utilisateur pour
-/// qu'il sache où le trouver s'il veut le re-partager.
+/// Returns the written path — the CLI shows it to the user so they know
+/// where to find it if they want to share it again.
 pub fn open_default(version: &str) -> io::Result<PathBuf> {
     let path = default_output_path(version);
     write_to(&path, version)?;
@@ -92,42 +92,43 @@ mod tests {
     use super::*;
 
     #[test]
-    fn markdown_source_est_non_vide() {
-        // Traceur d'un include_str! qui pointerait sur un fichier vide.
+    fn markdown_source_is_not_empty() {
+        // Tracer for an include_str! that would point to an empty file.
         assert!(
             MARKDOWN_SOURCE.len() > 1000,
-            "MARKDOWN_SOURCE ne fait que {} octets — la doc semble vide",
+            "MARKDOWN_SOURCE is only {} bytes — the docs look empty",
             MARKDOWN_SOURCE.len()
         );
         assert!(
             MARKDOWN_SOURCE.starts_with("# codev"),
-            "MARKDOWN_SOURCE doit commencer par le titre"
+            "MARKDOWN_SOURCE must start with the title"
         );
     }
 
     #[test]
-    fn render_html_produit_un_html5_autonome() {
-        let out = render_html("# Titre\n\nParagraphe.", "9.9.9");
+    fn render_html_produces_standalone_html5() {
+        let out = render_html("# Title\n\nParagraph.", "9.9.9");
         assert!(out.starts_with("<!doctype html>"));
+        assert!(out.contains("<html lang=\"en\">"));
         assert!(out.contains("codev"));
         assert!(out.contains("v9.9.9"));
-        assert!(out.contains("<h1>Titre</h1>"));
-        assert!(out.contains("<p>Paragraphe.</p>"));
-        // Autonomie : aucune référence à un URL externe (http://, https://).
-        // On tolère quand même les URL dans le corps de la doc rendu — le
-        // test cible spécifiquement les balises `<link>` et `<script src>`.
+        assert!(out.contains("<h1>Title</h1>"));
+        assert!(out.contains("<p>Paragraph.</p>"));
+        // Standalone: no reference to an external URL (http://, https://).
+        // URLs in the rendered docs body are still tolerated — the test
+        // specifically targets `<link>` and `<script src>` tags.
         assert!(
             !out.contains("<link href=\"http"),
-            "aucun <link> externe attendu (autonomie du HTML)"
+            "no external <link> expected (standalone HTML)"
         );
         assert!(
             !out.contains("<script src=\"http"),
-            "aucun <script src> externe attendu"
+            "no external <script src> expected"
         );
     }
 
     #[test]
-    fn render_html_gere_tables_et_code() {
+    fn render_html_handles_tables_and_code() {
         let md = "\
 | A | B |\n\
 |---|---|\n\
@@ -142,7 +143,7 @@ let x = 1;\n\
     }
 
     #[test]
-    fn write_to_ecrit_le_fichier_html() {
+    fn write_to_writes_the_html_file() {
         let dir = std::env::temp_dir().join("codev-docs-test-write");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("docs.html");
@@ -150,12 +151,12 @@ let x = 1;\n\
         let content = std::fs::read_to_string(&path).unwrap();
         assert!(content.starts_with("<!doctype html>"));
         assert!(content.contains("codev"));
-        // Nettoyage.
+        // Cleanup.
         let _ = std::fs::remove_file(&path);
     }
 
     #[test]
-    fn default_output_path_porte_la_version_dans_le_nom() {
+    fn default_output_path_carries_the_version_in_its_name() {
         let p = default_output_path("1.2.3");
         let name = p.file_name().unwrap().to_string_lossy();
         assert_eq!(name, "codev-docs-1.2.3.html");

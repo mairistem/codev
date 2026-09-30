@@ -1,13 +1,13 @@
-//! Prompts interactifs de `codev init`, isolés dans la coquille.
+//! Interactive prompts of `codev init`, isolated in the shell.
 //!
-//! Trois responsabilités :
-//! - décider si un prompt doit s'afficher (`should_prompt`) — dépend des
-//!   flags CLI et de l'état du TTY ;
-//! - poser au plus deux questions à l'utilisateur (workflows + contexte) ;
-//! - confirmer un MCP Jira détecté (une seule question de plus si
-//!   ambigu).
+//! Three responsibilities:
+//! - decide whether a prompt should be shown (`should_prompt`) — depends on
+//!   the CLI flags and the TTY state;
+//! - ask the user at most two questions (workflows + context);
+//! - confirm a detected Jira MCP (one more question at most, if
+//!   ambiguous).
 //!
-//! La sortie est un `UserChoices` prêt à alimenter
+//! The output is a `UserChoices` ready to feed
 //! `codev-core::config::from_detected`.
 
 use std::io::IsTerminal;
@@ -15,62 +15,69 @@ use std::io::IsTerminal;
 use anyhow::Result;
 use codev_core::config::UserChoices;
 use codev_core::detect::{
-    mcp::{self, DetectedMcp},
     Detected,
+    mcp::{self, DetectedMcp},
 };
-use dialoguer::{theme::ColorfulTheme, Confirm, Editor, Input, MultiSelect, Select};
+use dialoguer::{Confirm, Editor, Input, MultiSelect, Select, theme::ColorfulTheme};
 
-/// Préset choisi via `--preset`, ou déduit d'un flag.
+/// Preset chosen via `--preset`, or inferred from a flag.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Preset {
-    Complet,
+    Full,
     Minimal,
-    Personnalise,
+    Custom,
 }
 
-/// Options d'invocation de `codev init`.
+/// Invocation options of `codev init`.
 #[derive(Debug, Clone, Default)]
 pub struct InitOptions {
-    /// `--yes` — court-circuite tous les prompts.
+    /// `--yes` — skips all prompts.
     pub yes: bool,
-    /// `--no-detect` — désactive la sonde côté appelant, la coquille passe
-    /// alors un `Detected::empty()` à ce module.
+    /// `--no-detect` — disables the probe on the caller's side; the shell
+    /// then passes a `Detected::empty()` to this module.
     pub no_detect: bool,
-    /// `--preset` — préselectionne la réponse à la question workflows.
+    /// `--preset` — preselects the answer to the workflows question.
     pub preset: Option<Preset>,
 }
 
-/// Vrai si un prompt doit être posé à l'utilisateur.
+/// True if a prompt should be shown to the user.
 ///
-/// Extraite pour être testée seule — évite d'avoir à simuler un TTY.
+/// Extracted so it can be tested on its own — avoids having to simulate a TTY.
 pub fn should_prompt(opts: &InitOptions, stdin_is_tty: bool) -> bool {
     !opts.yes && stdin_is_tty
 }
 
-const WORKFLOWS_COMPLET: &[&str] = &[
-    "propose", "explore", "onboard", "apply", "sync", "archive", "update", "configure",
+const WORKFLOWS_FULL: &[&str] = &[
+    "propose",
+    "explore",
+    "onboard",
+    "apply",
+    "sync",
+    "archive",
+    "update",
+    "configure",
 ];
 const WORKFLOWS_MINIMAL: &[&str] = &["propose", "explore", "onboard", "configure"];
 
-/// Exécute les prompts et retourne les choix finaux.
+/// Runs the prompts and returns the final choices.
 ///
-/// En mode non-interactif (`--yes` ou stdin non-TTY), aucun prompt n'est
-/// affiché ; les défauts s'appliquent selon le préset (ou « Complet » si
-/// aucun préset n'est demandé).
+/// In non-interactive mode (`--yes` or non-TTY stdin), no prompt is shown;
+/// the defaults apply according to the preset (or "Full" if no preset was
+/// requested).
 pub fn run(detected: &Detected, opts: &InitOptions) -> Result<UserChoices> {
     let interactive = should_prompt(opts, std::io::stdin().is_terminal());
 
     // Question 1 — workflows
     let workflows = pick_workflows(opts, interactive)?;
 
-    // Question 2 — contexte libre
+    // Question 2 — free-form context
     let context_addition = if interactive {
         Some(prompt_context(detected)?)
     } else {
         None
     };
 
-    // MCP — confirmation (interactif) ou automatique (--yes / non-TTY)
+    // MCP — confirmation (interactive) or automatic (--yes / non-TTY)
     let jira_tool_confirmed = pick_mcp_jira(detected, interactive)?;
 
     Ok(UserChoices {
@@ -83,35 +90,35 @@ pub fn run(detected: &Detected, opts: &InitOptions) -> Result<UserChoices> {
 fn pick_workflows(opts: &InitOptions, interactive: bool) -> Result<Vec<String>> {
     let preset = match opts.preset {
         Some(p) => Some(p),
-        None if !interactive => Some(Preset::Complet),
+        None if !interactive => Some(Preset::Full),
         None => None,
     };
 
     if let Some(p) = preset {
         return Ok(match p {
-            Preset::Complet => WORKFLOWS_COMPLET.iter().map(|s| s.to_string()).collect(),
+            Preset::Full => WORKFLOWS_FULL.iter().map(|s| s.to_string()).collect(),
             Preset::Minimal => WORKFLOWS_MINIMAL.iter().map(|s| s.to_string()).collect(),
-            Preset::Personnalise if !interactive => {
-                // Sans TTY, `--preset personnalise` retombe sur Complet plutôt
-                // que sur un état indéfini.
-                WORKFLOWS_COMPLET.iter().map(|s| s.to_string()).collect()
+            Preset::Custom if !interactive => {
+                // Without a TTY, `--preset custom` falls back to Full rather
+                // than to an undefined state.
+                WORKFLOWS_FULL.iter().map(|s| s.to_string()).collect()
             }
-            Preset::Personnalise => pick_workflows_custom()?,
+            Preset::Custom => pick_workflows_custom()?,
         });
     }
 
     let theme = ColorfulTheme::default();
     let choice = Select::with_theme(&theme)
-        .with_prompt("Quels workflows installer ?")
+        .with_prompt("Which workflows should be installed?")
         .items(&[
-            "Complet (8) — propose, explore, onboard, apply, sync, archive, update, configure",
+            "Full (8) — propose, explore, onboard, apply, sync, archive, update, configure",
             "Minimal (4) — propose, explore, onboard, configure",
-            "Personnalisé — te laisse choisir un par un",
+            "Custom — pick them one by one",
         ])
         .default(0)
         .interact()?;
     match choice {
-        0 => Ok(WORKFLOWS_COMPLET.iter().map(|s| s.to_string()).collect()),
+        0 => Ok(WORKFLOWS_FULL.iter().map(|s| s.to_string()).collect()),
         1 => Ok(WORKFLOWS_MINIMAL.iter().map(|s| s.to_string()).collect()),
         _ => pick_workflows_custom(),
     }
@@ -120,41 +127,39 @@ fn pick_workflows(opts: &InitOptions, interactive: bool) -> Result<Vec<String>> 
 fn pick_workflows_custom() -> Result<Vec<String>> {
     let theme = ColorfulTheme::default();
     let indices = MultiSelect::with_theme(&theme)
-        .with_prompt("Sélectionne les workflows (espace pour cocher, Entrée pour valider)")
-        .items(WORKFLOWS_COMPLET)
+        .with_prompt("Select the workflows (Space to toggle, Enter to confirm)")
+        .items(WORKFLOWS_FULL)
         .defaults(&[true; 8])
         .interact()?;
     Ok(indices
         .into_iter()
-        .map(|i| WORKFLOWS_COMPLET[i].to_string())
+        .map(|i| WORKFLOWS_FULL[i].to_string())
         .collect())
 }
 
 fn prompt_context(detected: &Detected) -> Result<String> {
     let theme = ColorfulTheme::default();
     if let Some(stack) = &detected.stack {
-        eprintln!("\nContexte pour les skills (ce qui n'est pas déductible du code) :");
+        eprintln!("\nContext for the skills (what cannot be inferred from the code):");
         eprintln!(
-            "  stack détectée : {} {}",
+            "  detected stack: {} {}",
             stack.language,
             stack
                 .edition_or_version
                 .as_deref()
-                .unwrap_or("(version inconnue)")
+                .unwrap_or("(unknown version)")
         );
     } else {
-        eprintln!("\nContexte pour les skills :");
+        eprintln!("\nContext for the skills:");
     }
     let line: String = Input::with_theme(&theme)
-        .with_prompt(
-            "  Une ligne, ou Entrée pour ouvrir $EDITOR sur un squelette prérempli",
-        )
+        .with_prompt("  One line, or Enter to open $EDITOR on a prefilled skeleton")
         .allow_empty(true)
         .interact_text()?;
     if !line.trim().is_empty() {
         return Ok(line);
     }
-    // Entrée vide → $EDITOR
+    // Empty input → $EDITOR
     let skeleton = context_skeleton(detected);
     match Editor::new().extension(".md").edit(&skeleton)? {
         Some(text) => Ok(text),
@@ -166,20 +171,24 @@ fn context_skeleton(detected: &Detected) -> String {
     let stack_hint = detected
         .stack
         .as_ref()
-        .map(|s| format!("# Projet {}.", s.language))
+        .map(|s| format!("# {} project.", s.language))
         .unwrap_or_default();
     format!(
         "{stack_hint}
-# Décris ici :
-#   - conventions d'API, de nommage, d'erreur.
-#   - contraintes de sécurité ou de perf spécifiques.
-#   - ce que tu veux que l'agent sache avant d'écrire.
+# Describe here:
+#   - API, naming and error-handling conventions.
+#   - specific security or performance constraints.
+#   - what you want the agent to know before writing.
 "
     )
 }
 
 fn pick_mcp_jira(detected: &Detected, interactive: bool) -> Result<Option<String>> {
-    let candidates: Vec<&DetectedMcp> = detected.mcps.iter().filter(|m| mcp::matches_jira(m)).collect();
+    let candidates: Vec<&DetectedMcp> = detected
+        .mcps
+        .iter()
+        .filter(|m| mcp::matches_jira(m))
+        .collect();
     match candidates.len() {
         0 => Ok(None),
         1 => {
@@ -187,7 +196,7 @@ fn pick_mcp_jira(detected: &Detected, interactive: bool) -> Result<Option<String
             let tool = mcp::tool_id(&only.name, "getJiraIssue");
             if !interactive {
                 eprintln!(
-                    "  ✓ MCP Jira détecté : {tool}\n    (source : {} → serveur « {} »)",
+                    "  ✓ Jira MCP detected: {tool}\n    (source: {} → server \"{}\")",
                     only.source, only.name
                 );
                 return Ok(Some(tool));
@@ -195,7 +204,7 @@ fn pick_mcp_jira(detected: &Detected, interactive: bool) -> Result<Option<String
             let theme = ColorfulTheme::default();
             let ok = Confirm::with_theme(&theme)
                 .with_prompt(format!(
-                    "MCP Jira détecté : {tool}\n  (source : {} → serveur « {} »)\n  Retenir ?",
+                    "Jira MCP detected: {tool}\n  (source: {} → server \"{}\")\n  Use it?",
                     only.source, only.name
                 ))
                 .default(true)
@@ -206,17 +215,17 @@ fn pick_mcp_jira(detected: &Detected, interactive: bool) -> Result<Option<String
             if !interactive {
                 let first = candidates[0];
                 let tool = mcp::tool_id(&first.name, "getJiraIssue");
-                eprintln!("  ✓ Plusieurs MCPs Jira détectés — premier retenu : {tool}");
+                eprintln!("  ✓ Several Jira MCPs detected — using the first one: {tool}");
                 return Ok(Some(tool));
             }
             let theme = ColorfulTheme::default();
             let labels: Vec<String> = candidates
                 .iter()
                 .map(|m| format!("{} ({})", m.name, m.source))
-                .chain(std::iter::once("Aucun".to_string()))
+                .chain(std::iter::once("None".to_string()))
                 .collect();
             let idx = Select::with_theme(&theme)
-                .with_prompt("Plusieurs MCPs Jira détectés — lequel ?")
+                .with_prompt("Several Jira MCPs detected — which one?")
                 .items(&labels)
                 .default(0)
                 .interact()?;
@@ -236,7 +245,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn yes_court_circuite_prompt() {
+    fn yes_skips_the_prompt() {
         let opts = InitOptions {
             yes: true,
             no_detect: false,
@@ -246,19 +255,19 @@ mod tests {
     }
 
     #[test]
-    fn non_tty_court_circuite_prompt() {
+    fn non_tty_skips_the_prompt() {
         let opts = InitOptions::default();
         assert!(!should_prompt(&opts, false));
     }
 
     #[test]
-    fn tty_sans_yes_declenche_prompt() {
+    fn tty_without_yes_triggers_the_prompt() {
         let opts = InitOptions::default();
         assert!(should_prompt(&opts, true));
     }
 
     #[test]
-    fn run_yes_sans_detection_produit_defaut_complet() {
+    fn run_yes_without_detection_yields_the_full_default() {
         let opts = InitOptions {
             yes: true,
             no_detect: false,
@@ -273,7 +282,7 @@ mod tests {
     }
 
     #[test]
-    fn run_yes_avec_preset_minimal() {
+    fn run_yes_with_minimal_preset() {
         let opts = InitOptions {
             yes: true,
             no_detect: false,
@@ -287,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    fn run_yes_avec_mcp_detecte_retient_automatiquement() {
+    fn run_yes_with_detected_mcp_accepts_it_automatically() {
         let opts = InitOptions {
             yes: true,
             no_detect: false,
@@ -310,7 +319,7 @@ mod tests {
     }
 
     #[test]
-    fn run_yes_sans_mcp_ne_prerempli_rien() {
+    fn run_yes_without_mcp_prefills_nothing() {
         let opts = InitOptions {
             yes: true,
             no_detect: false,

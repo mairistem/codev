@@ -1,155 +1,158 @@
 use codev_engine::Warning;
 
-/// Un workflow : le corps d'une skill, plus ce qu'il faut pour la déclarer.
+/// A workflow: the body of a skill, plus what it takes to declare it.
 ///
-/// Le corps est un fichier markdown d'`assets/workflows/`, inclus à la
-/// compilation. Il reste une **donnée** : l'améliorer ne demande pas de
-/// toucher au code.
+/// The body is a markdown file from `assets/workflows/`, included at compile
+/// time. It stays **data**: improving it does not require touching the
+/// code.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Workflow {
     pub id: &'static str,
-    /// Ce que l'agent lit pour décider si cette skill s'applique. C'est la
-    /// phrase la plus importante du fichier : une description vague et la skill
-    /// ne se déclenche jamais.
+    /// What the agent reads to decide whether this skill applies. It is the
+    /// most important sentence in the file: a vague description and the skill
+    /// never triggers.
     pub description: &'static str,
-    /// Les outils que le workflow a besoin d'utiliser.
+    /// The tools the workflow needs to use.
     ///
-    /// Sert aussi de garde-fou : `explore` n'obtient pas `Write`, ce qui rend
-    /// sa promesse de ne rien écrire structurelle et non déclarative.
+    /// Also serves as a guardrail: `explore` does not get `Write`, which makes
+    /// its promise to write nothing structural rather than declarative.
     pub allowed_tools: &'static str,
     pub body: &'static str,
 }
 
-/// Les workflows livrés par cette version.
+/// The workflows shipped by this version.
 ///
-/// Le catalogue ne contient que ce que le CLI sait réellement servir : un
-/// workflow dont les commandes n'existent pas encore produirait une skill qui
-/// échoue devant l'utilisateur. Ajouter un workflow, c'est ajouter un fichier
-/// d'assets et une entrée ici.
+/// The catalog only contains what the CLI can actually serve: a workflow
+/// whose commands do not exist yet would produce a skill that fails in front
+/// of the user. Adding a workflow means adding an asset file and an entry
+/// here.
 pub const CATALOG: &[Workflow] = &[
     Workflow {
         id: "propose",
-        description: "Créer un change codev et rédiger tous ses artefacts de planification \
-                      en une fois — proposal, specs, design, tâches. À utiliser quand \
-                      l'utilisateur décrit ce qu'il veut construire ou corriger et qu'il faut \
-                      un plan prêt pour l'implémentation. Ne modifie aucun code. Détecte un \
-                      identifiant de ticket (pattern [A-Z]{2,}-\\d+) mentionné dans le prompt \
-                      et enrichit le proposal via le MCP Jira configuré côté projet, si \
-                      disponible.",
-        // `{{JIRA_MCP_TOOL}}` en fin de liste : placeholder substitué au
-        // moment du rendering par le nom du tool MCP Jira déclaré dans
-        // `_codev/config.yaml.mcp.jira_tool`. Sans config, le placeholder
-        // (et la virgule qui le précède) sont retirés proprement — voir
-        // `codev-agents::claude::substitute_jira_mcp`. La skill reste
-        // lecture seule sur Jira : un seul tool déclaré, jamais d'écriture.
+        description: "Create a codev change and write all its planning artifacts in one pass \
+                      — proposal, specs, design, tasks. Use when the user describes what they \
+                      want to build or fix and a plan ready for implementation is needed. \
+                      Modifies no code. Detects a ticket identifier (pattern [A-Z]{2,}-\\d+) \
+                      mentioned in the prompt and enriches the proposal through the Jira MCP \
+                      configured for the project, if available.",
+        // `{{JIRA_MCP_TOOL}}` at the end of the list: a placeholder substituted
+        // at rendering time with the name of the Jira MCP tool declared in
+        // `_codev/config.yaml.mcp.jira_tool`. Without config, the placeholder
+        // (and the comma preceding it) are removed cleanly — see
+        // `codev-agents::claude::substitute_jira_mcp`. The skill stays
+        // read-only on Jira: a single declared tool, never a write.
         allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, {{JIRA_MCP_TOOL}}",
         body: include_str!("../../../assets/workflows/propose.md"),
     },
     Workflow {
         id: "explore",
-        description: "Défricher une idée, enquêter sur un problème ou clarifier un besoin \
-                      avant de créer un change codev. À utiliser quand la demande est floue, \
-                      qu'il faut comparer plusieurs approches, ou qu'on ne sait pas encore quoi \
-                      construire. N'écrit aucun fichier.",
+        description: "Explore an idea, investigate a problem or clarify a need before \
+                      creating a codev change. Use when the request is vague, when several \
+                      approaches need comparing, or when it is not yet clear what to build. \
+                      Writes no files.",
         allowed_tools: "Bash(codev:*), Read, Glob, Grep",
         body: include_str!("../../../assets/workflows/explore.md"),
     },
     Workflow {
         id: "apply",
-        description: "Implémenter les tâches d'un change codev déjà planifié : lire tasks.md, \
-                      traiter chaque case non cochée dans l'ordre, cocher au fur et à mesure. \
-                      Modifie du code du projet. Ne modifie pas d'autres changes, n'archive pas \
-                      et ne sync pas — ces pas restent explicites côté utilisateur.",
-        // `Bash` général en plus de `Bash(codev:*)` : les tâches citent des
-        // commandes de vérification (cargo, git, npm, python…) qu'il faut
-        // pouvoir lancer. Le préfixe `Bash(codev:*)` reste en tête pour
-        // documenter l'usage principal.
+        description: "Implement the tasks of an already planned codev change: read tasks.md, \
+                      work through each unchecked box in order, checking them off along the \
+                      way. Modifies project code. Does not modify other changes, does not \
+                      archive and does not sync — those steps stay explicit on the user's side.",
+        // General `Bash` in addition to `Bash(codev:*)`: tasks cite
+        // verification commands (cargo, git, npm, python…) that must be
+        // runnable. The `Bash(codev:*)` prefix stays first to document the
+        // main usage.
         allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash",
         body: include_str!("../../../assets/workflows/apply.md"),
     },
     Workflow {
         id: "sync",
-        description: "Faire entrer les deltas d'un change codev déjà planifié dans les specs \
-                      principales, sans déplacer le change. À utiliser quand une capacité \
-                      nouvelle doit apparaître dans les specs avant d'être consommée par un \
-                      autre change, ou pour relire le merge avant d'archiver. N'archive pas.",
-        // `Read` en plus de `Bash(codev:*)` pour permettre à la skill de
-        // relire `tasks.md` si l'utilisateur pose une question de contexte —
-        // sans jamais écrire. Pas de `Bash` général : la seule action
-        // effective passe par `codev`.
+        description: "Merge the deltas of an already planned codev change into the main \
+                      specs, without moving the change. Use when a new capability must appear \
+                      in the specs before another change consumes it, or to review the merge \
+                      before archiving. Does not archive.",
+        // `Read` in addition to `Bash(codev:*)` so the skill can re-read
+        // `tasks.md` if the user asks a context question — without ever
+        // writing. No general `Bash`: the only effective action goes through
+        // `codev`.
         allowed_tools: "Bash(codev:*), Read",
         body: include_str!("../../../assets/workflows/sync.md"),
     },
     Workflow {
         id: "archive",
-        description: "Clore un change codev : fusionner ses deltas dans les specs principales et \
-                      déplacer le dossier vers l'archive datée. Refuse d'agir si la validation \
-                      remonte des erreurs, et renvoie alors vers `codev validate` pour le détail.",
+        description: "Close a codev change: merge its deltas into the main specs and move the \
+                      folder to the dated archive. Refuses to act if validation reports \
+                      errors, and then points to `codev validate` for the details.",
         allowed_tools: "Bash(codev:*), Read",
         body: include_str!("../../../assets/workflows/archive.md"),
     },
     Workflow {
         id: "update",
-        description: "Réviser un artefact de planification déjà écrit d'un change codev actif — \
-                      proposal, specs, design ou tasks — en préservant la cohérence avec les \
-                      autres artefacts. Ne modifie aucun code du projet, ne crée aucun artefact \
-                      manquant, ne touche à aucun change archivé.",
-        // Édition markdown directe via Edit/Write, pas de Bash général : la
-        // skill révise du texte, elle n'exécute pas de tests. La règle
-        // « seule `apply` a le Bash général » reste vraie.
+        description: "Revise an already written planning artifact of an active codev change — \
+                      proposal, specs, design or tasks — while keeping it consistent with the \
+                      other artifacts. Modifies no project code, creates no missing artifact, \
+                      touches no archived change.",
+        // Direct markdown editing via Edit/Write, no general Bash: the skill
+        // revises text, it does not run tests. The rule "only `apply` has
+        // general Bash" still holds.
         allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep",
         body: include_str!("../../../assets/workflows/update.md"),
     },
     Workflow {
         id: "onboard",
-        description: "Présenter codev à un utilisateur qui le découvre : ce que fait l'outil, \
-                      l'état actuel du projet, et la prochaine action recommandée. Strictement \
-                      en lecture — ne modifie ni ne crée rien.",
-        // Lecture pure : le rôle est de guider, jamais d'agir à la place.
-        // Pas de Write, pas de Edit, pas de Grep (chemins connus), pas de
-        // Bash général — la règle « seule `apply` a le Bash général »
-        // reste vraie.
+        description: "Introduce codev to a user discovering it: what the tool does, the \
+                      current state of the project, and the recommended next action. Strictly \
+                      read-only — modifies and creates nothing.",
+        // Read-only: the role is to guide, never to act on the user's behalf.
+        // No Write, no Edit, no Grep (known paths), no general Bash — the
+        // rule "only `apply` has general Bash" still holds.
         allowed_tools: "Bash(codev:*), Read, Glob",
         body: include_str!("../../../assets/workflows/onboard.md"),
     },
     Workflow {
         id: "configure",
-        description: "Enrichir `_codev/config.yaml` d'un projet en analysant son code : lire \
-                      README, CONTRIBUTING, docs et un échantillon de sources, puis proposer un \
-                      `context:` détaillé et des `rules:` par artefact. Affiche un diff, écrit \
-                      uniquement sur confirmation. Ne touche jamais aux workflows, aux MCPs, ni \
-                      au schéma.",
-        // Édition ciblée d'un seul fichier (_codev/config.yaml) via Edit,
-        // avec Read/Glob/Grep pour explorer le projet. Pas de Bash général :
-        // la skill ne lance ni tests, ni git, ni outil externe — la règle
-        // « seule `apply` a le Bash général » reste vraie.
+        description: "Enrich a project's `_codev/config.yaml` by analyzing its code: read \
+                      README, CONTRIBUTING, docs and a sample of sources, then propose a \
+                      detailed `context:` and per-artifact `rules:`. Shows a diff, writes only \
+                      on confirmation. Never touches the workflows, the MCPs or the schema.",
+        // Targeted editing of a single file (_codev/config.yaml) via Edit,
+        // with Read/Glob/Grep to explore the project. No general Bash: the
+        // skill runs no tests, no git, no external tool — the rule "only
+        // `apply` has general Bash" still holds.
         allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep",
         body: include_str!("../../../assets/workflows/configure.md"),
     },
 ];
 
-/// Les workflows installés quand la configuration n'en désigne aucun.
+/// The workflows installed when the configuration names none.
 ///
-/// Le catalogue par défaut couvre l'**intégralité** du cycle codev : un
-/// utilisateur qui installe l'outil obtient d'un coup tout ce qu'il faut
-/// pour proposer, implémenter, valider et archiver — plus `configure`,
-/// la porte d'entrée recommandée après `codev init` pour enrichir le
-/// `_codev/config.yaml`. Un projet qui veut restreindre la liste
-/// déclare `workflows:` explicitement dans son `_codev/config.yaml`
-/// (voie opt-out).
+/// The default catalog covers the **entire** codev cycle: a user who
+/// installs the tool gets everything needed to propose, implement, validate
+/// and archive in one go — plus `configure`, the recommended entry point
+/// after `codev init` to enrich `_codev/config.yaml`. A project that wants
+/// to restrict the list declares `workflows:` explicitly in its
+/// `_codev/config.yaml` (opt-out path).
 pub const DEFAULT_WORKFLOWS: &[&str] = &[
-    "propose", "explore", "onboard", "apply", "sync", "archive", "update", "configure",
+    "propose",
+    "explore",
+    "onboard",
+    "apply",
+    "sync",
+    "archive",
+    "update",
+    "configure",
 ];
 
 pub fn find(id: &str) -> Option<&'static Workflow> {
     CATALOG.iter().find(|w| w.id == id)
 }
 
-/// Résout la liste demandée en workflows connus.
+/// Resolves the requested list into known workflows.
 ///
-/// Un identifiant inconnu produit un avertissement, pas une erreur : une faute
-/// de frappe dans `config.yaml` ne doit pas empêcher l'installation des autres
-/// skills, mais elle ne doit pas non plus passer inaperçue.
+/// An unknown identifier produces a warning, not an error: a typo in
+/// `config.yaml` must not prevent the other skills from being installed, but
+/// it must not go unnoticed either.
 pub fn select(requested: Option<&[String]>) -> (Vec<&'static Workflow>, Vec<Warning>) {
     let mut warnings = Vec::new();
     let ids: Vec<String> = match requested {
@@ -165,12 +168,8 @@ pub fn select(requested: Option<&[String]>) -> (Vec<&'static Workflow>, Vec<Warn
             None => warnings.push(Warning::new(
                 "unknown_workflow",
                 format!(
-                    "workflow « {id} » inconnu, ignoré — cette version fournit : {}",
-                    CATALOG
-                        .iter()
-                        .map(|w| w.id)
-                        .collect::<Vec<_>>()
-                        .join(", ")
+                    "unknown workflow `{id}` ignored; this version provides: {}",
+                    CATALOG.iter().map(|w| w.id).collect::<Vec<_>>().join(", ")
                 ),
             )),
         }
@@ -183,45 +182,45 @@ mod tests {
     use super::*;
 
     #[test]
-    fn chaque_workflow_a_un_corps_et_une_description_utilisables() {
+    fn every_workflow_has_a_usable_body_and_description() {
         for workflow in CATALOG {
             assert!(
                 workflow.body.len() > 200,
-                "le corps de « {} » est suspicieusement court",
+                "the body of `{}` is suspiciously short",
                 workflow.id
             );
             assert!(
                 workflow.description.len() > 60,
-                "la description de « {} » est trop vague pour déclencher la skill",
+                "the description of `{}` is too vague to trigger the skill",
                 workflow.id
             );
             assert!(
                 workflow.allowed_tools.contains("Bash(codev:*)"),
-                "« {} » doit pouvoir appeler le CLI",
+                "`{}` must be able to call the CLI",
                 workflow.id
             );
         }
     }
 
     #[test]
-    fn explore_ne_peut_pas_ecrire() {
-        // Sa promesse « n'écrit aucun fichier » doit être structurelle.
+    fn explore_cannot_write() {
+        // Its "writes no files" promise must be structural.
         let explore = find("explore").unwrap();
         assert!(!explore.allowed_tools.contains("Write"));
         assert!(!explore.allowed_tools.contains("Edit"));
     }
 
     #[test]
-    fn cycle_completion_skills_present_et_restreintes() {
-        // Les deux skills du bouclage : présentes, avec `allowed-tools`
-        // strictement `Bash(codev:*), Read` — pas de `Bash` général, pas de
-        // `Write`/`Edit`. Ce qui rend la skill incapable de modifier un
-        // fichier par elle-même : tout passe par le CLI.
+    fn cycle_completion_skills_present_and_restricted() {
+        // The two cycle-closing skills: present, with `allowed-tools`
+        // strictly `Bash(codev:*), Read` — no general `Bash`, no
+        // `Write`/`Edit`. This makes the skill unable to modify a file on
+        // its own: everything goes through the CLI.
         for id in ["sync", "archive"] {
-            let workflow = find(id).unwrap_or_else(|| panic!("« {id} » doit être dans le CATALOG"));
+            let workflow = find(id).unwrap_or_else(|| panic!("`{id}` must be in the CATALOG"));
             assert_eq!(
                 workflow.allowed_tools, "Bash(codev:*), Read",
-                "« {id} » doit se cantonner à Bash(codev:*), Read"
+                "`{id}` must stick to Bash(codev:*), Read"
             );
             assert!(!workflow.allowed_tools.contains("Write"));
             assert!(!workflow.allowed_tools.contains("Edit"));
@@ -230,32 +229,37 @@ mod tests {
     }
 
     #[test]
-    fn sync_et_archive_citent_les_champs_du_contrat() {
-        // Les skills nomment explicitement les champs du contrat public
-        // qu'elles consomment. Un renommage de champ dans `contract.rs` doit
-        // remonter jusqu'ici via `grep`, plutôt que devenir un drame
-        // silencieux à l'exécution.
+    fn sync_and_archive_cite_the_contract_fields() {
+        // The skills explicitly name the public contract fields they
+        // consume. A field rename in `contract.rs` must surface here via
+        // `grep`, rather than become a silent failure at runtime.
         let sync = find("sync").unwrap();
-        for champ in ["SyncReportV1", "changeName", "created", "updated", "unchanged"] {
+        for field in [
+            "SyncReportV1",
+            "changeName",
+            "created",
+            "updated",
+            "unchanged",
+        ] {
             assert!(
-                sync.body.contains(champ),
-                "sync doit citer nommément « {champ} »"
+                sync.body.contains(field),
+                "sync must cite `{field}` by name"
             );
         }
         let archive = find("archive").unwrap();
-        for champ in ["ArchiveReportV1", "movedTo", "validation_failed", "status"] {
+        for field in ["ArchiveReportV1", "movedTo", "validation_failed", "status"] {
             assert!(
-                archive.body.contains(champ),
-                "archive doit citer nommément « {champ} »"
+                archive.body.contains(field),
+                "archive must cite `{field}` by name"
             );
         }
     }
 
     #[test]
-    fn update_est_dans_le_catalogue_et_a_les_bons_outils() {
-        let update = find("update").expect("update doit être dans le CATALOG");
-        // Édition markdown : Write et Edit obligatoires. Bash(codev:*) seul —
-        // pas de Bash général, la règle « seule apply l'a » reste préservée.
+    fn update_is_in_the_catalog_with_the_right_tools() {
+        let update = find("update").expect("update must be in the CATALOG");
+        // Markdown editing: Write and Edit required. Bash(codev:*) only —
+        // no general Bash, the rule "only apply has it" is preserved.
         assert_eq!(
             update.allowed_tools,
             "Bash(codev:*), Read, Write, Edit, Glob, Grep"
@@ -264,54 +268,60 @@ mod tests {
     }
 
     #[test]
-    fn update_cite_ses_frontieres() {
-        // Traceur d'un renommage ou d'une suppression accidentelle des
-        // garde-fous du corps de la skill.
+    fn update_states_its_boundaries() {
+        // Tracer for an accidental rename or removal of the guardrails in
+        // the skill body.
         let update = find("update").unwrap();
-        for frontiere in ["ne modifie", "archivé"] {
+        for boundary in ["not modify", "archived"] {
             assert!(
-                update.body.contains(frontiere),
-                "le body de `update` doit citer la frontière « {frontiere} »"
+                update.body.contains(boundary),
+                "the `update` body must state the boundary `{boundary}`"
             );
         }
     }
 
     #[test]
-    fn apply_est_dans_le_catalogue_et_a_les_bons_outils() {
-        let apply = find("apply").expect("apply doit être dans le CATALOG");
-        // Le préfixe `Bash(codev:*)` en premier — usage principal — et le
-        // `Bash` général en dernier — pour les commandes de vérification.
-        // C'est le SEUL workflow à demander ce dernier, garde-fou contre un
-        // élargissement silencieux à d'autres.
+    fn apply_is_in_the_catalog_with_the_right_tools() {
+        let apply = find("apply").expect("apply must be in the CATALOG");
+        // The `Bash(codev:*)` prefix first — main usage — and general
+        // `Bash` last — for verification commands. It is the ONLY workflow
+        // to request the latter, a guardrail against silently widening it
+        // to others.
         assert!(apply.allowed_tools.starts_with("Bash(codev:*)"));
         assert!(apply.allowed_tools.contains(", Bash"));
         assert!(apply.allowed_tools.contains("Edit"));
 
-        let autres_avec_bash_general = CATALOG
+        let others_with_general_bash = CATALOG
             .iter()
             .filter(|w| w.id != "apply")
             .filter(|w| w.allowed_tools.ends_with(", Bash") || w.allowed_tools == "Bash")
             .count();
         assert_eq!(
-            autres_avec_bash_general, 0,
-            "seul `apply` doit avoir le Bash général — sinon la promesse de restriction se perd"
+            others_with_general_bash, 0,
+            "only `apply` may have general Bash — otherwise the restriction promise is lost"
         );
     }
 
     #[test]
-    fn sans_demande_installe_le_catalogue_par_defaut() {
-        // Le catalogue par défaut couvre les 8 workflows du cycle codev :
-        // un utilisateur qui vient d'installer l'outil obtient d'un coup tout
-        // ce qu'il faut pour proposer, implémenter, valider et archiver, plus
-        // `configure` pour enrichir la config. Un projet qui veut restreindre
-        // la liste passe par `workflows:` explicite dans `_codev/config.yaml`
-        // — voie opt-out.
+    fn without_request_installs_the_default_catalog() {
+        // The default catalog covers the 8 workflows of the codev cycle: a
+        // user who just installed the tool gets everything needed to
+        // propose, implement, validate and archive in one go, plus
+        // `configure` to enrich the config. A project that wants to restrict
+        // the list goes through an explicit `workflows:` in
+        // `_codev/config.yaml` — opt-out path.
         let (workflows, warnings) = select(None);
         let ids: Vec<_> = workflows.iter().map(|w| w.id).collect();
         assert_eq!(
             ids,
             [
-                "propose", "explore", "onboard", "apply", "sync", "archive", "update",
+                "propose",
+                "explore",
+                "onboard",
+                "apply",
+                "sync",
+                "archive",
+                "update",
                 "configure"
             ]
         );
@@ -320,145 +330,152 @@ mod tests {
     }
 
     #[test]
-    fn configure_est_dans_le_catalogue_et_a_les_bons_outils() {
-        // `configure` a Write et Edit (elle modifie un fichier), mais PAS le
-        // Bash général — elle ne lance pas de tests, seule `apply` a ce droit.
-        let configure = find("configure").expect("configure doit être dans le CATALOG");
+    fn configure_is_in_the_catalog_with_the_right_tools() {
+        // `configure` has Write and Edit (it modifies a file), but NOT
+        // general Bash — it runs no tests; only `apply` has that right.
+        let configure = find("configure").expect("configure must be in the CATALOG");
         assert!(configure.allowed_tools.contains("Write"));
         assert!(configure.allowed_tools.contains("Edit"));
         assert!(!configure.allowed_tools.ends_with(", Bash"));
         assert!(configure.allowed_tools.starts_with("Bash(codev:*)"));
-        // Le body doit citer explicitement les champs préservés — c'est la
-        // promesse structurelle de la skill.
+        // The body must explicitly cite the preserved fields — it is the
+        // skill's structural promise.
         assert!(
             configure.body.contains("schema") && configure.body.contains("workflows"),
-            "le body doit énumérer les champs préservés (schema, workflows, mcp, inherits)"
+            "the body must list the preserved fields (schema, workflows, mcp, inherits)"
         );
     }
 
     #[test]
-    fn restriction_opt_out_via_workflows_explicite() {
-        // Un projet qui déclare `workflows: [propose]` obtient uniquement
-        // `propose`, jamais les 6 autres. C'est la contrepartie du défaut
-        // large : opt-out par déclaration explicite.
-        let demande = vec!["propose".to_string()];
-        let (workflows, warnings) = select(Some(&demande));
+    fn opt_out_restriction_via_explicit_workflows() {
+        // A project that declares `workflows: [propose]` gets only
+        // `propose`, never the others. It is the counterpart of the broad
+        // default: opt-out by explicit declaration.
+        let requested = vec!["propose".to_string()];
+        let (workflows, warnings) = select(Some(&requested));
         let ids: Vec<_> = workflows.iter().map(|w| w.id).collect();
         assert_eq!(ids, ["propose"]);
         assert!(warnings.is_empty());
     }
 
     #[test]
-    fn onboard_est_dans_le_catalogue_et_a_les_bons_outils() {
-        let onboard = find("onboard").expect("onboard doit être dans le CATALOG");
-        // Lecture pure : Bash(codev:*), Read, Glob — pas de Write/Edit,
-        // pas de Bash général, pas de Grep (chemins connus).
+    fn onboard_is_in_the_catalog_with_the_right_tools() {
+        let onboard = find("onboard").expect("onboard must be in the CATALOG");
+        // Read-only: Bash(codev:*), Read, Glob — no Write/Edit, no general
+        // Bash, no Grep (known paths).
         assert_eq!(onboard.allowed_tools, "Bash(codev:*), Read, Glob");
         assert!(!onboard.allowed_tools.contains("Write"));
         assert!(!onboard.allowed_tools.contains("Edit"));
         assert!(!onboard.allowed_tools.ends_with(", Bash"));
-        // Le body doit mentionner la branche « config thin →
-        // /codev-configure » — traceur qu'elle n'est pas retirée par
-        // accident d'une refonte.
+        // The body must mention the "thin config → /codev-configure" branch
+        // — a tracer that it is not removed by accident in a rework.
         assert!(
             onboard.body.contains("/codev-configure"),
-            "le body onboard doit citer /codev-configure comme recommandation sur config thin"
+            "the onboard body must cite /codev-configure as the recommendation on a thin config"
         );
         assert!(
             onboard.body.contains("thin"),
-            "le body onboard doit décrire la détection thin"
+            "the onboard body must describe thin detection"
         );
         assert!(
-            !onboard.body.contains("200 caractères") && !onboard.body.contains("< 200"),
-            "le body onboard ne doit plus mentionner le seuil retiré des 200 caractères"
+            !onboard.body.contains("200 characters") && !onboard.body.contains("< 200"),
+            "the onboard body must no longer mention the removed 200-character threshold"
         );
     }
 
     #[test]
-    fn onboard_est_dans_le_catalogue_par_defaut() {
-        // `onboard` fait partie du catalogue par défaut — c'est son
-        // rôle même : accueillir un utilisateur qui n'a rien
-        // configuré.
+    fn onboard_is_in_the_default_catalog() {
+        // `onboard` is part of the default catalog — that is its very role:
+        // welcoming a user who has configured nothing.
         assert!(DEFAULT_WORKFLOWS.contains(&"onboard"));
     }
 
     #[test]
-    fn onboard_cite_ses_trois_blocs() {
-        // Traceur d'une refonte accidentelle du body : la skill promet
-        // trois blocs (description, état, suite/action). Ces mots-clés
-        // doivent rester présents.
+    fn onboard_cites_its_three_blocks() {
+        // Tracer for an accidental rework of the body: the skill promises
+        // three blocks (description, state, next step/action). These
+        // keywords must stay present.
         let onboard = find("onboard").unwrap();
-        for mot_cle in ["codev, c'est", "ici, tu as", "la suite"] {
+        for keyword in ["codev is", "here you have", "what's next"] {
             assert!(
-                onboard.body.to_lowercase().contains(&mot_cle.to_lowercase()),
-                "le body de `onboard` doit citer le bloc « {mot_cle} »"
+                onboard
+                    .body
+                    .to_lowercase()
+                    .contains(&keyword.to_lowercase()),
+                "the `onboard` body must cite the block `{keyword}`"
             );
         }
     }
 
     #[test]
-    fn un_workflow_inconnu_avertit_sans_bloquer_les_autres() {
-        let demande = vec!["propose".to_string(), "teleportation".to_string()];
-        let (workflows, warnings) = select(Some(&demande));
-        assert_eq!(workflows.iter().map(|w| w.id).collect::<Vec<_>>(), ["propose"]);
+    fn an_unknown_workflow_warns_without_blocking_the_others() {
+        let requested = vec!["propose".to_string(), "teleportation".to_string()];
+        let (workflows, warnings) = select(Some(&requested));
+        assert_eq!(
+            workflows.iter().map(|w| w.id).collect::<Vec<_>>(),
+            ["propose"]
+        );
         assert_eq!(warnings.len(), 1);
         assert_eq!(warnings[0].code, "unknown_workflow");
-        assert!(warnings[0].message.contains("propose"), "le message doit lister ce qui existe");
+        assert!(
+            warnings[0].message.contains("propose"),
+            "the message must list what exists"
+        );
     }
 
     #[test]
-    fn deduplique_une_demande_repetee() {
-        let demande = vec!["propose".to_string(), "propose".to_string()];
-        let (workflows, _) = select(Some(&demande));
+    fn deduplicates_a_repeated_request() {
+        let requested = vec!["propose".to_string(), "propose".to_string()];
+        let (workflows, _) = select(Some(&requested));
         assert_eq!(workflows.len(), 1);
     }
 
-    // ─────────────── MCP Atlassian sur propose (première intégration) ───────────────
+    // ─────────────── Atlassian MCP on propose (first integration) ───────────────
 
     #[test]
-    fn propose_utilise_un_placeholder_pour_le_mcp_jira() {
-        // Le CATALOG ne cite plus aucun nom MCP en dur : c'est le
-        // rendering qui substitue `{{JIRA_MCP_TOOL}}` d'après la config
-        // projet. Verrouille la présence du placeholder dans les deux
-        // endroits attendus : `allowed_tools` et body.
-        let propose = find("propose").expect("propose doit être dans le CATALOG");
+    fn propose_uses_a_placeholder_for_the_jira_mcp() {
+        // The CATALOG no longer hardcodes any MCP name: rendering
+        // substitutes `{{JIRA_MCP_TOOL}}` from the project config. Locks in
+        // the placeholder's presence in both expected places:
+        // `allowed_tools` and body.
+        let propose = find("propose").expect("propose must be in the CATALOG");
         assert!(
             propose.allowed_tools.contains("{{JIRA_MCP_TOOL}}"),
-            "allowed_tools doit contenir le placeholder pour la substitution"
+            "allowed_tools must contain the placeholder for substitution"
         );
         assert!(
             propose.body.contains("{{JIRA_MCP_TOOL}}"),
-            "le body doit citer le placeholder pour que la substitution \
-             injecte le nom du tool dans les instructions à l'agent"
+            "the body must cite the placeholder so that substitution \
+             injects the tool name into the agent's instructions"
         );
     }
 
     #[test]
-    fn propose_ne_cite_pas_de_nom_de_mcp_en_dur() {
-        // Garde-fou contre la régression du hardcodage. Aucune chaîne
-        // `mcp__...` ne doit apparaître dans le CATALOG — tout passe par
-        // le placeholder.
+    fn propose_does_not_hardcode_an_mcp_name() {
+        // Guardrail against a hardcoding regression. No `mcp__...` string
+        // may appear in the CATALOG — everything goes through the
+        // placeholder.
         let propose = find("propose").unwrap();
         assert!(
             !propose.allowed_tools.contains("mcp__"),
-            "aucun nom MCP ne doit être hardcodé dans allowed_tools"
+            "no MCP name may be hardcoded in allowed_tools"
         );
         assert!(
             !propose.body.contains("mcp__"),
-            "aucun nom MCP ne doit être hardcodé dans le body"
+            "no MCP name may be hardcoded in the body"
         );
     }
 
     #[test]
-    fn propose_cite_la_detection_de_ticket_dans_son_body() {
-        // Traceur d'une refonte accidentelle du body : les mots-clés du
-        // pattern et du placeholder doivent rester présents pour que la
-        // logique décrite reste visible à l'agent qui lit la skill.
+    fn propose_body_describes_ticket_detection() {
+        // Tracer for an accidental rework of the body: the pattern and
+        // placeholder keywords must stay present so that the logic described
+        // stays visible to the agent reading the skill.
         let propose = find("propose").unwrap();
-        for mot_cle in ["[A-Z]{2,}-\\d+", "{{JIRA_MCP_TOOL}}"] {
+        for keyword in ["[A-Z]{2,}-\\d+", "{{JIRA_MCP_TOOL}}"] {
             assert!(
-                propose.body.contains(mot_cle),
-                "le body de `propose` doit citer « {mot_cle} »"
+                propose.body.contains(keyword),
+                "the `propose` body must cite `{keyword}`"
             );
         }
     }

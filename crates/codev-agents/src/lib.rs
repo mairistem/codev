@@ -1,12 +1,12 @@
-//! La génération des skills : le seul crate qui sait quelque chose d'un outil
-//! d'agent.
+//! Skill generation: the only crate that knows anything about an agent
+//! tool.
 //!
-//! C'est la raison d'être du projet. Le reste de codev gère des fichiers
-//! markdown ; ici on rend le workflow atteignable depuis le chat de Claude
-//! Code, en écrivant les skills qu'il découvre au démarrage.
+//! It is the project's reason for being. The rest of codev manages markdown
+//! files; here the workflow is made reachable from the Claude Code chat, by
+//! writing the skills it discovers at startup.
 //!
-//! Une seule cible existe, et c'est assumé — mais elle passe par
-//! [`AgentTarget`], pour qu'en ajouter une reste un fichier de plus.
+//! A single target exists, deliberately — but it goes through
+//! [`AgentTarget`], so that adding another one remains just one more file.
 
 pub mod claude;
 pub mod target;
@@ -14,4 +14,4 @@ pub mod workflows;
 
 pub use claude::ClaudeCode;
 pub use target::{AgentTarget, SkillsPlan};
-pub use workflows::{Workflow, CATALOG, DEFAULT_WORKFLOWS};
+pub use workflows::{CATALOG, DEFAULT_WORKFLOWS, Workflow};

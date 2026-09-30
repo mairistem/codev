@@ -1,6 +1,6 @@
 [package]
 name = "codev-cli"
-description = "Le binaire codev : développement piloté par les specs pour Claude Code"
+description = "The codev binary: spec-driven development for Claude Code"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
