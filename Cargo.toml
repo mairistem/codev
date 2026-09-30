@@ -7,27 +7,30 @@ version = "0.3.2"
 edition = "2024"
 rust-version = "1.89"
 license = "MIT"
+repository = "https://github.com/mairistem/codev"
+homepage = "https://github.com/mairistem/codev"
+keywords = ["spec-driven", "claude-code", "specifications", "adr", "cli"]
+categories = ["command-line-utilities", "development-tools"]
 
 [workspace.dependencies]
-# Crates internes. Le graphe de dépendances est strictement acyclique et Cargo
-# le vérifie à la compilation : c'est notre application de la règle de
-# dépendance (cf. _codev/decisions/0002).
+# Internal crates. The dependency graph is strictly acyclic and Cargo checks it
+# at compile time: this is how the dependency rule is enforced
+# (see _codev/decisions/0002).
 codev-core = { path = "crates/codev-core" }
 codev-engine = { path = "crates/codev-engine" }
 codev-agents = { path = "crates/codev-agents" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
-# dialoguer sert les prompts interactifs de `codev init`. `default-features
-# = false` retire le thème couleurs (indexmap + console lourds) — on garde
-# `editor` pour ouvrir $EDITOR sur le prompt contexte, et `fuzzy-select`
-# pour la sélection au clavier.
+# dialoguer powers the interactive prompts of `codev init`. Default features
+# are off to keep the dependency tree small; `editor` opens $EDITOR for the
+# context prompt, and `fuzzy-select` provides keyboard selection.
 dialoguer = { version = "0.11", default-features = false, features = ["editor", "fuzzy-select"] }
 globset = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# serde_yaml est déprécié en amont ; serde_norway est le fork maintenu.
-# cf. _codev/decisions/0006
+# serde_yaml is deprecated upstream; serde_norway is the maintained fork.
+# See _codev/decisions/0006.
 serde_norway = "0.9"
 sha2 = "0.10"
 thiserror = "2"

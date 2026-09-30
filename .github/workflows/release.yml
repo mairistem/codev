@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write # nécessaire pour publier une GitHub Release
+  contents: write # required to publish a GitHub Release
 
 jobs:
   build:
@@ -19,19 +19,17 @@ jobs:
           - runner: macos-14
             target: aarch64-apple-darwin
             ext: tar.gz
-          # Cross-compilation Apple Silicon → Intel : rustc le supporte
-          # nativement, et les runners macos-13 (Intel natifs) ne sont
-          # plus fiables (Apple ne fabrique plus de Macs Intel depuis
-          # 2023, GitHub raréfie ces runners gratuits).
+          # Cross-compiled from Apple Silicon to Intel: rustc supports it
+          # natively, and Intel macOS runners are becoming scarce.
           - runner: macos-14
             target: x86_64-apple-darwin
             ext: tar.gz
           - runner: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             ext: tar.gz
-          # Windows : archive `.zip` (convention Windows,
-          # `Expand-Archive` natif dès PowerShell 5.1) et binaire
-          # `codev.exe`. Toolchain MSVC — préinstallée sur le runner.
+          # Windows: a `.zip` archive (the platform convention; native
+          # `Expand-Archive` since PowerShell 5.1) holding `codev.exe`.
+          # MSVC toolchain, preinstalled on the runner.
           - runner: windows-latest
             target: x86_64-pc-windows-msvc
             ext: zip
