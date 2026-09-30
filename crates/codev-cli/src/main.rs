@@ -62,6 +62,24 @@ impl PresetArg {
     }
 }
 
+/// Documentation language for `codev docs --lang`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+enum DocsLang {
+    /// English
+    En,
+    /// French
+    Fr,
+}
+
+impl DocsLang {
+    fn to_lang(self) -> docs::Lang {
+        match self {
+            DocsLang::En => docs::Lang::En,
+            DocsLang::Fr => docs::Lang::Fr,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum Command {
     /// Initialize codev in a project and install the Claude Code skills
@@ -184,6 +202,9 @@ enum Command {
         /// Write the HTML to the given path (does not open anything)
         #[arg(long, value_name = "PATH")]
         write: Option<std::path::PathBuf>,
+        /// Language of the documentation
+        #[arg(long, value_enum, default_value_t = DocsLang::En)]
+        lang: DocsLang,
     },
 
     /// Generate a shell completion script for local installation
@@ -359,17 +380,23 @@ fn run(cli: Cli) -> i32 {
     };
 
     match cli.command {
-        Command::Docs { print, write } => {
+        Command::Docs { print, write, lang } => {
+            let lang = lang.to_lang();
             if print {
                 use std::io::Write as _;
-                if let Err(e) = std::io::stdout().write_all(docs::MARKDOWN_SOURCE.as_bytes()) {
-                    eprintln!("error: {e}");
-                    return 1;
-                }
-                return 0;
+                return match std::io::stdout().write_all(docs::markdown(lang).as_bytes()) {
+                    Ok(()) => 0,
+                    // `codev docs --print | head`: the reader left, which is
+                    // not an error worth reporting.
+                    Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => 0,
+                    Err(e) => {
+                        eprintln!("error: {e}");
+                        1
+                    }
+                };
             }
             if let Some(path) = write {
-                match docs::write_to(&path, VERSION) {
+                match docs::write_to(&path, lang, VERSION) {
                     Ok(()) => {
                         eprintln!("Wrote {}", path.display());
                         0
@@ -380,7 +407,7 @@ fn run(cli: Cli) -> i32 {
                     }
                 }
             } else {
-                match docs::open_default(VERSION) {
+                match docs::open_default(lang, VERSION) {
                     Ok(path) => {
                         eprintln!("Opened {}", path.display());
                         0
