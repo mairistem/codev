@@ -1059,6 +1059,17 @@ fn fail(json: bool, shape: serde_json::Value, err: &Failure) -> i32 {
     1
 }
 
+/// Validates `--language` up front, with the same rule `config.yaml` applies.
+fn parse_language(raw: &str) -> Result<String, String> {
+    if codev_core::detect::locale::is_valid_language_code(raw) {
+        Ok(raw.to_string())
+    } else {
+        Err(format!(
+            "`{raw}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
+        ))
+    }
+}
+
 #[cfg(test)]
 mod completions_tests {
     use clap::CommandFactory;
@@ -1093,16 +1104,5 @@ mod completions_tests {
                 "output for {shell:?} does not name the binary"
             );
         }
-    }
-}
-
-/// Validates `--language` up front, with the same rule `config.yaml` applies.
-fn parse_language(raw: &str) -> Result<String, String> {
-    if codev_core::detect::locale::is_valid_language_code(raw) {
-        Ok(raw.to_string())
-    } else {
-        Err(format!(
-            "`{raw}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
-        ))
     }
 }
