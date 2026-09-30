@@ -11,7 +11,7 @@
 use std::path::{Path, PathBuf};
 
 use codev_core::detect::{
-    Detected, license, mcp,
+    Detected, license, locale, mcp,
     stack::{self, Stack},
 };
 
@@ -58,7 +58,8 @@ enum StackKind {
 /// Probes the current directory and returns a `Detected` report.
 ///
 /// - `project_root` — the root of the inspected project.
-/// - `env` — to resolve `~/.claude.json` via `HOME` / `USERPROFILE`.
+/// - `env` — to resolve `~/.claude.json` via `HOME` / `USERPROFILE`, and
+///   to read the locale variables that suggest the artifact language.
 pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected {
     let home = env.home_dir();
 
@@ -67,6 +68,7 @@ pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected 
     let has_ci = detect_ci(fs, project_root);
     let is_git_repo = fs.exists(&project_root.join(".git"));
     let mcps = detect_mcps(fs, project_root, home.as_deref());
+    let locale = locale::detect(|var| env.var(var));
 
     Detected {
         stack,
@@ -75,6 +77,7 @@ pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected 
         has_ci,
         is_git_repo,
         mcps,
+        locale,
     }
 }
 

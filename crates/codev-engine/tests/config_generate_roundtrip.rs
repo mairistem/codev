@@ -8,7 +8,7 @@
 //! `codev status` on the fresh project.
 
 use codev_core::config::{UserChoices, from_detected, render};
-use codev_core::detect::{Detected, mcp::DetectedMcp, stack::Stack};
+use codev_core::detect::{Detected, locale::DetectedLocale, mcp::DetectedMcp, stack::Stack};
 use codev_engine::config::ProjectConfig;
 
 fn detected_full() -> Detected {
@@ -29,6 +29,11 @@ fn detected_full() -> Detected {
             url: Some("https://mcp.atlassian.com/".into()),
             source: ".mcp.json".into(),
         }],
+        locale: Some(DetectedLocale {
+            var: "LANG".into(),
+            value: "fr_FR.UTF-8".into(),
+            language: "fr".into(),
+        }),
     }
 }
 
@@ -46,6 +51,7 @@ fn generated_full_yaml_is_readable_by_project_config() {
         ],
         context_addition: Some("Test roundtrip.".into()),
         jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+        language: None,
     };
     let g = from_detected(&detected_full(), &choices);
     let yaml = render(&g);
@@ -56,6 +62,8 @@ fn generated_full_yaml_is_readable_by_project_config() {
     let workflows = parsed.workflows.expect("workflows present");
     assert_eq!(workflows.len(), 7);
     assert!(workflows.contains(&"apply".to_string()));
+
+    assert_eq!(parsed.language.as_deref(), Some("fr"));
 
     assert_eq!(
         parsed.mcp.jira_tool.as_deref(),
@@ -73,6 +81,7 @@ fn generated_minimal_yaml_is_readable() {
         workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
         context_addition: None,
         jira_tool_confirmed: None,
+        language: None,
     };
     let g = from_detected(&Detected::empty(), &choices);
     let yaml = render(&g);
@@ -80,6 +89,7 @@ fn generated_minimal_yaml_is_readable() {
     let parsed: ProjectConfig = serde_norway::from_str(&yaml).unwrap();
     assert_eq!(parsed.workflows.unwrap().len(), 3);
     assert!(parsed.context.is_none());
+    assert_eq!(parsed.language.as_deref(), Some("en"));
     // No `mcp:` block generated → jira_tool missing (default McpConfig).
     assert!(parsed.mcp.jira_tool.is_none());
 }

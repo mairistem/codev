@@ -11,10 +11,13 @@ pub struct UserChoices {
     pub context_addition: Option<String>,
     /// The selected Jira MCP tool ID, if any.
     pub jira_tool_confirmed: Option<String>,
+    /// Language chosen explicitly (`codev init --language`). `None` → the
+    /// locale decides, then the `en` default.
+    pub language: Option<String>,
 }
 
 impl UserChoices {
-    /// A "full default" set of choices — 7 workflows, no
+    /// A "full default" set of choices — all 8 workflows, no
     /// customization.
     pub fn defaults_full() -> Self {
         Self {
@@ -26,9 +29,11 @@ impl UserChoices {
                 "sync".into(),
                 "archive".into(),
                 "update".into(),
+                "configure".into(),
             ],
             context_addition: None,
             jira_tool_confirmed: None,
+            language: None,
         }
     }
 
@@ -38,6 +43,7 @@ impl UserChoices {
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
             context_addition: None,
             jira_tool_confirmed: None,
+            language: None,
         }
     }
 }

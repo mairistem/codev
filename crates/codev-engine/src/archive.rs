@@ -34,7 +34,7 @@ pub struct ArchiveOutcome {
     pub created: Vec<PathBuf>,
     pub updated: Vec<PathBuf>,
     pub unchanged: Vec<PathBuf>,
-    /// Main specs deleted by the change (F5). Empty in the common case.
+    /// Main specs deleted by the change (retired capabilities). Empty in the common case.
     pub deleted: Vec<PathBuf>,
     pub moved_to: PathBuf,
 }

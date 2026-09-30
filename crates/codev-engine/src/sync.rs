@@ -30,7 +30,7 @@ pub struct SyncPlan {
     pub updates: Vec<PathBuf>,
     /// Paths of the main specs already up to date — the sync would have no effect.
     pub unchanged: Vec<PathBuf>,
-    /// Paths of the main specs to delete (F5) — the capability is retired
+    /// Paths of the main specs to delete — the capability is retired
     /// by a `## REMOVED Requirements` that would empty the spec, combined
     /// with `retire_capabilities: true` in `change.yaml`.
     pub deleted: Vec<PathBuf>,
@@ -44,7 +44,7 @@ pub struct SyncOutcome {
     pub updated: Vec<PathBuf>,
     pub created: Vec<PathBuf>,
     pub unchanged: Vec<PathBuf>,
-    /// Deleted main specs (F5). Empty in the common case.
+    /// Deleted main specs (retired capabilities). Empty in the common case.
     pub deleted: Vec<PathBuf>,
 }
 
@@ -379,7 +379,7 @@ mod tests {
         );
     }
 
-    // ─────────────── F5 : retire_capabilities ───────────────
+    // ─────────────── retire_capabilities ───────────────
 
     fn project_with_retire_capabilities(flag: bool) -> MemoryFileSystem {
         let yaml = if flag {

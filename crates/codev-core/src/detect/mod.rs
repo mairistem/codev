@@ -6,6 +6,7 @@
 //! in `codev-engine::detect`.
 
 pub mod license;
+pub mod locale;
 pub mod mcp;
 pub mod stack;
 
@@ -23,6 +24,8 @@ pub struct Detected {
     pub has_ci: bool,
     pub is_git_repo: bool,
     pub mcps: Vec<mcp::DetectedMcp>,
+    /// The user's language, inferred from the locale variables.
+    pub locale: Option<locale::DetectedLocale>,
 }
 
 impl Detected {

@@ -50,6 +50,8 @@ impl<T> GeneratedValue<T> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GeneratedConfig {
     pub schema: String,
+    /// Language of the prose skills write in artifacts (ISO 639 code).
+    pub language: GeneratedValue<String>,
     /// Selected workflows, in the order they should appear in the YAML.
     pub workflows: Vec<String>,
     /// Jira MCP tool ID, if detected and confirmed.
@@ -62,12 +64,16 @@ impl Default for GeneratedConfig {
     fn default() -> Self {
         Self {
             schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
             workflows: Vec::new(),
             mcp_jira: None,
             context: None,
         }
     }
 }
+
+/// The artifact language when neither `--language` nor the locale gives one.
+pub const DEFAULT_LANGUAGE: &str = "en";
 
 /// A `_codev/config.yaml` is **thin** when it does not yet carry any
 /// guidance useful for steering the skills. The only criterion used
@@ -131,8 +137,23 @@ pub fn from_detected(detected: &Detected, choices: &UserChoices) -> GeneratedCon
         GeneratedValue::with_source(tool_id.clone(), source)
     });
 
+    let language = match (&choices.language, &detected.locale) {
+        (Some(code), _) => {
+            GeneratedValue::with_source(code.clone(), "set with `codev init --language`")
+        }
+        (None, Some(locale)) => GeneratedValue::with_source(
+            locale.language.clone(),
+            format!("detected from {}={}", locale.var, locale.value),
+        ),
+        (None, None) => GeneratedValue::with_source(
+            DEFAULT_LANGUAGE.to_string(),
+            "default — no locale detected",
+        ),
+    };
+
     GeneratedConfig {
         schema: "spec-driven".to_string(),
+        language,
         workflows: choices.workflows.clone(),
         mcp_jira,
         context,
@@ -183,7 +204,7 @@ fn provenance_for_stack(d: &Detected) -> String {
 
 /// Renders a `GeneratedConfig` as YAML, with provenance comments.
 ///
-/// Key order is fixed: `schema`, `workflows`, `mcp`, `context`.
+/// Key order is fixed: `schema`, `language`, `workflows`, `mcp`, `context`.
 /// Each non-trivial key carries, on the line above it, a
 /// `# <provenance>` comment if the entry has one.
 ///
@@ -196,6 +217,15 @@ pub fn render(config: &GeneratedConfig) -> String {
 
     // schema
     out.push_str(&format!("schema: {}\n", config.schema));
+
+    // language
+    out.push_str("\n# Language of the prose skills write in artifacts (proposal, design,\n");
+    out.push_str("# tasks, specs). Structural keywords such as `## Why` or\n");
+    out.push_str("# `### Requirement:` always stay in English.\n");
+    if let Some(source) = &config.language.provenance {
+        out.push_str(&format!("# {source}\n"));
+    }
+    out.push_str(&format!("language: {}\n", config.language.value));
 
     // workflows
     if !config.workflows.is_empty() {
@@ -239,7 +269,7 @@ pub fn render(config: &GeneratedConfig) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::detect::{mcp::DetectedMcp, stack::Stack};
+    use crate::detect::{locale::DetectedLocale, mcp::DetectedMcp, stack::Stack};
 
     fn workspace_rust_detected() -> Detected {
         Detected {
@@ -259,6 +289,11 @@ mod tests {
                 url: Some("https://mcp.atlassian.com/".into()),
                 source: ".mcp.json".into(),
             }],
+            locale: Some(DetectedLocale {
+                var: "LANG".into(),
+                value: "fr_FR.UTF-8".into(),
+                language: "fr".into(),
+            }),
         }
     }
 
@@ -269,6 +304,7 @@ mod tests {
             workflows: vec!["propose".into(), "apply".into()],
             context_addition: Some("In-house conventions: typed errors.".into()),
             jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         assert_eq!(g.schema, "spec-driven");
@@ -299,11 +335,48 @@ mod tests {
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
             context_addition: None,
             jira_tool_confirmed: None,
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         assert_eq!(g.workflows.len(), 3);
         assert!(g.mcp_jira.is_none());
         assert!(g.context.is_none());
+        assert_eq!(g.language.value, "en");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("default — no locale detected")
+        );
+    }
+
+    #[test]
+    fn language_comes_from_the_locale_when_not_chosen() {
+        let g = from_detected(&workspace_rust_detected(), &UserChoices::defaults_full());
+        assert_eq!(g.language.value, "fr");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("detected from LANG=fr_FR.UTF-8")
+        );
+    }
+
+    #[test]
+    fn explicit_language_wins_over_the_locale() {
+        let choices = UserChoices {
+            language: Some("de".into()),
+            ..UserChoices::defaults_full()
+        };
+        let g = from_detected(&workspace_rust_detected(), &choices);
+        assert_eq!(g.language.value, "de");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("set with `codev init --language`")
+        );
+    }
+
+    #[test]
+    fn full_defaults_install_every_workflow() {
+        let full = UserChoices::defaults_full();
+        assert_eq!(full.workflows.len(), 8);
+        assert!(full.workflows.iter().any(|w| w == "configure"));
     }
 
     #[test]
@@ -313,6 +386,7 @@ mod tests {
             workflows: vec!["propose".into()],
             context_addition: None,
             jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         // The auto context comes on its own, without the user's addition.
@@ -324,6 +398,12 @@ mod tests {
 # Hand-editable: each non-trivial field carries its source as a comment.
 
 schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+# detected from LANG=fr_FR.UTF-8
+language: fr
 
 workflows:
   - propose
@@ -360,6 +440,7 @@ context: |
             ],
             context_addition: Some("In-house conventions: typed errors.".into()),
             jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         let rendered = render(&g);
@@ -370,6 +451,12 @@ context: |
 # Hand-editable: each non-trivial field carries its source as a comment.
 
 schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+# default
+language: en
 
 workflows:
   - propose
@@ -391,6 +478,7 @@ workflows:
     fn render_minimal_matches_golden() {
         let g = GeneratedConfig {
             schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
             mcp_jira: None,
             context: None,

@@ -59,6 +59,9 @@ pub struct Instructions {
     pub resolved_output_path: PathBuf,
     pub instruction: Option<String>,
     pub template: Option<String>,
+    /// Language of the prose to write (from `language:` in the config).
+    /// Structural keywords of the template stay in English whatever it is.
+    pub language: String,
     /// Constraints for the agent, never content to copy into the file.
     pub context: Vec<Block>,
     pub rules: Vec<Block>,
@@ -182,6 +185,7 @@ pub fn for_artifact(
         resolved_output_path: change_dir.join(&artifact.generates),
         instruction: artifact.instruction.clone(),
         template: ctx.schema.template(fs, artifact)?,
+        language: config.language.clone(),
         context: config.context.clone(),
         rules: config.rules_for(&artifact.id).to_vec(),
         dependencies,

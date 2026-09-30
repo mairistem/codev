@@ -5,7 +5,7 @@
 //! (disk walk, grouping, reporting) lives in `codev-engine::validate`.
 //!
 //! A rule is an implementation of [`Rule`] registered in [`RULES`].
-//! Adding an E4 rule (batch 2 warnings) will be one more struct in the
+//! Adding a rule (for instance a new warning) is one more struct in the
 //! registry, without touching the callers.
 
 use crate::parser::ast::{Delta, Finding, Spec};

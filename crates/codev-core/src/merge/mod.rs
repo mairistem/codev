@@ -162,7 +162,7 @@ pub fn merge_into_existing(
                     // heading line, leaving the body and scenarios intact.
                     let Some(&idx) = by_name.get(rename.from.as_str()) else {
                         // Renaming a missing requirement is a silent no-op —
-                        // the validator (E6, batch 2) reports it separately.
+                        // the validator reports it separately.
                         continue;
                     };
                     let target = &spec.requirements[idx];
@@ -182,7 +182,7 @@ pub fn merge_into_existing(
                 // Re-applying the same sync must change nothing; otherwise a
                 // user who reruns it when in doubt writes a duplicate.
                 // An intended-but-conflicting ADDED is what the validator
-                // (E4/E6, batch 2) reports upstream, with a dedicated
+                // reports upstream, with a dedicated
                 // finding — not here.
                 let to_add: Vec<_> = requirements
                     .iter()

@@ -2,6 +2,8 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use codev_core::Layout;
+use codev_core::config::DEFAULT_LANGUAGE;
+use codev_core::detect::locale::is_valid_language_code;
 use serde::Deserialize;
 
 use crate::error::{EngineError, Result, Warning};
@@ -15,6 +17,10 @@ pub const DEFAULT_SCHEMA: &str = "spec-driven";
 pub struct ProjectConfig {
     #[serde(default)]
     pub schema: Option<String>,
+    /// Language of the prose skills write in artifacts, as an ISO 639 code
+    /// (`en`, `fr`, `pt-BR`…). Absent means English.
+    #[serde(default)]
+    pub language: Option<String>,
     /// The workflows to install. `None` lets `codev-agents` pick its default
     /// catalog: it is the one that knows what exists.
     #[serde(default)]
@@ -84,6 +90,9 @@ pub struct Block {
 #[derive(Debug, Clone)]
 pub struct ResolvedConfig {
     pub schema: String,
+    /// Artifact prose language — project only, like `mcp`: it belongs to
+    /// the team writing in this repository, not to an inherited source.
+    pub language: String,
     pub workflows: Option<Vec<String>>,
     /// From most general to most specific. On a contradiction, the last block
     /// wins — and the agent is instructed to flag the contradiction.
@@ -121,6 +130,16 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
         path: path.to_path_buf(),
         reason: e.to_string(),
     })?;
+    if let Some(code) = &config.language
+        && !is_valid_language_code(code)
+    {
+        return Err(EngineError::Invalid {
+            path: path.to_path_buf(),
+            reason: format!(
+                "`language: {code}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
+            ),
+        });
+    }
     Ok(Some(config))
 }
 
@@ -226,6 +245,10 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
             .schema
             .clone()
             .unwrap_or_else(|| DEFAULT_SCHEMA.to_string()),
+        language: project
+            .language
+            .clone()
+            .unwrap_or_else(|| DEFAULT_LANGUAGE.to_string()),
         workflows: project.workflows.clone(),
         context,
         rules,
@@ -595,5 +618,30 @@ mod tests {
         );
         let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
         assert_eq!(resolved.mcp.jira_tool.as_deref(), Some("mcp__bar__get"));
+    }
+
+    #[test]
+    fn language_defaults_to_english() {
+        let fs =
+            MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "schema: spec-driven\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.language, "en");
+    }
+
+    #[test]
+    fn language_is_read_from_the_project() {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "language: fr\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.language, "fr");
+    }
+
+    #[test]
+    fn an_invalid_language_is_rejected_with_a_hint() {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "language: French\n");
+        let err = resolve(&fs, &env_with_home(), &Layout::new("/p"))
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("`language: French`"), "{err}");
+        assert!(err.contains("ISO 639"), "{err}");
     }
 }
