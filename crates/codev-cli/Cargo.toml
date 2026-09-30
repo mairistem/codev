@@ -23,7 +23,7 @@ codev-core = { workspace = true }
 codev-engine = { workspace = true }
 dialoguer = { workspace = true }
 open = "5"
-pulldown-cmark = "0.10"
+pulldown-cmark = "0.13"
 serde = { workspace = true }
 serde_json = { workspace = true }
 
