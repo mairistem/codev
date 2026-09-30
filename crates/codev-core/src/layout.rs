@@ -2,13 +2,13 @@ use std::path::{Path, PathBuf};
 
 use crate::id::ChangeId;
 
-/// Nom du dossier de planification.
+/// Name of the planning directory.
 ///
-/// Constante unique du projet : en changer coûte une recompilation, pas un
-/// refactor. Le préfixe `_` le garde **visible** — les outils de recherche
-/// (`ripgrep`, `fd`, et donc ceux de Claude Code) ignorent les dossiers cachés
-/// par défaut, et une source de vérité que l'agent ne trouve pas ne sert à
-/// rien. Voir `_codev/decisions/0003-racine-de-planification-_codev.md`.
+/// A single project-wide constant: changing it costs a recompile, not a
+/// refactor. The `_` prefix keeps it **visible** — search tools
+/// (`ripgrep`, `fd`, and therefore Claude Code's) ignore hidden directories
+/// by default, and a source of truth the agent cannot find is
+/// useless. See `_codev/decisions/0003-racine-de-planification-_codev.md`.
 pub const PLANNING_DIR: &str = "_codev";
 
 pub const CONFIG_FILE: &str = "config.yaml";
@@ -22,18 +22,18 @@ const CHANGES_DIR: &str = "changes";
 const ARCHIVE_DIR: &str = "archive";
 const SCHEMAS_DIR: &str = "schemas";
 
-/// Toutes les questions « où vit tel fichier ? », en un seul endroit.
+/// Every "where does this file live?" question, in one place.
 ///
-/// De l'algèbre de chemins, donc pur : aucune de ces méthodes ne touche au
-/// disque, et aucune ne vérifie l'existence de ce qu'elle nomme.
+/// Path algebra, hence pure: none of these methods touch the
+/// disk, and none checks that what it names exists.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Layout {
     project_root: PathBuf,
 }
 
 impl Layout {
-    /// `project_root` est le dossier **contenant** `_codev/`, pas `_codev/`
-    /// lui-même.
+    /// `project_root` is the directory **containing** `_codev/`, not `_codev/`
+    /// itself.
     pub fn new(project_root: impl Into<PathBuf>) -> Self {
         Self {
             project_root: project_root.into(),
@@ -64,8 +64,8 @@ impl Layout {
         self.planning_dir().join(DECISIONS_DIR)
     }
 
-    /// Fichier de sceau qui atteste du corps des ADR locaux au moment de
-    /// leur acceptation — voir `codev-core::decisions::seal`.
+    /// Seal file attesting to the body of local ADRs at the time of
+    /// their acceptance — see `codev-core::decisions::seal`.
     pub fn decisions_seal_file(&self) -> PathBuf {
         self.decisions_dir().join(DECISIONS_SEAL_FILE)
     }
@@ -90,18 +90,18 @@ impl Layout {
         self.change_dir(change).join(CHANGE_METADATA_FILE)
     }
 
-    /// Le dossier d'un change archivé, préfixé par sa date pour un classement
-    /// chronologique.
+    /// The directory of an archived change, prefixed with its date for
+    /// chronological sorting.
     pub fn archived_change_dir(&self, change: &ChangeId, date: &str) -> PathBuf {
         self.archive_dir().join(format!("{date}-{change}"))
     }
 
-    /// Le dossier d'un schéma propre au projet.
+    /// The directory of a project-specific schema.
     pub fn project_schema_dir(&self, name: &str) -> PathBuf {
         self.schemas_dir().join(name)
     }
 
-    /// La spec principale d'une capacité, `<chemin>` étant relatif à `specs/`.
+    /// The main spec of a capability, `capability_path` being relative to `specs/`.
     pub fn spec_file(&self, capability_path: &str) -> PathBuf {
         self.specs_dir().join(capability_path).join("spec.md")
     }
@@ -112,30 +112,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn compose_les_chemins_depuis_la_racine_du_projet() {
-        let layout = Layout::new("/tmp/projet");
+    fn builds_paths_from_the_project_root() {
+        let layout = Layout::new("/tmp/project");
         let change = ChangeId::parse("add-auth").unwrap();
 
-        assert_eq!(layout.planning_dir(), Path::new("/tmp/projet/_codev"));
+        assert_eq!(layout.planning_dir(), Path::new("/tmp/project/_codev"));
         assert_eq!(
             layout.config_file(),
-            Path::new("/tmp/projet/_codev/config.yaml")
+            Path::new("/tmp/project/_codev/config.yaml")
         );
         assert_eq!(
             layout.change_dir(&change),
-            Path::new("/tmp/projet/_codev/changes/add-auth")
+            Path::new("/tmp/project/_codev/changes/add-auth")
         );
         assert_eq!(
             layout.change_metadata(&change),
-            Path::new("/tmp/projet/_codev/changes/add-auth/change.yaml")
+            Path::new("/tmp/project/_codev/changes/add-auth/change.yaml")
         );
         assert_eq!(
             layout.archived_change_dir(&change, "2026-09-08"),
-            Path::new("/tmp/projet/_codev/changes/archive/2026-09-08-add-auth")
+            Path::new("/tmp/project/_codev/changes/archive/2026-09-08-add-auth")
         );
         assert_eq!(
             layout.spec_file("identity/user-auth"),
-            Path::new("/tmp/projet/_codev/specs/identity/user-auth/spec.md")
+            Path::new("/tmp/project/_codev/specs/identity/user-auth/spec.md")
         );
     }
 }

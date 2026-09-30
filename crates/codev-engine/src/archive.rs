@@ -1,10 +1,10 @@
-//! `archive` : sync préflighté par le validateur + déplacement chronologique
-//! du dossier de change.
+//! `archive`: a sync preflighted by the validator + a chronological move of
+//! the change directory.
 //!
-//! `archive` délègue la totalité de la logique de règles au validateur
-//! (`codev-engine::validate::validate_change`). Aucun code d'erreur n'est
-//! dupliqué ici ; en cas de finding d'erreur, un renvoi vers `codev validate`
-//! suffit.
+//! `archive` delegates all rule logic to the validator
+//! (`codev-engine::validate::validate_change`). No error code is
+//! duplicated here; on an error finding, pointing to `codev validate`
+//! is enough.
 
 use std::path::PathBuf;
 
@@ -17,16 +17,16 @@ use crate::ports::{Clock, FileSystem};
 use crate::sync::{self, SyncPlan};
 use crate::validate;
 
-/// Plan complet d'un `archive` : le sync et le déplacement final.
+/// Full plan of an `archive`: the sync and the final move.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArchivePlan {
     pub sync: SyncPlan,
     pub archive_dir: PathBuf,
-    /// Le `Plan` composé — sync.plan + move final.
+    /// The combined `Plan` — sync.plan + final move.
     pub plan: Plan,
 }
 
-/// Ce que l'archive a effectivement fait.
+/// What the archive actually did.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct ArchiveOutcome {
     pub change: String,
@@ -34,13 +34,13 @@ pub struct ArchiveOutcome {
     pub created: Vec<PathBuf>,
     pub updated: Vec<PathBuf>,
     pub unchanged: Vec<PathBuf>,
-    /// Main specs supprimées par le change (F5). Vide dans le cas courant.
+    /// Main specs deleted by the change (F5). Empty in the common case.
     pub deleted: Vec<PathBuf>,
     pub moved_to: PathBuf,
 }
 
-/// Construit le plan sans écrire. Vérifie d'abord via `validate` — si le
-/// change a la moindre erreur, on refuse sans même préparer le plan.
+/// Builds the plan without writing. Checks with `validate` first — if the
+/// change has any error at all, it refuses without even preparing the plan.
 pub fn plan_archive(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -48,22 +48,22 @@ pub fn plan_archive(
     clock: &dyn Clock,
     change_id: &ChangeId,
 ) -> Result<ArchivePlan> {
-    // Pré-flight : le validateur donne la vérité. Un finding d'erreur → refus.
+    // Preflight: the validator is the source of truth. An error finding → refusal.
     let report = validate::validate_change(fs, layout, config, change_id)?;
     if report.has_errors() {
         return Err(EngineError::Invalid {
             path: layout.change_dir(change_id),
             reason: format!(
-                "validation_failed : le change « {change_id} » a des erreurs ; \
-                 lance `codev validate {change_id}` pour le détail"
+                "validation_failed: change `{change_id}` has errors; \
+                 run `codev validate {change_id}` for details"
             ),
         });
     }
 
     let sync_plan = sync::plan_sync(fs, layout, config, change_id)?;
 
-    // Cible du déplacement : `changes/archive/<date>-<name>/`. Le préfixe
-    // date sert au classement chronologique sur disque.
+    // Move target: `changes/archive/<date>-<name>/`. The date prefix
+    // gives a chronological ordering on disk.
     let archive_dir = layout.archived_change_dir(change_id, &clock.today());
 
     let mut combined = sync_plan.plan.clone();
@@ -79,7 +79,7 @@ pub fn plan_archive(
     })
 }
 
-/// Exécute le plan d'archive.
+/// Executes the archive plan.
 pub fn execute_archive(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -90,10 +90,10 @@ pub fn execute_archive(
     let archive_plan = plan_archive(fs, layout, config, clock, change_id)?;
     let applied = apply::execute(&archive_plan.plan, fs)?;
 
-    // Le sync a distingué les creates/updates au moment du plan ; on les
-    // reprend depuis les listes du sync_plan (plutôt que de deviner depuis
-    // `applied.created`, qui inclurait aussi les dirs planifiés qu'on ne
-    // veut pas compter comme des « fichiers créés »).
+    // The sync told creates and updates apart at planning time; we take them
+    // from the sync_plan lists (rather than guessing from `applied.created`,
+    // which would also include the planned dirs that we do not want to
+    // count as "created files").
     let mut outcome = ArchiveOutcome {
         change: change_id.to_string(),
         root: layout.project_root().to_path_buf(),
@@ -103,7 +103,7 @@ pub fn execute_archive(
         deleted: archive_plan.sync.deleted.clone(),
         moved_to: archive_plan.archive_dir.clone(),
     };
-    // Sanity : le move a bien eu lieu.
+    // Sanity check: the move did happen.
     let expected_source = layout.change_dir(change_id);
     if !applied
         .moved
@@ -112,7 +112,7 @@ pub fn execute_archive(
     {
         return Err(EngineError::Invalid {
             path: layout.change_dir(change_id),
-            reason: "le déplacement du change n'a pas eu lieu".into(),
+            reason: "the change was not moved".into(),
         });
     }
     outcome.unchanged.extend(applied.untouched);
@@ -137,7 +137,7 @@ mod tests {
         config::resolve(fs, &env(), &Layout::new("/p")).unwrap()
     }
 
-    fn projet_bien_forme() -> MemoryFileSystem {
+    fn well_formed_project() -> MemoryFileSystem {
         MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
@@ -146,13 +146,13 @@ mod tests {
             )
             .with_file(
                 "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
-                "## Purpose\n\nGère l'authentification.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
+                "## Purpose\n\nHandles authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
             )
     }
 
     #[test]
-    fn plan_inclut_sync_puis_move_date() {
-        let fs = projet_bien_forme();
+    fn plan_includes_sync_then_dated_move() {
+        let fs = well_formed_project();
         let layout = Layout::new("/p");
         let cfg = resolved(&fs);
         let clock = FixedClock("2026-09-08".into());
@@ -165,24 +165,21 @@ mod tests {
         )
         .unwrap();
 
-        // Le sync prépare la création de la main spec.
+        // The sync prepares the creation of the main spec.
         assert_eq!(plan.sync.creates.len(), 1);
-        // Le move est planifié vers `archive/<date>-<name>/`.
+        // The move is planned to `archive/<date>-<name>/`.
         assert_eq!(
             plan.archive_dir,
             PathBuf::from("/p/_codev/changes/archive/2026-09-08-add-auth")
         );
-        assert!(plan
-            .plan
-            .moves
-            .iter()
-            .any(|m| m.from == std::path::Path::new("/p/_codev/changes/add-auth")
-                && m.to == plan.archive_dir));
+        assert!(plan.plan.moves.iter().any(|m| m.from
+            == std::path::Path::new("/p/_codev/changes/add-auth")
+            && m.to == plan.archive_dir));
     }
 
     #[test]
-    fn archive_deplace_le_change_et_conserve_ses_fichiers() {
-        let fs = projet_bien_forme();
+    fn archive_moves_the_change_and_keeps_its_files() {
+        let fs = well_formed_project();
         let layout = Layout::new("/p");
         let cfg = resolved(&fs);
         let clock = FixedClock("2026-09-08".into());
@@ -199,27 +196,28 @@ mod tests {
             outcome.moved_to,
             PathBuf::from("/p/_codev/changes/archive/2026-09-08-add-auth")
         );
-        // Main spec créée à partir du delta.
-        assert!(fs
-            .read("/p/_codev/specs/user-auth/spec.md")
-            .is_some_and(|s| s.contains("### Requirement: Login")));
-        // Le dossier initial du change n'existe plus.
-        assert!(!fs.exists(std::path::Path::new(
-            "/p/_codev/changes/add-auth"
-        )));
-        // Ses fichiers sont sous l'archive.
-        assert!(fs
-            .read("/p/_codev/changes/archive/2026-09-08-add-auth/change.yaml")
-            .is_some());
-        assert!(fs
-            .read("/p/_codev/changes/archive/2026-09-08-add-auth/specs/user-auth/spec.md")
-            .is_some());
+        // Main spec created from the delta.
+        assert!(
+            fs.read("/p/_codev/specs/user-auth/spec.md")
+                .is_some_and(|s| s.contains("### Requirement: Login"))
+        );
+        // The change's original directory no longer exists.
+        assert!(!fs.exists(std::path::Path::new("/p/_codev/changes/add-auth")));
+        // Its files are under the archive.
+        assert!(
+            fs.read("/p/_codev/changes/archive/2026-09-08-add-auth/change.yaml")
+                .is_some()
+        );
+        assert!(
+            fs.read("/p/_codev/changes/archive/2026-09-08-add-auth/specs/user-auth/spec.md")
+                .is_some()
+        );
     }
 
     #[test]
-    fn preflight_valide_avant_de_planifier() {
-        // Un change avec un delta contenant un doublon (finding de validation)
-        // ne doit ni écrire, ni déplacer.
+    fn preflight_validates_before_planning() {
+        // A change whose delta contains a duplicate (validation finding)
+        // must neither write nor move.
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
@@ -243,11 +241,9 @@ mod tests {
         .unwrap_err();
         assert_eq!(err.code(), "invalid");
         assert!(err.to_string().contains("validation_failed"), "{err}");
-        // Nulle main spec créée.
+        // No main spec created.
         assert!(fs.read("/p/_codev/specs/x/spec.md").is_none());
-        // Change intact.
-        assert!(fs
-            .read("/p/_codev/changes/buggy/specs/x/spec.md")
-            .is_some());
+        // Change left intact.
+        assert!(fs.read("/p/_codev/changes/buggy/specs/x/spec.md").is_some());
     }
 }

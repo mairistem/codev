@@ -1,16 +1,16 @@
-//! Les six règles pures jouées par le validateur.
+//! The six pure rules run by the validator.
 //!
-//! Une règle par struct, sans état — c'est ce qui autorise le registre à en
-//! garder une référence `&'static`. Toute la logique se lit ici, pour qu'un
-//! contributeur puisse ajouter la septième par symétrie.
+//! One stateless struct per rule — which is what lets the registry hold
+//! a `&'static` reference to each. All the logic reads here, so that a
+//! contributor can add the seventh by symmetry.
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::codes;
 use super::Rule;
+use super::codes;
 use crate::parser::ast::{Delta, DeltaSection, Finding, Requirement, Spec};
 
-// ─────────────────────────── règles structurelles ────────────────────────────
+// ─────────────────────────── structural rules ────────────────────────────
 
 pub struct RequirementNoShall;
 
@@ -22,7 +22,7 @@ impl Rule for RequirementNoShall {
     fn check_spec(&self, spec: &Spec) -> Vec<Finding> {
         spec.requirements
             .iter()
-            .filter_map(|r| check_requirement_shall(r, "la spec principale"))
+            .filter_map(|r| check_requirement_shall(r, "main spec"))
             .collect()
     }
 
@@ -34,9 +34,9 @@ impl Rule for RequirementNoShall {
     }
 }
 
-/// Une exigence est normative si sa description contient `SHALL` ou `MUST`
-/// **en majuscules exactes** — c'est la convention documentée dans le
-/// schéma. Le nom de l'exigence est laissé libre : c'est une étiquette.
+/// A requirement is normative if its description contains `SHALL` or `MUST`
+/// **in exact uppercase** — this is the convention documented in the
+/// schema. The requirement name is left free-form: it is a label.
 fn check_requirement_shall(req: &Requirement, context: &str) -> Option<Finding> {
     if req.description.contains("SHALL") || req.description.contains("MUST") {
         return None;
@@ -45,8 +45,8 @@ fn check_requirement_shall(req: &Requirement, context: &str) -> Option<Finding> 
         codes::REQUIREMENT_NO_SHALL,
         req.span.start_line(),
         format!(
-            "ligne {} : {context} — exigence « {} » sans `SHALL` ni `MUST` ; \
-             emploie l'un des deux dans sa description",
+            "line {}: {context} — requirement \"{}\" has neither `SHALL` nor `MUST`; \
+             use one of them in its description",
             req.span.start_line(),
             req.name
         ),
@@ -83,7 +83,7 @@ fn check_requirement_scenario(req: &Requirement) -> Option<Finding> {
         codes::REQUIREMENT_NO_SCENARIO,
         req.span.start_line(),
         format!(
-            "ligne {} : exigence « {} » sans aucun scénario ; ajoute au moins un `#### Scenario:`",
+            "line {}: requirement \"{}\" has no scenario; add at least one `#### Scenario:`",
             req.span.start_line(),
             req.name
         ),
@@ -104,13 +104,13 @@ impl Rule for SpecNoRequirement {
         vec![Finding::error(
             codes::SPEC_NO_REQUIREMENT,
             1,
-            "la spec principale n'a aucune exigence extractible ; \
-             ajoute au moins un `### Requirement:` sous `## Requirements`",
+            "main spec has no extractable requirement; \
+             add at least one `### Requirement:` under `## Requirements`",
         )]
     }
 }
 
-// ─────────────────────────── règles de cohérence ────────────────────────────
+// ─────────────────────────── consistency rules ────────────────────────────
 
 pub struct CrossSectionConflict;
 
@@ -120,8 +120,8 @@ impl Rule for CrossSectionConflict {
     }
 
     fn check_delta(&self, delta: &Delta) -> Vec<Finding> {
-        // Indexer le nom → liste de (section, ligne). Deux entrées ou plus
-        // pour un même nom signifie collision.
+        // Index name → list of (section, line). Two or more entries
+        // for the same name means a collision.
         let mut index: BTreeMap<String, Vec<(&'static str, u32)>> = BTreeMap::new();
         for section in &delta.sections {
             let label = section_label(section);
@@ -138,20 +138,20 @@ impl Rule for CrossSectionConflict {
             if occurrences.len() < 2 {
                 continue;
             }
-            // La ligne rapportée est celle de la première section touchée —
-            // c'est là qu'un utilisateur commencera à corriger.
+            // The reported line is that of the first affected section —
+            // that is where a user will start fixing.
             let first_line = occurrences[0].1;
             let listing = occurrences
                 .iter()
-                .map(|(label, line)| format!("{label} (ligne {line})"))
+                .map(|(label, line)| format!("{label} (line {line})"))
                 .collect::<Vec<_>>()
                 .join(", ");
             findings.push(Finding::error(
                 codes::CROSS_SECTION_CONFLICT,
                 first_line,
                 format!(
-                    "exigence « {name} » présente dans plusieurs sections : {listing} ; \
-                     une même exigence ne peut figurer qu'une fois"
+                    "requirement \"{name}\" appears in several sections: {listing}; \
+                     a requirement may appear only once"
                 ),
             ));
         }
@@ -167,8 +167,8 @@ impl Rule for RenameTargetCollision {
     }
 
     fn check_delta(&self, delta: &Delta) -> Vec<Finding> {
-        // Un `RENAMED.TO` qui coïncide avec un `ADDED` produit une exigence
-        // ambiguë au moment de l'archive.
+        // A `RENAMED.TO` that coincides with an `ADDED` yields an ambiguous
+        // requirement at archive time.
         let added_names: BTreeSet<&str> = delta
             .sections
             .iter()
@@ -189,8 +189,8 @@ impl Rule for RenameTargetCollision {
                             codes::RENAME_TARGET_COLLISION,
                             rename.span.start_line().max(span.start_line()),
                             format!(
-                                "ligne {} : `TO: {}` collide avec un `ADDED` de même nom ; \
-                                 choisis un autre nom cible, ou retire l'ADDED redondant",
+                                "line {}: `TO: {}` collides with an `ADDED` of the same name; \
+                                 choose another target name, or remove the redundant ADDED",
                                 rename.span.start_line(),
                                 rename.to
                             ),
@@ -211,9 +211,9 @@ impl Rule for ModifiedUsesOldName {
     }
 
     fn check_delta(&self, delta: &Delta) -> Vec<Finding> {
-        // Un `MODIFIED` porte le NOUVEAU nom, jamais l'ancien : l'ancien
-        // n'existera plus après la fusion, donc la modification pointerait
-        // dans le vide.
+        // A `MODIFIED` carries the NEW name, never the old one: the old one
+        // will no longer exist after the merge, so the modification would point
+        // at nothing.
         let renames: BTreeMap<&str, &str> = delta
             .sections
             .iter()
@@ -238,8 +238,8 @@ impl Rule for ModifiedUsesOldName {
                             codes::MODIFIED_USES_OLD_NAME,
                             req.span.start_line(),
                             format!(
-                                "ligne {} : `MODIFIED` référence « {} » qui est renommée en « {} » ; \
-                                 utilise le nouveau nom",
+                                "line {}: `MODIFIED` references \"{}\", which is renamed to \"{}\"; \
+                                 use the new name",
                                 req.span.start_line(),
                                 req.name,
                                 new_name
@@ -253,7 +253,7 @@ impl Rule for ModifiedUsesOldName {
     }
 }
 
-// ─────────────────────────── outils partagés ────────────────────────────
+// ─────────────────────────── shared helpers ────────────────────────────
 
 fn section_label(section: &DeltaSection) -> &'static str {
     match section {
@@ -264,11 +264,11 @@ fn section_label(section: &DeltaSection) -> &'static str {
     }
 }
 
-/// Les noms d'exigences touchées par une section, quelle que soit sa forme.
+/// The names of the requirements touched by a section, whatever its shape.
 ///
-/// Pour `RENAMED`, la « touche » est le couple, donc on n'expose ni `from`
-/// ni `to` — la règle `CrossSectionConflict` ne raisonne que sur ce qui a
-/// une position d'exigence unique (ADDED/MODIFIED/REMOVED).
+/// For `RENAMED`, what is "touched" is the pair, so neither `from`
+/// nor `to` is exposed — the `CrossSectionConflict` rule only reasons about
+/// what has a single requirement position (ADDED/MODIFIED/REMOVED).
 fn requirement_names(section: &DeltaSection) -> Vec<String> {
     match section {
         DeltaSection::Added { requirements, .. } | DeltaSection::Modified { requirements, .. } => {
@@ -286,11 +286,11 @@ fn added_and_modified(delta: &Delta) -> Vec<(&'static str, &Requirement)> {
         .flat_map(|s| match s {
             DeltaSection::Added { requirements, .. } => requirements
                 .iter()
-                .map(|r| ("la section ADDED", r))
+                .map(|r| ("ADDED section", r))
                 .collect::<Vec<_>>(),
             DeltaSection::Modified { requirements, .. } => requirements
                 .iter()
-                .map(|r| ("la section MODIFIED", r))
+                .map(|r| ("MODIFIED section", r))
                 .collect::<Vec<_>>(),
             _ => Vec::new(),
         })
@@ -313,60 +313,76 @@ mod tests {
     }
 
     #[test]
-    fn requirement_sans_shall_est_signalee() {
-        // La description ne contient ni SHALL ni MUST : la règle mord.
+    fn requirement_without_shall_is_reported() {
+        // The description contains neither SHALL nor MUST: the rule fires.
         let source = "## ADDED Requirements\n\n### Requirement: X\nThe system does something.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let findings = run_delta(source);
         assert_eq!(findings.len(), 1);
         assert_eq!(findings[0].code, codes::REQUIREMENT_NO_SHALL);
-        assert!(findings[0].message.contains("« X »"), "{}", findings[0].message);
+        assert!(
+            findings[0].message.contains("\"X\""),
+            "{}",
+            findings[0].message
+        );
     }
 
     #[test]
-    fn shall_ou_must_satisfait_la_regle() {
+    fn shall_or_must_satisfies_the_rule() {
         let source_shall = "## ADDED Requirements\n\n### Requirement: X\nThe system SHALL do it.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let source_must = "## ADDED Requirements\n\n### Requirement: X\nThe system MUST do it.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         for s in [source_shall, source_must] {
             let findings = run_delta(s);
             assert!(
-                !findings.iter().any(|f| f.code == codes::REQUIREMENT_NO_SHALL),
-                "SHALL/MUST doit satisfaire la règle : {findings:?}"
+                !findings
+                    .iter()
+                    .any(|f| f.code == codes::REQUIREMENT_NO_SHALL),
+                "SHALL/MUST must satisfy the rule: {findings:?}"
             );
         }
     }
 
     #[test]
-    fn requirement_sans_scenario_est_signalee() {
-        // Une exigence dépourvue de scénario est repérée.
+    fn requirement_without_scenario_is_reported() {
+        // A requirement lacking a scenario is caught.
         let source = "## ADDED Requirements\n\n### Requirement: Y\nThe system SHALL do it.\n";
         let findings = run_delta(source);
-        assert!(findings
-            .iter()
-            .any(|f| f.code == codes::REQUIREMENT_NO_SCENARIO && f.message.contains("Y")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.code == codes::REQUIREMENT_NO_SCENARIO && f.message.contains("Y"))
+        );
     }
 
     #[test]
-    fn spec_sans_requirement_est_signalee() {
-        let source = "## Purpose\n\nUne belle spec sans contenu.\n\n## Requirements\n";
+    fn spec_without_requirement_is_reported() {
+        let source = "## Purpose\n\nA nice spec with no content.\n\n## Requirements\n";
         let findings = run_spec(source);
-        assert!(findings.iter().any(|f| f.code == codes::SPEC_NO_REQUIREMENT));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.code == codes::SPEC_NO_REQUIREMENT)
+        );
     }
 
     #[test]
-    fn exigence_dans_added_et_modified_est_signalee() {
+    fn requirement_in_added_and_modified_is_reported() {
         let source = "## ADDED Requirements\n\n### Requirement: Z\nThe system SHALL z.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## MODIFIED Requirements\n\n### Requirement: Z\nThe system SHALL z updated.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
         let findings = run_delta(source);
         let cross: Vec<_> = findings
             .iter()
             .filter(|f| f.code == codes::CROSS_SECTION_CONFLICT)
             .collect();
-        assert_eq!(cross.len(), 1, "un seul conflit sur « Z »");
+        assert_eq!(cross.len(), 1, "a single conflict on \"Z\"");
         assert!(cross[0].message.contains("ADDED"), "{}", cross[0].message);
-        assert!(cross[0].message.contains("MODIFIED"), "{}", cross[0].message);
+        assert!(
+            cross[0].message.contains("MODIFIED"),
+            "{}",
+            cross[0].message
+        );
     }
 
     #[test]
-    fn rename_to_qui_collide_avec_added_est_signale() {
+    fn rename_to_colliding_with_added_is_reported() {
         let source = "## ADDED Requirements\n\n### Requirement: New Name\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## RENAMED Requirements\n\n- FROM: Old Name\n- TO: New Name\n";
         let findings = run_delta(source);
         assert!(findings
@@ -376,7 +392,7 @@ mod tests {
     }
 
     #[test]
-    fn modified_reference_ancien_nom_renamed_est_signale() {
+    fn modified_referencing_renamed_old_name_is_reported() {
         let source = "## MODIFIED Requirements\n\n### Requirement: Old Name\nThe system MUST evolve.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## RENAMED Requirements\n\n- FROM: Old Name\n- TO: New Name\n";
         let findings = run_delta(source);
         let modified_uses: Vec<_> = findings
@@ -387,5 +403,4 @@ mod tests {
         assert!(modified_uses[0].message.contains("Old Name"));
         assert!(modified_uses[0].message.contains("New Name"));
     }
-
 }

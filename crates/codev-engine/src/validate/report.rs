@@ -2,12 +2,12 @@ use std::path::PathBuf;
 
 use codev_core::parser::ast::{Finding, Severity};
 
-/// Un finding, augmenté du chemin du fichier auquel il s'applique.
+/// A finding, augmented with the path of the file it applies to.
 ///
-/// Le type sépare la préoccupation « où » (ici, dans l'engine) de la
-/// préoccupation « quoi » (dans le parseur ou dans une règle). Casser le
-/// `Finding` du cœur pour y ajouter un `path` obligerait chaque call site à
-/// porter un chemin qui n'a de sens qu'à l'échelle d'un projet.
+/// The type separates the "where" concern (here, in the engine) from the
+/// "what" concern (in the parser or in a rule). Breaking the core's
+/// `Finding` to add a `path` to it would force every call site to carry a
+/// path that only makes sense at the scale of a project.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LocatedFinding {
     pub path: PathBuf,
@@ -24,18 +24,18 @@ impl LocatedFinding {
     }
 }
 
-/// Ce qu'est un item : un change actif, ou une spec principale.
+/// What an item is: an active change, or a main spec.
 ///
-/// Un `enum` plutôt qu'une `String` : le rendu humain et le contrat JSON
-/// s'en servent, et on veut que le compilateur nous prévienne quand un
-/// troisième type d'item apparaîtra (les décisions, par exemple).
+/// An `enum` rather than a `String`: both the human rendering and the JSON
+/// contract use it, and we want the compiler to warn us when a third kind
+/// of item appears (decisions, for example).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ItemKind {
     Change,
     Spec,
-    /// L'ensemble des décisions du projet, vu comme un item unique — les
-    /// findings de scellement pointent vers l'ADR ou vers `seal.yaml`
-    /// selon le cas.
+    /// All of the project's decisions, seen as a single item — seal
+    /// findings point to the ADR or to `seal.yaml`, depending on the
+    /// case.
     Decisions,
 }
 
@@ -62,10 +62,12 @@ impl ItemReport {
         self.findings.iter().any(LocatedFinding::is_error)
     }
 
-    /// `true` dès qu'au moins un finding porte la sévérité `Warning`.
-    /// Symétrique de `has_errors` — utile pour le mode strict de la CLI.
+    /// `true` as soon as at least one finding has `Warning` severity.
+    /// Symmetric to `has_errors` — useful for the CLI's strict mode.
     pub fn has_warnings(&self) -> bool {
-        self.findings.iter().any(|f| f.finding.severity == Severity::Warning)
+        self.findings
+            .iter()
+            .any(|f| f.finding.severity == Severity::Warning)
     }
 }
 
@@ -80,9 +82,9 @@ impl ValidateReport {
         self.items.iter().any(ItemReport::has_errors)
     }
 
-    /// `true` dès qu'au moins un `ItemReport` contient un finding
-    /// `Warning`. Sert au mode strict de `codev validate` — le CLI ne
-    /// modifie pas la sévérité, il compose ce booléen avec le flag.
+    /// `true` as soon as at least one `ItemReport` contains a `Warning`
+    /// finding. Used by the strict mode of `codev validate` — the CLI does
+    /// not change the severity, it combines this boolean with the flag.
     pub fn has_warnings(&self) -> bool {
         self.items.iter().any(ItemReport::has_warnings)
     }
@@ -94,22 +96,22 @@ mod tests {
     use codev_core::parser::ast::Span;
 
     #[test]
-    fn located_conserve_code_line_severite() {
+    fn located_keeps_code_line_severity() {
         let finding = Finding {
             severity: Severity::Error,
-            code: "un_code",
+            code: "some_code",
             line: 42,
-            message: "un message".into(),
+            message: "a message".into(),
         };
         let located = LocatedFinding::from_finding(finding, PathBuf::from("_codev/x.md"));
         assert!(located.is_error());
-        assert_eq!(located.finding.code, "un_code");
+        assert_eq!(located.finding.code, "some_code");
         assert_eq!(located.finding.line, 42);
         assert_eq!(located.path, PathBuf::from("_codev/x.md"));
     }
 
     #[test]
-    fn has_warnings_est_vrai_sur_un_warning_isole() {
+    fn has_warnings_is_true_for_a_single_warning() {
         let warning = Finding {
             severity: Severity::Warning,
             code: "warn",
@@ -127,8 +129,8 @@ mod tests {
     }
 
     #[test]
-    fn has_warnings_est_faux_sur_une_erreur_seule() {
-        // Les erreurs ne sont pas des warnings — le mode strict distinguera.
+    fn has_warnings_is_false_for_an_error_alone() {
+        // Errors are not warnings — strict mode tells them apart.
         let err = Finding {
             severity: Severity::Error,
             code: "e",
@@ -146,7 +148,7 @@ mod tests {
     }
 
     #[test]
-    fn has_warnings_sur_report_vide_est_faux() {
+    fn has_warnings_on_empty_report_is_false() {
         let report = ValidateReport {
             root: PathBuf::from("/p"),
             items: vec![],
@@ -155,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn item_report_signale_un_error_meme_isole() {
+    fn item_report_flags_an_error_even_alone() {
         let finding = Finding {
             severity: Severity::Error,
             code: "err",
@@ -170,7 +172,7 @@ mod tests {
         };
         assert!(report.has_errors());
 
-        // Un warning ne fait pas basculer.
+        // A warning does not tip it over.
         let warning = Finding {
             severity: Severity::Warning,
             code: "warn",
@@ -182,11 +184,11 @@ mod tests {
         assert!(!only_warn.has_errors());
     }
 
-    // Test de compilation : `Span` reste importable de la même façon depuis
-    // le cœur — garantit qu'un futur refactor du parseur ne casse pas ce
-    // point d'entrée sans faire échouer un test ici.
+    // Compilation test: `Span` stays importable the same way from the
+    // core — guarantees that a future parser refactor cannot break this
+    // entry point without failing a test here.
     #[test]
-    fn span_reste_importable() {
+    fn span_stays_importable() {
         let _ = Span::new(0..1, 1..2);
     }
 }

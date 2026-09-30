@@ -4,65 +4,64 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// L'accès au système de fichiers, derrière un port.
+/// File system access, behind a port.
 ///
-/// L'intérêt n'est pas de pouvoir « changer de système de fichiers » — on n'en
-/// changera pas. C'est que `init`, `new change` et `archive` deviennent
-/// testables en mémoire, sans répertoire temporaire ni tests sérialisés.
+/// The point is not to be able to "swap file systems" — that will never
+/// happen. It is that `init`, `new change` and `archive` become testable in
+/// memory, with no temporary directory and no serialized tests.
 ///
-/// Le trait reste compatible `dyn` : `codev-agents` en tient une référence
-/// dynamique pour rester lui-même utilisable via `dyn AgentTarget`.
+/// The trait stays `dyn`-compatible: `codev-agents` holds a dynamic reference
+/// to it so that it can itself remain usable through `dyn AgentTarget`.
 pub trait FileSystem {
     fn exists(&self, path: &Path) -> bool;
 
     fn read_to_string(&self, path: &Path) -> io::Result<String>;
 
-    /// Écrit le fichier, en créant ses dossiers parents si besoin.
+    /// Writes the file, creating its parent directories if needed.
     fn write(&self, path: &Path, contents: &str) -> io::Result<()>;
 
     fn create_dir_all(&self, path: &Path) -> io::Result<()>;
 
-    /// Les fichiers sous `dir`, récursivement, en chemins **relatifs à `dir`**
-    /// et toujours séparés par `/`.
+    /// The files under `dir`, recursively, as paths **relative to `dir`**,
+    /// always separated by `/`.
     ///
-    /// Ce format n'est pas un détail : c'est ce que consomme
-    /// `codev_core::outputs::pattern_matches_any`, et il garde les séparateurs
-    /// propres à la plateforme hors du cœur pur.
+    /// This format is not a detail: it is what
+    /// `codev_core::outputs::pattern_matches_any` consumes, and it keeps
+    /// platform-specific separators out of the pure core.
     ///
-    /// Un `dir` absent rend une liste vide, pas une erreur : « ce change n'a
-    /// encore aucun fichier » est un état normal, pas une panne.
+    /// A missing `dir` yields an empty list, not an error: "this change has
+    /// no files yet" is a normal state, not a failure.
     fn walk_files(&self, dir: &Path) -> io::Result<Vec<String>>;
 
-    /// Les noms des entrées directes de `dir`. Vide si `dir` est absent.
+    /// The names of the direct entries of `dir`. Empty if `dir` is missing.
     fn list_dir(&self, dir: &Path) -> io::Result<Vec<String>>;
 
-    /// Déplace `from` vers `to`. Crée les dossiers parents de `to` si besoin.
+    /// Moves `from` to `to`. Creates the parent directories of `to` if needed.
     ///
-    /// L'implémentation réelle tente d'abord `std::fs::rename` (atomique
-    /// intra-volume) et retombe sur copy+remove en cas d'erreur cross-device.
-    /// Toutes les implémentations doivent traiter aussi bien un fichier
-    /// qu'un dossier — c'est ce que fait `codev archive` avec le dossier du
-    /// change en entier.
+    /// The real implementation first tries `std::fs::rename` (atomic within a
+    /// volume) and falls back to copy+remove on a cross-device error.
+    /// Every implementation must handle a file as well as a directory —
+    /// that is what `codev archive` does with the whole change directory.
     fn rename(&self, from: &Path, to: &Path) -> io::Result<()>;
 
-    /// Supprime un seul fichier. Un fichier absent renvoie
-    /// [`io::ErrorKind::NotFound`] — l'exécuteur (`apply::execute`) décide
-    /// s'il ignore ou remonte. Le rôle du port est simplement d'exposer
-    /// le geste destructeur ; toute politique se joue en amont.
+    /// Removes a single file. A missing file returns
+    /// [`io::ErrorKind::NotFound`] — the executor (`apply::execute`) decides
+    /// whether to ignore or propagate it. The port's only role is to expose
+    /// the destructive operation; any policy is decided upstream.
     fn remove_file(&self, path: &Path) -> io::Result<()>;
 }
 
-/// L'horloge, derrière un port.
+/// The clock, behind a port.
 ///
-/// Volontairement étroite : ces dates ne servent qu'à nommer un dossier
-/// d'archive et à horodater une décision. Une [`FixedClock`] rend les tests
-/// déterministes en une ligne.
+/// Deliberately narrow: these dates are only used to name an archive
+/// directory and to date a decision. A [`FixedClock`] makes tests
+/// deterministic in one line.
 pub trait Clock {
-    /// La date du jour, au format `AAAA-MM-JJ`.
+    /// Today's date, in `YYYY-MM-DD` format.
     fn today(&self) -> String;
 }
 
-/// Un processus externe lancé, avec sa sortie capturée.
+/// An external process that was run, with its output captured.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProcessOutput {
     pub stdout: Vec<u8>,
@@ -82,30 +81,20 @@ impl ProcessOutput {
     }
 }
 
-/// Le pilotage d'un binaire externe, derrière un port.
+/// Driving an external binary, behind a port.
 ///
-/// Utilisé pour `git` par `codev sources update` — la seule opération de
-/// codev qui contacte un service distant. Le port permet à la fois de
-/// piloter le vrai `git` et d'écrire des tests déterministes qui ne
-/// touchent jamais au réseau.
+/// Used for `git` by `codev sources update` — the only codev operation that
+/// contacts a remote service. The port makes it possible both to drive the
+/// real `git` and to write deterministic tests that never touch the
+/// network.
 pub trait ProcessRunner {
-    fn run(
-        &self,
-        program: &str,
-        args: &[&str],
-        cwd: Option<&Path>,
-    ) -> io::Result<ProcessOutput>;
+    fn run(&self, program: &str, args: &[&str], cwd: Option<&Path>) -> io::Result<ProcessOutput>;
 }
 
 pub struct RealProcessRunner;
 
 impl ProcessRunner for RealProcessRunner {
-    fn run(
-        &self,
-        program: &str,
-        args: &[&str],
-        cwd: Option<&Path>,
-    ) -> io::Result<ProcessOutput> {
+    fn run(&self, program: &str, args: &[&str], cwd: Option<&Path>) -> io::Result<ProcessOutput> {
         let mut command = Command::new(program);
         command.args(args);
         if let Some(cwd) = cwd {
@@ -127,14 +116,14 @@ impl ProcessRunner for RealProcessRunner {
     }
 }
 
-/// Impl de test qui rend une réponse prédéfinie par tuple `(programme,
-/// premier argument)`. Suffit pour les scénarios d'`update` — pilotage
-/// séquentiel de `git ls-remote`, `git fetch`, `git worktree add`.
+/// Test implementation that returns a predefined response per `(program,
+/// first argument)` tuple. Enough for the `update` scenarios — sequential
+/// driving of `git ls-remote`, `git fetch`, `git worktree add`.
 #[derive(Debug, Default)]
 pub struct MockProcessRunner {
-    /// Réponses associées à un préfixe `(program, args_prefix)`.
+    /// Responses associated with a `(program, args_prefix)` prefix.
     responses: RefCell<Vec<(String, Vec<String>, ProcessOutput)>>,
-    /// Log des appels effectifs — pour affirmer côté test.
+    /// Log of the actual calls — for assertions in tests.
     calls: RefCell<Vec<(String, Vec<String>)>>,
 }
 
@@ -163,12 +152,7 @@ impl MockProcessRunner {
 }
 
 impl ProcessRunner for MockProcessRunner {
-    fn run(
-        &self,
-        program: &str,
-        args: &[&str],
-        _cwd: Option<&Path>,
-    ) -> io::Result<ProcessOutput> {
+    fn run(&self, program: &str, args: &[&str], _cwd: Option<&Path>) -> io::Result<ProcessOutput> {
         self.calls.borrow_mut().push((
             program.to_string(),
             args.iter().map(|s| s.to_string()).collect(),
@@ -186,21 +170,21 @@ impl ProcessRunner for MockProcessRunner {
             Some((_, _, resp)) => Ok(resp.clone()),
             None => Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("aucune réponse mock pour {program} {args:?}"),
+                format!("no mock response for {program} {args:?}"),
             )),
         }
     }
 }
 
-/// L'environnement d'exécution, derrière un port.
+/// The execution environment, behind a port.
 pub trait Env {
     fn current_dir(&self) -> io::Result<PathBuf>;
     fn var(&self, key: &str) -> Option<String>;
 
-    /// Le dossier personnel, pour développer un `~` dans un chemin déclaré.
+    /// The home directory, used to expand a `~` in a declared path.
     ///
-    /// Lu depuis l'environnement plutôt que via `std::env::home_dir`, dont
-    /// l'histoire de dépréciation ne mérite pas d'être suivie ici.
+    /// Read from the environment rather than through `std::env::home_dir`,
+    /// whose deprecation history is not worth following here.
     fn home_dir(&self) -> Option<PathBuf> {
         self.var("HOME")
             .or_else(|| self.var("USERPROFILE"))
@@ -208,7 +192,7 @@ pub trait Env {
     }
 }
 
-// ─────────────────────────── implémentations réelles ───────────────────────────
+// ─────────────────────────── real implementations ───────────────────────────
 
 pub struct RealFileSystem;
 
@@ -266,9 +250,9 @@ impl FileSystem for RealFileSystem {
     }
 
     fn rename(&self, from: &Path, to: &Path) -> io::Result<()> {
-        // `create_dir_all` sur le parent de la destination, sinon un
-        // déplacement vers `archive/AAAA-MM-JJ-name/` échouerait dès que
-        // `archive/` n'existe pas encore.
+        // `create_dir_all` on the destination's parent, otherwise a move to
+        // `archive/YYYY-MM-DD-name/` would fail whenever `archive/` does not
+        // exist yet.
         if let Some(parent) = to.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -284,13 +268,13 @@ impl FileSystem for RealFileSystem {
     }
 }
 
-/// `rename(2)` échoue avec `EXDEV` quand `from` et `to` sont sur des systèmes
-/// de fichiers différents. On garde le fallback discret plutôt que fatal :
-/// improbable en pratique (dossier de planning et code partagent le même
-/// volume), mais le fallback évite un message d'erreur imbuvable dans les
-/// rares cas où ça arrive.
+/// `rename(2)` fails with `EXDEV` when `from` and `to` are on different file
+/// systems. The fallback is kept silent rather than fatal: unlikely in
+/// practice (the planning directory and the code share the same volume), but
+/// the fallback avoids an unreadable error message in the rare cases where
+/// it happens.
 fn is_cross_device(err: &io::Error) -> bool {
-    err.raw_os_error() == Some(18) // EXDEV sur Linux/macOS
+    err.raw_os_error() == Some(18) // EXDEV on Linux/macOS
 }
 
 fn copy_then_remove(from: &Path, to: &Path) -> io::Result<()> {
@@ -329,12 +313,12 @@ pub struct SystemClock;
 
 impl Clock for SystemClock {
     fn today(&self) -> String {
-        // La date locale est celle que l'utilisateur lit sur son horloge, donc
-        // celle qu'il attend dans un nom de dossier d'archive. Elle échoue sur
-        // certaines configurations système : on retombe alors sur UTC, ce qui
-        // vaut mieux que de refuser d'archiver.
-        let now = time::OffsetDateTime::now_local()
-            .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
+        // The local date is the one users read on their clock, hence the one
+        // they expect in an archive directory name. It fails on some system
+        // configurations: we then fall back to UTC, which beats refusing to
+        // archive.
+        let now =
+            time::OffsetDateTime::now_local().unwrap_or_else(|_| time::OffsetDateTime::now_utc());
         format!(
             "{:04}-{:02}-{:02}",
             now.year(),
@@ -344,7 +328,7 @@ impl Clock for SystemClock {
     }
 }
 
-/// Horloge figée, pour les tests et les exécutions reproductibles.
+/// Frozen clock, for tests and reproducible runs.
 pub struct FixedClock(pub String);
 
 impl Clock for FixedClock {
@@ -365,12 +349,12 @@ impl Env for SystemEnv {
     }
 }
 
-// ─────────────────────────── doubles en mémoire ───────────────────────────
+// ─────────────────────────── in-memory doubles ───────────────────────────
 
-/// Système de fichiers en mémoire.
+/// In-memory file system.
 ///
-/// Public et non conditionné aux tests : les crates au-dessus l'utilisent pour
-/// tester leurs propres plans sans avoir à redéclarer un double.
+/// Public and not gated behind `cfg(test)`: the crates above use it to test
+/// their own plans without having to redeclare a double.
 #[derive(Default)]
 pub struct MemoryFileSystem {
     files: RefCell<BTreeMap<PathBuf, String>>,
@@ -382,7 +366,7 @@ impl MemoryFileSystem {
         Self::default()
     }
 
-    /// Dépose un fichier, façon « voilà l'état du disque avant l'opération ».
+    /// Seeds a file, as in "here is the state of the disk before the operation".
     pub fn with_file(self, path: impl Into<PathBuf>, contents: impl Into<String>) -> Self {
         self.files.borrow_mut().insert(path.into(), contents.into());
         self
@@ -405,8 +389,8 @@ impl FileSystem for MemoryFileSystem {
         if self.dirs.borrow().iter().any(|d| d == path) {
             return true;
         }
-        // Un dossier existe dès qu'un fichier vit dessous, comme sur un vrai
-        // disque.
+        // A directory exists as soon as a file lives under it, just like on a
+        // real disk.
         self.files
             .borrow()
             .keys()
@@ -417,7 +401,7 @@ impl FileSystem for MemoryFileSystem {
         self.files.borrow().get(path).cloned().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("{} est absent", path.display()),
+                format!("{} is missing", path.display()),
             )
         })
     }
@@ -458,66 +442,66 @@ impl FileSystem for MemoryFileSystem {
     }
 
     fn rename(&self, from: &Path, to: &Path) -> io::Result<()> {
-        // On collecte tout ce qui vit sous `from` — fichier isolé ou arbre —
-        // avant de muter, pour éviter de lire et écrire dans une même passe
-        // sur la même `RefCell`.
-        let a_deplacer: Vec<(PathBuf, String)> = self
+        // Collect everything that lives under `from` — single file or tree —
+        // before mutating, to avoid reading and writing the same `RefCell`
+        // in a single pass.
+        let to_move: Vec<(PathBuf, String)> = self
             .files
             .borrow()
             .iter()
             .filter_map(|(path, contents)| {
                 if path == from {
-                    // Fichier isolé qui correspond exactement à `from` :
-                    // sa nouvelle place est `to`, pas `to.push("")`.
+                    // Single file matching `from` exactly: its new location
+                    // is `to`, not `to.push("")`.
                     Some((to.to_path_buf(), contents.clone()))
                 } else if let Ok(relative) = path.strip_prefix(from) {
-                    let mut nouveau = to.to_path_buf();
-                    nouveau.push(relative);
-                    Some((nouveau, contents.clone()))
+                    let mut new_path = to.to_path_buf();
+                    new_path.push(relative);
+                    Some((new_path, contents.clone()))
                 } else {
                     None
                 }
             })
             .collect();
 
-        if a_deplacer.is_empty() {
+        if to_move.is_empty() {
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("{} n'existe pas", from.display()),
+                format!("{} does not exist", from.display()),
             ));
         }
 
-        let mut fichiers = self.files.borrow_mut();
-        // Purge : tout ce qui est `from` ou dessous disparaît.
-        let a_supprimer: Vec<PathBuf> = fichiers
+        let mut files = self.files.borrow_mut();
+        // Purge: everything that is `from` or below it goes away.
+        let to_remove: Vec<PathBuf> = files
             .keys()
             .filter(|p| p.as_path() == from || p.strip_prefix(from).is_ok())
             .cloned()
             .collect();
-        for p in a_supprimer {
-            fichiers.remove(&p);
+        for p in to_remove {
+            files.remove(&p);
         }
-        // Réinsertion sous la nouvelle racine.
-        for (nouveau_chemin, contents) in a_deplacer {
-            fichiers.insert(nouveau_chemin, contents);
+        // Reinsert under the new root.
+        for (new_path, contents) in to_move {
+            files.insert(new_path, contents);
         }
         Ok(())
     }
 
     fn remove_file(&self, path: &Path) -> io::Result<()> {
-        let mut fichiers = self.files.borrow_mut();
-        if fichiers.remove(path).is_some() {
+        let mut files = self.files.borrow_mut();
+        if files.remove(path).is_some() {
             Ok(())
         } else {
             Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("{} est absent", path.display()),
+                format!("{} is missing", path.display()),
             ))
         }
     }
 }
 
-/// Environnement figé, pour les tests.
+/// Frozen environment, for tests.
 pub struct FixedEnv {
     pub cwd: PathBuf,
     pub vars: BTreeMap<String, String>,
@@ -547,7 +531,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn la_memoire_voit_les_dossiers_impliques_par_ses_fichiers() {
+    fn memory_sees_directories_implied_by_its_files() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "schema: spec-driven");
         assert!(fs.exists(Path::new("/p/_codev/config.yaml")));
         assert!(fs.exists(Path::new("/p/_codev")));
@@ -556,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn walk_files_rend_des_chemins_relatifs_en_slash() {
+    fn walk_files_returns_slash_separated_relative_paths() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/changes/add-auth/proposal.md", "x")
             .with_file("/p/changes/add-auth/specs/user-auth/spec.md", "y");
@@ -565,18 +549,18 @@ mod tests {
     }
 
     #[test]
-    fn walk_files_sur_un_dossier_absent_ne_donne_rien() {
+    fn walk_files_on_a_missing_directory_yields_nothing() {
         let fs = MemoryFileSystem::new();
-        assert!(fs.walk_files(Path::new("/nulle/part")).unwrap().is_empty());
+        assert!(fs.walk_files(Path::new("/nowhere")).unwrap().is_empty());
     }
 
     #[test]
-    fn lhorloge_figee_est_deterministe() {
+    fn fixed_clock_is_deterministic() {
         assert_eq!(FixedClock("2026-09-08".into()).today(), "2026-09-08");
     }
 
     #[test]
-    fn memory_rename_deplace_un_arbre_entier() {
+    fn memory_rename_moves_a_whole_tree() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/changes/x/proposal.md", "p")
             .with_file("/p/_codev/changes/x/specs/y/spec.md", "s");
@@ -601,24 +585,25 @@ mod tests {
     }
 
     #[test]
-    fn memory_rename_dun_fichier_seul() {
+    fn memory_rename_of_a_single_file() {
         let fs = MemoryFileSystem::new().with_file("/a/x.md", "hello");
-        fs.rename(Path::new("/a/x.md"), Path::new("/b/y.md")).unwrap();
+        fs.rename(Path::new("/a/x.md"), Path::new("/b/y.md"))
+            .unwrap();
         assert!(!fs.exists(Path::new("/a/x.md")));
         assert_eq!(fs.read("/b/y.md").as_deref(), Some("hello"));
     }
 
     #[test]
-    fn memory_rename_source_absente_est_une_erreur() {
+    fn memory_rename_of_a_missing_source_is_an_error() {
         let fs = MemoryFileSystem::new();
         let err = fs
-            .rename(Path::new("/pas/la"), Path::new("/ailleurs"))
+            .rename(Path::new("/not/here"), Path::new("/elsewhere"))
             .unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::NotFound);
     }
 
     #[test]
-    fn mock_process_runner_repond_aux_commandes_attendues() {
+    fn mock_process_runner_answers_expected_commands() {
         let runner = MockProcessRunner::new().with_response(
             "git",
             &["ls-remote"],
@@ -637,20 +622,24 @@ mod tests {
     }
 
     #[test]
-    fn real_process_runner_signale_un_binaire_absent() {
+    fn real_process_runner_reports_a_missing_binary() {
         let runner = RealProcessRunner;
         let out = runner
-            .run("codev-binaire-inexistant-abc", &["--help"], None)
+            .run("codev-nonexistent-binary-abc", &["--help"], None)
             .unwrap();
         assert_eq!(out.exit_code, 127);
-        assert!(out.stderr_str().contains("not found"), "{}", out.stderr_str());
+        assert!(
+            out.stderr_str().contains("not found"),
+            "{}",
+            out.stderr_str()
+        );
     }
 
     #[test]
-    fn le_dossier_personnel_vient_de_lenvironnement() {
+    fn home_directory_comes_from_the_environment() {
         let mut env = FixedEnv::at("/p");
-        env.vars.insert("HOME".into(), "/Users/moi".into());
-        assert_eq!(env.home_dir(), Some(PathBuf::from("/Users/moi")));
+        env.vars.insert("HOME".into(), "/Users/me".into());
+        assert_eq!(env.home_dir(), Some(PathBuf::from("/Users/me")));
         assert_eq!(FixedEnv::at("/p").home_dir(), None);
     }
 }

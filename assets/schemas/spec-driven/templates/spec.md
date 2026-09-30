@@ -1,42 +1,42 @@
-<!-- Nouvelle capacité UNIQUEMENT : ouvre le fichier par cette section.
-     Ne l'ajoute pas au delta d'une capacité qui existe déjà — elle a déjà son
-     Purpose, et celui du delta serait ignoré.
+<!-- NEW capability ONLY: start the file with this section.
+     Do not add it to the delta of a capability that already exists — it
+     already has its Purpose, and the one in the delta would be ignored.
 
 ## Purpose
 
-Une ou deux phrases sur ce à quoi sert cette capacité.
+One or two sentences on what this capability is for.
 -->
 
 ## ADDED Requirements
 
-### Requirement: <nom de l'exigence>
+### Requirement: <requirement name>
 
-Le système SHALL <comportement observable>.
+The system SHALL <observable behavior>.
 
-#### Scenario: <nom du scénario>
+#### Scenario: <scenario name>
 
-- **WHEN** <déclencheur>
-- **THEN** <résultat observable>
-- **AND** <résultat additionnel>
+- **WHEN** <trigger>
+- **THEN** <observable outcome>
+- **AND** <additional outcome>
 
-<!-- Sections disponibles, à ne garder que si elles sont utilisées :
+<!-- Available sections — keep only the ones you use:
 
 ## MODIFIED Requirements
 
-### Requirement: <nom exact de l'exigence existante>
+### Requirement: <exact name of the existing requirement>
 
-     Recopie le bloc ENTIER depuis la spec principale, scénarios compris, puis
-     édite-le. Un contenu partiel perd du détail au moment de l'archive.
+     Copy the ENTIRE block from the main spec, scenarios included, then
+     edit it. Partial content loses detail at archive time.
 
 ## REMOVED Requirements
 
-### Requirement: <nom exact>
+### Requirement: <exact name>
 
-**Raison** : <pourquoi cette exigence disparaît>
-**Migration** : <ce que doivent faire les appelants existants>
+**Reason**: <why this requirement is being removed>
+**Migration**: <what existing callers must do>
 
 ## RENAMED Requirements
 
-- FROM: `### Requirement: <ancien nom>`
-- TO: `### Requirement: <nouveau nom>`
+- FROM: `### Requirement: <old name>`
+- TO: `### Requirement: <new name>`
 -->

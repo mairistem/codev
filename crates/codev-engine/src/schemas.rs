@@ -6,16 +6,16 @@ use codev_core::{ArtifactGraph, Layout};
 use crate::error::{EngineError, Result};
 use crate::ports::FileSystem;
 
-/// Le seul schéma embarqué. Tout le reste vient du projet.
+/// The only embedded schema. Everything else comes from the project.
 pub const BUILTIN_SCHEMA: &str = "spec-driven";
 
 const BUILTIN_SCHEMA_YAML: &str = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
 
-/// Les templates du schéma embarqué, inclus à la compilation.
+/// The embedded schema's templates, included at compile time.
 ///
-/// Un binaire autoportant : `codev init` fonctionne sans rien télécharger, et
-/// une installation ne peut pas se retrouver avec un schéma d'une version et
-/// des templates d'une autre.
+/// A self-contained binary: `codev init` works without downloading anything,
+/// and an installation can never end up with a schema from one version and
+/// templates from another.
 const BUILTIN_TEMPLATES: &[(&str, &str)] = &[
     (
         "proposal.md",
@@ -37,17 +37,17 @@ const BUILTIN_TEMPLATES: &[(&str, &str)] = &[
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SchemaOrigin {
-    /// Défini par le projet, dans `_codev/schemas/<nom>/`.
+    /// Defined by the project, in `_codev/schemas/<name>/`.
     Project(PathBuf),
-    /// Embarqué dans le binaire.
+    /// Embedded in the binary.
     Builtin,
 }
 
 impl SchemaOrigin {
     pub fn label(&self) -> &'static str {
         match self {
-            Self::Project(_) => "projet",
-            Self::Builtin => "intégré",
+            Self::Project(_) => "project",
+            Self::Builtin => "built-in",
         }
     }
 }
@@ -58,11 +58,11 @@ pub struct ResolvedSchema {
     pub origin: SchemaOrigin,
 }
 
-/// Résout un schéma par son nom.
+/// Resolves a schema by name.
 ///
-/// Précédence : le projet d'abord, l'embarqué ensuite. Un projet peut donc
-/// remplacer `spec-driven` par sa propre version sans changer de nom, et sans
-/// que rien d'autre ne bouge.
+/// Precedence: the project first, the embedded one second. A project can
+/// therefore replace `spec-driven` with its own version without renaming it,
+/// and without anything else moving.
 pub fn resolve(fs: &dyn FileSystem, layout: &Layout, name: &str) -> Result<ResolvedSchema> {
     let project_dir = layout.project_schema_dir(name);
     let project_file = project_dir.join("schema.yaml");
@@ -82,8 +82,8 @@ pub fn resolve(fs: &dyn FileSystem, layout: &Layout, name: &str) -> Result<Resol
 
     if name == BUILTIN_SCHEMA {
         return Ok(ResolvedSchema {
-            // Un échec ici serait un bug de compilation de notre côté, pas une
-            // erreur de l'utilisateur : le fichier est embarqué.
+            // A failure here would be a build bug on our side, not a user
+            // error: the file is embedded.
             graph: ArtifactGraph::from_yaml(BUILTIN_SCHEMA_YAML)?,
             origin: SchemaOrigin::Builtin,
         });
@@ -94,7 +94,7 @@ pub fn resolve(fs: &dyn FileSystem, layout: &Layout, name: &str) -> Result<Resol
     })
 }
 
-/// Les schémas disponibles, ceux du projet en premier.
+/// The available schemas, the project's first.
 pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<(String, SchemaOrigin)> {
     let mut schemas = Vec::new();
     let schemas_dir = layout.schemas_dir();
@@ -117,7 +117,7 @@ impl ResolvedSchema {
         &self.graph.schema().name
     }
 
-    /// Le contenu du template d'un artefact, s'il en déclare un.
+    /// The content of an artifact's template, if it declares one.
     pub fn template(&self, fs: &dyn FileSystem, artifact: &Artifact) -> Result<Option<String>> {
         let Some(file) = artifact.template.as_deref() else {
             return Ok(None);
@@ -156,10 +156,10 @@ mod tests {
     use crate::ports::MemoryFileSystem;
 
     #[test]
-    fn le_schema_embarque_est_valide() {
-        // Ce test est le garde-fou du fichier d'assets : une faute de frappe
-        // dans `assets/schemas/spec-driven/schema.yaml` casse ici, à la
-        // compilation des tests, et non chez un utilisateur.
+    fn the_embedded_schema_is_valid() {
+        // This test guards the asset file: a typo in
+        // `assets/schemas/spec-driven/schema.yaml` breaks here, when the
+        // tests are built, and not on a user's machine.
         let fs = MemoryFileSystem::new();
         let resolved = resolve(&fs, &Layout::new("/p"), BUILTIN_SCHEMA).unwrap();
         assert_eq!(resolved.name(), "spec-driven");
@@ -175,23 +175,23 @@ mod tests {
     }
 
     #[test]
-    fn chaque_artefact_embarque_a_son_template() {
+    fn every_embedded_artifact_has_its_template() {
         let fs = MemoryFileSystem::new();
         let resolved = resolve(&fs, &Layout::new("/p"), BUILTIN_SCHEMA).unwrap();
         for artifact in resolved.graph.artifacts() {
             let template = resolved
                 .template(&fs, artifact)
-                .unwrap_or_else(|e| panic!("template de « {} » : {e}", artifact.id));
+                .unwrap_or_else(|e| panic!("template for `{}`: {e}", artifact.id));
             assert!(
                 template.is_some_and(|t| !t.trim().is_empty()),
-                "l'artefact « {} » doit avoir un template non vide",
+                "artifact `{}` must have a non-empty template",
                 artifact.id
             );
         }
     }
 
     #[test]
-    fn le_projet_prime_sur_lembarque() {
+    fn the_project_takes_precedence_over_the_embedded_schema() {
         let fs = MemoryFileSystem::new().with_file(
             "/p/_codev/schemas/spec-driven/schema.yaml",
             "name: spec-driven\nartifacts:\n  - id: proposal\n    generates: proposal.md\napply:\n  requires: [proposal]\n  tracks: proposal.md\n",
@@ -202,23 +202,23 @@ mod tests {
     }
 
     #[test]
-    fn un_schema_inconnu_est_une_erreur_qui_oriente() {
+    fn an_unknown_schema_is_an_error_that_guides() {
         let fs = MemoryFileSystem::new();
-        let err = resolve(&fs, &Layout::new("/p"), "maison").unwrap_err();
+        let err = resolve(&fs, &Layout::new("/p"), "custom").unwrap_err();
         assert_eq!(err.code(), "schema_not_found");
         assert!(err.to_string().contains("codev schemas"), "{err}");
     }
 
     #[test]
-    fn liste_le_projet_puis_lembarque() {
+    fn lists_the_project_then_the_embedded_schema() {
         let fs = MemoryFileSystem::new().with_file(
-            "/p/_codev/schemas/maison/schema.yaml",
-            "name: maison\nartifacts:\n  - id: a\n    generates: a.md\napply:\n  requires: [a]\n  tracks: a.md\n",
+            "/p/_codev/schemas/custom/schema.yaml",
+            "name: custom\nartifacts:\n  - id: a\n    generates: a.md\napply:\n  requires: [a]\n  tracks: a.md\n",
         );
-        let noms: Vec<String> = list(&fs, &Layout::new("/p"))
+        let names: Vec<String> = list(&fs, &Layout::new("/p"))
             .into_iter()
             .map(|(name, _)| name)
             .collect();
-        assert_eq!(noms, ["maison", "spec-driven"]);
+        assert_eq!(names, ["custom", "spec-driven"]);
     }
 }

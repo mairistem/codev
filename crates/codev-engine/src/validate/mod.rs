@@ -1,9 +1,9 @@
-//! Orchestration de la validation : lit les fichiers, appelle le parseur et
-//! le registre de règles, produit un rapport.
+//! Validation orchestration: reads the files, calls the parser and the rule
+//! registry, produces a report.
 //!
-//! Aucune logique de règle ici — ces règles sont pures et vivent dans
-//! `codev-core::validate`. On coordonne, on groupe, on décide un exit code.
-//! C'est la coquille au sens de la décision
+//! No rule logic here — the rules are pure and live in
+//! `codev-core::validate`. We coordinate, group, and decide an exit code.
+//! This is the shell in the sense of the decision
 //! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
 
 pub mod metadata_rules;
@@ -29,18 +29,18 @@ use crate::error::{EngineError, Result};
 use crate::ports::{Env, FileSystem};
 use crate::specs;
 
-/// Codes stables des findings émis par la vérification du scellement.
+/// Stable codes of the findings emitted by seal verification.
 ///
-/// Exposés côté `codev-cli::contract` pour que l'agent puisse tester
-/// dessus. En cas de changement de nom, c'est un breaking du contrat
-/// public — d'où le fait de les figer ici, pas dans une chaîne inline.
+/// Exposed through `codev-cli::contract` so that the agent can test
+/// against them. Renaming one is a breaking change to the public
+/// contract — hence freezing them here, not in an inline string.
 pub mod seal_codes {
     pub const DECISION_UNSEALED: &str = "decision_unsealed";
     pub const DECISION_SEAL_MISMATCH: &str = "decision_seal_mismatch";
     pub const DECISION_ORPHAN_SEAL: &str = "decision_orphan_seal";
 }
 
-/// Valide un change : ses métadonnées et chacun de ses fichiers de delta.
+/// Validates a change: its metadata and each of its delta files.
 pub fn validate_change(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -52,21 +52,27 @@ pub fn validate_change(
 
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
 
-    // Chaque delta est lu une fois, parsé une fois : les findings du parseur
-    // et ceux des règles sortent du même passage.
+    // Each delta is read once and parsed once: the parser's findings and
+    // the rules' findings come out of the same pass.
     for delta_path in locate_deltas(fs, &change_dir)? {
         let relative = delta_path
             .strip_prefix(layout.project_root())
             .unwrap_or(&delta_path)
             .to_path_buf();
 
-        let source = fs.read_to_string(&delta_path).map_err(|e| EngineError::Unreadable {
-            path: delta_path.clone(),
-            reason: e.to_string(),
-        })?;
+        let source = fs
+            .read_to_string(&delta_path)
+            .map_err(|e| EngineError::Unreadable {
+                path: delta_path.clone(),
+                reason: e.to_string(),
+            })?;
         let parsed = parse_delta(&source);
 
-        for f in parsed.findings.iter().chain(core_validate::check_delta(&parsed.value).iter()) {
+        for f in parsed
+            .findings
+            .iter()
+            .chain(core_validate::check_delta(&parsed.value).iter())
+        {
             findings.push(LocatedFinding::from_finding(f.clone(), relative.clone()));
         }
     }
@@ -79,23 +85,21 @@ pub fn validate_change(
     })
 }
 
-/// Valide une spec principale, désignée par son chemin de capacité relatif à
+/// Validates a main spec, designated by its capability path relative to
 /// `_codev/specs/`.
-pub fn validate_spec(
-    fs: &dyn FileSystem,
-    layout: &Layout,
-    capability: &str,
-) -> Result<ItemReport> {
+pub fn validate_spec(fs: &dyn FileSystem, layout: &Layout, capability: &str) -> Result<ItemReport> {
     let path = layout.spec_file(capability);
     let relative = path
         .strip_prefix(layout.project_root())
         .unwrap_or(&path)
         .to_path_buf();
 
-    let source = fs.read_to_string(&path).map_err(|e| EngineError::Unreadable {
-        path: path.clone(),
-        reason: e.to_string(),
-    })?;
+    let source = fs
+        .read_to_string(&path)
+        .map_err(|e| EngineError::Unreadable {
+            path: path.clone(),
+            reason: e.to_string(),
+        })?;
     let parsed = parse_spec(&source);
     let findings: Vec<LocatedFinding> = parsed
         .findings
@@ -113,7 +117,7 @@ pub fn validate_spec(
     })
 }
 
-/// Valide tous les changes actifs et toutes les specs principales du projet.
+/// Validates all active changes and all main specs of the project.
 pub fn validate_all(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -134,15 +138,15 @@ pub fn validate_all(
     })
 }
 
-/// Valide le sous-système « décisions » : compare chaque ADR local à son
-/// entrée dans `seal.yaml` et émet des findings pour chaque écart.
+/// Validates the "decisions" subsystem: compares each local ADR with its
+/// entry in `seal.yaml` and emits a finding for each discrepancy.
 ///
-/// - `decision_unsealed` (warning) : ADR sans entrée de sceau — migration
-///   attendue via `codev decision seal`.
-/// - `decision_seal_mismatch` (**erreur**) : le corps courant ne
-///   correspond plus au hash enregistré.
-/// - `decision_orphan_seal` (warning) : entrée de sceau pour un ADR qui
-///   n'existe plus.
+/// - `decision_unsealed` (warning): ADR with no seal entry — migration
+///   expected via `codev decision seal`.
+/// - `decision_seal_mismatch` (**error**): the current body no longer
+///   matches the recorded hash.
+/// - `decision_orphan_seal` (warning): seal entry for an ADR that no
+///   longer exists.
 pub fn validate_decisions(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -150,16 +154,15 @@ pub fn validate_decisions(
     config: &ResolvedConfig,
 ) -> Result<ItemReport> {
     let index = decisions_index::index(fs, env, layout, config)?;
-    let seal_file = decisions_actions::read_seal_file(fs, layout).map_err(|e| {
-        EngineError::Unreadable {
+    let seal_file =
+        decisions_actions::read_seal_file(fs, layout).map_err(|e| EngineError::Unreadable {
             path: layout.decisions_seal_file(),
             reason: e.to_string(),
-        }
-    })?;
+        })?;
 
-    // Seuls les ADR locaux `accepted` ou `superseded` portent un
-    // engagement d'immutabilité — les autres statuts (proposed,
-    // deprecated, rejected) ne se scellent pas.
+    // Only local `accepted` or `superseded` ADRs carry an immutability
+    // commitment — the other statuses (proposed, deprecated,
+    // rejected) are not sealed.
     let mut present: Vec<(String, String, PathBuf)> = Vec::new();
     for entry in &index.entries {
         if entry.qualified_id.origin != Origin::Project {
@@ -169,24 +172,24 @@ pub fn validate_decisions(
         if !matches!(entry.decision.status, Accepted | Superseded) {
             continue;
         }
-        let source =
-            fs.read_to_string(&entry.path)
-                .map_err(|e| EngineError::Unreadable {
-                    path: entry.path.clone(),
-                    reason: e.to_string(),
-                })?;
+        let source = fs
+            .read_to_string(&entry.path)
+            .map_err(|e| EngineError::Unreadable {
+                path: entry.path.clone(),
+                reason: e.to_string(),
+            })?;
         let hash = match seal::body_hash(&source) {
             Ok(h) => h,
             Err(_) => {
-                // Sans frontmatter fermant, l'ADR n'aurait même pas été
-                // indexé — on peut sauter en silence.
+                // Without a closing frontmatter, the ADR would not even have
+                // been indexed — it can be skipped silently.
                 continue;
             }
         };
         present.push((entry.decision.id.clone(), hash, entry.path.clone()));
     }
 
-    // Pour cartographier chaque cas à son chemin, on garde un index id → path.
+    // To map each case to its path, we keep an id → path index.
     let paths_by_id: std::collections::HashMap<String, PathBuf> = present
         .iter()
         .map(|(id, _, path)| (id.clone(), path.clone()))
@@ -210,7 +213,10 @@ pub fn validate_decisions(
     for case in cases {
         let (finding, path) = match case {
             VerificationCase::Unsealed { id } => {
-                let path = paths_by_id.get(&id).cloned().unwrap_or_else(|| seal_path.clone());
+                let path = paths_by_id
+                    .get(&id)
+                    .cloned()
+                    .unwrap_or_else(|| seal_path.clone());
                 let relative = path
                     .strip_prefix(layout.project_root())
                     .unwrap_or(&path)
@@ -221,9 +227,9 @@ pub fn validate_decisions(
                         code: seal_codes::DECISION_UNSEALED,
                         line: 1,
                         message: format!(
-                            "la décision « {id} » n'est pas scellée ; \
-                             lance `codev decision seal {id}` pour enregistrer \
-                             le hash de son corps"
+                            "decision `{id}` is not sealed; \
+                             run `codev decision seal {id}` to record \
+                             the hash of its body"
                         ),
                     },
                     relative,
@@ -234,7 +240,10 @@ pub fn validate_decisions(
                 recorded,
                 actual,
             } => {
-                let path = paths_by_id.get(&id).cloned().unwrap_or_else(|| seal_path.clone());
+                let path = paths_by_id
+                    .get(&id)
+                    .cloned()
+                    .unwrap_or_else(|| seal_path.clone());
                 let relative = path
                     .strip_prefix(layout.project_root())
                     .unwrap_or(&path)
@@ -245,9 +254,9 @@ pub fn validate_decisions(
                         code: seal_codes::DECISION_SEAL_MISMATCH,
                         line: 1,
                         message: format!(
-                            "le corps de la décision « {id} » ne correspond plus \
-                             à son sceau — sceau : {recorded}, corps actuel : {actual}. \
-                             Réécris le sceau délibérément avec \
+                            "the body of decision `{id}` no longer matches \
+                             its seal — seal: {recorded}, current body: {actual}. \
+                             Rewrite the seal deliberately with \
                              `codev decision seal {id} --force`."
                         ),
                     },
@@ -260,8 +269,8 @@ pub fn validate_decisions(
                     code: seal_codes::DECISION_ORPHAN_SEAL,
                     line: 1,
                     message: format!(
-                        "le sceau de « {id} » n'a plus d'ADR correspondant \
-                         dans _codev/decisions/"
+                        "the seal for `{id}` no longer has a matching ADR \
+                         in _codev/decisions/"
                     ),
                 },
                 seal_relative.clone(),
@@ -270,11 +279,11 @@ pub fn validate_decisions(
         findings.push(LocatedFinding::from_finding(finding, path));
     }
 
-    // Le rapport porte aussi les findings du parseur d'ADR (frontmatter
-    // manquant, id absent, statut inconnu…) qu'on ne veut pas perdre.
+    // The report also carries the ADR parser's findings (missing
+    // frontmatter, missing id, unknown status…), which we do not want to lose.
     for f in index.findings {
-        // Les findings du parseur ne portent pas de chemin — on utilise
-        // le dossier des décisions comme ancre par défaut.
+        // Parser findings carry no path — the decisions directory is
+        // used as the default anchor.
         let anchor = layout
             .decisions_dir()
             .strip_prefix(layout.project_root())
@@ -295,13 +304,15 @@ pub fn validate_decisions(
     })
 }
 
-/// Repère les fichiers `*.md` sous `changes/<name>/specs/**`.
+/// Locates the `*.md` files under `changes/<name>/specs/**`.
 fn locate_deltas(fs: &dyn FileSystem, change_dir: &std::path::Path) -> Result<Vec<PathBuf>> {
     let specs_dir = change_dir.join("specs");
-    let files = fs.walk_files(&specs_dir).map_err(|e| EngineError::Unreadable {
-        path: specs_dir.clone(),
-        reason: e.to_string(),
-    })?;
+    let files = fs
+        .walk_files(&specs_dir)
+        .map_err(|e| EngineError::Unreadable {
+            path: specs_dir.clone(),
+            reason: e.to_string(),
+        })?;
     let mut out: Vec<PathBuf> = files
         .into_iter()
         .filter(|p| p.ends_with(".md"))
@@ -335,7 +346,7 @@ mod tests {
         crate::config::resolve(fs, &env(), &Layout::new("/p")).unwrap()
     }
 
-    fn projet_avec_change_bien_forme() -> MemoryFileSystem {
+    fn project_with_well_formed_change() -> MemoryFileSystem {
         MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
@@ -344,19 +355,19 @@ mod tests {
             )
             .with_file(
                 "/p/_codev/changes/add-auth/proposal.md",
-                "# Proposal\n\n## Pourquoi\n\nTest\n",
+                "# Proposal\n\n## Why\n\nTest\n",
             )
             .with_file(
                 "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
-                "## Purpose\n\nGère l'authentification des utilisateurs.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL issue a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
+                "## Purpose\n\nHandles user authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL issue a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
             )
     }
 
     #[test]
-    fn rapport_change_couvre_tous_les_fichiers_de_delta() {
-        let fs = projet_avec_change_bien_forme().with_file(
+    fn change_report_covers_all_delta_files() {
+        let fs = project_with_well_formed_change().with_file(
             "/p/_codev/changes/add-auth/specs/second/spec.md",
-            "## Purpose\n\nDeuxième capacité.\n\n## ADDED Requirements\n\n### Requirement: Second\nThe system SHALL do.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
+            "## Purpose\n\nSecond capability.\n\n## ADDED Requirements\n\n### Requirement: Second\nThe system SHALL do.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
         );
         let cfg = config(&fs);
         let report = validate_change(
@@ -369,11 +380,15 @@ mod tests {
 
         assert_eq!(report.kind, ItemKind::Change);
         assert_eq!(report.name, "add-auth");
-        assert!(report.findings.is_empty(), "findings inattendus : {:?}", report.findings);
+        assert!(
+            report.findings.is_empty(),
+            "unexpected findings: {:?}",
+            report.findings
+        );
     }
 
     #[test]
-    fn rapport_spec_expose_les_findings_du_parseur() {
+    fn spec_report_exposes_parser_findings() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
@@ -381,49 +396,57 @@ mod tests {
                 "## Requirements\n\n### Requirement: X\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
             );
         let report = validate_spec(&fs, &Layout::new("/p"), "user-auth").unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == parser_codes::SPEC_PURPOSE_MISSING));
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == parser_codes::SPEC_PURPOSE_MISSING)
+        );
     }
 
     #[test]
-    fn rapport_spec_expose_les_findings_du_registre() {
-        // Spec avec Purpose mais sans exigence : la règle SpecNoRequirement du
-        // registre doit sortir.
+    fn spec_report_exposes_registry_findings() {
+        // A spec with a Purpose but no requirement: the registry's
+        // SpecNoRequirement rule must fire.
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
                 "/p/_codev/specs/user-auth/spec.md",
-                "## Purpose\n\nGérer les utilisateurs.\n\n## Requirements\n",
+                "## Purpose\n\nManage users.\n\n## Requirements\n",
             );
         let report = validate_spec(&fs, &Layout::new("/p"), "user-auth").unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == rule_codes::SPEC_NO_REQUIREMENT));
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == rule_codes::SPEC_NO_REQUIREMENT)
+        );
     }
 
     #[test]
-    fn validate_all_couvre_changes_et_specs() {
-        let fs = projet_avec_change_bien_forme().with_file(
+    fn validate_all_covers_changes_and_specs() {
+        let fs = project_with_well_formed_change().with_file(
             "/p/_codev/specs/user-auth/spec.md",
-            "## Purpose\n\nSpec principale existante.\n\n## Requirements\n\n### Requirement: Old\nThe system SHALL persist.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
+            "## Purpose\n\nExisting main spec.\n\n## Requirements\n\n### Requirement: Old\nThe system SHALL persist.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
         );
         let cfg = config(&fs);
         let report = validate_all(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
-        // 1 change + 1 spec principale + le rapport décisions (toujours
-        // présent, même sans ADR).
+        // 1 change + 1 main spec + the decisions report (always
+        // present, even without ADRs).
         assert_eq!(report.items.len(), 3);
-        assert!(report
-            .items
-            .iter()
-            .any(|i| i.kind == ItemKind::Change && i.name == "add-auth"));
-        assert!(report
-            .items
-            .iter()
-            .any(|i| i.kind == ItemKind::Spec && i.name == "user-auth"));
+        assert!(
+            report
+                .items
+                .iter()
+                .any(|i| i.kind == ItemKind::Change && i.name == "add-auth")
+        );
+        assert!(
+            report
+                .items
+                .iter()
+                .any(|i| i.kind == ItemKind::Spec && i.name == "user-auth")
+        );
         assert!(!report.has_errors());
     }
 
@@ -431,13 +454,13 @@ mod tests {
 
     fn adr_source(id: &str) -> String {
         format!(
-            "---\nid: \"{id}\"\ntitle: T\nstatus: accepted\ndate: 2026-09-09\n---\n\n## Contexte\n\nx\n"
+            "---\nid: \"{id}\"\ntitle: T\nstatus: accepted\ndate: 2026-09-09\n---\n\n## Context\n\nx\n"
         )
     }
 
     #[test]
-    fn decisions_sans_seal_remontent_unsealed() {
-        // Migration typique : 3 ADR acceptés, pas de seal.yaml.
+    fn decisions_without_seal_report_unsealed() {
+        // Typical migration: 3 accepted ADRs, no seal.yaml.
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/decisions/0001-a.md", adr_source("0001"))
@@ -454,55 +477,59 @@ mod tests {
                 seal_codes::DECISION_UNSEALED,
             ]
         );
-        // Warnings, pas erreurs — la migration ne bloque pas les autres flows.
+        // Warnings, not errors — the migration does not block other flows.
         assert!(!report.has_errors());
     }
 
     #[test]
-    fn corps_modifie_apres_scellement_remonte_mismatch_en_erreur() {
+    fn body_modified_after_sealing_reports_mismatch_as_error() {
         let adr = adr_source("0001");
         let hash = seal::body_hash(&adr).unwrap();
         let seal_yaml = format!(
             "version: 1\nseals:\n  - id: \"0001\"\n    bodySha256: \"{hash}\"\n    sealedAt: 2026-09-09\n"
         );
-        // On corrompt le corps après scellement.
-        let modified = adr.replace("\n\nx\n", "\n\nx modifié\n");
+        // Corrupt the body after sealing.
+        let modified = adr.replace("\n\nx\n", "\n\nx modified\n");
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/decisions/0001-a.md", &modified)
             .with_file("/p/_codev/decisions/seal.yaml", &seal_yaml);
         let cfg = config(&fs);
         let report = validate_decisions(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == seal_codes::DECISION_SEAL_MISMATCH));
-        // C'est bien une erreur : l'index de décisions ne peut plus être
-        // considéré fiable.
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == seal_codes::DECISION_SEAL_MISMATCH)
+        );
+        // It is indeed an error: the decisions index can no longer be
+        // considered reliable.
         assert!(report.has_errors());
     }
 
     #[test]
-    fn sceau_orphelin_remonte_warning() {
-        // Un sceau pour 0009 mais l'ADR n'existe plus.
+    fn orphan_seal_reports_warning() {
+        // A seal for 0009, but the ADR no longer exists.
         let seal_yaml = "version: 1\nseals:\n  - id: \"0009\"\n    bodySha256: \"sha256:whatever\"\n    sealedAt: 2026-09-09\n";
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/decisions/seal.yaml", seal_yaml);
         let cfg = config(&fs);
         let report = validate_decisions(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == seal_codes::DECISION_ORPHAN_SEAL));
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == seal_codes::DECISION_ORPHAN_SEAL)
+        );
         assert!(!report.has_errors());
     }
 
     #[test]
-    fn validate_remonte_dangling_deviation_en_warning() {
-        // Un ADR local `deviates_from` d'une cible qui n'existe pas →
-        // warning, exit code nul.
-        let adr = "---\nid: \"0007\"\ntitle: T\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/inconnue/9999\"]\n---\n\n## Contexte\n\nx\n";
+    fn validate_reports_dangling_deviation_as_warning() {
+        // A local ADR that `deviates_from` a target that does not exist →
+        // warning, zero exit code.
+        let adr = "---\nid: \"0007\"\ntitle: T\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/unknown/9999\"]\n---\n\n## Context\n\nx\n";
         let hash = seal::body_hash(adr).unwrap();
         let seal_yaml = format!(
             "version: 1\nseals:\n  - id: \"0007\"\n    bodySha256: \"{hash}\"\n    sealedAt: 2026-09-09\n"
@@ -513,65 +540,64 @@ mod tests {
             .with_file("/p/_codev/decisions/seal.yaml", &seal_yaml);
         let cfg = config(&fs);
         let report = validate_decisions(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == codev_core::parser::codes::DECISION_DANGLING_DEVIATION));
-        assert!(!report.has_errors(), "dangling deviation reste un warning");
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == codev_core::parser::codes::DECISION_DANGLING_DEVIATION)
+        );
+        assert!(!report.has_errors(), "dangling deviation stays a warning");
     }
 
     #[test]
-    fn validate_remonte_conflicting_deviations_en_erreur() {
-        // Deux ADR locaux qui dévient de la même cible → erreur.
-        let adr_a = "---\nid: \"0007\"\ntitle: A\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/partage/0100\"]\n---\n\n## Contexte\n\na\n";
-        let adr_b = "---\nid: \"0008\"\ntitle: B\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/partage/0100\"]\n---\n\n## Contexte\n\nb\n";
-        let adr_h = "---\nid: \"0100\"\ntitle: Source\nstatus: accepted\ndate: 2026-09-09\n---\n\n## Contexte\n\ns\n";
+    fn validate_reports_conflicting_deviations_as_error() {
+        // Two local ADRs deviating from the same target → error.
+        let adr_a = "---\nid: \"0007\"\ntitle: A\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/shared/0100\"]\n---\n\n## Context\n\na\n";
+        let adr_b = "---\nid: \"0008\"\ntitle: B\nstatus: accepted\ndate: 2026-09-09\ndeviates_from: [\"path:~/shared/0100\"]\n---\n\n## Context\n\nb\n";
+        let adr_h = "---\nid: \"0100\"\ntitle: Source\nstatus: accepted\ndate: 2026-09-09\n---\n\n## Context\n\ns\n";
         let hash_a = seal::body_hash(adr_a).unwrap();
         let hash_b = seal::body_hash(adr_b).unwrap();
         let seal_yaml = format!(
             "version: 1\nseals:\n  - id: \"0007\"\n    bodySha256: \"{hash_a}\"\n    sealedAt: 2026-09-09\n  - id: \"0008\"\n    bodySha256: \"{hash_b}\"\n    sealedAt: 2026-09-09\n"
         );
         let fs = MemoryFileSystem::new()
-            .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file("/p/_codev/decisions/0007-a.md", adr_a)
             .with_file("/p/_codev/decisions/0008-b.md", adr_b)
-            .with_file("/home/partage/_codev/decisions/0100.md", adr_h)
+            .with_file("/home/shared/_codev/decisions/0100.md", adr_h)
             .with_file("/p/_codev/decisions/seal.yaml", &seal_yaml);
         let cfg = config(&fs);
         let report = validate_decisions(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        assert!(report
-            .findings
-            .iter()
-            .any(|f| f.finding.code == codev_core::parser::codes::DECISION_CONFLICTING_DEVIATIONS));
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code
+                    == codev_core::parser::codes::DECISION_CONFLICTING_DEVIATIONS)
+        );
         assert!(report.has_errors(), "conflict must be an error");
     }
 
     #[test]
-    fn adr_herite_nest_pas_verifie_par_le_projet() {
-        // Un ADR local scellé (OK) + un ADR hérité (jamais scellé par
-        // le consommateur) → aucun finding pour l'hérité.
+    fn inherited_adr_is_not_verified_by_the_project() {
+        // A sealed local ADR (OK) + an inherited ADR (never sealed by
+        // the consumer) → no finding for the inherited one.
         let local = adr_source("0001");
         let hash = seal::body_hash(&local).unwrap();
         let seal_yaml = format!(
             "version: 1\nseals:\n  - id: \"0001\"\n    bodySha256: \"{hash}\"\n    sealedAt: 2026-09-09\n"
         );
         let fs = MemoryFileSystem::new()
-            .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file("/p/_codev/decisions/0001-a.md", &local)
             .with_file("/p/_codev/decisions/seal.yaml", &seal_yaml)
             .with_file(
-                "/home/partage/_codev/decisions/0100-h.md",
+                "/home/shared/_codev/decisions/0100-h.md",
                 adr_source("0100"),
             );
         let cfg = config(&fs);
         let report = validate_decisions(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        // Aucun finding pour 0100 — c'est au projet source de sceller.
+        // No finding for 0100 — sealing is up to the source project.
         assert!(report.findings.is_empty(), "{:#?}", report.findings);
     }
 }

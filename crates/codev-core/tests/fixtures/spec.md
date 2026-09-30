@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Authentification et gestion de session pour l'application.
+Authentication and session management for the application.
 
 ## Requirements
 

@@ -2,20 +2,20 @@ use codev_core::{ChangeId, Layout, Plan, WriteMode};
 
 use crate::metadata::ChangeMetadata;
 
-/// Template de secours pour `_codev/config.yaml`.
+/// Fallback template for `_codev/config.yaml`.
 ///
-/// **Rôle résiduel** — depuis le lot `init-interactive-with-detection`,
-/// `codev init` génère lui-même un `config.yaml` prérempli à partir de la
-/// sonde et des choix utilisateur (`codev-core::config::render`). Ce
-/// template ne sert plus qu'en filet de sécurité, lorsque le fichier a été
-/// supprimé à la main : `codev update` le régénère à l'identique de ce
-/// contenu, avec les workflows commentés (donc, à la relecture,
-/// `DEFAULT_WORKFLOWS` s'applique — les 7 skills).
-const DEFAULT_CONFIG: &str = r#"# Configuration de codev pour ce projet.
+/// **Residual role** — since the `init-interactive-with-detection` batch,
+/// `codev init` itself generates a `config.yaml` prefilled from the probe
+/// and the user's choices (`codev-core::config::render`). This template
+/// only serves as a safety net, when the file has been deleted by hand:
+/// `codev update` regenerates it exactly as this content, with the
+/// workflows commented out (so, when read back, `DEFAULT_WORKFLOWS`
+/// applies — the 7 skills).
+const DEFAULT_CONFIG: &str = r#"# codev configuration for this project.
 schema: spec-driven
 
-# Les workflows installés comme skills Claude Code par `codev init` et
-# `codev update`. Absent, le catalogue par défaut s'applique.
+# The workflows installed as Claude Code skills by `codev init` and
+# `codev update`. When absent, the default catalog applies.
 # workflows:
 #   - propose
 #   - explore
@@ -25,49 +25,49 @@ schema: spec-driven
 #   - archive
 #   - update
 
-# Contexte injecté dans les instructions de TOUS les artefacts : ce que l'agent
-# doit savoir de ce projet avant d'écrire quoi que ce soit.
+# Context injected into the instructions of ALL artifacts: what the agent
+# must know about this project before writing anything.
 # context: |
-#   Pile technique : ...
-#   Conventions d'API : ...
-#   Tests : ...
+#   Tech stack: ...
+#   API conventions: ...
+#   Tests: ...
 
-# Règles par artefact, injectées uniquement pour l'artefact concerné.
+# Per-artifact rules, injected only for the artifact concerned.
 # rules:
 #   specs:
-#     - Décrire un comportement observable, jamais une implémentation.
+#     - Describe observable behavior, never an implementation.
 #   design:
-#     - Citer les décisions de _codev/decisions/ qui contraignent l'approche.
+#     - Cite the decisions in _codev/decisions/ that constrain the approach.
 
-# Sources héritées, en lecture seule, du plus général au plus spécifique.
+# Inherited sources, read-only, from the most general to the most specific.
 # inherits:
-#   - path: ~/codev/partage
+#   - path: ~/codev/shared
 
-# Nom des outils MCP à utiliser dans les skills. Le nom dépend de la config
-# Claude Code de ton utilisateur — décommenter et remplacer par le nom exact
-# du MCP disponible dans ta session. Sans cette clef, la détection de tickets
-# dans `/codev-propose` est inactive (fallback silencieux).
+# Names of the MCP tools to use in skills. The name depends on the user's
+# Claude Code config — uncomment and replace with the exact name of the MCP
+# available in your session. Without this key, ticket detection in
+# `/codev-propose` is inactive (silent fallback).
 # mcp:
 #   jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
 "#;
 
-/// Marqueur déposé dans les dossiers encore vides.
+/// Marker placed in directories that are still empty.
 ///
-/// Git ne versionne pas les dossiers vides : sans ce fichier, un `codev init`
-/// suivi d'un commit ne transmettrait pas la structure à l'équipe, et le
-/// collègue suivant se demanderait où sont les dossiers.
+/// Git does not track empty directories: without this file, a `codev init`
+/// followed by a commit would not pass the structure on to the team, and the
+/// next colleague would wonder where the directories went.
 const KEEP_FILE: &str = ".gitkeep";
 
 const KEEP_CONTENT: &str =
-    "# Ce fichier garde le dossier dans git tant qu'il est vide. Supprime-le quand il ne l'est plus.\n";
+    "# This file keeps the directory in git while it is empty. Delete it once it no longer is.\n";
 
-/// Le plan de `codev init` : la structure `_codev/` et sa configuration.
+/// The `codev init` plan: the `_codev/` structure and its configuration.
 ///
-/// Les skills n'en font pas partie — c'est `codev-agents` qui les planifie, et
-/// le CLI qui réunit les deux plans. Un crate, une responsabilité.
+/// Skills are not part of it — `codev-agents` plans them, and the CLI
+/// combines both plans. One crate, one responsibility.
 ///
-/// Tout est en [`WriteMode::CreateOnly`] : relancer `init` sur un projet déjà
-/// initialisé ne doit rien écraser, et donc ne rien risquer.
+/// Everything is [`WriteMode::CreateOnly`]: rerunning `init` on an already
+/// initialized project must overwrite nothing, and therefore risk nothing.
 pub fn plan_init(layout: &Layout) -> Plan {
     let mut plan = Plan::new();
 
@@ -87,7 +87,7 @@ pub fn plan_init(layout: &Layout) -> Plan {
     plan
 }
 
-/// Le plan de `codev new change`.
+/// The `codev new change` plan.
 pub fn plan_new_change(layout: &Layout, change: &ChangeId, metadata: &ChangeMetadata) -> Plan {
     let mut plan = Plan::new();
     plan.dir(layout.change_dir(change));
@@ -107,10 +107,10 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     #[test]
-    fn init_prepare_la_structure_complete() {
+    fn init_prepares_the_full_structure() {
         let plan = plan_init(&Layout::new("/p"));
 
-        for attendu in [
+        for expected in [
             "/p/_codev",
             "/p/_codev/specs",
             "/p/_codev/decisions",
@@ -119,29 +119,30 @@ mod tests {
             "/p/_codev/schemas",
         ] {
             assert!(
-                plan.dirs.contains(&PathBuf::from(attendu)),
-                "{attendu} devrait être planifié"
+                plan.dirs.contains(&PathBuf::from(expected)),
+                "{expected} should be planned"
             );
         }
-        assert!(plan
-            .writes
-            .iter()
-            .any(|w| w.path == Path::new("/p/_codev/config.yaml")));
-    }
-
-    #[test]
-    fn init_necrase_jamais_rien() {
-        let plan = plan_init(&Layout::new("/p"));
         assert!(
-            plan.writes.iter().all(|w| w.mode == WriteMode::CreateOnly),
-            "aucune écriture de `init` ne doit pouvoir écraser un fichier"
+            plan.writes
+                .iter()
+                .any(|w| w.path == Path::new("/p/_codev/config.yaml"))
         );
     }
 
     #[test]
-    fn la_config_par_defaut_est_valide_et_relisible() {
-        // Le fichier que l'on écrit doit passer notre propre lecteur, sans quoi
-        // le premier `codev status` après un `init` échouerait.
+    fn init_never_overwrites_anything() {
+        let plan = plan_init(&Layout::new("/p"));
+        assert!(
+            plan.writes.iter().all(|w| w.mode == WriteMode::CreateOnly),
+            "no `init` write may overwrite a file"
+        );
+    }
+
+    #[test]
+    fn default_config_is_valid_and_readable() {
+        // The file we write must pass our own reader, otherwise the first
+        // `codev status` after an `init` would fail.
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", DEFAULT_CONFIG);
         let mut env = FixedEnv::at("/p");
         env.vars.insert("HOME".into(), "/home".into());
@@ -151,7 +152,7 @@ mod tests {
     }
 
     #[test]
-    fn new_change_ecrit_les_metadonnees() {
+    fn new_change_writes_the_metadata() {
         let change = ChangeId::parse("add-auth").unwrap();
         let metadata = ChangeMetadata::new("spec-driven", "2026-09-08");
         let plan = plan_new_change(&Layout::new("/p"), &change, &metadata);

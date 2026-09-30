@@ -1,24 +1,21 @@
-//! Plans de création et de supersession d'ADR — cœur de coquille : les
-//! fonctions calculent un `Plan`, la coquille CLI l'exécute.
+//! ADR creation and supersession plans — functional core: these
+//! functions compute a `Plan`, the imperative CLI shell executes it.
 
 use std::path::PathBuf;
 
-use codev_core::decisions::seal::{self, SealError, SealFile};
 use codev_core::decisions::DecisionStatus;
+use codev_core::decisions::seal::{self, SealError, SealFile};
 use codev_core::{Layout, Plan, WriteMode};
 
 use crate::decisions::{DecisionIndex, Origin};
 use crate::ports::FileSystem;
 
-/// Lit et parse `seal.yaml` s'il existe ; sinon retourne un sceau vide.
+/// Reads and parses `seal.yaml` if it exists; otherwise returns an empty seal.
 ///
-/// C'est le point d'accès unique à `seal.yaml` côté coquille — utilisé
-/// avant d'appeler `plan_new`, `plan_supersede` et `plan_seal`, et par
-/// `validate` pour vérifier les hashes.
-pub fn read_seal_file(
-    fs: &dyn FileSystem,
-    layout: &Layout,
-) -> Result<SealFile, ActionError> {
+/// This is the single access point to `seal.yaml` on the shell side — used
+/// before calling `plan_new`, `plan_supersede` and `plan_seal`, and by
+/// `validate` to check the hashes.
+pub fn read_seal_file(fs: &dyn FileSystem, layout: &Layout) -> Result<SealFile, ActionError> {
     let path = layout.decisions_seal_file();
     if !fs.exists(&path) {
         return Ok(SealFile::empty());
@@ -31,33 +28,55 @@ pub fn read_seal_file(
 
 const DECISION_TEMPLATE: &str = include_str!("../../../assets/templates/decision.md");
 
-/// Ce que peut refuser une action.
+/// What an action can refuse.
 ///
-/// Les codes portent la même règle que le reste de l'outil : stables et
-/// testables côté agent, messages libres de reformulation.
+/// The codes follow the same rule as the rest of the tool: stable and
+/// testable on the agent side, while messages are free to be reworded.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ActionError {
     EmptyTitle,
-    UnknownDecisionId { id: String },
-    CannotSupersedeInherited { qualified_id: String },
-    CannotSealInherited { qualified_id: String },
-    /// La cible passée à `decision deviate` est une décision locale — le
-    /// geste propre pour ça, c'est `decision supersede`.
-    CannotDeviateFromLocal { qualified_id: String },
-    /// La cible d'un `decision promote` pointe vers un change archivé —
-    /// un design archivé est de l'histoire, on ne le modifie pas.
-    CannotPromoteFromArchived { change: String },
-    /// Le change n'a pas de `design.md` — impossible de promouvoir.
-    DesignMissing { change: String },
-    /// Aucun bloc `### Décision : <titre>` ne correspond.
-    DecisionHeadingNotFound { title: String },
-    /// Plusieurs blocs partagent le même titre — l'utilisateur précise.
-    AmbiguousDecisionHeading { title: String, lines: Vec<u32> },
-    AmbiguousDecisionId { id: String, candidates: Vec<String> },
-    /// Un sceau déjà présent, corps différent du hash enregistré, `--force`
-    /// non demandé. Le code stable est `seal_conflict`.
-    SealConflict { id: String },
-    /// Une erreur du module `seal` — code stable dérivé.
+    UnknownDecisionId {
+        id: String,
+    },
+    CannotSupersedeInherited {
+        qualified_id: String,
+    },
+    CannotSealInherited {
+        qualified_id: String,
+    },
+    /// The target passed to `decision deviate` is a local decision — the
+    /// proper action for that is `decision supersede`.
+    CannotDeviateFromLocal {
+        qualified_id: String,
+    },
+    /// The target of a `decision promote` points to an archived change —
+    /// an archived design is history, it is not modified.
+    CannotPromoteFromArchived {
+        change: String,
+    },
+    /// The change has no `design.md` — nothing can be promoted.
+    DesignMissing {
+        change: String,
+    },
+    /// No `### Decision: <title>` block matches.
+    DecisionHeadingNotFound {
+        title: String,
+    },
+    /// Several blocks share the same title — the user must disambiguate.
+    AmbiguousDecisionHeading {
+        title: String,
+        lines: Vec<u32>,
+    },
+    AmbiguousDecisionId {
+        id: String,
+        candidates: Vec<String>,
+    },
+    /// A seal is already present, the body differs from the recorded hash,
+    /// and `--force` was not requested. The stable code is `seal_conflict`.
+    SealConflict {
+        id: String,
+    },
+    /// An error from the `seal` module — stable code derived from it.
     Seal(SealError),
 }
 
@@ -87,60 +106,58 @@ impl ActionError {
 
     pub fn message(&self) -> String {
         match self {
-            Self::EmptyTitle => {
-                "un titre non vide est requis pour créer une décision".into()
-            }
+            Self::EmptyTitle => "a non-empty title is required to create a decision".into(),
             Self::UnknownDecisionId { id } => format!(
-                "aucune décision d'identifiant « {id} » dans le projet ; \
-                 `codev decision list` montre celles qui existent"
+                "no decision with identifier `{id}` in the project; \
+                 `codev decision list` shows the existing ones"
             ),
             Self::CannotSupersedeInherited { qualified_id } => format!(
-                "la décision « {qualified_id} » est héritée, donc en lecture seule ; \
-                 le geste « déviation » (à venir) permettra de s'en écarter localement"
+                "decision `{qualified_id}` is inherited, hence read-only; \
+                 use `codev decision deviate` to depart from it locally"
             ),
             Self::CannotSealInherited { qualified_id } => format!(
-                "la décision « {qualified_id} » est héritée : le scellement \
-                 relève du projet source, pas du consommateur"
+                "decision `{qualified_id}` is inherited: sealing it is up to \
+                 the source project, not the consumer"
             ),
             Self::CannotDeviateFromLocal { qualified_id } => format!(
-                "la décision « {qualified_id} » est locale : le geste propre \
-                 pour la remplacer est `codev decision supersede`, pas \
-                 `deviate` — qui est réservé aux décisions héritées"
+                "decision `{qualified_id}` is local: the proper way to \
+                 replace it is `codev decision supersede`, not \
+                 `deviate` — which is reserved for inherited decisions"
             ),
             Self::CannotPromoteFromArchived { change } => format!(
-                "le change « {change} » est archivé : un design archivé est \
-                 de l'histoire, la promotion se fait avant l'archive"
+                "change `{change}` is archived: an archived design is \
+                 history; promote decisions before archiving"
             ),
             Self::DesignMissing { change } => format!(
-                "le change « {change} » n'a pas de `design.md` — rien à promouvoir. \
-                 Crée-le d'abord avec `codev-propose` ou en éditant à la main."
+                "change `{change}` has no `design.md` — nothing to promote; \
+                 create it first with `codev-propose` or by hand"
             ),
             Self::DecisionHeadingNotFound { title } => format!(
-                "aucun bloc `### Décision : {title}` trouvé sous `## Décisions` \
-                 du design ; vérifie le titre exact (le contrôle est sensible à \
-                 la casse)"
+                "no `### Decision: {title}` block found under `## Decisions` \
+                 in the design; check the exact title (matching is \
+                 case-sensitive)"
             ),
             Self::AmbiguousDecisionHeading { title, lines } => {
-                let lignes = lines
+                let line_list = lines
                     .iter()
                     .map(u32::to_string)
                     .collect::<Vec<_>>()
                     .join(", ");
                 format!(
-                    "le titre « {title} » apparaît sur plusieurs blocs \
-                     (lignes {lignes}) — édite un des titres pour rendre le \
-                     choix sans ambiguïté avant de re-lancer la promotion"
+                    "title `{title}` appears on multiple blocks \
+                     (lines {line_list}) — edit one of the titles to make the \
+                     choice unambiguous before running the promotion again"
                 )
             }
             Self::AmbiguousDecisionId { id, candidates } => format!(
-                "l'identifiant « {id} » désigne plusieurs décisions : {} — \
-                 précise avec un identifiant qualifié",
+                "identifier `{id}` matches several decisions: {} — \
+                 use a qualified identifier instead",
                 candidates.join(", ")
             ),
             Self::SealConflict { id } => format!(
-                "le corps de « {id} » a changé depuis son scellement ; \
-                 utilise `codev decision seal {id} --force` pour réécrire \
-                 délibérément le sceau"
+                "the body of `{id}` has changed since it was sealed; \
+                 use `codev decision seal {id} --force` to deliberately \
+                 rewrite the seal"
             ),
             Self::Seal(err) => err.to_string(),
         }
@@ -161,18 +178,18 @@ impl std::fmt::Display for ActionError {
 
 impl std::error::Error for ActionError {}
 
-/// Le plan calculé pour `codev decision new`.
+/// The plan computed for `codev decision new`.
 #[derive(Debug)]
 pub struct CreatePlan {
     pub plan: Plan,
     pub new_id: String,
     pub new_path: PathBuf,
-    /// Hash du corps du nouvel ADR — exposé pour que le CLI puisse le
-    /// remonter dans son JSON de succès sans avoir à re-hasher.
+    /// Hash of the new ADR's body — exposed so the CLI can report it in
+    /// its success JSON without re-hashing.
     pub body_sha256: String,
 }
 
-/// Le plan calculé pour `codev decision supersede`.
+/// The plan computed for `codev decision supersede`.
 #[derive(Debug)]
 pub struct SupersedePlan {
     pub plan: Plan,
@@ -180,16 +197,16 @@ pub struct SupersedePlan {
     pub new_path: PathBuf,
     pub old_qualified_id: String,
     pub old_path: PathBuf,
-    /// Hash du corps du nouvel ADR — même motivation que `CreatePlan`.
+    /// Hash of the new ADR's body — same rationale as `CreatePlan`.
     pub body_sha256: String,
 }
 
-/// Le plan calculé pour `codev decision seal`.
+/// The plan computed for `codev decision seal`.
 ///
-/// Deux issues côté résultat :
-/// - `plan` non vide, `body_sha256` porte le nouveau hash → écriture à
-///   faire côté coquille ;
-/// - `plan.writes` vide → no-op silencieux (sceau déjà à jour).
+/// Two possible outcomes:
+/// - non-empty `plan`, `body_sha256` carries the new hash → the shell has
+///   a write to perform;
+/// - empty `plan.writes` → silent no-op (seal already up to date).
 #[derive(Debug)]
 pub struct SealActionPlan {
     pub plan: Plan,
@@ -199,39 +216,38 @@ pub struct SealActionPlan {
     pub was_noop: bool,
 }
 
-/// Le plan calculé pour `codev decision promote`.
+/// The plan computed for `codev decision promote`.
 #[derive(Debug)]
 pub struct PromotePlan {
     pub plan: Plan,
     pub new_id: String,
     pub new_path: PathBuf,
     pub body_sha256: String,
-    /// Le nom du change d'où vient la promotion — utile au rendu et au
-    /// contrat JSON.
+    /// The name of the change the promotion comes from — useful for
+    /// rendering and for the JSON contract.
     pub source_change: String,
-    /// Chemin du `design.md` modifié — pareillement utile.
+    /// Path of the modified `design.md` — useful for the same reasons.
     pub design_path: PathBuf,
 }
 
-/// Le plan calculé pour `codev decision deviate`.
+/// The plan computed for `codev decision deviate`.
 #[derive(Debug)]
 pub struct DeviatePlan {
     pub plan: Plan,
     pub new_id: String,
     pub new_path: PathBuf,
-    /// L'identifiant qualifié qu'on écarte — normalisé (accepte un
-    /// `path:...` ou `git:...` avec ou sans le `origin/` explicite tant
-    /// que la résolution est sans ambiguïté).
+    /// The qualified identifier being deviated from — normalized (accepts
+    /// a `path:...` or `git:...` with or without the explicit `origin/` as
+    /// long as resolution is unambiguous).
     pub target_qualified_id: String,
     pub body_sha256: String,
 }
 
-/// Prépare la création d'un nouvel ADR local.
+/// Prepares the creation of a new local ADR.
 ///
-/// `existing_seal` est le contenu courant de `seal.yaml` — la coquille
-/// l'a lu au préalable. Le plan produit écrit l'ADR **et** la mise à jour
-/// du sceau atomiquement : soit les deux réussissent, soit rien n'est
-/// écrit.
+/// `existing_seal` is the current content of `seal.yaml` — the shell has
+/// read it beforehand. The resulting plan writes the ADR **and** the seal
+/// update atomically: either both succeed, or nothing is written.
 pub fn plan_new(
     index: &DecisionIndex,
     existing_seal: &SealFile,
@@ -252,9 +268,9 @@ pub fn plan_new(
     let contents = render_new_adr(&next, title, &status, today, &[]);
     let body_sha256 = seal::body_hash(&contents)?;
 
-    // Le sceau ne s'écrit que si l'ADR est `accepted` ou `superseded` —
-    // les autres statuts (proposed, deprecated, rejected) ne portent pas
-    // d'engagement d'immutabilité.
+    // The seal is only written if the ADR is `accepted` or `superseded` —
+    // the other statuses (proposed, deprecated, rejected) carry no
+    // immutability commitment.
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), contents, WriteMode::CreateOnly);
@@ -280,14 +296,14 @@ pub fn plan_new(
     })
 }
 
-/// Prépare une supersession : réécrit le prédécesseur avec `status:
-/// superseded` et crée un nouvel ADR qui le référence.
+/// Prepares a supersession: rewrites the predecessor with `status:
+/// superseded` and creates a new ADR that references it.
 ///
-/// `source_content` fournit à la fonction le contenu du fichier
-/// prédécesseur, sans que l'index ait à le stocker deux fois. On ne
-/// paramètre pas par `&dyn FileSystem` pour rester utilisable depuis
-/// d'autres consommateurs (tests, futur `--dry-run` client) sans
-/// coupler à un port.
+/// `source_content` supplies the function with the predecessor file's
+/// content, without the index having to store it twice. We do not take a
+/// `&dyn FileSystem` parameter so the function stays usable from other
+/// consumers (tests, a future client-side `--dry-run`) without coupling to
+/// a port.
 pub fn plan_supersede(
     index: &DecisionIndex,
     existing_seal: &SealFile,
@@ -301,37 +317,33 @@ pub fn plan_supersede(
         return Err(ActionError::EmptyTitle);
     }
 
-    // Résolution de l'ancien : deux cas selon le format du `old_id`.
+    // Resolve the old entry: two cases depending on the `old_id` format.
     let (old_index, is_qualified) = resolve_old_entry(index, old_id)?;
     let old_entry = &index.entries[old_index];
 
-    // Une décision héritée reste en lecture seule.
+    // An inherited decision stays read-only.
     if old_entry.qualified_id.origin != Origin::Project {
         return Err(ActionError::CannotSupersedeInherited {
             qualified_id: old_entry.qualified_id.as_str(),
         });
     }
-    let _ = is_qualified; // exposé plus tard si besoin
+    let _ = is_qualified; // exposed later if needed
 
-    // Nouveau frontmatter du prédécesseur — mêmes champs sauf `status`.
+    // New frontmatter for the predecessor — same fields except `status`.
     let old_source = source_content(&old_entry.path).map_err(|e| {
-        // Une erreur de lecture est une erreur d'exécution, pas un refus
-        // logique — on l'expose comme `UnknownDecisionId` pour ne pas
-        // fuiter l'io. En pratique c'est très rare (le fichier vient
-        // d'être indexé) ; les futurs consommateurs sensibles pourront
-        // pré-lire pour distinguer.
+        // A read error is a runtime error, not a logical refusal — we
+        // expose it as `UnknownDecisionId` to avoid leaking the io error.
+        // In practice this is very rare (the file was just indexed);
+        // future consumers that care can pre-read to tell them apart.
         let _ = e;
         ActionError::UnknownDecisionId {
             id: old_entry.decision.id.clone(),
         }
     })?;
-    let new_old_contents = rewrite_frontmatter_status(
-        &old_source,
-        &old_entry.decision,
-        DecisionStatus::Superseded,
-    );
+    let new_old_contents =
+        rewrite_frontmatter_status(&old_source, &old_entry.decision, DecisionStatus::Superseded);
 
-    // Nouveau numéro pour la décision qui supersede.
+    // New number for the superseding decision.
     let next = next_local_id(index);
     let new_slug = slug_from_title(new_title);
     let new_filename = format!("{next}-{new_slug}.md");
@@ -346,9 +358,9 @@ pub fn plan_supersede(
         &[old_id_ref],
     );
 
-    // Hash et sceau pour le nouvel ADR uniquement — le corps de l'ancien
-    // reste bit-identique (voir test dédié), donc son sceau reste valide
-    // sans manipulation.
+    // Hash and seal for the new ADR only — the old one's body stays
+    // bit-identical (see dedicated test), so its seal remains valid
+    // without any change.
     let body_sha256 = seal::body_hash(&new_adr)?;
     let new_seal = seal::plan_seal_new(
         existing_seal,
@@ -360,7 +372,11 @@ pub fn plan_supersede(
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), new_adr, WriteMode::CreateOnly);
-    plan.write(old_entry.path.clone(), new_old_contents, WriteMode::Overwrite);
+    plan.write(
+        old_entry.path.clone(),
+        new_old_contents,
+        WriteMode::Overwrite,
+    );
     plan.write(
         layout.decisions_seal_file(),
         seal::render_seal_file(&new_seal),
@@ -377,19 +393,19 @@ pub fn plan_supersede(
     })
 }
 
-/// Prépare un sceau — cas de la commande `codev decision seal <id>`.
+/// Prepares a seal — the `codev decision seal <id>` command.
 ///
-/// Trois issues selon l'état :
-/// - ADR non scellé → ajoute une entrée (`was_noop = false`).
-/// - ADR scellé, corps inchangé → no-op silencieux (`was_noop = true`,
-///   `plan.writes` vide).
-/// - ADR scellé, corps changé, `force = false` → refuse avec
+/// Three outcomes depending on the state:
+/// - ADR not sealed → adds an entry (`was_noop = false`).
+/// - ADR sealed, body unchanged → silent no-op (`was_noop = true`,
+///   empty `plan.writes`).
+/// - ADR sealed, body changed, `force = false` → refuses with
 ///   `SealConflict`.
-/// - ADR scellé, corps changé, `force = true` → réécrit l'entrée.
+/// - ADR sealed, body changed, `force = true` → rewrites the entry.
 ///
-/// `adr_source` fournit à la fonction le contenu courant du fichier ADR ;
-/// même motif que `plan_supersede` — la coquille lit, la fonction pure
-/// calcule.
+/// `adr_source` supplies the function with the current content of the ADR
+/// file; same pattern as `plan_supersede` — the shell reads, the pure
+/// function computes.
 pub fn plan_seal(
     index: &DecisionIndex,
     existing_seal: &SealFile,
@@ -399,8 +415,8 @@ pub fn plan_seal(
     layout: &Layout,
     adr_source: impl FnOnce(&std::path::Path) -> std::io::Result<String>,
 ) -> Result<SealActionPlan, ActionError> {
-    // Résolution : même mécanique que supersede — mais on refuse une
-    // décision héritée avec un code dédié.
+    // Resolution: same mechanics as supersede — but an inherited decision
+    // is refused with a dedicated code.
     let (idx, _) = resolve_old_entry(index, id)?;
     let entry = &index.entries[idx];
     if entry.qualified_id.origin != Origin::Project {
@@ -420,7 +436,7 @@ pub fn plan_seal(
 
     match already {
         None => {
-            // Cas 1 : pas encore scellé — insertion neuve.
+            // Case 1: not sealed yet — fresh insertion.
             let new_seal = seal::plan_seal_new(
                 existing_seal,
                 local_id.clone(),
@@ -442,7 +458,7 @@ pub fn plan_seal(
             })
         }
         Some(existing_entry) if existing_entry.body_sha256 == body_sha256 => {
-            // Cas 2 : no-op — le sceau est déjà à jour.
+            // Case 2: no-op — the seal is already up to date.
             Ok(SealActionPlan {
                 plan,
                 id: local_id,
@@ -452,11 +468,11 @@ pub fn plan_seal(
             })
         }
         Some(_) if !force => {
-            // Cas 3 : conflit sans force.
+            // Case 3: conflict without force.
             Err(ActionError::SealConflict { id: local_id })
         }
         Some(_) => {
-            // Cas 4 : force → réécriture.
+            // Case 4: force → rewrite.
             let new_seal = seal::plan_seal_force(
                 existing_seal,
                 local_id.clone(),
@@ -480,27 +496,28 @@ pub fn plan_seal(
     }
 }
 
-/// Un statut porte-t-il un engagement d'immutabilité ?
+/// Does a status carry an immutability commitment?
 fn status_needs_seal(status: &DecisionStatus) -> bool {
-    matches!(status, DecisionStatus::Accepted | DecisionStatus::Superseded)
-}
-
-/// La ligne de citation qui remplace le corps d'un bloc `### Décision :`
-/// après promotion. Emit d'ici pour rester testable sans I/O.
-fn build_promote_reference(new_id: &str, new_slug: &str) -> String {
-    format!(
-        "\n> Promue en ADR **{new_id}** — voir `_codev/decisions/{new_id}-{new_slug}.md`.\n\n"
+    matches!(
+        status,
+        DecisionStatus::Accepted | DecisionStatus::Superseded
     )
 }
 
-/// Prépare la promotion d'un bloc `### Décision : <titre>` d'un
-/// `design.md` en ADR local. Réutilise le rendu de `plan_new` avec un
-/// corps précalculé — le sceau (K3) est attaché au plan.
+/// The quote line that replaces the body of a `### Decision:` block after
+/// promotion. Emitted here so it stays testable without I/O.
+fn build_promote_reference(new_id: &str, new_slug: &str) -> String {
+    format!("\n> Promoted to ADR **{new_id}** — see `_codev/decisions/{new_id}-{new_slug}.md`.\n\n")
+}
+
+/// Prepares the promotion of a `### Decision: <title>` block from a
+/// `design.md` into a local ADR. Reuses the `plan_new` rendering with a
+/// precomputed body — the decision seal is attached to the plan.
 ///
-/// `design_source` : contenu courant du design (la coquille l'a lu).
-/// `design_path` : chemin du design côté disque, pour la write du plan.
+/// `design_source`: current content of the design (the shell has read it).
+/// `design_path`: on-disk path of the design, for the plan's write.
 ///
-/// Refus explicites — voir `ActionError` : `EmptyTitle`, `DesignMissing`,
+/// Explicit refusals — see `ActionError`: `EmptyTitle`, `DesignMissing`,
 /// `DecisionHeadingNotFound`, `AmbiguousDecisionHeading`.
 #[allow(clippy::too_many_arguments)]
 pub fn plan_promote(
@@ -529,14 +546,14 @@ pub fn plan_promote(
     })?;
     let block = &blocks[idx];
 
-    // ─── Construction de l'ADR ───
+    // ─── Building the ADR ───
     let next = next_local_id(index);
     let slug = slug_from_title(&block.title);
     let filename = format!("{next}-{slug}.md");
     let new_path = layout.decisions_dir().join(&filename);
 
-    // Rendu du corps ADR : template avec placeholders pour Contexte,
-    // Conséquences, Alternatives ; le bloc verbatim va sous ## Décision.
+    // ADR body rendering: template with placeholders for Context,
+    // Consequences, Alternatives; the verbatim block goes under ## Decision.
     let contents = render_promoted_adr(&next, &block.title, today, &block.body, change_name);
     let body_sha256 = seal::body_hash(&contents)?;
     let new_seal = seal::plan_seal_new(
@@ -546,10 +563,10 @@ pub fn plan_promote(
         today.to_string(),
     )?;
 
-    // ─── Substitution du bloc dans le design ───
-    // On garde la ligne de titre `### Décision : <titre>` telle qu'elle
-    // était, on remplace seulement le corps par la citation. Le titre
-    // se termine au premier `\n` après byte_range.start.
+    // ─── Substituting the block in the design ───
+    // We keep the `### Decision: <title>` heading line as it was and only
+    // replace the body with the quote. The heading ends at the first `\n`
+    // after byte_range.start.
     let title_line_end = design_source[block.byte_range.start..]
         .find('\n')
         .map(|off| block.byte_range.start + off + 1)
@@ -561,7 +578,7 @@ pub fn plan_promote(
     new_design.push_str(&reference);
     new_design.push_str(&design_source[block.byte_range.end..]);
 
-    // ─── Plan atomique ───
+    // ─── Atomic plan ───
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), contents, WriteMode::CreateOnly);
@@ -582,9 +599,9 @@ pub fn plan_promote(
     })
 }
 
-/// Rend le contenu complet d'un ADR issu d'une promotion depuis un
-/// `design.md` — le corps du bloc va sous `## Décision`, les autres
-/// sections gardent leur placeholder pour ventilation manuelle.
+/// Renders the full content of an ADR promoted from a `design.md` — the
+/// block's body goes under `## Decision`, the other sections keep their
+/// placeholder for manual redistribution.
 fn render_promoted_adr(
     id: &str,
     title: &str,
@@ -592,18 +609,11 @@ fn render_promoted_adr(
     verbatim_body: &str,
     source_change: &str,
 ) -> String {
-    let frontmatter = render_frontmatter(
-        id,
-        title,
-        &DecisionStatus::Accepted,
-        today,
-        &[],
-        &[],
-        &[],
-    );
-    // Corps propre au verbatim : on retire les blancs de tête pour
-    // éviter une ligne vide inutile en début de section, et on garantit
-    // un `\n` final.
+    let frontmatter =
+        render_frontmatter(id, title, &DecisionStatus::Accepted, today, &[], &[], &[]);
+    // Clean verbatim body: strip leading newlines to avoid a useless
+    // blank line at the start of the section, and guarantee a trailing
+    // `\n`.
     let trimmed_body = verbatim_body.trim_start_matches('\n');
     let body_with_newline = if trimmed_body.ends_with('\n') {
         trimmed_body.to_string()
@@ -613,32 +623,32 @@ fn render_promoted_adr(
 
     format!(
         "{frontmatter}\n\n\
-         <!-- ADR promu depuis _codev/changes/{source_change}/design.md.\n     \
-         Ventile le corps ci-dessous entre Contexte, Décision, Conséquences\n     \
-         et Alternatives écartées avant d'archiver le change. -->\n\n\
-         ## Contexte\n\n\
-         <!-- Le problème ou la situation qui appelle une décision. Court : deux ou\n     \
-         trois phrases suffisent. -->\n\n\
-         ## Décision\n\n\
+         <!-- ADR promoted from _codev/changes/{source_change}/design.md.\n     \
+         Split the body below across Context, Decision, Consequences\n     \
+         and Alternatives considered before archiving the change. -->\n\n\
+         ## Context\n\n\
+         <!-- The problem or situation that calls for a decision. Keep it short: two\n     \
+         or three sentences are enough. -->\n\n\
+         ## Decision\n\n\
          {body_with_newline}\n\
-         ## Conséquences\n\n\
-         <!-- Ce que cette décision impose ou permet — bonnes et mauvaises. -->\n\n\
-         ## Alternatives écartées\n\n\
-         <!-- Ce qu'on aurait pu faire, et pourquoi on a choisi autre chose. -->\n"
+         ## Consequences\n\n\
+         <!-- What this decision imposes or enables — good and bad. -->\n\n\
+         ## Alternatives considered\n\n\
+         <!-- What could have been done instead, and why something else was chosen. -->\n"
     )
 }
 
-/// Prépare la dérive locale d'une décision héritée.
+/// Prepares a local deviation from an inherited decision.
 ///
-/// Crée un ADR local `accepted` portant `deviates_from: ["<qualified>"]`
-/// et scelle son corps — comme `plan_new` mais avec la référence à la
-/// cible.
+/// Creates a local `accepted` ADR carrying `deviates_from: ["<qualified>"]`
+/// and seals its body — like `plan_new`, but with the reference to the
+/// target.
 ///
-/// Refus explicites :
-/// - `EmptyTitle` si `new_title` est vide ;
-/// - `CannotDeviateFromLocal` si `target` est une décision `projet/…` ;
-/// - `UnknownDecisionId` si `target` n'est pas indexée ;
-/// - `AmbiguousDecisionId` si deux sources exposent le même qualified.
+/// Explicit refusals:
+/// - `EmptyTitle` if `new_title` is empty;
+/// - `CannotDeviateFromLocal` if `target` is a `project/…` decision;
+/// - `UnknownDecisionId` if `target` is not indexed;
+/// - `AmbiguousDecisionId` if two sources expose the same qualified id.
 pub fn plan_deviate(
     index: &DecisionIndex,
     existing_seal: &SealFile,
@@ -651,7 +661,7 @@ pub fn plan_deviate(
         return Err(ActionError::EmptyTitle);
     }
 
-    // Résolution de la cible — même mécanique que supersede et seal.
+    // Resolve the target — same mechanics as supersede and seal.
     let (idx, _) = resolve_old_entry(index, target)?;
     let entry = &index.entries[idx];
     if entry.qualified_id.origin == Origin::Project {
@@ -662,13 +672,14 @@ pub fn plan_deviate(
 
     let qualified = entry.qualified_id.as_str();
 
-    // Nouveau numéro local, rendu de l'ADR, hash, sceau.
+    // New local number, ADR rendering, hash, seal.
     let next = next_local_id(index);
     let slug = slug_from_title(new_title);
     let filename = format!("{next}-{slug}.md");
     let new_path = layout.decisions_dir().join(&filename);
 
-    let contents = render_new_deviate_adr(&next, new_title, today, std::slice::from_ref(&qualified));
+    let contents =
+        render_new_deviate_adr(&next, new_title, today, std::slice::from_ref(&qualified));
     let body_sha256 = seal::body_hash(&contents)?;
     let new_seal = seal::plan_seal_new(
         existing_seal,
@@ -695,27 +706,24 @@ pub fn plan_deviate(
     })
 }
 
-// ─────────────────────────── résolution d'identifiant ───────────────────────────
+// ─────────────────────────── identifier resolution ───────────────────────────
 
-/// Résout un identifiant `old_id` en une entrée de l'index.
+/// Resolves an `old_id` identifier to an index entry.
 ///
-/// Deux formes acceptées :
-/// - `<id>` court (par exemple `0007`) — sans ambiguïté sur l'origine
-/// - `<origin>/<id>` qualifié (par exemple `path:~/partage/0100`)
+/// Two accepted forms:
+/// - short `<id>` (for example `0007`) — when the origin is unambiguous
+/// - qualified `<origin>/<id>` (for example `path:~/shared/0100`)
 pub fn resolve_old_entry(
     index: &DecisionIndex,
     old_id: &str,
 ) -> Result<(usize, bool), ActionError> {
-    // Forme qualifiée ?
+    // Qualified form?
     if let Some((origin_raw, id)) = split_qualified(old_id) {
         let matching: Vec<usize> = index
             .entries
             .iter()
             .enumerate()
-            .filter(|(_, e)| {
-                e.qualified_id.origin.as_str() == origin_raw
-                    && e.decision.id == id
-            })
+            .filter(|(_, e)| e.qualified_id.origin.as_str() == origin_raw && e.decision.id == id)
             .map(|(i, _)| i)
             .collect();
         return match matching.len() {
@@ -726,7 +734,7 @@ pub fn resolve_old_entry(
         };
     }
 
-    // Forme courte : recherche par `decision.id`.
+    // Short form: look up by `decision.id`.
     let matching: Vec<usize> = index
         .entries
         .iter()
@@ -750,19 +758,19 @@ pub fn resolve_old_entry(
 }
 
 fn split_qualified(raw: &str) -> Option<(String, String)> {
-    // Un identifiant qualifié se termine par `/<id>` — l'origine peut
-    // contenir des `/` (le `path:~/partage/xxx` en a). On prend donc le
-    // dernier `/` comme séparateur.
+    // A qualified identifier ends with `/<id>` — the origin may contain
+    // `/` characters (`path:~/shared/xxx` does). So we take the last `/`
+    // as the separator.
     let idx = raw.rfind('/')?;
     let origin_raw = &raw[..idx];
     let id = &raw[idx + 1..];
     if origin_raw.is_empty() || id.is_empty() {
         return None;
     }
-    // Une origine qualifiée commence toujours par `projet` ou `path:` ou
-    // `git:` — sinon c'est un id court qui contient un `/`, très
-    // improbable, mais on préfère ne pas le confondre.
-    if origin_raw != "projet"
+    // A qualified origin always starts with `project`, `path:` or `git:` —
+    // otherwise it is a short id containing a `/`, which is very unlikely,
+    // but we would rather not confuse the two.
+    if origin_raw != "project"
         && !origin_raw.starts_with("path:")
         && !origin_raw.starts_with("git:")
     {
@@ -771,11 +779,11 @@ fn split_qualified(raw: &str) -> Option<(String, String)> {
     Some((origin_raw.to_string(), id.to_string()))
 }
 
-// ─────────────────────────── numérotation & slug ───────────────────────────
+// ─────────────────────────── numbering & slug ───────────────────────────
 
-/// `NNNN` — un de plus que le plus grand `id` numérique connu **côté projet
-/// uniquement**. Les décisions héritées vivent dans leur propre espace ; on
-/// ne s'y intercale pas.
+/// `NNNN` — one more than the largest known numeric `id` **on the project
+/// side only**. Inherited decisions live in their own space; we do not
+/// interleave with them.
 fn next_local_id(index: &DecisionIndex) -> String {
     let max_local = index
         .entries
@@ -787,8 +795,8 @@ fn next_local_id(index: &DecisionIndex) -> String {
     format!("{:04}", max_local + 1)
 }
 
-/// Kebab-case ASCII à partir d'un titre libre. Un slug vide après
-/// normalisation devient `decision` — fallback documenté du design.
+/// ASCII kebab-case from a free-form title. A slug that is empty after
+/// normalization becomes `decision` — the fallback documented in the design.
 pub fn slug_from_title(title: &str) -> String {
     let mut out = String::with_capacity(title.len());
     let mut previous_dash = true;
@@ -819,7 +827,7 @@ pub fn slug_from_title(title: &str) -> String {
     }
 }
 
-// ─────────────────────────── rendu ADR ───────────────────────────
+// ─────────────────────────── ADR rendering ───────────────────────────
 
 fn render_new_adr(
     id: &str,
@@ -832,14 +840,9 @@ fn render_new_adr(
     DECISION_TEMPLATE.replace("{{FRONTMATTER}}", &frontmatter)
 }
 
-/// Rendu d'un ADR de dérive — même corps modèle, frontmatter avec
+/// Renders a deviation ADR — same template body, frontmatter with
 /// `deviates_from`.
-fn render_new_deviate_adr(
-    id: &str,
-    title: &str,
-    today: &str,
-    deviates_from: &[String],
-) -> String {
+fn render_new_deviate_adr(id: &str, title: &str, today: &str, deviates_from: &[String]) -> String {
     let frontmatter = render_frontmatter(
         id,
         title,
@@ -899,22 +902,22 @@ fn render_frontmatter(
     out
 }
 
-/// Cite un scalaire YAML entre guillemets ; échappe les caractères
-/// problématiques minimaux.
+/// Quotes a YAML scalar in double quotes; escapes the minimal set of
+/// problematic characters.
 fn yaml_scalar(raw: &str) -> String {
-    let echappe = raw.replace('\\', "\\\\").replace('"', "\\\"");
-    format!("\"{echappe}\"")
+    let escaped = raw.replace('\\', "\\\\").replace('"', "\\\"");
+    format!("\"{escaped}\"")
 }
 
-/// Réécrit le contenu d'un ADR existant en changeant uniquement le `status`
-/// du frontmatter. Le corps — tout ce qui suit le deuxième `---` — est
-/// préservé au caractère près.
+/// Rewrites the content of an existing ADR, changing only the frontmatter
+/// `status`. The body — everything after the second `---` — is preserved
+/// character for character.
 pub fn rewrite_frontmatter_status(
     source: &str,
     decision: &codev_core::decisions::Decision,
     new_status: DecisionStatus,
 ) -> String {
-    let corps = &source[decision.frontmatter_span.byte_range.end..];
+    let body = &source[decision.frontmatter_span.byte_range.end..];
     let frontmatter = render_frontmatter(
         &decision.id,
         &decision.title,
@@ -924,10 +927,10 @@ pub fn rewrite_frontmatter_status(
         &decision.tags,
         &decision.deviates_from,
     );
-    // Le `frontmatter_span` se termine juste après le `---\n` de fermeture.
-    // On ajoute un `\n` après notre nouveau frontmatter pour restaurer la
-    // même forme.
-    format!("{frontmatter}\n{corps}")
+    // `frontmatter_span` ends right after the closing `---\n`.
+    // We add a `\n` after our new frontmatter to restore the same
+    // shape.
+    format!("{frontmatter}\n{body}")
 }
 
 #[cfg(test)]
@@ -945,7 +948,7 @@ mod tests {
 
     fn adr(id: &str, status: &str) -> String {
         format!(
-            "---\nid: \"{id}\"\ntitle: ADR {id}\nstatus: {status}\ndate: 2026-09-08\n---\n\n## Contexte\n\nx\n"
+            "---\nid: \"{id}\"\ntitle: ADR {id}\nstatus: {status}\ndate: 2026-09-08\n---\n\n## Context\n\nx\n"
         )
     }
 
@@ -956,22 +959,22 @@ mod tests {
     }
 
     #[test]
-    fn squelette_est_embarque() {
+    fn skeleton_is_embedded() {
         assert!(DECISION_TEMPLATE.contains("{{FRONTMATTER}}"));
-        assert!(DECISION_TEMPLATE.contains("## Contexte"));
-        assert!(DECISION_TEMPLATE.contains("## Décision"));
-        assert!(DECISION_TEMPLATE.contains("## Conséquences"));
-        assert!(DECISION_TEMPLATE.contains("## Alternatives écartées"));
+        assert!(DECISION_TEMPLATE.contains("## Context"));
+        assert!(DECISION_TEMPLATE.contains("## Decision"));
+        assert!(DECISION_TEMPLATE.contains("## Consequences"));
+        assert!(DECISION_TEMPLATE.contains("## Alternatives considered"));
     }
 
     #[test]
-    fn plan_new_dans_projet_vide_produit_0001() {
+    fn plan_new_in_empty_project_yields_0001() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_new(
             &index,
             &SealFile::empty(),
-            "Un premier choix",
+            "A first choice",
             DecisionStatus::Accepted,
             "2026-09-08",
             &Layout::new("/p"),
@@ -980,9 +983,9 @@ mod tests {
         assert_eq!(plan.new_id, "0001");
         assert_eq!(
             plan.new_path,
-            PathBuf::from("/p/_codev/decisions/0001-un-premier-choix.md")
+            PathBuf::from("/p/_codev/decisions/0001-a-first-choice.md")
         );
-        // 2 writes : ADR (CreateOnly) + seal.yaml (Overwrite).
+        // 2 writes: ADR (CreateOnly) + seal.yaml (Overwrite).
         assert_eq!(plan.plan.writes.len(), 2);
         let adr_write = plan
             .plan
@@ -994,23 +997,20 @@ mod tests {
     }
 
     #[test]
-    fn numerotation_ignore_les_sources_heritees() {
+    fn numbering_ignores_inherited_sources() {
         let fs = MemoryFileSystem::new()
-            .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file("/p/_codev/decisions/0001-local.md", adr("0001", "accepted"))
-            // Source héritée avec un id « plus grand » — ne doit pas influencer.
+            // Inherited source with a "larger" id — must have no influence.
             .with_file(
-                "/home/partage/_codev/decisions/9999-du-partage.md",
+                "/home/shared/_codev/decisions/9999-from-shared.md",
                 adr("9999", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let plan = plan_new(
             &index,
             &SealFile::empty(),
-            "Suivant",
+            "Next",
             DecisionStatus::Accepted,
             "2026-09-08",
             &Layout::new("/p"),
@@ -1020,18 +1020,18 @@ mod tests {
     }
 
     #[test]
-    fn slug_du_titre() {
-        assert_eq!(slug_from_title("Titre normal"), "titre-normal");
-        assert_eq!(slug_from_title("émoji : 🎉"), "moji");
+    fn slug_from_title_cases() {
+        assert_eq!(slug_from_title("Normal title"), "normal-title");
+        assert_eq!(slug_from_title("Ωmega : 🎉"), "mega");
         assert_eq!(slug_from_title("???"), "decision");
         assert_eq!(slug_from_title(""), "decision");
-        assert_eq!(slug_from_title("  espaces multiples  "), "espaces-multiples");
+        assert_eq!(slug_from_title("  multiple spaces  "), "multiple-spaces");
         assert_eq!(slug_from_title("under_score"), "under-score");
         assert_eq!(slug_from_title("ID-Kebab-Case"), "id-kebab-case");
     }
 
     #[test]
-    fn titre_vide_refuse() {
+    fn empty_title_is_refused() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let err = plan_new(
@@ -1047,9 +1047,9 @@ mod tests {
     }
 
     #[test]
-    fn plan_new_ecrit_ladr_en_create_only_et_le_sceau_en_overwrite() {
-        // L'ADR ne doit jamais écraser un fichier existant (CreateOnly),
-        // mais le sceau se réécrit à chaque nouvelle décision (Overwrite).
+    fn plan_new_writes_adr_as_create_only_and_seal_as_overwrite() {
+        // The ADR must never overwrite an existing file (CreateOnly),
+        // but the seal is rewritten on every new decision (Overwrite).
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_new(
@@ -1061,7 +1061,7 @@ mod tests {
             &Layout::new("/p"),
         )
         .unwrap();
-        // 2 writes : l'ADR + le seal.yaml.
+        // 2 writes: the ADR + seal.yaml.
         assert_eq!(plan.plan.writes.len(), 2);
         let create_only = plan
             .plan
@@ -1069,60 +1069,57 @@ mod tests {
             .iter()
             .filter(|w| w.mode == WriteMode::CreateOnly)
             .count();
-        assert_eq!(create_only, 1, "un seul CreateOnly attendu (l'ADR)");
+        assert_eq!(create_only, 1, "exactly one CreateOnly expected (the ADR)");
     }
 
     #[test]
-    fn plan_new_sur_statut_proposed_ne_scelle_pas() {
-        // Un ADR `proposed` ne porte pas d'engagement d'immutabilité —
-        // pas de sceau.
+    fn plan_new_with_proposed_status_does_not_seal() {
+        // A `proposed` ADR carries no immutability commitment —
+        // no seal.
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_new(
             &index,
             &SealFile::empty(),
-            "Piste",
+            "Tentative idea",
             DecisionStatus::Proposed,
             "2026-09-08",
             &Layout::new("/p"),
         )
         .unwrap();
-        assert_eq!(plan.plan.writes.len(), 1, "aucun sceau pour proposed");
+        assert_eq!(plan.plan.writes.len(), 1, "no seal for proposed");
     }
 
     // ─────────────── supersede ───────────────
 
     #[test]
-    fn plan_supersede_produit_deux_ecritures() {
+    fn plan_supersede_produces_the_expected_writes() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0003-vieux.md",
-                adr("0003", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
         let index = empty_index_with_config(&fs);
         let plan = plan_supersede(
             &index,
             &SealFile::empty(),
             "0003",
-            "Nouveau choix",
+            "New choice",
             "2026-09-08",
             &Layout::new("/p"),
             |path| {
                 Ok(fs
                     .read(path)
-                    .unwrap_or_else(|| panic!("{} absent", path.display())))
+                    .unwrap_or_else(|| panic!("{} missing", path.display())))
             },
         )
         .unwrap();
 
         assert_eq!(plan.new_id, "0004");
-        assert_eq!(plan.old_qualified_id, "projet/0003");
-        // 3 writes : nouvel ADR (CreateOnly), ancien réécrit (Overwrite),
+        assert_eq!(plan.old_qualified_id, "project/0003");
+        // 3 writes: new ADR (CreateOnly), old one rewritten (Overwrite),
         // seal.yaml (Overwrite).
         assert_eq!(plan.plan.writes.len(), 3);
 
-        // Nouvel ADR : CreateOnly, référence l'ancien.
+        // New ADR: CreateOnly, references the old one.
         let new_write = plan
             .plan
             .writes
@@ -1132,7 +1129,7 @@ mod tests {
         assert!(new_write.contents.contains("supersedes: [\"0003\"]"));
         assert!(new_write.contents.contains("id: \"0004\""));
 
-        // Ancien ADR : Overwrite, status: superseded.
+        // Old ADR: Overwrite, status: superseded.
         let old_write = plan
             .plan
             .writes
@@ -1143,7 +1140,7 @@ mod tests {
     }
 
     #[test]
-    fn supersede_id_inconnu_refuse() {
+    fn supersede_unknown_id_is_refused() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let err = plan_supersede(
@@ -1160,55 +1157,52 @@ mod tests {
     }
 
     #[test]
-    fn supersede_source_heritee_refuse() {
+    fn supersede_inherited_source_is_refused() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100-partagee.md",
+                "/home/shared/_codev/decisions/0100-shared.md",
                 adr("0100", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let err = plan_supersede(
             &index,
             &SealFile::empty(),
-            "path:~/partage/0100",
-            "Notre alternative",
+            "path:~/shared/0100",
+            "Our alternative",
             "2026-09-08",
             &Layout::new("/p"),
             |_| Ok(String::new()),
         )
         .unwrap_err();
         assert_eq!(err.code(), "cannot_supersede_inherited");
-        assert!(err.to_string().contains("déviation"));
+        assert!(err.to_string().contains("deviate"));
     }
 
     #[test]
-    fn frontmatter_supersede_conserve_champs_dorigine() {
-        // On construit un source explicite avec tags et supersedes existants,
-        // et on vérifie que la réécriture les conserve tous.
-        let source = "---\nid: \"0003\"\ntitle: \"Vieux titre\"\nstatus: accepted\ndate: 2025-01-01\ntags: [\"a\", \"b\"]\nsupersedes: [\"0001\"]\n---\n\n## Corps\n\ninchangé\n";
+    fn supersede_frontmatter_keeps_original_fields() {
+        // Build an explicit source with existing tags and supersedes, and
+        // check that the rewrite keeps all of them.
+        let source = "---\nid: \"0003\"\ntitle: \"Old title\"\nstatus: accepted\ndate: 2025-01-01\ntags: [\"a\", \"b\"]\nsupersedes: [\"0001\"]\n---\n\n## Body\n\nunchanged\n";
         let parsed = codev_core::decisions::parse_decision(source);
-        let decision = parsed.value.expect("décision valide");
+        let decision = parsed.value.expect("valid decision");
         let out = rewrite_frontmatter_status(source, &decision, DecisionStatus::Superseded);
 
         assert!(out.contains("status: superseded"));
         assert!(out.contains("id: \"0003\""));
-        assert!(out.contains("title: \"Vieux titre\""));
+        assert!(out.contains("title: \"Old title\""));
         assert!(out.contains("date: 2025-01-01"));
         assert!(out.contains("tags: [\"a\", \"b\"]"));
         assert!(out.contains("supersedes: [\"0001\"]"));
-        // Corps préservé au caractère près.
-        assert!(out.ends_with("## Corps\n\ninchangé\n"));
+        // Body preserved character for character.
+        assert!(out.ends_with("## Body\n\nunchanged\n"));
     }
 
     #[test]
-    fn supersede_ne_touche_pas_au_corps_du_predecesseur() {
-        // Golden : après supersession, tout ce qui est après le frontmatter
-        // reste identique à l'octet près.
-        let source = "---\nid: \"0003\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\nUn contenu avec des `caractères` spéciaux — comme ça.\n\n## Décision\n\nOK.\n";
+    fn supersede_does_not_touch_predecessor_body() {
+        // Golden: after supersession, everything after the frontmatter
+        // stays byte-for-byte identical.
+        let source = "---\nid: \"0003\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nContent with `special` characters — “curly quotes” ✓.\n\n## Decision\n\nOK.\n";
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/decisions/0003.md", source);
@@ -1217,7 +1211,7 @@ mod tests {
             &index,
             &SealFile::empty(),
             "0003",
-            "Nouveau",
+            "New",
             "2026-09-08",
             &Layout::new("/p"),
             |path| Ok(fs.read(path).unwrap()),
@@ -1231,36 +1225,30 @@ mod tests {
             .find(|w| w.mode == WriteMode::Overwrite)
             .unwrap();
 
-        // Extrait ce qui suit le deuxième `---\n` — c'est le corps.
+        // Extract what follows the second `---\n` — that is the body.
         fn body_after_frontmatter(text: &str) -> &str {
-            let end_first = text.find("---\n").expect("premier ---") + 4;
-            let end_second_rel = text[end_first..]
-                .find("---\n")
-                .expect("second ---")
-                + 4;
+            let end_first = text.find("---\n").expect("first ---") + 4;
+            let end_second_rel = text[end_first..].find("---\n").expect("second ---") + 4;
             &text[end_first + end_second_rel..]
         }
         assert_eq!(
             body_after_frontmatter(&old_write.contents),
             body_after_frontmatter(source),
-            "corps au caractère près"
+            "body identical character for character"
         );
     }
 
     #[test]
-    fn plan_supersede_inclut_la_nouvelle_decision() {
+    fn plan_supersede_includes_the_new_decision() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0003-vieux.md",
-                adr("0003", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
         let index = empty_index_with_config(&fs);
         let plan = plan_supersede(
             &index,
             &SealFile::empty(),
             "0003",
-            "Nouveau choix",
+            "New choice",
             "2026-09-08",
             &Layout::new("/p"),
             |path| Ok(fs.read(path).unwrap()),
@@ -1268,20 +1256,17 @@ mod tests {
         .unwrap();
         assert_eq!(
             plan.new_path,
-            PathBuf::from("/p/_codev/decisions/0004-nouveau-choix.md")
+            PathBuf::from("/p/_codev/decisions/0004-new-choice.md")
         );
     }
 
     // ─────────────── plan_seal ───────────────
 
     #[test]
-    fn plan_seal_neuf_ajoute_lentree() {
+    fn plan_seal_fresh_adds_the_entry() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0001-x.md",
-                adr("0001", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0001-x.md", adr("0001", "accepted"));
         let index = empty_index_with_config(&fs);
         let plan = plan_seal(
             &index,
@@ -1300,15 +1285,14 @@ mod tests {
     }
 
     #[test]
-    fn plan_seal_noop_si_le_hash_correspond_deja() {
+    fn plan_seal_is_noop_when_hash_already_matches() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0001-x.md",
-                adr("0001", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0001-x.md", adr("0001", "accepted"));
         let index = empty_index_with_config(&fs);
-        let source = fs.read(std::path::Path::new("/p/_codev/decisions/0001-x.md")).unwrap();
+        let source = fs
+            .read(std::path::Path::new("/p/_codev/decisions/0001-x.md"))
+            .unwrap();
         let hash = seal::body_hash(&source).unwrap();
         let mut existing = SealFile::empty();
         existing.seals.push(codev_core::decisions::seal::Seal {
@@ -1327,22 +1311,19 @@ mod tests {
         )
         .unwrap();
         assert!(plan.was_noop);
-        assert!(plan.plan.writes.is_empty(), "no-op → aucune écriture");
+        assert!(plan.plan.writes.is_empty(), "no-op → no writes");
     }
 
     #[test]
-    fn plan_seal_refuse_sans_force_si_le_corps_a_change() {
+    fn plan_seal_refuses_without_force_when_body_changed() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0001-x.md",
-                adr("0001", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0001-x.md", adr("0001", "accepted"));
         let index = empty_index_with_config(&fs);
         let mut existing = SealFile::empty();
         existing.seals.push(codev_core::decisions::seal::Seal {
             id: "0001".into(),
-            body_sha256: "sha256:un-vieux-hash".into(),
+            body_sha256: "sha256:an-old-hash".into(),
             sealed_at: "2026-09-08".into(),
         });
         let err = plan_seal(
@@ -1359,18 +1340,15 @@ mod tests {
     }
 
     #[test]
-    fn plan_seal_avec_force_reecrit_lentree() {
+    fn plan_seal_with_force_rewrites_the_entry() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0001-x.md",
-                adr("0001", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0001-x.md", adr("0001", "accepted"));
         let index = empty_index_with_config(&fs);
         let mut existing = SealFile::empty();
         existing.seals.push(codev_core::decisions::seal::Seal {
             id: "0001".into(),
-            body_sha256: "sha256:un-vieux-hash".into(),
+            body_sha256: "sha256:an-old-hash".into(),
             sealed_at: "2026-09-08".into(),
         });
         let plan = plan_seal(
@@ -1385,26 +1363,23 @@ mod tests {
         .unwrap();
         assert!(!plan.was_noop);
         assert!(plan.body_sha256.starts_with("sha256:"));
-        assert_ne!(plan.body_sha256, "sha256:un-vieux-hash");
+        assert_ne!(plan.body_sha256, "sha256:an-old-hash");
         assert_eq!(plan.plan.writes.len(), 1);
     }
 
     #[test]
-    fn plan_seal_refuse_une_decision_heritee() {
+    fn plan_seal_refuses_an_inherited_decision() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100-partagee.md",
+                "/home/shared/_codev/decisions/0100-shared.md",
                 adr("0100", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let err = plan_seal(
             &index,
             &SealFile::empty(),
-            "path:~/partage/0100",
+            "path:~/shared/0100",
             false,
             "2026-09-09",
             &Layout::new("/p"),
@@ -1417,30 +1392,27 @@ mod tests {
     // ─────────────── plan_deviate ───────────────
 
     #[test]
-    fn plan_deviate_ecrit_ladr_et_le_sceau() {
+    fn plan_deviate_writes_adr_and_seal() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100-partagee.md",
+                "/home/shared/_codev/decisions/0100-shared.md",
                 adr("0100", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let plan = plan_deviate(
             &index,
             &SealFile::empty(),
-            "path:~/partage/0100",
-            "Notre alternative locale",
+            "path:~/shared/0100",
+            "Our local alternative",
             "2026-09-09",
             &Layout::new("/p"),
         )
         .unwrap();
 
         assert_eq!(plan.new_id, "0001");
-        assert_eq!(plan.target_qualified_id, "path:~/partage/0100");
-        assert_eq!(plan.plan.writes.len(), 2, "ADR + sceau");
+        assert_eq!(plan.target_qualified_id, "path:~/shared/0100");
+        assert_eq!(plan.plan.writes.len(), 2, "ADR + seal");
 
         let adr_write = plan
             .plan
@@ -1448,24 +1420,25 @@ mod tests {
             .iter()
             .find(|w| w.mode == WriteMode::CreateOnly)
             .unwrap();
-        assert!(adr_write.contents.contains("deviates_from: [\"path:~/partage/0100\"]"));
+        assert!(
+            adr_write
+                .contents
+                .contains("deviates_from: [\"path:~/shared/0100\"]")
+        );
         assert!(adr_write.contents.contains("status: accepted"));
         assert!(adr_write.contents.contains("id: \"0001\""));
     }
 
     #[test]
-    fn plan_deviate_refuse_une_cible_locale() {
+    fn plan_deviate_refuses_a_local_target() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0003-locale.md",
-                adr("0003", "accepted"),
-            );
+            .with_file("/p/_codev/decisions/0003-local.md", adr("0003", "accepted"));
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
             &SealFile::empty(),
-            "projet/0003",
+            "project/0003",
             "…",
             "2026-09-09",
             &Layout::new("/p"),
@@ -1476,13 +1449,13 @@ mod tests {
     }
 
     #[test]
-    fn plan_deviate_refuse_une_cible_inconnue() {
+    fn plan_deviate_refuses_an_unknown_target() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
             &SealFile::empty(),
-            "path:~/inconnue/0100",
+            "path:~/unknown/0100",
             "…",
             "2026-09-09",
             &Layout::new("/p"),
@@ -1492,21 +1465,18 @@ mod tests {
     }
 
     #[test]
-    fn plan_deviate_refuse_titre_vide() {
+    fn plan_deviate_refuses_empty_title() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100-p.md",
+                "/home/shared/_codev/decisions/0100-p.md",
                 adr("0100", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
             &SealFile::empty(),
-            "path:~/partage/0100",
+            "path:~/shared/0100",
             "   ",
             "2026-09-09",
             &Layout::new("/p"),
@@ -1516,25 +1486,22 @@ mod tests {
     }
 
     #[test]
-    fn plan_deviate_rend_le_frontmatter_avec_deviates_from() {
-        // Contrat exact du frontmatter — les tests plus haut vérifient déjà
-        // le contenu, on golden ici le format YAML précis pour éviter
-        // qu'un refactor casse la ligne rendue.
+    fn plan_deviate_renders_frontmatter_with_deviates_from() {
+        // Exact frontmatter contract — the tests above already check the
+        // content; here we golden the precise YAML format so that a
+        // refactor does not break the rendered line.
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100-p.md",
+                "/home/shared/_codev/decisions/0100-p.md",
                 adr("0100", "accepted"),
             );
         let index = empty_index_with_config(&fs);
         let plan = plan_deviate(
             &index,
             &SealFile::empty(),
-            "path:~/partage/0100",
-            "Choix local",
+            "path:~/shared/0100",
+            "Local choice",
             "2026-09-09",
             &Layout::new("/p"),
         )
@@ -1546,42 +1513,42 @@ mod tests {
             .find(|w| w.mode == WriteMode::CreateOnly)
             .unwrap()
             .contents;
-        // Ligne exacte : `deviates_from: ["<qualified>"]`.
-        assert!(adr_content.contains("\ndeviates_from: [\"path:~/partage/0100\"]\n"));
+        // Exact line: `deviates_from: ["<qualified>"]`.
+        assert!(adr_content.contains("\ndeviates_from: [\"path:~/shared/0100\"]\n"));
     }
 
     // ─────────────── plan_promote ───────────────
 
-    const DESIGN_A_UN_BLOC: &str = "\
-# Design : x
+    const DESIGN_WITH_ONE_BLOCK: &str = "\
+# Design: x
 
-## Contexte
+## Context
 
-Voir proposal.
+See proposal.
 
-## Décisions
+## Decisions
 
-### Décision : Utiliser JWT
+### Decision: Use JWT
 
-Le rationale du choix.
+The rationale for the choice.
 
-Deuxième paragraphe.
+Second paragraph.
 
-## Risques
+## Risks
 
 y
 ";
 
     #[test]
-    fn plan_promote_produit_un_adr_et_reference_le_design() {
+    fn plan_promote_produces_adr_and_references_design() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_promote(
             &index,
             &SealFile::empty(),
             "add-auth",
-            "Utiliser JWT",
-            DESIGN_A_UN_BLOC,
+            "Use JWT",
+            DESIGN_WITH_ONE_BLOCK,
             PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             "2026-09-09",
             &Layout::new("/p"),
@@ -1591,50 +1558,56 @@ y
         assert_eq!(plan.new_id, "0001");
         assert_eq!(
             plan.new_path,
-            PathBuf::from("/p/_codev/decisions/0001-utiliser-jwt.md")
+            PathBuf::from("/p/_codev/decisions/0001-use-jwt.md")
         );
         assert!(plan.body_sha256.starts_with("sha256:"));
-        // 3 writes : ADR + sceau + design.md.
+        // 3 writes: ADR + seal + design.md.
         assert_eq!(plan.plan.writes.len(), 3);
 
-        // Le nouvel ADR contient bien le corps verbatim.
+        // The new ADR does contain the verbatim body.
         let adr = plan
             .plan
             .writes
             .iter()
             .find(|w| w.mode == WriteMode::CreateOnly)
             .unwrap();
-        assert!(adr.contents.contains("Le rationale du choix."));
-        assert!(adr.contents.contains("Deuxième paragraphe."));
-        assert!(adr.contents.contains("<!-- ADR promu depuis"));
+        assert!(adr.contents.contains("The rationale for the choice."));
+        assert!(adr.contents.contains("Second paragraph."));
+        assert!(adr.contents.contains("<!-- ADR promoted from"));
         assert!(adr.contents.contains("_codev/changes/add-auth/design.md"));
 
-        // Le design.md réécrit contient la référence textuelle.
+        // The rewritten design.md contains the textual reference.
         let new_design = plan
             .plan
             .writes
             .iter()
             .find(|w| w.path == std::path::Path::new("/p/_codev/changes/add-auth/design.md"))
             .unwrap();
-        assert!(new_design
-            .contents
-            .contains("### Décision : Utiliser JWT\n\n> Promue en ADR **0001**"));
-        // Le corps original a bien disparu.
-        assert!(!new_design.contents.contains("Le rationale du choix."));
-        // Les autres sections (Contexte, Risques) sont préservées.
-        assert!(new_design.contents.contains("## Risques\n\ny\n"));
+        assert!(
+            new_design
+                .contents
+                .contains("### Decision: Use JWT\n\n> Promoted to ADR **0001**")
+        );
+        // The original body is gone.
+        assert!(
+            !new_design
+                .contents
+                .contains("The rationale for the choice.")
+        );
+        // The other sections (Context, Risks) are preserved.
+        assert!(new_design.contents.contains("## Risks\n\ny\n"));
     }
 
     #[test]
-    fn plan_promote_refuse_titre_absent() {
+    fn plan_promote_refuses_missing_title() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let err = plan_promote(
             &index,
             &SealFile::empty(),
             "add-auth",
-            "Titre fantôme",
-            DESIGN_A_UN_BLOC,
+            "Ghost title",
+            DESIGN_WITH_ONE_BLOCK,
             PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             "2026-09-09",
             &Layout::new("/p"),
@@ -1644,19 +1617,19 @@ y
     }
 
     #[test]
-    fn plan_promote_refuse_titre_ambigu() {
-        let design_ambigu = "\
-## Décisions
+    fn plan_promote_refuses_ambiguous_title() {
+        let ambiguous_design = "\
+## Decisions
 
-### Décision : X
+### Decision: X
 
 v1
 
-### Décision : X
+### Decision: X
 
 v2
 
-## Fin
+## End
 ";
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
@@ -1665,18 +1638,18 @@ v2
             &SealFile::empty(),
             "add-auth",
             "X",
-            design_ambigu,
+            ambiguous_design,
             PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             "2026-09-09",
             &Layout::new("/p"),
         )
         .unwrap_err();
         assert_eq!(err.code(), "ambiguous_decision_heading");
-        assert!(err.to_string().contains("plusieurs blocs"));
+        assert!(err.to_string().contains("multiple blocks"));
     }
 
     #[test]
-    fn plan_promote_refuse_titre_vide() {
+    fn plan_promote_refuses_empty_title() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let err = plan_promote(
@@ -1684,7 +1657,7 @@ v2
             &SealFile::empty(),
             "add-auth",
             "   ",
-            DESIGN_A_UN_BLOC,
+            DESIGN_WITH_ONE_BLOCK,
             PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             "2026-09-09",
             &Layout::new("/p"),
@@ -1694,24 +1667,24 @@ v2
     }
 
     #[test]
-    fn plan_promote_produit_un_adr_scelle() {
-        // Le hash exposé correspond bien au SHA-256 du corps de l'ADR
-        // rendu.
+    fn plan_promote_produces_a_sealed_adr() {
+        // The exposed hash does match the SHA-256 of the rendered ADR's
+        // body.
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_promote(
             &index,
             &SealFile::empty(),
             "add-auth",
-            "Utiliser JWT",
-            DESIGN_A_UN_BLOC,
+            "Use JWT",
+            DESIGN_WITH_ONE_BLOCK,
             PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             "2026-09-09",
             &Layout::new("/p"),
         )
         .unwrap();
 
-        // Le seal.yaml qu'on va écrire porte l'entrée avec le même hash.
+        // The seal.yaml about to be written carries the entry with the same hash.
         let seal_write = plan
             .plan
             .writes

@@ -1,17 +1,17 @@
-//! Cœur pur de codev : modèle de domaine, schémas, graphe d'artefacts, plans.
+//! codev's pure core: domain model, schemas, artifact graph, plans.
 //!
-//! **Invariant de ce crate : aucune entrée-sortie.** Pas de `std::fs`, pas de
-//! `std::env`, pas d'horloge, pas de réseau. Ce qui a besoin du monde extérieur
-//! vit dans `codev-engine`, derrière un port.
+//! **Invariant of this crate: no input/output.** No `std::fs`, no
+//! `std::env`, no clock, no network. Anything that needs the outside world
+//! lives in `codev-engine`, behind a port.
 //!
-//! Ce n'est pas de la discipline gratuite : c'est ce qui rend la fusion de
-//! specs et le contrat JSON testables par golden tests, sans répertoire
-//! temporaire. Voir `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
+//! This is not discipline for its own sake: it is what makes spec merging
+//! and the JSON contract testable with golden tests, without a temporary
+//! directory. See `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
 //!
-//! Noter aussi ce que ce crate ne fait **pas** : il ne dérive pas `Serialize`
-//! sur ses types de domaine. La sortie JSON est une API publique consommée par
-//! des skills déjà installées ; elle a ses propres types dans
-//! `codev-cli::contract`, pour qu'un refactor interne ne la casse pas.
+//! Note also what this crate does **not** do: it does not derive `Serialize`
+//! on its domain types. The JSON output is a public API consumed by
+//! already-installed skills; it has its own types in
+//! `codev-cli::contract`, so that an internal refactor cannot break it.
 
 pub mod config;
 pub mod decisions;

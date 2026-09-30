@@ -3,26 +3,26 @@ use std::collections::BTreeSet;
 use crate::graph::ArtifactGraph;
 use crate::id::ChangeId;
 
-/// L'état d'un artefact.
+/// The state of an artifact.
 ///
-/// Il n'existe **aucun fichier d'état** : l'état est déduit de l'existence des
-/// fichiers sur le disque. Un utilisateur qui supprime `design.md` à la main
-/// remet cet artefact à `Ready`, sans commande de réparation à connaître.
+/// There is **no state file**: the state is inferred from the existence of
+/// files on disk. A user who deletes `design.md` by hand
+/// resets that artifact to `Ready`, with no repair command to learn.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArtifactState {
-    /// Sa sortie existe.
+    /// Its output exists.
     Done,
-    /// Ses dépendances sont satisfaites, il peut être écrit.
+    /// Its dependencies are satisfied; it can be written.
     Ready,
-    /// Il attend au moins une dépendance.
+    /// It is waiting on at least one dependency.
     Blocked,
-    /// Le change l'a neutralisé (`skip_specs`). Il compte comme satisfait, et
-    /// ses fichiers ne doivent **pas** être créés.
+    /// The change has disabled it (`skip_specs`). It counts as satisfied, and
+    /// its files must **not** be created.
     Skipped,
 }
 
 impl ArtifactState {
-    /// Vrai si cet état satisfait une dépendance.
+    /// True if this state satisfies a dependency.
     pub fn satisfies_dependency(self) -> bool {
         matches!(self, Self::Done | Self::Skipped)
     }
@@ -31,11 +31,11 @@ impl ArtifactState {
 #[derive(Debug, Clone)]
 pub struct ArtifactStatus {
     pub id: String,
-    /// Le `generates` du schéma, tel quel — chemin littéral ou motif.
+    /// The schema's `generates`, verbatim — literal path or pattern.
     pub output_path: String,
     pub state: ArtifactState,
     pub requires: Vec<String>,
-    /// Les dépendances qui manquent, quand l'état est `Blocked`.
+    /// The missing dependencies, when the state is `Blocked`.
     pub missing_deps: Vec<String>,
 }
 
@@ -44,16 +44,16 @@ pub struct ChangeStatus {
     pub change: ChangeId,
     pub schema_name: String,
     pub apply_requires: Vec<String>,
-    /// En ordre topologique : le premier `Ready` est l'artefact à écrire
-    /// maintenant.
+    /// In topological order: the first `Ready` one is the artifact to write
+    /// now.
     pub artifacts: Vec<ArtifactStatus>,
-    /// Vrai quand tous les artefacts de la fermeture requise sont satisfaits.
-    /// Ne dit **rien** de l'avancement des tâches d'implémentation.
+    /// True when every artifact in the required closure is satisfied.
+    /// Says **nothing** about the progress of implementation tasks.
     pub planning_complete: bool,
 }
 
-/// Calcule l'état d'un change. Fonction pure : le disque a déjà été interrogé
-/// par l'appelant, qui fournit `existing` et `skipped`.
+/// Computes the state of a change. Pure function: the disk has already been queried
+/// by the caller, which supplies `existing` and `skipped`.
 pub fn compute(
     graph: &ArtifactGraph,
     change: &ChangeId,
@@ -156,12 +156,12 @@ apply:
             .artifacts
             .iter()
             .find(|a| a.id == id)
-            .unwrap_or_else(|| panic!("artefact « {id} » absent du statut"))
+            .unwrap_or_else(|| panic!("artifact `{id}` missing from status"))
             .state
     }
 
     #[test]
-    fn un_change_vide_na_que_sa_racine_de_prete() {
+    fn an_empty_change_has_only_its_root_ready() {
         let status = status(&[], &[]);
         assert_eq!(state_of(&status, "proposal"), ArtifactState::Ready);
         assert_eq!(state_of(&status, "specs"), ArtifactState::Blocked);
@@ -170,18 +170,18 @@ apply:
     }
 
     #[test]
-    fn le_premier_pret_est_lartefact_a_ecrire() {
+    fn the_first_ready_is_the_artifact_to_write() {
         let status = status(&["proposal"], &[]);
-        let premier_pret = status
+        let first_ready = status
             .artifacts
             .iter()
             .find(|a| a.state == ArtifactState::Ready)
-            .expect("il doit rester quelque chose à écrire");
-        assert_eq!(premier_pret.id, "specs");
+            .expect("something must be left to write");
+        assert_eq!(first_ready.id, "specs");
     }
 
     #[test]
-    fn nomme_les_dependances_manquantes() {
+    fn names_the_missing_dependencies() {
         let status = status(&["proposal", "specs"], &[]);
         let tasks = status.artifacts.iter().find(|a| a.id == "tasks").unwrap();
         assert_eq!(tasks.state, ArtifactState::Blocked);
@@ -189,30 +189,30 @@ apply:
     }
 
     #[test]
-    fn un_artefact_saute_satisfait_ses_dependants() {
-        // C'est le cas `skip_specs` : `specs` n'existera jamais, et `tasks` doit
-        // pourtant devenir écrivable.
+    fn a_skipped_artifact_satisfies_its_dependents() {
+        // This is the `skip_specs` case: `specs` will never exist, and yet `tasks`
+        // must become writable.
         let status = status(&["proposal", "design"], &["specs"]);
         assert_eq!(state_of(&status, "specs"), ArtifactState::Skipped);
         assert_eq!(state_of(&status, "tasks"), ArtifactState::Ready);
     }
 
     #[test]
-    fn la_planification_est_complete_quand_la_fermeture_est_satisfaite() {
+    fn planning_is_complete_when_the_closure_is_satisfied() {
         let status = status(&["proposal", "specs", "design", "tasks"], &[]);
         assert!(status.planning_complete);
     }
 
     #[test]
-    fn ecrire_tasks_en_premier_ne_rend_pas_la_planification_complete() {
-        // Le piège que le contrat doit rendre visible : `status` ne regarde que
-        // l'existence des fichiers, donc `tasks` est `Done` alors que `specs` et
-        // `design` n'ont jamais été écrits.
+    fn writing_tasks_first_does_not_complete_planning() {
+        // The trap the contract must make visible: `status` only looks at
+        // file existence, so `tasks` is `Done` even though `specs` and
+        // `design` were never written.
         let status = status(&["tasks"], &[]);
         assert_eq!(state_of(&status, "tasks"), ArtifactState::Done);
         assert!(
             !status.planning_complete,
-            "la fermeture requise n'est pas satisfaite"
+            "the required closure is not satisfied"
         );
     }
 }

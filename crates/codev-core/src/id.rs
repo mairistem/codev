@@ -2,15 +2,15 @@ use std::fmt;
 
 use crate::error::{CoreError, Result};
 
-/// Identifiant de change, en kebab-case strict.
+/// Change identifier, in strict kebab-case.
 ///
-/// Un chiffre en tête est autorisé : cela permet de préfixer les changes pour
-/// les ordonner ou les échelonner (`100-add-billing`, `00001-add-auth`).
+/// A leading digit is allowed: it lets changes be prefixed to
+/// order or stagger them (`100-add-billing`, `00001-add-auth`).
 ///
-/// L'identifiant sert de nom de dossier sur trois systèmes de fichiers
-/// différents, dont un insensible à la casse (macOS) : d'où le refus des
-/// majuscules, qui rendraient `Add-Auth` et `add-auth` indistinguables ici et
-/// distincts sur un poste Linux.
+/// The identifier is used as a directory name on three different file
+/// systems, one of which is case-insensitive (macOS): hence the rejection of
+/// uppercase letters, which would make `Add-Auth` and `add-auth` indistinguishable there and
+/// distinct on a Linux machine.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ChangeId(String);
 
@@ -43,40 +43,40 @@ impl AsRef<str> for ChangeId {
     }
 }
 
-/// Vrai si `raw` est un identifiant kebab-case acceptable.
+/// True if `raw` is an acceptable kebab-case identifier.
 pub fn is_kebab_case(raw: &str) -> bool {
     kebab_violation(raw).is_none()
 }
 
-/// Retourne la première règle enfreinte, formulée pour être lue par un humain.
+/// Returns the first violated rule, phrased to be read by a human.
 ///
-/// Un booléen ne suffirait pas : « nom invalide » sans dire laquelle des règles
-/// a été enfreinte oblige l'utilisateur à deviner.
+/// A boolean would not be enough: "invalid name" without saying which rule
+/// was violated forces the user to guess.
 fn kebab_violation(raw: &str) -> Option<String> {
     if raw.is_empty() {
-        return Some("il est vide".into());
+        return Some("it is empty".into());
     }
     if raw.starts_with('-') || raw.ends_with('-') {
-        return Some("il commence ou finit par un tiret".into());
+        return Some("it starts or ends with a hyphen".into());
     }
     if raw.contains("--") {
-        return Some("il contient deux tirets consécutifs".into());
+        return Some("it contains two consecutive hyphens".into());
     }
     if raw.contains(' ') {
-        return Some("il contient une espace ; utilise des tirets".into());
+        return Some("it contains a space; use hyphens".into());
     }
     if raw.contains('_') {
-        return Some("il contient un souligné ; utilise des tirets".into());
+        return Some("it contains an underscore; use hyphens".into());
     }
     if raw.chars().any(|c| c.is_ascii_uppercase()) {
-        return Some("il contient une majuscule ; tout en minuscules".into());
+        return Some("it contains an uppercase letter; use lowercase only".into());
     }
     if let Some(bad) = raw
         .chars()
         .find(|c| !(c.is_ascii_lowercase() || c.is_ascii_digit() || *c == '-'))
     {
         return Some(format!(
-            "il contient le caractère « {bad} » ; seuls les minuscules, les chiffres et les tirets sont admis"
+            "it contains the character `{bad}`; only lowercase letters, digits and hyphens are allowed"
         ));
     }
     None
@@ -87,7 +87,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn accepte_le_kebab_case() {
+    fn accepts_kebab_case() {
         for ok in [
             "add-auth",
             "fix-bug",
@@ -96,36 +96,36 @@ mod tests {
             "00001-add-auth",
             "v2-migration",
         ] {
-            assert!(ChangeId::parse(ok).is_ok(), "{ok} devrait être accepté");
+            assert!(ChangeId::parse(ok).is_ok(), "{ok} should be accepted");
         }
     }
 
     #[test]
-    fn refuse_et_explique() {
+    fn rejects_and_explains() {
         let cases = [
-            ("", "vide"),
-            ("-lead", "tiret"),
-            ("trail-", "tiret"),
-            ("double--tiret", "consécutifs"),
-            ("avec espace", "espace"),
-            ("avec_souligne", "souligné"),
-            ("AddAuth", "majuscule"),
-            ("accentué", "caractère"),
+            ("", "empty"),
+            ("-lead", "hyphen"),
+            ("trail-", "hyphen"),
+            ("double--hyphen", "consecutive"),
+            ("with space", "space"),
+            ("with_underscore", "underscore"),
+            ("AddAuth", "uppercase"),
+            ("caf\u{e9}", "character"),
         ];
-        for (raw, attendu) in cases {
+        for (raw, expected) in cases {
             let err = ChangeId::parse(raw)
                 .err()
-                .unwrap_or_else(|| panic!("« {raw} » devrait être refusé"));
+                .unwrap_or_else(|| panic!("`{raw}` should be rejected"));
             let message = err.to_string();
             assert!(
-                message.contains(attendu),
-                "« {raw} » : le message « {message} » devrait mentionner « {attendu} »"
+                message.contains(expected),
+                "`{raw}`: message `{message}` should mention `{expected}`"
             );
         }
     }
 
     #[test]
-    fn le_code_derreur_est_stable() {
+    fn error_code_is_stable() {
         let err = ChangeId::parse("Nope").unwrap_err();
         assert_eq!(err.code(), "invalid_change_id");
     }

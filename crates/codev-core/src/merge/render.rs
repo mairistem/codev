@@ -1,15 +1,15 @@
-//! Rendu markdown des blocs manipulés par le merge.
+//! Markdown rendering of the blocks handled by the merge.
 //!
-//! Un canon strict, pour que deux syncs successifs donnent le même contenu
-//! au caractère près. Les blocs sont écrits dans un format canonique — sans
-//! chercher à imiter l'espacement d'une spec existante voisine, ce qui serait
-//! source de dérive silencieuse.
+//! A strict canonical form, so that two successive syncs yield the same
+//! content down to the character. Blocks are written in a canonical format
+//! — without trying to mimic the spacing of a neighboring existing spec,
+//! which would be a source of silent drift.
 
 use crate::parser::ast::{Requirement, Scenario};
 
-/// Rendu d'une exigence complète.
+/// Rendering of a complete requirement.
 ///
-/// Format :
+/// Format:
 ///
 /// ```text
 /// ### Requirement: <name>
@@ -25,9 +25,9 @@ use crate::parser::ast::{Requirement, Scenario};
 /// <body>
 /// ```
 ///
-/// La dernière ligne se termine sans blanc supplémentaire — c'est l'appelant
-/// (typiquement `merge::edits`) qui ajuste l'espacement de séparation avec le
-/// bloc suivant.
+/// The last line ends without an extra blank line — it is the caller
+/// (typically `merge::edits`) that adjusts the separating space with the
+/// next block.
 pub fn requirement(req: &Requirement) -> String {
     let mut out = String::new();
     out.push_str("### Requirement: ");
@@ -61,11 +61,11 @@ fn scenario_str(scenario: &Scenario) -> String {
     out
 }
 
-/// Titre d'une spec principale dérivé du chemin de la capacité.
+/// Title of a main spec derived from the capability path.
 ///
-/// `identity/user-auth` → `User Auth`. On ne cherche pas à préserver le
-/// chemin complet dans le titre — le nom du dossier suffit et le fichier vit
-/// à l'endroit qui le désambiguïse.
+/// `identity/user-auth` → `User Auth`. We don't try to preserve the full
+/// path in the title — the directory name is enough, and the file lives at
+/// the location that disambiguates it.
 pub fn spec_title_from_capability(capability_path: &str) -> String {
     let last = capability_path
         .rsplit('/')
@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn render_requirement_est_stable() {
+    fn render_requirement_is_stable() {
         let req = Requirement {
             name: "Login".into(),
             description: "The system SHALL emit a token.".into(),
@@ -107,16 +107,16 @@ mod tests {
             }],
             span: span(),
         };
-        let attendu = "### Requirement: Login\n\n\
+        let expected = "### Requirement: Login\n\n\
                        The system SHALL emit a token.\n\n\
                        #### Scenario: OK\n\n\
                        - **WHEN** login\n\
                        - **THEN** token\n";
-        assert_eq!(requirement(&req), attendu);
+        assert_eq!(requirement(&req), expected);
     }
 
     #[test]
-    fn render_avec_deux_scenarios() {
+    fn render_with_two_scenarios() {
         let req = Requirement {
             name: "Auth".into(),
             description: "The system MUST authenticate.".into(),
@@ -134,22 +134,22 @@ mod tests {
             ],
             span: span(),
         };
-        let rendu = requirement(&req);
-        assert!(rendu.contains("#### Scenario: OK"));
-        assert!(rendu.contains("#### Scenario: KO"));
-        // Une ligne blanche entre les deux scénarios.
-        assert!(rendu.contains("- **THEN** ok\n\n#### Scenario: KO"));
+        let rendered = requirement(&req);
+        assert!(rendered.contains("#### Scenario: OK"));
+        assert!(rendered.contains("#### Scenario: KO"));
+        // One blank line between the two scenarios.
+        assert!(rendered.contains("- **THEN** ok\n\n#### Scenario: KO"));
     }
 
     #[test]
-    fn titre_depuis_capacite_flat() {
+    fn title_from_flat_capability() {
         assert_eq!(spec_title_from_capability("user-auth"), "User Auth");
     }
 
     #[test]
-    fn titre_depuis_capacite_imbriquee() {
-        // On prend le dernier segment — le chemin complet resterait dans le
-        // dossier, pas besoin de le dupliquer dans le titre.
+    fn title_from_nested_capability() {
+        // Take the last segment — the full path stays in the directory,
+        // no need to duplicate it in the title.
         assert_eq!(
             spec_title_from_capability("identity/user-auth"),
             "User Auth"
@@ -157,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn titre_avec_segment_vide_est_robuste() {
+    fn title_with_empty_segment_is_robust() {
         assert_eq!(spec_title_from_capability("--x"), "X");
         assert_eq!(spec_title_from_capability(""), "");
     }

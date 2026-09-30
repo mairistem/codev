@@ -1,19 +1,19 @@
 {{FRONTMATTER}}
 
-## Contexte
+## Context
 
-<!-- Le problème ou la situation qui appelle une décision. Court : deux ou
-     trois phrases suffisent, on n'écrit pas un roman. -->
+<!-- The problem or situation that calls for a decision. Keep it short: two or
+     three sentences are enough — this is not an essay. -->
 
-## Décision
+## Decision
 
-<!-- Ce qui est retenu, en une ou deux phrases. Le reste du fichier justifie. -->
+<!-- What was chosen, in one or two sentences. The rest of the file justifies it. -->
 
-## Conséquences
+## Consequences
 
-<!-- Ce que cette décision impose ou permet — bonnes et mauvaises. -->
+<!-- What this decision imposes or enables — the good and the bad. -->
 
-## Alternatives écartées
+## Alternatives considered
 
-<!-- Ce qu'on aurait pu faire, et pourquoi on a choisi autre chose. Une ligne
-     par alternative suffit dans la plupart des cas. -->
+<!-- What could have been done instead, and why something else was chosen. One
+     line per alternative is enough in most cases. -->

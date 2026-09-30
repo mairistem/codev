@@ -5,13 +5,13 @@ use serde::Deserialize;
 use crate::error::{CoreError, Result};
 use crate::id::is_kebab_case;
 
-/// Définition d'un workflow : quels artefacts existent, et lesquels dépendent
-/// de lesquels.
+/// Definition of a workflow: which artifacts exist, and which depend
+/// on which.
 ///
-/// C'est de la **donnée**, jamais du code. Un utilisateur doit pouvoir modifier
-/// un `schema.yaml` ou un template et en voir l'effet immédiatement, sans
-/// attendre une release. C'est la principale leçon retenue d'OpenSpec, dont le
-/// workflow historique enfouissait ses instructions dans le binaire.
+/// This is **data**, never code. A user must be able to edit
+/// a `schema.yaml` or a template and see the effect immediately, without
+/// waiting for a release. This is the main lesson learned from OpenSpec, whose
+/// legacy workflow buried its instructions in the binary.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Schema {
@@ -32,12 +32,12 @@ fn default_version() -> u32 {
 #[serde(deny_unknown_fields)]
 pub struct Artifact {
     pub id: String,
-    /// Chemin de sortie relatif au dossier du change. Accepte un motif glob
-    /// (`specs/**/*.md`) pour les artefacts qui produisent plusieurs fichiers.
+    /// Output path relative to the change directory. Accepts a glob pattern
+    /// (`specs/**/*.md`) for artifacts that produce several files.
     pub generates: String,
     #[serde(default)]
     pub description: Option<String>,
-    /// Nom du fichier de template, cherché dans le `templates/` du schéma.
+    /// Template file name, looked up in the schema's `templates/`.
     #[serde(default)]
     pub template: Option<String>,
     #[serde(default)]
@@ -47,33 +47,33 @@ pub struct Artifact {
 }
 
 impl Artifact {
-    /// Vrai si `generates` est un motif et non un chemin littéral.
+    /// True if `generates` is a pattern rather than a literal path.
     pub fn is_pattern(&self) -> bool {
         self.generates.contains('*') || self.generates.contains('?')
     }
 }
 
-/// La phase d'implémentation. Elle n'est pas un artefact : elle ne produit pas
-/// de fichier de planification, elle en consomme.
+/// The implementation phase. It is not an artifact: it produces no
+/// planning file, it consumes them.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Apply {
     pub requires: Vec<String>,
-    /// Le fichier dont les cases à cocher suivent l'avancement.
+    /// The file whose checkboxes track progress.
     pub tracks: String,
     #[serde(default)]
     pub instruction: Option<String>,
 }
 
 impl Schema {
-    /// Analyse un `schema.yaml`.
+    /// Parses a `schema.yaml`.
     ///
-    /// `deny_unknown_fields` est délibéré : ces fichiers sont écrits à la main,
-    /// et une clé mal orthographiée qui serait silencieusement ignorée
-    /// produirait un workflow qui ne fait pas ce que son auteur croit.
+    /// `deny_unknown_fields` is deliberate: these files are hand-written,
+    /// and a misspelled key that was silently ignored
+    /// would produce a workflow that does not do what its author thinks.
     pub fn parse(yaml: &str) -> Result<Self> {
-        let schema: Self = serde_norway::from_str(yaml)
-            .map_err(|e| CoreError::SchemaUnreadable(e.to_string()))?;
+        let schema: Self =
+            serde_norway::from_str(yaml).map_err(|e| CoreError::SchemaUnreadable(e.to_string()))?;
         schema.validate()?;
         Ok(schema)
     }
@@ -85,38 +85,31 @@ impl Schema {
         }
     }
 
-    /// Vérifie tout ce qui rendrait le graphe inexploitable.
+    /// Checks everything that would make the graph unusable.
     pub fn validate(&self) -> Result<()> {
         if self.name.is_empty() {
-            return Err(self.invalid("le champ `name` est vide"));
+            return Err(self.invalid("the `name` field is empty"));
         }
         if !is_kebab_case(&self.name) {
-            return Err(self.invalid(format!(
-                "le nom « {} » n'est pas en kebab-case",
-                self.name
-            )));
+            return Err(self.invalid(format!("name `{}` is not kebab-case", self.name)));
         }
         if self.artifacts.is_empty() {
-            return Err(self.invalid("aucun artefact déclaré"));
+            return Err(self.invalid("no artifact declared"));
         }
 
         let mut seen = BTreeSet::new();
         for artifact in &self.artifacts {
             if !is_kebab_case(&artifact.id) {
-                return Err(self.invalid(format!(
-                    "l'identifiant d'artefact « {} » n'est pas en kebab-case",
-                    artifact.id
-                )));
+                return Err(
+                    self.invalid(format!("artifact id `{}` is not kebab-case", artifact.id))
+                );
             }
             if !seen.insert(artifact.id.as_str()) {
-                return Err(self.invalid(format!(
-                    "l'artefact « {} » est déclaré deux fois",
-                    artifact.id
-                )));
+                return Err(self.invalid(format!("artifact `{}` is declared twice", artifact.id)));
             }
             if artifact.generates.is_empty() {
                 return Err(self.invalid(format!(
-                    "l'artefact « {} » ne déclare pas de `generates`",
+                    "artifact `{}` does not declare `generates`",
                     artifact.id
                 )));
             }
@@ -126,41 +119,42 @@ impl Schema {
             for dep in &artifact.requires {
                 if !seen.contains(dep.as_str()) {
                     return Err(self.invalid(format!(
-                        "l'artefact « {} » dépend de « {dep} », qui n'existe pas",
+                        "artifact `{}` depends on `{dep}`, which does not exist",
                         artifact.id
                     )));
                 }
                 if dep == &artifact.id {
-                    return Err(self.invalid(format!(
-                        "l'artefact « {} » dépend de lui-même",
-                        artifact.id
-                    )));
+                    return Err(
+                        self.invalid(format!("artifact `{}` depends on itself", artifact.id))
+                    );
                 }
             }
         }
 
         if self.apply.requires.is_empty() {
-            return Err(self.invalid("`apply.requires` est vide : rien ne déclencherait l'implémentation"));
+            return Err(
+                self.invalid("`apply.requires` is empty: nothing would trigger implementation")
+            );
         }
         for dep in &self.apply.requires {
             if !seen.contains(dep.as_str()) {
                 return Err(self.invalid(format!(
-                    "`apply.requires` mentionne « {dep} », qui n'est pas un artefact du schéma"
+                    "`apply.requires` mentions `{dep}`, which is not an artifact of the schema"
                 )));
             }
         }
         if self.apply.tracks.is_empty() {
-            return Err(self.invalid("`apply.tracks` est vide"));
+            return Err(self.invalid("`apply.tracks` is empty"));
         }
 
         self.assert_acyclic()
     }
 
-    /// Détecte un cycle de dépendances.
+    /// Detects a dependency cycle.
     ///
-    /// Un cycle est fatal et non réparable automatiquement : le message nomme
-    /// donc les artefacts impliqués, sans quoi l'auteur du schéma n'a aucune
-    /// piste.
+    /// A cycle is fatal and cannot be repaired automatically: the message therefore
+    /// names the artifacts involved, otherwise the schema author would have no
+    /// lead.
     fn assert_acyclic(&self) -> Result<()> {
         let mut settled: BTreeSet<&str> = BTreeSet::new();
         loop {
@@ -173,24 +167,21 @@ impl Schema {
                 Some(artifact) => {
                     settled.insert(artifact.id.as_str());
                 }
-                // Plus rien ne progresse : ce qui reste est dans un cycle ou en
-                // dépend.
+                // Nothing progresses any more: what remains is in a cycle or
+                // depends on one.
                 None => break,
             }
         }
         if settled.len() == self.artifacts.len() {
             return Ok(());
         }
-        let bloques: Vec<&str> = self
+        let blocked: Vec<&str> = self
             .artifacts
             .iter()
             .map(|a| a.id.as_str())
             .filter(|id| !settled.contains(id))
             .collect();
-        Err(self.invalid(format!(
-            "cycle de dépendances entre : {}",
-            bloques.join(", ")
-        )))
+        Err(self.invalid(format!("dependency cycle between: {}", blocked.join(", "))))
     }
 
     pub fn artifact(&self, id: &str) -> Option<&Artifact> {
@@ -217,23 +208,23 @@ apply:
 "#;
 
     #[test]
-    fn analyse_un_schema_minimal() {
-        let schema = Schema::parse(MINIMAL).expect("devrait être valide");
+    fn parses_a_minimal_schema() {
+        let schema = Schema::parse(MINIMAL).expect("should be valid");
         assert_eq!(schema.name, "minimal");
-        assert_eq!(schema.version, 1, "la version doit valoir 1 par défaut");
+        assert_eq!(schema.version, 1, "version must default to 1");
         assert_eq!(schema.artifacts.len(), 2);
         assert_eq!(schema.apply.tracks, "tasks.md");
     }
 
     #[test]
-    fn refuse_une_cle_inconnue() {
+    fn rejects_an_unknown_key() {
         let yaml = MINIMAL.replace("name: minimal", "name: minimal\nartefacts: []");
         let err = Schema::parse(&yaml).unwrap_err();
         assert_eq!(err.code(), "schema_unreadable");
     }
 
     #[test]
-    fn refuse_une_dependance_fantome() {
+    fn rejects_a_phantom_dependency() {
         let yaml = MINIMAL.replace("requires: [proposal]", "requires: [design]");
         let err = Schema::parse(&yaml).unwrap_err();
         assert_eq!(err.code(), "schema_invalid");
@@ -241,9 +232,9 @@ apply:
     }
 
     #[test]
-    fn refuse_un_cycle_et_nomme_les_coupables() {
+    fn rejects_a_cycle_and_names_the_culprits() {
         let yaml = r#"
-name: boucle
+name: loop
 artifacts:
   - id: a
     generates: a.md
@@ -262,24 +253,24 @@ apply:
     }
 
     #[test]
-    fn refuse_un_artefact_duplique() {
+    fn rejects_a_duplicate_artifact() {
         let yaml = r#"
-name: doublon
+name: duplicate
 artifacts:
   - id: a
     generates: a.md
   - id: a
-    generates: autre.md
+    generates: other.md
 apply:
   requires: [a]
   tracks: a.md
 "#;
         let err = Schema::parse(yaml).unwrap_err();
-        assert!(err.to_string().contains("deux fois"), "{err}");
+        assert!(err.to_string().contains("twice"), "{err}");
     }
 
     #[test]
-    fn reconnait_un_motif_glob() {
+    fn recognizes_a_glob_pattern() {
         let schema = Schema::parse(MINIMAL).unwrap();
         assert!(!schema.artifact("proposal").unwrap().is_pattern());
 

@@ -3,18 +3,18 @@ use std::collections::{BTreeSet, VecDeque};
 use crate::error::Result;
 use crate::schema::{Artifact, Schema};
 
-/// Le graphe de dépendances entre artefacts d'un schéma.
+/// The dependency graph between a schema's artifacts.
 ///
-/// Les dépendances sont des **activateurs, pas des barrières** : elles disent ce
-/// qu'il est possible de créer, pas ce qu'il faut créer ensuite. Un `design.md`
-/// peut être sauté ; ce qui en dépend reste écrivable.
+/// Dependencies are **enablers, not gates**: they say what
+/// can be created, not what must be created next. A `design.md`
+/// can be skipped; whatever depends on it remains writable.
 #[derive(Debug)]
 pub struct ArtifactGraph {
     schema: Schema,
 }
 
 impl ArtifactGraph {
-    /// Construit le graphe à partir d'un schéma déjà désérialisé.
+    /// Builds the graph from an already-deserialized schema.
     pub fn new(schema: Schema) -> Result<Self> {
         schema.validate()?;
         Ok(Self { schema })
@@ -38,20 +38,20 @@ impl ArtifactGraph {
         self.schema.artifact(id)
     }
 
-    /// Ordre topologique : une dépendance n'apparaît jamais après ce qui en
-    /// dépend.
+    /// Topological order: a dependency never appears after what
+    /// depends on it.
     ///
-    /// Les égalités sont tranchées par l'**ordre de déclaration** du schéma, pas
-    /// alphabétiquement. Le graphe laisse `specs` et `design` à égalité — tous
-    /// deux ne dépendent que de `proposal` — et un tri alphabétique placerait
-    /// `design` devant, contredisant la séquence que le schéma annonce lui-même
-    /// (`proposal → specs → design → tasks`). Suivre l'ordre d'écriture de
-    /// l'auteur est tout aussi déterministe et ne le trahit pas.
+    /// Ties are broken by the schema's **declaration order**, not
+    /// alphabetically. The graph leaves `specs` and `design` tied — both
+    /// depend only on `proposal` — and an alphabetical sort would put
+    /// `design` first, contradicting the sequence the schema itself announces
+    /// (`proposal → specs → design → tasks`). Following the author's writing
+    /// order is just as deterministic and does not betray them.
     pub fn topological_order(&self) -> Vec<&Artifact> {
         let mut settled: BTreeSet<&str> = BTreeSet::new();
         let mut order = Vec::with_capacity(self.schema.artifacts.len());
-        // Boucle quadratique assumée : un schéma compte une poignée
-        // d'artefacts, et cette forme rend le critère de départage évident.
+        // Deliberately quadratic loop: a schema has a handful
+        // of artifacts, and this shape makes the tie-breaking criterion obvious.
         loop {
             let next = self
                 .schema
@@ -64,24 +64,29 @@ impl ArtifactGraph {
                     settled.insert(artifact.id.as_str());
                     order.push(artifact);
                 }
-                // `Schema::validate` a déjà écarté les cycles, donc on ne sort
-                // ici qu'une fois tout le monde placé.
+                // `Schema::validate` has already ruled out cycles, so we only
+                // exit here once everyone has been placed.
                 None => break,
             }
         }
         order
     }
 
-    /// L'ensemble des artefacts dont l'implémentation dépend, transitivement.
+    /// The set of artifacts the implementation depends on, transitively.
     ///
-    /// `apply.requires` ne suffit pas : avec `spec-driven` il ne nomme que
-    /// `tasks`, alors que `tasks` dépend de `specs` et `design`, qui dépendent
-    /// de `proposal`. Un agent qui se fierait à la seule liste `apply.requires`
-    /// écrirait `tasks.md` et s'arrêterait là.
+    /// `apply.requires` is not enough: with `spec-driven` it only names
+    /// `tasks`, whereas `tasks` depends on `specs` and `design`, which depend
+    /// on `proposal`. An agent relying on the `apply.requires` list alone
+    /// would write `tasks.md` and stop there.
     pub fn required_closure(&self) -> BTreeSet<String> {
         let mut closure = BTreeSet::new();
-        let mut queue: VecDeque<&str> =
-            self.schema.apply.requires.iter().map(String::as_str).collect();
+        let mut queue: VecDeque<&str> = self
+            .schema
+            .apply
+            .requires
+            .iter()
+            .map(String::as_str)
+            .collect();
         while let Some(id) = queue.pop_front() {
             if !closure.insert(id.to_string()) {
                 continue;
@@ -93,7 +98,7 @@ impl ArtifactGraph {
         closure
     }
 
-    /// Les artefacts que la création de `id` rend possibles.
+    /// The artifacts that creating `id` makes possible.
     pub fn unlocked_by(&self, id: &str) -> Vec<&str> {
         self.schema
             .artifacts
@@ -108,8 +113,8 @@ impl ArtifactGraph {
 mod tests {
     use super::*;
 
-    /// La forme de `spec-driven` : `specs` et `design` sont à égalité, et
-    /// `specs` est déclaré en premier.
+    /// The shape of `spec-driven`: `specs` and `design` are tied, and
+    /// `specs` is declared first.
     const SPEC_DRIVEN: &str = r#"
 name: spec-driven
 artifacts:
@@ -131,7 +136,7 @@ apply:
 "#;
 
     fn graph() -> ArtifactGraph {
-        ArtifactGraph::from_yaml(SPEC_DRIVEN).expect("schéma de test valide")
+        ArtifactGraph::from_yaml(SPEC_DRIVEN).expect("valid test schema")
     }
 
     fn ordered_ids(graph: &ArtifactGraph) -> Vec<&str> {
@@ -143,7 +148,7 @@ apply:
     }
 
     #[test]
-    fn ordonne_selon_les_dependances() {
+    fn orders_by_dependencies() {
         let graph = graph();
         assert_eq!(
             ordered_ids(&graph),
@@ -152,30 +157,30 @@ apply:
     }
 
     #[test]
-    fn tranche_les_egalites_par_ordre_de_declaration_et_non_alphabetiquement() {
-        // Le piège : « design » précède « specs » dans l'alphabet. Si le tri
-        // alphabétique se réinstallait un jour, ce test tomberait.
+    fn breaks_ties_by_declaration_order_not_alphabetically() {
+        // The trap: "design" precedes "specs" alphabetically. If alphabetical
+        // sorting ever crept back in, this test would fail.
         let graph = graph();
         let ids = ordered_ids(&graph);
         let position = |id: &str| ids.iter().position(|x| *x == id).unwrap();
         assert!(
             position("specs") < position("design"),
-            "l'ordre obtenu est {ids:?}"
+            "actual order is {ids:?}"
         );
     }
 
     #[test]
-    fn ferme_transitivement_sur_apply_requires() {
+    fn closes_transitively_over_apply_requires() {
         let closure = graph().required_closure();
-        let attendu: BTreeSet<String> = ["proposal", "specs", "design", "tasks"]
+        let expected: BTreeSet<String> = ["proposal", "specs", "design", "tasks"]
             .iter()
             .map(|s| s.to_string())
             .collect();
-        assert_eq!(closure, attendu);
+        assert_eq!(closure, expected);
     }
 
     #[test]
-    fn dit_ce_que_debloque_un_artefact() {
+    fn tells_what_an_artifact_unlocks() {
         assert_eq!(graph().unlocked_by("proposal"), ["specs", "design"]);
         assert_eq!(graph().unlocked_by("specs"), ["tasks"]);
         assert!(graph().unlocked_by("tasks").is_empty());
