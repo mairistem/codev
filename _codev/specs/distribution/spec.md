@@ -25,8 +25,9 @@ workflow MUST produce a GitHub Release containing:
 - A `SHA256SUMS` file listing the SHA-256 of **all** the archives
   (all four), in standard `sha256sum` format.
 - The contents of each archive: the binary (`codev` on macOS/Linux,
-  `codev.exe` on Windows), `README.md`, `LICENSE`, and a copy of the
-  documentation's markdown source (`docs/codev.md`).
+  `codev.exe` on Windows), `README.md`, `README.fr.md`, `LICENSE` and
+  `CHANGELOG.md`. The documentation itself is embedded in the binary
+  (`codev docs`).
 
 The workflow MUST NOT write to the repository.
 
@@ -50,8 +51,8 @@ The workflow MUST NOT write to the repository.
   of the release
 - **WHEN** a user extracts it on Windows
 - **THEN** a `codev.exe` file is present
-- **AND** the files `README.md`, `LICENSE`, `codev.md` (docs) are
-  present as well
+- **AND** the files `README.md`, `README.fr.md`, `LICENSE` and
+  `CHANGELOG.md` are present as well
 
 #### Scenario: A push without a tag publishes nothing
 
@@ -130,14 +131,10 @@ The script MUST refuse (non-zero exit) if:
 - **THEN** the installation is refused
 - **AND** no file is copied into `~/.local/bin/`
 
-### Requirement: The documentation cites the three installation paths
+### Requirement: The documentation cites the four installation paths
 
-Note: the historical title keeps "three paths" to preserve name
-compatibility with the main spec; the content below describes
-**four** paths since Windows was added. A clean rename will come in a
-dedicated cycle.
-
-The Installation section of `docs/codev.md` MUST cite, in this order:
+The Installation chapter of each language (`docs/en/src/installation.md`,
+`docs/fr/src/installation.md`) MUST cite, in this order:
 
 1. **Recommended Unix path** — `curl -sSL … | sh` for macOS/Linux.
 2. **Recommended Windows path** — `iwr -useb … | iex` for Windows
@@ -150,10 +147,10 @@ The Installation section of `docs/codev.md` MUST cite, in this order:
 The repository README MUST mention at least the first **and** the
 second path (with the `curl … | sh` and `iwr … | iex` one-liners).
 
-#### Scenario: The Installation section of docs/codev.md lists the four paths in order
+#### Scenario: The Installation chapter lists the four paths in order
 
-- **GIVEN** a reader who opens `docs/codev.md` at the Installation
-  section
+- **GIVEN** a reader who opens the Installation chapter, in English or
+  in French
 - **WHEN** they go through the subsections in order
 - **THEN** they successively encounter the Unix path (`curl | sh`),
   the Windows path (`iwr | iex`), the manual path (download from

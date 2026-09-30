@@ -133,6 +133,14 @@ change active where it is.
 - **THEN** the final output reports the absence of changes
 - **AND** does NOT suggest archiving — there is nothing new to propagate
 
+#### Scenario: Sync refused by validation
+
+- **GIVEN** a change that `codev validate` reports with an error
+- **WHEN** the user types `/codev-sync`
+- **THEN** the skill replies that the change has errors and points to
+  `codev validate <name>`
+- **AND** no main spec is modified
+
 ### Requirement: The `archive` skill closes a change with a strict pre-flight
 
 The catalog SHALL expose an `archive` workflow — installed under
@@ -522,3 +530,21 @@ rendering MUST:
 - **THEN** no MCP call is emitted
 - **AND** no ticket-related message appears
 - **AND** the proposal is drafted exactly as before this batch of changes
+
+### Requirement: Skills write artifact prose in the configured language
+
+The skills that write planning content — `propose`, `update` and
+`configure` — SHALL write their prose in the language set by `language:` in
+`_codev/config.yaml` (`en` when absent), whatever language the conversation
+is in. `codev instructions --json` MUST expose that language as `language`.
+Structural keywords that codev parses — template headings such as `## Why`
+or `### Requirement:`, delta section headings, `**WHEN**` / `**THEN**`,
+`SHALL` / `MUST` — MUST stay in English.
+
+#### Scenario: French prose, English structure
+
+- **GIVEN** a project whose config contains `language: fr`
+- **WHEN** the user runs `/codev-propose` in an English conversation
+- **THEN** the proposal's sentences are written in French
+- **AND** its headings are `## Why`, `## What Changes`, `## Capabilities`
+  and `## Impact`

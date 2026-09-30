@@ -1,36 +1,4 @@
-# Spec Parsing Specification
-
-## Purpose
-
-Give codev a structured, reliable reading of main specs and deltas written
-in markdown, on which validation, sync and archive can rely without risking
-a destructive rewrite.
-
-## Requirements
-
-### Requirement: Structure of a main spec extracted
-
-The parser SHALL extract from a main spec markdown file its `## Purpose`
-section, its `## Requirements` section, and for each requirement its name,
-its descriptive text and its scenarios.
-
-#### Scenario: Well-formed Purpose and requirements
-
-- **GIVEN** a file containing `## Purpose`, a sentence, then `## Requirements`,
-  then a `### Requirement: Session Expiration` followed by a `#### Scenario: Idle`
-  with **WHEN** / **THEN** lines
-- **WHEN** the parser reads the file
-- **THEN** the result exposes the Purpose text
-- **AND** exposes a requirement named `Session Expiration` carrying its
-  scenario named `Idle`
-
-#### Scenario: Missing Purpose in a main spec
-
-- **GIVEN** a main spec file without a `## Purpose` section
-- **WHEN** the parser reads the file
-- **THEN** the result reports the missing Purpose as a structural defect
-  naming the nature of what is missing
-- **AND** the remaining requirements are still extractable
+## MODIFIED Requirements
 
 ### Requirement: Delta operations recognized
 
@@ -81,48 +49,6 @@ for `REMOVED`, and the `FROM:` / `TO:` pair for `RENAMED`. A `FROM:` or
   ``- TO: `### Requirement: New Name` ``
 - **WHEN** the parser reads the delta
 - **THEN** the `RENAMED` operation associates `Old Name` with `New Name`
-
-### Requirement: Literal zones ignored
-
-The parser MUST ignore any structure — headings, requirements, scenarios,
-delta headers — that appears inside a code block fenced by ` ``` ` or
-`~~~`, or inside an HTML comment `<!-- … -->`.
-
-#### Scenario: Example requirement inside a code block
-
-- **GIVEN** a file whose Purpose section contains a ` ``` ` block containing
-  the line `### Requirement: Example`
-- **WHEN** the parser reads the file
-- **THEN** no requirement named `Example` appears in the result
-
-#### Scenario: Delta header inside a comment
-
-- **GIVEN** a delta containing a comment `<!-- ## ADDED Requirements … -->`
-  followed, further down, by a real `## ADDED Requirements` with a requirement
-- **WHEN** the parser reads the delta
-- **THEN** the `ADDED` operation is counted only once, with the requirement
-  from the real block
-
-### Requirement: Original position preserved
-
-Every extracted element — Purpose, requirement, scenario, delta block — SHALL
-carry the exact `[start, end)` range it occupies in the source text, in
-bytes and in lines.
-
-#### Scenario: Rewriting a block without touching the rest
-
-- **GIVEN** a main spec file containing two successive requirements
-- **WHEN** a consumer replaces the source text occupied by the first
-  requirement with a new block of different length
-- **THEN** the second requirement, its scenarios and the surrounding
-  whitespace remain identical down to the character
-
-#### Scenario: Line position of a scenario
-
-- **GIVEN** a file where the `Idle` scenario of a requirement starts at
-  line 42
-- **WHEN** the parser reads the file
-- **THEN** the element representing that scenario exposes line 42 as its start
 
 ### Requirement: Localized structural defects
 

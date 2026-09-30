@@ -154,11 +154,12 @@ date in `YYYY-MM-DD` format and `<name>` is the change identifier.
 - **AND** `_codev/changes/archive/2026-09-08-add-auth/` exists, with all the
   files of the change preserved
 
-### Requirement: Validation pre-flight before archive
+### Requirement: Validation pre-flight before sync and archive
 
-`codev archive` MUST refuse to act if `codev validate <change>` reports at
-least one error; it MUST do so without performing the merge, without
-writing, and without moving anything.
+`codev sync` and `codev archive` MUST refuse to act if
+`codev validate <change>` reports at least one error; they MUST do so
+without performing the merge, without writing, and without moving anything,
+and report the stable code `validation_failed`.
 
 #### Scenario: A change with a validation error is not archived
 
@@ -169,14 +170,13 @@ writing, and without moving anything.
 - **AND** the error message names the code `validation_failed` and invites
   the user to run `codev validate <change>` to see the details
 
-#### Scenario: A sync does not require full validation
+#### Scenario: A sync with a validation error merges nothing
 
 - **GIVEN** a change containing a well-formed delta but also a requirement
   without `SHALL` (an error finding reported by validate)
-- **WHEN** the user runs `codev sync <change>`
-- **THEN** the merge takes place; the sync pre-flight is limited to the
-  invariants strictly required for the merge (existence of the `MODIFIED`
-  targets, presence of a Purpose for a new capability)
+- **WHEN** the user runs `codev sync --change <change>`
+- **THEN** no main spec is modified
+- **AND** the JSON error carries the code `validation_failed`
 
 ### Requirement: Report with a stable contract
 
