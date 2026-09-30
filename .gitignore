@@ -7,3 +7,6 @@
 
 # mdBook output
 /docs/*/book/
+
+# Intermediate recording of docs/assets/record-demo.sh
+/docs/assets/demo-raw.gif
