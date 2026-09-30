@@ -1,26 +1,32 @@
-# Demo for the README, recorded with vhs (https://github.com/charmbracelet/vhs).
+# Demo for the README, recorded with vhs (https://github.com/charmbracelet/vhs)
+# in the Mairistem brand colors.
 #
-# Prerequisites: vhs, git, and a `codev` binary on PATH.
-# Record from the repository root:
-#
-#   vhs docs/assets/demo.tape
+# Do not run this tape directly: run docs/assets/record-demo.sh, which records
+# it and then stamps the Mairistem logo on the frame (vhs cannot draw images).
 #
 # The plan of the demo change (proposal, spec delta, design, tasks) lives in
 # docs/assets/demo/add-dark-mode/: it stands for what `/codev-propose` writes
 # in Claude Code, so the recording needs no model and is reproducible.
 
-Output docs/assets/demo.gif
+Output docs/assets/demo-raw.gif
 
 Require git
 Require codev
 
 Set Shell "bash"
 Set FontSize 16
-Set Width 1200
-Set Height 720
-Set Padding 24
+Set Width 1280
+Set Height 880
+Set Padding 20
+Set Margin 64
+Set MarginFill "#004C66"
+Set WindowBar Colorful
+Set WindowBarSize 36
+Set BorderRadius 12
 Set TypingSpeed 40ms
-Set Theme "Catppuccin Mocha"
+# Terminal colors from the Mairistem palette: deep-blue card, white text,
+# coral / green / yellow accents.
+Set Theme { "name": "Mairistem", "background": "#00394D", "foreground": "#FFFFFF", "cursor": "#FFAB03", "selection": "#004C66", "black": "#00394D", "red": "#FF5331", "green": "#00C39B", "yellow": "#FFAB03", "blue": "#9CBAC4", "magenta": "#FF5331", "cyan": "#00C39B", "white": "#E7EDEF", "brightBlack": "#6E858D", "brightRed": "#FF5331", "brightGreen": "#00C39B", "brightYellow": "#FFAB03", "brightBlue": "#B9CDD3", "brightMagenta": "#FF5331", "brightCyan": "#00C39B", "brightWhite": "#FFFFFF" }
 
 # Start from a fresh, empty repository, off camera.
 Hide
