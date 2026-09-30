@@ -1,47 +1,58 @@
-# Politique de sécurité
+# Security Policy
 
-## Versions supportées
+## Supported versions
 
-| Version | Support |
-|---------|---------|
-| 0.x     | Toutes les versions récentes tant que codev est en 0.x |
+| Version | Supported |
+|---------|-----------|
+| 0.x     | Latest minor release only |
 
-Une fois codev passé en 1.x, seule la branche majeure la plus
-récente sera supportée activement. Cette table sera mise à jour à ce
-moment-là.
+codev is pre-1.0: fixes land on the latest `0.x` release, and users are
+expected to upgrade. Once codev reaches 1.0, the most recent major version
+will be actively supported, and this table will be updated.
 
-## Signaler une faille
+## Reporting a vulnerability
 
-Merci de **ne pas ouvrir d'issue publique** pour signaler une faille
-de sécurité.
+**Please do not report security vulnerabilities through public GitHub
+issues, discussions, or pull requests.**
 
-Utilise le mécanisme privé de GitHub :
+Use GitHub's private vulnerability reporting instead:
 
-1. Va sur [github.com/mairistem/codev/security/advisories](https://github.com/mairistem/codev/security/advisories).
-2. Clique **« Report a vulnerability »**.
-3. Décris la faille, un scénario reproductible, et l'impact attendu.
+1. Go to [github.com/mairistem/codev/security/advisories/new](https://github.com/mairistem/codev/security/advisories/new).
+2. Describe the vulnerability, a reproducible scenario, and the expected
+   impact.
 
-Ce canal est privé, versionné et permet la coordination d'une CVE si
-nécessaire.
+This channel is private, tracked, and allows coordinating a CVE when
+appropriate.
 
-**Délai de première réponse cible : 72 heures.** Si tu ne reçois
-aucune réponse dans ce délai, tu peux ouvrir une issue publique
-minimale intitulée « Re: vulnerability report » sans donner le
-détail, pour signaler qu'un rapport privé attend traitement.
+## What to expect
 
-## Périmètre
+- **Acknowledgement within 72 hours.** If you have not heard back by then,
+  open a minimal public issue titled "Pending security report" — without any
+  detail — so the maintainers know a private report is waiting.
+- An assessment and, when confirmed, a fix timeline shared with you.
+- Credit in the release notes and advisory, unless you prefer to remain
+  anonymous.
 
-Sont dans le périmètre les failles qui affectent :
+Please give us a reasonable amount of time to release a fix before any
+public disclosure.
 
-- Le binaire `codev` (crates `codev-core`, `codev-engine`,
-  `codev-cli`).
-- Les scripts `install.sh` et `install.ps1` (intégrité, chaîne de
-  téléchargement, vérification SHA-256).
-- La chaîne de publication (workflow `.github/workflows/release.yml`).
+## Scope
 
-Sont hors périmètre :
+In scope:
 
-- Les vulnérabilités des dépendances tierces qui n'ont pas d'impact
-  démontré sur codev (à signaler en amont au projet concerné).
-- Les problèmes d'utilisation qui ne relèvent pas d'une faille de
-  sécurité (à ouvrir en issue publique).
+- The `codev` binary (crates `codev-core`, `codev-engine`, `codev-agents`,
+  `codev-cli`), including how it reads inherited sources from local paths
+  and remote git repositories.
+- The installers `install.sh` and `install.ps1` (download chain, SHA-256
+  verification).
+- The release pipeline (`.github/workflows/release.yml`).
+- The skills generated into `.claude/skills/`, in particular the tool
+  permissions they grant to Claude Code.
+
+Out of scope:
+
+- Vulnerabilities in third-party dependencies with no demonstrated impact on
+  codev — please report those upstream.
+- Behavior of Claude Code itself or of third-party MCP servers.
+- Usage issues that are not security vulnerabilities — please open a regular
+  issue.

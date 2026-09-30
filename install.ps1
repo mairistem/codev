@@ -1,21 +1,26 @@
-# codev — script d'installation Windows.
+# codev - installer for Windows.
 #
-# Usage :
+# Usage:
 #
-#   # Dernière version
+#   # Latest release
 #   iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
 #
-#   # Version précise
+#   # Specific version
 #   $env:CODEV_VERSION = '0.2.0'
 #   iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
 #
-# Détecte l'arch, télécharge le binaire depuis GitHub Releases, vérifie
-# son SHA-256 puis le copie dans %LOCALAPPDATA%\Programs\codev\codev.exe.
+# Detects the architecture, downloads the binary from GitHub Releases,
+# verifies its SHA-256 checksum, then copies it to
+# %LOCALAPPDATA%\Programs\codev\codev.exe.
 #
-# Aucune dépendance à Rust. Requiert PowerShell 5.1+ (built-in Windows 10+).
-# N'appelle pas `Set-ExecutionPolicy` — un script piped depuis stdin passe
-# sans restriction. Ne modifie pas le PATH utilisateur : les instructions
-# sont affichées à la fin.
+# No Rust toolchain needed. Requires PowerShell 5.1+ (built into Windows 10+).
+# Does not call `Set-ExecutionPolicy` - a script piped through `iex` is not
+# subject to it. Does not modify the user PATH: instructions are printed at
+# the end instead.
+#
+# This file is intentionally pure ASCII: Windows PowerShell 5.1 reads
+# BOM-less scripts with the ANSI code page, which would mangle any
+# non-ASCII character when the script is run from disk.
 
 $ErrorActionPreference = 'Stop'
 
@@ -27,37 +32,37 @@ function Say([string]$msg)  { Write-Host "==> $msg" }
 function Warn([string]$msg) { Write-Warning $msg }
 function Die([string]$msg)  { Write-Error $msg; exit 1 }
 
-# ─────────────────────────── détection arch ───────────────────────────
+# --------------------------- architecture ---------------------------
 
 $arch = $env:PROCESSOR_ARCHITECTURE
 switch ($arch) {
     'AMD64' { $target = 'x86_64-pc-windows-msvc' }
     default {
         Die @"
-Architecture non supportée : $arch
-La seule cible Windows précompilée est x86_64 (AMD64).
-Pour ARM64 ou autre, installe la toolchain Rust et lance
-'cargo install --path crates/codev-cli' depuis un clone du dépôt.
+Unsupported architecture: $arch
+The only prebuilt Windows target is x86_64 (AMD64).
+For ARM64 or other architectures, install the Rust toolchain and run
+'cargo install --path crates/codev-cli' from a clone of the repository.
 "@
     }
 }
-Say "plateforme détectée : $target"
+Say "detected platform: $target"
 
-# ─────────────────────────── version ───────────────────────────
+# ----------------------------- version ------------------------------
 
 $version = $env:CODEV_VERSION
 if ([string]::IsNullOrEmpty($version)) {
-    Say 'résolution de la dernière version via l''API GitHub...'
+    Say 'resolving the latest release from the GitHub API...'
     try {
         $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -Headers @{ 'User-Agent' = 'codev-installer' }
         $version = $latest.tag_name -replace '^v', ''
     } catch {
-        Die "impossible de résoudre la dernière version (API GitHub ratée : $_). Fixe une version avec `$env:CODEV_VERSION = 'x.y.z'`."
+        Die "could not resolve the latest release (GitHub API request failed: $_). Pin a version with `$env:CODEV_VERSION = 'x.y.z'`."
     }
 }
-Say "version cible : $version"
+Say "target version: $version"
 
-# ─────────────────────────── téléchargement ───────────────────────────
+# ----------------------------- download -----------------------------
 
 $archive     = "codev-$version-$target.zip"
 $baseUrl     = "https://github.com/$repo/releases/download/v$version"
@@ -66,68 +71,71 @@ $archivePath = Join-Path $tmp $archive
 $sumsPath    = Join-Path $tmp 'SHA256SUMS'
 
 try {
-    Say "téléchargement : $baseUrl/$archive"
+    Say "downloading $baseUrl/$archive"
     try {
         Invoke-WebRequest -Uri "$baseUrl/$archive" -OutFile $archivePath -UseBasicParsing
     } catch {
-        Die "téléchargement raté (asset introuvable pour cette version/plateforme ?) : $_"
+        Die "download failed (no asset for this version and platform?): $_"
     }
 
-    Say "téléchargement : $baseUrl/SHA256SUMS"
+    Say "downloading $baseUrl/SHA256SUMS"
     try {
         Invoke-WebRequest -Uri "$baseUrl/SHA256SUMS" -OutFile $sumsPath -UseBasicParsing
     } catch {
-        Die "impossible de récupérer SHA256SUMS — l'intégrité ne peut pas être vérifiée : $_"
+        Die "could not download SHA256SUMS - integrity cannot be verified: $_"
     }
 
-    # ─────────────────────────── vérification SHA-256 ───────────────────────────
+    # ----------------------- SHA-256 verification -----------------------
 
-    Say 'vérification SHA-256...'
+    Say 'verifying SHA-256 checksum...'
     $sumsContent = Get-Content $sumsPath
     $expectedLine = $sumsContent | Where-Object { $_ -match "\s$([regex]::Escape($archive))$" } | Select-Object -First 1
     if (-not $expectedLine) {
-        Die "SHA256SUMS ne référence pas $archive — refus d'installer"
+        Die "SHA256SUMS has no entry for $archive - refusing to install"
     }
     $expected = ($expectedLine -split '\s+')[0].ToLower()
     $actual   = (Get-FileHash -Path $archivePath -Algorithm SHA256).Hash.ToLower()
     if ($actual -ne $expected) {
-        Die "SHA-256 divergent (attendu $expected, obtenu $actual) — refus d'installer"
+        Die "SHA-256 mismatch (expected $expected, got $actual) - refusing to install"
     }
-    Say 'SHA-256 vérifié'
+    Say 'SHA-256 checksum verified'
 
-    # ─────────────────────────── installation ───────────────────────────
+    # --------------------------- installation ---------------------------
 
-    Say 'extraction...'
+    Say 'extracting...'
     Expand-Archive -Path $archivePath -DestinationPath $tmp -Force
 
     $extractedBin = Join-Path $tmp "codev-$version-$target\$binName"
     if (-not (Test-Path $extractedBin)) {
-        Die "binaire absent dans l'archive : $extractedBin"
+        Die "binary not found in archive: $extractedBin"
     }
 
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
     Copy-Item -Path $extractedBin -Destination (Join-Path $installDir $binName) -Force
-    Say "installé : $(Join-Path $installDir $binName)"
+    Say "installed $(Join-Path $installDir $binName)"
 
-    # ─────────────────────────── PATH ───────────────────────────
+    # ------------------------------- PATH -------------------------------
 
     $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
     $entries  = if ($userPath) { $userPath -split ';' } else { @() }
     if ($entries -contains $installDir) {
-        Say "$installDir est déjà dans ton PATH utilisateur."
-        Say 'Vérifie avec : codev --version'
+        Say "$installDir is already on your user PATH."
+        Say 'Check with: codev --version'
     } else {
-        Warn "$installDir n'est pas dans ton PATH utilisateur."
+        Warn "$installDir is not on your user PATH."
         Write-Host ''
-        Write-Host 'Ajoute-le avec cette commande, dans un shell séparé :'
+        Write-Host 'Add it with this command:'
         Write-Host ''
-        Write-Host "  setx PATH `"`$env:PATH;$installDir`""
+        # Writes the *user* PATH only. `setx PATH "$env:PATH;..."` is avoided on
+        # purpose: it truncates at 1024 characters and copies the machine PATH
+        # into the user PATH.
+        Write-Host "  [Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ';$installDir', 'User')"
         Write-Host ''
-        Write-Host 'Ou par Paramètres → Système → Variables d''environnement.'
-        Write-Host 'Puis ouvre un nouveau PowerShell pour recharger le PATH.'
+        Write-Host 'Or use Settings > System > About > Advanced system settings > Environment Variables.'
+        Write-Host 'Then open a new PowerShell window to reload PATH.'
     }
 
-    Say "codev v$version prêt. Lance : codev docs"
+    Say "codev v$version is ready. Next: cd into a repository and run codev init"
 }
 finally {
     Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue
