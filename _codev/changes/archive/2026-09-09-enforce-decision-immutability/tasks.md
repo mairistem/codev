@@ -1,133 +1,133 @@
-# Tâches
+# Tasks
 
-## 1. Cœur — module `seal` et hash
+## 1. Core — `seal` module and hash
 
-- [x] 1.1 Créer `crates/codev-core/src/decisions/seal.rs` — types :
+- [x] 1.1 Create `crates/codev-core/src/decisions/seal.rs` — types:
       `Seal { id: DecisionId, body_sha256: String, sealed_at: NaiveDate }`,
-      `SealFile { version: u32, seals: Vec<Seal> }`. Frontmatter attribué
-      `#[serde(deny_unknown_fields)]` sur les deux. `version` figé à `1`
-      pour cette livraison.
-- [x] 1.2 Fonction `body_hash(source: &str) -> Result<String,
-      SealError>` — trouve le `\n---\n` (ou `\n---\r\n`) fermant le
-      frontmatter, calcule SHA-256 sur tout ce qui suit **byte pour
-      byte**, retourne la chaîne `"sha256:<hex>"`. Erreur typée si le
-      séparateur est introuvable. Tests : ADR standard, ADR sans
-      contenu après le frontmatter (corps vide), ADR avec CRLF, ADR sans
-      frontmatter (erreur).
-- [x] 1.3 Fonction `parse_seal_file(source: &str) -> Result<SealFile,
-      SealError>` via `serde_norway` ; retourne `SealFile { version: 1,
-      seals: vec![] }` sur source vide. Tests : forme canonique, champ
-      inconnu rejeté, version différente de 1 rejetée avec code
-      stable `seal_version_unsupported`.
-- [x] 1.4 Fonction `render_seal_file(seal: &SealFile) -> String` —
-      YAML canonique avec `version:` en tête, `seals:` en liste, ordre
-      des entrées par `id` croissant (déterminisme pour git). Test
-      round-trip parse→render→parse.
-- [x] 1.5 Fonction pure `plan_seal_new(existing: &SealFile, id:
+      `SealFile { version: u32, seals: Vec<Seal> }`. Frontmatter attributed
+      `#[serde(deny_unknown_fields)]` on both. `version` fixed at `1`
+      for this delivery.
+- [x] 1.2 Function `body_hash(source: &str) -> Result<String,
+      SealError>` — finds the `\n---\n` (or `\n---\r\n`) closing the
+      frontmatter, computes SHA-256 over everything that follows **byte
+      for byte**, returns the string `"sha256:<hex>"`. Typed error if the
+      separator cannot be found. Tests: standard ADR, ADR with no
+      content after the frontmatter (empty body), ADR with CRLF, ADR
+      without frontmatter (error).
+- [x] 1.3 Function `parse_seal_file(source: &str) -> Result<SealFile,
+      SealError>` via `serde_norway`; returns `SealFile { version: 1,
+      seals: vec![] }` on empty source. Tests: canonical form, unknown
+      field rejected, version other than 1 rejected with stable code
+      `seal_version_unsupported`.
+- [x] 1.4 Function `render_seal_file(seal: &SealFile) -> String` —
+      canonical YAML with `version:` first, `seals:` as a list, entries
+      ordered by ascending `id` (determinism for git). Round-trip test
+      parse→render→parse.
+- [x] 1.5 Pure function `plan_seal_new(existing: &SealFile, id:
       DecisionId, body_hash: String, today: NaiveDate) -> SealFile` —
-      insère la nouvelle entrée en préservant l'ordre par id. Test :
-      insertion au milieu, refuse un id déjà scellé (retour
+      inserts the new entry preserving order by id. Test: insertion in
+      the middle, refuses an already sealed id (returns
       `Err(SealError::AlreadySealed)`).
-- [x] 1.6 Fonction pure `plan_seal_force(existing: &SealFile, id:
+- [x] 1.6 Pure function `plan_seal_force(existing: &SealFile, id:
       DecisionId, body_hash: String, today: NaiveDate) -> SealFile` —
-      remplace l'entrée existante, met à jour `sealed_at`. Test :
-      remplace ; refuse un id absent (retour `Err(SealError::Unknown)`).
-- [x] 1.7 Fonction pure `verify(seal: &SealFile, present_ids:
+      replaces the existing entry, updates `sealed_at`. Test: replaces;
+      refuses an absent id (returns `Err(SealError::Unknown)`).
+- [x] 1.7 Pure function `verify(seal: &SealFile, present_ids:
       &[DecisionId], body_hashes: &HashMap<DecisionId, String>) ->
-      Vec<Finding>` — émet `decision_unsealed`, `decision_seal_mismatch`,
-      `decision_orphan_seal` selon les cas. Tests : chaque cas isolé, cas
-      combinés, chaîne de supersession (les deux ADR de la chaîne
-      doivent être scellés).
+      Vec<Finding>` — emits `decision_unsealed`, `decision_seal_mismatch`,
+      `decision_orphan_seal` depending on the case. Tests: each case in
+      isolation, combined cases, supersession chain (both ADRs of the
+      chain must be sealed).
 
-## 2. Cœur — intégration dans plans existants
+## 2. Core — integration into existing plans
 
-- [x] 2.1 Étendre `plan_new_decision` : signature reçoit maintenant
-      `existing_seal: SealFile` et `today: NaiveDate` (déjà en argument).
-      Retourne un `Plan` qui écrit l'ADR **et** `seal.yaml` mis à jour.
-      Tests existants adaptés — le plan a désormais 2 writes au lieu
-      d'1.
-- [x] 2.2 Étendre `plan_supersede` : ajoute un write pour `seal.yaml`
-      portant la nouvelle entrée du nouvel ADR ; l'entrée de l'ancien
-      reste identique. Test dédié : après `plan_supersede`, `seal.yaml`
-      contient N+1 entrées et l'ancienne est bit-identique.
-- [x] 2.3 Nouvelle fonction `plan_seal(existing_adr: &Decision,
+- [x] 2.1 Extend `plan_new_decision`: the signature now receives
+      `existing_seal: SealFile` and `today: NaiveDate` (already an
+      argument). Returns a `Plan` that writes the ADR **and** the
+      updated `seal.yaml`. Existing tests adapted — the plan now has 2
+      writes instead of 1.
+- [x] 2.2 Extend `plan_supersede`: adds a write for `seal.yaml`
+      carrying the new entry for the new ADR; the old one's entry stays
+      identical. Dedicated test: after `plan_supersede`, `seal.yaml`
+      contains N+1 entries and the old one is bit-identical.
+- [x] 2.3 New function `plan_seal(existing_adr: &Decision,
       existing_seal: &SealFile, force: bool, today: NaiveDate) ->
-      Result<Plan, SealError>` — modèle des deux modes. Tests : ajout
-      neuf, refus sans force sur changement, réécriture avec force,
-      no-op si sceau déjà correct.
+      Result<Plan, SealError>` — models both modes. Tests: fresh
+      addition, refusal without force on change, rewrite with force,
+      no-op if the seal is already correct.
 
-## 3. Coquille — engine et coordonnées
+## 3. Shell — engine and coordination
 
-- [x] 3.1 `crates/codev-engine/src/decisions_actions.rs` : la fonction
-      qui construit le plan `new` doit d'abord lire `seal.yaml` via le
-      port `FileSystem`, appeler `plan_new_decision` en lui passant le
-      contenu parsé, puis exécuter le plan. Idem pour `supersede`.
-- [x] 3.2 Nouvelle action `seal(id: DecisionId, force: bool)` dans
-      l'engine, qui compose lecture ADR + lecture seal + calcul hash +
-      appel de `plan_seal`, puis exécution. Erreurs remappées vers les
-      codes stables `seal_conflict`, `cannot_seal_inherited`,
+- [x] 3.1 `crates/codev-engine/src/decisions_actions.rs`: the function
+      that builds the `new` plan must first read `seal.yaml` via the
+      `FileSystem` port, call `plan_new_decision` passing it the parsed
+      content, then execute the plan. Same for `supersede`.
+- [x] 3.2 New action `seal(id: DecisionId, force: bool)` in the engine,
+      which composes ADR read + seal read + hash computation + call to
+      `plan_seal`, then execution. Errors remapped to the stable codes
+      `seal_conflict`, `cannot_seal_inherited`,
       `unknown_decision_id`.
-- [x] 3.3 Extension de `crates/codev-engine/src/validate.rs` : après le
-      chargement de l'index de décisions, lire `seal.yaml` via le port
-      `FileSystem`, appeler `verify`, ajouter ses findings au rapport de
-      validation. Tests : projet où seal.yaml est absent → tous les ADR
-      remontent `decision_unsealed` ; projet où seal.yaml a été rempli à
-      la main mais un ADR a été modifié → `decision_seal_mismatch`.
-- [x] 3.4 `_codev/decisions/seal.yaml` doit être **créé au layout**
-      côté engine — le lister comme fichier de vérité connu, éviter
-      qu'il soit interprété comme un ADR par erreur (extension `.yaml`
-      donc de toute façon ignoré par le lecteur d'ADR qui filtre `.md`,
-      mais autant l'affirmer par test).
+- [x] 3.3 Extension of `crates/codev-engine/src/validate.rs`: after
+      loading the decision index, read `seal.yaml` via the `FileSystem`
+      port, call `verify`, add its findings to the validation report.
+      Tests: project where seal.yaml is absent → every ADR surfaces
+      `decision_unsealed`; project where seal.yaml was filled by hand
+      but an ADR was modified → `decision_seal_mismatch`.
+- [x] 3.4 `_codev/decisions/seal.yaml` must be **created in the layout**
+      on the engine side — list it as a known source-of-truth file,
+      avoid it being mistakenly interpreted as an ADR (`.yaml` extension,
+      so ignored anyway by the ADR reader which filters `.md`, but
+      better to assert it with a test).
 
-## 4. CLI — commande `decision seal`
+## 4. CLI — `decision seal` command
 
-- [x] 4.1 Nouvelle sous-commande `codev decision seal <id> [--force]
-      [--json]`. Route vers l'action de l'engine. `--json` produit
+- [x] 4.1 New subcommand `codev decision seal <id> [--force]
+      [--json]`. Routes to the engine action. `--json` produces
       `{ "decision": { "id": …, "bodySha256": …, "sealedAt": … },
-      "status": [] }` en succès, `{ "decision": null, "status": [{code,
-      message}] }` en échec.
-- [x] 4.2 Rendu humain : succès neuf → `Scellé : 0001 (sha256:abcd…)` ;
-      re-sceau → `Re-scellé : 0001 (sha256:…)` ; no-op → `Déjà à jour :
-      0001` ; conflit sans force → message avec le code `seal_conflict`
-      qui rappelle l'usage de `--force`.
-- [x] 4.3 `codev decision new --json` gagne un champ `bodySha256` dans
-      son entrée `decision`. Le champ apparaît aussi dans la sortie
-      humaine sur sa propre ligne (`Hash : sha256:…`) — utile pour le
-      copier-coller si migration.
-- [x] 4.4 Tests d'intégration CLI : `decision seal` en trois modes
-      (neuf, no-op, conflit avec/sans force) sur un dépôt de test.
+      "status": [] }` on success, `{ "decision": null, "status": [{code,
+      message}] }` on failure.
+- [x] 4.2 Human rendering: fresh success → `Sealed 0001 (sha256:abcd…)`;
+      re-seal → `Resealed 0001 (sha256:…)`; no-op → `Already up to date:
+      0001`; conflict without force → message with the code
+      `seal_conflict` recalling the use of `--force`.
+- [x] 4.3 `codev decision new --json` gains a `bodySha256` field in its
+      `decision` entry. The field also appears in the human output on
+      its own line (`Hash: sha256:…`) — useful for copy-paste during
+      migration.
+- [x] 4.4 CLI integration tests: `decision seal` in three modes (fresh,
+      no-op, conflict with/without force) on a test repository.
 
-## 5. Contrat JSON
+## 5. JSON contract
 
-- [x] 5.1 Ajouter la struct `SealEntryV1 { id, bodySha256, sealedAt }`
-      dans `codev-cli::contract::v1`. La struct `DecisionEntryV1` (utilisée
-      par `decision new`) gagne un `bodySha256: Option<String>` optionnel
-      — additif, jamais breaking.
-- [x] 5.2 Documenter les nouveaux codes de finding dans le module
-      `codev-cli::contract::v1::status` : `decision_unsealed`,
+- [x] 5.1 Add the struct `SealEntryV1 { id, bodySha256, sealedAt }`
+      in `codev-cli::contract::v1`. The struct `DecisionEntryV1` (used
+      by `decision new`) gains an optional `bodySha256: Option<String>`
+      — additive, never breaking.
+- [x] 5.2 Document the new finding codes in the module
+      `codev-cli::contract::v1::status`: `decision_unsealed`,
       `decision_seal_mismatch`, `decision_orphan_seal`, `seal_conflict`,
       `cannot_seal_inherited`, `seal_version_unsupported`,
-      `unknown_decision_id` (existe déjà).
+      `unknown_decision_id` (already exists).
 
-## 6. Migration du dépôt lui-même
+## 6. Migration of the repository itself
 
-- [x] 6.1 Après implémentation et `cargo install`, lancer `codev
-      validate` — vérifier que les 6 warnings `decision_unsealed`
-      remontent.
-- [x] 6.2 Boucler `codev decision seal <id>` pour les 6 ADR ; commit
-      unique portant `_codev/decisions/seal.yaml`.
-- [x] 6.3 Vérifier qu'un `codev validate` post-migration est
-      complètement vert côté décisions.
-- [x] 6.4 Éditer volontairement le corps d'un ADR (par exemple ajouter
-      « TEST-A-EFFACER » dans le contexte), relancer `codev validate` —
-      vérifier que `decision_seal_mismatch` est bien émis avec un exit
-      code non nul. Retirer l'édition de test avant le commit.
+- [x] 6.1 After implementation and `cargo install`, run `codev
+      validate` — check that the 6 `decision_unsealed` warnings
+      surface.
+- [x] 6.2 Loop `codev decision seal <id>` over the 6 ADRs; single
+      commit carrying `_codev/decisions/seal.yaml`.
+- [x] 6.3 Check that a post-migration `codev validate` is completely
+      green on the decisions side.
+- [x] 6.4 Deliberately edit the body of an ADR (for example add
+      "TEST-TO-DELETE" in the context), rerun `codev validate` —
+      check that `decision_seal_mismatch` is indeed emitted with a
+      non-zero exit code. Remove the test edit before the commit.
 
-## 7. Intégration workspace
+## 7. Workspace integration
 
-- [x] 7.1 `cargo test --workspace` reste vert, gagne au moins 15 tests
-      nouveaux (module seal + intégrations).
-- [x] 7.2 `cargo clippy --workspace --all-targets` reste sans
-      avertissement.
-- [x] 7.3 `codev validate --all` reste vert (une fois la migration du
-      point 6 faite).
+- [x] 7.1 `cargo test --workspace` stays green, gains at least 15 new
+      tests (seal module + integrations).
+- [x] 7.2 `cargo clippy --workspace --all-targets` stays free of
+      warnings.
+- [x] 7.3 `codev validate --all` stays green (once the migration of
+      item 6 is done).

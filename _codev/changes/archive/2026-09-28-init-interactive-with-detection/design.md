@@ -1,190 +1,185 @@
-# Design : codev init interactif avec détection
+# Design: interactive codev init with detection
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Nouvelle capacité `init`, modification de `skills`
-pour retourner `DEFAULT_WORKFLOWS`, refonte de `codev-cli::commands::init`,
-nouveau module `codev-core::detect`, nouveau module
-`codev-core::config::generate`. Nouvelle dépendance `dialoguer`.
+See `proposal.md`. New `init` capability, modification of `skills` to
+reverse `DEFAULT_WORKFLOWS`, rework of `codev-cli::commands::init`,
+new module `codev-core::detect`, new module
+`codev-core::config::generate`. New dependency `dialoguer`.
 
-## Décisions
+## Decisions
 
-### Décision : `dialoguer` plutôt que `inquire`
+### Decision: `dialoguer` rather than `inquire`
 
-Les deux libs Rust de prompts sont matures. `dialoguer` est plus
-petite (une dizaine de dépendances, pas de tokio), stable depuis
-2018, utilisée par `cargo`, `rustup`, `clap` et `k8s`. `inquire` est
-plus riche (validation inline, autocomplete) mais ces features ne
-nous servent pas ici — deux questions, aucune validation
-sophistiquée.
+Both Rust prompt libraries are mature. `dialoguer` is smaller (about
+ten dependencies, no tokio), stable since 2018, used by `cargo`,
+`rustup`, `clap` and `k8s`. `inquire` is richer (inline validation,
+autocomplete) but those features are of no use to us here — two
+questions, no sophisticated validation.
 
-Coût pour codev : ~10 dépendances transitives supplémentaires. Coût
-`inquire` : ~20. Pour un CLI de dev tool, `dialoguer` gagne.
+Cost for codev: ~10 additional transitive dependencies. Cost of
+`inquire`: ~20. For a dev-tool CLI, `dialoguer` wins.
 
-**Alternative écartée A** : `inquire`. Rejeté au motif du poids
-disproportionné pour les besoins.
+**Rejected alternative A**: `inquire`. Rejected on the grounds of
+weight disproportionate to the needs.
 
-**Alternative écartée B** : rouler notre propre prompt via `println!`
-+ `io::stdin().read_line()`. Rejeté — la gestion propre du TTY, de
-la sélection au clavier, du redraw sur backspace, coûte plus qu'une
-dépendance battle-tested.
+**Rejected alternative B**: roll our own prompt via `println!`
++ `io::stdin().read_line()`. Rejected — clean handling of the TTY, of
+keyboard selection, of redraw on backspace, costs more than a
+battle-tested dependency.
 
-### Décision : détection dans `codev-core`, prompts dans `codev-cli`
+### Decision: detection in `codev-core`, prompts in `codev-cli`
 
-La détection est **pure** — elle transforme des `&[u8]` (contenus de
-manifestes) en un `struct Detected`. Elle n'a pas besoin d'I/O
-au-delà de la lecture des fichiers, qui passe par le port `FileSystem`
-existant. Elle vit dans `codev-core::detect` (submodules `stack`,
-`mcp`, `license`, `ci`, `git`).
+Detection is **pure** — it transforms `&[u8]` (manifest contents) into
+a `struct Detected`. It needs no I/O beyond reading the files, which
+goes through the existing `FileSystem` port. It lives in
+`codev-core::detect` (submodules `stack`, `mcp`, `license`, `ci`,
+`git`).
 
-Les prompts sont **impurs** — ils lisent stdin, écrivent stdout,
-sondent l'état du TTY. Ils vivent dans `codev-cli::init_prompts`
-(nouveau module).
+Prompts are **impure** — they read stdin, write stdout, probe the TTY
+state. They live in `codev-cli::init_prompts` (new module).
 
-L'orchestration (sniff → prompt → generate → scaffold → install)
-vit dans `codev-cli::commands::init`.
+The orchestration (sniff → prompt → generate → scaffold → install)
+lives in `codev-cli::commands::init`.
 
-**Alternative écartée** : ranger la détection dans `codev-engine`
-parce qu'elle « fait de l'I/O ». Rejeté — la lecture d'un
-`Cargo.toml` via le port `FileSystem` est de la lecture pure vue
-depuis le domaine. Rangée dans `codev-engine`, elle mélangerait
-détection et effets, alors que la détection est justement le calcul
-qu'un cœur pur sait faire.
+**Rejected alternative**: put detection in `codev-engine` because it
+"does I/O". Rejected — reading a `Cargo.toml` through the
+`FileSystem` port is pure reading as seen from the domain. Placed in
+`codev-engine`, it would mix detection and effects, whereas detection
+is precisely the kind of computation a pure core knows how to do.
 
-### Décision : la génération de `_codev/config.yaml` est un **rendu YAML manuel**, pas `serde_norway::to_string`
+### Decision: generating `_codev/config.yaml` is a **manual YAML rendering**, not `serde_norway::to_string`
 
-Le fichier généré porte des **commentaires de provenance** au-dessus
-de certaines clés (`# détecté depuis Cargo.toml`). Aucune lib de
-sérialisation YAML ne préserve les commentaires — c'est un
-non-problème pour la lecture (elles les ignorent), mais un problème
-insurmontable pour l'écriture.
+The generated file carries **provenance comments** above certain keys
+(`# detected from Cargo.toml`). No YAML serialization library
+preserves comments — a non-issue for reading (they ignore them), but
+an insurmountable problem for writing.
 
-La fonction `codev-core::config::generate` MUST donc rendre le YAML
-**caractère par caractère** : elle assemble une string à partir d'un
-`GeneratedConfig` typé qui porte, pour chaque champ, sa valeur ET
-son commentaire optionnel de provenance.
+The `codev-core::config::generate` function MUST therefore render the
+YAML **character by character**: it assembles a string from a typed
+`GeneratedConfig` that carries, for each field, its value AND its
+optional provenance comment.
 
-Le rendu est déterministe (ordre des champs stable) et testable par
-golden : mêmes entrées, même bytes en sortie.
+The rendering is deterministic (stable field order) and testable by
+golden: same inputs, same bytes out.
 
-**Alternative écartée** : générer le YAML nu avec `serde_norway`,
-puis post-traiter la string pour insérer les commentaires par
-regex/split. Rejeté — trop fragile et pas plus court que le rendu
-manuel.
+**Rejected alternative**: generate bare YAML with `serde_norway`, then
+post-process the string to insert the comments via regex/split.
+Rejected — too fragile and no shorter than manual rendering.
 
-**Contrôle croisé** : le YAML généré MUST passer par
-`serde_norway::from_str::<ProjectConfig>()` dans un test unitaire, pour
-garantir qu'il reste lisible par le reste de codev. On génère à la
-main, on relit avec la lib.
+**Cross-check**: the generated YAML MUST go through
+`serde_norway::from_str::<ProjectConfig>()` in a unit test, to
+guarantee that it stays readable by the rest of codev. We generate by
+hand, we read back with the library.
 
-### Décision : `Detected` inclut des `Option` — jamais d'invention
+### Decision: `Detected` contains `Option`s — never invention
 
-Chaque champ de `Detected` est un `Option<T>`. Un manifeste absent
-ou illisible produit `None`, jamais une valeur inventée par défaut.
-La génération de `context:` ne mentionne que les champs `Some`. Un
-projet sans manifeste connu et sans `.github/workflows/` produit un
-`context:` minimal — ce n'est pas une erreur.
+Each field of `Detected` is an `Option<T>`. A missing or unreadable
+manifest produces `None`, never a default invented value. The
+generation of `context:` only mentions the `Some` fields. A project
+with no known manifest and no `.github/workflows/` produces a minimal
+`context:` — this is not an error.
 
-**Alternative écartée** : produire un `context:` par défaut (« projet
-générique ») quand rien n'est détecté. Rejeté — préférable de rien
-dire que d'affirmer faux.
+**Rejected alternative**: produce a default `context:` ("generic
+project") when nothing is detected. Rejected — better to say nothing
+than to assert something false.
 
-### Décision : ordre de résolution MCP — projet gagne sur utilisateur
+### Decision: MCP resolution order — project wins over user
 
-Sources MCP scannées, dans cet ordre :
+MCP sources scanned, in this order:
 
-1. `<projet>/.mcp.json`
+1. `<project>/.mcp.json`
 2. `~/.claude.json`
-3. `<projet>/.claude/settings.json`
-4. `<projet>/.claude/settings.local.json`
+3. `<project>/.claude/settings.json`
+4. `<project>/.claude/settings.local.json`
 
-Les entrées `mcpServers` sont fusionnées ; si un même nom apparaît
-dans deux fichiers, **le premier trouvé gagne** — la config projet
-prime sur la config utilisateur globale. Ce choix suit la convention
-Claude Code (les fichiers projet ont priorité).
+The `mcpServers` entries are merged; if the same name appears in two
+files, **the first one found wins** — the project config takes
+precedence over the global user config. This choice follows the
+Claude Code convention (project files have priority).
 
-`~/.claude.json` est lu **best-effort** — si absent, silence ; si
-mal formé, warning silencieux, on continue.
+`~/.claude.json` is read **best-effort** — if missing, silence; if
+malformed, silent warning, we continue.
 
-**Alternative écartée** : fusion inverse (globale gagne). Rejeté —
-contre-intuitif pour un dev qui a paramétré un MCP spécifiquement
-pour ce projet.
+**Rejected alternative**: reverse merge (global wins). Rejected —
+counter-intuitive for a dev who has set up an MCP specifically for
+this project.
 
-### Décision : Détection de la stack — premier manifeste gagne, pas de vote
+### Decision: Stack detection — first manifest wins, no vote
 
-Ordre de recherche : `Cargo.toml` → `package.json` → `pyproject.toml`
-→ `go.mod` → `pom.xml`. Le **premier trouvé** fixe la stack primaire ;
-les autres sont ignorés. Un dépôt polyglotte affiche la stack du
-manifeste racine.
+Search order: `Cargo.toml` → `package.json` → `pyproject.toml`
+→ `go.mod` → `pom.xml`. The **first one found** sets the primary
+stack; the others are ignored. A polyglot repository shows the stack
+of the root manifest.
 
-Cette convention est arbitraire mais stable. L'utilisateur peut
-toujours amender le `context:` généré à la main.
+This convention is arbitrary but stable. The user can always amend
+the generated `context:` by hand.
 
-**Alternative écartée** : mentionner **tous** les manifestes trouvés
-dans le `context:`. Rejeté — bruit typique d'un `node_modules/` ou
-d'un submodule qui polluerait la détection.
+**Rejected alternative**: mention **all** the manifests found in the
+`context:`. Rejected — typical noise from a `node_modules/` or a
+submodule that would pollute detection.
 
-### Décision : Le prompt « Contexte » propose l'ouverture de `$EDITOR`
+### Decision: The "Context" prompt offers to open `$EDITOR`
 
-Un contexte utile fait souvent plus d'une phrase. Forcer l'utilisateur
-à taper la ligne au prompt le pousse à minimiser. La convention Git
-est d'ouvrir `$EDITOR` sur un fichier temporaire préampli, qui devient
-l'entrée après fermeture.
+A useful context is often more than one sentence. Forcing the user to
+type the line at the prompt pushes them to minimize. The Git
+convention is to open `$EDITOR` on a pre-filled temporary file, which
+becomes the input once closed.
 
-`dialoguer` supporte cela via `Editor::new().edit()`. On l'utilise
-uniquement à ce prompt-là (les workflows restent en `Select`).
+`dialoguer` supports this via `Editor::new().edit()`. We use it only
+at that prompt (the workflows stay as a `Select`).
 
-**Alternative écartée** : n'accepter que la ligne courte au prompt.
-Rejeté — trop de friction pour un champ qui gagne à être détaillé.
+**Rejected alternative**: accept only the short line at the prompt.
+Rejected — too much friction for a field that benefits from being
+detailed.
 
-### Décision : Retour de `DEFAULT_WORKFLOWS` = 7 workflows — bascule non-graduelle
+### Decision: Reversing `DEFAULT_WORKFLOWS` = 7 workflows — non-gradual switch
 
-Le nouveau défaut casse la lecture strictement chronologique de la
-spec `skills` : un test existant (« Catalogue par défaut inclut
-onboard » avec exactement 3 workflows) devient faux. La spec est
-donc **MODIFIED**, pas complétée par un ADDED — le contrat change,
-pas une extension. Le test correspondant est réécrit.
+The new default breaks the strictly chronological reading of the
+`skills` spec: an existing test ("Default catalog includes onboard"
+with exactly 3 workflows) becomes false. The spec is therefore
+**MODIFIED**, not supplemented by an ADDED — the contract changes, it
+is not an extension. The corresponding test is rewritten.
 
-Effet secondaire pour les projets existants : `codev update` sur un
-projet qui n'a pas de clé `workflows:` explicite installe d'un coup
-les 4 skills manquantes. C'est le comportement voulu — un projet
-sous-configuré rattrape ce qu'il aurait dû avoir. Un projet qui
-tient à rester sur les 3 skills initiales peut ajouter la clé
-`workflows:` explicite (voie opt-out).
+Side effect for existing projects: `codev update` on a project that
+has no explicit `workflows:` key installs the 4 missing skills all at
+once. This is the intended behavior — an under-configured project
+catches up on what it should have had. A project that insists on
+staying on the 3 initial skills can add the explicit `workflows:` key
+(opt-out path).
 
-Documenté dans le `CHANGELOG.md` comme **changement de comportement
-notable** (mais non-breaking : l'ancien comportement reste
-accessible par déclaration explicite).
+Documented in `CHANGELOG.md` as a **notable behavior change** (but
+non-breaking: the old behavior remains accessible through explicit
+declaration).
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Prompt bloque sur un TTY faux positif** — un émulateur exotique
-  qui prétend être un TTY mais n'accepte pas de saisie fait bloquer
-  la commande. → **Atténuation** : `--yes` reste le kill switch. Le
-  bloc « stdin non-TTY implique --yes » attrape le cas courant
-  (CI, pipe).
-- **Détection MCP faux positif** — un serveur nommé
-  `"my-jira-mock"` est faussement matché comme un vrai MCP Jira. →
-  **Atténuation** : la détection ne fait que proposer ; l'utilisateur
-  confirme en interactif. En `--yes`, un faux positif produit un
-  `mcp.jira_tool:` qui pointe vers un tool inexistant — les skills
-  qui l'appellent échoueront proprement avec un message clair (déjà
-  couvert par la spec `skills` propose).
-- **Changement du défaut casse un test existant** — c'est le prix
-  attendu, pas un risque. Le test « autres opt-in restent opt-in »
-  est retiré dans le MODIFIED.
-- **Génération YAML manuelle est fastidieuse à maintenir** — chaque
-  nouveau champ demande d'être ajouté au renderer. → **Atténuation** :
-  le renderer est court (~80 lignes), typé, testé par golden. Une
-  clé oubliée est visible tout de suite.
+- **Prompt hangs on a false-positive TTY** — an exotic emulator that
+  claims to be a TTY but does not accept input makes the command
+  hang. → **Mitigation**: `--yes` remains the kill switch. The
+  "non-TTY stdin implies --yes" rule catches the common case (CI,
+  pipe).
+- **MCP detection false positive** — a server named `"my-jira-mock"`
+  is wrongly matched as a real Jira MCP. → **Mitigation**: detection
+  only proposes; the user confirms in interactive mode. In `--yes`, a
+  false positive produces a `mcp.jira_tool:` that points to a
+  non-existent tool — the skills that call it will fail cleanly with a
+  clear message (already covered by the `skills` propose spec).
+- **Changing the default breaks an existing test** — this is the
+  expected price, not a risk. The "other opt-in ones stay opt-in" test
+  is removed in the MODIFIED.
+- **Manual YAML generation is tedious to maintain** — each new field
+  has to be added to the renderer. → **Mitigation**: the renderer is
+  short (~80 lines), typed, tested by golden. A forgotten key is
+  immediately visible.
 
-## Plan de migration
+## Migration Plan
 
-Aucun outil de migration nécessaire. Un projet existant qui n'a pas
-de clé `workflows:` explicite verra, au prochain `codev update`, ses
-skills complétées. Un projet qui la tient veut peut-être ajouter les
-workflows manquants (ADR interne — pas de contrainte).
+No migration tool needed. An existing project that has no explicit
+`workflows:` key will see its skills completed on the next
+`codev update`. A project that has one may want to add the missing
+workflows (internal ADR — no constraint).
 
-Le `CHANGELOG.md` documente le changement avec une phrase courte :
-« Le défaut de `codev init`/`update` passe de 3 à 7 skills — les
-projets qui veulent moins déclarent `workflows:` explicite. »
+`CHANGELOG.md` documents the change with a short sentence:
+"The default of `codev init`/`update` goes from 3 to 7 skills —
+projects that want fewer declare an explicit `workflows:`."

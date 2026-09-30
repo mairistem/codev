@@ -1,41 +1,42 @@
-# Tâches
+# Tasks
 
-## 1. Body de la skill
+## 1. Skill body
 
-- [x] 1.1 Éditer `assets/workflows/onboard.md`, bloc 2 (« ici, tu
-      as ») : après la liste des changes actifs, ajouter une puce
-      « Q change(s) archivé(s) » affichée **uniquement si Q > 0**.
-      La skill compte les dossiers sous `_codev/changes/archive/` via
-      `ls` ou une commande équivalente (Glob). Un projet neuf ou sans
-      archive n'ajoute rien.
-- [x] 1.2 Éditer le bloc 3 (« la suite »), branche « projet initialisé,
-      aucun change actif » : nouvelle formulation qui invite à lire
-      `README.md` d'abord, puis propose `/codev-propose <une-idée>`,
-      et mentionne `/codev-explore <sujet>` comme alternative. Exemple
-      de sortie attendue :
-      > **La suite** : commence par lire `README.md` pour prendre le
-      > pouls du projet. Puis, quand une idée émerge, tape
-      > `/codev-propose <une-idée>`. Alternative si tu as une question
-      > mais pas encore d'idée d'action : `/codev-explore <sujet>`.
-- [x] 1.3 Les autres branches (change actif, plusieurs changes,
-      `codev init` absent) restent inchangées.
+- [x] 1.1 Edit `assets/workflows/onboard.md`, block 2 ("here you
+      have"): after the list of active changes, add a bullet
+      "Q archived change(s)" displayed **only if Q > 0**. The skill
+      counts the folders under `_codev/changes/archive/` via `ls` or
+      an equivalent command (Glob). A new project or one without an
+      archive adds nothing.
+- [x] 1.2 Edit block 3 ("what's next"), branch "project initialized,
+      no active change": new wording that invites reading `README.md`
+      first, then suggests `/codev-propose <an-idea>`, and mentions
+      `/codev-explore <topic>` as an alternative. Example of expected
+      output:
+      > **What's next**: start by reading `README.md` to get a feel
+      > for the project. Then, when an idea emerges, type
+      > `/codev-propose <an-idea>`. Alternative if you have a question
+      > but no idea for an action yet: `/codev-explore <topic>`.
+- [x] 1.3 The other branches (active change, several changes,
+      `codev init` missing) stay unchanged.
 
-## 2. Vérifications
+## 2. Checks
 
-- [x] 2.1 L'invariant `onboard_cite_ses_trois_blocs` continue de
-      passer — les mots-clés `codev, c'est` / `ici, tu as` / `la
-      suite` restent présents dans le body. Vérifié par
+- [x] 2.1 The invariant `onboard_cite_ses_trois_blocs` keeps
+      passing — the keywords `codev is` / `here you have` / `what's
+      next` remain present in the body. Verified by
       `cargo test -p codev-agents onboard_cite_ses_trois_blocs`.
-- [x] 2.2 `cargo test --workspace` reste vert.
-- [x] 2.3 `cargo clippy --workspace --all-targets` reste sans
-      avertissement.
-- [x] 2.4 `codev validate --strict` reste vert.
+- [x] 2.2 `cargo test --workspace` stays green.
+- [x] 2.3 `cargo clippy --workspace --all-targets` stays free of
+      warnings.
+- [x] 2.4 `codev validate --strict` stays green.
 
 ## 3. Dogfooding
 
-- [x] 3.1 Après `cargo install --path crates/codev-cli` puis
-      `codev update`, relancer `/codev-onboard` sur ce dépôt et
-      vérifier de visu :
-      - la ligne « 11 change(s) archivé(s) » apparaît dans « ici, tu
-        as » ;
-      - le bloc « la suite » cite `README.md` avant `/codev-propose`.
+- [x] 3.1 After `cargo install --path crates/codev-cli` then
+      `codev update`, rerun `/codev-onboard` on this repository and
+      check visually:
+      - the line "11 archived change(s)" appears in "here you
+        have";
+      - the "what's next" block cites `README.md` before
+        `/codev-propose`.

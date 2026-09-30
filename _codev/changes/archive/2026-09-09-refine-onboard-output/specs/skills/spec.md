@@ -1,80 +1,79 @@
 ## MODIFIED Requirements
 
-### Requirement: Skill `onboard` présente codev et recommande la prochaine action
+### Requirement: Skill `onboard` presents codev and recommends the next action
 
-Le catalogue de codev SHALL exposer un workflow `onboard` — installé
-sous `.claude/skills/codev-onboard/SKILL.md`, invocable
-`/codev-onboard` — dont le rôle est de présenter codev à un utilisateur
-qui le découvre, en trois blocs :
+The codev catalog SHALL expose an `onboard` workflow — installed under
+`.claude/skills/codev-onboard/SKILL.md`, invocable as
+`/codev-onboard` — whose role is to introduce codev to a user
+discovering it, in three blocks:
 
-1. Une description courte de codev (deux ou trois phrases).
-2. L'état courant du projet — dépôt initialisé ou non, nombre de specs
-   principales, nombre de décisions locales indexées, changes actifs
-   listés par nom, et **nombre de changes archivés** (affiché
-   uniquement s'il est non nul, pour ne pas polluer la sortie sur un
-   projet neuf).
-3. La prochaine action recommandée, adaptée à l'état :
-   - `_codev/` absent → `codev init`.
-   - Projet initialisé, aucun change → **inviter à lire `README.md`
-     pour prendre le pouls du projet**, puis `/codev-propose <idée>` ;
-     `/codev-explore <sujet>` reste mentionné comme alternative si
-     l'utilisateur a une question mais pas encore d'idée d'action.
-   - Un change actif dont la planification est incomplète →
-     `/codev-propose <ce-change>` pour le poursuivre.
-   - Un change actif dont la planification est complète →
-     `/codev-apply <ce-change>`.
-   - Plusieurs changes actifs → les lister et laisser l'utilisateur
-     choisir.
+1. A short description of codev (two or three sentences).
+2. The current state of the project — repository initialized or not,
+   number of main specs, number of indexed local decisions, active
+   changes listed by name, and **number of archived changes**
+   (displayed only if non-zero, so as not to clutter the output on a
+   new project).
+3. The recommended next action, adapted to the state:
+   - `_codev/` missing → `codev init`.
+   - Project initialized, no change → **invite reading `README.md` to
+     get a feel for the project**, then `/codev-propose <idea>`;
+     `/codev-explore <topic>` is still mentioned as an alternative if
+     the user has a question but no idea for an action yet.
+   - One active change whose planning is incomplete →
+     `/codev-propose <that-change>` to continue it.
+   - One active change whose planning is complete →
+     `/codev-apply <that-change>`.
+   - Several active changes → list them and let the user choose.
 
-La skill MUST être **strictement en lecture** : `allowed-tools` limité
-à `Bash(codev:*), Read, Glob`. Ni `Write`, ni `Edit`, ni `Bash`
-général.
+The skill MUST be **strictly read-only**: `allowed-tools` limited to
+`Bash(codev:*), Read, Glob`. No `Write`, no `Edit`, no general
+`Bash`.
 
-#### Scenario: Rôle documenté dans le catalogue
+#### Scenario: Role documented in the catalog
 
-- **GIVEN** le catalogue de workflows codev
-- **WHEN** on résout le workflow `onboard`
-- **THEN** son entrée existe (`find("onboard").is_some()`)
-- **AND** son `allowed_tools` vaut exactement
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `onboard` workflow is resolved
+- **THEN** its entry exists (`find("onboard").is_some()`)
+- **AND** its `allowed_tools` is exactly
   `"Bash(codev:*), Read, Glob"`
-- **AND** son `allowed_tools` ne contient PAS `Bash` général (règle
-  invariante : seule `apply` en dispose)
-- **AND** son `body` cite les trois blocs (description, état, action
-  recommandée)
+- **AND** its `allowed_tools` does NOT contain general `Bash`
+  (invariant rule: only `apply` has it)
+- **AND** its `body` cites the three blocks (description, state,
+  recommended action)
 
-#### Scenario: Skill installée par un `codev update`
+#### Scenario: Skill installed by a `codev update`
 
-- **GIVEN** un projet dont le `config.yaml` a `workflows: [propose,
+- **GIVEN** a project whose `config.yaml` has `workflows: [propose,
   explore, apply, sync, archive, update, onboard]`
-- **WHEN** l'utilisateur lance `codev update`
-- **THEN** le fichier `.claude/skills/codev-onboard/SKILL.md` est
-  créé
-- **AND** son frontmatter YAML est valide et porte la description
-  attendue
+- **WHEN** the user runs `codev update`
+- **THEN** the file `.claude/skills/codev-onboard/SKILL.md` is
+  created
+- **AND** its YAML frontmatter is valid and carries the expected
+  description
 
-#### Scenario: Bloc « ici, tu as » mentionne les archivés quand il y en a
+#### Scenario: "Here you have" block mentions archived changes when there are some
 
-- **GIVEN** un projet contenant au moins un change dans
+- **GIVEN** a project containing at least one change in
   `_codev/changes/archive/`
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « ici, tu as » contient une ligne indiquant le
-  nombre de changes archivés
-- **AND** ce nombre correspond au nombre de dossiers de la forme
-  `<date>-<nom>/` sous `_codev/changes/archive/`
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "here you have" block contains a line indicating the
+  number of archived changes
+- **AND** that number matches the number of folders of the form
+  `<date>-<name>/` under `_codev/changes/archive/`
 
-#### Scenario: Bloc « ici, tu as » n'ajoute pas de ligne archivée sur projet neuf
+#### Scenario: "Here you have" block adds no archived line on a new project
 
-- **GIVEN** un projet fraîchement initialisé, sans aucun change
-  archivé
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « ici, tu as » **n'affiche pas** de ligne
-  « changes archivés » — la sortie reste courte et non polluée
+- **GIVEN** a freshly initialized project, without any archived
+  change
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "here you have" block **does not display** an
+  "archived changes" line — the output stays short and uncluttered
 
-#### Scenario: Recommandation par défaut cite README.md
+#### Scenario: Default recommendation cites README.md
 
-- **GIVEN** un projet initialisé sans aucun change actif
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « la suite » invite à lire `README.md` avant de
-  créer un change
-- **AND** cite en actionable `/codev-propose <une-idée>` et mentionne
-  `/codev-explore <sujet>` comme alternative
+- **GIVEN** an initialized project without any active change
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "what's next" block invites reading `README.md` before
+  creating a change
+- **AND** cites `/codev-propose <an-idea>` as the actionable step and
+  mentions `/codev-explore <topic>` as an alternative

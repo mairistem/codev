@@ -1,96 +1,97 @@
-# Proposal : codev init interactif avec auto-détection
+# Proposal: interactive codev init with auto-detection
 
-## Pourquoi
+## Why
 
-Aujourd'hui, `codev init` fait le strict minimum : il crée l'arborescence
-`_codev/`, écrit un `config.yaml` template avec les workflows **commentés**,
-et installe **trois** skills — `propose`, `explore`, `onboard`. Les quatre
-autres (`apply`, `sync`, `archive`, `update`) sont opt-in : il faut
-éditer `_codev/config.yaml` à la main, décommenter la liste, et relancer
-`codev update`.
+Today, `codev init` does the bare minimum: it creates the `_codev/`
+tree, writes a template `config.yaml` with the workflows **commented
+out**, and installs **three** skills — `propose`, `explore`,
+`onboard`. The four others (`apply`, `sync`, `archive`, `update`) are
+opt-in: one has to edit `_codev/config.yaml` by hand, uncomment the
+list, and rerun `codev update`.
 
-Ce défaut casse la découverte : un utilisateur qui installe codev tape
-`/codev-apply` en toute logique après `/codev-propose`, ne trouve pas la
-skill, en déduit que codev n'a pas d'implémenteur — ou qu'il a mal
-installé.
+This default breaks discovery: a user who installs codev naturally
+types `/codev-apply` after `/codev-propose`, does not find the skill,
+and concludes that codev has no implementer — or that they installed
+it wrong.
 
-Trois autres frictions qu'aucun `codev init` ne prend en charge :
+Three other frictions that no `codev init` handles:
 
-- **Détection MCP** — le projet a probablement un ou plusieurs MCPs
-  déclarés (Jira, Confluence, Figma). Aujourd'hui, l'utilisateur doit
-  copier-coller le tool ID `mcp__…__getJiraIssue` dans `mcp.jira_tool`.
-- **Détection stack** — `context:` reste vide, alors que le langage,
-  l'édition, les crates du workspace, la licence et la présence d'un
-  CI se lisent en 5 lignes.
-- **Aucune prise en main** — la première invocation aboutit à un fichier
-  YAML rempli de commentaires que l'utilisateur doit décoder.
+- **MCP detection** — the project probably has one or more MCPs
+  declared (Jira, Confluence, Figma). Today, the user has to
+  copy-paste the tool ID `mcp__…__getJiraIssue` into `mcp.jira_tool`.
+- **Stack detection** — `context:` stays empty, even though the
+  language, the edition, the workspace crates, the license and the
+  presence of a CI can be read in 5 lines.
+- **No onboarding** — the first invocation ends in a YAML file full of
+  comments that the user has to decode.
 
-Ce change transforme `codev init` en **prise en main réelle** :
-auto-détection maximale, deux questions ciblées, config générée avec
-commentaires de provenance.
+This change turns `codev init` into **real onboarding**: maximal
+auto-detection, two targeted questions, config generated with
+provenance comments.
 
-## Ce qui change
+## What Changes
 
-### Détection (aucune question posée)
+### Detection (no question asked)
 
-Au démarrage, `codev init` sonde silencieusement le dossier courant et
-en tire :
+On startup, `codev init` silently probes the current folder and
+derives:
 
-| Champ | Source | Utilisation |
+| Field | Source | Use |
 |---|---|---|
-| **Stack + langage** | `Cargo.toml` / `package.json` / `pyproject.toml` / `go.mod` / `pom.xml` | Base du `context:` généré |
-| **Édition, MSRV** | `Cargo.toml` `[package]` / `[workspace.package]` | Ajouté au `context:` |
-| **Nom du projet** | manifeste + `git remote get-url origin` (fallback) | Log de bienvenue |
-| **Framework de test** | dépendances déclarées | `context:` |
-| **Licence** | fichier `LICENSE` racine (regex sur les 3-4 courants) | `context:` |
-| **CI** | présence de `.github/workflows/` | `context:` |
-| **MCPs Jira / Atlassian** | `<projet>/.mcp.json`, `~/.claude.json`, `.claude/settings.json`, `.claude/settings.local.json` — clé `mcpServers`, matcher `/jira\|atlassian/i` sur nom/commande/URL | Préremplit `mcp.jira_tool:` |
-| **Git repo** | `.git/` présent | Log de bienvenue |
+| **Stack + language** | `Cargo.toml` / `package.json` / `pyproject.toml` / `go.mod` / `pom.xml` | Base of the generated `context:` |
+| **Edition, MSRV** | `Cargo.toml` `[package]` / `[workspace.package]` | Added to `context:` |
+| **Project name** | manifest + `git remote get-url origin` (fallback) | Welcome log |
+| **Test framework** | declared dependencies | `context:` |
+| **License** | root `LICENSE` file (regex on the 3-4 common ones) | `context:` |
+| **CI** | presence of `.github/workflows/` | `context:` |
+| **Jira / Atlassian MCPs** | `<project>/.mcp.json`, `~/.claude.json`, `.claude/settings.json`, `.claude/settings.local.json` — `mcpServers` key, matcher `/jira\|atlassian/i` on name/command/URL | Pre-fills `mcp.jira_tool:` |
+| **Git repo** | `.git/` present | Welcome log |
 
-La règle de résolution nom-serveur → tool-id est la convention Claude
-Code : espaces et points → `_`, préfixe `mcp__`, suffixe `__<tool>`.
-Pour `"claude.ai Atlassian Rovo"` + `getJiraIssue` →
-`mcp__claude_ai_Atlassian_Rovo__getJiraIssue`. Fonction pure dans
+The server-name → tool-id resolution rule is the Claude Code
+convention: spaces and dots → `_`, prefix `mcp__`, suffix `__<tool>`.
+For `"claude.ai Atlassian Rovo"` + `getJiraIssue` →
+`mcp__claude_ai_Atlassian_Rovo__getJiraIssue`. Pure function in
 `codev-core::detect::mcp`.
 
-### Prompts (deux questions, pas trois)
+### Prompts (two questions, not three)
 
-**Question 1 — Workflows** :
+**Question 1 — Workflows**:
 
 ```
-Quels workflows installer ?
-    > Complet (7) — propose, explore, onboard, apply, sync, archive, update  [défaut]
+Which workflows to install?
+    > Full (7) — propose, explore, onboard, apply, sync, archive, update  [default]
       Minimal (3) — propose, explore, onboard
-      Personnalisé — te laisse choisir un par un
+      Custom — choose them one by one
 ```
 
-**Question 2 — Contexte projet** :
+**Question 2 — Project context**:
 
 ```
-Contexte pour les skills (ce qui n'est pas déductible du code) :
-    stack détectée : Rust workspace (4 crates), édition 2024
+Context for the skills (what cannot be inferred from the code):
+    detected stack: Rust workspace (4 crates), edition 2024
 
-    Ajoute tes conventions (Enter pour ouvrir $EDITOR, ou tape ta phrase) :
+    Add your conventions (Enter to open $EDITOR, or type your sentence):
     ▓
 ```
 
-Une phrase suffit. Ce que la détection a déjà rempli reste et est
-préservé.
+One sentence is enough. What detection has already filled in stays
+and is preserved.
 
-Le MCP détecté est **confirmé, pas demandé** :
+The detected MCP is **confirmed, not asked**:
 
 ```
-✓ MCP Jira détecté : mcp__claude_ai_Atlassian_Rovo__getJiraIssue
-   (source : .mcp.json → serveur « claude.ai Atlassian Rovo »)
+✓ Jira MCP detected: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
+   (source: .mcp.json → server "claude.ai Atlassian Rovo")
 ```
 
-Si zéro candidat : rien à confirmer, silence. Si plusieurs : liste
-courte à choisir.
+If zero candidates: nothing to confirm, silence. If several: a short
+list to choose from.
 
-### `config.yaml` généré avec provenance
+### `config.yaml` generated with provenance
 
-À la place du template commenté actuel, l'utilisateur voit un fichier
-**pré-rempli** dont chaque champ non trivial porte son origine :
+Instead of the current commented template, the user sees a
+**pre-filled** file in which each non-trivial field carries its
+origin:
 
 ```yaml
 schema: spec-driven
@@ -104,111 +105,109 @@ workflows:
   - archive
   - update
 
-# détecté depuis .mcp.json → serveur « claude.ai Atlassian Rovo »
+# detected from .mcp.json → server "claude.ai Atlassian Rovo"
 mcp:
   jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
 
-# détecté depuis Cargo.toml — édite si besoin
+# detected from Cargo.toml — edit if needed
 context: |
-  Projet Rust workspace (4 crates : codev-core, codev-engine,
-  codev-agents, codev-cli), édition 2024, MSRV 1.89. Licence MIT.
-  CI GitHub Actions.
+  Rust workspace project (4 crates: codev-core, codev-engine,
+  codev-agents, codev-cli), edition 2024, MSRV 1.89. MIT license.
+  GitHub Actions CI.
 
-  <ce que l'utilisateur a tapé à la question 2>
+  <what the user typed at question 2>
 
-# rules: à définir au fil des cycles, par artefact — voir docs §7.
+# rules: to be defined over the cycles, per artifact — see docs §7.
 ```
 
-### Flags CLI
+### CLI flags
 
-- `--yes` (`-y`) — applique tous les défauts, aucun prompt (utile en
-  CI, script, ou pour l'utilisateur pressé).
-- `--no-detect` — désactive la sonde (utile pour les tests
-  déterministes).
-- `--preset <complet|minimal|personnalise>` — préselectionne la
-  réponse à la question 1.
-- `--force` — inchangé, réécrit les skills même modifiées à la main.
-- **Sans TTY** (stdin non-interactif — pipe, redirect) : implicit
-  `--yes`, aucun prompt.
+- `--yes` (`-y`) — applies all defaults, no prompt (useful in CI,
+  scripts, or for the user in a hurry).
+- `--no-detect` — disables the probe (useful for deterministic tests).
+- `--preset <complet|minimal|personnalise>` — preselects the answer to
+  question 1.
+- `--force` — unchanged, rewrites skills even if modified by hand.
+- **Without a TTY** (non-interactive stdin — pipe, redirect): implicit
+  `--yes`, no prompt.
 
-Toutes ces options composent : `codev init --preset complet --yes`
-utilise le préset et ne pose aucune question.
+All these options compose: `codev init --preset complet --yes` uses
+the preset and asks no question.
 
-### Défaut retourné
+### Reversed default
 
-`DEFAULT_WORKFLOWS` passe de `["propose", "explore", "onboard"]` à la
-liste **complète des 7 workflows**. Cela reste cohérent avec le
-nouveau flux :
+`DEFAULT_WORKFLOWS` goes from `["propose", "explore", "onboard"]` to
+the **full list of 7 workflows**. This stays consistent with the new
+flow:
 
-- **Interactif** : question 1 propose « Complet (7) » comme défaut ;
-  l'utilisateur peut choisir minimal.
-- **`--yes`** : applique le nouveau défaut → 7 workflows.
-- **Absent de `_codev/config.yaml`** : `codev update` sur un projet
-  existant applique le défaut → 7 workflows également.
+- **Interactive**: question 1 offers "Full (7)" as the default; the
+  user can choose minimal.
+- **`--yes`**: applies the new default → 7 workflows.
+- **Missing from `_codev/config.yaml`**: `codev update` on an existing
+  project applies the default → 7 workflows as well.
 
-La spec `skills` doit être mise à jour en conséquence.
+The `skills` spec must be updated accordingly.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-- **`init`** — nouvelle capacité qui décrit le contrat interactif de
-  `codev init` : détection, prompts, génération avec provenance, flags
-  non-interactifs. Aujourd'hui `codev init` a un comportement, mais
-  aucune spec ne le fixe — ce change comble la lacune.
+- **`init`** — new capability that describes the interactive contract
+  of `codev init`: detection, prompts, generation with provenance,
+  non-interactive flags. Today `codev init` has a behavior, but no
+  spec pins it down — this change fills the gap.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- **`skills`** — la Requirement « `onboard` fait partie du catalogue
-  par défaut » est réécrite pour refléter le nouveau `DEFAULT_WORKFLOWS`
-  (les 7 workflows). La note « les autres opt-in restent opt-in » est
-  supprimée.
+- **`skills`** — the Requirement "`onboard` is part of the default
+  catalog" is rewritten to reflect the new `DEFAULT_WORKFLOWS` (the 7
+  workflows). The note "the other opt-in ones stay opt-in" is removed.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** :
-  - Nouveau module `codev-core::detect` (pur — reçoit des `&[u8]` de
-    manifestes, retourne un `Detected` typé).
-  - Nouveau module `codev-core::config::generate` (pur — reçoit
-    `Detected` + choix utilisateur, retourne du YAML avec commentaires).
-  - Refonte de `codev-cli::commands::init` : orchestration
+- **Code**:
+  - New module `codev-core::detect` (pure — receives `&[u8]` of
+    manifests, returns a typed `Detected`).
+  - New module `codev-core::config::generate` (pure — receives
+    `Detected` + user choices, returns YAML with comments).
+  - Rework of `codev-cli::commands::init`: orchestration
     (sniff → prompt → generate → scaffold → install).
-  - Nouvelle dépendance workspace : **`dialoguer`** (lib de prompts,
-    mature, utilisée par cargo/rustup). Alternative écartée :
-    `inquire` — plus lourde, features non nécessaires ici.
-- **Contrat JSON** : le contrat `SetupOutcome`/`InitReportV1` gagne un
-  champ `detected` optionnel qui liste ce qui a été détecté. Non
-  breaking — additif.
-- **Backward compat** : sur un projet déjà initialisé, `codev init`
-  détecte le `config.yaml` existant et **ne re-prompt pas** — même
-  comportement idempotent qu'aujourd'hui. Seule différence : `codev
-  update` respecte le nouveau `DEFAULT_WORKFLOWS`, donc un projet
-  qui n'a jamais posé de `workflows:` explicite reçoit d'un coup les
-  4 skills manquantes. Documenté dans le CHANGELOG.
-- **Tests** :
-  - `codev-core::detect` : tests unitaires par manifeste (fixtures de
-    `Cargo.toml`, `package.json`, etc.) + tests MCP par variante de
+  - New workspace dependency: **`dialoguer`** (prompt library,
+    mature, used by cargo/rustup). Rejected alternative: `inquire` —
+    heavier, features not needed here.
+- **JSON contract**: the `SetupOutcome`/`InitReportV1` contract gains
+  an optional `detected` field that lists what was detected. Not
+  breaking — additive.
+- **Backward compat**: on an already initialized project, `codev init`
+  detects the existing `config.yaml` and **does not re-prompt** — same
+  idempotent behavior as today. Only difference: `codev update`
+  honors the new `DEFAULT_WORKFLOWS`, so a project that never set an
+  explicit `workflows:` suddenly receives the 4 missing skills.
+  Documented in the CHANGELOG.
+- **Tests**:
+  - `codev-core::detect`: unit tests per manifest (fixtures of
+    `Cargo.toml`, `package.json`, etc.) + MCP tests per variant of
     `.mcp.json`.
-  - `codev-core::config::generate` : test golden — un `Detected`
-    fixe + choix connus produit toujours le même YAML.
-  - `codev-cli::commands::init` : test intégration `--yes` de bout
-    en bout avec un `MemoryFileSystem`, plus test `--no-detect`,
-    plus test « sans TTY implicit --yes ».
-- **Fichier écrit** : ~4 fichiers de code neufs, ~2 modifiés, la spec
-  `init` (~150 lignes), delta `skills` (MODIFIED), tests fixtures,
-  entrée `docs/codev.md` §2.
-- **Hors périmètre** :
-  - **Détection Figma / design MCPs** — la même mécanique s'y appliquera
-    quand on ajoutera la clé `mcp.design_tool:`, mais pas dans ce
-    lot. La fonction de matching reste extensible (liste de patterns).
-  - **Détection de règles** (`rules:` par artefact) — trop niché ; les
-    utilisateurs les découvrent en éditant le YAML.
-  - **`codev init --update`** — un flag qui rejouerait les prompts sur
-    un projet existant pour compléter la config. Reporté à un cycle
-    futur si demandé.
-  - **Détection au-delà de la racine du projet** — on ne remonte pas
-    l'arborescence.
+  - `codev-core::config::generate`: golden test — a fixed `Detected`
+    + known choices always produces the same YAML.
+  - `codev-cli::commands::init`: end-to-end `--yes` integration test
+    with a `MemoryFileSystem`, plus a `--no-detect` test, plus a
+    "without TTY implicit --yes" test.
+- **Files written**: ~4 new code files, ~2 modified, the `init` spec
+  (~150 lines), `skills` delta (MODIFIED), test fixtures, a
+  `docs/codev.md` §2 entry.
+- **Out of scope**:
+  - **Figma / design MCP detection** — the same mechanism will apply
+    when we add the `mcp.design_tool:` key, but not in this batch. The
+    matching function remains extensible (list of patterns).
+  - **Rule detection** (per-artifact `rules:`) — too niche; users
+    discover them by editing the YAML.
+  - **`codev init --update`** — a flag that would replay the prompts
+    on an existing project to complete the config. Deferred to a
+    future cycle if requested.
+  - **Detection beyond the project root** — we do not walk up the
+    tree.

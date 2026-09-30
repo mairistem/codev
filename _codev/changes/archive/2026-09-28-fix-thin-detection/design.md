@@ -1,80 +1,78 @@
-# Design : fix de la détection thin
+# Design: fix for thin detection
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Bug observé sur un vrai projet TypeScript (mira) :
-la nudge n'apparaît pas alors qu'aucune règle n'a été écrite, parce
-que la sonde a rempli un `context:` de 280 caractères.
+See `proposal.md`. Bug observed on a real TypeScript project (mira):
+the hint does not appear even though no rule has been written, because
+the probe filled in a `context:` of 280 characters.
 
-## Décisions
+## Decisions
 
-### Décision : `is_config_thin(rules_empty: bool)` — signature réduite à un seul paramètre
+### Decision: `is_config_thin(rules_empty: bool)` — signature reduced to a single parameter
 
-Le paramètre `context: Option<&str>` disparaît. La fonction retourne
-strictement `rules_empty`.
+The `context: Option<&str>` parameter disappears. The function returns
+strictly `rules_empty`.
 
-C'est un affaiblissement délibéré : on abandonne la finesse « long
-contexte compte comme configuré » parce qu'elle produit des faux
-négatifs sur les projets à stack riche (TypeScript, Java Maven, tout
-projet avec plus de 5-6 dépendances déclarées).
+This is a deliberate weakening: we give up the nuance "a long context
+counts as configured" because it produces false negatives on projects
+with a rich stack (TypeScript, Java Maven, any project with more than
+5-6 declared dependencies).
 
-En pratique, l'affaiblissement est neutre :
+In practice, the weakening is neutral:
 
-- Un utilisateur qui a le temps d'écrire un `context:` détaillé
-  écrira aussi presque toujours au moins une règle — le cas
-  « context long, rules vides » est rare et souvent involontaire.
-- Un utilisateur qui n'a écrit ni contexte ni règles ne perd rien à
-  recevoir la nudge une deuxième fois — il l'ignore d'un coup d'œil.
+- A user who has the time to write a detailed `context:` will almost
+  always also write at least one rule — the "long context, empty
+  rules" case is rare and often unintentional.
+- A user who has written neither context nor rules loses nothing by
+  receiving the hint a second time — they dismiss it at a glance.
 
-**Alternative écartée A** : bumper le seuil de 200 à 1000 caractères.
-Rejeté — c'est repousser le problème, pas le résoudre. Un projet
-polyglotte peut dépasser 1000 chars de deps détectées.
+**Rejected alternative A**: bump the threshold from 200 to 1000
+characters. Rejected — it pushes the problem back, it does not solve
+it. A polyglot project can exceed 1000 chars of detected deps.
 
-**Alternative écartée B** : distinguer contexte auto-détecté et
-contexte utilisateur via un marqueur (`# rédigé par
-/codev-configure`). Plus précis, mais introduit une complexité qui
-n'apporte pas grand-chose : la détection sur `rules_empty` couvre le
-99e centile.
+**Rejected alternative B**: distinguish auto-detected context from
+user context via a marker (`# written by /codev-configure`). More
+precise, but introduces complexity that brings little: detection on
+`rules_empty` covers the 99th percentile.
 
-### Décision : le body de `configure` ne change pas de contrat
+### Decision: the `configure` body does not change contract
 
-Le body `assets/workflows/configure.md` ne mentionne actuellement
-aucun seuil sur `context`. La refonte de `is_config_thin` ne l'affecte
-pas — le body décrit ce que la skill fait quand elle est invoquée,
-pas quand elle est **recommandée**.
+The `assets/workflows/configure.md` body currently mentions no
+threshold on `context`. The rework of `is_config_thin` does not affect
+it — the body describes what the skill does when it is invoked, not
+when it is **recommended**.
 
-Le seul body à mettre à jour est `onboard.md`, qui décrivait comment
-calculer la nudge (Read sur le YAML). La formule devient : « lis le
-YAML, regarde s'il porte au moins une entrée dans `rules:` — sinon,
-c'est thin ».
+The only body to update is `onboard.md`, which described how to
+compute the hint (Read on the YAML). The formula becomes: "read the
+YAML, check whether it carries at least one entry in `rules:` —
+otherwise, it is thin".
 
-### Décision : les tests unitaires deviennent binaires
+### Decision: the unit tests become binary
 
-Les 3 tests `is_config_thin_*` sont réécrits en 2 :
+The 3 `is_config_thin_*` tests are rewritten into 2:
 
-- `is_config_thin_vrai_quand_rules_vides` — assertion : la fonction
-  retourne `true` pour `true`.
-- `is_config_thin_faux_quand_rules_presentes` — assertion : la
-  fonction retourne `false` pour `false`.
+- `is_config_thin_vrai_quand_rules_vides` — assertion: the function
+  returns `true` for `true`.
+- `is_config_thin_faux_quand_rules_presentes` — assertion: the
+  function returns `false` for `false`.
 
-Suppression du test sur le seuil de 200 caractères — il ne
-correspond plus à rien.
+Removal of the test on the 200-character threshold — it no longer
+corresponds to anything.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Nudge « permanent » sur un utilisateur qui refuse `configure`**
-  — quelqu'un qui ne veut pas de la skill verra la nudge à chaque
-  `codev init` / `codev status`. → **Atténuation** : deux voies pour
-  la faire disparaître — soit lancer `configure` une fois (rules
-  écrites), soit ajouter à la main dans le YAML une entrée `rules:
-  {}` de type « je sais ce que je fais ». La deuxième option n'est
-  pas documentée mais fonctionne mécaniquement.
-- **Divergence entre l'ancien seuil documenté et le nouveau
-  comportement** — les personnes qui ont lu `docs/codev.md`
-  s'attendent à un seuil de 200. → **Atténuation** : la
-  documentation est à mettre à jour en même temps.
+- **"Permanent" hint for a user who refuses `configure`** — someone
+  who does not want the skill will see the hint on every `codev init`
+  / `codev status`. → **Mitigation**: two ways to make it disappear —
+  either run `configure` once (rules written), or add by hand in the
+  YAML a `rules: {}` entry of the "I know what I'm doing" kind. The
+  second option is not documented but works mechanically.
+- **Divergence between the old documented threshold and the new
+  behavior** — people who have read `docs/codev.md` expect a threshold
+  of 200. → **Mitigation**: the documentation is to be updated at the
+  same time.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Le fix change juste le comportement observable de la nudge
-(elle apparaît plus souvent). Aucun format de fichier ne change.
+None. The fix only changes the observable behavior of the hint (it
+appears more often). No file format changes.

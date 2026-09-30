@@ -1,111 +1,110 @@
-# Proposal : hériter d'un dépôt git distant
+# Proposal: inherit from a remote git repository
 
-## Pourquoi
+## Why
 
-Depuis le début du projet, la promesse était : « les décisions et les
-conventions se partagent entre projets d'une même organisation, sans qu'un
-projet ait à cloner un dépôt à côté ». La moitié locale est déjà là — un
-projet peut hériter d'un autre via `inherits: path:`. La moitié distante ne
-l'est pas : `inherits: git:` émet un warning `inherit_git_unsupported` et
-s'arrête là. Ce change livre le vrai transport, épinglé par SHA,
-lecture-seule, aligné sur la décision
+Since the start of the project, the promise has been: "decisions and
+conventions are shared across projects of the same organization, without
+any project having to clone a repository next to it". The local half is
+already there — a project can inherit from another via `inherits: path:`.
+The remote half is not: `inherits: git:` emits an `inherit_git_unsupported`
+warning and stops there. This change delivers the real transport, pinned
+by SHA, read-only, aligned with decision
 [0005](../../decisions/0005-sources-heritees-en-lecture-seule.md).
 
-## Ce qui change
+## What Changes
 
-- **Sous-clé `git:` de `inherits`** — actuellement acceptée par la
-  configuration mais bloquée par un warning ; devient fonctionnelle. Une
-  entrée typique :
+- **`git:` subkey of `inherits`** — currently accepted by the
+  configuration but blocked by a warning; becomes functional. A typical
+  entry:
 
   ```yaml
   inherits:
-    - git: git@github.com:mon-orga/codev-decisions.git
+    - git: git@github.com:my-org/codev-decisions.git
       ref: main
-      subpath: shared/           # optionnel
+      subpath: shared/           # optional
   ```
 
-- **Nouveau port `ProcessRunner`** dans `codev-engine`, avec une
-  implémentation réelle qui exécute `git` via `std::process::Command` et
-  une implémentation en mémoire pour les tests. C'est le quatrième port
-  annoncé par l'architecture — le premier consommateur en est ce change.
+- **New `ProcessRunner` port** in `codev-engine`, with a real
+  implementation that runs `git` via `std::process::Command` and an
+  in-memory implementation for tests. This is the fourth port announced by
+  the architecture — this change is its first consumer.
 
-- **Cache adressé par SHA** sous `~/.cache/codev/`
-  (respect de `XDG_CACHE_HOME`) : un dépôt *bare* par URL dans
-  `git/<hash-de-l-url>/`, le contenu extrait par SHA dans
-  `content/<sha>/`. Lecture entièrement hors ligne dès que le SHA est en
-  cache.
+- **SHA-addressed cache** under `~/.cache/codev/`
+  (honoring `XDG_CACHE_HOME`): one *bare* repository per URL in
+  `git/<url-hash>/`, the content extracted per SHA in `content/<sha>/`.
+  Reads are fully offline as soon as the SHA is cached.
 
-- **Fichier de verrouillage `_codev/codev.lock`** versionné avec le projet,
-  au format TOML — comme la convention `Cargo.lock`. Chaque entrée `git:`
-  y porte l'URL, le `ref` demandé, le `subpath`, le SHA résolu, et l'heure
-  de résolution. Un `codev sources update` est **la seule commande qui
-  déplace un pin**.
+- **Lock file `_codev/codev.lock`** versioned with the project, in TOML
+  format — like the `Cargo.lock` convention. Each `git:` entry carries the
+  URL, the requested `ref`, the `subpath`, the resolved SHA, and the
+  resolution time. `codev sources update` is **the only command that
+  moves a pin**.
 
-- **Résolution paresseuse à `config::resolve`** : quand un `inherits:
-  git:` est déclaré, `resolve` cherche l'entrée correspondante dans le
-  lock. Trouvée → le chemin résolu pointe vers le contenu du cache pour
-  le SHA verrouillé. Absente → warning `git_source_unlocked` qui invite à
-  lancer `codev sources update`. Rien n'est fetché à l'exécution ; c'est
-  `sources update` qui touche au réseau, jamais autre chose.
+- **Lazy resolution in `config::resolve`**: when an `inherits: git:` is
+  declared, `resolve` looks up the matching entry in the lock. Found → the
+  resolved path points to the cache content for the locked SHA. Missing →
+  a `git_source_unlocked` warning inviting the user to run
+  `codev sources update`. Nothing is fetched at run time; `sources update`
+  is what touches the network, nothing else.
 
-- **Trois nouvelles commandes `codev sources`** :
-  - `codev sources list [--json]` : liste toutes les sources déclarées
-    avec leur état (locale résolue, git verrouillée, git non verrouillée) ;
-  - `codev sources update [--json]` : résout chaque `git:` via
-    `git ls-remote`, télécharge si nouveau SHA, affiche le diff des
-    changements de SHA avant d'écrire le lock, écrit ;
-  - `codev sources show <ref> [--json]` : détails d'une source (URL, ref,
-    SHA verrouillé, chemin dans le cache, contenu hérité).
+- **Three new `codev sources` commands**:
+  - `codev sources list [--json]`: lists all declared sources with their
+    state (local resolved, git locked, git unlocked);
+  - `codev sources update [--json]`: resolves each `git:` via
+    `git ls-remote`, downloads if the SHA is new, shows the diff of SHA
+    changes before writing the lock, writes;
+  - `codev sources show <ref> [--json]`: details of a source (URL, ref,
+    locked SHA, path in the cache, inherited content).
 
-- **Garde-fous** — la décision 0005 les inscrit ; ils deviennent
-  matériels :
-  - le SHA est obligatoire, jamais lu depuis une branche flottante à
-    l'exécution ;
-  - seuls les fichiers `.md` et `.yaml` sont exposés aux consommateurs
-    (décisions, main specs, config héritée) — aucun binaire, aucun hook,
-    aucun script n'est jamais chargé depuis une source héritée.
+- **Safeguards** — decision 0005 states them; they become concrete:
+  - the SHA is mandatory, never read from a floating branch at run time;
+  - only `.md` and `.yaml` files are exposed to consumers (decisions, main
+    specs, inherited config) — no binary, no hook, no script is ever
+    loaded from an inherited source.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `decisions` — les décisions héritées peuvent désormais venir d'un dépôt
-  git en plus d'un dossier local. L'`origin` gagne une nouvelle forme
-  `git:<url>`, exposée dans le contrat JSON. La logique d'index et
-  d'injection dans `design` reste identique.
+- `decisions` — inherited decisions can now come from a git repository in
+  addition to a local folder. `origin` gains a new `git:<url>` form,
+  exposed in the JSON contract. The index logic and the injection into
+  `design` remain identical.
 
 ## Impact
 
-- **Code** : nouveau port `ProcessRunner` (`codev-engine::ports`), nouveau
-  module `codev-engine::sources` avec les fonctions de résolution et de
-  cache, nouveau module `codev-engine::lockfile` pour la lecture/écriture
-  du TOML, extension de `codev-engine::config` pour utiliser le lock,
-  nouveau groupe `codev-cli::commands::sources` avec ses rendus humains et
-  ses formes JSON versionnées.
-- **Dépendances** : nouvelle dépendance `toml = "0.8"` pour le lock —
-  cohérent avec la convention `<outil>.lock` (`Cargo.lock`, `poetry.lock`,
-  `uv.lock`). Alternative écartée (garder YAML pour tout) dans le design.
-- **Binaire externe** : `git` doit être présent sur le PATH pour
-  `codev sources update`. Absent → `codev sources update` échoue avec un
-  code stable `git_not_found` et un message explicite. Les autres
-  commandes n'ont besoin ni de `git` ni du réseau.
-- **Hors périmètre** :
-  - **Support HTTP « tarball » codeload** (`https://codeload.github.com/…`) —
-    utile pour un cas dégradé sans `git` installé, remonté si besoin.
-  - **Extraction paresseuse par `git archive` sans clone complet** — l'implémentation MVP fait un
-    `git fetch --depth 1 --filter=blob:none` puis un `git worktree add`
-    dans le cache ; le passage à `git archive` peut arriver après retour
-    d'expérience.
-  - **Nettoyage automatique du cache** — le cache grossit à mesure que les
-    SHAs changent ; une commande `codev sources gc` (ou équivalent) sera
-    utile plus tard mais pas ici.
-  - **Sources git en écriture** — décision 0005 : lecture seule, point.
-  - **Authentification autre que celle de `git`** — pas de gestion de
-    token PAT, pas de proxy HTTP à part. Ce que sait faire `git` sur ta
-    machine, on le fait ; le reste, non.
-  - **Fetch parallèle de plusieurs sources** — séquentiel dans ce change,
-    parallélisable après si le besoin remonte.
+- **Code**: new `ProcessRunner` port (`codev-engine::ports`), new module
+  `codev-engine::sources` with the resolution and cache functions, new
+  module `codev-engine::lockfile` for reading/writing the TOML, extension
+  of `codev-engine::config` to use the lock, new group
+  `codev-cli::commands::sources` with its human renderings and its
+  versioned JSON shapes.
+- **Dependencies**: new dependency `toml = "0.8"` for the lock —
+  consistent with the `<tool>.lock` convention (`Cargo.lock`,
+  `poetry.lock`, `uv.lock`). Rejected alternative (keep YAML for
+  everything) in the design.
+- **External binary**: `git` must be on the PATH for
+  `codev sources update`. Missing → `codev sources update` fails with a
+  stable code `git_not_found` and an explicit message. The other commands
+  need neither `git` nor the network.
+- **Out of scope**:
+  - **codeload HTTP "tarball" support** (`https://codeload.github.com/…`) —
+    useful for a degraded case without `git` installed, to be raised if
+    needed.
+  - **Lazy extraction via `git archive` without a full clone** — the MVP
+    implementation does a `git fetch --depth 1 --filter=blob:none` followed
+    by a `git worktree add` in the cache; switching to `git archive` may
+    come after real-world feedback.
+  - **Automatic cache cleanup** — the cache grows as SHAs change; a
+    `codev sources gc` command (or equivalent) will be useful later but
+    not here.
+  - **Writable git sources** — decision 0005: read-only, period.
+  - **Authentication other than `git`'s** — no PAT token handling, no
+    separate HTTP proxy. Whatever `git` can do on the user's machine, we
+    do; the rest, we don't.
+  - **Parallel fetching of several sources** — sequential in this change,
+    parallelizable later if the need arises.

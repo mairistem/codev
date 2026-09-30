@@ -1,80 +1,79 @@
-# Proposal : les décisions d'architecture, objet de première classe
+# Proposal: architecture decisions as first-class objects
 
-## Pourquoi
+## Why
 
-Le dépôt contient déjà 6 ADR sous `_codev/decisions/` — écrits à la main, lus
-par les humains, cités à la main dans le `design.md` des changes. C'est le
-socle qu'annonce le README et la raison pour laquelle codev existe plutôt
-qu'OpenSpec. Aujourd'hui pourtant, aucun code de codev ne les *voit* : elles
-ne sont pas indexées, elles ne sont pas injectées dans les instructions de
-`design`, et un agent qui rédige un design peut tout à fait re-débattre en
-silence un choix déjà tranché. Ce change livre la brique qui rend les
-décisions **exploitables par l'outil**.
+The repository already contains 6 ADRs under `_codev/decisions/` — written
+by hand, read by humans, cited by hand in the changes' `design.md`. This is
+the foundation the README announces and the reason codev exists rather than
+OpenSpec. Yet today no codev code *sees* them: they are not indexed, they
+are not injected into the `design` instructions, and an agent drafting a
+design may very well silently re-litigate a choice already settled. This
+change delivers the building block that makes decisions **usable by the
+tool**.
 
-## Ce qui change
+## What Changes
 
-- **Format ADR reconnu** — frontmatter YAML (`id`, `title`, `status`, `date`,
-  `tags`, `supersedes` optionnel) suivi de sections libres. Le format déjà
-  utilisé par les 6 ADR du dépôt.
-- **Parseur pur** dans `codev-core::decisions` — prend le texte, rend un
-  `Decision` typé, sans I/O.
-- **Index des décisions** dans `codev-engine::decisions` — lit
-  `_codev/decisions/` du projet et de chaque source héritée `path:`,
-  résout les liens `supersedes` → calcule pour chaque décision son état
-  d'effet (`in_effect` / `superseded_by(<id>)` / `superseded_by(<source>/<id>)`).
-- **Statuts reconnus** : `accepted`, `superseded`, `proposed`, `deprecated`,
-  `rejected` — seuls `accepted` et `superseded` interviennent dans le calcul
-  d'effet. Les autres sont exposés tels quels dans l'index.
-- **Injection dans les instructions de `design`** — l'appel `codev
-  instructions design --change <nom>` gagne un nouveau champ
-  `decisions[]` porteur des décisions **en vigueur** (celles qui ne sont
-  supersedées par aucune autre). Chaque entrée porte `id`, `title`, `status`,
-  `tags`, `path` relatif, et `origin` (`projet` ou `path:<chemin>`). Le
-  contenu complet reste dans le fichier — l'agent le lit via `path`, comme
-  les dépendances.
-- **Rendu humain de `codev instructions design`** enrichi d'une section
-  « Décisions en vigueur » qui liste les entrées, une ligne chacune.
+- **Recognized ADR format** — YAML frontmatter (`id`, `title`, `status`,
+  `date`, `tags`, optional `supersedes`) followed by free-form sections.
+  The format already used by the repository's 6 ADRs.
+- **Pure parser** in `codev-core::decisions` — takes the text, returns a
+  typed `Decision`, without I/O.
+- **Decision index** in `codev-engine::decisions` — reads the
+  `_codev/decisions/` of the project and of each `path:` inherited source,
+  resolves the `supersedes` links → computes for each decision its effect
+  state (`in_effect` / `superseded_by(<id>)` / `superseded_by(<source>/<id>)`).
+- **Recognized statuses**: `accepted`, `superseded`, `proposed`,
+  `deprecated`, `rejected` — only `accepted` and `superseded` take part in
+  the effect computation. The others are exposed as is in the index.
+- **Injection into the `design` instructions** — the call `codev
+  instructions design --change <name>` gains a new `decisions[]` field
+  carrying the decisions **in effect** (those not superseded by any other).
+  Each entry carries `id`, `title`, `status`, `tags`, a relative `path`, and
+  `origin` (`project` or `path:<path>`). The full content stays in the
+  file — the agent reads it through `path`, like dependencies.
+- **Human rendering of `codev instructions design`** enriched with a
+  "Decisions in effect" section that lists the entries, one line each.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
 - `decisions`
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — le workflow `propose` (et éventuellement `apply` plus tard)
-  continue de lire `codev instructions`. La forme du contrat s'enrichit d'un
-  champ, sans casser l'existant. Aucune modification d'exigence, donc pas
-  de delta MODIFIED sur cette capacité.
+- `skills` — the `propose` workflow (and possibly `apply` later) keeps
+  reading `codev instructions`. The shape of the contract gains a field,
+  without breaking what exists. No requirement changes, hence no MODIFIED
+  delta on this capability.
 
 ## Impact
 
-- **Code** : nouveau module `codev-core::decisions` (parseur + AST), nouveau
-  module `codev-engine::decisions` (index + supersession), extension de
-  `codev-engine::instructions::Instructions` avec un champ `decisions:
-  Vec<DecisionRef>`, nouveau `DecisionRefV1` dans `contract::v1`, rendu humain
-  étendu dans `codev-cli::render`.
-- **Dépendances** : aucune nouvelle — le frontmatter YAML est déjà géré par
-  `serde_norway`, le parsing de sections utilise la mécanique du module
-  `parser`.
-- **Sources héritées** : quand un `inherits: path: X` est déclaré, les ADR
-  de `X/_codev/decisions/` sont fusionnés dans l'index, avec provenance
-  visible. Ordre de précédence : projet en dernier (donc « gagne » pour
-  un même `id` — cas rare, à signaler comme conflit).
-- **Hors périmètre** :
-  - **K3 — immuabilité** d'une décision `accepted` : détecter une
-    modification demande un hash de référence, dont la re-génération
-    demande à son tour une commande CLI (`codev decision seal`) qui n'existe
-    pas encore. Reporté avec K5 pour rester cohérent.
-  - **K5 — commandes CLI** `codev decision new/list/show/supersede` :
-    l'utilisateur continue de créer et éditer ses ADR à la main pour ce
-    change. Ergonomiquement suffisant en dogfooding, à améliorer ensuite.
-  - **K6 — déviation** `deviates-from` d'une décision héritée : demande K5
-    en amont pour créer proprement une décision de déviation.
-  - **K7 — promotion** depuis `design.md` : demande un chemin d'écriture
-    guidé qui rejoint K5.
-  - **Injection dans les instructions d'autres artefacts** que `design` :
-    l'index existe côté engine, un futur change peut l'exposer ailleurs
-    (par exemple dans `proposal` pour rappeler les décisions qui bornent la
-    scope). Rien de bloquant, juste hors du strict K4.
+- **Code**: new module `codev-core::decisions` (parser + AST), new module
+  `codev-engine::decisions` (index + supersession), extension of
+  `codev-engine::instructions::Instructions` with a `decisions:
+  Vec<DecisionRef>` field, new `DecisionRefV1` in `contract::v1`, extended
+  human rendering in `codev-cli::render`.
+- **Dependencies**: none new — the YAML frontmatter is already handled by
+  `serde_norway`, and section parsing uses the machinery of the `parser`
+  module.
+- **Inherited sources**: when an `inherits: path: X` is declared, the ADRs
+  in `X/_codev/decisions/` are merged into the index, with visible
+  provenance. Precedence order: project last (so it "wins" for the same
+  `id` — a rare case, to be reported as a conflict).
+- **Out of scope**:
+  - **K3 — immutability** of an `accepted` decision: detecting a
+    modification requires a reference hash, whose regeneration in turn
+    requires a CLI command (`codev decision seal`) that does not exist
+    yet. Deferred along with K5 to stay consistent.
+  - **K5 — CLI commands** `codev decision new/list/show/supersede`:
+    the user keeps creating and editing ADRs by hand for this change.
+    Ergonomically sufficient for dogfooding, to be improved later.
+  - **K6 — deviation** `deviates-from` from an inherited decision: requires
+    K5 upstream to cleanly create a deviation decision.
+  - **K7 — promotion** from `design.md`: requires a guided write path that
+    overlaps with K5.
+  - **Injection into the instructions of artifacts** other than `design`:
+    the index exists on the engine side; a future change can expose it
+    elsewhere (for instance in `proposal`, to recall the decisions that
+    bound the scope). Nothing blocking, just outside strict K4.

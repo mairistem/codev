@@ -1,76 +1,73 @@
 ## ADDED Requirements
 
-### Requirement: Skill `onboard` présente codev et recommande la prochaine action
+### Requirement: Skill `onboard` presents codev and recommends the next action
 
-Le catalogue de codev SHALL exposer un workflow `onboard` — installé
-sous `.claude/skills/codev-onboard/SKILL.md`, invocable
-`/codev-onboard` — dont le rôle est de présenter codev à un utilisateur
-qui le découvre, en trois blocs :
+The codev catalog SHALL expose an `onboard` workflow — installed under
+`.claude/skills/codev-onboard/SKILL.md`, invocable as
+`/codev-onboard` — whose role is to introduce codev to a user
+discovering it, in three blocks:
 
-1. Une description courte de codev (deux ou trois phrases).
-2. L'état courant du projet — dépôt initialisé ou non, nombre de specs
-   principales, nombre de décisions locales indexées, changes actifs
-   listés par nom.
-3. La prochaine action recommandée, adaptée à l'état :
+1. A short description of codev (two or three sentences).
+2. The current state of the project — repository initialized or not,
+   number of main specs, number of indexed local decisions, active
+   changes listed by name.
+3. The recommended next action, adapted to the state:
    - `_codev/` absent → `codev init`.
-   - Projet initialisé, aucun change → `/codev-propose <idée>`.
-   - Un change actif dont la planification est incomplète →
-     `/codev-propose <ce-change>` pour le poursuivre.
-   - Un change actif dont la planification est complète →
-     `/codev-apply <ce-change>`.
-   - Plusieurs changes actifs → les lister et laisser l'utilisateur
-     choisir.
+   - Project initialized, no change → `/codev-propose <idea>`.
+   - One active change whose planning is incomplete →
+     `/codev-propose <that-change>` to continue it.
+   - One active change whose planning is complete →
+     `/codev-apply <that-change>`.
+   - Several active changes → list them and let the user choose.
 
-La skill MUST être **strictement en lecture** : `allowed-tools` limité
-à `Bash(codev:*), Read, Glob`. Ni `Write`, ni `Edit`, ni `Bash`
-général.
+The skill MUST be **strictly read-only**: `allowed-tools` limited to
+`Bash(codev:*), Read, Glob`. No `Write`, no `Edit`, no general
+`Bash`.
 
-#### Scenario: Rôle documenté dans le catalogue
+#### Scenario: Role documented in the catalog
 
-- **GIVEN** le catalogue de workflows codev
-- **WHEN** on résout le workflow `onboard`
-- **THEN** son entrée existe (`find("onboard").is_some()`)
-- **AND** son `allowed_tools` vaut exactement
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `onboard` workflow is resolved
+- **THEN** its entry exists (`find("onboard").is_some()`)
+- **AND** its `allowed_tools` is exactly
   `"Bash(codev:*), Read, Glob"`
-- **AND** son `allowed_tools` ne contient PAS `Bash` général (règle
-  invariante : seule `apply` en dispose)
-- **AND** son `body` cite les trois blocs (description, état, action
-  recommandée)
+- **AND** its `allowed_tools` does NOT contain general `Bash`
+  (invariant rule: only `apply` has it)
+- **AND** its `body` cites the three blocks (description, state,
+  recommended action)
 
-#### Scenario: Skill installée par un `codev update`
+#### Scenario: Skill installed by a `codev update`
 
-- **GIVEN** un projet dont le `config.yaml` a `workflows: [propose,
+- **GIVEN** a project whose `config.yaml` has `workflows: [propose,
   explore, apply, sync, archive, update, onboard]`
-- **WHEN** l'utilisateur lance `codev update`
-- **THEN** le fichier `.claude/skills/codev-onboard/SKILL.md` est
-  créé
-- **AND** son frontmatter YAML est valide et porte la description
-  attendue
+- **WHEN** the user runs `codev update`
+- **THEN** the file `.claude/skills/codev-onboard/SKILL.md` is
+  created
+- **AND** its YAML frontmatter is valid and carries the expected
+  description
 
-### Requirement: `onboard` fait partie du catalogue par défaut
+### Requirement: `onboard` is part of the default catalog
 
-Le tableau `DEFAULT_WORKFLOWS` de `codev-agents::workflows` MUST
-contenir `onboard`, aux côtés de `propose` et `explore`. Un
-utilisateur qui lance `codev init` sur un projet neuf, sans clef
-`workflows:` dans son `config.yaml`, obtient donc `/codev-onboard`
-disponible immédiatement.
+The `DEFAULT_WORKFLOWS` array of `codev-agents::workflows` MUST
+contain `onboard`, alongside `propose` and `explore`. A user who runs
+`codev init` on a new project, with no `workflows:` key in their
+`config.yaml`, therefore gets `/codev-onboard` available immediately.
 
-Les autres workflows opt-in (`apply`, `sync`, `archive`, `update`)
-restent hors du catalogue par défaut — leur inclusion demande une
-déclaration explicite.
+The other opt-in workflows (`apply`, `sync`, `archive`, `update`)
+stay out of the default catalog — including them requires an explicit
+declaration.
 
-#### Scenario: Catalogue par défaut inclut onboard
+#### Scenario: Default catalog includes onboard
 
-- **GIVEN** un projet dont le `config.yaml` n'a pas de clef
-  `workflows:`
-- **WHEN** `select(None)` est appelé sur le catalogue
-- **THEN** la liste des `id` retournés est exactement
+- **GIVEN** a project whose `config.yaml` has no `workflows:` key
+- **WHEN** `select(None)` is called on the catalog
+- **THEN** the list of returned `id`s is exactly
   `["propose", "explore", "onboard"]`
-- **AND** aucun warning n'est émis
+- **AND** no warning is emitted
 
-#### Scenario: Autres opt-in restent opt-in
+#### Scenario: Other opt-ins stay opt-in
 
-- **GIVEN** le même contexte
-- **WHEN** on inspecte le catalogue par défaut
-- **THEN** aucun de `["apply", "sync", "archive", "update"]` ne
-  figure — leur inclusion demande toujours une déclaration explicite
+- **GIVEN** the same context
+- **WHEN** the default catalog is inspected
+- **THEN** none of `["apply", "sync", "archive", "update"]` appears —
+  including them still requires an explicit declaration

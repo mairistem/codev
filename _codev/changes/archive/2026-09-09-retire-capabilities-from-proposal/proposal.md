@@ -1,96 +1,95 @@
-# Proposal : retirer une capacité entière depuis un proposal
+# Proposal: remove an entire capability from a proposal
 
-## Pourquoi
+## Why
 
-Aujourd'hui, un proposal peut **ajouter** (`### Nouvelles capacités`) ou
-**modifier** (`### Capacités modifiées`) une capacité, mais il n'a
-**aucun mécanisme complet pour en retirer une**. Le `## REMOVED
-Requirements` d'un delta existe déjà — mais si toutes les exigences
-d'une capacité sont retirées, l'outil **refuse le merge** avec
-`would_leave_spec_without_requirement` : « le marqueur
-`retire_capabilities: true` (à venir) sera nécessaire pour retirer la
-capacité ».
+Today, a proposal can **add** (`### New Capabilities`) or **modify**
+(`### Modified Capabilities`) a capability, but it has **no complete
+mechanism to remove one**. A delta's `## REMOVED Requirements` already
+exists — but if all the requirements of a capability are removed, the
+tool **refuses the merge** with
+`would_leave_spec_without_requirement`: "the
+`retire_capabilities: true` marker (coming soon) will be required to
+remove the capability".
 
-Le marqueur est déjà réservé dans `ChangeMetadata` mais n'est lu par
-personne. F5 livre la fonctionnalité qui va derrière : quand un change
-retire toutes les exigences d'une spec **et** déclare
-`retire_capabilities: true`, `sync`/`archive` **supprime** le fichier
-`_codev/specs/<capa>/spec.md` au lieu de le laisser vide ou de refuser.
+The marker is already reserved in `ChangeMetadata` but nobody reads
+it. F5 delivers the feature behind it: when a change removes all the
+requirements of a spec **and** declares `retire_capabilities: true`,
+`sync`/`archive` **deletes** the file `_codev/specs/<capa>/spec.md`
+instead of leaving it empty or refusing.
 
-Ferme la boucle CRUD sur les specs — sans ce geste, une capacité obsolète
-soit reste à traîner dans les specs principales, soit force l'utilisateur
-à supprimer le fichier à la main (ce qui contourne l'atomicité et laisse
-l'historique du change incomplet).
+This closes the CRUD loop on specs — without this step, an obsolete
+capability either lingers in the main specs, or forces the user to
+delete the file by hand (which bypasses atomicity and leaves the
+change's history incomplete).
 
-## Ce qui change
+## What Changes
 
-- **Nouvelle sous-section `### Capacités retirées`** dans le template
-  proposal, à côté des sections `Nouvelles` et `Modifiées`. Le contenu
-  documente les capacités que le change retire — utile pour la relecture
-  humaine, pas une source de vérité pour l'outil.
-- **La source de vérité reste `retire_capabilities: true`** dans
-  `change.yaml`. Sans ce marqueur, un `## REMOVED Requirements` qui
-  viderait une spec principale est **refusé** comme aujourd'hui — geste
-  irréversible, donc opt-in explicite.
-- **Nouveau champ `deletions: Vec<PathBuf>` sur `Plan`** (cœur), pour
-  qu'une suppression de fichier soit une opération de premier ordre du
-  plan atomique — même granularité que `writes` et `moves`.
-- **Nouvelle méthode `FileSystem::remove_file(&Path)`** sur le port, avec
-  implémentation réelle (`std::fs::remove_file`) et en mémoire.
-- **`merge_into_existing` étendu** — retourne un `MergePlan` qui expose
-  désormais un `should_delete_spec: bool`. Vrai quand toutes les
-  exigences ont été retirées **et** que `retire_capabilities: true` est
-  passé en argument. L'ancienne erreur
-  `WouldLeaveSpecWithoutRequirement` est conservée pour le cas sans le
-  flag.
-- **`sync` propage la suppression** — `SyncPlan` gagne `deleted:
-  Vec<PathBuf>` ; `SyncOutcome` aussi ; le contrat JSON aussi.
-- **`archive` hérite du même comportement** (il passe par `sync`).
+- **New `### Removed Capabilities` subsection** in the proposal
+  template, next to the `New` and `Modified` sections. Its content
+  documents the capabilities the change removes — useful for human
+  review, not a source of truth for the tool.
+- **The source of truth remains `retire_capabilities: true`** in
+  `change.yaml`. Without this marker, a `## REMOVED Requirements` that
+  would empty a main spec is **refused** as today — an irreversible
+  step, hence an explicit opt-in.
+- **New `deletions: Vec<PathBuf>` field on `Plan`** (core), so that a
+  file deletion is a first-class operation of the atomic plan — same
+  granularity as `writes` and `moves`.
+- **New `FileSystem::remove_file(&Path)` method** on the port, with a
+  real implementation (`std::fs::remove_file`) and an in-memory one.
+- **`merge_into_existing` extended** — returns a `MergePlan` that now
+  exposes a `should_delete_spec: bool`. True when all requirements
+  have been removed **and** `retire_capabilities: true` is passed as
+  an argument. The old `WouldLeaveSpecWithoutRequirement` error is
+  kept for the case without the flag.
+- **`sync` propagates the deletion** — `SyncPlan` gains `deleted:
+  Vec<PathBuf>`; so does `SyncOutcome`; so does the JSON contract.
+- **`archive` inherits the same behavior** (it goes through `sync`).
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `spec-merge` — trois nouvelles exigences ADDED : suppression atomique
-  d'une spec vidée, propagation dans `sync`/`archive`, mécanisme
-  `deletions` du plan.
+- `spec-merge` — three new ADDED requirements: atomic deletion of an
+  emptied spec, propagation into `sync`/`archive`, the plan's
+  `deletions` mechanism.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune. (Documentation-only — utile pour montrer la nouvelle section
-dans le template dès sa livraison.)
+None. (Documentation-only — useful to showcase the new section in the
+template as soon as it ships.)
 
 ## Impact
 
-- **Code** :
-  - `codev-core::plan::Plan` gagne `deletions: Vec<PathBuf>` et
+- **Code**:
+  - `codev-core::plan::Plan` gains `deletions: Vec<PathBuf>` and
     `Plan::delete()`.
-  - `codev-core::merge::MergePlan` gagne `should_delete_spec: bool` et
-    `merge_into_existing` prend un `retire_capabilities: bool` en argument.
-  - `codev-engine::ports::FileSystem` gagne `remove_file(&Path)` (avec
-    `RealFileSystem` et `MemoryFileSystem`).
-  - `codev-engine::apply::execute` applique les deletions **après** les
-    writes et **avant** les moves.
-  - `codev-engine::sync::SyncPlan/SyncOutcome` gagnent `deleted:
+  - `codev-core::merge::MergePlan` gains `should_delete_spec: bool` and
+    `merge_into_existing` takes a `retire_capabilities: bool` argument.
+  - `codev-engine::ports::FileSystem` gains `remove_file(&Path)` (with
+    `RealFileSystem` and `MemoryFileSystem`).
+  - `codev-engine::apply::execute` applies deletions **after** the
+    writes and **before** the moves.
+  - `codev-engine::sync::SyncPlan/SyncOutcome` gain `deleted:
     Vec<PathBuf>`.
-- **Contrat JSON** — `SyncReportV1` et `ArchiveReportV1` gagnent
-  `deleted: Vec<String>` (additif, toujours présent, vide dans le cas
-  courant). Aucun champ retiré ni renommé.
-- **Template proposal** — `assets/schemas/spec-driven/templates/proposal.md`
-  gagne la section `### Capacités retirées`.
-- **Documentation** — la ligne `retire_capabilities: true` de
-  `ChangeMetadata` gagne un exemple d'usage dans son commentaire.
-- **Migration** — aucune. Sans le flag, comportement inchangé (le
-  refus historique reste).
-- **Hors périmètre** :
-  - **Un flag `codev new change --retire-capabilities`** — l'utilisateur
-    édite `change.yaml` à la main dans ce cas rare ; pas d'ergonomie
-    supplémentaire tant qu'un besoin ne se manifeste pas.
-  - **Rétablir une capacité retirée par un change précédent** — pas
-    d'undo. Un ADR ou un ADDED du proposal suivant fait l'affaire.
-  - **Supprimer aussi les décisions liées à la capacité retirée** —
-    hors périmètre ; les décisions restent (elles sont l'histoire).
+- **JSON contract** — `SyncReportV1` and `ArchiveReportV1` gain
+  `deleted: Vec<String>` (additive, always present, empty in the usual
+  case). No field removed or renamed.
+- **Proposal template** — `assets/schemas/spec-driven/templates/proposal.md`
+  gains the `### Removed Capabilities` section.
+- **Documentation** — the `retire_capabilities: true` line of
+  `ChangeMetadata` gains a usage example in its comment.
+- **Migration** — none. Without the flag, behavior is unchanged (the
+  historical refusal remains).
+- **Out of scope**:
+  - **A `codev new change --retire-capabilities` flag** — the user
+    edits `change.yaml` by hand in this rare case; no extra ergonomics
+    until a need shows up.
+  - **Restoring a capability removed by a previous change** — no
+    undo. An ADR or an ADDED in the next proposal does the job.
+  - **Also deleting the decisions linked to the removed capability**
+    — out of scope; the decisions remain (they are history).

@@ -1,149 +1,149 @@
 ## MODIFIED Requirements
 
-### Requirement: Un tag `v*.*.*` publie une GitHub Release avec les binaires cibles
+### Requirement: A `v*.*.*` tag publishes a GitHub Release with the target binaries
 
-Un workflow GitHub Actions SHALL être déclenché par un tag git au
-format `v<major>.<minor>.<patch>` (par exemple `v0.2.0`). Le
-workflow MUST produire une GitHub Release contenant :
+A GitHub Actions workflow SHALL be triggered by a git tag in the
+format `v<major>.<minor>.<patch>` (for example `v0.2.0`). The
+workflow MUST produce a GitHub Release containing:
 
-- Un binaire précompilé par **cible supportée** : macOS arm64, macOS
-  x86_64, Linux x86_64 musl statique, **Windows x86_64 MSVC**.
-- Un format d'archive **par famille d'OS** : `.tar.gz` pour macOS
-  et Linux (convention Unix, `tar` universel) ; `.zip` pour Windows
-  (convention Windows, `Expand-Archive` natif dès PowerShell 5.1).
-- Le nom de fichier suit `codev-<version>-<target>.<ext>` — par
-  exemple `codev-0.2.0-x86_64-pc-windows-msvc.zip`.
-- Un fichier `SHA256SUMS` qui liste le SHA-256 de **toutes** les
-  archives (les quatre), au format `sha256sum` standard.
-- Le contenu de chaque archive : le binaire (`codev` sur
-  macOS/Linux, `codev.exe` sur Windows), `README.md`, `LICENSE`, et
-  une copie du markdown source de la doc (`docs/codev.md`).
+- One precompiled binary per **supported target**: macOS arm64,
+  macOS x86_64, Linux x86_64 static musl, **Windows x86_64 MSVC**.
+- One archive format **per OS family**: `.tar.gz` for macOS and
+  Linux (Unix convention, universal `tar`); `.zip` for Windows
+  (Windows convention, native `Expand-Archive` since PowerShell 5.1).
+- The file name follows `codev-<version>-<target>.<ext>` — for
+  example `codev-0.2.0-x86_64-pc-windows-msvc.zip`.
+- A `SHA256SUMS` file that lists the SHA-256 of **all** the archives
+  (all four), in standard `sha256sum` format.
+- The contents of each archive: the binary (`codev` on macOS/Linux,
+  `codev.exe` on Windows), `README.md`, `LICENSE`, and a copy of the
+  documentation's markdown source (`docs/codev.md`).
 
-Le workflow MUST NOT écrire dans le dépôt.
+The workflow MUST NOT write to the repository.
 
-#### Scenario: Un tag `v0.2.0` déclenche la release avec les quatre binaires
+#### Scenario: A `v0.2.0` tag triggers the release with the four binaries
 
-- **GIVEN** un développeur pousse un tag `v0.2.0` sur `main`
-- **AND** la version dans `Cargo.toml` du workspace vaut `0.2.0`
-- **WHEN** le workflow `.github/workflows/release.yml` s'exécute
-- **THEN** une GitHub Release nommée `v0.2.0` est créée
-- **AND** elle contient exactement quatre archives :
+- **GIVEN** a developer pushes a `v0.2.0` tag on `main`
+- **AND** the version in the workspace `Cargo.toml` is `0.2.0`
+- **WHEN** the `.github/workflows/release.yml` workflow runs
+- **THEN** a GitHub Release named `v0.2.0` is created
+- **AND** it contains exactly four archives:
   `codev-0.2.0-aarch64-apple-darwin.tar.gz`,
   `codev-0.2.0-x86_64-apple-darwin.tar.gz`,
   `codev-0.2.0-x86_64-unknown-linux-musl.tar.gz`,
   `codev-0.2.0-x86_64-pc-windows-msvc.zip`
-- **AND** elle contient un fichier `SHA256SUMS` qui liste les quatre
-  archives avec leur SHA-256
+- **AND** it contains a `SHA256SUMS` file that lists the four
+  archives with their SHA-256
 
-#### Scenario: L'archive Windows contient `codev.exe`
+#### Scenario: The Windows archive contains `codev.exe`
 
-- **GIVEN** l'archive `codev-<version>-x86_64-pc-windows-msvc.zip`
-  de la release
-- **WHEN** un utilisateur l'extrait sur Windows
-- **THEN** un fichier `codev.exe` est présent
-- **AND** les fichiers `README.md`, `LICENSE`, `codev.md` (doc) sont
-  aussi présents
+- **GIVEN** the release's `codev-<version>-x86_64-pc-windows-msvc.zip`
+  archive
+- **WHEN** a user extracts it on Windows
+- **THEN** a `codev.exe` file is present
+- **AND** the files `README.md`, `LICENSE`, `codev.md` (docs) are
+  present too
 
-#### Scenario: Un push sans tag ne publie rien
+#### Scenario: A push without a tag publishes nothing
 
-- **GIVEN** un développeur pousse un commit sur `main` sans tag
-- **WHEN** GitHub Actions s'exécute
-- **THEN** aucune GitHub Release n'est créée
-- **AND** aucun binaire n'est publié
+- **GIVEN** a developer pushes a commit on `main` without a tag
+- **WHEN** GitHub Actions runs
+- **THEN** no GitHub Release is created
+- **AND** no binary is published
 
-### Requirement: La documentation cite les trois voies d'installation
+### Requirement: The documentation lists the three installation paths
 
-Note : le titre historique reste « trois voies » pour préserver la
-compatibilité de nom avec la spec principale ; le contenu ci-dessous
-décrit **quatre** voies après ajout de Windows. Un renommage propre
-viendra dans un cycle dédié.
+Note: the historical title keeps "three paths" to preserve name
+compatibility with the main spec; the content below describes
+**four** paths after adding Windows. A proper rename will come in a
+dedicated cycle.
 
-La section Installation de `docs/codev.md` MUST citer, dans cet ordre :
+The Installation section of `docs/codev.md` MUST cite, in this order:
 
-1. **Voie recommandée Unix** — `curl -sSL … | sh` pour macOS/Linux.
-2. **Voie recommandée Windows** — `iwr -useb … | iex` pour Windows
-   dans PowerShell.
-3. **Voie manuelle** — téléchargement depuis GitHub Releases + vérif
-   `sha256sum -c` (Unix) ou `Get-FileHash` (Windows).
-4. **Voie contributeur** — `cargo install --path crates/codev-cli`
-   depuis un clone du dépôt.
+1. **Recommended Unix path** — `curl -sSL … | sh` for macOS/Linux.
+2. **Recommended Windows path** — `iwr -useb … | iex` for Windows
+   in PowerShell.
+3. **Manual path** — download from GitHub Releases + check with
+   `sha256sum -c` (Unix) or `Get-FileHash` (Windows).
+4. **Contributor path** — `cargo install --path crates/codev-cli`
+   from a clone of the repository.
 
-Le README du dépôt MUST mentionner au moins la première **et** la
-deuxième voie (avec les one-liners exacts), avec un lien vers
-`docs/codev.md` pour le détail.
+The repository README MUST mention at least the first **and** the
+second path (with the exact one-liners), with a link to
+`docs/codev.md` for details.
 
-#### Scenario: Section Installation à jour avec les deux voies recommandées
+#### Scenario: Installation section up to date with the two recommended paths
 
-- **GIVEN** la documentation générée par `codev docs`
-- **WHEN** on cherche la section « Installation »
-- **THEN** les quatre voies sont présentes dans l'ordre attendu
-- **AND** la voie Windows cite exactement `iwr -useb https://…/install.ps1 | iex`
-- **AND** la voie Unix cite exactement `curl -sSL https://…/install.sh | sh`
+- **GIVEN** the documentation generated by `codev docs`
+- **WHEN** one looks for the "Installation" section
+- **THEN** the four paths are present in the expected order
+- **AND** the Windows path cites exactly `iwr -useb https://…/install.ps1 | iex`
+- **AND** the Unix path cites exactly `curl -sSL https://…/install.sh | sh`
 
 ## ADDED Requirements
 
-### Requirement: Le script `install.ps1` installe codev en une commande sur Windows
+### Requirement: The `install.ps1` script installs codev in one command on Windows
 
-Un script `install.ps1` à la racine du dépôt SHALL permettre à un
-utilisateur Windows d'installer codev via :
+An `install.ps1` script at the repository root SHALL allow a Windows
+user to install codev via:
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
 ```
 
-Le script MUST :
+The script MUST:
 
-- détecter l'architecture via `$env:PROCESSOR_ARCHITECTURE`
-  (`AMD64` → target `x86_64-pc-windows-msvc`) ;
-- résoudre la version : si `$env:CODEV_VERSION` est défini,
-  l'utiliser ; sinon interroger l'API GitHub Releases pour la
-  dernière (via `Invoke-RestMethod`) ;
-- télécharger l'archive
-  `codev-<version>-x86_64-pc-windows-msvc.zip` et le fichier
-  `SHA256SUMS` via `Invoke-WebRequest` ;
-- **vérifier le SHA-256** via `Get-FileHash -Algorithm SHA256` et
-  refuser d'installer si divergence ;
-- extraire via `Expand-Archive` ;
-- copier `codev.exe` dans `$env:LOCALAPPDATA\Programs\codev\codev.exe`
-  (création du dossier si absent) ;
-- **afficher** les instructions pour ajouter
-  `$env:LOCALAPPDATA\Programs\codev\` au PATH utilisateur (via
-  `setx PATH` ou l'interface Système), **sans** modifier le PATH
-  automatiquement.
+- detect the architecture via `$env:PROCESSOR_ARCHITECTURE`
+  (`AMD64` → target `x86_64-pc-windows-msvc`);
+- resolve the version: if `$env:CODEV_VERSION` is set, use it;
+  otherwise query the GitHub Releases API for the latest one (via
+  `Invoke-RestMethod`);
+- download the archive
+  `codev-<version>-x86_64-pc-windows-msvc.zip` and the
+  `SHA256SUMS` file via `Invoke-WebRequest`;
+- **verify the SHA-256** via `Get-FileHash -Algorithm SHA256` and
+  refuse to install on mismatch;
+- extract via `Expand-Archive`;
+- copy `codev.exe` into `$env:LOCALAPPDATA\Programs\codev\codev.exe`
+  (creating the folder if missing);
+- **print** the instructions for adding
+  `$env:LOCALAPPDATA\Programs\codev\` to the user PATH (via
+  `setx PATH` or the System UI), **without** modifying the PATH
+  automatically.
 
-Le script MUST refuser (exit code non nul) si :
+The script MUST refuse (non-zero exit code) if:
 
-- l'architecture n'est pas supportée (par exemple `ARM64` en V1) ;
-- le SHA-256 vérifié ne correspond pas ;
-- une commande PowerShell nécessaire (`Invoke-WebRequest`,
-  `Expand-Archive`, `Get-FileHash`) n'est pas disponible.
+- the architecture is not supported (for example `ARM64` in V1);
+- the verified SHA-256 does not match;
+- a required PowerShell command (`Invoke-WebRequest`,
+  `Expand-Archive`, `Get-FileHash`) is not available.
 
-#### Scenario: Installation Windows x86_64, PATH incomplet
+#### Scenario: Windows x86_64 install, incomplete PATH
 
-- **GIVEN** un utilisateur Windows sur PowerShell 5.1+ (ou Core 7+)
-- **AND** `$env:LOCALAPPDATA\Programs\codev\` n'est pas dans son
+- **GIVEN** a Windows user on PowerShell 5.1+ (or Core 7+)
+- **AND** `$env:LOCALAPPDATA\Programs\codev\` is not in their
   PATH
-- **WHEN** il lance
+- **WHEN** they run
   `iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex`
-- **THEN** le script détecte `x86_64-pc-windows-msvc`
-- **AND** télécharge, vérifie SHA-256, extrait `codev.exe`
-- **AND** copie `codev.exe` dans
+- **THEN** the script detects `x86_64-pc-windows-msvc`
+- **AND** downloads, verifies SHA-256, extracts `codev.exe`
+- **AND** copies `codev.exe` into
   `$env:LOCALAPPDATA\Programs\codev\`
-- **AND** affiche la commande exacte à taper pour ajouter le dossier
-  au PATH utilisateur (par exemple `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\codev"`)
-- **AND** rappelle d'ouvrir un nouveau shell pour recharger le PATH
+- **AND** prints the exact command to type to add the folder to the
+  user PATH (for example `setx PATH "$env:PATH;$env:LOCALAPPDATA\Programs\codev"`)
+- **AND** reminds the user to open a new shell to reload the PATH
 
-#### Scenario: Architecture non supportée refusée
+#### Scenario: Unsupported architecture refused
 
-- **GIVEN** un utilisateur Windows sur ARM64
-- **WHEN** il lance le script
-- **THEN** le script s'arrête avec un exit code non nul
-- **AND** le message d'erreur nomme l'architecture détectée et
-  renvoie vers `cargo install --path` comme fallback
+- **GIVEN** a Windows user on ARM64
+- **WHEN** they run the script
+- **THEN** the script stops with a non-zero exit code
+- **AND** the error message names the detected architecture and
+  points to `cargo install --path` as a fallback
 
-#### Scenario: SHA-256 corrompu → refus
+#### Scenario: Corrupted SHA-256 → refusal
 
-- **GIVEN** un environnement où le fichier téléchargé serait altéré
-- **WHEN** le script compare `Get-FileHash` au `SHA256SUMS`
-- **THEN** l'installation est refusée
-- **AND** aucun fichier n'est copié dans `$env:LOCALAPPDATA`
+- **GIVEN** an environment where the downloaded file has been altered
+- **WHEN** the script compares `Get-FileHash` to `SHA256SUMS`
+- **THEN** the installation is refused
+- **AND** no file is copied into `$env:LOCALAPPDATA`

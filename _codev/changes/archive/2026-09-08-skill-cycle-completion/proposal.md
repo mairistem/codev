@@ -1,80 +1,80 @@
-# Proposal : livrer `/codev-sync` et `/codev-archive`
+# Proposal: ship `/codev-sync` and `/codev-archive`
 
-## Pourquoi
+## Why
 
-Le cycle est bouclé côté CLI (`codev sync`, `codev archive`) et côté planification
-(`/codev-propose`, `/codev-apply`). Le dernier maillon manquant : rendre le
-bouclage invocable **dans le chat**, sans que l'utilisateur ait à quitter
-Claude Code pour taper une commande bash. Deux skills — c'est peu — mais elles
-transforment le rythme d'usage : « planifier, implémenter, archiver » devient
-trois slash commands consécutives.
+The cycle is closed on the CLI side (`codev sync`, `codev archive`) and on
+the planning side (`/codev-propose`, `/codev-apply`). The last missing link:
+making the closing step invocable **in the chat**, without the user having
+to leave Claude Code to type a bash command. Two skills — that is not much —
+but they transform the rhythm of use: "plan, implement, archive" becomes
+three consecutive slash commands.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau workflow `sync`** dans le catalogue, invocable `/codev-sync` :
-  résout un change actif, lance `codev sync <nom>`, résume les specs
-  principales créées/modifiées/inchangées. Ne déplace jamais le change.
-- **Nouveau workflow `archive`** dans le catalogue, invocable `/codev-archive` :
-  vérifie que la planification est complète, lance `codev archive <nom>`,
-  résume la destination archive et les specs principales touchées. Si
-  `codev archive` refuse (pré-flight validate en échec), la skill renvoie
-  explicitement vers `/codev-validate` (à venir) ou `codev validate <nom>`
-  pour voir le détail — sans tenter de trancher elle-même.
-- **Deux fichiers d'assets** : `assets/workflows/sync.md` et
-  `assets/workflows/archive.md`, chargés à la compilation via `include_str!`
-  comme les trois autres.
-- **Ces deux workflows n'ont pas besoin de `Bash` général** — leur seule action
-  effective est le passage par `codev` lui-même. `allowed-tools` reste donc
-  `Bash(codev:*), Read` pour les deux (le `Read` sert à relire `tasks.md` si
-  l'utilisateur pose une question de contexte).
-- **Rendu structuré à partir du JSON du CLI** : les deux skills invoquent
-  `codev sync <nom> --json` et `codev archive <nom> --json`, lisent le
-  `SyncReportV1` / `ArchiveReportV1` (contrat public déjà versionné et testé
-  par snapshot), et rendent à l'utilisateur un résumé net — nombres par
-  catégorie, chemin d'archive, code stable d'erreur en cas de refus.
-- **La skill `sync` termine par une invitation à archiver quand la fusion a
-  produit du changement** : « Le change est prêt à être archivé si tu veux
-  clore le cycle. » Une seule ligne, non-injonctive.
+- **New `sync` workflow** in the catalog, invocable as `/codev-sync`:
+  resolves an active change, runs `codev sync <name>`, summarizes the main
+  specs created/modified/unchanged. Never moves the change.
+- **New `archive` workflow** in the catalog, invocable as `/codev-archive`:
+  checks that planning is complete, runs `codev archive <name>`,
+  summarizes the archive destination and the main specs touched. If
+  `codev archive` refuses (validate pre-flight failed), the skill
+  explicitly points to `/codev-validate` (upcoming) or `codev validate <name>`
+  to see the details — without trying to decide on its own.
+- **Two asset files**: `assets/workflows/sync.md` and
+  `assets/workflows/archive.md`, loaded at compile time via `include_str!`
+  like the other three.
+- **These two workflows do not need general `Bash`** — their only effective
+  action goes through `codev` itself. `allowed-tools` therefore stays
+  `Bash(codev:*), Read` for both (the `Read` serves to reread `tasks.md` if
+  the user asks a context question).
+- **Structured rendering from the CLI's JSON**: both skills invoke
+  `codev sync <name> --json` and `codev archive <name> --json`, read the
+  `SyncReportV1` / `ArchiveReportV1` (a public contract already versioned
+  and snapshot-tested), and give the user a clean summary — counts per
+  category, archive path, stable error code on refusal.
+- **The `sync` skill ends with an invitation to archive when the merge
+  produced a change**: "The change is ready to be archived if you want to
+  close the cycle." A single line, non-directive.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
 - `skills`
 
-**Note d'ordonnancement.** La capacité `skills` est également déclarée par le
-change `skill-apply-change` actuellement actif. Deux changes qui déclarent la
-même capacité « nouvelle » est le cas normal : celui qui est archivé en
-premier crée `_codev/specs/skills/spec.md` avec son `Purpose` et ses `ADDED`
-propres ; celui qui est archivé en second voit `merge_into_existing` ajouter
-ses propres `ADDED` à la spec existante — le `## Purpose` du second delta est
-silencieusement ignoré, comme le contrat le veut. Aucun conflit à prévoir,
-quel que soit l'ordre.
+**Ordering note.** The `skills` capability is also declared by the
+currently active `skill-apply-change` change. Two changes declaring the
+same "new" capability is the normal case: the one archived first creates
+`_codev/specs/skills/spec.md` with its own `Purpose` and `ADDED`; the one
+archived second sees `merge_into_existing` add its own `ADDED` to the
+existing spec — the second delta's `## Purpose` is silently ignored, as
+the contract intends. No conflict to expect, whatever the order.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune — les workflows existants (`propose`, `explore`, `apply`) ne bougent
-pas.
+None — the existing workflows (`propose`, `explore`, `apply`) do not
+change.
 
 ## Impact
 
-- **Code** : deux entrées `Workflow { … }` de plus dans le `CATALOG` de
-  `codev-agents::workflows`, un test dédié
-  (`workflows::cycle_completion_skills_present_et_restreintes`) qui vérifie
-  que `sync` et `archive` sont là, avec le bon `allowed-tools` (pas de `Bash`
-  général) et une description claire.
-- **Config** : ajouter `- sync` et `- archive` à la liste `workflows` de
-  `_codev/config.yaml` de ce dépôt, pour que la skill existe après un
+- **Code**: two more `Workflow { … }` entries in the `CATALOG` of
+  `codev-agents::workflows`, a dedicated test
+  (`workflows::cycle_completion_skills_present_et_restreintes`) that checks
+  that `sync` and `archive` are there, with the right `allowed-tools` (no
+  general `Bash`) and a clear description.
+- **Config**: add `- sync` and `- archive` to the `workflows` list of this
+  repository's `_codev/config.yaml`, so that the skill exists after a
   `codev update`.
-- **Catalogue par défaut** : NE PAS ajouter `sync` ni `archive` à
-  `DEFAULT_WORKFLOWS` — même décision que pour `apply`, pour rester cohérent :
-  le catalogue par défaut se limite à ce qui prépare le travail (propose,
-  explore), le reste est opt-in projet par projet.
-- **Hors périmètre** :
-  - **`update`** en tant que skill — sémantique différente (révise des
-    artefacts déjà écrits, ne boucle rien), à traiter séparément si le
-    besoin apparaît.
-  - **Auto-installation par défaut** — cf. paragraphe précédent.
-  - **Parsing d'autres commandes que sync/archive en JSON** — la skill ne
-    lit le JSON que de ces deux commandes précises. Un changement de la
-    forme de `codev status --json` ou d'un autre contrat ne l'affecte pas.
+- **Default catalog**: do NOT add `sync` or `archive` to
+  `DEFAULT_WORKFLOWS` — same decision as for `apply`, to stay consistent:
+  the default catalog is limited to what prepares the work (propose,
+  explore); the rest is opt-in project by project.
+- **Out of scope**:
+  - **`update`** as a skill — different semantics (revises artifacts
+    already written, closes nothing), to be handled separately if the
+    need arises.
+  - **Default auto-installation** — cf. previous paragraph.
+  - **Parsing JSON from commands other than sync/archive** — the skill
+    only reads the JSON of these two specific commands. A change to the
+    shape of `codev status --json` or of another contract does not affect
+    it.

@@ -1,123 +1,124 @@
 ## Purpose
 
-Décrit le contrat des skills que codev installe dans Claude Code : leur nom,
-ce qu'elles doivent faire, ce qu'elles n'ont pas le droit de faire, et
-comment leur frontmatter garantit ces promesses. Les entrées sont ajoutées
-au fil des changes qui introduisent chaque workflow — un ADDED par workflow.
+Describes the contract of the skills that codev installs in Claude Code:
+their name, what they must do, what they are not allowed to do, and how
+their frontmatter guarantees these promises. Entries are added as the
+changes that introduce each workflow land — one ADDED per workflow.
 
 ## ADDED Requirements
 
-### Requirement: Skill `sync` merge le delta d'un change sans le déplacer
+### Requirement: Skill `sync` merges a change's delta without moving it
 
-Le catalogue de codev SHALL exposer un workflow `sync` — installé sous
-`.claude/skills/codev-sync/SKILL.md`, invocable `/codev-sync` — dont le rôle
-est de faire entrer les deltas d'un change dans les specs principales, en
-laissant le change actif à son emplacement.
+The codev catalog SHALL expose a `sync` workflow — installed under
+`.claude/skills/codev-sync/SKILL.md`, invocable as `/codev-sync` — whose
+role is to bring a change's deltas into the main specs, leaving the active
+change in place.
 
-#### Scenario: Sync d'un change actif unique
+#### Scenario: Sync of a single active change
 
-- **GIVEN** un projet avec un seul change actif dont la planification est
-  complète et qui porte un delta ADDED sur une capacité nouvelle
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** la skill résout implicitement le change actif
-- **AND** lance `codev sync <nom>`
-- **AND** résume à l'utilisateur les main specs créées ou mises à jour
+- **GIVEN** a project with a single active change whose planning is
+  complete and which carries an ADDED delta on a new capability
+- **WHEN** the user types `/codev-sync`
+- **THEN** the skill implicitly resolves the active change
+- **AND** runs `codev sync <name>`
+- **AND** summarizes for the user the main specs created or updated
 
-#### Scenario: Deuxième sync silencieux
+#### Scenario: Silent second sync
 
-- **GIVEN** un change déjà synchronisé, dont aucune main spec n'a changé
-  depuis
-- **WHEN** l'utilisateur tape `/codev-sync` une seconde fois
-- **THEN** la skill rend compte qu'il n'y a rien à faire
-- **AND** ne relance pas d'écriture
+- **GIVEN** an already synced change, none of whose main specs has changed
+  since
+- **WHEN** the user types `/codev-sync` a second time
+- **THEN** the skill reports that there is nothing to do
+- **AND** does not write again
 
-#### Scenario: Sync ne déplace jamais
+#### Scenario: Sync never moves
 
-- **GIVEN** un change dont la fusion réussit
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le dossier `_codev/changes/<nom>/` existe toujours à son
-  emplacement d'origine
+- **GIVEN** a change whose merge succeeds
+- **WHEN** the user types `/codev-sync`
+- **THEN** the `_codev/changes/<name>/` folder still exists at its
+  original location
 
-#### Scenario: Sync invite à archiver après un changement
+#### Scenario: Sync invites to archive after a change
 
-- **GIVEN** un change dont la fusion a modifié au moins une spec principale
-  (créée ou mise à jour)
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu final contient une ligne invitant à `/codev-archive`
-  pour clore le cycle, formulée sans injonction
+- **GIVEN** a change whose merge modified at least one main spec
+  (created or updated)
+- **WHEN** the user types `/codev-sync`
+- **THEN** the final rendering contains a line inviting to `/codev-archive`
+  to close the cycle, worded without an order
 
-#### Scenario: Sync sans changement n'invite pas
+#### Scenario: Sync without a change does not invite
 
-- **GIVEN** un change dont la fusion est un no-op (toutes les specs
-  principales sont déjà à jour)
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu final rend compte de l'absence de changement
-- **AND** ne suggère PAS d'archiver — il n'y a rien de nouveau à propager
+- **GIVEN** a change whose merge is a no-op (all main specs are already
+  up to date)
+- **WHEN** the user types `/codev-sync`
+- **THEN** the final rendering reports the absence of change
+- **AND** does NOT suggest archiving — there is nothing new to propagate
 
-### Requirement: Skill `archive` clôt un change avec pré-flight strict
+### Requirement: Skill `archive` closes a change with a strict pre-flight
 
-Le catalogue SHALL exposer un workflow `archive` — installé sous
-`.claude/skills/codev-archive/SKILL.md`, invocable `/codev-archive` — dont le
-rôle est de fusionner le delta puis de déplacer le change vers
-`_codev/changes/archive/<date>-<nom>/`. La skill MUST refuser d'agir si
-`codev archive` rapporte un pré-flight de validation en échec.
+The catalog SHALL expose an `archive` workflow — installed under
+`.claude/skills/codev-archive/SKILL.md`, invocable as `/codev-archive` —
+whose role is to merge the delta then move the change to
+`_codev/changes/archive/<date>-<name>/`. The skill MUST refuse to act if
+`codev archive` reports a failed validation pre-flight.
 
-#### Scenario: Archive d'un change validé
+#### Scenario: Archive of a validated change
 
-- **GIVEN** un change dont la planification est complète et qui passe
+- **GIVEN** a change whose planning is complete and which passes
   `codev validate`
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill lance `codev archive <nom>`
-- **AND** résume à l'utilisateur les main specs touchées
-- **AND** nomme la destination d'archive datée
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill runs `codev archive <name>`
+- **AND** summarizes for the user the main specs touched
+- **AND** names the dated archive destination
 
-#### Scenario: Archive refusé pour erreur de validation
+#### Scenario: Archive refused for a validation error
 
-- **GIVEN** un change dont un delta contient une erreur remontée par
-  `codev validate` (par exemple, une exigence dupliquée)
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill n'insiste pas
-- **AND** invite explicitement l'utilisateur à lancer `codev validate <nom>`
-  pour voir le détail
-- **AND** ne tente pas de deviner ou de corriger l'erreur
+- **GIVEN** a change one of whose deltas contains an error reported by
+  `codev validate` (for example, a duplicated requirement)
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill does not insist
+- **AND** explicitly invites the user to run `codev validate <name>`
+  to see the details
+- **AND** does not try to guess or fix the error
 
-### Requirement: Skills `sync` et `archive` s'appuient sur le contrat JSON
+### Requirement: Skills `sync` and `archive` rely on the JSON contract
 
-Les workflows `sync` et `archive` MUST invoquer le CLI avec `--json` et lire
-la forme structurée (`SyncReportV1`, `ArchiveReportV1`) plutôt que la sortie
-humaine — c'est le contrat public que codev garantit stable dans sa version
-courante, et c'est ce qui rend le rendu de la skill fiable.
+The `sync` and `archive` workflows MUST invoke the CLI with `--json` and
+read the structured shape (`SyncReportV1`, `ArchiveReportV1`) rather than
+the human output — it is the public contract that codev guarantees stable
+in its current version, and it is what makes the skill's rendering
+reliable.
 
-#### Scenario: Rendu structuré des créations et mises à jour
+#### Scenario: Structured rendering of creations and updates
 
-- **GIVEN** un change dont la fusion crée une spec principale et en met une
-  autre à jour
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu nomme distinctement les deux — le fichier créé et le
-  fichier mis à jour — chacun sur sa ligne
+- **GIVEN** a change whose merge creates one main spec and updates
+  another
+- **WHEN** the user types `/codev-sync`
+- **THEN** the rendering names the two distinctly — the created file and
+  the updated file — each on its own line
 
-#### Scenario: Refus d'archive détecté par code stable
+#### Scenario: Archive refusal detected by stable code
 
-- **GIVEN** un change dont `codev archive --json` refuse avec le code
-  `validation_failed` dans son tableau `status`
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill détecte le code stable dans le JSON
-- **AND** dit exactement : « Le change a des erreurs. Lance `codev validate
-  <nom>` pour voir le détail. »
-- **AND** ne parse pas le message humain (qui peut être reformulé sans
-  préavis)
+- **GIVEN** a change for which `codev archive --json` refuses with the code
+  `validation_failed` in its `status` array
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill detects the stable code in the JSON
+- **AND** says exactly: "The change has errors. Run `codev validate
+  <name>` to see the details."
+- **AND** does not parse the human message (which may be reworded without
+  notice)
 
-### Requirement: Skills `sync` et `archive` ne demandent pas le Bash général
+### Requirement: Skills `sync` and `archive` do not request general Bash
 
-Les workflows `sync` et `archive` MUST se limiter à `Bash(codev:*)` et à des
-outils de lecture dans leur frontmatter `allowed-tools` — ils n'exécutent
-aucune commande de vérification autre que celles du binaire codev, à
-l'inverse de `apply` qui doit pouvoir lancer des tests projets.
+The `sync` and `archive` workflows MUST limit themselves to `Bash(codev:*)`
+and read tools in their `allowed-tools` frontmatter — they run no
+verification command other than those of the codev binary, unlike `apply`,
+which must be able to run project tests.
 
-#### Scenario: Le Bash général n'apparaît pas
+#### Scenario: General Bash does not appear
 
-- **GIVEN** la skill `sync` livrée par la version courante
-- **WHEN** son frontmatter est inspecté
-- **THEN** la chaîne `allowed-tools` ne contient pas `Bash` seul en fin de
-  liste, seulement le préfixe `Bash(codev:*)`
-- **AND** la même règle vaut pour `archive`
+- **GIVEN** the `sync` skill shipped by the current version
+- **WHEN** its frontmatter is inspected
+- **THEN** the `allowed-tools` string does not contain plain `Bash` at the
+  end of the list, only the `Bash(codev:*)` prefix
+- **AND** the same rule holds for `archive`

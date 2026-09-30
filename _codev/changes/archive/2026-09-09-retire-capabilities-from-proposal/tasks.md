@@ -1,18 +1,18 @@
-# Tâches
+# Tasks
 
-## 1. Cœur — `Plan.deletions`
+## 1. Core — `Plan.deletions`
 
-- [x] 1.1 Ajouter `deletions: Vec<PathBuf>` à `codev_core::plan::Plan`,
-      initialisé vide via `#[derive(Default)]` existant.
-- [x] 1.2 Ajouter `Plan::delete(&mut self, path: impl Into<PathBuf>)` —
-      dédoublonnage sur chemin exact, comme `dir()`.
-- [x] 1.3 Étendre `Plan::merge` pour absorber `other.deletions`.
-- [x] 1.4 `Plan::is_empty` inclut maintenant `deletions.is_empty()`.
-- [x] 1.5 Tests : `delete` déduplique ; `merge` absorbe ; `is_empty` couvre.
+- [x] 1.1 Add `deletions: Vec<PathBuf>` to `codev_core::plan::Plan`,
+      initialized empty via the existing `#[derive(Default)]`.
+- [x] 1.2 Add `Plan::delete(&mut self, path: impl Into<PathBuf>)` —
+      deduplication on exact path, like `dir()`.
+- [x] 1.3 Extend `Plan::merge` to absorb `other.deletions`.
+- [x] 1.4 `Plan::is_empty` now includes `deletions.is_empty()`.
+- [x] 1.5 Tests: `delete` deduplicates; `merge` absorbs; `is_empty` covers.
 
-## 2. Cœur — `merge_into_existing` étendu
+## 2. Core — `merge_into_existing` extended
 
-- [x] 2.1 Nouvelle signature :
+- [x] 2.1 New signature:
       ```rust
       pub fn merge_into_existing(
           spec_source: &str,
@@ -21,89 +21,93 @@
           retire_capabilities: bool,
       ) -> Result<MergePlan, MergeError>
       ```
-- [x] 2.2 Ajouter `should_delete_spec: bool` à `MergePlan` — initialement
-      `false`. Vaut `true` quand `retire_capabilities == true` **et**
-      qu'après application des REMOVED, la spec serait vide (`removed_count
-      >= spec.requirements.len()`).
-- [x] 2.3 Le refus historique `WouldLeaveSpecWithoutRequirement` reste
-      actif quand `retire_capabilities == false`. Message d'erreur mis à
-      jour : « ... utilise `retire_capabilities: true` dans `change.yaml`
-      pour retirer la capacité » — retire le « à venir ».
-- [x] 2.4 Tests : vide total sans flag → erreur ; vide total avec flag
-      → plan avec `should_delete_spec: true`, edits appliqués ; vide
-      partiel avec flag → plan normal, `should_delete_spec: false`.
-- [x] 2.5 Adapter les appels existants dans `codev-engine::sync.rs` pour
-      passer le nouveau paramètre (voir tâche 4.1).
+- [x] 2.2 Add `should_delete_spec: bool` to `MergePlan` — initially
+      `false`. It is `true` when `retire_capabilities == true` **and**,
+      after applying the REMOVED entries, the spec would be empty
+      (`removed_count >= spec.requirements.len()`).
+- [x] 2.3 The historical refusal `WouldLeaveSpecWithoutRequirement`
+      stays active when `retire_capabilities == false`. Error message
+      updated: "... use `retire_capabilities: true` in `change.yaml`
+      to remove the capability" — drops the "coming soon".
+- [x] 2.4 Tests: total emptying without flag → error; total emptying
+      with flag → plan with `should_delete_spec: true`, edits applied;
+      partial emptying with flag → normal plan,
+      `should_delete_spec: false`.
+- [x] 2.5 Adapt the existing calls in `codev-engine::sync.rs` to pass
+      the new parameter (see task 4.1).
 
-## 3. Coquille — `FileSystem::remove_file`
+## 3. Shell — `FileSystem::remove_file`
 
-- [x] 3.1 Nouvelle méthode sur le trait `FileSystem` :
+- [x] 3.1 New method on the `FileSystem` trait:
       ```rust
       fn remove_file(&self, path: &Path) -> io::Result<()>;
       ```
-      Documentée : « supprime un seul fichier ; un fichier absent renvoie
-      `NotFound` — l'exécuteur décide s'il ignore ou remonte ».
+      Documented: "deletes a single file; a missing file returns
+      `NotFound` — the executor decides whether to ignore or surface
+      it".
 - [x] 3.2 `RealFileSystem::remove_file` → `std::fs::remove_file`.
-- [x] 3.3 `MemoryFileSystem::remove_file` → retire l'entrée de sa
-      structure interne, retourne `NotFound` si absent.
-- [x] 3.4 Tests : write puis remove, remove sur absent, remove puis
-      exists (résultat `false`).
+- [x] 3.3 `MemoryFileSystem::remove_file` → removes the entry from its
+      internal structure, returns `NotFound` if absent.
+- [x] 3.4 Tests: write then remove, remove on missing, remove then
+      exists (result `false`).
 
-## 4. Coquille — `apply::execute` gère les deletions
+## 4. Shell — `apply::execute` handles deletions
 
-- [x] 4.1 Dans `apply::execute`, après la boucle des writes, boucler
-      les deletions et appeler `fs.remove_file`. Ordre : `dirs` → `writes`
+- [x] 4.1 In `apply::execute`, after the writes loop, loop over the
+      deletions and call `fs.remove_file`. Order: `dirs` → `writes`
       → `deletions` → `moves`.
-- [x] 4.2 `AppliedOutcome` gagne un champ `deleted: Vec<PathBuf>` porté
-      par l'exécution — chaque suppression réussie est enregistrée.
-- [x] 4.3 Un fichier absent lors d'une deletion n'est **pas** une erreur
-      (le change peut avoir été appliqué déjà). Silencieux, ne marque
-      pas la deletion comme faite.
-- [x] 4.4 Tests : deletion d'un fichier existant → supprimé et listé ;
-      deletion d'un absent → pas d'erreur, pas de listing.
+- [x] 4.2 `AppliedOutcome` gains a `deleted: Vec<PathBuf>` field
+      carried by the execution — each successful deletion is
+      recorded.
+- [x] 4.3 A file missing during a deletion is **not** an error (the
+      change may already have been applied). Silent; does not mark
+      the deletion as done.
+- [x] 4.4 Tests: deletion of an existing file → deleted and listed;
+      deletion of a missing one → no error, not listed.
 
-## 5. Coquille — `sync` propage la deletion
+## 5. Shell — `sync` propagates the deletion
 
-- [x] 5.1 `sync::plan_sync` lit `metadata.retire_capabilities` depuis
-      le change context et le passe à `merge_into_existing`.
-- [x] 5.2 Si `merge_plan.should_delete_spec`, ajouter `main_spec_path`
-      à `plan.deletions` **et** à un nouveau champ `deleted:
-      Vec<PathBuf>` du `SyncPlan`. Ne pas écrire dans `updates` — la
-      capacité est retirée, pas mise à jour.
-- [x] 5.3 `SyncOutcome` gagne `deleted: Vec<PathBuf>`. Idem
-      `ArchiveOutcome` (qui l'obtient via sync).
-- [x] 5.4 Tests intégration : sync sur un change qui retire une capa +
-      flag → fichier absent du disque, `outcome.deleted` non vide,
-      `outcome.updated/unchanged` ne le contiennent pas.
+- [x] 5.1 `sync::plan_sync` reads `metadata.retire_capabilities` from
+      the change context and passes it to `merge_into_existing`.
+- [x] 5.2 If `merge_plan.should_delete_spec`, add `main_spec_path`
+      to `plan.deletions` **and** to a new `deleted:
+      Vec<PathBuf>` field of the `SyncPlan`. Do not write into
+      `updates` — the capability is removed, not updated.
+- [x] 5.3 `SyncOutcome` gains `deleted: Vec<PathBuf>`. Same for
+      `ArchiveOutcome` (which gets it via sync).
+- [x] 5.4 Integration tests: sync on a change that removes a
+      capability + flag → file gone from disk, `outcome.deleted` non
+      empty, `outcome.updated/unchanged` do not contain it.
 
-## 6. Contrat JSON
+## 6. JSON contract
 
-- [x] 6.1 `SyncReportV1` gagne `deleted: Vec<String>` (camelCase),
-      toujours présent, vide dans le cas courant.
-- [x] 6.2 `ArchiveReportV1` gagne `deleted: Vec<String>` (même
-      règle).
-- [x] 6.3 Le shape d'échec de sync et d'archive dans `main.rs` gagne
-      `"deleted": []` — cohérence avec les autres champs du shape.
-- [x] 6.4 Test : `codev sync <c> --json` sur un change qui retire une
-      capa expose bien `deleted[0]`.
+- [x] 6.1 `SyncReportV1` gains `deleted: Vec<String>` (camelCase),
+      always present, empty in the usual case.
+- [x] 6.2 `ArchiveReportV1` gains `deleted: Vec<String>` (same
+      rule).
+- [x] 6.3 The sync and archive failure shape in `main.rs` gains
+      `"deleted": []` — consistency with the shape's other fields.
+- [x] 6.4 Test: `codev sync <c> --json` on a change that removes a
+      capability does expose `deleted[0]`.
 
-## 7. Template proposal
+## 7. Proposal template
 
-- [x] 7.1 `assets/schemas/spec-driven/templates/proposal.md` gagne une
-      nouvelle sous-section `### Capacités retirées` sous `## Capacités`.
-      Commentaire : « Une ligne par capacité retirée, chemin exact.
-      Requiert `retire_capabilities: true` dans `change.yaml`. »
-- [x] 7.2 `codev instructions proposal` renvoie le template mis à jour
+- [x] 7.1 `assets/schemas/spec-driven/templates/proposal.md` gains a
+      new `### Removed Capabilities` subsection under
+      `## Capabilities`. Comment: "One line per removed capability,
+      exact path. Requires `retire_capabilities: true` in
+      `change.yaml`."
+- [x] 7.2 `codev instructions proposal` returns the updated template
       (via `include_str!`).
 
-## 8. Doc + dogfooding
+## 8. Docs + dogfooding
 
-- [x] 8.1 `ChangeMetadata::retire_capabilities` — actualiser le
-      commentaire pour retirer « à venir » et ajouter un exemple :
-      « Voir F5 pour le comportement. »
-- [x] 8.2 `cargo test --workspace` reste vert, +15 tests minimum.
-- [x] 8.3 `cargo clippy --workspace --all-targets` sans avertissement.
-- [x] 8.4 `codev validate --strict` sur ce dépôt reste vert.
-- [x] 8.5 Test à la main : créer un change de test qui retire une capa
-      factice, appliquer via `sync`, vérifier que le fichier est
-      supprimé, restaurer.
+- [x] 8.1 `ChangeMetadata::retire_capabilities` — update the comment
+      to drop "coming soon" and add an example: "See F5 for the
+      behavior."
+- [x] 8.2 `cargo test --workspace` stays green, +15 tests minimum.
+- [x] 8.3 `cargo clippy --workspace --all-targets` free of warnings.
+- [x] 8.4 `codev validate --strict` on this repository stays green.
+- [x] 8.5 Manual test: create a test change that removes a dummy
+      capability, apply it via `sync`, check that the file is
+      deleted, restore.

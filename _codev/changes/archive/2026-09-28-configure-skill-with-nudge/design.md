@@ -1,162 +1,162 @@
-# Design : skill `configure` + nudge
+# Design: `configure` skill + hint
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Nouveau workflow (le 8ème), fonction pure
-`is_config_thin` dans `codev-core`, deux nudges dans `codev-cli`,
-mise à jour du body `onboard`.
+See `proposal.md`. New workflow (the 8th), pure function
+`is_config_thin` in `codev-core`, two hints in `codev-cli`,
+update of the `onboard` body.
 
-## Décisions
+## Decisions
 
-### Décision : seuil « thin » = `context < 200 chars ET rules vides`
+### Decision: "thin" threshold = `context < 200 chars AND empty rules`
 
-Deux critères conjonctifs. Un projet dont un utilisateur a rempli l'un
-ou l'autre est considéré comme « déjà configuré » — la skill
-`configure` n'a plus rien à offrir de fondamental.
+Two conjunctive criteria. A project where a user has filled in one
+or the other is considered "already configured" — the
+`configure` skill has nothing fundamental left to offer.
 
-Le seuil de 200 caractères est arbitraire mais éclairé par la sortie
-minimale de `codev init` sur un projet Rust nu : `Projet Rust, 2024.`
-fait 22 caractères. Le seuil de 200 laisse largement passer un
-`context:` détaillé (stack + une phrase de contexte), et coupe court
-aux stubs.
+The 200-character threshold is arbitrary but informed by the minimal
+output of `codev init` on a bare Rust project: `Rust project, 2024.`
+is 19 characters. The 200 threshold easily lets through a
+detailed `context:` (stack + one sentence of context), and cuts
+stubs short.
 
-**Alternative écartée A** : seuil sur `context` seul. Rejeté — un
-utilisateur qui a écrit des `rules:` sans `context:` a explicitement
-choisi sa configuration.
+**Rejected alternative A**: threshold on `context` alone. Rejected — a
+user who wrote `rules:` without `context:` has explicitly
+chosen their configuration.
 
-**Alternative écartée B** : seuil configurable via `_codev/config.yaml`.
-Rejeté — sur-ingénierie ; le seuil est un défaut, pas une politique.
+**Rejected alternative B**: threshold configurable via `_codev/config.yaml`.
+Rejected — over-engineering; the threshold is a default, not a policy.
 
-### Décision : `configure` a `Bash(codev:*), Read, Glob, Grep, Write, Edit` — mais pas Bash général
+### Decision: `configure` has `Bash(codev:*), Read, Glob, Grep, Write, Edit` — but not general Bash
 
-La skill doit :
+The skill must:
 
-- Lire des fichiers (`Read`, `Glob`, `Grep`).
-- Écrire un `_codev/config.yaml` (`Write`).
-- Éditer avec précision — préserver les commentaires — (`Edit`).
-- Appeler `codev status`, `codev list --specs` pour se situer
+- Read files (`Read`, `Glob`, `Grep`).
+- Write a `_codev/config.yaml` (`Write`).
+- Edit precisely — preserve comments — (`Edit`).
+- Call `codev status`, `codev list --specs` to get its bearings
   (`Bash(codev:*)`).
 
-Elle **n'a pas** le `Bash` général : elle n'exécute pas de tests, pas
-de `git`, pas d'outil externe. La règle d'invariant « seule `apply` a
-le Bash général » reste préservée.
+It **does not have** general `Bash`: it runs no tests, no
+`git`, no external tool. The invariant rule "only `apply` has
+general Bash" stays preserved.
 
-**Alternative écartée** : donner le Bash général pour laisser Claude
-lire l'historique via `git log`. Rejeté — le fichier `.git/index` +
-`git log` suffit rarement pour comprendre un projet, et `Read` sur
-`README.md` + un échantillon de code fait 90% du travail.
+**Rejected alternative**: grant general Bash to let Claude
+read the history via `git log`. Rejected — the `.git/index` file +
+`git log` is rarely enough to understand a project, and `Read` on
+`README.md` + a sample of code does 90% of the work.
 
-### Décision : la skill affiche le diff, écrit sur confirmation — jamais d'écriture silencieuse
+### Decision: the skill shows the diff, writes on confirmation — never a silent write
 
-Le body de `configure.md` MUST guider Claude sur une séquence stricte :
+The body of `configure.md` MUST guide Claude through a strict sequence:
 
-1. Rassembler ce qu'on veut proposer (patch YAML).
-2. **Afficher** le diff à l'utilisateur — ligne par ligne, avec le
-   commentaire d'origine « voici ce que je propose ».
-3. Demander « Applique ? [oui/non] ».
-4. Écrire seulement si oui.
+1. Gather what is to be proposed (YAML patch).
+2. **Show** the diff to the user — line by line, with the
+   leading comment "here is what I propose".
+3. Ask "Apply? [yes/no]".
+4. Write only if yes.
 
-La séquence est explicite dans le body — pas une convention implicite.
-Une skill qui écrit sans confirmation trahirait la confiance.
+The sequence is explicit in the body — not an implicit convention.
+A skill that writes without confirmation would betray trust.
 
-**Alternative écartée** : mode `--auto` qui écrit sans confirmation
-pour scripter. Rejeté — c'est justement une skill, pas un CLI. Un
-utilisateur qui veut scripter édite `_codev/config.yaml` à la main
-via un template.
+**Rejected alternative**: an `--auto` mode that writes without confirmation
+for scripting. Rejected — this is precisely a skill, not a CLI. A
+user who wants to script edits `_codev/config.yaml` by hand
+via a template.
 
-### Décision : la fonction `is_config_thin` vit dans `codev-core::config`
+### Decision: the `is_config_thin` function lives in `codev-core::config`
 
-C'est une fonction pure sur `ProjectConfig` — pas de I/O, pas
-d'environnement. Elle appartient au cœur.
+It is a pure function over `ProjectConfig` — no I/O, no
+environment. It belongs to the core.
 
-Le fait qu'elle prenne un type de `codev-engine` (`ProjectConfig`)
-casserait le sens de dépendance. **Solution** : la fonction prend en
-paramètres directement `context: Option<&str>` et `rules_empty: bool`,
-pas le `ProjectConfig` entier. Chaque appelant lit ces deux champs et
-passe. Simple, testable seule.
+Having it take a type from `codev-engine` (`ProjectConfig`)
+would break the dependency direction. **Solution**: the function takes
+`context: Option<&str>` and `rules_empty: bool` directly as parameters,
+not the whole `ProjectConfig`. Each caller reads these two fields and
+passes them. Simple, testable on its own.
 
-**Alternative écartée** : dupliquer `ProjectConfig` dans `codev-core`
-juste pour cette fonction. Rejeté — la duplication de type est un
-coût élevé pour un gain minuscule.
+**Rejected alternative**: duplicate `ProjectConfig` in `codev-core`
+just for this function. Rejected — type duplication is a
+high cost for a tiny gain.
 
-### Décision : la nudge dans `codev status` n'apparaît que quand aucun change n'est actif
+### Decision: the hint in `codev status` appears only when no change is active
 
-`codev status` a plusieurs modes de sortie — avec change actif, sans,
-avec plusieurs. Le nudge n'a de sens que dans le cas « projet
-initialisé, aucun change actif » — c'est-à-dire le cas typique après
-un `codev init`. L'insérer dans le cas « change actif » polluerait
-l'écran d'un utilisateur en cours de travail.
+`codev status` has several output modes — with an active change, without,
+with several. The hint only makes sense in the "project
+initialized, no active change" case — that is, the typical case after
+a `codev init`. Inserting it in the "active change" case would clutter
+the screen of a user in the middle of their work.
 
-Techniquement : le nudge s'affiche uniquement dans la branche
-d'erreur `no_active_change` de la sortie humaine, jamais dans le
-rapport JSON.
+Technically: the hint is shown only in the
+`no_active_change` error branch of the human output, never in the
+JSON report.
 
-### Décision : lecture du projet par la skill — un budget explicite
+### Decision: project reading by the skill — an explicit budget
 
-Le body de `configure.md` MUST inscrire des limites explicites pour
-que Claude ne lise pas tout le projet :
+The body of `configure.md` MUST set explicit limits so
+that Claude does not read the whole project:
 
-- **README** — lecture complète.
-- **CONTRIBUTING.md** — lecture complète si présent.
-- **docs/** — glob des `*.md`, lecture des 3-5 fichiers les plus
-  courts.
-- **Fichiers source** — jusqu'à 8 fichiers, priorisés par récence de
-  commit (`git log --since='6 months ago' --pretty=format: --name-only`)
-  filtrés par extension usuelle du langage détecté.
-- **Structure** — `ls _codev/`, `ls src/` ou équivalent — un seul
-  niveau.
+- **README** — full read.
+- **CONTRIBUTING.md** — full read if present.
+- **docs/** — glob of `*.md`, read the 3-5 shortest
+  files.
+- **Source files** — up to 8 files, prioritized by commit
+  recency (`git log --since='6 months ago' --pretty=format: --name-only`)
+  filtered by the usual extension of the detected language.
+- **Structure** — `ls _codev/`, `ls src/` or equivalent — a single
+  level.
 
-Ce budget contient le coût token et la variabilité de sortie. Sans
-budget, Claude lirait au hasard et proposerait des contextes
-incohérents.
+This budget contains the token cost and output variability. Without a
+budget, Claude would read at random and propose inconsistent
+contexts.
 
-**Alternative écartée** : « laisse Claude lire ce qu'il veut ». Rejeté
-— l'expérience prouve que sans borne, la sortie devient imprévisible.
+**Rejected alternative**: "let Claude read whatever it wants". Rejected
+— experience shows that without bounds, the output becomes unpredictable.
 
-### Décision : mise à jour du body `onboard` — nouvelle branche AVANT les autres
+### Decision: update of the `onboard` body — new branch BEFORE the others
 
-Dans la table de décision de `onboard.md`, la branche « config thin »
-doit être placée **avant** les branches sur les changes, car un
-projet fraîchement initialisé n'a par définition aucun change actif —
-sinon on serait déjà dans une autre branche.
+In the decision table of `onboard.md`, the "thin config" branch
+must be placed **before** the branches about changes, because a
+freshly initialized project by definition has no active change —
+otherwise we would already be in another branch.
 
-Ordre final :
+Final order:
 
 1. `_codev/` absent → `codev init`
-2. Config thin, aucun change → `/codev-configure` puis `/codev-propose`
-3. Aucun change → lire README puis `/codev-propose`
-4. Un change actif, planification incomplète → `/codev-propose <nom>`
-5. Un change actif, planification complète → `/codev-apply <nom>`
-6. Plusieurs changes → lister
+2. Thin config, no change → `/codev-configure` then `/codev-propose`
+3. No change → read README then `/codev-propose`
+4. One active change, planning incomplete → `/codev-propose <name>`
+5. One active change, planning complete → `/codev-apply <name>`
+6. Several changes → list
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Le seuil « thin » vieillit** — un projet peut avoir un context de
-  180 caractères qui est parfait, et la nudge sera fausse. →
-  **Atténuation** : la nudge est douce (« Prochaine étape
-  recommandée » / « Astuce »), jamais bloquante. L'utilisateur peut
-  ignorer.
-- **La skill peut proposer un mauvais contexte** — Claude peut lire
-  un projet et se tromper de conventions. → **Atténuation** :
-  confirmation obligatoire avec diff. Ce que l'utilisateur voit et
-  accepte est ce qu'il obtient.
-- **Le body `configure.md` est notoirement fragile** — comme toutes
-  les skills, une consigne trop lâche produit une sortie erratique.
-  → **Atténuation** : le budget de lecture explicite + la séquence
-  strictement décrite + le préservé/interdit typé.
-- **`Bash(codev:*), Write, Edit` est presque `apply`** — la skill est
-  puissante. → **Atténuation** : elle ne touche qu'un fichier
-  (`_codev/config.yaml`) et le body l'énonce. Un test d'invariant
-  vérifie que le body cite explicitement cette contrainte.
+- **The "thin" threshold ages** — a project may have a context of
+  180 characters that is perfect, and the hint will be wrong. →
+  **Mitigation**: the hint is gentle ("Recommended next
+  step" / "hint"), never blocking. The user can
+  ignore it.
+- **The skill may propose a bad context** — Claude may read
+  a project and get its conventions wrong. → **Mitigation**:
+  mandatory confirmation with a diff. What the user sees and
+  accepts is what they get.
+- **The `configure.md` body is notoriously fragile** — like all
+  skills, an instruction that is too loose produces erratic output.
+  → **Mitigation**: the explicit reading budget + the strictly
+  described sequence + the typed preserved/forbidden lists.
+- **`Bash(codev:*), Write, Edit` is almost `apply`** — the skill is
+  powerful. → **Mitigation**: it touches only one file
+  (`_codev/config.yaml`) and the body states so. An invariant test
+  checks that the body explicitly cites this constraint.
 
-## Plan de migration
+## Migration Plan
 
-Aucune migration nécessaire. Un projet existant :
+No migration needed. An existing project:
 
-- Voit la 8ème skill apparaître au prochain `codev update`.
-- Reçoit la nudge à son prochain `codev init` ou `codev status`
-  **seulement** si son `_codev/config.yaml` est thin.
+- Sees the 8th skill appear on the next `codev update`.
+- Receives the hint on its next `codev init` or `codev status`
+  **only** if its `_codev/config.yaml` is thin.
 
-Un projet dont l'utilisateur a rempli sa config manuellement ne
-verra jamais la nudge — l'expérience est parfaitement identique à
-aujourd'hui.
+A project whose user filled in the config manually will
+never see the hint — the experience is exactly identical to
+today.

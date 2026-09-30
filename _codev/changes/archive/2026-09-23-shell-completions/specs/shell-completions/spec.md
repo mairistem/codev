@@ -1,68 +1,68 @@
 ## Purpose
 
-Livrer un mécanisme pour que l'utilisateur active la complétion des
-commandes `codev` dans son shell, sans avoir à écrire ni maintenir de
-script à la main — l'outil génère le script à partir de la déclaration
-`clap` existante.
+Provide a mechanism for users to enable completion of `codev`
+commands in their shell, without having to write or maintain a
+script by hand — the tool generates the script from the existing
+`clap` declaration.
 
 ## ADDED Requirements
 
-### Requirement: `codev completions <shell>` imprime un script de complétion sur stdout
+### Requirement: `codev completions <shell>` prints a completion script to stdout
 
-Le binaire `codev` SHALL exposer une sous-commande `completions
-<shell>` où `<shell>` est l'une des cinq valeurs standard de
-`clap_complete` : `bash`, `zsh`, `fish`, `powershell`, `elvish`.
+The `codev` binary SHALL expose a `completions <shell>` subcommand
+where `<shell>` is one of the five standard `clap_complete`
+values: `bash`, `zsh`, `fish`, `powershell`, `elvish`.
 
-La commande MUST :
+The command MUST:
 
-- écrire le script sur **stdout uniquement** — aucun fichier système
-  n'est touché ;
-- retourner exit code **0** en cas de succès ;
-- refuser avec exit code non nul et un message clair si `<shell>`
-  n'est pas l'une des cinq valeurs reconnues.
+- write the script to **stdout only** — no system file
+  is touched;
+- return exit code **0** on success;
+- refuse with a non-zero exit code and a clear message if `<shell>`
+  is not one of the five recognized values.
 
-Le script MUST correspondre à la structure courante des commandes
-codev — chaque nouvelle sous-commande ajoutée à `Cli` (par exemple
-`decision promote`, `decision deviate`) apparaît dans le script sans
-intervention manuelle.
+The script MUST match the current structure of the codev
+commands — every new subcommand added to `Cli` (for example
+`decision promote`, `decision deviate`) appears in the script without
+manual intervention.
 
-#### Scenario: Génération zsh non vide et cite codev
+#### Scenario: zsh generation is non-empty and mentions codev
 
-- **GIVEN** un binaire `codev` de la version courante
-- **WHEN** l'utilisateur lance `codev completions zsh`
-- **THEN** stdout porte une sortie non vide (≥ 500 caractères)
-- **AND** cette sortie contient au moins une fois le nom `codev`
-- **AND** le code de retour est 0
+- **GIVEN** a `codev` binary of the current version
+- **WHEN** the user runs `codev completions zsh`
+- **THEN** stdout carries non-empty output (≥ 500 characters)
+- **AND** that output contains the name `codev` at least once
+- **AND** the exit code is 0
 
-#### Scenario: Support des cinq shells de clap_complete
+#### Scenario: Support for the five clap_complete shells
 
-- **GIVEN** un binaire `codev` de la version courante
-- **WHEN** l'utilisateur lance successivement `codev completions bash`,
+- **GIVEN** a `codev` binary of the current version
+- **WHEN** the user successively runs `codev completions bash`,
   `codev completions zsh`, `codev completions fish`,
   `codev completions powershell`, `codev completions elvish`
-- **THEN** chaque appel produit une sortie non vide sur stdout
-- **AND** chaque appel retourne exit code 0
+- **THEN** each call produces non-empty output on stdout
+- **AND** each call returns exit code 0
 
-#### Scenario: Shell inconnu refusé
+#### Scenario: Unknown shell refused
 
-- **GIVEN** un binaire `codev` de la version courante
-- **WHEN** l'utilisateur lance `codev completions nushell`
-- **THEN** aucun script n'est imprimé sur stdout
-- **AND** un message d'erreur nomme `nushell` et rappelle la liste
-  des shells reconnus
-- **AND** le code de retour est non nul
+- **GIVEN** a `codev` binary of the current version
+- **WHEN** the user runs `codev completions nushell`
+- **THEN** no script is printed to stdout
+- **AND** an error message names `nushell` and recalls the list
+  of recognized shells
+- **AND** the exit code is non-zero
 
-### Requirement: La commande `completions` est purement lecture
+### Requirement: The `completions` command is purely read-only
 
-`codev completions <shell>` MUST NOT écrire dans le système de
-fichiers, ni contacter le réseau, ni lire `_codev/config.yaml` ou
-tout autre état du projet. Elle est indépendante d'un dépôt
-initialisé : elle fonctionne dans n'importe quel répertoire courant,
-y compris hors de toute racine codev.
+`codev completions <shell>` MUST NOT write to the file
+system, contact the network, or read `_codev/config.yaml` or
+any other project state. It is independent of an initialized
+repository: it works in any current directory,
+including outside any codev root.
 
-#### Scenario: Fonctionne hors d'un dépôt codev
+#### Scenario: Works outside a codev repository
 
-- **GIVEN** un utilisateur dans un répertoire qui n'a pas de `_codev/`
-- **WHEN** il lance `codev completions bash`
-- **THEN** le script est imprimé normalement
-- **AND** aucun message d'erreur ne mentionne `_codev`
+- **GIVEN** a user in a directory that has no `_codev/`
+- **WHEN** they run `codev completions bash`
+- **THEN** the script is printed normally
+- **AND** no error message mentions `_codev`

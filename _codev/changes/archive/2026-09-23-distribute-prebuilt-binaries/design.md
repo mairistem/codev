@@ -1,130 +1,130 @@
-# Design : distribution de codev par binaires précompilés
+# Design: distributing codev through prebuilt binaries
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Change **hors des crates Rust** — il touche
-uniquement au workflow GitHub Actions, au script `install.sh`, et à
-la documentation. Aucune ligne de Rust ne bouge.
+See `proposal.md`. Change **outside the Rust crates** — it touches
+only the GitHub Actions workflow, the `install.sh` script, and the
+documentation. Not a single line of Rust moves.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre : les cibles supportées, le format d'artefact, la
-mécanique du workflow, le comportement du script `install.sh`, la
-vérification d'intégrité. Il ne cadre pas Windows, Linux ARM64,
-Homebrew, auto-update, ni signature GPG.
+This design frames: the supported targets, the artifact format, the
+workflow mechanics, the behavior of the `install.sh` script, the
+integrity check. It does not frame Windows, Linux ARM64, Homebrew,
+auto-update, or GPG signing.
 
-## Décisions
+## Decisions
 
-### Décision : trois cibles pour la V1 — macOS arm64/x86_64, Linux x86_64 musl
+### Decision: three targets for V1 — macOS arm64/x86_64, Linux x86_64 musl
 
-Le public visé (équipes JVS + contributeurs open source curieux) est
-à ≥ 95 % sur ces trois cibles. Aller plus loin ajoute de la matrice
-CI (build lent, cache à gérer) sans bénéfice mesuré.
+The target audience (JVS teams + curious open source contributors) is
+≥ 95% on these three targets. Going further adds CI matrix entries
+(slow builds, cache to manage) with no measured benefit.
 
-**Alternative écartée** : ajouter `aarch64-unknown-linux-musl` et
-`x86_64-pc-windows-msvc` d'entrée. Rejeté au titre de la V1 —
-extensions faciles quand un vrai utilisateur se manifestera.
+**Rejected alternative**: adding `aarch64-unknown-linux-musl` and
+`x86_64-pc-windows-msvc` from the start. Rejected for V1 — easy
+extensions once a real user shows up.
 
-### Décision : musl statique pour Linux, pas glibc
+### Decision: static musl for Linux, not glibc
 
-Un binaire compilé contre musl est **statiquement lié** — il marche
-sur n'importe quelle distribution Linux, quelle que soit la version
-de glibc. C'est le pattern adopté par ripgrep, fd, bat, sccache, la
-plupart des CLI Rust d'infrastructure.
+A binary compiled against musl is **statically linked** — it runs on
+any Linux distribution, whatever the glibc version. This is the
+pattern adopted by ripgrep, fd, bat, sccache, and most infrastructure
+Rust CLIs.
 
-Un binaire glibc dynamique risquerait de casser sur des systèmes
-plus anciens (« GLIBC_2.34 not found »). musl échange 10-15 % de
-taille de binaire contre une portabilité totale — trade-off à
-prendre.
+A dynamic glibc binary could break on older systems
+("GLIBC_2.34 not found"). musl trades 10-15% of binary size for full
+portability — a trade-off worth taking.
 
-### Décision : format `.tar.gz`, pas `.zip`
+### Decision: `.tar.gz` format, not `.zip`
 
-`.tar.gz` est natif sur macOS et Linux — tar est présent partout,
-l'utilisateur n'a rien à installer pour extraire. `.zip` demanderait
-un `unzip` séparé sur Linux minimal.
+`.tar.gz` is native on macOS and Linux — tar is present everywhere,
+the user has nothing to install to extract. `.zip` would require a
+separate `unzip` on minimal Linux.
 
-Windows utilisera `.zip` **quand** Windows sera supporté. Pour V1,
-un seul format simplifie le script d'install.
+Windows will use `.zip` **when** Windows is supported. For V1, a
+single format simplifies the install script.
 
-### Décision : SHA-256 dans un `SHA256SUMS`, pas de signature GPG
+### Decision: SHA-256 in a `SHA256SUMS`, no GPG signature
 
-Deux niveaux de garantie possibles :
+Two possible levels of guarantee:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Rien** | Simple | Un attaquant qui compromet le CDN peut servir un binaire modifié |
-| **B. SHA-256 dans un `SHA256SUMS`** publié par le même workflow | Défend contre les altérations en transit ; format standard `sha256sum -c` | Ne défend pas contre une compromission du workflow GH Actions lui-même |
-| **C. Signature GPG / sigstore** | Défense forte contre tout attaquant hors des mainteneurs | Clef à gérer, publier, faire tourner. Pour un outil interne c'est disproportionné en V1. |
+| **A. Nothing** | Simple | An attacker who compromises the CDN can serve a modified binary |
+| **B. SHA-256 in a `SHA256SUMS`** published by the same workflow | Defends against tampering in transit; standard `sha256sum -c` format | Does not defend against a compromise of the GH Actions workflow itself |
+| **C. GPG / sigstore signature** | Strong defense against any attacker outside the maintainers | Key to manage, publish, rotate. For an internal tool this is disproportionate in V1. |
 
-**Choisi : B.** Pattern des CLI Rust mainstream (ripgrep, fd,
-starship). Marge de progression vers C si le contexte se durcit
-(publication publique, secteur régulé, etc.).
+**Chosen: B.** The pattern of mainstream Rust CLIs (ripgrep, fd,
+starship). Room to move toward C if the context hardens (public
+release, regulated sector, etc.).
 
-### Décision : `install.sh` télécharge le SHA256SUMS séparément et vérifie
+### Decision: `install.sh` downloads the SHA256SUMS separately and verifies
 
-Le script ne fait pas confiance au serveur — il télécharge le
-`SHA256SUMS` publié dans la release, calcule le SHA-256 du fichier
-qu'il a téléchargé, compare, refuse si divergence. Pratique standard.
+The script does not trust the server — it downloads the
+`SHA256SUMS` published in the release, computes the SHA-256 of the
+file it downloaded, compares, and refuses on mismatch. Standard
+practice.
 
-**Alternative écartée** : télécharger seulement l'archive, sans
-vérifier. Rejeté — le coût est nul (un `curl` de plus, un `sha256sum`
-en local).
+**Rejected alternative**: downloading only the archive, without
+verifying. Rejected — the cost is zero (one more `curl`, a local
+`sha256sum`).
 
-### Décision : destination `~/.local/bin/`, pas `/usr/local/bin/`
+### Decision: destination `~/.local/bin/`, not `/usr/local/bin/`
 
-`~/.local/bin/` est le dossier XDG standard pour un binaire installé
-par l'utilisateur, sans droits root. Compatible macOS/Linux, ne
-demande pas de `sudo`.
+`~/.local/bin/` is the standard XDG folder for a binary installed by
+the user, without root privileges. Compatible with macOS/Linux, does
+not require `sudo`.
 
-**Alternative écartée** : `/usr/local/bin/`. Demande `sudo` sur
-beaucoup de systèmes ; conflit possible avec Homebrew.
+**Rejected alternative**: `/usr/local/bin/`. Requires `sudo` on many
+systems; possible conflict with Homebrew.
 
-### Décision : version dans le nom de l'archive
+### Decision: version in the archive name
 
-`codev-0.2.0-aarch64-apple-darwin.tar.gz` — la version est visible
-sans avoir à décompresser. Utile pour un utilisateur qui garde
-plusieurs versions côte à côte, et pour le script `install.sh` qui
-construit le nom d'après la version résolue.
+`codev-0.2.0-aarch64-apple-darwin.tar.gz` — the version is visible
+without having to decompress. Useful for a user who keeps several
+versions side by side, and for the `install.sh` script, which builds
+the name from the resolved version.
 
-### Décision : le workflow GH Actions ne pousse rien dans le dépôt
+### Decision: the GH Actions workflow pushes nothing to the repository
 
-Aucun commit auto, aucun push automatique. Le workflow lit le repo,
-produit des artefacts, publie sur GitHub Releases. C'est tout.
+No auto commit, no automatic push. The workflow reads the repo,
+produces artifacts, publishes to GitHub Releases. That's all.
 
-**Rationale** : un workflow qui pousserait des commits (par exemple
-pour bump la version) crée un cycle push → CI → push potentiellement
-récursif. On préfère un modèle simple où le développeur bump la
-version localement, tag, push le tag, le workflow publie la release.
+**Rationale**: a workflow that pushed commits (for example to bump
+the version) creates a potentially recursive push → CI → push cycle.
+We prefer a simple model where the developer bumps the version
+locally, tags, pushes the tag, and the workflow publishes the release.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Un utilisateur pipe `curl … | sh` d'une source compromise.**
-  → **Atténuation** : le script vérifie le SHA-256 depuis le même
-  serveur, ce qui défend contre la compromission d'un CDN mais pas
-  contre celle du repo lui-même. Pour une garantie plus forte, l'user
-  peut télécharger le script, le lire, puis l'exécuter (`sh
-  install.sh`). Documenté dans la doc.
-- **`curl -sSL … | sh` reste une pratique discutée** — mais standard
-  chez rustup, oh-my-zsh, Homebrew, starship. Le compromis
-  ergonomie/sécurité est accepté par la communauté.
-- **La matrice de trois cibles double le temps de CI** — la V1 tourne
-  probablement à 5-10 min end-to-end. Pas bloquant.
-- **La version dans `Cargo.toml` doit correspondre au tag** — sinon
-  le `install.sh` ne trouvera pas l'archive. Un petit script `xtask
-  release <version>` ou une note dans `docs/codev.md` peut aider. Pas
-  de mécanique auto pour la V1 — un check-list humain suffit.
+- **A user pipes `curl … | sh` from a compromised source.**
+  → **Mitigation**: the script verifies the SHA-256 from the same
+  server, which defends against a CDN compromise but not against a
+  compromise of the repo itself. For a stronger guarantee, the user
+  can download the script, read it, then run it (`sh
+  install.sh`). Documented in the docs.
+- **`curl -sSL … | sh` remains a debated practice** — but standard
+  for rustup, oh-my-zsh, Homebrew, starship. The ergonomics/security
+  trade-off is accepted by the community.
+- **The three-target matrix doubles CI time** — V1 probably runs
+  in 5-10 min end-to-end. Not blocking.
+- **The version in `Cargo.toml` must match the tag** — otherwise
+  `install.sh` will not find the archive. A small `xtask
+  release <version>` script or a note in `docs/codev.md` can help. No
+  automatic mechanism for V1 — a human checklist is enough.
 
-## Plan de migration
+## Migration Plan
 
-Pour un utilisateur qui a **déjà** installé codev via `cargo install`
-et veut migrer vers la voie curl :
+For a user who has **already** installed codev via `cargo install`
+and wants to migrate to the curl path:
 
-1. `rm ~/.cargo/bin/codev` (optionnel, remplacé au prochain
+1. `rm ~/.cargo/bin/codev` (optional, replaced at the next
    `cargo install`)
 2. `curl -sSL https://…/install.sh | sh`
-3. Vérifier que `~/.local/bin/codev` est utilisé
-   (`which codev` doit rendre ce chemin, à condition que le PATH
-   ordonne `~/.local/bin` avant `~/.cargo/bin`)
+3. Check that `~/.local/bin/codev` is used
+   (`which codev` must return that path, provided the PATH orders
+   `~/.local/bin` before `~/.cargo/bin`)
 
-Pour un utilisateur **nouveau** : suivre la section Installation de
-`codev docs` (recommandée : `curl … | sh`).
+For a **new** user: follow the Installation section of
+`codev docs` (recommended: `curl … | sh`).

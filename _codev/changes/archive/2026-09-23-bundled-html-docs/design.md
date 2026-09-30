@@ -1,138 +1,142 @@
-# Design : `codev docs` et son bundle HTML autonome
+# Design: `codev docs` and its standalone HTML bundle
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Doc bundle qui répond aux trois questions
-tranchées par défaut :
+See `proposal.md`. A documentation bundle that answers the three
+questions settled by default:
 
-- **Génération** : runtime, pas build-time (build reste simple).
-- **Design visuel** : maison minimal, aucun CDN.
-- **Contenu** : manuel, rédigé avec le même ton que les artefacts
-  codev.
+- **Generation**: runtime, not build-time (the build stays simple).
+- **Visual design**: minimal and home-made, no CDN.
+- **Content**: manual, written in the same tone as the codev
+  artifacts.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre la conversion markdown → HTML, l'ouverture système,
-les trois formes de la sous-commande, l'embed du markdown, et le
-squelette CSS. Il ne cadre pas la génération PDF, la recherche
-full-text JS, ni la génération de la section CLI depuis clap.
+This design covers the markdown → HTML conversion, system opening,
+the three forms of the subcommand, the embedding of the markdown,
+and the CSS skeleton. It does not cover PDF generation, JS full-text
+search, or generating the CLI section from clap.
 
-## Décisions
+## Decisions
 
-### Décision : conversion **runtime** via `pulldown-cmark`
+### Decision: **runtime** conversion via `pulldown-cmark`
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Build-time via `build.rs`** — le HTML est embedded prêt à l'usage | Coût zéro à l'exécution, HTML précalculé | Build cache invalidé à chaque édition de la doc, `build.rs` supplémentaire à maintenir |
-| **B. Runtime — le markdown est embedded, conversion au moment de l'appel** | Build reste simple, cache des sources markdown identique à celui des autres `include_str!` | ~5-10 ms de conversion à chaque `codev docs` |
+| **A. Build-time via `build.rs`** — the HTML is embedded ready to use | Zero cost at runtime, precomputed HTML | Build cache invalidated on every documentation edit, an extra `build.rs` to maintain |
+| **B. Runtime — the markdown is embedded, converted at call time** | Build stays simple, markdown source caching identical to the other `include_str!` | ~5-10 ms of conversion on every `codev docs` |
 
-**Choisi : B.** Les 5-10 ms sont indolores devant l'ouverture du
-navigateur (~500 ms). Le build reste homogène — pas de `build.rs`
-qui devient un endroit spécial pour une seule chose.
+**Chosen: B.** The 5-10 ms are painless compared to opening the
+browser (~500 ms). The build stays homogeneous — no `build.rs` that
+becomes a special place for a single thing.
 
-### Décision : `pulldown-cmark` version 0.10, pas de renderer custom
+### Decision: `pulldown-cmark` version 0.10, no custom renderer
 
-`pulldown-cmark` est le converter markdown → HTML mainstream en
-Rust : utilisé par mdBook, docs.rs, GitBook alternatives. Son
-`html::push_html` gère les six éléments dont on a besoin (titres,
-paragraphes, listes, tableaux, code, blockquotes) avec les
-extensions **tables** et **footnotes** activées.
+`pulldown-cmark` is the mainstream markdown → HTML converter in
+Rust: used by mdBook, docs.rs, GitBook alternatives. Its
+`html::push_html` handles the six elements we need (headings,
+paragraphs, lists, tables, code, blockquotes) with the **tables**
+and **footnotes** extensions enabled.
 
-**Alternative écartée** : `comrak` (compatible CommonMark strict).
-Plus lourd, moins nécessaire.
+**Rejected alternative**: `comrak` (strict CommonMark compliant).
+Heavier, less necessary.
 
-### Décision : template HTML minimal maison, pas de framework
+### Decision: minimal home-made HTML template, no framework
 
-Un template de 150 lignes environ, avec :
+A template of about 150 lines, with:
 
-- Doctype HTML5.
-- `<meta charset="utf-8">` et viewport mobile.
-- `<style>` inline avec ~120 lignes de CSS.
-- `<header>` : nom + version.
-- `<nav>` : sommaire auto-généré à partir des `h2`/`h3` (via JS de 30
-  lignes ; sans JS, le sommaire n'apparaît pas mais la doc reste
-  navigable via Ctrl+F).
-- `<main>` : le contenu.
-- **Aucun** `<link>` externe.
+- HTML5 doctype.
+- `<meta charset="utf-8">` and mobile viewport.
+- Inline `<style>` with ~120 lines of CSS.
+- `<header>`: name + version.
+- `<nav>`: table of contents auto-generated from the `h2`/`h3` (via
+  30 lines of JS; without JS, the table of contents does not appear
+  but the documentation remains navigable via Ctrl+F).
+- `<main>`: the content.
+- **No** external `<link>`.
 
-**CSS style** : typographie techdoc, `system-ui` pour les headings,
-`Georgia`/`serif` pour le body (lecture confortable sur écran),
-`ui-monospace` pour code. Palette monochrome (contrastes suffisants,
-imprimable).
+**CSS style**: techdoc typography, `system-ui` for headings,
+`Georgia`/`serif` for the body (comfortable on-screen reading),
+`ui-monospace` for code. Monochrome palette (sufficient contrast,
+printable).
 
-**Alternative écartée** : Tailwind Play CDN. Casse l'autonomie
-(première ouverture demande internet).
+**Rejected alternative**: Tailwind Play CDN. Breaks
+self-containment (first opening requires internet).
 
-### Décision : trois formes exclusives — défaut, `--print`, `--write`
+### Decision: three exclusive forms — default, `--print`, `--write`
 
-Résolution ordonnée par précédence :
+Resolution ordered by precedence:
 
-1. `--print` seul → markdown sur stdout, rien d'autre.
-2. `--write <PATH>` → HTML au chemin donné, pas d'ouverture.
-3. Défaut (aucun flag) → HTML dans `temp_dir()` + ouverture.
+1. `--print` alone → markdown on stdout, nothing else.
+2. `--write <PATH>` → HTML at the given path, no opening.
+3. Default (no flag) → HTML in `temp_dir()` + opening.
 
-Les combinaisons `--print --write` sont refusées par clap
+The `--print --write` combinations are refused by clap
 (`conflicts_with`).
 
-### Décision : chemin par défaut = `temp_dir()/codev-docs-<version>.html`
+### Decision: default path = `temp_dir()/codev-docs-<version>.html`
 
-Ré-appeler `codev docs` écrase le fichier de la session précédente.
-Idempotent. Un nom de fichier qui porte la version distingue les
-versions installées côte à côte (rare mais possible).
+Calling `codev docs` again overwrites the file from the previous
+session. Idempotent. A file name that carries the version
+distinguishes versions installed side by side (rare but possible).
 
-**Alternative écartée** : `~/.local/share/codev/docs.html`. Persistant
-mais pollue le `$HOME`, qui n'est pas le rôle d'une commande docs.
+**Rejected alternative**: `~/.local/share/codev/docs.html`.
+Persistent but pollutes `$HOME`, which is not the role of a docs
+command.
 
-### Décision : ouverture système via la crate `open`
+### Decision: system opening via the `open` crate
 
-`open = "5"` fait exactement une chose : `open::that(path)` → délègue
-à `open` / `xdg-open` / `start`. 200 lignes de code source, zéro
-dépendance runtime.
+`open = "5"` does exactly one thing: `open::that(path)` → delegates
+to `open` / `xdg-open` / `start`. 200 lines of source code, zero
+runtime dependencies.
 
-**Alternative écartée** : `std::process::Command::new("open").arg(…)`
-maison. Marche sur macOS mais casse sur Linux/Windows. La crate
-absorbe ces différences pour trois fois rien.
+**Rejected alternative**: a home-made
+`std::process::Command::new("open").arg(…)`. Works on macOS but
+breaks on Linux/Windows. The crate absorbs these differences for
+next to nothing.
 
-### Décision : contenu manuel, dix sections
+### Decision: manual content, ten sections
 
-Plan de la doc, à rédiger dans `docs/codev.md` :
+Outline of the documentation, to be written in `docs/codev.md`:
 
-1. **Introduction** — qu'est-ce que codev, pourquoi ce cycle.
-2. **Installation** — cargo install, PATH, `~/.cargo/bin`, completions.
-3. **Le cycle** — propose → apply → sync → archive, schéma ASCII.
-4. **Les 7 skills Claude Code** — propose, explore, apply, sync,
-   archive, update, onboard. Chacune : rôle, `allowed-tools`,
-   quand l'utiliser.
-5. **Les concepts** — capacité, décision, change, delta operation
+1. **Introduction** — what codev is, why this cycle.
+2. **Installation** — cargo install, PATH, `~/.cargo/bin`,
+   completions.
+3. **The cycle** — propose → apply → sync → archive, ASCII diagram.
+4. **The 7 Claude Code skills** — propose, explore, apply, sync,
+   archive, update, onboard. Each one: role, `allowed-tools`, when
+   to use it.
+5. **The concepts** — capability, decision, change, delta operation
    (`ADDED`, `MODIFIED`, `REMOVED`, `RENAMED`).
-6. **La CLI** — chaque commande avec un exemple, groupée par famille
-   (projet, changes, décisions, sources, validation, docs).
-7. **Configuration** — `_codev/config.yaml` : schéma, workflows,
+6. **The CLI** — every command with an example, grouped by family
+   (project, changes, decisions, sources, validation, docs).
+7. **Configuration** — `_codev/config.yaml`: schema, workflows,
    context, rules, inherits, mcp.
-8. **Décisions d'architecture** — les 6 ADR racines, K3/K6/K7.
-9. **Extensions MCP** — Jira/Atlassian aujourd'hui, comment ajouter
-   d'autres MCP.
-10. **FAQ / troubleshooting** — trous mémoire courants, cas
-    d'échec.
+8. **Architecture decisions** — the 6 root ADRs, K3/K6/K7.
+9. **MCP extensions** — Jira/Atlassian today, how to add other
+   MCPs.
+10. **FAQ / troubleshooting** — common memory lapses, failure
+    cases.
 
-Un ton unique aligné sur les artefacts qu'on écrit depuis 16 changes.
+A single tone aligned with the artifacts we have been writing for 16
+changes.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Un utilisateur sur un système où `open`/`xdg-open`/`start`
-  n'existe pas** — cas de bord (serveurs headless). La crate `open`
-  remonte l'erreur ; la commande imprime « impossible d'ouvrir le
-  navigateur — utilise `--print` ou `--write`. »
-- **Le HTML fait 100-300 Ko une fois embarqué avec le CSS et la
-  doc** — mesurable au premier build, acceptable devant un binaire
-  qui pèse déjà ~4 Mo.
-- **Les futures évolutions de la doc casseront les tests golden**
-  éventuels — c'est **le point**. Un test golden serait remplacé par
-  des tests structurels : « le HTML commence par `<!doctype html>` »,
-  « il ne cite aucun URL externe », « il contient le nom `codev` ».
+- **A user on a system where `open`/`xdg-open`/`start` does not
+  exist** — an edge case (headless servers). The `open` crate
+  surfaces the error; the command prints "cannot open the browser —
+  use `--print` or `--write`."
+- **The HTML weighs 100-300 KB once embedded with the CSS and the
+  documentation** — measurable at the first build, acceptable
+  compared to a binary that already weighs ~4 MB.
+- **Future documentation changes will break any golden tests** —
+  that is **the point**. A golden test would be replaced by
+  structural tests: "the HTML starts with `<!doctype html>`", "it
+  cites no external URL", "it contains the name `codev`".
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Feature additive, opt-in.
+None. An additive, opt-in feature.
