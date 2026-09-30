@@ -165,7 +165,15 @@ impl ActionError {
                     .unwrap_or_default();
                 let hint = superseded_by
                     .as_ref()
-                    .map(|q| format!("; supersede `{q}` instead"))
+                    // Worded for both call sites: `supersede` (target the
+                    // decision in effect) and `accept` (fix the `supersedes`
+                    // list of the proposed decision).
+                    .map(|q| {
+                        format!(
+                            "; the decision in effect is `{q}`: supersede that one, or \
+                             for a proposed decision, point its `supersedes` at it"
+                        )
+                    })
                     .unwrap_or_default();
                 format!(
                     "decision `{id}` has status `{status}`{by}: only an \
