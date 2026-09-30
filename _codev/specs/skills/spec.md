@@ -2,522 +2,523 @@
 
 ## Purpose
 
-Décrit le contrat des skills que codev installe dans Claude Code : leur nom,
-ce qu'elles doivent faire, ce qu'elles n'ont pas le droit de faire, et
-comment leur frontmatter garantit ces promesses. Les entrées sont ajoutées
-au fil des changes qui introduisent chaque workflow — un ADDED par workflow.
+Describes the contract of the skills that codev installs into Claude Code:
+their name, what they must do, what they are not allowed to do, and how
+their frontmatter guarantees these promises. Entries are added as the
+changes that introduce each workflow land — one ADDED per workflow.
 
 ## Requirements
 
-### Requirement: Skill `apply` guide l'implémentation d'un change
+### Requirement: The `apply` skill guides the implementation of a change
 
-Le catalogue de codev SHALL exposer un workflow `apply` — installé sous
-`.claude/skills/codev-apply/SKILL.md`, invocable `/codev-apply` — dont le
-rôle est de traiter les tâches non cochées du `tasks.md` d'un change, dans
-l'ordre du fichier, en cochant chaque case à mesure.
+The codev catalog SHALL expose an `apply` workflow — installed under
+`.claude/skills/codev-apply/SKILL.md`, invocable as `/codev-apply` — whose
+role is to process the unchecked tasks of a change's `tasks.md`, in file
+order, checking each box as it goes.
 
-#### Scenario: Implémentation d'un change avec un seul actif
+#### Scenario: Implementing a change when only one is active
 
-- **GIVEN** un projet avec un seul change actif dont `tasks.md` porte deux
-  tâches non cochées
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill résout implicitement le change actif
-- **AND** implémente la première tâche puis la coche
-- **AND** implémente la seconde tâche puis la coche
+- **GIVEN** a project with a single active change whose `tasks.md` carries
+  two unchecked tasks
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill implicitly resolves the active change
+- **AND** implements the first task, then checks it
+- **AND** implements the second task, then checks it
 
-#### Scenario: Reprise après interruption
+#### Scenario: Resuming after an interruption
 
-- **GIVEN** un `tasks.md` où la première tâche est déjà cochée `- [x]` et la
-  seconde ne l'est pas
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill ignore la tâche déjà cochée
-- **AND** commence par la première tâche non cochée
+- **GIVEN** a `tasks.md` in which the first task is already checked `- [x]`
+  and the second is not
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill skips the already checked task
+- **AND** starts with the first unchecked task
 
-#### Scenario: Ambiguïté demande un choix explicite
+#### Scenario: Ambiguity requires an explicit choice
 
-- **GIVEN** deux changes actifs
-- **WHEN** l'utilisateur tape `/codev-apply` sans nom
-- **THEN** la skill demande lequel appliquer, en listant les deux noms
+- **GIVEN** two active changes
+- **WHEN** the user types `/codev-apply` without a name
+- **THEN** the skill asks which one to apply, listing both names
 
-### Requirement: Skill `apply` respecte les frontières du change
+### Requirement: The `apply` skill respects the boundaries of the change
 
-Le workflow `apply` MUST se cantonner à ce qui est nécessaire pour cocher
-les tâches du change nommé : il MUST NOT modifier d'autres changes, MUST NOT
-archiver ni sync tout seul, et MUST s'arrêter dès qu'une tâche est
-ambiguë ou bloquée plutôt que de deviner.
+The `apply` workflow MUST confine itself to what is necessary to check off
+the tasks of the named change: it MUST NOT modify other changes, MUST NOT
+archive or sync on its own, and MUST stop as soon as a task is ambiguous
+or blocked rather than guess.
 
-#### Scenario: Refus d'archiver depuis apply
+#### Scenario: Refusal to archive from apply
 
-- **GIVEN** un change dont toutes les tâches sont cochées
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill signale que le change est prêt à être archivé
-- **AND** invite explicitement à lancer `/codev-archive` ou `codev archive`
-  comme prochaine étape séparée
+- **GIVEN** a change whose tasks are all checked
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill reports that the change is ready to be archived
+- **AND** explicitly invites the user to run `/codev-archive` or
+  `codev archive` as a separate next step
 
-#### Scenario: Tâche ambiguë interrompt le flux
+#### Scenario: An ambiguous task interrupts the flow
 
-- **GIVEN** un `tasks.md` contenant une tâche dont la formulation admet
-  plusieurs interprétations qui changeraient matériellement le résultat
-- **WHEN** la skill arrive à cette tâche
-- **THEN** la skill demande une clarification à l'utilisateur avant
-  d'implémenter
-- **AND** ne coche pas la tâche tant que la clarification n'est pas obtenue
+- **GIVEN** a `tasks.md` containing a task whose wording admits several
+  interpretations that would materially change the outcome
+- **WHEN** the skill reaches that task
+- **THEN** the skill asks the user for clarification before
+  implementing
+- **AND** does not check the task until the clarification is obtained
 
-### Requirement: Contrat du frontmatter d'une skill codev
+### Requirement: Frontmatter contract of a codev skill
 
-Toute skill livrée par codev MUST porter un frontmatter YAML valide dont le
-`name` correspond au nom du dossier `.claude/skills/<name>/`, dont le champ
-`allowed-tools` inclut au moins `Bash(codev:*)`, et dont `metadata.version`
-correspond à la version du binaire qui l'a générée.
+Every skill shipped by codev MUST carry a valid YAML frontmatter whose
+`name` matches the name of the `.claude/skills/<name>/` directory, whose
+`allowed-tools` field includes at least `Bash(codev:*)`, and whose
+`metadata.version` matches the version of the binary that generated it.
 
-#### Scenario: Frontmatter parseur par un lecteur YAML tiers
+#### Scenario: Frontmatter parsed by a third-party YAML reader
 
-- **GIVEN** une skill livrée par la version courante du binaire
-- **WHEN** son frontmatter est extrait et passé à un parseur YAML standard
-- **THEN** le parseur rend `name`, `allowed-tools` et `metadata.version`
-  sans erreur
-- **AND** `metadata.version` égale la version que le binaire annonce
+- **GIVEN** a skill shipped by the current version of the binary
+- **WHEN** its frontmatter is extracted and passed to a standard YAML parser
+- **THEN** the parser returns `name`, `allowed-tools` and `metadata.version`
+  without error
+- **AND** `metadata.version` equals the version the binary reports
 
-#### Scenario: Édition à la main détectée à l'update
+#### Scenario: Hand edit detected on update
 
-- **GIVEN** une skill dont un utilisateur a édité le corps à la main, sans
-  changer sa version
-- **WHEN** l'utilisateur relance `codev update` sans `--force`
-- **THEN** la skill n'est pas écrasée
-- **AND** le rapport de l'update la signale comme préservée
+- **GIVEN** a skill whose body a user has edited by hand, without
+  changing its version
+- **WHEN** the user runs `codev update` again without `--force`
+- **THEN** the skill is not overwritten
+- **AND** the update report flags it as preserved
 
-### Requirement: Skill `sync` merge le delta d'un change sans le déplacer
+### Requirement: The `sync` skill merges a change's delta without moving it
 
-Le catalogue de codev SHALL exposer un workflow `sync` — installé sous
-`.claude/skills/codev-sync/SKILL.md`, invocable `/codev-sync` — dont le rôle
-est de faire entrer les deltas d'un change dans les specs principales, en
-laissant le change actif à son emplacement.
+The codev catalog SHALL expose a `sync` workflow — installed under
+`.claude/skills/codev-sync/SKILL.md`, invocable as `/codev-sync` — whose
+role is to bring a change's deltas into the main specs, while leaving the
+change active where it is.
 
-#### Scenario: Sync d'un change actif unique
+#### Scenario: Sync of a single active change
 
-- **GIVEN** un projet avec un seul change actif dont la planification est
-  complète et qui porte un delta ADDED sur une capacité nouvelle
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** la skill résout implicitement le change actif
-- **AND** lance `codev sync <nom>`
-- **AND** résume à l'utilisateur les main specs créées ou mises à jour
+- **GIVEN** a project with a single active change whose planning is
+  complete and which carries an ADDED delta on a new capability
+- **WHEN** the user types `/codev-sync`
+- **THEN** the skill implicitly resolves the active change
+- **AND** runs `codev sync <name>`
+- **AND** summarizes for the user the main specs created or updated
 
-#### Scenario: Deuxième sync silencieux
+#### Scenario: Second sync is silent
 
-- **GIVEN** un change déjà synchronisé, dont aucune main spec n'a changé
-  depuis
-- **WHEN** l'utilisateur tape `/codev-sync` une seconde fois
-- **THEN** la skill rend compte qu'il n'y a rien à faire
-- **AND** ne relance pas d'écriture
+- **GIVEN** a change already synced, none of whose main specs has changed
+  since
+- **WHEN** the user types `/codev-sync` a second time
+- **THEN** the skill reports that there is nothing to do
+- **AND** does not trigger any new write
 
-#### Scenario: Sync ne déplace jamais
+#### Scenario: Sync never moves
 
-- **GIVEN** un change dont la fusion réussit
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le dossier `_codev/changes/<nom>/` existe toujours à son
-  emplacement d'origine
+- **GIVEN** a change whose merge succeeds
+- **WHEN** the user types `/codev-sync`
+- **THEN** the `_codev/changes/<name>/` directory still exists at its
+  original location
 
-#### Scenario: Sync invite à archiver après un changement
+#### Scenario: Sync suggests archiving after a change
 
-- **GIVEN** un change dont la fusion a modifié au moins une spec principale
-  (créée ou mise à jour)
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu final contient une ligne invitant à `/codev-archive`
-  pour clore le cycle, formulée sans injonction
+- **GIVEN** a change whose merge modified at least one main spec
+  (created or updated)
+- **WHEN** the user types `/codev-sync`
+- **THEN** the final output contains a line suggesting `/codev-archive`
+  to close the cycle, phrased without insistence
 
-#### Scenario: Sync sans changement n'invite pas
+#### Scenario: Sync without changes does not suggest anything
 
-- **GIVEN** un change dont la fusion est un no-op (toutes les specs
-  principales sont déjà à jour)
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu final rend compte de l'absence de changement
-- **AND** ne suggère PAS d'archiver — il n'y a rien de nouveau à propager
+- **GIVEN** a change whose merge is a no-op (all main specs are already
+  up to date)
+- **WHEN** the user types `/codev-sync`
+- **THEN** the final output reports the absence of changes
+- **AND** does NOT suggest archiving — there is nothing new to propagate
 
-### Requirement: Skill `archive` clôt un change avec pré-flight strict
+### Requirement: The `archive` skill closes a change with a strict pre-flight
 
-Le catalogue SHALL exposer un workflow `archive` — installé sous
-`.claude/skills/codev-archive/SKILL.md`, invocable `/codev-archive` — dont le
-rôle est de fusionner le delta puis de déplacer le change vers
-`_codev/changes/archive/<date>-<nom>/`. La skill MUST refuser d'agir si
-`codev archive` rapporte un pré-flight de validation en échec.
+The catalog SHALL expose an `archive` workflow — installed under
+`.claude/skills/codev-archive/SKILL.md`, invocable as `/codev-archive` —
+whose role is to merge the delta and then move the change to
+`_codev/changes/archive/<date>-<name>/`. The skill MUST refuse to act if
+`codev archive` reports a failed validation pre-flight.
 
-#### Scenario: Archive d'un change validé
+#### Scenario: Archiving a validated change
 
-- **GIVEN** un change dont la planification est complète et qui passe
+- **GIVEN** a change whose planning is complete and which passes
   `codev validate`
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill lance `codev archive <nom>`
-- **AND** résume à l'utilisateur les main specs touchées
-- **AND** nomme la destination d'archive datée
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill runs `codev archive <name>`
+- **AND** summarizes for the user the main specs touched
+- **AND** names the dated archive destination
 
-#### Scenario: Archive refusé pour erreur de validation
+#### Scenario: Archive refused because of a validation error
 
-- **GIVEN** un change dont un delta contient une erreur remontée par
-  `codev validate` (par exemple, une exigence dupliquée)
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill n'insiste pas
-- **AND** invite explicitement l'utilisateur à lancer `codev validate <nom>`
-  pour voir le détail
-- **AND** ne tente pas de deviner ou de corriger l'erreur
+- **GIVEN** a change in which a delta contains an error reported by
+  `codev validate` (for example, a duplicate requirement)
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill does not insist
+- **AND** explicitly invites the user to run `codev validate <name>`
+  to see the details
+- **AND** does not attempt to guess or fix the error
 
-### Requirement: Skills `sync` et `archive` s'appuient sur le contrat JSON
+### Requirement: The `sync` and `archive` skills rely on the JSON contract
 
-Les workflows `sync` et `archive` MUST invoquer le CLI avec `--json` et lire
-la forme structurée (`SyncReportV1`, `ArchiveReportV1`) plutôt que la sortie
-humaine — c'est le contrat public que codev garantit stable dans sa version
-courante, et c'est ce qui rend le rendu de la skill fiable.
+The `sync` and `archive` workflows MUST invoke the CLI with `--json` and
+read the structured form (`SyncReportV1`, `ArchiveReportV1`) rather than
+the human output — it is the public contract that codev guarantees stable
+within its current version, and it is what makes the skill's output
+reliable.
 
-#### Scenario: Rendu structuré des créations et mises à jour
+#### Scenario: Structured rendering of creations and updates
 
-- **GIVEN** un change dont la fusion crée une spec principale et en met une
-  autre à jour
-- **WHEN** l'utilisateur tape `/codev-sync`
-- **THEN** le rendu nomme distinctement les deux — le fichier créé et le
-  fichier mis à jour — chacun sur sa ligne
+- **GIVEN** a change whose merge creates one main spec and updates
+  another
+- **WHEN** the user types `/codev-sync`
+- **THEN** the output names the two distinctly — the created file and the
+  updated file — each on its own line
 
-#### Scenario: Refus d'archive détecté par code stable
+#### Scenario: Archive refusal detected through a stable code
 
-- **GIVEN** un change dont `codev archive --json` refuse avec le code
-  `validation_failed` dans son tableau `status`
-- **WHEN** l'utilisateur tape `/codev-archive`
-- **THEN** la skill détecte le code stable dans le JSON
-- **AND** dit exactement : « Le change a des erreurs. Lance `codev validate
-  <nom>` pour voir le détail. »
-- **AND** ne parse pas le message humain (qui peut être reformulé sans
-  préavis)
+- **GIVEN** a change for which `codev archive --json` refuses with the code
+  `validation_failed` in its `status` array
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill detects the stable code in the JSON
+- **AND** says exactly: "The change has errors. Run `codev validate
+  <name>` to see the details."
+- **AND** does not parse the human message (which may be reworded without
+  notice)
 
-### Requirement: Skills `sync` et `archive` ne demandent pas le Bash général
+### Requirement: The `sync` and `archive` skills do not request general Bash
 
-Les workflows `sync` et `archive` MUST se limiter à `Bash(codev:*)` et à des
-outils de lecture dans leur frontmatter `allowed-tools` — ils n'exécutent
-aucune commande de vérification autre que celles du binaire codev, à
-l'inverse de `apply` qui doit pouvoir lancer des tests projets.
+The `sync` and `archive` workflows MUST limit themselves to `Bash(codev:*)`
+and read-only tools in their `allowed-tools` frontmatter — they run no
+verification command other than those of the codev binary, unlike `apply`,
+which must be able to run project tests.
 
-#### Scenario: Le Bash général n'apparaît pas
+#### Scenario: General Bash does not appear
 
-- **GIVEN** la skill `sync` livrée par la version courante
-- **WHEN** son frontmatter est inspecté
-- **THEN** la chaîne `allowed-tools` ne contient pas `Bash` seul en fin de
-  liste, seulement le préfixe `Bash(codev:*)`
-- **AND** la même règle vaut pour `archive`
+- **GIVEN** the `sync` skill shipped by the current version
+- **WHEN** its frontmatter is inspected
+- **THEN** the `allowed-tools` string does not contain a bare `Bash` at the
+  end of the list, only the `Bash(codev:*)` prefix
+- **AND** the same rule holds for `archive`
 
-### Requirement: Skill `update` révise un artefact de planification
+### Requirement: The `update` skill revises a planning artifact
 
-Le catalogue de codev SHALL exposer un workflow `update` — installé sous
-`.claude/skills/codev-update/SKILL.md`, invocable `/codev-update` — dont le
-rôle est de réviser un artefact de planification déjà écrit (proposal,
-specs, design ou tasks) d'un change actif, à partir d'une description libre
-donnée par l'utilisateur.
+The codev catalog SHALL expose an `update` workflow — installed under
+`.claude/skills/codev-update/SKILL.md`, invocable as `/codev-update` —
+whose role is to revise an already written planning artifact (proposal,
+specs, design or tasks) of an active change, based on a free-form
+description given by the user.
 
-#### Scenario: Révision d'un design d'après une nouvelle contrainte
+#### Scenario: Revising a design after a new constraint
 
-- **GIVEN** un change actif dont `design.md` cite une décision technique X
-- **WHEN** l'utilisateur tape `/codev-update design "remplacer X par Y à
-  cause de la contrainte Z"`
-- **THEN** la skill lit `design.md`, applique la révision demandée, et
-  écrit la nouvelle version
-- **AND** relance `codev validate <change>` en fin de traitement
+- **GIVEN** an active change whose `design.md` cites a technical decision X
+- **WHEN** the user types `/codev-update design "replace X with Y because
+  of constraint Z"`
+- **THEN** the skill reads `design.md`, applies the requested revision, and
+  writes the new version
+- **AND** runs `codev validate <change>` again at the end
 
-#### Scenario: Résolution implicite quand un seul change est actif
+#### Scenario: Implicit resolution when a single change is active
 
-- **GIVEN** un projet avec un seul change actif
-- **WHEN** l'utilisateur tape `/codev-update proposal "réduire le
-  périmètre"`
-- **THEN** la skill résout implicitement le change actif
-- **AND** applique la révision au `proposal.md` de ce change
+- **GIVEN** a project with a single active change
+- **WHEN** the user types `/codev-update proposal "reduce the
+  scope"`
+- **THEN** the skill implicitly resolves the active change
+- **AND** applies the revision to that change's `proposal.md`
 
-#### Scenario: Ambiguïté sur le change à réviser
+#### Scenario: Ambiguity about which change to revise
 
-- **GIVEN** deux changes actifs
-- **WHEN** l'utilisateur tape `/codev-update tasks "…"` sans nommer de
+- **GIVEN** two active changes
+- **WHEN** the user types `/codev-update tasks "…"` without naming a
   change
-- **THEN** la skill demande à l'utilisateur lequel réviser, en listant les
-  deux noms
-- **AND** n'écrit rien avant d'avoir la réponse
+- **THEN** the skill asks the user which one to revise, listing both
+  names
+- **AND** writes nothing before getting the answer
 
-### Requirement: Skill `update` annonce la ripple avant d'agir
+### Requirement: The `update` skill announces the ripple effect before acting
 
-Quand la révision demandée sur un artefact rend un autre incohérent, la
-skill MUST le signaler à l'utilisateur et proposer la correction avant de
-l'écrire, plutôt que de laisser la spec principale, le design ou la liste
-de tâches en désaccord silencieux.
+When the requested revision of one artifact makes another inconsistent,
+the skill MUST report it to the user and propose the correction before
+writing it, rather than leaving the main spec, the design or the task list
+silently out of agreement.
 
-#### Scenario: Retirer une capacité du proposal ripple sur specs
+#### Scenario: Removing a capability from the proposal ripples onto specs
 
-- **GIVEN** un `proposal.md` déclarant deux capacités nouvelles `a` et
-  `b`, et un fichier `specs/b/spec.md` déjà écrit
-- **WHEN** l'utilisateur tape `/codev-update proposal "retirer la
-  capacité b — hors périmètre finalement"`
-- **THEN** la skill applique la révision au `proposal.md`
-- **AND** signale à l'utilisateur que `specs/b/spec.md` devient orphelin
-- **AND** propose de supprimer ce fichier ou d'appeler
-  `/codev-update specs …` pour l'ajuster
-- **AND** n'écrit pas cette seconde modification sans confirmation
+- **GIVEN** a `proposal.md` declaring two new capabilities `a` and
+  `b`, and an already written `specs/b/spec.md` file
+- **WHEN** the user types `/codev-update proposal "remove capability
+  b — out of scope after all"`
+- **THEN** the skill applies the revision to `proposal.md`
+- **AND** reports to the user that `specs/b/spec.md` becomes orphaned
+- **AND** offers to delete that file or to call
+  `/codev-update specs …` to adjust it
+- **AND** does not write that second modification without confirmation
 
-#### Scenario: Une révision sans ripple s'applique sans confirmation supplémentaire
+#### Scenario: A revision without ripple applies without additional confirmation
 
-- **GIVEN** une révision qui ne touche qu'à `design.md` sans conséquence
-  sur les autres artefacts
-- **WHEN** l'utilisateur tape `/codev-update design "…"`
-- **THEN** la skill applique la révision sans demander de confirmation
-  additionnelle
+- **GIVEN** a revision that touches only `design.md`, with no consequence
+  for the other artifacts
+- **WHEN** the user types `/codev-update design "…"`
+- **THEN** the skill applies the revision without asking for additional
+  confirmation
 
-### Requirement: Skill `update` reste dans la frontière planning
+### Requirement: The `update` skill stays within the planning boundary
 
-Le workflow `update` MUST se limiter aux fichiers sous
-`_codev/changes/<nom>/` et MUST NOT :
+The `update` workflow MUST limit itself to files under
+`_codev/changes/<name>/` and MUST NOT:
 
-- modifier du code du projet ;
-- créer un artefact manquant (proposal, specs, design, tasks) — c'est
-  `/codev-propose` qui le fait ;
-- toucher à un change déjà archivé sous `changes/archive/`.
+- modify project code;
+- create a missing artifact (proposal, specs, design, tasks) — that is
+  what `/codev-propose` does;
+- touch a change already archived under `changes/archive/`.
 
-#### Scenario: Refus d'écrire un artefact manquant
+#### Scenario: Refusal to write a missing artifact
 
-- **GIVEN** un change dont `design.md` n'existe pas encore
-- **WHEN** l'utilisateur tape `/codev-update design "ajouter la décision
+- **GIVEN** a change whose `design.md` does not exist yet
+- **WHEN** the user types `/codev-update design "add decision
   Z"`
-- **THEN** la skill refuse
-- **AND** invite explicitement à `/codev-propose` pour créer l'artefact
+- **THEN** the skill refuses
+- **AND** explicitly points to `/codev-propose` to create the artifact
 
-#### Scenario: Refus d'un change archivé
+#### Scenario: Refusal of an archived change
 
-- **GIVEN** un change qui vit sous `changes/archive/2026-09-09-<nom>/`
-- **WHEN** l'utilisateur tape `/codev-update proposal --change
-  <archived-nom>`
-- **THEN** la skill refuse
-- **AND** rappelle qu'un change archivé est de l'histoire ; corriger
-  demande de le dé-archiver à la main
+- **GIVEN** a change that lives under `changes/archive/2026-09-09-<name>/`
+- **WHEN** the user types `/codev-update proposal --change
+  <archived-name>`
+- **THEN** the skill refuses
+- **AND** recalls that an archived change is history; correcting it
+  requires un-archiving it by hand
 
-### Requirement: Skill `onboard` présente codev et recommande la prochaine action
+### Requirement: The `onboard` skill introduces codev and recommends the next action
 
-Le catalogue de codev SHALL exposer un workflow `onboard` — installé
-sous `.claude/skills/codev-onboard/SKILL.md`, invocable
-`/codev-onboard` — dont le rôle est de présenter codev à un utilisateur
-qui le découvre, en trois blocs :
+The codev catalog SHALL expose an `onboard` workflow — installed
+under `.claude/skills/codev-onboard/SKILL.md`, invocable as
+`/codev-onboard` — whose role is to introduce codev to a user
+discovering it, in three blocks:
 
-1. Une description courte de codev (deux ou trois phrases).
-2. L'état courant du projet — dépôt initialisé ou non, nombre de specs
-   principales, nombre de décisions locales indexées, changes actifs
-   listés par nom, et **nombre de changes archivés** (affiché
-   uniquement s'il est non nul, pour ne pas polluer la sortie sur un
-   projet neuf).
-3. La prochaine action recommandée, adaptée à l'état :
-   - `_codev/` absent → `codev init`.
-   - Projet initialisé, aucun change, **et `_codev/config.yaml`
-     thin** (aucune entrée dans `rules:`) → `/codev-configure` en
-     premier, avec une phrase qui explique le bénéfice (« Claude
-     enrichira ta config à partir du projet »), puis `/codev-propose
-     <idée>` en second.
-   - Projet initialisé, aucun change, config non-thin → **inviter à
-     lire `README.md` pour prendre le pouls du projet**, puis
-     `/codev-propose <idée>` ; `/codev-explore <sujet>` reste
-     mentionné comme alternative.
-   - Un change actif dont la planification est incomplète →
-     `/codev-propose <ce-change>` pour le poursuivre.
-   - Un change actif dont la planification est complète →
-     `/codev-apply <ce-change>`.
-   - Plusieurs changes actifs → les lister et laisser l'utilisateur
-     choisir.
+1. A short description of codev (two or three sentences).
+2. The current state of the project — repository initialized or not,
+   number of main specs, number of indexed local decisions, active
+   changes listed by name, and **number of archived changes** (shown
+   only when non-zero, so as not to clutter the output on a new
+   project).
+3. The recommended next action, adapted to the state:
+   - `_codev/` missing → `codev init`.
+   - Project initialized, no change, **and `_codev/config.yaml`
+     thin** (no entry in `rules:`) → `/codev-configure` first, with a
+     sentence explaining the benefit ("Claude will enrich the config
+     from the project"), then `/codev-propose <idea>` second.
+   - Project initialized, no change, config not thin → **invite the
+     user to read `README.md` to get a feel for the project**, then
+     `/codev-propose <idea>`; `/codev-explore <topic>` remains
+     mentioned as an alternative.
+   - An active change whose planning is incomplete →
+     `/codev-propose <that-change>` to continue it.
+   - An active change whose planning is complete →
+     `/codev-apply <that-change>`.
+   - Several active changes → list them and let the user choose.
 
-La skill MUST être **strictement en lecture** : `allowed-tools` limité
-à `Bash(codev:*), Read, Glob`. Ni `Write`, ni `Edit`, ni `Bash`
-général.
+The skill MUST be **strictly read-only**: `allowed-tools` limited
+to `Bash(codev:*), Read, Glob`. Neither `Write`, nor `Edit`, nor
+general `Bash`.
 
-#### Scenario: Rôle documenté dans le catalogue
+#### Scenario: Role documented in the catalog
 
-- **GIVEN** le catalogue de workflows codev
-- **WHEN** on résout le workflow `onboard`
-- **THEN** son entrée existe (`find("onboard").is_some()`)
-- **AND** son `allowed_tools` vaut exactement
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `onboard` workflow is resolved
+- **THEN** its entry exists (`find("onboard").is_some()`)
+- **AND** its `allowed_tools` is exactly
   `"Bash(codev:*), Read, Glob"`
-- **AND** son `allowed_tools` ne contient PAS `Bash` général (règle
-  invariante : seule `apply` en dispose)
-- **AND** son `body` cite les trois blocs (description, état, action
-  recommandée)
+- **AND** its `allowed_tools` does NOT contain general `Bash` (invariant
+  rule: only `apply` has it)
+- **AND** its `body` cites the three blocks (description, state,
+  recommended action)
 
-#### Scenario: Skill installée par un `codev update`
+#### Scenario: Skill installed by a `codev update`
 
-- **GIVEN** un projet dont le `config.yaml` a `workflows: [propose,
+- **GIVEN** a project whose `config.yaml` has `workflows: [propose,
   explore, apply, sync, archive, update, onboard]`
-- **WHEN** l'utilisateur lance `codev update`
-- **THEN** le fichier `.claude/skills/codev-onboard/SKILL.md` est
-  créé
-- **AND** son frontmatter YAML est valide et porte la description
-  attendue
+- **WHEN** the user runs `codev update`
+- **THEN** the file `.claude/skills/codev-onboard/SKILL.md` is
+  created
+- **AND** its YAML frontmatter is valid and carries the expected
+  description
 
-#### Scenario: Bloc « ici, tu as » mentionne les archivés quand il y en a
+#### Scenario: The "here you have" block mentions archived changes when there are some
 
-- **GIVEN** un projet contenant au moins un change dans
+- **GIVEN** a project containing at least one change in
   `_codev/changes/archive/`
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « ici, tu as » contient une ligne indiquant le
-  nombre de changes archivés
-- **AND** ce nombre correspond au nombre de dossiers de la forme
-  `<date>-<nom>/` sous `_codev/changes/archive/`
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "here you have" block contains a line stating the
+  number of archived changes
+- **AND** that number matches the number of directories of the form
+  `<date>-<name>/` under `_codev/changes/archive/`
 
-#### Scenario: Bloc « ici, tu as » n'ajoute pas de ligne archivée sur projet neuf
+#### Scenario: The "here you have" block adds no archived line on a new project
 
-- **GIVEN** un projet fraîchement initialisé, sans aucun change
-  archivé
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « ici, tu as » **n'affiche pas** de ligne
-  « changes archivés » — la sortie reste courte et non polluée
+- **GIVEN** a freshly initialized project, with no archived
+  change
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "here you have" block **does not show** an
+  "archived changes" line — the output stays short and uncluttered
 
-#### Scenario: Recommandation configure quand la config n'a pas de règles
+#### Scenario: Configure recommendation when the config has no rules
 
-- **GIVEN** un projet initialisé sans change actif, dont le
-  `_codev/config.yaml` n'a aucune entrée dans `rules:`
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « la suite » cite `/codev-configure` en premier,
-  avec une phrase sur le bénéfice attendu
-- **AND** mentionne `/codev-propose <idée>` en second
+- **GIVEN** an initialized project with no active change, whose
+  `_codev/config.yaml` has no entry in `rules:`
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "what's next" block cites `/codev-configure` first,
+  with a sentence about the expected benefit
+- **AND** mentions `/codev-propose <idea>` second
 
-#### Scenario: Recommandation par défaut cite README.md quand la config a des règles
+#### Scenario: Default recommendation cites README.md when the config has rules
 
-- **GIVEN** un projet initialisé sans change actif dont le
-  `_codev/config.yaml` porte au moins une entrée dans `rules:`
-- **WHEN** l'utilisateur lance `/codev-onboard`
-- **THEN** le bloc « la suite » invite à lire `README.md` avant de
-  créer un change
-- **AND** cite en actionable `/codev-propose <une-idée>` et mentionne
-  `/codev-explore <sujet>` comme alternative
-### Requirement: `onboard` fait partie du catalogue par défaut
+- **GIVEN** an initialized project with no active change whose
+  `_codev/config.yaml` carries at least one entry in `rules:`
+- **WHEN** the user runs `/codev-onboard`
+- **THEN** the "what's next" block invites the user to read `README.md`
+  before creating a change
+- **AND** cites `/codev-propose <an-idea>` as the actionable step and
+  mentions `/codev-explore <topic>` as an alternative
 
-Le tableau `DEFAULT_WORKFLOWS` de `codev-agents::workflows` MUST
-contenir la **liste complète des 8 workflows** de codev : `propose`,
-`explore`, `onboard`, `apply`, `sync`, `archive`, `update` et
-`configure`. Un utilisateur qui lance `codev init --yes` (ou depuis un
-pipe non interactif) sur un projet neuf, sans clé `workflows:` dans
-son `config.yaml`, obtient donc toutes les skills disponibles
-immédiatement — y compris `configure`, la porte d'entrée
-recommandée après l'init.
+### Requirement: `onboard` is part of the default catalog
 
-Un projet qui veut restreindre le catalogue MUST déclarer une clé
-`workflows:` explicite avec un sous-ensemble choisi — c'est la voie
-opt-out, plutôt que l'ancienne voie opt-in.
+The `DEFAULT_WORKFLOWS` array of `codev-agents::workflows` MUST
+contain the **complete list of the 8 codev workflows**: `propose`,
+`explore`, `onboard`, `apply`, `sync`, `archive`, `update` and
+`configure`. A user who runs `codev init --yes` (or from a
+non-interactive pipe) on a new project, without a `workflows:` key in
+their `config.yaml`, therefore gets all available skills
+immediately — including `configure`, the recommended entry point
+after init.
 
-Cette bascule règle un problème de découverte : sous l'ancien défaut
-(3 workflows), un utilisateur qui tapait `/codev-apply` après
-`/codev-propose` ne trouvait pas la skill et croyait qu'elle
-n'existait pas.
+A project that wants to restrict the catalog MUST declare an explicit
+`workflows:` key with a chosen subset — this is the opt-out path,
+instead of the former opt-in path.
 
-#### Scenario: Catalogue par défaut inclut les 8 workflows
+This switch solves a discoverability problem: under the former default
+(3 workflows), a user who typed `/codev-apply` after
+`/codev-propose` could not find the skill and assumed it did not
+exist.
 
-- **GIVEN** un projet dont le `config.yaml` n'a pas de clé
-  `workflows:`
-- **WHEN** `select(None)` est appelé sur le catalogue
-- **THEN** la liste des `id` retournés est exactement
+#### Scenario: The default catalog includes the 8 workflows
+
+- **GIVEN** a project whose `config.yaml` has no `workflows:`
+  key
+- **WHEN** `select(None)` is called on the catalog
+- **THEN** the list of returned `id`s is exactly
   `["propose", "explore", "onboard", "apply", "sync", "archive", "update", "configure"]`
-- **AND** aucun warning n'est émis
+- **AND** no warning is emitted
 
-#### Scenario: Restriction opt-out via workflows explicite
+#### Scenario: Opt-out restriction through explicit workflows
 
-- **GIVEN** un projet dont le `config.yaml` contient
+- **GIVEN** a project whose `config.yaml` contains
   `workflows: [propose, explore, onboard]`
-- **WHEN** `select` est appelé avec cette liste
-- **THEN** seules ces trois skills sont retournées
-- **AND** `apply`, `sync`, `archive`, `update`, `configure` ne sont
-  **pas** installés
-### Requirement: Skill `propose` détecte les tickets Jira mentionnés et enrichit le proposal
+- **WHEN** `select` is called with that list
+- **THEN** only those three skills are returned
+- **AND** `apply`, `sync`, `archive`, `update`, `configure` are
+  **not** installed
 
-Le workflow `propose` du catalogue SHALL, en amont de la résolution du
-nom de change, scanner le prompt de l'utilisateur pour repérer un
-identifiant de ticket qui matche le pattern régulier `[A-Z]{2,}-\d+`
-(par exemple `JVS-1234`, `PROJ-42`).
+### Requirement: The `propose` skill detects mentioned Jira tickets and enriches the proposal
 
-Sur détection d'au moins un ticket, la skill MUST :
+The catalog's `propose` workflow SHALL, before resolving the change
+name, scan the user's prompt for a ticket identifier matching the
+regular expression `[A-Z]{2,}-\d+` (for example `PROJ-123`,
+`ABC-42`).
 
-1. **Tenter d'appeler** l'outil MCP dont le nom est déclaré côté
-   projet via `_codev/config.yaml.mcp.jira_tool`. Ce nom est injecté
-   au moment de l'installation de la skill dans le frontmatter
-   `allowed-tools` et dans le body — l'utilisateur/organisation
-   choisit **son** MCP (`mcp__claude_ai_Atlassian__getJiraIssue`,
-   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`, ou un autre) sans
-   que ça touche au code source de codev.
-2. **Un seul appel par invocation**, sur l'identifiant du ticket
-   **le plus tôt mentionné dans le prompt** ; les autres sont juste
-   nommés.
-3. **En cas de succès** : injecter le contenu (titre, description,
-   status, type) dans le contexte de rédaction, et faire figurer le
-   ticket en tête du `proposal.md` sous forme d'une ligne citation
-   `> Source : ticket **<ID>** — « <titre> » (<status>)`.
-4. **En cas d'échec — outil MCP indisponible dans la session ou
-   non configuré côté projet** : afficher un message informatif à
-   l'utilisateur, puis continuer le flow habituel sans le contenu
-   du ticket. Le proposal cite quand même le ticket en tête (« Source
-   : ticket **<ID>** — contenu non récupéré »).
-5. **En l'absence de pattern** : comportement bit-identique à
-   aujourd'hui — aucun appel MCP, aucun message.
+When at least one ticket is detected, the skill MUST:
 
-Le CATALOG des workflows MUST utiliser un placeholder textuel
-`{{JIRA_MCP_TOOL}}` dans `allowed_tools` et dans le body du
-workflow `propose`, en lieu et place d'un nom de MCP hardcodé. Le
-placeholder est substitué au moment du rendering du frontmatter
-d'installation par `ClaudeCode::render`.
+1. **Attempt to call** the MCP tool whose name is declared on the
+   project side via `_codev/config.yaml.mcp.jira_tool`. This name is
+   injected when the skill is installed, into the `allowed-tools`
+   frontmatter and into the body — the user/organization chooses
+   **its own** MCP (`mcp__claude_ai_Atlassian__getJiraIssue`,
+   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`, or another) without
+   touching codev's source code.
+2. **A single call per invocation**, on the ticket identifier
+   **mentioned earliest in the prompt**; the others are merely
+   named.
+3. **On success**: inject the content (title, description, status,
+   type) into the drafting context, and place the ticket at the top of
+   `proposal.md` as a quote line
+   `> Source: ticket **<ID>** — "<title>" (<status>)`.
+4. **On failure — MCP tool unavailable in the session or not
+   configured on the project side**: display an informational message
+   to the user, then continue the usual flow without the ticket's
+   content. The proposal still cites the ticket at the top
+   ("Source: ticket **<ID>** — content not retrieved").
+5. **When no pattern is found**: behavior bit-for-bit identical to
+   today — no MCP call, no message.
 
-Quand `_codev/config.yaml.mcp.jira_tool` est **absent** ou vide, le
-rendering MUST :
+The workflow CATALOG MUST use a textual placeholder
+`{{JIRA_MCP_TOOL}}` in `allowed_tools` and in the body of the
+`propose` workflow, instead of a hardcoded MCP name. The placeholder
+is substituted when the installation frontmatter is rendered by
+`ClaudeCode::render`.
 
-- retirer proprement `{{JIRA_MCP_TOOL}}` de `allowed_tools` **et** la
-  virgule qui le précède (pour ne pas laisser un `allowed-tools`
-  malformé qui se terminerait par `", "`) ;
-- remplacer chaque occurrence dans le body par la chaîne
-  `(MCP Jira non configuré)` — la skill reste installée et
-  fonctionnelle sur les autres aspects, mais n'appelle plus de MCP.
+When `_codev/config.yaml.mcp.jira_tool` is **absent** or empty,
+rendering MUST:
 
-#### Scenario: Configuration `mcp.jira_tool` présente → skill fonctionnelle
+- cleanly remove `{{JIRA_MCP_TOOL}}` from `allowed_tools` **and** the
+  comma preceding it (so as not to leave a malformed `allowed-tools`
+  ending with `", "`);
+- replace every occurrence in the body with the string
+  `(Jira MCP not configured)` — the skill remains installed and
+  functional in every other respect, but no longer calls any MCP.
 
-- **GIVEN** un projet dont `_codev/config.yaml` déclare
+#### Scenario: `mcp.jira_tool` configuration present → functional skill
+
+- **GIVEN** a project whose `_codev/config.yaml` declares
   `mcp: { jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue }`
-- **WHEN** l'utilisateur lance `codev update`
-- **THEN** le fichier `.claude/skills/codev-propose/SKILL.md` porte
+- **WHEN** the user runs `codev update`
+- **THEN** the file `.claude/skills/codev-propose/SKILL.md` carries
   `allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`
-- **AND** le body de la skill cite
-  `mcp__claude_ai_Atlassian_Rovo__getJiraIssue` là où le CATALOG
-  contient `{{JIRA_MCP_TOOL}}`
-- **AND** aucun `{{…}}` ne subsiste dans le fichier installé
+- **AND** the skill body cites
+  `mcp__claude_ai_Atlassian_Rovo__getJiraIssue` wherever the CATALOG
+  contains `{{JIRA_MCP_TOOL}}`
+- **AND** no `{{…}}` remains in the installed file
 
-#### Scenario: Configuration `mcp.jira_tool` absente → fallback propre
+#### Scenario: `mcp.jira_tool` configuration absent → clean fallback
 
-- **GIVEN** un projet dont `_codev/config.yaml` n'a pas de bloc `mcp:`
-- **WHEN** l'utilisateur lance `codev update`
-- **THEN** le fichier `.claude/skills/codev-propose/SKILL.md` porte
+- **GIVEN** a project whose `_codev/config.yaml` has no `mcp:` block
+- **WHEN** the user runs `codev update`
+- **THEN** the file `.claude/skills/codev-propose/SKILL.md` carries
   `allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep"`
-  (sans le placeholder et sans virgule finale)
-- **AND** le body remplace `{{JIRA_MCP_TOOL}}` par la mention
-  `(MCP Jira non configuré)`
-- **AND** aucun `{{…}}` ne subsiste dans le fichier installé
+  (without the placeholder and without a trailing comma)
+- **AND** the body replaces `{{JIRA_MCP_TOOL}}` with the mention
+  `(Jira MCP not configured)`
+- **AND** no `{{…}}` remains in the installed file
 
-#### Scenario: Ticket mentionné, MCP configuré et disponible → ticket cité en tête
+#### Scenario: Ticket mentioned, MCP configured and available → ticket cited at the top
 
-- **GIVEN** un utilisateur tape `/codev-propose ajouter JWT pour JVS-1234`
-- **AND** le projet a configuré `mcp.jira_tool:
+- **GIVEN** a user types `/codev-propose add JWT for PROJ-123`
+- **AND** the project has configured `mcp.jira_tool:
   mcp__claude_ai_Atlassian_Rovo__getJiraIssue`
-- **AND** ce MCP est disponible dans la session Claude Code
-- **AND** le ticket `JVS-1234` existe
-- **WHEN** la skill s'exécute
-- **THEN** un appel `mcp__claude_ai_Atlassian_Rovo__getJiraIssue({issueIdOrKey: "JVS-1234"})`
-  est émis
-- **AND** le `proposal.md` du change créé contient en tête une ligne
-  `> Source : ticket **JVS-1234** — « <titre> » (<status>)`
+- **AND** that MCP is available in the Claude Code session
+- **AND** the ticket `PROJ-123` exists
+- **WHEN** the skill runs
+- **THEN** a call `mcp__claude_ai_Atlassian_Rovo__getJiraIssue({issueIdOrKey: "PROJ-123"})`
+  is emitted
+- **AND** the `proposal.md` of the created change contains at the top a line
+  `> Source: ticket **PROJ-123** — "<title>" (<status>)`
 
-#### Scenario: Ticket mentionné, MCP absent → proposal quand même
+#### Scenario: Ticket mentioned, MCP absent → proposal anyway
 
-- **GIVEN** un utilisateur tape `/codev-propose corriger JVS-1234`
-- **AND** aucun MCP Jira n'est configuré (`mcp.jira_tool` absent ou
-  outil déclaré indisponible)
-- **WHEN** la skill s'exécute
-- **THEN** la skill affiche un message informatif nommant
-  `JVS-1234` et indiquant que le MCP Jira n'est pas actif
-- **AND** le proposal est créé quand même, en tête duquel
-  `JVS-1234` est mentionné avec « contenu non récupéré »
+- **GIVEN** a user types `/codev-propose fix PROJ-123`
+- **AND** no Jira MCP is configured (`mcp.jira_tool` absent or the
+  declared tool unavailable)
+- **WHEN** the skill runs
+- **THEN** the skill displays an informational message naming
+  `PROJ-123` and stating that the Jira MCP is not active
+- **AND** the proposal is created anyway, with `PROJ-123` mentioned at
+  the top along with "content not retrieved"
 
-#### Scenario: Aucun ticket mentionné → comportement inchangé
+#### Scenario: No ticket mentioned → unchanged behavior
 
-- **GIVEN** un utilisateur tape `/codev-propose ajouter
-  l'authentification`
-- **WHEN** la skill s'exécute
-- **THEN** aucun appel MCP n'est émis
-- **AND** aucun message relatif à un ticket n'apparaît
-- **AND** le proposal est rédigé exactement comme avant ce lot
+- **GIVEN** a user types `/codev-propose add
+  authentication`
+- **WHEN** the skill runs
+- **THEN** no MCP call is emitted
+- **AND** no ticket-related message appears
+- **AND** the proposal is drafted exactly as before this batch of changes
