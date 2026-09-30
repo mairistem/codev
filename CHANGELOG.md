@@ -67,6 +67,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `codev init` counts the generated `config.yaml` among the files it created.
 - `codev docs --print` no longer prints an error when its output is piped to a
   command that exits early, such as `head`.
+- Decisions saved with Windows (CRLF) line endings are parsed, and changing
+  their status keeps their sealed body intact.
 
 ## [0.3.2] - 2026-09-28
 
