@@ -1,143 +1,161 @@
 ---
 name: codev-onboard
-description: "Présenter codev à un utilisateur qui le découvre : ce que fait l'outil, l'état actuel du projet, et la prochaine action recommandée. Strictement en lecture — ne modifie ni ne crée rien."
+description: "Introduce codev to a user discovering it: what the tool does, the current state of the project, and the recommended next action. Strictly read-only — modifies and creates nothing."
 allowed-tools: "Bash(codev:*), Read, Glob"
 license: MIT
 metadata:
   generator: codev
-  version: "0.1.0"
+  version: "0.3.2"
 ---
 
-Présenter codev à un utilisateur qui le découvre : ce que fait l'outil,
-l'état actuel du projet, et la prochaine action recommandée.
+Introduce codev to a user discovering it: what the tool does, the current
+state of the project, and the recommended next action.
 
-**Frontière stricte lecture.** Cette skill **ne modifie rien**. Elle ne
-crée pas de change, ne lance pas `codev init` à la place de
-l'utilisateur, ne coche pas de tâche. Elle **guide** — l'utilisateur
-agit.
+**Strict read-only boundary.** This skill **modifies nothing**. It does not
+create a change, does not run `codev init` on the user's behalf, does not
+check off a task. It **guides** — the user acts.
 
 ---
 
-## Entrée
+## Input
 
-Rien. La skill s'invoque sans argument. Si l'utilisateur passe une
-question, elle informe sur codev, elle ne l'implémente pas.
+Nothing. The skill is invoked without arguments. If the user asks a
+question, it informs about codev; it does not implement anything.
 
-## Étapes
+## Steps
 
-### 1. Décrire codev (bloc 1 — « codev, c'est »)
+### 1. Describe codev (block 1 — "codev is")
 
-Trois phrases exactement, à afficher au format markdown :
+Exactly three sentences, displayed as markdown:
 
-> **codev** est un outil de planification versionnée pour un projet
-> logiciel : chaque évolution passe par un cycle **propose → apply →
-> archive** documenté dans `_codev/`. Chaque étape est pilotée par une
-> skill Claude Code (`/codev-<étape>`), et le CLI `codev` fait le
-> travail atomique en dessous. Ta planification vit dans le dépôt,
-> aux côtés du code.
+> **codev** is a versioned planning tool for software projects: every
+> change goes through a **propose → apply → archive** cycle documented
+> in `_codev/`. Each step is driven by a Claude Code skill
+> (`/codev-<step>`), and the `codev` CLI does the atomic work
+> underneath. Your planning lives in the repository, alongside the
+> code.
 
-### 2. Lire l'état du projet (bloc 2 — « ici, tu as »)
+### 2. Read the project state (block 2 — "here you have")
 
-**Vérifie d'abord si le dépôt est initialisé** :
+**First check whether the repository is initialized**:
 
 ```bash
 codev list
 ```
 
-Cette commande liste les changes actifs. Trois cas :
+This command lists the active changes. Three cases:
 
-- **Succès** → le dépôt est initialisé. Continue.
-- **Échec avec code `no_codev_root`** → aucun `_codev/` sous le
-  dossier courant. Bascule directement à l'étape 3, branche « `codev
-  init` ».
-- **Autre échec** → relaie le message tel quel et arrête-toi.
+- **Success** → the repository is initialized. Continue.
+- **Failure with code `no_codev_root`** → no `_codev/` under the
+  current folder. Go straight to step 3, "`codev init`" branch.
+- **Other failure** → relay the message as is and stop.
 
-Si le dépôt est initialisé, complète l'état :
+If the repository is initialized, complete the picture:
 
 ```bash
-codev list --specs           # capacités déjà spécifiées
-codev decision list          # décisions locales et héritées
-ls _codev/changes/archive/   # nombre de changes archivés (facultatif)
+codev list --specs           # capabilities already specified
+codev decision list          # local and inherited decisions
+ls _codev/changes/archive/   # number of archived changes (optional)
 ```
 
-Compte les entrées de la forme `<date>-<nom>/` dans
-`_codev/changes/archive/` (ignore `.gitkeep` et les fichiers cachés).
+Count the entries of the form `<date>-<name>/` in
+`_codev/changes/archive/` (ignore `.gitkeep` and hidden files).
 
-Affiche un résumé compact — **compte, ne liste pas exhaustivement** :
+Display a compact summary — **count, do not list exhaustively**:
 
-> Ici, tu as :
-> - N spec(s) principale(s) : `<liste des ids>` (jusqu'à 5 ; sinon
->   « et K autres »)
-> - M décision(s) locale(s) en vigueur, P héritée(s)
-> - Q change(s) actif(s) : `<liste des noms>`
-> - R change(s) archivé(s) *(**cette ligne uniquement si R > 0**, pour
->   ne pas polluer un projet neuf)*
+> Here you have:
+> - N main spec(s): `<list of ids>` (up to 5; otherwise
+>   "and K more")
+> - M local decision(s) in effect, P inherited
+> - Q active change(s): `<list of names>`
+> - R archived change(s) *(**this line only if R > 0**, so as not to
+>   clutter a new project)*
 
-Un projet fraîchement initialisé (aucune spec, aucun change, aucune
-décision) est un cas normal — dis-le : « projet fraîchement
-initialisé, prêt pour ton premier change ».
+A freshly initialized project (no spec, no change, no decision) is a
+normal case — say so: "freshly initialized project, ready for your
+first change".
 
-### 3. Recommander la prochaine action (bloc 3 — « la suite »)
+### 3. Recommend the next action (block 3 — "what's next")
 
-Résolution ordonnée, du plus contraignant au plus général. **Un seul
-cas s'applique** :
+Ordered resolution, from the most constraining to the most general.
+**Exactly one case applies**:
 
-| État | Recommandation |
+| State | Recommendation |
 |---|---|
-| `_codev/` absent | `codev init` |
-| Aucun change actif | **Lire `README.md`** pour prendre le pouls, puis `/codev-propose <une-idée>` ; `/codev-explore <sujet>` en alternative |
-| Un seul change actif, planification incomplète | `/codev-propose <ce-nom>` pour poursuivre |
-| Un seul change actif, planification complète | `/codev-apply <ce-nom>` |
-| Plusieurs changes actifs | Les lister ; laisser l'utilisateur choisir la skill |
+| `_codev/` missing | `codev init` |
+| No active change AND thin config (no entry under `rules:`) | **`/codev-configure` first** — Claude will enrich the config from the project; then `/codev-propose <an-idea>` |
+| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then `/codev-propose <an-idea>`; `/codev-explore <topic>` as an alternative |
+| A single active change, planning incomplete | `/codev-propose <that-name>` to continue |
+| A single active change, planning complete | `/codev-apply <that-name>` |
+| Several active changes | List them; let the user choose the skill |
 
-Comment déterminer si la planification d'un change est complète :
+To assess whether the config is "thin", read `_codev/config.yaml` and
+look at the `rules:` key:
+
+- **`rules:` missing or empty** → thin. `/codev-configure` really
+  has something to contribute.
+- **`rules:` has at least one entry** → non-thin. The user has
+  already written their rules; the hint no longer applies.
+
+The `context:` field does **not** factor into the decision. It is
+usually filled by the `codev init` probe from the detected manifests,
+which makes its length meaningless — a TypeScript project with several
+dependencies has a long context without the user having written
+anything.
+
+How to determine whether a change's planning is complete:
 
 ```bash
-codev status --change "<nom>"
+codev status --change "<name>"
 ```
 
-La dernière ligne dit « Planification : N/N artefacts » et « La
-planification est complète. » quand tout est prêt.
+The last lines say "Planning: N/N artifacts" and "Planning is
+complete." when everything is ready.
 
-**Rends la suggestion actionnable** : cite la commande exacte à taper,
-pas juste « lance `codev-propose` ». Exemple utile sur un projet sans
-change actif :
+**Make the suggestion actionable**: quote the exact command to type,
+not just "run `codev-propose`". A useful example on a new project whose
+config is thin:
 
-> **La suite** : commence par lire `README.md` pour prendre le pouls
-> du projet. Puis, quand une idée émerge, tape
-> `/codev-propose <une-idée>`. Alternative si tu as une question mais
-> pas encore d'idée d'action : `/codev-explore <sujet>`.
+> **What's next**: your config is sparse. Start with
+> `/codev-configure` — Claude will read the project (README, docs,
+> a sample of the code) and enrich `_codev/config.yaml`. Then type
+> `/codev-propose <an-idea>` for your first change.
 
-Et sur un change actif :
+On a project whose config is already well filled in:
 
-> **La suite** : tu peux taper `/codev-propose add-user-auth` pour
-> planifier ton premier change.
+> **What's next**: start by reading `README.md` to get a feel for the
+> project. Then, when an idea comes up, type
+> `/codev-propose <an-idea>`. Alternative if you have a question but
+> no idea for an action yet: `/codev-explore <topic>`.
 
-Un cas de non-lieu : si l'utilisateur a déjà tapé `/codev-onboard`
-pour la Nième fois, l'état est stable, tu redis la même chose sans
-t'en excuser — le rôle de la skill est de rester **prévisible**.
+And with an active change:
 
-## Sortie
+> **What's next**: you can type `/codev-propose add-user-auth` to
+> plan your first change.
 
-Les **trois blocs** dans l'ordre : description, état, suite. Séparés
-par une ligne blanche. Pas d'introduction (« Voici… »), pas de
-conclusion (« J'espère que… »). Le lecteur veut la carte du terrain,
-pas un tour guidé.
+A non-case: if the user has already typed `/codev-onboard` for the
+Nth time, the state is stable; say the same thing again without
+apologizing — the skill's role is to stay **predictable**.
 
-## Garde-fous
+## Output
 
-- **Aucune écriture** — ni fichier, ni skill, ni change, ni décision.
-  `allowed-tools` ne contient que `Bash(codev:*), Read, Glob`.
-- **Pas de `codev init` lancé** — si le dépôt n'est pas initialisé,
-  affiche la commande, laisse l'utilisateur la taper.
-- **Pas de sur-détail** — nombres, pas listes exhaustives. Un
-  utilisateur qui veut le détail lance `/codev-explore` ou les
-  commandes `codev decision list` / `codev list --specs`.
-- **Pas de suggestion d'une skill absente** — ne recommande
-  `/codev-<truc>` que si le workflow existe dans le catalogue
-  installé. En pratique, cette skill est toujours livrée avec les
-  workflows du catalogue par défaut ; les opt-in (`apply`, `sync`,
-  `archive`, `update`) peuvent ne pas être installés. Si tu recommandes
-  `/codev-apply` alors qu'il n'est pas installé, l'utilisateur ne
-  trouvera pas la skill — vérifie avant en listant les skills de
-  `.claude/skills/`.
+The **three blocks** in order: description, state, what's next. Separated
+by a blank line. No introduction ("Here is…"), no conclusion ("I hope
+that…"). The reader wants the map of the terrain, not a guided tour.
+
+## Guardrails
+
+- **No writing** — no file, no skill, no change, no decision.
+  `allowed-tools` contains only `Bash(codev:*), Read, Glob`.
+- **Never run `codev init`** — if the repository is not initialized,
+  display the command and let the user type it.
+- **No excess detail** — numbers, not exhaustive lists. A user who
+  wants the details runs `/codev-explore` or the commands
+  `codev decision list` / `codev list --specs`.
+- **Never suggest a missing skill** — only recommend
+  `/codev-<something>` if the workflow exists in the installed
+  catalog. In practice, this skill always ships with the workflows of
+  the default catalog; the opt-in ones (`apply`, `sync`, `archive`,
+  `update`) may not be installed. If you recommend `/codev-apply`
+  when it is not installed, the user will not find the skill — check
+  first by listing the skills in `.claude/skills/`.

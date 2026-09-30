@@ -1,156 +1,159 @@
 ---
 name: codev-update
-description: "Réviser un artefact de planification déjà écrit d'un change codev actif — proposal, specs, design ou tasks — en préservant la cohérence avec les autres artefacts. Ne modifie aucun code du projet, ne crée aucun artefact manquant, ne touche à aucun change archivé."
+description: "Revise an already written planning artifact of an active codev change — proposal, specs, design or tasks — while keeping it consistent with the other artifacts. Modifies no project code, creates no missing artifact, touches no archived change."
 allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep"
 license: MIT
 metadata:
   generator: codev
-  version: "0.1.0"
+  version: "0.3.2"
 ---
 
-Réviser un artefact de planification déjà écrit d'un change codev actif —
-proposal, specs, design ou tasks — en préservant la cohérence avec les
-autres artefacts.
+Revise an already written planning artifact of an active codev change —
+proposal, specs, design or tasks — while keeping it consistent with the
+other artifacts.
 
-**Frontière stricte.** Cette skill lit et écrit **uniquement** des
-fichiers sous `_codev/changes/<nom>/`. Elle **ne modifie pas** de code du
-projet — ça, c'est `/codev-apply` après révision. Elle **ne crée pas**
-d'artefact manquant — ça, c'est `/codev-propose`. Elle **ne touche pas**
-à un change déjà archivé — un archivé est de l'histoire.
+**Strict boundary.** This skill reads and writes **only** files under
+`_codev/changes/<name>/`. It does **not modify** project code — that is
+`/codev-apply`'s job after the revision. It does **not create** a missing
+artifact — that is `/codev-propose`'s job. It does **not touch** an
+already archived change — an archived change is history.
 
 ---
 
-## Entrée
+## Input
 
-Deux morceaux, dans cet ordre :
+Two pieces, in this order:
 
-1. L'identifiant de l'artefact à réviser — `proposal`, `specs`, `design`
-   ou `tasks`. Si l'utilisateur ne le nomme pas, demande explicitement
-   lequel — ne devine pas.
-2. Une description libre de la révision demandée.
+1. The identifier of the artifact to revise — `proposal`, `specs`, `design`
+   or `tasks`. If the user does not name it, ask explicitly which one — do
+   not guess.
+2. A free-form description of the requested revision.
 
-Optionnel : `--change <nom>` si plusieurs changes sont actifs.
+Optional: `--change <name>` if several changes are active.
 
-## Étapes
+## Steps
 
-### 1. Résoudre le change et vérifier son état
+### 1. Resolve the change and check its state
 
 ```bash
 codev list
 ```
 
-- Un seul change actif → c'est celui-là.
-- Plusieurs → si l'utilisateur n'a pas nommé, demande.
-- Aucun → dis-le et arrête-toi.
+- A single active change → use it.
+- Several → if the user did not name one, ask.
+- None → say so and stop.
 
-Si le nom donné ne figure pas dans `codev list` — parce qu'il est
-archivé, ou qu'il n'existe pas — **refuse**. Rappelle qu'un archivé est
-figé ; corriger demande de le dé-archiver à la main.
+If the given name does not appear in `codev list` — because it is archived,
+or does not exist — **refuse**. Remind the user that an archived change is
+frozen; correcting it requires un-archiving it by hand.
 
-Puis :
-
-```bash
-codev status --change "<nom>" --json
-```
-
-Repère l'artefact demandé dans `artifacts[]` :
-
-- statut `done` → OK, on peut réviser.
-- statut `ready` ou `blocked` → l'artefact n'existe pas encore.
-  **Refuse** et invite explicitement à `/codev-propose` (ou
-  `/codev-continue` en profil étendu) pour le créer.
-- statut `skipped` → **refuse** et explique que cet artefact est
-  neutralisé par `skip_specs` dans le `change.yaml`.
-
-### 2. Lire l'existant
-
-Lis, depuis le disque (jamais depuis la conversation) :
-
-- l'artefact à réviser lui-même ;
-- les autres artefacts du change qui pourraient être impactés.
-
-Cette lecture sert au repérage du ripple à l'étape 4 — c'est pour ça
-qu'on la fait **avant** d'écrire, pas après.
-
-### 3. Appliquer la révision
-
-Deux formes selon l'ampleur :
-
-- **Modification ciblée** — un paragraphe à ajuster, une décision à
-  remplacer, une tâche à reformuler → `Edit` avec un `old_string` précis.
-- **Réécriture complète** — un artefact qui doit être largement refait →
-  `Write`, mais garde en tête que les autres artefacts vont s'appuyer sur
-  sa nouvelle forme.
-
-Reste dans le contrat de l'artefact — sections attendues, format des
-scénarios, cases à cocher. Le changement porte sur le **contenu**, pas
-sur la structure.
-
-### 4. Détecter et signaler le ripple
-
-Après l'écriture, compare l'état du change avec ce qui a changé :
-
-- **`proposal` révisé** :
-  - une capacité listée dans les « Nouvelles capacités » ou « Capacités
-    modifiées » qui disparaît → nomme le fichier
-    `specs/<capa>/spec.md` qui devient orphelin ;
-  - une nouvelle capacité qui apparaît → nomme le fichier `specs/<capa>/`
-    qui manque désormais.
-- **`specs` révisé** :
-  - une exigence supprimée qui était citée par une tâche → nomme la
-    tâche concernée dans `tasks.md` ;
-  - un nouveau nom de scénario différent — un `tasks.md` qui citait
-    l'ancien nom est signalé.
-- **`design` révisé** :
-  - une décision citée qui disparaît d'un côté et une contrainte de
-    l'autre → signale, mais laisse l'utilisateur trancher (`codev
-    decision list` peut aider).
-- **`tasks` révisé** :
-  - une tâche qui contredit une exigence de `specs/` → nomme
-    l'exigence en cause.
-
-**Signale**, **propose** l'action suivante (souvent : « lance
-`/codev-update specs …` » ou « supprime `_codev/changes/<nom>/specs/<capa>/spec.md` »),
-mais **n'agis pas** sans confirmation explicite.
-
-### 5. Garde-fou final — `codev validate`
-
-Quel que soit le ripple, à la fin, lance :
+Then:
 
 ```bash
-codev validate "<nom>"
+codev status --change "<name>" --json
 ```
 
-Relaye le rapport tel quel. Si `validate` remonte des erreurs, cite les
-codes stables ; ne réécris pas les messages humains.
+Find the requested artifact in `artifacts[]`:
 
-### 6. Résumé final
+- status `done` → OK, it can be revised.
+- status `ready` or `blocked` → the artifact does not exist yet.
+  **Refuse** and explicitly point to `/codev-propose` (or
+  `/codev-continue` in the extended profile) to create it.
+- status `skipped` → **refuse** and explain that this artifact is
+  disabled by `skip_specs` in `change.yaml`.
 
-Une ou deux phrases :
+### 2. Read what exists
 
-- le ou les fichiers touchés ;
-- le verdict de `codev validate` ;
-- la prochaine action recommandée — souvent `/codev-apply` (si la
-  révision affecte l'implémentation) ou `/codev-archive` (si l'écart
-  reconnu est terminé).
+Read, from disk (never from the conversation):
 
-## Sortie
+- the artifact to revise itself;
+- the other artifacts of the change that might be affected.
 
-Le résumé de l'étape 6, précédé du signalement de ripple s'il y en a un
-et de son statut (accepté par l'utilisateur, refusé, reporté à un
-`/codev-update` séparé).
+This reading is what lets you spot the ripple in step 4 — that is why it
+happens **before** writing, not after.
 
-## Garde-fous
+### 3. Apply the revision
 
-- **Pas de code** — tous les chemins écrits par cette skill vivent sous
-  `_codev/changes/<nom>/`. Refuse si l'utilisateur demande d'ajuster du
-  code : c'est `/codev-apply` qui le fait après la révision.
-- **Pas de création** — si l'artefact demandé n'existe pas, refuse et
-  renvoie vers `/codev-propose`. Ne crée jamais un `proposal.md`,
-  `design.md` ou `tasks.md` de zéro depuis cette skill.
-- **Pas d'archivé** — un change qui vit sous `changes/archive/` est de
-  l'histoire. Refuse et rappelle que le corriger demande de le
-  dé-archiver à la main.
-- **Pas de cascade** — un ripple détecté est signalé, jamais appliqué
-  sans confirmation.
-- **Toujours `validate` en fin** — c'est le seul garde-fou automatique.
+Two forms, depending on the scope:
+
+- **Targeted edit** — a paragraph to adjust, a decision to replace, a task
+  to reword → `Edit` with a precise `old_string`.
+- **Full rewrite** — an artifact that must be largely redone → `Write`,
+  but keep in mind that the other artifacts will rely on its new shape.
+
+Stay within the artifact's contract — expected sections, scenario format,
+checkboxes. The change is about **content**, not structure.
+
+Write in the language set by the `language:` key of `_codev/config.yaml`
+(`en` when absent), whatever language the conversation is in. Structural
+keywords — headings such as `## Why` or `### Requirement:`, `**WHEN**` /
+`**THEN**`, `SHALL` / `MUST` — stay in English.
+
+### 4. Detect and report the ripple
+
+After writing, compare the state of the change with what changed:
+
+- **`proposal` revised**:
+  - a capability listed under `### New Capabilities` or
+    `### Modified Capabilities` that disappears → name the file
+    `specs/<capability>/spec.md` that becomes orphaned;
+  - a new capability that appears → name the `specs/<capability>/` file
+    that is now missing.
+- **`specs` revised**:
+  - a removed requirement that was cited by a task → name the task
+    concerned in `tasks.md`;
+  - a renamed scenario — a `tasks.md` that cited the old name is
+    flagged.
+- **`design` revised**:
+  - a cited decision that disappears on one side and a constraint on the
+    other → flag it, but let the user decide (`codev decision list` can
+    help).
+- **`tasks` revised**:
+  - a task that contradicts a requirement in `specs/` → name the
+    requirement at stake.
+
+**Report**, **suggest** the next action (often: "run
+`/codev-update specs …`" or "delete `_codev/changes/<name>/specs/<capability>/spec.md`"),
+but **do not act** without explicit confirmation.
+
+### 5. Final guardrail — `codev validate`
+
+Whatever the ripple, at the end, run:
+
+```bash
+codev validate "<name>"
+```
+
+Relay the report as is. If `validate` reports errors, cite the stable
+codes; do not rewrite the human messages.
+
+### 6. Final summary
+
+One or two sentences:
+
+- the file or files touched;
+- the `codev validate` verdict;
+- the recommended next action — often `/codev-apply` (if the revision
+  affects the implementation) or `/codev-archive` (if the acknowledged gap
+  is closed).
+
+## Output
+
+The step 6 summary, preceded by the ripple report if there is one and its
+status (accepted by the user, declined, deferred to a separate
+`/codev-update`).
+
+## Guardrails
+
+- **No code** — every path written by this skill lives under
+  `_codev/changes/<name>/`. Refuse if the user asks to adjust code: that is
+  `/codev-apply`'s job after the revision.
+- **No creation** — if the requested artifact does not exist, refuse and
+  point to `/codev-propose`. Never create a `proposal.md`, `design.md` or
+  `tasks.md` from scratch in this skill.
+- **Nothing archived** — a change living under `changes/archive/` is
+  history. Refuse and remind the user that correcting it requires
+  un-archiving it by hand.
+- **No cascade** — a detected ripple is reported, never applied without
+  confirmation.
+- **Always `validate` at the end** — it is the only automatic guardrail.

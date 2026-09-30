@@ -1,110 +1,110 @@
 ---
 name: codev-sync
-description: "Faire entrer les deltas d'un change codev déjà planifié dans les specs principales, sans déplacer le change. À utiliser quand une capacité nouvelle doit apparaître dans les specs avant d'être consommée par un autre change, ou pour relire le merge avant d'archiver. N'archive pas."
+description: "Merge the deltas of an already planned codev change into the main specs, without moving the change. Use when a new capability must appear in the specs before another change consumes it, or to review the merge before archiving. Does not archive."
 allowed-tools: "Bash(codev:*), Read"
 license: MIT
 metadata:
   generator: codev
-  version: "0.1.0"
+  version: "0.3.2"
 ---
 
-Faire entrer les deltas d'un change codev dans les specs principales, **sans
-déplacer le change**. Le change reste actif à son emplacement.
+Merge a codev change's deltas into the main specs, **without moving the
+change**. The change stays active where it is.
 
-**Quand l'utiliser.** Quand une capacité nouvelle doit apparaître dans les
-specs avant qu'un autre change ne s'y appuie, ou quand tu veux relire le
-merge avant d'archiver. Dans le cas normal, `codev-archive` fait déjà le
-sync en pré-flight — inutile de `sync` puis `archive` séparément.
+**When to use it.** When a new capability must appear in the specs before
+another change builds on it, or when you want to review the merge before
+archiving. In the normal case, `codev-archive` already runs the sync as a
+pre-flight step — there is no need to `sync` then `archive` separately.
 
 ---
 
-## Entrée
+## Input
 
-Un nom de change en argument, ou rien (auquel cas le change est résolu
-implicitement s'il n'y en a qu'un seul actif).
+A change name as argument, or nothing (in which case the change is resolved
+implicitly if there is only one active change).
 
-## Étapes
+## Steps
 
-### 1. Résoudre le change et vérifier la planification
+### 1. Resolve the change and check the planning
 
-Sans nom explicite :
+Without an explicit name:
 
 ```bash
 codev list
 ```
 
-- Un seul change actif → c'est celui-là.
-- Plusieurs → demande à l'utilisateur, en listant les noms.
-- Aucun → dis-le et arrête-toi.
+- A single active change → use it.
+- Several → ask the user, listing the names.
+- None → say so and stop.
 
-Puis :
-
-```bash
-codev status --change "<nom>" --json
-```
-
-Si `isPlanningComplete` est `false`, arrête : la planification n'est pas
-prête. Nomme les artefacts manquants et propose `/codev-propose` ou
-`/codev-continue` (selon ce qui existe déjà). Ne lance pas `sync`.
-
-### 2. Lancer la fusion en mode JSON
+Then:
 
 ```bash
-codev sync --change "<nom>" --json
+codev status --change "<name>" --json
 ```
 
-Le JSON reçu est un `SyncReportV1` — contrat public, versionné. Champs à
-utiliser :
+If `isPlanningComplete` is `false`, stop: planning is not ready. Name the
+missing artifacts and suggest `/codev-propose` or `/codev-continue`
+(depending on what already exists). Do not run `sync`.
 
-- `changeName` — pour confirmer sur quoi on agit ;
-- `created[]` — chemins des specs principales qui viennent d'être créées ;
-- `updated[]` — chemins des specs principales qui viennent d'être modifiées ;
-- `unchanged[]` — chemins des specs qui étaient déjà à jour ;
-- `status[]` — vide en cas de succès.
+### 2. Run the merge in JSON mode
 
-En cas d'exit non nul, lis `status[0].code` et `status[0].message`, relaye
-le message tel quel et arrête-toi.
-
-### 3. Rendre compte à l'utilisateur
-
-Résumé attendu, une ligne :
-
-> ✓ Sync de « `<changeName>` » — `N` spec(s) créée(s), `M` mise(s) à jour,
-> `K` inchangée(s).
-
-Puis, si au moins l'une des listes `created` ou `updated` est non vide,
-liste-les par catégorie, chacune sur sa propre ligne :
-
-```
-Créé(s) :
-  <chemin>
-Mis à jour :
-  <chemin>
+```bash
+codev sync --change "<name>" --json
 ```
 
-### 4. Fin — inviter à archive si quelque chose a changé
+The JSON received is a `SyncReportV1` — a public, versioned contract.
+Fields to use:
 
-Si `created` ou `updated` est non vide, ajoute **une seule ligne**, sans
-injonction :
+- `changeName` — to confirm what is being acted on;
+- `created[]` — paths of main specs that were just created;
+- `updated[]` — paths of main specs that were just modified;
+- `unchanged[]` — paths of specs that were already up to date;
+- `status[]` — empty on success.
 
-> Le change est prêt à être archivé si tu veux clore le cycle.
+On a non-zero exit, read `status[0].code` and `status[0].message`, relay
+the message as is and stop.
 
-Si les deux listes sont vides (`unchanged` seulement), ne suggère rien —
-un sync no-op n'appelle pas d'archive.
+### 3. Report to the user
 
-## Sortie
+Expected summary, one line:
 
-Ce que tu as rendu à l'étape 3 + éventuellement la ligne de l'étape 4.
-Rien de plus. La skill s'arrête là ; c'est l'utilisateur qui décide de la
-suite (relire, archiver, ou autre).
+> ✓ Synced "`<changeName>`" — `N` spec(s) created, `M` updated,
+> `K` unchanged.
 
-## Garde-fous
+Then, if at least one of the `created` or `updated` lists is non-empty,
+list them by category, each on its own line:
 
-- **Ne déplace jamais le change** — le pouvoir de `codev sync` s'arrête à
-  la fusion. Le déplacement est le travail de `codev-archive`.
-- **N'archive pas** — si l'utilisateur voulait archiver, il aurait tapé
-  `/codev-archive`.
-- **Ne parse pas d'autre JSON que celui de `sync`** — la skill ne connaît
-  la forme d'aucun autre contrat.
-- **Ne masque pas une erreur** — si le CLI retourne un exit non nul,
-  relaye ; ne retente pas silencieusement.
+```
+Created:
+  <path>
+Updated:
+  <path>
+```
+
+### 4. Finish — suggest archiving if something changed
+
+If `created` or `updated` is non-empty, add **a single line**, without
+pressing the point:
+
+> The change is ready to be archived if you want to close the cycle.
+
+If both lists are empty (`unchanged` only), suggest nothing — a no-op
+sync does not call for an archive.
+
+## Output
+
+What you reported in step 3, plus the step 4 line if applicable. Nothing
+more. The skill stops there; the user decides what comes next (review,
+archive, or something else).
+
+## Guardrails
+
+- **Never move the change** — the power of `codev sync` ends at the
+  merge. Moving is the job of `codev-archive`.
+- **Do not archive** — if the user wanted to archive, they would have
+  typed `/codev-archive`.
+- **Do not parse any JSON other than `sync`'s** — the skill knows the
+  shape of no other contract.
+- **Do not hide an error** — if the CLI returns a non-zero exit, relay
+  it; do not silently retry.
