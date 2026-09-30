@@ -80,9 +80,14 @@ de formatage. Les décisions acceptées sont immuables :
 
 - **Restaurez** le contenu d'origine (`git diff` montre ce qui a changé) ; le
   sceau redevient valide.
-- Ou, si la modification était volontaire — typiquement, pour compléter une
-  décision que vous venez de créer —, **scellez-la à nouveau** :
+- Ou, si la modification était volontaire, **scellez-la à nouveau** :
   `codev decision seal <ID> --force`.
+
+Pour rédiger une décision avant de la sceller, laissez-la `proposed` — le
+statut par défaut de `codev decision new` — et lancez
+`codev decision accept <ID>` une fois son texte définitif. Une décision créée
+avec `--status accepted` est scellée immédiatement, avec le texte d'exemple du
+template.
 
 Pour changer ce que dit une décision, remplacez-la plutôt avec
 `codev decision supersede <ID> "<new title>"`.

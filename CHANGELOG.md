@@ -24,8 +24,17 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The installers print their messages in English. On Windows, `install.ps1`
   now suggests a PATH command that updates only the user `PATH`, instead of
   `setx`, which can truncate it.
+- `codev decision new` now creates a `proposed` decision, unsealed, so its
+  body can be written before it is sealed; accept it with
+  `codev decision accept`. Pass `--status accepted` to create and seal it at
+  once, as before.
 
 ### Added
+
+- `codev decision accept <ID>` sets a local `proposed` decision to `accepted`
+  and seals its body in the same step. It refuses inherited decisions
+  (`cannot_accept_inherited`) and decisions that are not `proposed`
+  (`decision_not_proposed`).
 
 - Artifact language: a `language:` key in `_codev/config.yaml` (an ISO 639
   code such as `en`, `fr` or `pt-BR`) sets the language skills write proposals,

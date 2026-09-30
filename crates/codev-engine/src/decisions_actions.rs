@@ -44,6 +44,17 @@ pub enum ActionError {
     CannotSealInherited {
         qualified_id: String,
     },
+    /// `decision accept` targets an inherited decision — read-only on the
+    /// consumer side.
+    CannotAcceptInherited {
+        qualified_id: String,
+    },
+    /// `decision accept` targets a decision whose status is not
+    /// `proposed` — only that transition carries a seal.
+    DecisionNotProposed {
+        id: String,
+        status: String,
+    },
     /// The target passed to `decision deviate` is a local decision — the
     /// proper action for that is `decision supersede`.
     CannotDeviateFromLocal {
@@ -87,6 +98,8 @@ impl ActionError {
             Self::UnknownDecisionId { .. } => "unknown_decision_id",
             Self::CannotSupersedeInherited { .. } => "cannot_supersede_inherited",
             Self::CannotSealInherited { .. } => "cannot_seal_inherited",
+            Self::CannotAcceptInherited { .. } => "cannot_accept_inherited",
+            Self::DecisionNotProposed { .. } => "decision_not_proposed",
             Self::CannotDeviateFromLocal { .. } => "cannot_deviate_from_local",
             Self::CannotPromoteFromArchived { .. } => "cannot_promote_from_archived",
             Self::DesignMissing { .. } => "design_missing",
@@ -118,6 +131,18 @@ impl ActionError {
             Self::CannotSealInherited { qualified_id } => format!(
                 "decision `{qualified_id}` is inherited: sealing it is up to \
                  the source project, not the consumer"
+            ),
+            Self::CannotAcceptInherited { qualified_id } => format!(
+                "decision `{qualified_id}` is inherited, hence read-only: \
+                 accepting it is up to the source project"
+            ),
+            Self::DecisionNotProposed { id, status } if status == "accepted" => format!(
+                "decision `{id}` is already accepted: nothing to do; \
+                 to replace it, use `codev decision supersede {id}`"
+            ),
+            Self::DecisionNotProposed { id, status } => format!(
+                "decision `{id}` has status `{status}`: only a `proposed` \
+                 decision can be accepted"
             ),
             Self::CannotDeviateFromLocal { qualified_id } => format!(
                 "decision `{qualified_id}` is local: the proper way to \
@@ -214,6 +239,16 @@ pub struct SealActionPlan {
     pub body_sha256: String,
     pub sealed_at: String,
     pub was_noop: bool,
+}
+
+/// The plan computed for `codev decision accept`.
+#[derive(Debug)]
+pub struct AcceptPlan {
+    pub plan: Plan,
+    pub id: String,
+    pub path: PathBuf,
+    /// Hash of the accepted ADR's body — the one recorded in the seal.
+    pub body_sha256: String,
 }
 
 /// The plan computed for `codev decision promote`.
@@ -494,6 +529,78 @@ pub fn plan_seal(
             })
         }
     }
+}
+
+/// Prepares an acceptance — the `codev decision accept <id>` command.
+///
+/// Turns a local `proposed` decision into an `accepted` one: the plan
+/// rewrites the frontmatter status **and** writes the seal entry, so the
+/// shell writes both or, if the plan cannot be computed, neither. Only
+/// the frontmatter changes, so the recorded hash is the hash of the body
+/// the user wrote.
+///
+/// Explicit refusals: `UnknownDecisionId`, `AmbiguousDecisionId`,
+/// `CannotAcceptInherited`, `DecisionNotProposed`, and `SealConflict` if a
+/// seal entry with another hash already exists for this id.
+pub fn plan_accept(
+    index: &DecisionIndex,
+    existing_seal: &SealFile,
+    id: &str,
+    today: &str,
+    layout: &Layout,
+    adr_source: impl FnOnce(&std::path::Path) -> std::io::Result<String>,
+) -> Result<AcceptPlan, ActionError> {
+    let (idx, _) = resolve_old_entry(index, id)?;
+    let entry = &index.entries[idx];
+    if entry.qualified_id.origin != Origin::Project {
+        return Err(ActionError::CannotAcceptInherited {
+            qualified_id: entry.qualified_id.as_str(),
+        });
+    }
+    let local_id = entry.decision.id.clone();
+    if entry.decision.status != DecisionStatus::Proposed {
+        return Err(ActionError::DecisionNotProposed {
+            id: local_id,
+            status: entry.decision.status.as_str().to_string(),
+        });
+    }
+
+    let source = adr_source(&entry.path).map_err(|_| ActionError::UnknownDecisionId {
+        id: local_id.clone(),
+    })?;
+    let accepted = rewrite_frontmatter_status(&source, &entry.decision, DecisionStatus::Accepted);
+    let body_sha256 = seal::body_hash(&accepted)?;
+
+    let mut plan = Plan::new();
+    plan.dir(layout.decisions_dir());
+    plan.write(entry.path.clone(), accepted, WriteMode::Overwrite);
+    match existing_seal.find(&local_id) {
+        // A leftover entry that already matches the body: nothing to add.
+        Some(sealed) if sealed.body_sha256 == body_sha256 => {}
+        // A leftover entry for another body: refuse rather than silently
+        // rewrite a seal — `decision seal --force` is the deliberate path.
+        Some(_) => return Err(ActionError::SealConflict { id: local_id }),
+        None => {
+            let new_seal = seal::plan_seal_new(
+                existing_seal,
+                local_id.clone(),
+                body_sha256.clone(),
+                today.to_string(),
+            )?;
+            plan.write(
+                layout.decisions_seal_file(),
+                seal::render_seal_file(&new_seal),
+                WriteMode::Overwrite,
+            );
+        }
+    }
+
+    Ok(AcceptPlan {
+        plan,
+        id: local_id,
+        path: entry.path.clone(),
+        body_sha256,
+    })
 }
 
 /// Does a status carry an immutability commitment?
@@ -1387,6 +1494,121 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(err.code(), "cannot_seal_inherited");
+    }
+
+    // ─────────────── plan_accept ───────────────
+
+    fn accept(fs: &MemoryFileSystem, seal: &SealFile, id: &str) -> Result<AcceptPlan, ActionError> {
+        let index = empty_index_with_config(fs);
+        plan_accept(&index, seal, id, "2026-09-30", &Layout::new("/p"), |path| {
+            Ok(fs.read(path).unwrap())
+        })
+    }
+
+    #[test]
+    fn plan_accept_rewrites_the_status_and_seals_in_one_plan() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0007-x.md", adr("0007", "proposed"));
+        let plan = accept(&fs, &SealFile::empty(), "0007").unwrap();
+
+        assert_eq!(plan.id, "0007");
+        assert_eq!(plan.path, PathBuf::from("/p/_codev/decisions/0007-x.md"));
+        // Both writes live in the same plan: the ADR and seal.yaml.
+        assert_eq!(plan.plan.writes.len(), 2);
+        let adr_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == plan.path)
+            .expect("the ADR is rewritten");
+        assert!(adr_write.contents.contains("status: accepted"));
+        let seal_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == std::path::Path::new("/p/_codev/decisions/seal.yaml"))
+            .expect("the seal is written");
+        let seal_file = seal::parse_seal_file(&seal_write.contents).unwrap();
+        let entry = seal_file.find("0007").expect("entry for 0007");
+        assert_eq!(entry.body_sha256, plan.body_sha256);
+        assert_eq!(entry.sealed_at, "2026-09-30");
+    }
+
+    #[test]
+    fn plan_accept_keeps_the_body_byte_for_byte() {
+        let source = "---\nid: \"0007\"\ntitle: T\nstatus: proposed\ndate: 2026-09-08\n---\n\n## Context\n\nWritten by hand — “quotes” ✓.\n";
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0007-t.md", source);
+        let plan = accept(&fs, &SealFile::empty(), "0007").unwrap();
+        let adr_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == plan.path)
+            .unwrap();
+        assert_eq!(
+            seal::body_slice(&adr_write.contents).unwrap(),
+            seal::body_slice(source).unwrap(),
+        );
+        // The recorded hash is the hash of the body the user wrote.
+        assert_eq!(plan.body_sha256, seal::body_hash(source).unwrap());
+    }
+
+    #[test]
+    fn plan_accept_refuses_an_unknown_id() {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
+        let err = accept(&fs, &SealFile::empty(), "0042").unwrap_err();
+        assert_eq!(err.code(), "unknown_decision_id");
+    }
+
+    #[test]
+    fn plan_accept_refuses_an_inherited_decision() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with_file(
+                "/home/shared/_codev/decisions/0100-shared.md",
+                adr("0100", "proposed"),
+            );
+        let err = accept(&fs, &SealFile::empty(), "path:~/shared/0100").unwrap_err();
+        assert_eq!(err.code(), "cannot_accept_inherited");
+    }
+
+    #[test]
+    fn plan_accept_refuses_an_accepted_decision_and_points_to_supersede() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003-x.md", adr("0003", "accepted"));
+        let err = accept(&fs, &SealFile::empty(), "0003").unwrap_err();
+        assert_eq!(err.code(), "decision_not_proposed");
+        assert!(err.to_string().contains("already accepted"));
+        assert!(err.to_string().contains("codev decision supersede 0003"));
+    }
+
+    #[test]
+    fn plan_accept_refuses_a_rejected_decision() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0004-x.md", adr("0004", "rejected"));
+        let err = accept(&fs, &SealFile::empty(), "0004").unwrap_err();
+        assert_eq!(err.code(), "decision_not_proposed");
+        assert!(err.to_string().contains("`rejected`"));
+    }
+
+    #[test]
+    fn plan_accept_refuses_a_leftover_seal_for_another_body() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0007-x.md", adr("0007", "proposed"));
+        let mut existing = SealFile::empty();
+        existing.seals.push(codev_core::decisions::seal::Seal {
+            id: "0007".into(),
+            body_sha256: "sha256:another-body".into(),
+            sealed_at: "2026-09-08".into(),
+        });
+        let err = accept(&fs, &existing, "0007").unwrap_err();
+        assert_eq!(err.code(), "seal_conflict");
     }
 
     // ─────────────── plan_deviate ───────────────

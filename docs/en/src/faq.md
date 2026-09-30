@@ -77,8 +77,13 @@ Accepted decisions are immutable:
 
 - **Restore** the original body (`git diff` shows what changed); the seal is
   valid again.
-- Or, if the edit was deliberate — typically, filling in a decision you just
-  created — **reseal** it: `codev decision seal <ID> --force`.
+- Or, if the edit was deliberate, **reseal** it:
+  `codev decision seal <ID> --force`.
+
+To write a decision before sealing it, keep it `proposed` — the default of
+`codev decision new` — and run `codev decision accept <ID>` once its text is
+final. A decision created with `--status accepted` is sealed straight away,
+with the template's placeholder text.
 
 To change what a decision says, supersede it with
 `codev decision supersede <ID> "<new title>"` instead.

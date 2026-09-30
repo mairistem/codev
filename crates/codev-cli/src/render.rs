@@ -14,10 +14,10 @@ use codev_engine::sync::SyncOutcome;
 use codev_engine::validate::{ItemKind, ValidateReport};
 
 use crate::commands::{
-    ChangesOutcome, DecisionCreatedOutcome, DecisionDeviatedOutcome, DecisionListOutcome,
-    DecisionPromotedOutcome, DecisionSealedOutcome, DecisionShowOutcome, DecisionSupersededOutcome,
-    NewChangeOutcome, SchemasOutcome, SetupOutcome, SourcesListOutcome, SourcesShowOutcome,
-    SourcesUpdateOutcome, SpecsOutcome,
+    ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome, DecisionDeviatedOutcome,
+    DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome, DecisionShowOutcome,
+    DecisionSupersededOutcome, NewChangeOutcome, SchemasOutcome, SetupOutcome, SourcesListOutcome,
+    SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
 };
 
 /// Warnings go to stderr, never to stdout: a `codev list` redirected to a
@@ -451,10 +451,37 @@ pub fn decision_created(outcome: &DecisionCreatedOutcome) -> String {
         outcome.decision.id, outcome.decision.title
     );
     let _ = writeln!(out, "  File: {}", outcome.path.display());
+    match &outcome.body_sha256 {
+        Some(hash) => {
+            let _ = writeln!(out, "  Hash: {hash}");
+            let _ = writeln!(
+                out,
+                "\nThe decision is accepted and sealed: its body can no longer be\n\
+                 edited without `codev decision seal {} --force`.",
+                outcome.decision.id
+            );
+        }
+        None => {
+            let _ = writeln!(
+                out,
+                "\nOpen the file to write the Context, Decision and Consequences sections,\n\
+                 then run `codev decision accept {}` to accept and seal it.",
+                outcome.decision.id
+            );
+        }
+    }
+    out
+}
+
+/// Human rendering of `codev decision accept`.
+pub fn decision_accepted(outcome: &DecisionAcceptedOutcome) -> String {
+    let mut out = String::new();
     let _ = writeln!(
         out,
-        "\nOpen the file to write the Context, Decision and Consequences sections."
+        "✓ Accepted {} — sealed ({})",
+        outcome.decision.id, outcome.body_sha256
     );
+    let _ = writeln!(out, "  File: {}", outcome.path.display());
     out
 }
 

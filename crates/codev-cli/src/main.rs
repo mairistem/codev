@@ -17,11 +17,11 @@ use serde_json::json;
 
 use commands::{Ctx, Failure};
 use contract::{
-    ArchiveReportV1, ChangesV1, DecisionCreatedV1, DecisionDeviatedV1, DecisionListReportV1,
-    DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1, DecisionSupersededV1, DecisionV1,
-    InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1, SchemasV1, SealEntryV1, SetupV1,
-    SourceDetailV1, SourceStateV1, SourcesListReportV1, SourcesUpdateReportV1, SpecsV1, StatusV1,
-    SyncReportV1, ValidateReportV1,
+    ArchiveReportV1, ChangesV1, DecisionAcceptedV1, DecisionCreatedV1, DecisionDeviatedV1,
+    DecisionListReportV1, DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1,
+    DecisionSupersededV1, DecisionV1, InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1,
+    SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1,
+    SourcesUpdateReportV1, SpecsV1, StatusV1, SyncReportV1, ValidateReportV1,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -155,7 +155,7 @@ enum Command {
         json: bool,
     },
 
-    /// Create, inspect and supersede architecture decisions
+    /// Create, accept, inspect and supersede architecture decisions
     Decision {
         #[command(subcommand)]
         what: DecisionCommand,
@@ -282,12 +282,28 @@ enum DecisionCommand {
         json: bool,
     },
     /// Create a new local decision
+    ///
+    /// The decision is created `proposed` and unsealed, so its body can be
+    /// written freely; `codev decision accept` then accepts and seals it.
     New {
         /// Free-form title — slugified for the file name
         title: String,
-        /// Initial status
-        #[arg(long, default_value = "accepted")]
+        /// Initial status; `accepted` seals the body right away, `proposed`
+        /// leaves it editable until `codev decision accept`
+        #[arg(long, default_value = "proposed")]
         status: String,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Accept a proposed decision: set its status to `accepted` and seal it
+    ///
+    /// Rewrites the frontmatter status of a local `proposed` decision and
+    /// records the hash of its body in `seal.yaml`, in the same plan — both
+    /// are written or neither is. The body is left untouched. Inherited
+    /// decisions and decisions that are not `proposed` are refused.
+    Accept {
+        /// Short identifier (`0007`) — inherited ones (`path:` / `git:`) are refused
+        id: String,
         #[arg(long)]
         json: bool,
     },
@@ -767,6 +783,23 @@ fn run(cli: Cli) -> i32 {
                 }
                 Err(err) => fail(json, decision_created_shape(), &err),
             },
+            DecisionCommand::Accept { id, json } => match commands::decision_accept(&ctx, &id) {
+                Ok(outcome) => {
+                    emit(
+                        json,
+                        DecisionAcceptedV1 {
+                            root: outcome.root.display().to_string(),
+                            decision: Some(decision_v1(&outcome.decision)),
+                            path: Some(outcome.path.display().to_string()),
+                            body_sha256: Some(outcome.body_sha256.clone()),
+                            status: Vec::new(),
+                        },
+                        || render::decision_accepted(&outcome),
+                    );
+                    0
+                }
+                Err(err) => fail(json, decision_accepted_shape(), &err),
+            },
             DecisionCommand::Supersede {
                 old_id,
                 new_title,
@@ -961,6 +994,10 @@ fn decision_created_shape() -> serde_json::Value {
     json!({ "root": null, "decision": null, "path": null })
 }
 
+fn decision_accepted_shape() -> serde_json::Value {
+    json!({ "root": null, "decision": null, "path": null })
+}
+
 fn decision_superseded_shape() -> serde_json::Value {
     json!({
         "root": null,
@@ -1094,6 +1131,38 @@ fn parse_language(raw: &str) -> Result<String, String> {
         Err(format!(
             "`{raw}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
         ))
+    }
+}
+
+#[cfg(test)]
+mod parsing_tests {
+    use clap::Parser;
+
+    use super::{Cli, Command, DecisionCommand};
+
+    #[test]
+    fn decision_new_status_defaults_to_proposed() {
+        let cli = Cli::try_parse_from(["codev", "decision", "new", "A choice"]).unwrap();
+        let Command::Decision {
+            what: DecisionCommand::New { status, .. },
+        } = cli.command
+        else {
+            panic!("expected `decision new`");
+        };
+        assert_eq!(status, "proposed");
+    }
+
+    #[test]
+    fn decision_accept_takes_an_id_and_json() {
+        let cli = Cli::try_parse_from(["codev", "decision", "accept", "0007", "--json"]).unwrap();
+        let Command::Decision {
+            what: DecisionCommand::Accept { id, json },
+        } = cli.command
+        else {
+            panic!("expected `decision accept`");
+        };
+        assert_eq!(id, "0007");
+        assert!(json);
     }
 }
 

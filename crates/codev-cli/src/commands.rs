@@ -909,6 +909,47 @@ pub fn decision_seal(ctx: &Ctx, id: &str, force: bool) -> Result<DecisionSealedO
     })
 }
 
+#[derive(Debug)]
+pub struct DecisionAcceptedOutcome {
+    pub root: PathBuf,
+    pub decision: DecisionSummary,
+    pub path: PathBuf,
+    pub body_sha256: String,
+}
+
+pub fn decision_accept(ctx: &Ctx, id: &str) -> Result<DecisionAcceptedOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
+    let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
+    let today = ctx.clock.today();
+    let plan = engine_actions::plan_accept(&index, &seal_file, id, &today, &layout, |path| {
+        ctx.fs.read_to_string(path)
+    })
+    .map_err(action_to_failure)?;
+    apply::execute(&plan.plan, ctx.fs)?;
+
+    // Read back, as `decision new` does, so the summary reflects the
+    // rewritten status and the effect computed with it.
+    let qualified = format!("project/{}", plan.id);
+    let index_after = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let summary = build_summaries(&index_after, &layout)
+        .into_iter()
+        .find(|s| s.qualified_id == qualified)
+        .ok_or_else(|| {
+            Failure::new(
+                "write_failed",
+                "the accepted decision could not be read back",
+            )
+        })?;
+    Ok(DecisionAcceptedOutcome {
+        root: layout.project_root().to_path_buf(),
+        decision: summary,
+        path: plan.path,
+        body_sha256: plan.body_sha256,
+    })
+}
+
 /// Converts the index into `DecisionSummary` values, with effect and
 /// supersession.
 fn build_summaries(
@@ -1611,8 +1652,8 @@ edition = "2024"
     // ─────────────── decision seal ───────────────
 
     #[test]
-    fn decision_new_seals_the_entry_and_exposes_the_hash() {
-        // A `decision new` creates the ADR AND the seal entry; the hash
+    fn decision_new_accepted_seals_the_entry_and_exposes_the_hash() {
+        // A `decision new --status accepted` creates the ADR AND the seal entry; the hash
         // surfaces in the outcome for the JSON contract.
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
@@ -1690,6 +1731,127 @@ edition = "2024"
         let outcome = decision_seal(&h.ctx(), "0001", true).unwrap();
         assert!(!outcome.was_noop);
         assert!(outcome.was_forced);
+    }
+
+    // ─────────────── decision accept ───────────────
+
+    fn seal_yaml(h: &Harness) -> Option<String> {
+        use codev_engine::FileSystem;
+        h.fs.read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
+            .ok()
+    }
+
+    /// A proposed decision whose body the user has written by hand — the
+    /// situation `decision accept` is meant for.
+    fn written_proposed_decision(h: &Harness) -> std::path::PathBuf {
+        use codev_engine::FileSystem;
+        let created = decision_new(&h.ctx(), "A first choice", "proposed").unwrap();
+        let path = std::path::PathBuf::from("/p/_codev/decisions/0001-a-first-choice.md");
+        assert_eq!(created.path, path);
+        let source = h.fs.read_to_string(&path).unwrap();
+        let written = source.replace("## Context", "## Context\n\nThe real context.");
+        assert_ne!(written, source);
+        h.fs.write(&path, &written).unwrap();
+        path
+    }
+
+    #[test]
+    fn decision_accept_seals_a_proposed_decision() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let path = written_proposed_decision(&h);
+        let before = h.fs.read_to_string(&path).unwrap();
+
+        let outcome = decision_accept(&h.ctx(), "0001").unwrap();
+
+        assert_eq!(outcome.decision.id, "0001");
+        assert_eq!(outcome.decision.status, "accepted");
+        assert!(outcome.decision.in_effect);
+        assert_eq!(outcome.path, path);
+        let after = h.fs.read_to_string(&path).unwrap();
+        assert!(after.contains("status: accepted"));
+        assert_eq!(
+            codev_core::decisions::body_slice(&after).unwrap(),
+            codev_core::decisions::body_slice(&before).unwrap(),
+            "the body stays byte for byte identical"
+        );
+        let seal = seal_yaml(&h).expect("seal.yaml written");
+        assert!(seal.contains("0001"));
+        assert!(seal.contains(&outcome.body_sha256));
+    }
+
+    #[test]
+    fn decision_accept_then_validate_is_clean() {
+        // The whole point: write the proposed decision, accept it, and
+        // validate neither reports a mismatch nor asks for a seal.
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        written_proposed_decision(&h);
+        decision_accept(&h.ctx(), "0001").unwrap();
+
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let codes: Vec<&str> = report
+            .items
+            .iter()
+            .flat_map(|i| i.findings.iter().map(|f| f.finding.code))
+            .collect();
+        assert!(
+            !codes.contains(&"decision_seal_mismatch") && !codes.contains(&"decision_unsealed"),
+            "no seal finding expected; codes: {codes:?}"
+        );
+    }
+
+    #[test]
+    fn decision_accept_refuses_an_accepted_decision() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "Settled", "accepted").unwrap();
+        let seal_before = seal_yaml(&h);
+
+        let err = decision_accept(&h.ctx(), "0001").unwrap_err();
+
+        assert_eq!(err.code, "decision_not_proposed");
+        assert!(err.message.contains("supersede"));
+        assert_eq!(seal_yaml(&h), seal_before, "seal.yaml unchanged");
+    }
+
+    #[test]
+    fn decision_accept_refuses_an_inherited_decision() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with(
+                "/home/shared/_codev/decisions/0100.md",
+                "---\nid: \"0100\"\ntitle: Shared\nstatus: proposed\ndate: 2026-09-08\n---\n\n## Context\n\nx\n",
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let err = decision_accept(&h.ctx(), "path:~/shared/0100").unwrap_err();
+        assert_eq!(err.code, "cannot_accept_inherited");
+        assert!(seal_yaml(&h).is_none(), "nothing written");
+    }
+
+    #[test]
+    fn decision_accept_refuses_an_unknown_id() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let err = decision_accept(&h.ctx(), "0042").unwrap_err();
+        assert_eq!(err.code, "unknown_decision_id");
+    }
+
+    #[test]
+    fn decision_accept_writes_nothing_when_the_seal_file_is_invalid() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let path = written_proposed_decision(&h);
+        let adr_before = h.fs.read_to_string(&path).unwrap();
+        write_helper(&h, "/p/_codev/decisions/seal.yaml", "not: [a, seal");
+
+        let err = decision_accept(&h.ctx(), "0001").unwrap_err();
+
+        assert_eq!(err.code, "seal_invalid");
+        assert_eq!(h.fs.read_to_string(&path).unwrap(), adr_before);
+        assert_eq!(seal_yaml(&h).as_deref(), Some("not: [a, seal"));
     }
 
     // ─────────────── decision promote ───────────────

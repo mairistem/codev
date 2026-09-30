@@ -140,10 +140,14 @@ envisagées.
 
 ```bash
 codev decision new "Use PostgreSQL for persistence"
+codev decision accept 0001
 ```
 
 Une décision a l'un des cinq statuts suivants : `accepted`, `superseded`,
-`proposed`, `deprecated` ou `rejected`. Une décision est **en vigueur**
+`proposed`, `deprecated` ou `rejected`. `codev decision new` la crée
+`proposed`, afin que vous puissiez la rédiger librement ;
+`codev decision accept` la passe à `accepted` une fois son texte définitif.
+Une décision est **en vigueur**
 lorsqu'elle est `accepted` et qu'aucune autre ne la remplace. Les décisions en
 vigueur sont transmises à l'agent chaque fois qu'il rédige un `design.md`,
 afin que les designs les respectent au lieu de les remettre en débat.
@@ -155,25 +159,26 @@ pour une décision héritée d'un autre dépôt.
 
 ## Sceau
 
-Une décision acceptée est immuable. Lorsqu'une commande `codev decision` crée
-une décision acceptée, elle enregistre une empreinte SHA-256 du contenu de la
-décision dans `_codev/decisions/seal.yaml` ; `codev decision seal` fait de même
-pour une décision que vous avez rédigée ou acceptée à la main.
+Une décision acceptée est immuable. Lorsqu'une décision devient acceptée par
+une commande `codev decision` — `accept`, `supersede`, `deviate`, `promote`,
+ou `new --status accepted` — codev enregistre une empreinte SHA-256 du contenu
+de la décision dans `_codev/decisions/seal.yaml` ; `codev decision seal` fait
+de même pour une décision que vous avez acceptée à la main.
 `codev validate` compare le contenu de chaque décision locale `accepted` ou
 `superseded` à son empreinte, et signale une modification par l'erreur
 `decision_seal_mismatch` et un sceau manquant par l'avertissement
-`decision_unsealed`.
+`decision_unsealed`. Une décision `proposed` n'est pas scellée.
 
 Le frontmatter n'est pas couvert par le sceau : un statut peut donc passer de
 `accepted` à `superseded` sans le briser.
 
 > **Remarque**
-> `codev decision new` crée par défaut une décision `accepted` et la scelle
-> immédiatement, avec le texte d'exemple du template. Pour rédiger d'abord la
-> décision, créez-la avec `--status proposed`, rédigez-la, passez son statut à
-> `accepted`, puis lancez `codev decision seal <ID>`. Si vous avez déjà
-> modifié volontairement une décision scellée,
-> `codev decision seal <ID> --force` enregistre le nouveau contenu.
+> Scellez une décision lorsque son texte est définitif : rédigez d'abord la
+> décision `proposed`, puis lancez `codev decision accept <ID>`, qui change
+> le statut et enregistre le sceau en une seule étape. Si vous avez modifié
+> volontairement une décision scellée, `codev decision seal <ID> --force`
+> enregistre le nouveau contenu ; pour changer ce que dit une décision
+> acceptée, [remplacez-la](#remplacement) plutôt.
 
 ## Remplacement
 

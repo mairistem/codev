@@ -287,11 +287,41 @@ The commands that create or seal decisions return:
 
 | Command | Fields besides `root` and `status` |
 |---|---|
-| `decision new` | `decision`, `path`, `bodySha256` (when sealed) |
+| `decision new` | `decision`, `path`, `bodySha256` (only with `--status accepted`) |
+| `decision accept` | `decision`, `path`, `bodySha256` |
 | `decision supersede` | `newDecision`, `newPath`, `oldId`, `oldQualifiedId`, `oldPath` |
 | `decision seal` | `seal` (`id`, `bodySha256`, `sealedAt`), `wasNoop` |
 | `decision deviate` | `decision`, `path`, `targetQualifiedId`, `bodySha256` |
 | `decision promote` | `decision`, `path`, `bodySha256`, `sourceChange`, `designPath` |
+
+For example, `codev decision accept 0001 --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "decision": {
+    "id": "0001",
+    "qualifiedId": "project/0001",
+    "title": "Use PostgreSQL for persistence",
+    "status": "accepted",
+    "date": "2026-09-30",
+    "tags": [],
+    "supersedes": [],
+    "deviatesFrom": [],
+    "path": "_codev/decisions/0001-use-postgresql-for-persistence.md",
+    "origin": "project",
+    "inEffect": true,
+    "supersededBy": null
+  },
+  "path": "/home/you/acme-app/_codev/decisions/0001-use-postgresql-for-persistence.md",
+  "bodySha256": "sha256:167c548eb2750fa6f7b25dd836916adf29d02a95adcf6510a7cc11873e994deb",
+  "status": []
+}
+```
+
+A refused acceptance keeps the same shape, with `decision` and `path` set to
+`null` and the code in `status`: `unknown_decision_id`,
+`cannot_accept_inherited` or `decision_not_proposed`.
 
 ### sources
 

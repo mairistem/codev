@@ -131,10 +131,13 @@ context, the decision, its consequences and the alternatives considered.
 
 ```bash
 codev decision new "Use PostgreSQL for persistence"
+codev decision accept 0001
 ```
 
 A decision has one of five statuses: `accepted`, `superseded`, `proposed`,
-`deprecated` or `rejected`. A decision is **in effect** when it is `accepted`
+`deprecated` or `rejected`. `codev decision new` creates it `proposed`, so
+you can write it freely; `codev decision accept` makes it `accepted` once its
+text is final. A decision is **in effect** when it is `accepted`
 and nothing supersedes it. The decisions in effect are handed to the agent
 whenever it writes a `design.md`, so designs follow them instead of
 re-debating them.
@@ -146,24 +149,24 @@ decision inherited from another repository.
 
 ## Seal
 
-An accepted decision is immutable. When a `codev decision` command creates an
-accepted decision, it records a SHA-256 hash of the decision's body in
-`_codev/decisions/seal.yaml`; `codev decision seal` does the same for a
-decision you wrote or accepted by hand. `codev validate` compares the body of
+An accepted decision is immutable. When a decision becomes accepted through a
+`codev decision` command — `accept`, `supersede`, `deviate`, `promote`, or
+`new --status accepted` — codev records a SHA-256 hash of the decision's body
+in `_codev/decisions/seal.yaml`; `codev decision seal` does the same for a
+decision you accepted by hand. `codev validate` compares the body of
 every local `accepted` or `superseded` decision with its hash, and reports an
 edit as a `decision_seal_mismatch` error and a missing seal as a
-`decision_unsealed` warning.
+`decision_unsealed` warning. A `proposed` decision is not sealed.
 
 The frontmatter is not covered by the seal, so a status can move from
 `accepted` to `superseded` without breaking it.
 
 > **Note**
-> `codev decision new` creates an `accepted` decision by default and seals it
-> immediately, with the template's placeholder text. To draft the decision
-> first, create it with `--status proposed`, write it, set its status to
-> `accepted`, then run `codev decision seal <ID>`. If you have already edited
-> a sealed decision on purpose, `codev decision seal <ID> --force` records the
-> new body.
+> Seal a decision when its text is final: write the `proposed` decision
+> first, then run `codev decision accept <ID>`, which sets the status and
+> records the seal in one step. If you have edited a sealed decision on
+> purpose, `codev decision seal <ID> --force` records the new body; to change
+> what an accepted decision says, [supersede](#supersession) it instead.
 
 ## Supersession
 

@@ -23,7 +23,7 @@ Commands:
   status        Show the state of a change's artifacts
   instructions  Print everything needed to write an artifact
   schemas       List the available workflow schemas
-  decision      Create, inspect and supersede architecture decisions
+  decision      Create, accept, inspect and supersede architecture decisions
   sources       Manage inherited sources (local paths and remote git repositories)
   sync          Merge a change's deltas into the main specs without archiving
   archive       Merge, then move a change to the dated archive
@@ -406,7 +406,7 @@ intégré `spec-driven`, avec l'ordre de leurs artefacts. Voir
 ### codev decision
 
 ```text
-Create, inspect and supersede architecture decisions
+Create, accept, inspect and supersede architecture decisions
 
 Usage: codev decision <COMMAND>
 
@@ -414,6 +414,7 @@ Commands:
   list       List local and inherited decisions
   show       Show a specific decision
   new        Create a new local decision
+  accept     Accept a proposed decision: set its status to `accepted` and seal it
   supersede  Supersede a decision: mark it `superseded` and create a new one
   seal       Add or rewrite the seal of a local decision
   deviate    Record a local deviation from an inherited decision
@@ -465,21 +466,60 @@ Options:
 ```text
 Create a new local decision
 
+The decision is created `proposed` and unsealed, so its body can be written freely; `codev decision accept` then accepts and seals it.
+
 Usage: codev decision new [OPTIONS] <TITLE>
 
 Arguments:
-  <TITLE>  Free-form title — slugified for the file name
+  <TITLE>
+          Free-form title — slugified for the file name
 
 Options:
-      --status <STATUS>  Initial status [default: accepted]
+      --status <STATUS>
+          Initial status; `accepted` seals the body right away, `proposed` leaves it editable until `codev decision accept`
+
+          [default: proposed]
+
       --json
-  -h, --help             Print help
+
+
+  -h, --help
+          Print help (see a summary with '-h')
 ```
 
 Crée `_codev/decisions/NNNN-<slug>.md` à partir du template d'ADR, avec le
-prochain numéro libre. Avec le statut par défaut `accepted`, la décision est
-scellée immédiatement ; utilisez `--status proposed` pour la rédiger d'abord,
-puis `codev decision seal` une fois qu'elle est acceptée.
+prochain numéro libre. Avec le statut par défaut `proposed`, la décision n'est
+pas scellée : rédigez son contenu, puis lancez `codev decision accept` pour
+l'accepter et la sceller. `--status accepted` la scelle immédiatement, pour une
+décision dont le texte est déjà définitif.
+
+### codev decision accept
+
+```text
+Accept a proposed decision: set its status to `accepted` and seal it
+
+Rewrites the frontmatter status of a local `proposed` decision and records the hash of its body in `seal.yaml`, in the same plan — both are written or neither is. The body is left untouched. Inherited decisions and decisions that are not `proposed` are refused.
+
+Usage: codev decision accept [OPTIONS] <ID>
+
+Arguments:
+  <ID>
+          Short identifier (`0007`) — inherited ones (`path:` / `git:`) are refused
+
+Options:
+      --json
+
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Passe le statut d'une décision locale `proposed` à `accepted` et enregistre
+l'empreinte SHA-256 de son contenu dans `_codev/decisions/seal.yaml`, dans le
+même plan : les deux sont écrits, ou aucun. Seul le frontmatter change. Une
+décision héritée est refusée avec `cannot_accept_inherited`, une décision qui
+n'est pas `proposed` avec `decision_not_proposed` ; pour remplacer une décision
+acceptée, utilisez `codev decision supersede`.
 
 ### codev decision supersede
 

@@ -371,6 +371,22 @@ pub struct DecisionDeviatedV1 {
     pub status: Vec<StatusEntry>,
 }
 
+/// The output of `codev decision accept --json`.
+///
+/// Same fields as `DecisionCreatedV1`: the accepted decision, its file and
+/// the hash now recorded in `seal.yaml`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DecisionAcceptedV1 {
+    pub root: String,
+    pub decision: Option<DecisionV1>,
+    pub path: Option<String>,
+    /// Hash of the accepted ADR's body, prefixed with `sha256:`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_sha256: Option<String>,
+    pub status: Vec<StatusEntry>,
+}
+
 /// The output of `codev decision promote --json`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -857,6 +873,22 @@ apply:
         }
         assert_eq!(json["changeName"], "add-auth");
         assert_eq!(json["updated"][0], "_codev/specs/a/spec.md");
+    }
+
+    #[test]
+    fn accepted_report_exposes_the_expected_fields_in_camel_case() {
+        let report = DecisionAcceptedV1 {
+            root: "/p".into(),
+            decision: None,
+            path: Some("/p/_codev/decisions/0007-x.md".into()),
+            body_sha256: Some("sha256:abc".into()),
+            status: Vec::new(),
+        };
+        let json = serde_json::to_value(&report).unwrap();
+        for field in ["root", "decision", "path", "bodySha256", "status"] {
+            assert!(json.get(field).is_some(), "accept: missing `{field}`");
+        }
+        assert_eq!(json["bodySha256"], "sha256:abc");
     }
 
     #[test]
