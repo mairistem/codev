@@ -8,6 +8,29 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING:** `codev decision supersede`, `codev decision deviate` and
+  `codev decision promote` now create a `proposed` decision, unsealed, like
+  `codev decision new`: write or rework it, then run
+  `codev decision accept <ID>` to make it take effect. Scripts that relied on
+  these commands taking effect at once must add that step.
+- `codev decision supersede` no longer modifies the old decision: it stays
+  `accepted`, and in effect, until the new one is accepted. It now refuses a
+  decision that is not `accepted` (`predecessor_not_accepted`).
+- A deviation created by `codev decision deviate` only sets the inherited
+  decision aside once it is accepted.
+- `codev decision deviate --json` and `codev decision promote --json` no longer
+  return `bodySha256`, since nothing is sealed.
+
+### Added
+
+- `codev decision accept` marks the decisions listed in `supersedes` as
+  `superseded` in the same step, leaving their body and seal untouched, and
+  lists them in a new `superseded` field of its JSON output. It refuses a
+  predecessor that is no longer `accepted` — for example, one another decision
+  superseded in the meantime — with `predecessor_not_accepted`.
+
 ## [0.4.0] - 2026-09-30
 
 ### Changed

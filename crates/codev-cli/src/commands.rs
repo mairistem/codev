@@ -632,6 +632,7 @@ pub fn decision_new(ctx: &Ctx, title: &str, status_raw: &str) -> Result<Decision
     })
 }
 
+#[derive(Debug)]
 pub struct DecisionSupersededOutcome {
     pub root: PathBuf,
     pub new_decision: DecisionSummary,
@@ -650,17 +651,10 @@ pub fn decision_supersede(
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
     let today = ctx.clock.today();
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
-    let plan = engine_actions::plan_supersede(
-        &index,
-        &seal_file,
-        old_id,
-        new_title,
-        &today,
-        &layout,
-        |path| ctx.fs.read_to_string(path),
-    )
-    .map_err(action_to_failure)?;
+    // No seal is read nor written: the new decision is `proposed`, and the
+    // old one is only marked superseded by `decision accept`.
+    let plan = engine_actions::plan_supersede(&index, old_id, new_title, &today, &layout)
+        .map_err(action_to_failure)?;
 
     let old_id_str = old_id.split('/').next_back().unwrap_or(old_id).to_string();
     let old_qualified_id = plan.old_qualified_id.clone();
@@ -703,7 +697,6 @@ pub struct DecisionDeviatedOutcome {
     /// The qualified identifier of the decision being set aside — the same
     /// form that `codev decision show` accepts.
     pub target_qualified_id: String,
-    pub body_sha256: String,
 }
 
 pub fn decision_deviate(
@@ -715,14 +708,12 @@ pub fn decision_deviate(
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
     let today = ctx.clock.today();
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
 
-    let plan = engine_actions::plan_deviate(&index, &seal_file, target, new_title, &today, &layout)
+    let plan = engine_actions::plan_deviate(&index, target, new_title, &today, &layout)
         .map_err(action_to_failure)?;
 
     let target_qualified_id = plan.target_qualified_id.clone();
     let new_path = plan.new_path.clone();
-    let body_sha256 = plan.body_sha256.clone();
     let new_id = plan.new_id.clone();
 
     apply::execute(&plan.plan, ctx.fs)?;
@@ -746,7 +737,6 @@ pub fn decision_deviate(
         decision: summary,
         path: new_path,
         target_qualified_id,
-        body_sha256,
     })
 }
 
@@ -755,7 +745,6 @@ pub struct DecisionPromotedOutcome {
     pub root: PathBuf,
     pub decision: DecisionSummary,
     pub path: PathBuf,
-    pub body_sha256: String,
     /// The change the promotion comes from.
     pub source_change: String,
     /// The `design.md` that was updated (absolute path).
@@ -809,12 +798,10 @@ pub fn decision_promote(
     })?;
 
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
     let today = ctx.clock.today();
 
     let plan = engine_actions::plan_promote(
         &index,
-        &seal_file,
         change_name,
         heading,
         &design_source,
@@ -825,7 +812,6 @@ pub fn decision_promote(
     .map_err(action_to_failure)?;
 
     let new_path = plan.new_path.clone();
-    let body_sha256 = plan.body_sha256.clone();
     let source_change = plan.source_change.clone();
     let new_id = plan.new_id.clone();
 
@@ -847,7 +833,6 @@ pub fn decision_promote(
         root: layout.project_root().to_path_buf(),
         decision: summary,
         path: new_path,
-        body_sha256,
         source_change,
         design_path,
     })
@@ -915,6 +900,9 @@ pub struct DecisionAcceptedOutcome {
     pub decision: DecisionSummary,
     pub path: PathBuf,
     pub body_sha256: String,
+    /// The predecessors marked `superseded` by the same plan — empty when
+    /// the decision supersedes nothing.
+    pub superseded: Vec<engine_actions::SupersededPredecessor>,
 }
 
 pub fn decision_accept(ctx: &Ctx, id: &str) -> Result<DecisionAcceptedOutcome> {
@@ -947,6 +935,7 @@ pub fn decision_accept(ctx: &Ctx, id: &str) -> Result<DecisionAcceptedOutcome> {
         decision: summary,
         path: plan.path,
         body_sha256: plan.body_sha256,
+        superseded: plan.superseded,
     })
 }
 
@@ -1854,6 +1843,155 @@ edition = "2024"
         assert_eq!(seal_yaml(&h).as_deref(), Some("not: [a, seal"));
     }
 
+    // ─────────────── decision supersede ───────────────
+
+    /// Codes of every decision or seal finding `validate` reports — empty
+    /// means the decisions are clean.
+    fn decision_seal_findings(h: &Harness) -> Vec<&'static str> {
+        validate(&h.ctx(), ValidateArgs::All)
+            .unwrap()
+            .items
+            .iter()
+            .flat_map(|i| i.findings.iter().map(|f| f.finding.code))
+            .filter(|code| code.starts_with("decision_") || code.starts_with("seal_"))
+            .collect()
+    }
+
+    fn read(h: &Harness, path: &str) -> String {
+        use codev_engine::FileSystem;
+        h.fs.read_to_string(std::path::Path::new(path)).unwrap()
+    }
+
+    #[test]
+    fn decision_supersede_creates_a_proposed_decision_and_keeps_the_old_one_in_effect() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "Old choice", "accepted").unwrap();
+        let old_before = read(&h, "/p/_codev/decisions/0001-old-choice.md");
+        let seal_before = seal_yaml(&h);
+
+        let outcome = decision_supersede(&h.ctx(), "0001", "New choice").unwrap();
+
+        assert_eq!(outcome.new_decision.id, "0002");
+        assert_eq!(outcome.new_decision.status, "proposed");
+        assert_eq!(outcome.new_decision.supersedes, vec!["0001"]);
+        assert!(!outcome.new_decision.in_effect);
+        assert_eq!(outcome.old_qualified_id, "project/0001");
+        assert_eq!(
+            read(&h, "/p/_codev/decisions/0001-old-choice.md"),
+            old_before,
+            "the old decision is not modified"
+        );
+        assert_eq!(seal_yaml(&h), seal_before, "seal.yaml unchanged");
+        let old = decision_list(&h.ctx())
+            .unwrap()
+            .decisions
+            .into_iter()
+            .find(|d| d.id == "0001")
+            .unwrap();
+        assert!(old.in_effect);
+        assert!(old.superseded_by.is_none());
+    }
+
+    #[test]
+    fn decision_supersede_refuses_a_decision_that_is_not_accepted() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "Tentative", "proposed").unwrap();
+        let err = decision_supersede(&h.ctx(), "0001", "X").unwrap_err();
+        assert_eq!(err.code, "predecessor_not_accepted");
+        use codev_engine::FileSystem;
+        assert!(
+            !h.fs
+                .exists(std::path::Path::new("/p/_codev/decisions/0002-x.md"))
+        );
+    }
+
+    #[test]
+    fn decision_supersede_then_accept_supersedes_the_old_one_and_validates_clean() {
+        // End to end: supersede → validate clean → write the body → accept
+        // → old superseded, new sealed → validate clean.
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "Old choice", "accepted").unwrap();
+        let old_path = "/p/_codev/decisions/0001-old-choice.md";
+        let old_before = read(&h, old_path);
+        let old_seal = codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p"))
+            .unwrap()
+            .find("0001")
+            .cloned()
+            .unwrap();
+
+        decision_supersede(&h.ctx(), "0001", "New choice").unwrap();
+        assert!(decision_seal_findings(&h).is_empty());
+
+        // The user writes the new decision's body — no seal to trip over.
+        let new_path = std::path::Path::new("/p/_codev/decisions/0002-new-choice.md");
+        let source = h.fs.read_to_string(new_path).unwrap();
+        h.fs.write(
+            new_path,
+            &source.replace("## Context", "## Context\n\nWhy it changes."),
+        )
+        .unwrap();
+        assert!(decision_seal_findings(&h).is_empty());
+
+        let accepted = decision_accept(&h.ctx(), "0002").unwrap();
+
+        assert!(accepted.decision.in_effect);
+        assert_eq!(accepted.superseded.len(), 1);
+        assert_eq!(accepted.superseded[0].qualified_id, "project/0001");
+        assert_eq!(accepted.superseded[0].path, std::path::Path::new(old_path));
+        let old_after = read(&h, old_path);
+        assert!(old_after.contains("status: superseded"));
+        assert_eq!(
+            codev_core::decisions::body_slice(&old_after).unwrap(),
+            codev_core::decisions::body_slice(&old_before).unwrap(),
+        );
+        let seal =
+            codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p")).unwrap();
+        assert_eq!(seal.find("0001"), Some(&old_seal), "old seal untouched");
+        assert_eq!(
+            seal.find("0002").map(|s| s.body_sha256.as_str()),
+            Some(accepted.body_sha256.as_str())
+        );
+        let old = decision_list(&h.ctx())
+            .unwrap()
+            .decisions
+            .into_iter()
+            .find(|d| d.id == "0001")
+            .unwrap();
+        assert!(!old.in_effect);
+        assert_eq!(old.superseded_by.as_deref(), Some("project/0002"));
+        assert!(
+            decision_seal_findings(&h).is_empty(),
+            "{:?}",
+            decision_seal_findings(&h)
+        );
+    }
+
+    #[test]
+    fn decision_accept_refuses_a_second_supersession_of_the_same_decision() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "Old choice", "accepted").unwrap();
+        decision_supersede(&h.ctx(), "0001", "First successor").unwrap();
+        decision_supersede(&h.ctx(), "0001", "Second successor").unwrap();
+        decision_accept(&h.ctx(), "0002").unwrap();
+        let second = "/p/_codev/decisions/0003-second-successor.md";
+        let second_before = read(&h, second);
+        let seal_before = seal_yaml(&h);
+
+        let err = decision_accept(&h.ctx(), "0003").unwrap_err();
+
+        assert_eq!(err.code, "predecessor_not_accepted");
+        assert!(err.message.contains("`0001`"), "{}", err.message);
+        assert!(err.message.contains("`superseded`"), "{}", err.message);
+        assert!(err.message.contains("project/0002"), "{}", err.message);
+        assert_eq!(read(&h, second), second_before);
+        assert_eq!(seal_yaml(&h), seal_before);
+    }
+
     // ─────────────── decision promote ───────────────
 
     const DESIGN_WITH_BLOCK: &str = "\
@@ -1869,7 +2007,7 @@ The rationale for the choice.
 ";
 
     #[test]
-    fn decision_promote_creates_an_adr_and_references_the_design() {
+    fn decision_promote_creates_a_proposed_adr_and_references_the_design() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
@@ -1883,8 +2021,10 @@ The rationale for the choice.
 
         let outcome = decision_promote(&h.ctx(), "add-auth", "Use JWT").unwrap();
         assert_eq!(outcome.decision.id, "0001");
+        assert_eq!(outcome.decision.status, "proposed");
+        assert!(!outcome.decision.in_effect);
         assert_eq!(outcome.source_change, "add-auth");
-        assert!(outcome.body_sha256.starts_with("sha256:"));
+        assert!(seal_yaml(&h).is_none(), "a proposed ADR is not sealed");
 
         // The ADR exists.
         assert!(h.fs.exists(std::path::Path::new("/p/_codev/decisions/0001-use-jwt.md")));
@@ -1894,6 +2034,41 @@ The rationale for the choice.
                 .unwrap();
         assert!(design.contains("### Decision: Use JWT\n\n> Promoted to ADR **0001**"));
         assert!(!design.contains("The rationale for the choice."));
+    }
+
+    #[test]
+    fn decision_promote_rework_then_accept_validates_clean() {
+        // The promoted body is meant to be reworked: doing so before
+        // `decision accept` must never trip the seal.
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, None).unwrap();
+        h.fs.write(
+            std::path::Path::new("/p/_codev/changes/add-auth/design.md"),
+            DESIGN_WITH_BLOCK,
+        )
+        .unwrap();
+        decision_promote(&h.ctx(), "add-auth", "Use JWT").unwrap();
+
+        let adr = std::path::Path::new("/p/_codev/decisions/0001-use-jwt.md");
+        let source = h.fs.read_to_string(adr).unwrap();
+        let reworked = source.replace(
+            "## Consequences\n",
+            "## Consequences\n\nTokens expire; refresh is needed.\n",
+        );
+        assert_ne!(reworked, source);
+        h.fs.write(adr, &reworked).unwrap();
+        assert!(decision_seal_findings(&h).is_empty());
+
+        let accepted = decision_accept(&h.ctx(), "0001").unwrap();
+        assert_eq!(accepted.decision.status, "accepted");
+        assert!(accepted.superseded.is_empty());
+        assert!(
+            decision_seal_findings(&h).is_empty(),
+            "{:?}",
+            decision_seal_findings(&h)
+        );
     }
 
     #[test]
@@ -1951,7 +2126,7 @@ The rationale for the choice.
     }
 
     #[test]
-    fn decision_deviate_creates_a_local_adr_and_seals_it() {
+    fn decision_deviate_creates_a_proposed_adr_without_seal() {
         let h = Harness::new()
             .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with(
@@ -1962,16 +2137,49 @@ The rationale for the choice.
         let outcome = decision_deviate(&h.ctx(), "path:~/shared/0100", "Our alternative").unwrap();
 
         assert_eq!(outcome.target_qualified_id, "path:~/shared/0100");
-        assert!(outcome.body_sha256.starts_with("sha256:"));
         assert_eq!(outcome.decision.id, "0001");
+        assert_eq!(outcome.decision.status, "proposed");
         assert_eq!(outcome.decision.deviates_from, vec!["path:~/shared/0100"]);
+        assert!(
+            seal_yaml(&h).is_none(),
+            "a proposed deviation is not sealed"
+        );
+    }
 
-        // The seal exists and references 0001.
-        use codev_engine::FileSystem;
-        let seal_content =
-            h.fs.read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
-                .unwrap();
-        assert!(seal_content.contains("0001"));
+    #[test]
+    fn decision_deviate_has_no_effect_until_accepted() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with(
+                "/home/shared/_codev/decisions/0100.md",
+                &inherited_adr("0100"),
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_deviate(&h.ctx(), "path:~/shared/0100", "Our alt").unwrap();
+
+        let find = |qualified: &str| {
+            decision_list(&h.ctx())
+                .unwrap()
+                .decisions
+                .into_iter()
+                .find(|d| d.qualified_id == qualified)
+                .expect("decision listed")
+        };
+        // Proposed: the inherited decision is still in effect.
+        let inherited = find("path:~/shared/0100");
+        assert!(inherited.in_effect);
+        assert!(inherited.deviated_by.is_none());
+        assert!(!find("project/0001").in_effect);
+        assert!(decision_seal_findings(&h).is_empty());
+
+        // Accepted: the deviation takes effect.
+        let accepted = decision_accept(&h.ctx(), "0001").unwrap();
+        assert!(accepted.decision.in_effect);
+        let inherited = find("path:~/shared/0100");
+        assert!(!inherited.in_effect);
+        assert_eq!(inherited.deviated_by.as_deref(), Some("project/0001"));
+        assert!(seal_yaml(&h).is_some_and(|s| s.contains("0001")));
+        assert!(decision_seal_findings(&h).is_empty());
     }
 
     #[test]
@@ -2002,6 +2210,7 @@ The rationale for the choice.
             );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         decision_deviate(&h.ctx(), "path:~/shared/0100", "Our alt").unwrap();
+        decision_accept(&h.ctx(), "0001").unwrap();
         let list = decision_list(&h.ctx()).unwrap();
 
         let inherited = list

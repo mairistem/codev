@@ -465,8 +465,8 @@ pub fn decision_created(outcome: &DecisionCreatedOutcome) -> String {
             let _ = writeln!(
                 out,
                 "\nOpen the file to write the Context, Decision and Consequences sections,\n\
-                 then run `codev decision accept {}` to accept and seal it.",
-                outcome.decision.id
+                 {}.",
+                accept_next_step(&outcome.decision.id)
             );
         }
     }
@@ -482,7 +482,20 @@ pub fn decision_accepted(outcome: &DecisionAcceptedOutcome) -> String {
         outcome.decision.id, outcome.body_sha256
     );
     let _ = writeln!(out, "  File: {}", outcome.path.display());
+    for predecessor in &outcome.superseded {
+        let _ = writeln!(
+            out,
+            "  Superseded: {} (status: superseded)",
+            predecessor.qualified_id
+        );
+    }
     out
+}
+
+/// The next step shared by every command that creates a `proposed`
+/// decision — the same wording as `decision new`.
+fn accept_next_step(id: &str) -> String {
+    format!("then run `codev decision accept {id}` to accept and seal it")
 }
 
 /// Human rendering of `codev decision promote`.
@@ -490,17 +503,18 @@ pub fn decision_promoted(outcome: &DecisionPromotedOutcome) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "✓ Decision `{}` promoted to ADR {}: {}",
-        outcome.decision.title, outcome.decision.id, outcome.decision.title
+        "✓ Decision `{}` promoted to proposed ADR {}",
+        outcome.decision.title, outcome.decision.id
     );
     let _ = writeln!(out, "  File:    {}", outcome.path.display());
-    let _ = writeln!(out, "  Hash:    {}", outcome.body_sha256);
     let _ = writeln!(out, "  Source:  {}", outcome.design_path.display());
     let _ = writeln!(
         out,
-        "\nSplit the body into Context / Decision / Consequences / Alternatives\n\
-         considered before archiving change `{}`.",
-        outcome.source_change
+        "\nReview the ADR promoted from change `{}`: split its body into Context,\n\
+         Decision, Consequences and Alternatives considered,\n\
+         {}.",
+        outcome.source_change,
+        accept_next_step(&outcome.decision.id)
     );
     out
 }
@@ -510,14 +524,17 @@ pub fn decision_deviated(outcome: &DecisionDeviatedOutcome) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "✓ Local deviation from `{}` created: {} {}",
+        "✓ Local deviation from `{}` created: {} {} (proposed)",
         outcome.target_qualified_id, outcome.decision.id, outcome.decision.title
     );
     let _ = writeln!(out, "  File: {}", outcome.path.display());
-    let _ = writeln!(out, "  Hash: {}", outcome.body_sha256);
     let _ = writeln!(
         out,
-        "\nThe ADR is sealed. Open it to write the Context and Decision sections."
+        "\nOpen the file to write the Context, Decision and Consequences sections,\n\
+         {}.\n\
+         `{}` stays in effect until then.",
+        accept_next_step(&outcome.decision.id),
+        outcome.target_qualified_id
     );
     out
 }
@@ -544,18 +561,22 @@ pub fn decision_superseded(outcome: &DecisionSupersededOutcome) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "✓ Decision `{}` superseded by `{} {}`",
-        outcome.old_qualified_id, outcome.new_decision.id, outcome.new_decision.title
+        "✓ Decision `{} {}` created (proposed), to supersede `{}`",
+        outcome.new_decision.id, outcome.new_decision.title, outcome.old_qualified_id
     );
     let _ = writeln!(out, "  New ADR:     {}", outcome.new_path.display());
     let _ = writeln!(
         out,
-        "  Old ADR:     {} (status: superseded)",
+        "  Old ADR:     {} (unchanged, still in effect)",
         outcome.old_path.display()
     );
     let _ = writeln!(
         out,
-        "\nOpen the new file to write the Decision and what changes."
+        "\nOpen the new file to write the Context, Decision and Consequences sections,\n\
+         {}.\n\
+         Accepting it marks `{}` superseded; until then it stays in effect.",
+        accept_next_step(&outcome.new_decision.id),
+        outcome.old_qualified_id
     );
     out
 }
@@ -866,5 +887,68 @@ apply:
         let rendered = setup(&outcome, true);
         assert!(!rendered.contains("/codev-configure"), "{rendered}");
         assert!(rendered.contains("Restart Claude Code"), "{rendered}");
+    }
+
+    // ─────────────── decisions created proposed ───────────────
+
+    fn proposed_summary(id: &str, title: &str) -> crate::commands::DecisionSummary {
+        crate::commands::DecisionSummary {
+            id: id.into(),
+            qualified_id: format!("project/{id}"),
+            title: title.into(),
+            status: "proposed".into(),
+            date: "2026-09-30".into(),
+            tags: Vec::new(),
+            supersedes: Vec::new(),
+            deviates_from: Vec::new(),
+            path: std::path::PathBuf::from(format!("_codev/decisions/{id}-x.md")),
+            origin: "project".into(),
+            in_effect: false,
+            superseded_by: None,
+            deviated_by: None,
+        }
+    }
+
+    #[test]
+    fn superseded_output_names_the_accept_step() {
+        let out = decision_superseded(&crate::commands::DecisionSupersededOutcome {
+            root: "/p".into(),
+            new_decision: proposed_summary("0007", "New choice"),
+            new_path: "/p/_codev/decisions/0007-new-choice.md".into(),
+            old_id: "0003".into(),
+            old_qualified_id: "project/0003".into(),
+            old_path: "/p/_codev/decisions/0003-old.md".into(),
+        });
+        assert!(out.contains("(proposed)"), "{out}");
+        assert!(out.contains("still in effect"), "{out}");
+        assert!(out.contains("`codev decision accept 0007`"), "{out}");
+    }
+
+    #[test]
+    fn deviated_output_names_the_accept_step() {
+        let out = decision_deviated(&crate::commands::DecisionDeviatedOutcome {
+            root: "/p".into(),
+            decision: proposed_summary("0001", "Our alternative"),
+            path: "/p/_codev/decisions/0001-our-alternative.md".into(),
+            target_qualified_id: "path:~/shared/0100".into(),
+        });
+        assert!(out.contains("(proposed)"), "{out}");
+        assert!(!out.contains("Hash"), "nothing is sealed: {out}");
+        assert!(out.contains("`codev decision accept 0001`"), "{out}");
+    }
+
+    #[test]
+    fn promoted_output_names_the_accept_step() {
+        let out = decision_promoted(&crate::commands::DecisionPromotedOutcome {
+            root: "/p".into(),
+            decision: proposed_summary("0001", "Use JWT"),
+            path: "/p/_codev/decisions/0001-use-jwt.md".into(),
+            source_change: "add-auth".into(),
+            design_path: "/p/_codev/changes/add-auth/design.md".into(),
+        });
+        assert!(out.contains("proposed ADR 0001"), "{out}");
+        assert!(!out.contains("Hash"), "nothing is sealed: {out}");
+        assert!(out.contains("Review the ADR"), "{out}");
+        assert!(out.contains("`codev decision accept 0001`"), "{out}");
     }
 }

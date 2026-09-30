@@ -250,7 +250,9 @@ Le frontmatter est délimité par des lignes `---` placées tout au début du
 fichier. Le contenu est découpé en sections `##` ; les quatre sections du
 template relèvent de la convention, et non de l'obligation. Seules les
 décisions `accepted` qui ne sont ni remplacées ni l'objet d'un écart sont en
-vigueur.
+vigueur, et `supersedes` comme `deviates_from` ne prennent effet que sur une
+décision `accepted` : un remplacement ou un écart `proposed` ne change rien
+avant `codev decision accept`.
 
 ## seal.yaml
 
@@ -338,7 +340,7 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `decision_unknown_status` | erreur | Une décision a un statut inconnu |
 | `decision_field_type_mismatch` | erreur | Un champ du frontmatter n'a pas la forme attendue |
 | `decision_seal_mismatch` | erreur | Le contenu d'une décision scellée a été modifié |
-| `decision_conflicting_deviations` | erreur | Deux décisions locales s'écartent de la même décision héritée |
+| `decision_conflicting_deviations` | erreur | Deux décisions locales acceptées s'écartent de la même décision héritée |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
 | `decision_orphan_seal` | avertissement | Un sceau ne correspond à aucune décision |

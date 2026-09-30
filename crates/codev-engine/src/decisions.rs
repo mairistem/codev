@@ -582,6 +582,25 @@ mod tests {
     }
 
     #[test]
+    fn proposed_supersession_has_no_effect_on_the_index() {
+        // `decision supersede` creates a proposed successor: until it is
+        // accepted, the old decision stays in effect.
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003.md", adr("0003", "accepted", &[]))
+            .with_file(
+                "/p/_codev/decisions/0007.md",
+                adr("0007", "proposed", &["0003"]),
+            );
+        let cfg = resolved(&fs);
+        let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+
+        let in_effect: Vec<String> = idx.in_effect.iter().map(|q| q.id.clone()).collect();
+        assert_eq!(in_effect, ["0003"]);
+        assert!(idx.findings.is_empty(), "{:?}", idx.findings);
+    }
+
+    #[test]
     fn three_link_chain_leaves_the_last_one() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
@@ -806,6 +825,48 @@ mod tests {
             idx.in_effect
                 .iter()
                 .any(|q| q.as_str() == "path:~/shared/0100")
+        );
+    }
+
+    #[test]
+    fn proposed_deviations_on_the_same_target_do_not_conflict() {
+        // One accepted deviation and one still proposed: only the accepted
+        // one counts, so there is no conflict and it sets the target aside.
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with_file(
+                "/home/shared/_codev/decisions/0100.md",
+                adr("0100", "accepted", &[]),
+            )
+            .with_file(
+                "/p/_codev/decisions/0007.md",
+                adr_deviates("0007", "accepted", &["path:~/shared/0100"]),
+            )
+            .with_file(
+                "/p/_codev/decisions/0008.md",
+                adr_deviates("0008", "proposed", &["path:~/shared/0100"]),
+            );
+        let cfg = resolved(&fs);
+        let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        assert!(
+            !idx.findings
+                .iter()
+                .any(|f| f.code == codes::DECISION_CONFLICTING_DEVIATIONS),
+            "{:?}",
+            idx.findings
+        );
+        let inherited = idx
+            .entries
+            .iter()
+            .find(|e| e.qualified_id.origin != Origin::Project)
+            .unwrap();
+        assert_eq!(
+            inherited
+                .deviated_by
+                .as_ref()
+                .map(|q| q.as_str())
+                .as_deref(),
+            Some("project/0007")
         );
     }
 }

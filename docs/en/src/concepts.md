@@ -135,10 +135,13 @@ codev decision accept 0001
 ```
 
 A decision has one of five statuses: `accepted`, `superseded`, `proposed`,
-`deprecated` or `rejected`. `codev decision new` creates it `proposed`, so
-you can write it freely; `codev decision accept` makes it `accepted` once its
-text is final. A decision is **in effect** when it is `accepted`
-and nothing supersedes it. The decisions in effect are handed to the agent
+`deprecated` or `rejected`. Every command that creates a decision —
+`codev decision new`, [`supersede`](#supersession), [`deviate`](#deviation) and
+[`promote`](#promotion) — creates it `proposed`, so you can write it freely;
+`codev decision accept` makes it `accepted` once its text is final. Accepting
+is the only step that makes a decision take effect: a `proposed` decision
+supersedes nothing and deviates from nothing yet. A decision is **in effect**
+when it is `accepted` and nothing supersedes it. The decisions in effect are handed to the agent
 whenever it writes a `design.md`, so designs follow them instead of
 re-debating them.
 
@@ -150,9 +153,8 @@ decision inherited from another repository.
 ## Seal
 
 An accepted decision is immutable. When a decision becomes accepted through a
-`codev decision` command — `accept`, `supersede`, `deviate`, `promote`, or
-`new --status accepted` — codev records a SHA-256 hash of the decision's body
-in `_codev/decisions/seal.yaml`; `codev decision seal` does the same for a
+`codev decision` command — `accept`, or `new --status accepted` — codev
+records a SHA-256 hash of the decision's body in `_codev/decisions/seal.yaml`; `codev decision seal` does the same for a
 decision you accepted by hand. `codev validate` compares the body of
 every local `accepted` or `superseded` decision with its hash, and reports an
 edit as a `decision_seal_mismatch` error and a missing seal as a
@@ -176,9 +178,19 @@ To change a decision, supersede it rather than editing it:
 codev decision supersede 0001 "Use SQLite for persistence"
 ```
 
-codev creates a new accepted decision whose frontmatter lists
-`supersedes: ["0001"]`, and marks `0001` as `superseded`. The old body stays
-exactly as it was, so the history of the reasoning is preserved.
+codev creates a new `proposed` decision whose frontmatter lists
+`supersedes: ["0001"]`, and leaves `0001` untouched: it stays `accepted`, and in
+effect, while you write the new one. Accepting the new decision marks `0001` as
+`superseded` in the same step:
+
+```bash
+codev decision accept 0002
+```
+
+The old body stays exactly as it was, so its seal stays valid and the history
+of the reasoning is preserved. Only an `accepted` decision can be superseded:
+if another decision superseded `0001` in the meantime, `codev decision accept`
+refuses with `predecessor_not_accepted` and writes nothing.
 
 ## Deviation
 
@@ -190,10 +202,12 @@ deviation:
 codev decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
-This creates a local accepted decision with `deviates_from` pointing at the
-inherited one. The inherited decision stays visible in `codev decision list`,
-but it is no longer in effect for your project and is no longer handed to the
-agent when writing designs.
+This creates a local `proposed` decision with `deviates_from` pointing at the
+inherited one. The deviation takes effect when you accept it with
+`codev decision accept`: the inherited decision then stays visible in
+`codev decision list`, but it is no longer in effect for your project and is no
+longer handed to the agent when writing designs. Until then, the inherited
+decision is still in effect.
 
 ## Promotion
 
@@ -204,9 +218,11 @@ it in `design.md` as a `### Decision: <title>` block, then promote it:
 codev decision promote add-audit-log "Append-only audit table"
 ```
 
-codev creates a sealed ADR from the block's content and replaces the block's
-body with a reference to the new ADR. Split the promoted text into the ADR's
-sections before archiving the change.
+codev creates a `proposed` ADR whose `## Decision` section is the block's
+content, verbatim, and replaces the block's body with a reference to the new
+ADR. Review it and split the promoted text into the ADR's sections, then accept
+it with `codev decision accept`, which seals it — ideally before archiving the
+change.
 
 ## Inherited source
 

@@ -21,7 +21,7 @@ use contract::{
     DecisionListReportV1, DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1,
     DecisionSupersededV1, DecisionV1, InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1,
     SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1,
-    SourcesUpdateReportV1, SpecsV1, StatusV1, SyncReportV1, ValidateReportV1,
+    SourcesUpdateReportV1, SpecsV1, StatusV1, SupersededDecisionV1, SyncReportV1, ValidateReportV1,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -298,8 +298,11 @@ enum DecisionCommand {
     /// Accept a proposed decision: set its status to `accepted` and seal it
     ///
     /// Rewrites the frontmatter status of a local `proposed` decision and
-    /// records the hash of its body in `seal.yaml`, in the same plan — both
-    /// are written or neither is. The body is left untouched. Inherited
+    /// records the hash of its body in `seal.yaml`, in the same plan — all
+    /// writes happen or none does. The body is left untouched. The decisions
+    /// listed in its `supersedes` are marked `superseded` in the same plan;
+    /// each must still be `accepted`. This is how a decision created by
+    /// `new`, `supersede`, `deviate` or `promote` takes effect. Inherited
     /// decisions and decisions that are not `proposed` are refused.
     Accept {
         /// Short identifier (`0007`) — inherited ones (`path:` / `git:`) are refused
@@ -307,7 +310,12 @@ enum DecisionCommand {
         #[arg(long)]
         json: bool,
     },
-    /// Supersede a decision: mark it `superseded` and create a new one
+    /// Create a proposed decision that will supersede an accepted one
+    ///
+    /// The new decision is created `proposed` and unsealed, with the old one
+    /// in its `supersedes`. The old decision is not modified and stays in
+    /// effect until `codev decision accept` accepts the new one, which marks
+    /// the old one `superseded` in the same step.
     Supersede {
         /// Identifier of the decision to supersede (short or qualified)
         old_id: String,
@@ -332,11 +340,12 @@ enum DecisionCommand {
     },
     /// Record a local deviation from an inherited decision
     ///
-    /// Creates a local `accepted` ADR that explicitly references the
-    /// inherited decision being departed from. The inherited decision stays
-    /// visible in `codev decision list`, but disappears from the
-    /// instructions injected into the `design` artifact. To deviate from a
-    /// local decision, use `codev decision supersede`.
+    /// Creates a local `proposed` ADR, unsealed, that explicitly references
+    /// the inherited decision being departed from. The deviation takes
+    /// effect once `codev decision accept` accepts it: the inherited
+    /// decision then stays visible in `codev decision list`, but disappears
+    /// from the instructions injected into the `design` artifact. To deviate
+    /// from a local decision, use `codev decision supersede`.
     Deviate {
         /// Qualified identifier of the inherited decision to set aside
         ///
@@ -350,9 +359,10 @@ enum DecisionCommand {
     },
     /// Promote a `### Decision: <title>` block of a `design.md` to an ADR
     ///
-    /// Extracts the block's content, creates a sealed local ADR, and
-    /// replaces the block's body with a textual reference to the new ADR.
-    /// Refuses an archived change.
+    /// Extracts the block's content into a `proposed` local ADR, unsealed,
+    /// and replaces the block's body with a textual reference to the new
+    /// ADR. Review and rework the ADR, then accept and seal it with
+    /// `codev decision accept`. Refuses an archived change.
     Promote {
         /// Name of the active change whose `design.md` holds the block
         change: String,
@@ -792,6 +802,15 @@ fn run(cli: Cli) -> i32 {
                             decision: Some(decision_v1(&outcome.decision)),
                             path: Some(outcome.path.display().to_string()),
                             body_sha256: Some(outcome.body_sha256.clone()),
+                            superseded: outcome
+                                .superseded
+                                .iter()
+                                .map(|p| SupersededDecisionV1 {
+                                    id: p.id.clone(),
+                                    qualified_id: p.qualified_id.clone(),
+                                    path: p.path.display().to_string(),
+                                })
+                                .collect(),
                             status: Vec::new(),
                         },
                         || render::decision_accepted(&outcome),
@@ -835,7 +854,6 @@ fn run(cli: Cli) -> i32 {
                             root: outcome.root.display().to_string(),
                             decision: Some(decision_v1(&outcome.decision)),
                             path: Some(outcome.path.display().to_string()),
-                            body_sha256: Some(outcome.body_sha256.clone()),
                             source_change: Some(outcome.source_change.clone()),
                             design_path: Some(outcome.design_path.display().to_string()),
                             status: Vec::new(),
@@ -859,7 +877,6 @@ fn run(cli: Cli) -> i32 {
                             decision: Some(decision_v1(&outcome.decision)),
                             path: Some(outcome.path.display().to_string()),
                             target_qualified_id: Some(outcome.target_qualified_id.clone()),
-                            body_sha256: Some(outcome.body_sha256.clone()),
                             status: Vec::new(),
                         },
                         || render::decision_deviated(&outcome),
@@ -995,7 +1012,7 @@ fn decision_created_shape() -> serde_json::Value {
 }
 
 fn decision_accepted_shape() -> serde_json::Value {
-    json!({ "root": null, "decision": null, "path": null })
+    json!({ "root": null, "decision": null, "path": null, "superseded": [] })
 }
 
 fn decision_superseded_shape() -> serde_json::Value {
