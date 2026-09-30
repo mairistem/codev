@@ -15,6 +15,13 @@ To weigh in, open an issue or comment on an existing one.
 - Reading the specs of inherited sources, not only their context, rules and
   decisions.
 
+**Decisions**
+
+- The same lifecycle for every command that creates a decision:
+  `decision supersede`, `decision deviate` and `decision promote` will create
+  a `proposed` decision to review, sealed only by `codev decision accept`,
+  like `decision new` already does.
+
 **Validation**
 
 - Warnings for specs that are hard to maintain: a placeholder or very short
