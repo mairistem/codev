@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash"
 license: MIT
 metadata:
   generator: codev
-  version: "0.3.2"
+  version: "0.4.0"
 ---
 
 Implement the tasks of a codev change — work through each `- [ ]` box in

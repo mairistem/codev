@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read"
 license: MIT
 metadata:
   generator: codev
-  version: "0.3.2"
+  version: "0.4.0"
 ---
 
 Merge a codev change's deltas into the main specs, **without moving the
@@ -62,8 +62,12 @@ Fields to use:
 - `unchanged[]` — paths of specs that were already up to date;
 - `status[]` — empty on success.
 
-On a non-zero exit, read `status[0].code` and `status[0].message`, relay
-the message as is and stop.
+On a **non-zero exit**, read `status[0].code`:
+
+- If `code == "validation_failed"` → reply **exactly**:
+  > The change has errors. Run `codev validate <name>` to see the details.
+  Nothing more. Do not retry, and do not try to fix the change yourself.
+- For **any other code** → relay `status[0].message` as is, and stop.
 
 ### 3. Report to the user
 

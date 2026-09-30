@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, mcp__claude_ai_Atl
 license: MIT
 metadata:
   generator: codev
-  version: "0.3.2"
+  version: "0.4.0"
 ---
 
 Create a change and write its planning artifacts, in one pass.
