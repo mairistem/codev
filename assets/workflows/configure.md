@@ -7,7 +7,7 @@ workflows, the MCPs or the schema.
 - Reads the project at surface level, within a **budget** defined below.
 - Modifies **only** the `context` and `rules` fields of
   `_codev/config.yaml`.
-- **Preserves** `schema`, `workflows`, `mcp`, `inherits` and every
+- **Preserves** `schema`, `language`, `workflows`, `mcp`, `inherits` and every
   existing comment — the `codev init` probe filled those fields; they
   are not replayed.
 - **Writes nothing without confirmation** — show the diff, ask, write.
@@ -94,6 +94,9 @@ know before writing". It must cover:
 - **Checkable on review** — no "clean", no "elegant".
 - **Grounded** in what the project does, not generic.
 
+Write both blocks in the language set by the `language:` key of the same
+file (`en` when absent): the team reads and maintains them.
+
 ### 4. Show the diff
 
 Expected format:
@@ -130,8 +133,8 @@ Exact question:
 If `yes`:
 
 - **Edit** `_codev/config.yaml` — replace only the `context:` and
-  `rules:` sections. **Preserve** `schema`, `workflows`, `mcp`,
-  `inherits`, and **every comment**.
+  `rules:` sections. **Preserve** `schema`, `language`, `workflows`,
+  `mcp`, `inherits`, and **every comment**.
 - Add a comment above `context:`:
   `# written by /codev-configure`. If there was already one
   (e.g. "detected from Cargo.toml"), replace it with the new one.

@@ -74,6 +74,11 @@ Two forms, depending on the scope:
 Stay within the artifact's contract — expected sections, scenario format,
 checkboxes. The change is about **content**, not structure.
 
+Write in the language set by the `language:` key of `_codev/config.yaml`
+(`en` when absent), whatever language the conversation is in. Structural
+keywords — headings such as `## Why` or `### Requirement:`, `**WHEN**` /
+`**THEN**`, `SHALL` / `MUST` — stay in English.
+
 ### 4. Detect and report the ripple
 
 After writing, compare the state of the change with what changed:

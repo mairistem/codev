@@ -199,6 +199,11 @@ pub fn instructions(instructions: &Instructions) -> String {
         "Write to: {}",
         instructions.resolved_output_path.display()
     );
+    let _ = writeln!(
+        out,
+        "Language: {} — prose only; template keywords stay in English",
+        instructions.language
+    );
 
     if instructions.skipped {
         let _ = writeln!(out);
@@ -697,6 +702,7 @@ apply:
             resolved_output_path: PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             instruction: None,
             template: None,
+            language: "en".into(),
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::<Dependency>::new(),
@@ -730,6 +736,7 @@ apply:
             resolved_output_path: PathBuf::from("/p/_codev/changes/add-auth/design.md"),
             instruction: None,
             template: None,
+            language: "en".into(),
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::<Dependency>::new(),

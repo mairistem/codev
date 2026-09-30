@@ -1121,6 +1121,7 @@ mod tests {
             yes: true,
             no_detect: true,
             preset: None,
+            language: None,
         }
     }
 
@@ -1233,6 +1234,7 @@ edition = "2024"
             yes: true,
             no_detect: false,
             preset: None,
+            language: None,
         };
         let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
 
@@ -1262,6 +1264,46 @@ edition = "2024"
             cfg.contains("detected from Cargo.toml"),
             "config must cite the stack provenance: {cfg}"
         );
+    }
+
+    #[test]
+    fn init_writes_the_language_detected_from_the_locale() {
+        let mut h = Harness::new();
+        h.env.vars.insert("LANG".into(), "fr_FR.UTF-8".into());
+        let opts = crate::init_prompts::InitOptions {
+            yes: true,
+            no_detect: false,
+            preset: None,
+            language: None,
+        };
+        init(&h.ctx(), ".", false, &opts).unwrap();
+
+        let cfg =
+            h.fs.read("/p/_codev/config.yaml")
+                .expect("config.yaml written");
+        assert!(
+            cfg.contains("# detected from LANG=fr_FR.UTF-8\nlanguage: fr\n"),
+            "{cfg}"
+        );
+    }
+
+    #[test]
+    fn init_language_flag_wins_over_the_locale() {
+        let mut h = Harness::new();
+        h.env.vars.insert("LANG".into(), "fr_FR.UTF-8".into());
+        let opts = crate::init_prompts::InitOptions {
+            yes: true,
+            no_detect: false,
+            preset: None,
+            language: Some("de".into()),
+        };
+        init(&h.ctx(), ".", false, &opts).unwrap();
+
+        let cfg =
+            h.fs.read("/p/_codev/config.yaml")
+                .expect("config.yaml written");
+        assert!(cfg.contains("language: de\n"), "{cfg}");
+        assert!(!cfg.contains("language: fr"), "{cfg}");
     }
 
     #[test]

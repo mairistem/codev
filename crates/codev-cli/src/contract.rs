@@ -398,6 +398,10 @@ pub struct InstructionsV1 {
     pub resolved_output_path: String,
     pub instruction: Option<String>,
     pub template: Option<String>,
+    /// Language of the prose to write (ISO 639 code, from `language:` in
+    /// the config, `en` by default). Structural keywords of the template
+    /// stay in English whatever the language.
+    pub language: String,
     /// From most general to most specific. Constraints for the agent, never
     /// content to copy into the produced file.
     pub context: Vec<BlockV1>,
@@ -422,6 +426,7 @@ impl From<&Instructions> for InstructionsV1 {
             resolved_output_path: instructions.resolved_output_path.display().to_string(),
             instruction: instructions.instruction.clone(),
             template: instructions.template.clone(),
+            language: instructions.language.clone(),
             context: instructions.context.iter().map(BlockV1::from).collect(),
             rules: instructions.rules.iter().map(BlockV1::from).collect(),
             dependencies: instructions

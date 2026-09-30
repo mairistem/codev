@@ -111,6 +111,7 @@ The response contains:
 |---|---|
 | `instruction` | The schema's guidance for this artifact type. Final authority |
 | `template` | The structure of the file to produce |
+| `language` | The language to write the prose in (ISO 639 code, e.g. `fr`) |
 | `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
 | `context` | Project context — a **constraint on you**, never content to copy |
 | `rules` | Rules specific to this artifact — also a constraint, never content |
@@ -143,6 +144,13 @@ the change.
 
 **d. Write the file**, using `template` as its structure. Then check that it
 exists at the expected location.
+
+Write every sentence in `language`, whatever language the conversation is
+in: the file is read and approved by the team, and `language` is the team's
+choice. Structural keywords stay exactly as `template` gives them, in
+English — headings such as `## Why` or `### Requirement:`, delta sections
+such as `## ADDED Requirements`, and `**WHEN**` / `**THEN**` / `SHALL` /
+`MUST`. codev parses them; a translated keyword is a broken artifact.
 
 **Special case: the change's first artifact when a ticket was detected
 in step 0.** Right after `# Proposal: <title>`, before `## Why`, insert a
@@ -220,6 +228,7 @@ Summarize:
   not only those listed in `applyRequires`.
 - Always re-read the dependencies from disk before creating an artifact.
 - `context` and `rules` are never copied into the files produced.
+- Prose follows `language`; structural keywords always stay in English.
 - If a change with this name already exists, ask the user whether they want
   to continue it or create another one.
 - Check that each written file exists before moving on to the next.

@@ -80,6 +80,11 @@ enum Command {
         /// Preselect the answer to the workflows question
         #[arg(long, value_enum)]
         preset: Option<PresetArg>,
+        /// Language of the prose skills write in artifacts, as an ISO 639
+        /// code (`en`, `fr`, `pt-BR`…). Default: detected from the locale,
+        /// otherwise `en`
+        #[arg(long, value_name = "CODE", value_parser = parse_language)]
+        language: Option<String>,
         #[arg(long)]
         json: bool,
     },
@@ -408,6 +413,7 @@ fn run(cli: Cli) -> i32 {
             yes,
             no_detect,
             preset,
+            language,
             json,
         } => {
             let path = path.unwrap_or_else(|| ".".to_string());
@@ -415,6 +421,7 @@ fn run(cli: Cli) -> i32 {
                 yes,
                 no_detect,
                 preset: preset.map(PresetArg::to_preset),
+                language,
             };
             match commands::init(&ctx, &path, force, &init_opts) {
                 Ok(outcome) => {
@@ -1086,5 +1093,16 @@ mod completions_tests {
                 "output for {shell:?} does not name the binary"
             );
         }
+    }
+}
+
+/// Validates `--language` up front, with the same rule `config.yaml` applies.
+fn parse_language(raw: &str) -> Result<String, String> {
+    if codev_core::detect::locale::is_valid_language_code(raw) {
+        Ok(raw.to_string())
+    } else {
+        Err(format!(
+            "`{raw}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
+        ))
     }
 }
