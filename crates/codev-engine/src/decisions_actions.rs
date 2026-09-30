@@ -1024,7 +1024,17 @@ pub fn rewrite_frontmatter_status(
     decision: &codev_core::decisions::Decision,
     new_status: DecisionStatus,
 ) -> String {
-    let body = &source[decision.frontmatter_span.byte_range.end..];
+    // The body is cut exactly where the seal cuts it, so that rewriting the
+    // status can never change the sealed bytes — whatever the line endings.
+    let body = codev_core::decisions::seal::body_slice(source)
+        .unwrap_or(&source[decision.frontmatter_span.byte_range.end..]);
+    // Keep the file's line-ending style: a CRLF file (a Windows checkout)
+    // gets a CRLF frontmatter back.
+    let newline = if source.starts_with("---\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
     let frontmatter = render_frontmatter(
         &decision.id,
         &decision.title,
@@ -1034,10 +1044,10 @@ pub fn rewrite_frontmatter_status(
         &decision.tags,
         &decision.deviates_from,
     );
-    // `frontmatter_span` ends right after the closing `---\n`.
-    // We add a `\n` after our new frontmatter to restore the same
-    // shape.
-    format!("{frontmatter}\n{body}")
+    // `render_frontmatter` ends on the closing `---`, without its line
+    // ending.
+    let frontmatter = frontmatter.replace('\n', newline);
+    format!("{frontmatter}{newline}{body}")
 }
 
 #[cfg(test)]
@@ -1051,6 +1061,24 @@ mod tests {
         let mut env = FixedEnv::at("/p");
         env.vars.insert("HOME".into(), "/home".into());
         env
+    }
+
+    #[test]
+    fn rewriting_the_status_keeps_a_crlf_body_byte_for_byte() {
+        let source = "---\r\nid: \"0001\"\r\ntitle: T\r\nstatus: proposed\r\ndate: 2026-09-08\r\n---\r\n\r\n## Context\r\n\r\nx\r\n";
+        let decision = codev_core::decisions::parse_decision(source)
+            .value
+            .expect("a well-formed ADR");
+        let rewritten = rewrite_frontmatter_status(source, &decision, DecisionStatus::Accepted);
+        assert!(rewritten.contains("status: accepted\r\n"), "{rewritten:?}");
+        assert_eq!(
+            codev_core::decisions::seal::body_slice(&rewritten).unwrap(),
+            codev_core::decisions::seal::body_slice(source).unwrap(),
+        );
+        assert!(
+            !rewritten.contains("\n\n\r"),
+            "no mixed blank line: {rewritten:?}"
+        );
     }
 
     fn adr(id: &str, status: &str) -> String {

@@ -131,19 +131,20 @@ pub fn parse_decision(source: &str) -> Parsed<Option<Decision>> {
 
 /// Returns `(frontmatter content, offset of the first byte of the body)`.
 fn extract_frontmatter(source: &str) -> Option<(&str, usize)> {
-    // Must start with `---\n` — `\r\n` is tolerated by normalizing to
-    // `\n` at split time.
-    let after_open = source.strip_prefix("---\n")?;
+    // Must start with a `---` line, ending in `\n` or `\r\n` — files saved
+    // on Windows use the latter.
+    let after_open = source
+        .strip_prefix("---\n")
+        .or_else(|| source.strip_prefix("---\r\n"))?;
+    let open_len = source.len() - after_open.len();
     // Look for the closing fence: a lone `---` line.
     let close_relative = find_close_fence(after_open)?;
     let frontmatter = &after_open[..close_relative];
-    // `body_offset` in bytes in the original source: `---\n` (4) +
-    // frontmatter + `---\n` (4) — unless the file ends right after
-    // `---`, in which case the total length is used.
-    let open_len = 4;
-    let close_len = "---\n".len();
-    let raw_offset = open_len + close_relative + close_len;
-    let body_offset = raw_offset.min(source.len());
+    // The body starts after the closing line and its own line ending,
+    // whatever it is — or at the end of the file if nothing follows `---`.
+    let close_line = &after_open[close_relative..];
+    let close_len = close_line.find('\n').map_or(close_line.len(), |i| i + 1);
+    let body_offset = open_len + close_relative + close_len;
     Some((frontmatter, body_offset))
 }
 
@@ -342,6 +343,20 @@ impl<'de> Deserialize<'de> for SupersedesValue {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_crlf_adr_is_parsed_like_an_lf_one() {
+        let lf = "---\nid: \"0001\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nx\n";
+        let crlf = lf.replace('\n', "\r\n");
+        let a = parse_decision(lf).value.expect("LF parses");
+        let b = parse_decision(&crlf).value.expect("CRLF parses");
+        assert_eq!(a.id, b.id);
+        assert_eq!(a.title, b.title);
+        assert_eq!(
+            &crlf[b.frontmatter_span.byte_range.end..],
+            "\r\n## Context\r\n\r\nx\r\n"
+        );
+    }
 
     #[test]
     fn parse_well_formed_adr() {
