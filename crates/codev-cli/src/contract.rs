@@ -365,16 +365,16 @@ pub struct DecisionDeviatedV1 {
     pub path: Option<String>,
     /// The qualified identifier of the inherited decision being set aside.
     pub target_qualified_id: Option<String>,
-    /// Hash of the new local ADR's body — the ADR is sealed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub body_sha256: Option<String>,
+    // No `bodySha256`: the deviation is created `proposed`, hence unsealed;
+    // `decision accept --json` carries the hash once it is sealed.
     pub status: Vec<StatusEntry>,
 }
 
 /// The output of `codev decision accept --json`.
 ///
 /// Same fields as `DecisionCreatedV1`: the accepted decision, its file and
-/// the hash now recorded in `seal.yaml`.
+/// the hash now recorded in `seal.yaml` — plus the predecessors the
+/// acceptance marked `superseded`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecisionAcceptedV1 {
@@ -384,7 +384,20 @@ pub struct DecisionAcceptedV1 {
     /// Hash of the accepted ADR's body, prefixed with `sha256:`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body_sha256: Option<String>,
+    /// Additive field — the decisions listed in `supersedes` that this
+    /// acceptance rewrote to `status: superseded`. Always present, empty
+    /// when the decision supersedes nothing.
+    pub superseded: Vec<SupersededDecisionV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// A predecessor marked `superseded` by `decision accept`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupersededDecisionV1 {
+    pub id: String,
+    pub qualified_id: String,
+    pub path: String,
 }
 
 /// The output of `codev decision promote --json`.
@@ -394,9 +407,8 @@ pub struct DecisionPromotedV1 {
     pub root: String,
     pub decision: Option<DecisionV1>,
     pub path: Option<String>,
-    /// Hash of the new ADR's body — the ADR is sealed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub body_sha256: Option<String>,
+    // No `bodySha256`: the promoted ADR is created `proposed`, hence
+    // unsealed; `decision accept --json` carries the hash once it is sealed.
     /// The change the promotion comes from.
     pub source_change: Option<String>,
     /// The `design.md` that was updated.
@@ -882,13 +894,73 @@ apply:
             decision: None,
             path: Some("/p/_codev/decisions/0007-x.md".into()),
             body_sha256: Some("sha256:abc".into()),
+            superseded: Vec::new(),
             status: Vec::new(),
         };
         let json = serde_json::to_value(&report).unwrap();
-        for field in ["root", "decision", "path", "bodySha256", "status"] {
+        for field in [
+            "root",
+            "decision",
+            "path",
+            "bodySha256",
+            "superseded",
+            "status",
+        ] {
             assert!(json.get(field).is_some(), "accept: missing `{field}`");
         }
         assert_eq!(json["bodySha256"], "sha256:abc");
+        assert_eq!(json["superseded"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn accepted_report_lists_the_superseded_predecessors() {
+        let report = DecisionAcceptedV1 {
+            root: "/p".into(),
+            decision: None,
+            path: Some("/p/_codev/decisions/0007-x.md".into()),
+            body_sha256: Some("sha256:abc".into()),
+            superseded: vec![SupersededDecisionV1 {
+                id: "0003".into(),
+                qualified_id: "project/0003".into(),
+                path: "/p/_codev/decisions/0003-old.md".into(),
+            }],
+            status: Vec::new(),
+        };
+        let json = serde_json::to_value(&report).unwrap();
+        assert_eq!(
+            json["superseded"],
+            serde_json::json!([{
+                "id": "0003",
+                "qualifiedId": "project/0003",
+                "path": "/p/_codev/decisions/0003-old.md",
+            }])
+        );
+    }
+
+    #[test]
+    fn deviated_and_promoted_reports_carry_no_hash() {
+        // Both commands create a proposed, unsealed ADR: no `bodySha256`.
+        let deviated = serde_json::to_value(DecisionDeviatedV1 {
+            root: "/p".into(),
+            decision: None,
+            path: Some("/p/_codev/decisions/0001-x.md".into()),
+            target_qualified_id: Some("path:~/shared/0100".into()),
+            status: Vec::new(),
+        })
+        .unwrap();
+        let promoted = serde_json::to_value(DecisionPromotedV1 {
+            root: "/p".into(),
+            decision: None,
+            path: Some("/p/_codev/decisions/0001-x.md".into()),
+            source_change: Some("add-auth".into()),
+            design_path: Some("/p/_codev/changes/add-auth/design.md".into()),
+            status: Vec::new(),
+        })
+        .unwrap();
+        for json in [&deviated, &promoted] {
+            assert!(json.get("bodySha256").is_none(), "{json}");
+            assert!(json.get("path").is_some(), "{json}");
+        }
     }
 
     #[test]

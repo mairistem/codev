@@ -13,7 +13,7 @@ use crate::ports::FileSystem;
 /// Reads and parses `seal.yaml` if it exists; otherwise returns an empty seal.
 ///
 /// This is the single access point to `seal.yaml` on the shell side — used
-/// before calling `plan_new`, `plan_supersede` and `plan_seal`, and by
+/// before calling `plan_new`, `plan_accept` and `plan_seal`, and by
 /// `validate` to check the hashes.
 pub fn read_seal_file(fs: &dyn FileSystem, layout: &Layout) -> Result<SealFile, ActionError> {
     let path = layout.decisions_seal_file();
@@ -54,6 +54,15 @@ pub enum ActionError {
     DecisionNotProposed {
         id: String,
         status: String,
+    },
+    /// The decision to supersede — the target of `decision supersede`, or a
+    /// predecessor listed in the `supersedes` of a decision being accepted —
+    /// is not `accepted`, hence not in effect: there is nothing to replace.
+    PredecessorNotAccepted {
+        id: String,
+        status: String,
+        /// The accepted decision that superseded it in the meantime, if any.
+        superseded_by: Option<String>,
     },
     /// The target passed to `decision deviate` is a local decision — the
     /// proper action for that is `decision supersede`.
@@ -100,6 +109,7 @@ impl ActionError {
             Self::CannotSealInherited { .. } => "cannot_seal_inherited",
             Self::CannotAcceptInherited { .. } => "cannot_accept_inherited",
             Self::DecisionNotProposed { .. } => "decision_not_proposed",
+            Self::PredecessorNotAccepted { .. } => "predecessor_not_accepted",
             Self::CannotDeviateFromLocal { .. } => "cannot_deviate_from_local",
             Self::CannotPromoteFromArchived { .. } => "cannot_promote_from_archived",
             Self::DesignMissing { .. } => "design_missing",
@@ -144,6 +154,25 @@ impl ActionError {
                 "decision `{id}` has status `{status}`: only a `proposed` \
                  decision can be accepted"
             ),
+            Self::PredecessorNotAccepted {
+                id,
+                status,
+                superseded_by,
+            } => {
+                let by = superseded_by
+                    .as_ref()
+                    .map(|q| format!(", superseded by `{q}`"))
+                    .unwrap_or_default();
+                let hint = superseded_by
+                    .as_ref()
+                    .map(|q| format!("; supersede `{q}` instead"))
+                    .unwrap_or_default();
+                format!(
+                    "decision `{id}` has status `{status}`{by}: only an \
+                     `accepted` decision, in effect, can be superseded{hint}; \
+                     `codev decision list` shows the chain"
+                )
+            }
             Self::CannotDeviateFromLocal { qualified_id } => format!(
                 "decision `{qualified_id}` is local: the proper way to \
                  replace it is `codev decision supersede`, not \
@@ -220,10 +249,10 @@ pub struct SupersedePlan {
     pub plan: Plan,
     pub new_id: String,
     pub new_path: PathBuf,
+    /// The decision the new one will supersede once accepted — it is not
+    /// modified by the plan.
     pub old_qualified_id: String,
     pub old_path: PathBuf,
-    /// Hash of the new ADR's body — same rationale as `CreatePlan`.
-    pub body_sha256: String,
 }
 
 /// The plan computed for `codev decision seal`.
@@ -249,6 +278,17 @@ pub struct AcceptPlan {
     pub path: PathBuf,
     /// Hash of the accepted ADR's body — the one recorded in the seal.
     pub body_sha256: String,
+    /// The predecessors listed in `supersedes`, rewritten to `superseded`
+    /// by the same plan. Empty when the decision supersedes nothing.
+    pub superseded: Vec<SupersededPredecessor>,
+}
+
+/// A predecessor that `decision accept` marks `superseded`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SupersededPredecessor {
+    pub id: String,
+    pub qualified_id: String,
+    pub path: PathBuf,
 }
 
 /// The plan computed for `codev decision promote`.
@@ -257,7 +297,6 @@ pub struct PromotePlan {
     pub plan: Plan,
     pub new_id: String,
     pub new_path: PathBuf,
-    pub body_sha256: String,
     /// The name of the change the promotion comes from — useful for
     /// rendering and for the JSON contract.
     pub source_change: String,
@@ -275,7 +314,6 @@ pub struct DeviatePlan {
     /// a `path:...` or `git:...` with or without the explicit `origin/` as
     /// long as resolution is unambiguous).
     pub target_qualified_id: String,
-    pub body_sha256: String,
 }
 
 /// Prepares the creation of a new local ADR.
@@ -331,29 +369,30 @@ pub fn plan_new(
     })
 }
 
-/// Prepares a supersession: rewrites the predecessor with `status:
-/// superseded` and creates a new ADR that references it.
+/// Prepares a supersession: creates a `proposed` ADR that references the
+/// old decision in its `supersedes`.
 ///
-/// `source_content` supplies the function with the predecessor file's
-/// content, without the index having to store it twice. We do not take a
-/// `&dyn FileSystem` parameter so the function stays usable from other
-/// consumers (tests, a future client-side `--dry-run`) without coupling to
-/// a port.
+/// The old decision is not part of the plan: it stays `accepted`, and in
+/// effect, until the new one is accepted — `plan_accept` rewrites it to
+/// `superseded` then, in the same plan as the acceptance. Nothing is sealed
+/// here: the new ADR's body is meant to be written first.
+///
+/// Explicit refusals: `EmptyTitle`, `UnknownDecisionId`,
+/// `AmbiguousDecisionId`, `CannotSupersedeInherited`, and
+/// `PredecessorNotAccepted` for a local decision that is not in effect —
+/// its successor could never be accepted.
 pub fn plan_supersede(
     index: &DecisionIndex,
-    existing_seal: &SealFile,
     old_id: &str,
     new_title: &str,
     today: &str,
     layout: &Layout,
-    source_content: impl FnOnce(&std::path::Path) -> std::io::Result<String>,
 ) -> Result<SupersedePlan, ActionError> {
     if new_title.trim().is_empty() {
         return Err(ActionError::EmptyTitle);
     }
 
-    // Resolve the old entry: two cases depending on the `old_id` format.
-    let (old_index, is_qualified) = resolve_old_entry(index, old_id)?;
+    let (old_index, _) = resolve_old_entry(index, old_id)?;
     let old_entry = &index.entries[old_index];
 
     // An inherited decision stays read-only.
@@ -362,61 +401,26 @@ pub fn plan_supersede(
             qualified_id: old_entry.qualified_id.as_str(),
         });
     }
-    let _ = is_qualified; // exposed later if needed
+    if old_entry.decision.status != DecisionStatus::Accepted {
+        return Err(predecessor_not_accepted(index, old_entry, None));
+    }
 
-    // New frontmatter for the predecessor — same fields except `status`.
-    let old_source = source_content(&old_entry.path).map_err(|e| {
-        // A read error is a runtime error, not a logical refusal — we
-        // expose it as `UnknownDecisionId` to avoid leaking the io error.
-        // In practice this is very rare (the file was just indexed);
-        // future consumers that care can pre-read to tell them apart.
-        let _ = e;
-        ActionError::UnknownDecisionId {
-            id: old_entry.decision.id.clone(),
-        }
-    })?;
-    let new_old_contents =
-        rewrite_frontmatter_status(&old_source, &old_entry.decision, DecisionStatus::Superseded);
-
-    // New number for the superseding decision.
     let next = next_local_id(index);
     let new_slug = slug_from_title(new_title);
     let new_filename = format!("{next}-{new_slug}.md");
     let new_path = layout.decisions_dir().join(&new_filename);
 
-    let old_id_ref = old_entry.decision.id.clone();
     let new_adr = render_new_adr(
         &next,
         new_title,
-        &DecisionStatus::Accepted,
+        &DecisionStatus::Proposed,
         today,
-        &[old_id_ref],
+        std::slice::from_ref(&old_entry.decision.id),
     );
-
-    // Hash and seal for the new ADR only — the old one's body stays
-    // bit-identical (see dedicated test), so its seal remains valid
-    // without any change.
-    let body_sha256 = seal::body_hash(&new_adr)?;
-    let new_seal = seal::plan_seal_new(
-        existing_seal,
-        next.clone(),
-        body_sha256.clone(),
-        today.to_string(),
-    )?;
 
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), new_adr, WriteMode::CreateOnly);
-    plan.write(
-        old_entry.path.clone(),
-        new_old_contents,
-        WriteMode::Overwrite,
-    );
-    plan.write(
-        layout.decisions_seal_file(),
-        seal::render_seal_file(&new_seal),
-        WriteMode::Overwrite,
-    );
 
     Ok(SupersedePlan {
         plan,
@@ -424,8 +428,30 @@ pub fn plan_supersede(
         new_path,
         old_qualified_id: old_entry.qualified_id.as_str(),
         old_path: old_entry.path.clone(),
-        body_sha256,
     })
+}
+
+/// Builds the `PredecessorNotAccepted` refusal for `entry`, naming the
+/// accepted decision that superseded it, if any — other than `accepting`,
+/// the decision whose acceptance is being planned.
+fn predecessor_not_accepted(
+    index: &DecisionIndex,
+    entry: &crate::decisions::IndexEntry,
+    accepting: Option<&str>,
+) -> ActionError {
+    let superseded_by = index
+        .entries
+        .iter()
+        .filter(|e| e.qualified_id.origin == Origin::Project)
+        .filter(|e| e.decision.status == DecisionStatus::Accepted)
+        .filter(|e| Some(e.decision.id.as_str()) != accepting)
+        .find(|e| e.decision.supersedes.contains(&entry.decision.id))
+        .map(|e| e.qualified_id.as_str());
+    ActionError::PredecessorNotAccepted {
+        id: entry.decision.id.clone(),
+        status: entry.decision.status.as_str().to_string(),
+        superseded_by,
+    }
 }
 
 /// Prepares a seal — the `codev decision seal <id>` command.
@@ -539,16 +565,23 @@ pub fn plan_seal(
 /// the frontmatter changes, so the recorded hash is the hash of the body
 /// the user wrote.
 ///
+/// This is the single place where a decision takes effect: when the
+/// decision carries a `supersedes`, the same plan rewrites each listed
+/// predecessor to `superseded` — body byte for byte, seal untouched, so its
+/// seal stays valid.
+///
 /// Explicit refusals: `UnknownDecisionId`, `AmbiguousDecisionId`,
-/// `CannotAcceptInherited`, `DecisionNotProposed`, and `SealConflict` if a
-/// seal entry with another hash already exists for this id.
+/// `CannotAcceptInherited`, `DecisionNotProposed`, `SealConflict` if a
+/// seal entry with another hash already exists for this id, and for a
+/// predecessor: `UnknownDecisionId`, `CannotSupersedeInherited` or
+/// `PredecessorNotAccepted`.
 pub fn plan_accept(
     index: &DecisionIndex,
     existing_seal: &SealFile,
     id: &str,
     today: &str,
     layout: &Layout,
-    adr_source: impl FnOnce(&std::path::Path) -> std::io::Result<String>,
+    mut adr_source: impl FnMut(&std::path::Path) -> std::io::Result<String>,
 ) -> Result<AcceptPlan, ActionError> {
     let (idx, _) = resolve_old_entry(index, id)?;
     let entry = &index.entries[idx];
@@ -563,6 +596,35 @@ pub fn plan_accept(
             id: local_id,
             status: entry.decision.status.as_str().to_string(),
         });
+    }
+
+    // Every predecessor is checked before anything is planned: one that
+    // cannot be superseded refuses the whole acceptance.
+    let mut predecessors = Vec::new();
+    for target in &entry.decision.supersedes {
+        let local = index
+            .entries
+            .iter()
+            .find(|e| e.qualified_id.origin == Origin::Project && e.decision.id == *target);
+        let Some(predecessor) = local else {
+            // Not local: either inherited — read-only — or nowhere.
+            return Err(
+                match index.entries.iter().find(|e| e.decision.id == *target) {
+                    Some(inherited) => ActionError::CannotSupersedeInherited {
+                        qualified_id: inherited.qualified_id.as_str(),
+                    },
+                    None => ActionError::UnknownDecisionId { id: target.clone() },
+                },
+            );
+        };
+        if predecessor.decision.status != DecisionStatus::Accepted {
+            return Err(predecessor_not_accepted(
+                index,
+                predecessor,
+                Some(&local_id),
+            ));
+        }
+        predecessors.push(predecessor);
     }
 
     let source = adr_source(&entry.path).map_err(|_| ActionError::UnknownDecisionId {
@@ -595,11 +657,36 @@ pub fn plan_accept(
         }
     }
 
+    // The predecessors change status only; their body — hence their seal —
+    // stays byte for byte identical, so `seal.yaml` needs no other change.
+    let mut superseded = Vec::with_capacity(predecessors.len());
+    for predecessor in predecessors {
+        let old_source =
+            adr_source(&predecessor.path).map_err(|_| ActionError::UnknownDecisionId {
+                id: predecessor.decision.id.clone(),
+            })?;
+        plan.write(
+            predecessor.path.clone(),
+            rewrite_frontmatter_status(
+                &old_source,
+                &predecessor.decision,
+                DecisionStatus::Superseded,
+            ),
+            WriteMode::Overwrite,
+        );
+        superseded.push(SupersededPredecessor {
+            id: predecessor.decision.id.clone(),
+            qualified_id: predecessor.qualified_id.as_str(),
+            path: predecessor.path.clone(),
+        });
+    }
+
     Ok(AcceptPlan {
         plan,
         id: local_id,
         path: entry.path.clone(),
         body_sha256,
+        superseded,
     })
 }
 
@@ -618,8 +705,9 @@ fn build_promote_reference(new_id: &str, new_slug: &str) -> String {
 }
 
 /// Prepares the promotion of a `### Decision: <title>` block from a
-/// `design.md` into a local ADR. Reuses the `plan_new` rendering with a
-/// precomputed body — the decision seal is attached to the plan.
+/// `design.md` into a local `proposed` ADR. The promoted body is meant to
+/// be reworked, so nothing is sealed: `plan_accept` seals the ADR once
+/// its text is final.
 ///
 /// `design_source`: current content of the design (the shell has read it).
 /// `design_path`: on-disk path of the design, for the plan's write.
@@ -629,7 +717,6 @@ fn build_promote_reference(new_id: &str, new_slug: &str) -> String {
 #[allow(clippy::too_many_arguments)]
 pub fn plan_promote(
     index: &DecisionIndex,
-    existing_seal: &SealFile,
     change_name: &str,
     heading: &str,
     design_source: &str,
@@ -662,13 +749,6 @@ pub fn plan_promote(
     // ADR body rendering: template with placeholders for Context,
     // Consequences, Alternatives; the verbatim block goes under ## Decision.
     let contents = render_promoted_adr(&next, &block.title, today, &block.body, change_name);
-    let body_sha256 = seal::body_hash(&contents)?;
-    let new_seal = seal::plan_seal_new(
-        existing_seal,
-        next.clone(),
-        body_sha256.clone(),
-        today.to_string(),
-    )?;
 
     // ─── Substituting the block in the design ───
     // We keep the `### Decision: <title>` heading line as it was and only
@@ -689,18 +769,12 @@ pub fn plan_promote(
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), contents, WriteMode::CreateOnly);
-    plan.write(
-        layout.decisions_seal_file(),
-        seal::render_seal_file(&new_seal),
-        WriteMode::Overwrite,
-    );
     plan.write(design_path.clone(), new_design, WriteMode::Overwrite);
 
     Ok(PromotePlan {
         plan,
         new_id: next,
         new_path,
-        body_sha256,
         source_change: change_name.to_string(),
         design_path,
     })
@@ -717,7 +791,7 @@ fn render_promoted_adr(
     source_change: &str,
 ) -> String {
     let frontmatter =
-        render_frontmatter(id, title, &DecisionStatus::Accepted, today, &[], &[], &[]);
+        render_frontmatter(id, title, &DecisionStatus::Proposed, today, &[], &[], &[]);
     // Clean verbatim body: strip leading newlines to avoid a useless
     // blank line at the start of the section, and guarantee a trailing
     // `\n`.
@@ -732,7 +806,7 @@ fn render_promoted_adr(
         "{frontmatter}\n\n\
          <!-- ADR promoted from _codev/changes/{source_change}/design.md.\n     \
          Split the body below across Context, Decision, Consequences\n     \
-         and Alternatives considered before archiving the change. -->\n\n\
+         and Alternatives considered, then run `codev decision accept {id}`. -->\n\n\
          ## Context\n\n\
          <!-- The problem or situation that calls for a decision. Keep it short: two\n     \
          or three sentences are enough. -->\n\n\
@@ -747,9 +821,10 @@ fn render_promoted_adr(
 
 /// Prepares a local deviation from an inherited decision.
 ///
-/// Creates a local `accepted` ADR carrying `deviates_from: ["<qualified>"]`
-/// and seals its body — like `plan_new`, but with the reference to the
-/// target.
+/// Creates a local `proposed` ADR carrying `deviates_from: ["<qualified>"]`
+/// — like `plan_new`, but with the reference to the target. The deviation
+/// takes effect once `plan_accept` accepts and seals it: the index ignores
+/// the `deviates_from` of a decision that is not `accepted`.
 ///
 /// Explicit refusals:
 /// - `EmptyTitle` if `new_title` is empty;
@@ -758,7 +833,6 @@ fn render_promoted_adr(
 /// - `AmbiguousDecisionId` if two sources expose the same qualified id.
 pub fn plan_deviate(
     index: &DecisionIndex,
-    existing_seal: &SealFile,
     target: &str,
     new_title: &str,
     today: &str,
@@ -779,7 +853,7 @@ pub fn plan_deviate(
 
     let qualified = entry.qualified_id.as_str();
 
-    // New local number, ADR rendering, hash, seal.
+    // New local number and ADR rendering — no seal for a proposed ADR.
     let next = next_local_id(index);
     let slug = slug_from_title(new_title);
     let filename = format!("{next}-{slug}.md");
@@ -787,29 +861,16 @@ pub fn plan_deviate(
 
     let contents =
         render_new_deviate_adr(&next, new_title, today, std::slice::from_ref(&qualified));
-    let body_sha256 = seal::body_hash(&contents)?;
-    let new_seal = seal::plan_seal_new(
-        existing_seal,
-        next.clone(),
-        body_sha256.clone(),
-        today.to_string(),
-    )?;
 
     let mut plan = Plan::new();
     plan.dir(layout.decisions_dir());
     plan.write(new_path.clone(), contents, WriteMode::CreateOnly);
-    plan.write(
-        layout.decisions_seal_file(),
-        seal::render_seal_file(&new_seal),
-        WriteMode::Overwrite,
-    );
 
     Ok(DeviatePlan {
         plan,
         new_id: next,
         new_path,
         target_qualified_id: qualified,
-        body_sha256,
     })
 }
 
@@ -947,13 +1008,13 @@ fn render_new_adr(
     DECISION_TEMPLATE.replace("{{FRONTMATTER}}", &frontmatter)
 }
 
-/// Renders a deviation ADR — same template body, frontmatter with
-/// `deviates_from`.
+/// Renders a deviation ADR — same template body, `proposed` frontmatter
+/// with `deviates_from`.
 fn render_new_deviate_adr(id: &str, title: &str, today: &str, deviates_from: &[String]) -> String {
     let frontmatter = render_frontmatter(
         id,
         title,
-        &DecisionStatus::Accepted,
+        &DecisionStatus::Proposed,
         today,
         &[],
         &[],
@@ -1227,67 +1288,71 @@ mod tests {
 
     // ─────────────── supersede ───────────────
 
-    #[test]
-    fn plan_supersede_produces_the_expected_writes() {
-        let fs = MemoryFileSystem::new()
-            .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
-        let index = empty_index_with_config(&fs);
-        let plan = plan_supersede(
+    fn supersede(fs: &MemoryFileSystem, old_id: &str) -> Result<SupersedePlan, ActionError> {
+        let index = empty_index_with_config(fs);
+        plan_supersede(
             &index,
-            &SealFile::empty(),
-            "0003",
+            old_id,
             "New choice",
             "2026-09-08",
             &Layout::new("/p"),
-            |path| {
-                Ok(fs
-                    .read(path)
-                    .unwrap_or_else(|| panic!("{} missing", path.display())))
-            },
         )
-        .unwrap();
+    }
+
+    #[test]
+    fn plan_supersede_creates_a_proposed_adr_and_leaves_the_predecessor_untouched() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
+        let plan = supersede(&fs, "0003").unwrap();
 
         assert_eq!(plan.new_id, "0004");
         assert_eq!(plan.old_qualified_id, "project/0003");
-        // 3 writes: new ADR (CreateOnly), old one rewritten (Overwrite),
-        // seal.yaml (Overwrite).
-        assert_eq!(plan.plan.writes.len(), 3);
-
-        // New ADR: CreateOnly, references the old one.
-        let new_write = plan
-            .plan
-            .writes
-            .iter()
-            .find(|w| w.mode == WriteMode::CreateOnly)
-            .unwrap();
+        assert_eq!(
+            plan.old_path,
+            PathBuf::from("/p/_codev/decisions/0003-old.md")
+        );
+        // A single write: the new ADR. The predecessor is only rewritten
+        // when the new one is accepted.
+        assert_eq!(plan.plan.writes.len(), 1);
+        let new_write = &plan.plan.writes[0];
+        assert_eq!(new_write.mode, WriteMode::CreateOnly);
+        assert_eq!(new_write.path, plan.new_path);
         assert!(new_write.contents.contains("supersedes: [\"0003\"]"));
         assert!(new_write.contents.contains("id: \"0004\""));
+        assert!(new_write.contents.contains("status: proposed"));
+    }
 
-        // Old ADR: Overwrite, status: superseded.
-        let old_write = plan
-            .plan
-            .writes
-            .iter()
-            .find(|w| w.mode == WriteMode::Overwrite)
-            .unwrap();
-        assert!(old_write.contents.contains("status: superseded"));
+    #[test]
+    fn plan_supersede_writes_no_seal() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
+        let plan = supersede(&fs, "0003").unwrap();
+        assert!(
+            !plan
+                .plan
+                .writes
+                .iter()
+                .any(|w| w.path == Layout::new("/p").decisions_seal_file()),
+            "a proposed ADR is not sealed"
+        );
+    }
+
+    #[test]
+    fn plan_supersede_refuses_a_predecessor_that_is_not_accepted() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0004-x.md", adr("0004", "proposed"));
+        let err = supersede(&fs, "0004").unwrap_err();
+        assert_eq!(err.code(), "predecessor_not_accepted");
+        assert!(err.to_string().contains("`proposed`"), "{err}");
     }
 
     #[test]
     fn supersede_unknown_id_is_refused() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
-        let index = empty_index_with_config(&fs);
-        let err = plan_supersede(
-            &index,
-            &SealFile::empty(),
-            "9999",
-            "X",
-            "2026-09-08",
-            &Layout::new("/p"),
-            |_| Ok(String::new()),
-        )
-        .unwrap_err();
+        let err = supersede(&fs, "9999").unwrap_err();
         assert_eq!(err.code(), "unknown_decision_id");
     }
 
@@ -1299,17 +1364,7 @@ mod tests {
                 "/home/shared/_codev/decisions/0100-shared.md",
                 adr("0100", "accepted"),
             );
-        let index = empty_index_with_config(&fs);
-        let err = plan_supersede(
-            &index,
-            &SealFile::empty(),
-            "path:~/shared/0100",
-            "Our alternative",
-            "2026-09-08",
-            &Layout::new("/p"),
-            |_| Ok(String::new()),
-        )
-        .unwrap_err();
+        let err = supersede(&fs, "path:~/shared/0100").unwrap_err();
         assert_eq!(err.code(), "cannot_supersede_inherited");
         assert!(err.to_string().contains("deviate"));
     }
@@ -1334,61 +1389,11 @@ mod tests {
     }
 
     #[test]
-    fn supersede_does_not_touch_predecessor_body() {
-        // Golden: after supersession, everything after the frontmatter
-        // stays byte-for-byte identical.
-        let source = "---\nid: \"0003\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nContent with `special` characters — “curly quotes” ✓.\n\n## Decision\n\nOK.\n";
-        let fs = MemoryFileSystem::new()
-            .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/_codev/decisions/0003.md", source);
-        let index = empty_index_with_config(&fs);
-        let plan = plan_supersede(
-            &index,
-            &SealFile::empty(),
-            "0003",
-            "New",
-            "2026-09-08",
-            &Layout::new("/p"),
-            |path| Ok(fs.read(path).unwrap()),
-        )
-        .unwrap();
-
-        let old_write = plan
-            .plan
-            .writes
-            .iter()
-            .find(|w| w.mode == WriteMode::Overwrite)
-            .unwrap();
-
-        // Extract what follows the second `---\n` — that is the body.
-        fn body_after_frontmatter(text: &str) -> &str {
-            let end_first = text.find("---\n").expect("first ---") + 4;
-            let end_second_rel = text[end_first..].find("---\n").expect("second ---") + 4;
-            &text[end_first + end_second_rel..]
-        }
-        assert_eq!(
-            body_after_frontmatter(&old_write.contents),
-            body_after_frontmatter(source),
-            "body identical character for character"
-        );
-    }
-
-    #[test]
     fn plan_supersede_includes_the_new_decision() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"));
-        let index = empty_index_with_config(&fs);
-        let plan = plan_supersede(
-            &index,
-            &SealFile::empty(),
-            "0003",
-            "New choice",
-            "2026-09-08",
-            &Layout::new("/p"),
-            |path| Ok(fs.read(path).unwrap()),
-        )
-        .unwrap();
+        let plan = supersede(&fs, "0003").unwrap();
         assert_eq!(
             plan.new_path,
             PathBuf::from("/p/_codev/decisions/0004-new-choice.md")
@@ -1639,10 +1644,158 @@ mod tests {
         assert_eq!(err.code(), "seal_conflict");
     }
 
+    /// A `proposed` ADR `0007` superseding each of `supersedes`.
+    fn proposed_successor(supersedes: &[&str]) -> String {
+        let list = supersedes
+            .iter()
+            .map(|s| format!("\"{s}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!(
+            "---\nid: \"0007\"\ntitle: New\nstatus: proposed\ndate: 2026-09-30\nsupersedes: [{list}]\n---\n\n## Context\n\nThe new one.\n"
+        )
+    }
+
+    #[test]
+    fn plan_accept_marks_the_predecessor_superseded_in_the_same_plan() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "accepted"))
+            .with_file(
+                "/p/_codev/decisions/0007-new.md",
+                proposed_successor(&["0003"]),
+            );
+        let plan = accept(&fs, &SealFile::empty(), "0007").unwrap();
+
+        // Three writes in one plan: the new ADR, seal.yaml, the predecessor.
+        assert_eq!(plan.plan.writes.len(), 3);
+        let old_path = PathBuf::from("/p/_codev/decisions/0003-old.md");
+        let old_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == old_path)
+            .expect("the predecessor is rewritten");
+        assert_eq!(old_write.mode, WriteMode::Overwrite);
+        assert!(old_write.contents.contains("status: superseded"));
+        assert_eq!(
+            plan.superseded,
+            vec![SupersededPredecessor {
+                id: "0003".into(),
+                qualified_id: "project/0003".into(),
+                path: old_path,
+            }]
+        );
+        // Only the new decision gets a seal entry.
+        let seal_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == Layout::new("/p").decisions_seal_file())
+            .unwrap();
+        let seal_file = seal::parse_seal_file(&seal_write.contents).unwrap();
+        assert!(seal_file.find("0007").is_some());
+        assert!(seal_file.find("0003").is_none());
+    }
+
+    #[test]
+    fn plan_accept_keeps_the_predecessor_body_byte_for_byte() {
+        // Golden: after acceptance, everything after the predecessor's
+        // frontmatter stays byte-for-byte identical, so its seal holds.
+        let source = "---\nid: \"0003\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nContent with `special` characters — “curly quotes” ✓.\n\n## Decision\n\nOK.\n";
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003.md", source)
+            .with_file(
+                "/p/_codev/decisions/0007-new.md",
+                proposed_successor(&["0003"]),
+            );
+        let mut existing = SealFile::empty();
+        existing.seals.push(codev_core::decisions::seal::Seal {
+            id: "0003".into(),
+            body_sha256: seal::body_hash(source).unwrap(),
+            sealed_at: "2026-09-08".into(),
+        });
+        let plan = accept(&fs, &existing, "0007").unwrap();
+
+        let old_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == std::path::Path::new("/p/_codev/decisions/0003.md"))
+            .unwrap();
+        assert_eq!(
+            seal::body_slice(&old_write.contents).unwrap(),
+            seal::body_slice(source).unwrap(),
+            "body identical character for character"
+        );
+        let seal_write = plan
+            .plan
+            .writes
+            .iter()
+            .find(|w| w.path == Layout::new("/p").decisions_seal_file())
+            .unwrap();
+        let seal_file = seal::parse_seal_file(&seal_write.contents).unwrap();
+        assert_eq!(
+            seal_file.find("0003"),
+            existing.find("0003"),
+            "the predecessor's seal entry is untouched"
+        );
+    }
+
+    #[test]
+    fn plan_accept_refuses_a_predecessor_that_is_no_longer_accepted() {
+        // 0008 superseded 0003 in the meantime: accepting 0007, which also
+        // supersedes 0003, would fork the chain.
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/decisions/0003-old.md", adr("0003", "superseded"))
+            .with_file("/p/_codev/decisions/0007-new.md", proposed_successor(&["0003"]))
+            .with_file(
+                "/p/_codev/decisions/0008-other.md",
+                "---\nid: \"0008\"\ntitle: Other\nstatus: accepted\ndate: 2026-09-30\nsupersedes: [\"0003\"]\n---\n\nx\n",
+            );
+        let err = accept(&fs, &SealFile::empty(), "0007").unwrap_err();
+        assert_eq!(err.code(), "predecessor_not_accepted");
+        let message = err.to_string();
+        assert!(message.contains("`0003`"), "{message}");
+        assert!(message.contains("`superseded`"), "{message}");
+        assert!(message.contains("project/0008"), "{message}");
+    }
+
+    #[test]
+    fn plan_accept_refuses_an_inherited_predecessor() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with_file(
+                "/home/shared/_codev/decisions/0100-shared.md",
+                adr("0100", "accepted"),
+            )
+            .with_file(
+                "/p/_codev/decisions/0007-new.md",
+                proposed_successor(&["0100"]),
+            );
+        let err = accept(&fs, &SealFile::empty(), "0007").unwrap_err();
+        assert_eq!(err.code(), "cannot_supersede_inherited");
+    }
+
+    #[test]
+    fn plan_accept_refuses_an_unknown_predecessor() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/decisions/0007-new.md",
+                proposed_successor(&["9999"]),
+            );
+        let err = accept(&fs, &SealFile::empty(), "0007").unwrap_err();
+        assert_eq!(err.code(), "unknown_decision_id");
+        assert!(err.to_string().contains("9999"));
+    }
+
     // ─────────────── plan_deviate ───────────────
 
     #[test]
-    fn plan_deviate_writes_adr_and_seal() {
+    fn plan_deviate_creates_a_proposed_adr_without_seal() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
@@ -1652,7 +1805,6 @@ mod tests {
         let index = empty_index_with_config(&fs);
         let plan = plan_deviate(
             &index,
-            &SealFile::empty(),
             "path:~/shared/0100",
             "Our local alternative",
             "2026-09-09",
@@ -1662,7 +1814,7 @@ mod tests {
 
         assert_eq!(plan.new_id, "0001");
         assert_eq!(plan.target_qualified_id, "path:~/shared/0100");
-        assert_eq!(plan.plan.writes.len(), 2, "ADR + seal");
+        assert_eq!(plan.plan.writes.len(), 1, "the ADR only, no seal");
 
         let adr_write = plan
             .plan
@@ -1675,7 +1827,7 @@ mod tests {
                 .contents
                 .contains("deviates_from: [\"path:~/shared/0100\"]")
         );
-        assert!(adr_write.contents.contains("status: accepted"));
+        assert!(adr_write.contents.contains("status: proposed"));
         assert!(adr_write.contents.contains("id: \"0001\""));
     }
 
@@ -1687,7 +1839,6 @@ mod tests {
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
-            &SealFile::empty(),
             "project/0003",
             "…",
             "2026-09-09",
@@ -1704,7 +1855,6 @@ mod tests {
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
-            &SealFile::empty(),
             "path:~/unknown/0100",
             "…",
             "2026-09-09",
@@ -1725,7 +1875,6 @@ mod tests {
         let index = empty_index_with_config(&fs);
         let err = plan_deviate(
             &index,
-            &SealFile::empty(),
             "path:~/shared/0100",
             "   ",
             "2026-09-09",
@@ -1749,7 +1898,6 @@ mod tests {
         let index = empty_index_with_config(&fs);
         let plan = plan_deviate(
             &index,
-            &SealFile::empty(),
             "path:~/shared/0100",
             "Local choice",
             "2026-09-09",
@@ -1795,7 +1943,6 @@ y
         let index = empty_index_with_config(&fs);
         let plan = plan_promote(
             &index,
-            &SealFile::empty(),
             "add-auth",
             "Use JWT",
             DESIGN_WITH_ONE_BLOCK,
@@ -1810,9 +1957,8 @@ y
             plan.new_path,
             PathBuf::from("/p/_codev/decisions/0001-use-jwt.md")
         );
-        assert!(plan.body_sha256.starts_with("sha256:"));
-        // 3 writes: ADR + seal + design.md.
-        assert_eq!(plan.plan.writes.len(), 3);
+        // 2 writes: ADR + design.md — no seal for a proposed ADR.
+        assert_eq!(plan.plan.writes.len(), 2);
 
         // The new ADR does contain the verbatim body.
         let adr = plan
@@ -1854,7 +2000,6 @@ y
         let index = empty_index_with_config(&fs);
         let err = plan_promote(
             &index,
-            &SealFile::empty(),
             "add-auth",
             "Ghost title",
             DESIGN_WITH_ONE_BLOCK,
@@ -1885,7 +2030,6 @@ v2
         let index = empty_index_with_config(&fs);
         let err = plan_promote(
             &index,
-            &SealFile::empty(),
             "add-auth",
             "X",
             ambiguous_design,
@@ -1904,7 +2048,6 @@ v2
         let index = empty_index_with_config(&fs);
         let err = plan_promote(
             &index,
-            &SealFile::empty(),
             "add-auth",
             "   ",
             DESIGN_WITH_ONE_BLOCK,
@@ -1917,14 +2060,13 @@ v2
     }
 
     #[test]
-    fn plan_promote_produces_a_sealed_adr() {
-        // The exposed hash does match the SHA-256 of the rendered ADR's
-        // body.
+    fn plan_promote_creates_a_proposed_unsealed_adr() {
+        // The promoted body is meant to be reworked: the ADR is proposed,
+        // nothing is sealed, and the ADR says how to accept it.
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let index = empty_index_with_config(&fs);
         let plan = plan_promote(
             &index,
-            &SealFile::empty(),
             "add-auth",
             "Use JWT",
             DESIGN_WITH_ONE_BLOCK,
@@ -1934,13 +2076,21 @@ v2
         )
         .unwrap();
 
-        // The seal.yaml about to be written carries the entry with the same hash.
-        let seal_write = plan
+        assert!(
+            !plan
+                .plan
+                .writes
+                .iter()
+                .any(|w| w.path == Layout::new("/p").decisions_seal_file()),
+            "no seal for a proposed ADR"
+        );
+        let adr = plan
             .plan
             .writes
             .iter()
-            .find(|w| w.path == Layout::new("/p").decisions_seal_file())
+            .find(|w| w.path == plan.new_path)
             .unwrap();
-        assert!(seal_write.contents.contains(&plan.body_sha256));
+        assert!(adr.contents.contains("status: proposed"));
+        assert!(adr.contents.contains("`codev decision accept 0001`"));
     }
 }

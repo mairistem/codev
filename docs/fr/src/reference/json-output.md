@@ -296,40 +296,60 @@ Les commandes qui créent ou scellent des décisions renvoient :
 | Commande | Champs en plus de `root` et `status` |
 |---|---|
 | `decision new` | `decision`, `path`, `bodySha256` (seulement avec `--status accepted`) |
-| `decision accept` | `decision`, `path`, `bodySha256` |
+| `decision accept` | `decision`, `path`, `bodySha256`, `superseded` |
 | `decision supersede` | `newDecision`, `newPath`, `oldId`, `oldQualifiedId`, `oldPath` |
 | `decision seal` | `seal` (`id`, `bodySha256`, `sealedAt`), `wasNoop` |
-| `decision deviate` | `decision`, `path`, `targetQualifiedId`, `bodySha256` |
-| `decision promote` | `decision`, `path`, `bodySha256`, `sourceChange`, `designPath` |
+| `decision deviate` | `decision`, `path`, `targetQualifiedId` |
+| `decision promote` | `decision`, `path`, `sourceChange`, `designPath` |
 
-Par exemple, `codev decision accept 0001 --json` :
+`bodySha256` n'est présent que si la commande a scellé la décision :
+`decision supersede`, `decision deviate` et `decision promote` créent une
+décision `proposed` et ne scellent rien. Pour `decision supersede`, `oldId`,
+`oldQualifiedId` et `oldPath` désignent la décision que l'acceptation de la
+nouvelle remplacera ; elle n'est pas modifiée. `superseded` liste les
+prédécesseurs que `decision accept` a passés à `superseded` — chacun avec son
+`id`, son `qualifiedId` et son `path` — et reste vide quand la décision ne
+remplace rien.
+
+Par exemple, `codev decision accept 0002 --json` pour une décision créée par
+`codev decision supersede 0001 "Use SQLite"` :
 
 ```json
 {
   "root": "/home/you/acme-app",
   "decision": {
-    "id": "0001",
-    "qualifiedId": "project/0001",
-    "title": "Use PostgreSQL for persistence",
+    "id": "0002",
+    "qualifiedId": "project/0002",
+    "title": "Use SQLite",
     "status": "accepted",
     "date": "2026-09-30",
     "tags": [],
-    "supersedes": [],
+    "supersedes": [
+      "0001"
+    ],
     "deviatesFrom": [],
-    "path": "_codev/decisions/0001-use-postgresql-for-persistence.md",
+    "path": "_codev/decisions/0002-use-sqlite.md",
     "origin": "project",
     "inEffect": true,
     "supersededBy": null
   },
-  "path": "/home/you/acme-app/_codev/decisions/0001-use-postgresql-for-persistence.md",
-  "bodySha256": "sha256:167c548eb2750fa6f7b25dd836916adf29d02a95adcf6510a7cc11873e994deb",
+  "path": "/home/you/acme-app/_codev/decisions/0002-use-sqlite.md",
+  "bodySha256": "sha256:c8873b83c178dbf8434045f43a722911b9d9913ee9f13915ccda893539b788c1",
+  "superseded": [
+    {
+      "id": "0001",
+      "qualifiedId": "project/0001",
+      "path": "/home/you/acme-app/_codev/decisions/0001-use-postgresql.md"
+    }
+  ],
   "status": []
 }
 ```
 
 Une acceptation refusée garde la même forme, avec `decision` et `path` à
-`null` et le code dans `status` : `unknown_decision_id`,
-`cannot_accept_inherited` ou `decision_not_proposed`.
+`null`, `superseded` vide et le code dans `status` : `unknown_decision_id`,
+`cannot_accept_inherited`, `decision_not_proposed`,
+`cannot_supersede_inherited` ou `predecessor_not_accepted`.
 
 ### sources
 

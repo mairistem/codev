@@ -150,9 +150,19 @@ your project must depart from one, record a deviation:
 codev decision deviate path:~/src/acme-standards/0100 "Services log in logfmt"
 ```
 
-The new local decision references the inherited one in `deviates_from`. The
-inherited decision stays listed, so the departure is visible, but it is no
-longer in effect for your project. See [Deviation](../concepts.md#deviation).
+The new local decision references the inherited one in `deviates_from`. It is
+created `proposed` and unsealed: write why your project departs, then accept it,
+which seals it:
+
+```bash
+codev decision accept 0003
+```
+
+The deviation takes effect only once accepted. Until then, the inherited
+decision stays in effect and is still injected into the `design` instructions.
+Once the deviation is accepted, the inherited decision stays listed, so the
+departure is visible, but it is no longer in effect for your project. See
+[Deviation](../concepts.md#deviation).
 
 ## What is not inherited
 

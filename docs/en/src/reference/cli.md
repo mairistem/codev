@@ -405,7 +405,7 @@ Commands:
   show       Show a specific decision
   new        Create a new local decision
   accept     Accept a proposed decision: set its status to `accepted` and seal it
-  supersede  Supersede a decision: mark it `superseded` and create a new one
+  supersede  Create a proposed decision that will supersede an accepted one
   seal       Add or rewrite the seal of a local decision
   deviate    Record a local deviation from an inherited decision
   promote    Promote a `### Decision: <title>` block of a `design.md` to an ADR
@@ -488,7 +488,7 @@ final.
 ```text
 Accept a proposed decision: set its status to `accepted` and seal it
 
-Rewrites the frontmatter status of a local `proposed` decision and records the hash of its body in `seal.yaml`, in the same plan — both are written or neither is. The body is left untouched. Inherited decisions and decisions that are not `proposed` are refused.
+Rewrites the frontmatter status of a local `proposed` decision and records the hash of its body in `seal.yaml`, in the same plan — all writes happen or none does. The body is left untouched. The decisions listed in its `supersedes` are marked `superseded` in the same plan; each must still be `accepted`. This is how a decision created by `new`, `supersede`, `deviate` or `promote` takes effect. Inherited decisions and decisions that are not `proposed` are refused.
 
 Usage: codev decision accept [OPTIONS] <ID>
 
@@ -511,26 +511,68 @@ refused with `cannot_accept_inherited`, a decision that is not `proposed` with
 `decision_not_proposed`; to replace an accepted decision, use
 `codev decision supersede`.
 
+This is the only command that makes a decision take effect, whichever command
+created it. When the decision lists predecessors in `supersedes` — as one
+created by `codev decision supersede` does — the same plan sets each of them to
+`superseded`; their body, and therefore their seal, is not touched. A
+predecessor that is no longer `accepted`, for example because another decision
+superseded it in the meantime, is refused with `predecessor_not_accepted`, and
+nothing is written.
+
+```bash
+codev decision accept 0002
+```
+
+```text
+✓ Accepted 0002 — sealed (sha256:c8873b83c178dbf8434045f43a722911b9d9913ee9f13915ccda893539b788c1)
+  File: /home/you/acme-app/_codev/decisions/0002-use-sqlite.md
+  Superseded: project/0001 (status: superseded)
+```
+
 ### codev decision supersede
 
 ```text
-Supersede a decision: mark it `superseded` and create a new one
+Create a proposed decision that will supersede an accepted one
+
+The new decision is created `proposed` and unsealed, with the old one in its `supersedes`. The old decision is not modified and stays in effect until `codev decision accept` accepts the new one, which marks the old one `superseded` in the same step.
 
 Usage: codev decision supersede [OPTIONS] <OLD_ID> <NEW_TITLE>
 
 Arguments:
-  <OLD_ID>     Identifier of the decision to supersede (short or qualified)
-  <NEW_TITLE>  Title of the new decision
+  <OLD_ID>
+          Identifier of the decision to supersede (short or qualified)
+
+  <NEW_TITLE>
+          Title of the new decision
 
 Options:
       --json
-  -h, --help  Print help
+
+
+  -h, --help
+          Print help (see a summary with '-h')
 ```
 
-Creates a new accepted decision with `supersedes` pointing at `OLD_ID`, and
-sets the old decision's status to `superseded`. The old body is not modified,
-so its seal stays valid. To depart from an inherited decision, use
-`codev decision deviate`.
+Creates a new `proposed` decision, unsealed, with `supersedes` pointing at
+`OLD_ID`. The old decision is not modified: it stays `accepted`, and in effect,
+until you accept the new one with `codev decision accept`, which sets it to
+`superseded` in the same step. `OLD_ID` must be an `accepted` local decision;
+otherwise the command refuses with `predecessor_not_accepted`. To depart from
+an inherited decision, use `codev decision deviate`.
+
+```bash
+codev decision supersede 0001 "Use SQLite"
+```
+
+```text
+✓ Decision `0002 Use SQLite` created (proposed), to supersede `project/0001`
+  New ADR:     /home/you/acme-app/_codev/decisions/0002-use-sqlite.md
+  Old ADR:     /home/you/acme-app/_codev/decisions/0001-use-postgresql.md (unchanged, still in effect)
+
+Open the new file to write the Context, Decision and Consequences sections,
+then run `codev decision accept 0002` to accept and seal it.
+Accepting it marks `project/0001` superseded; until then it stays in effect.
+```
 
 ### codev decision seal
 
@@ -564,7 +606,7 @@ Sealing an already sealed, unchanged decision does nothing.
 ```text
 Record a local deviation from an inherited decision
 
-Creates a local `accepted` ADR that explicitly references the inherited decision being departed from. The inherited decision stays visible in `codev decision list`, but disappears from the instructions injected into the `design` artifact. To deviate from a local decision, use `codev decision supersede`.
+Creates a local `proposed` ADR, unsealed, that explicitly references the inherited decision being departed from. The deviation takes effect once `codev decision accept` accepts it: the inherited decision then stays visible in `codev decision list`, but disappears from the instructions injected into the `design` artifact. To deviate from a local decision, use `codev decision supersede`.
 
 Usage: codev decision deviate [OPTIONS] <TARGET> <NEW_TITLE>
 
@@ -585,12 +627,16 @@ Options:
           Print help (see a summary with '-h')
 ```
 
+The deviation is created `proposed`: the inherited decision stays in effect
+until you accept the deviation with `codev decision accept`. See
+[Inherited decisions](../guides/inherited-sources.md#inherited-decisions).
+
 ### codev decision promote
 
 ```text
 Promote a `### Decision: <title>` block of a `design.md` to an ADR
 
-Extracts the block's content, creates a sealed local ADR, and replaces the block's body with a textual reference to the new ADR. Refuses an archived change.
+Extracts the block's content into a `proposed` local ADR, unsealed, and replaces the block's body with a textual reference to the new ADR. Review and rework the ADR, then accept and seal it with `codev decision accept`. Refuses an archived change.
 
 Usage: codev decision promote [OPTIONS] <CHANGE> <TITLE>
 
@@ -609,8 +655,22 @@ Options:
           Print help (see a summary with '-h')
 ```
 
+The ADR is created `proposed`, with the block's text verbatim under
+`## Decision` and placeholders for the other sections. Rework it, then accept
+and seal it with `codev decision accept`:
+
 ```bash
 codev decision promote add-audit-log "Append-only audit table"
+```
+
+```text
+✓ Decision `Append-only audit table` promoted to proposed ADR 0004
+  File:    /home/you/acme-app/_codev/decisions/0004-append-only-audit-table.md
+  Source:  /home/you/acme-app/_codev/changes/add-audit-log/design.md
+
+Review the ADR promoted from change `add-audit-log`: split its body into Context,
+Decision, Consequences and Alternatives considered,
+then run `codev decision accept 0004` to accept and seal it.
 ```
 
 ## Inherited sources

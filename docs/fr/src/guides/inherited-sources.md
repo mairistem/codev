@@ -157,8 +157,17 @@ codev decision deviate path:~/src/acme-standards/0100 "Services log in logfmt"
 ```
 
 La nouvelle décision locale référence la décision héritée dans
-`deviates_from`. La décision héritée reste listée, ce qui rend l'écart
-visible, mais elle n'est plus en vigueur pour votre projet. Voir
+`deviates_from`. Elle est créée `proposed`, non scellée : rédigez pourquoi
+votre projet s'écarte, puis acceptez-la, ce qui la scelle :
+
+```bash
+codev decision accept 0003
+```
+
+L'écart n'entre en vigueur qu'une fois accepté. D'ici là, la décision héritée
+reste en vigueur et figure toujours dans les instructions de l'artefact
+`design`. Une fois l'écart accepté, la décision héritée reste listée, ce qui
+rend l'écart visible, mais elle n'est plus en vigueur pour votre projet. Voir
 [Écart](../concepts.md#écart).
 
 ## Ce qui n'est pas hérité

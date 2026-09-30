@@ -83,17 +83,28 @@ de formatage. Les décisions acceptées sont immuables :
 - Ou, si la modification était volontaire, **scellez-la à nouveau** :
   `codev decision seal <ID> --force`.
 
-Pour rédiger une décision avant de la sceller, laissez-la `proposed` — le
-statut par défaut de `codev decision new` — et lancez
+Pour rédiger une décision avant de la sceller, laissez-la `proposed` — comme
+la créent `codev decision new`, `supersede`, `deviate` et `promote` — et lancez
 `codev decision accept <ID>` une fois son texte définitif. Une décision créée
-avec `--status accepted` est scellée immédiatement, avec le texte d'exemple du
-template.
+avec `codev decision new --status accepted` est scellée immédiatement, avec le
+texte d'exemple du template.
 
 Pour changer ce que dit une décision, remplacez-la plutôt avec
-`codev decision supersede <ID> "<new title>"`.
+`codev decision supersede <ID> "<new title>"`, rédigez la nouvelle décision,
+puis acceptez-la.
 
 Pour tenir les outils de formatage à l'écart des décisions, excluez
 `_codev/decisions/` dans leur configuration.
+
+### `codev decision accept` signale `predecessor_not_accepted`
+
+La décision que vous acceptez liste, dans `supersedes`, une décision qui n'est
+plus `accepted` — le plus souvent parce qu'une autre décision l'a remplacée
+après la création de la vôtre. Rien n'a été écrit. Lancez
+`codev decision list` pour voir quelle décision est désormais en vigueur, puis
+faites pointer `supersedes` vers elle dans le frontmatter de la vôtre, ou
+abandonnez la vôtre si elle est devenue inutile. `codev decision supersede`
+refuse avec le même code une décision qui n'est pas `accepted`.
 
 ### `codev validate` signale `decision_missing_frontmatter`
 

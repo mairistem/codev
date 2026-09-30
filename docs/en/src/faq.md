@@ -80,16 +80,28 @@ Accepted decisions are immutable:
 - Or, if the edit was deliberate, **reseal** it:
   `codev decision seal <ID> --force`.
 
-To write a decision before sealing it, keep it `proposed` — the default of
-`codev decision new` — and run `codev decision accept <ID>` once its text is
-final. A decision created with `--status accepted` is sealed straight away,
-with the template's placeholder text.
+To write a decision before sealing it, keep it `proposed` — as
+`codev decision new`, `supersede`, `deviate` and `promote` create it — and run
+`codev decision accept <ID>` once its text is final. A decision created with
+`codev decision new --status accepted` is sealed straight away, with the
+template's placeholder text.
 
 To change what a decision says, supersede it with
-`codev decision supersede <ID> "<new title>"` instead.
+`codev decision supersede <ID> "<new title>"` instead, write the new decision,
+then accept it.
 
 To keep formatters away from decisions, exclude `_codev/decisions/` in their
 configuration.
+
+### `codev decision accept` reports `predecessor_not_accepted`
+
+The decision you are accepting lists, in `supersedes`, a decision that is no
+longer `accepted` — usually because another decision superseded it after yours
+was created. Nothing was written. Run `codev decision list` to see which
+decision is now in effect, then either point `supersedes` at that decision in
+the frontmatter of yours, or drop yours if it has become redundant.
+`codev decision supersede` refuses a decision that is not `accepted` with the
+same code.
 
 ### `codev validate` reports `decision_missing_frontmatter`
 

@@ -144,10 +144,13 @@ codev decision accept 0001
 ```
 
 Une décision a l'un des cinq statuts suivants : `accepted`, `superseded`,
-`proposed`, `deprecated` ou `rejected`. `codev decision new` la crée
-`proposed`, afin que vous puissiez la rédiger librement ;
-`codev decision accept` la passe à `accepted` une fois son texte définitif.
-Une décision est **en vigueur**
+`proposed`, `deprecated` ou `rejected`. Toutes les commandes qui créent une
+décision — `codev decision new`, [`supersede`](#remplacement),
+[`deviate`](#écart) et [`promote`](#promotion) — la créent `proposed`, afin que
+vous puissiez la rédiger librement ; `codev decision accept` la passe à
+`accepted` une fois son texte définitif. L'acceptation est la seule étape qui
+fait entrer une décision en vigueur : une décision `proposed` ne remplace encore
+rien et ne s'écarte encore de rien. Une décision est **en vigueur**
 lorsqu'elle est `accepted` et qu'aucune autre ne la remplace. Les décisions en
 vigueur sont transmises à l'agent chaque fois qu'il rédige un `design.md`,
 afin que les designs les respectent au lieu de les remettre en débat.
@@ -160,9 +163,9 @@ pour une décision héritée d'un autre dépôt.
 ## Sceau
 
 Une décision acceptée est immuable. Lorsqu'une décision devient acceptée par
-une commande `codev decision` — `accept`, `supersede`, `deviate`, `promote`,
-ou `new --status accepted` — codev enregistre une empreinte SHA-256 du contenu
-de la décision dans `_codev/decisions/seal.yaml` ; `codev decision seal` fait
+une commande `codev decision` — `accept`, ou `new --status accepted` — codev
+enregistre une empreinte SHA-256 du contenu de la décision dans
+`_codev/decisions/seal.yaml` ; `codev decision seal` fait
 de même pour une décision que vous avez acceptée à la main.
 `codev validate` compare le contenu de chaque décision locale `accepted` ou
 `superseded` à son empreinte, et signale une modification par l'erreur
@@ -188,10 +191,20 @@ Pour changer une décision, remplacez-la plutôt que de la modifier :
 codev decision supersede 0001 "Use SQLite for persistence"
 ```
 
-codev crée une nouvelle décision acceptée dont le frontmatter indique
-`supersedes: ["0001"]`, et marque `0001` comme `superseded`. Le contenu de
-l'ancienne décision reste strictement identique : l'historique du raisonnement
-est préservé.
+codev crée une nouvelle décision `proposed` dont le frontmatter indique
+`supersedes: ["0001"]`, et ne touche pas à `0001` : elle reste `accepted`, et en
+vigueur, pendant que vous rédigez la nouvelle. Accepter la nouvelle décision
+marque `0001` comme `superseded` dans la même étape :
+
+```bash
+codev decision accept 0002
+```
+
+Le contenu de l'ancienne décision reste strictement identique : son sceau reste
+valide et l'historique du raisonnement est préservé. Seule une décision
+`accepted` peut être remplacée : si une autre décision a remplacé `0001`
+entre-temps, `codev decision accept` refuse avec `predecessor_not_accepted` et
+n'écrit rien.
 
 ## Écart
 
@@ -203,10 +216,12 @@ plutôt un écart local :
 codev decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
-Cette commande crée une décision locale acceptée dont le champ `deviates_from`
-pointe vers la décision héritée. Celle-ci reste visible dans
-`codev decision list`, mais elle n'est plus en vigueur pour votre projet et
-n'est plus transmise à l'agent lorsqu'il rédige des designs.
+Cette commande crée une décision locale `proposed` dont le champ
+`deviates_from` pointe vers la décision héritée. L'écart entre en vigueur
+lorsque vous l'acceptez avec `codev decision accept` : la décision héritée reste
+alors visible dans `codev decision list`, mais elle n'est plus en vigueur pour
+votre projet et n'est plus transmise à l'agent lorsqu'il rédige des designs.
+D'ici là, la décision héritée reste en vigueur.
 
 ## Promotion
 
@@ -218,9 +233,11 @@ puis promouvez-la :
 codev decision promote add-audit-log "Append-only audit table"
 ```
 
-codev crée un ADR scellé à partir du contenu du bloc et remplace le contenu du
-bloc par une référence au nouvel ADR. Répartissez le texte promu dans les
-sections de l'ADR avant d'archiver le change.
+codev crée un ADR `proposed` dont la section `## Decision` reprend tel quel le
+contenu du bloc, et remplace le contenu du bloc par une référence au nouvel
+ADR. Relisez-le et répartissez le texte promu dans les sections de l'ADR, puis
+acceptez-le avec `codev decision accept`, qui le scelle — idéalement avant
+d'archiver le change.
 
 ## Source héritée
 

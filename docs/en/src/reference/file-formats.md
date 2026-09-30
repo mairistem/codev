@@ -244,7 +244,9 @@ supersedes: ["0001"]
 The frontmatter is delimited by `---` lines at the very start of the file. The
 body is split into `##` sections; the template's four sections are a
 convention, not a requirement. Only `accepted` decisions that are not
-superseded or deviated from are in effect.
+superseded or deviated from are in effect, and `supersedes` and
+`deviates_from` only take effect on an `accepted` decision: a `proposed`
+supersession or deviation changes nothing until `codev decision accept`.
 
 ## seal.yaml
 
@@ -329,7 +331,7 @@ may be reworded between versions; codes are not.
 | `decision_unknown_status` | error | A decision has an unknown status |
 | `decision_field_type_mismatch` | error | A frontmatter field has the wrong shape |
 | `decision_seal_mismatch` | error | A sealed decision's body was edited |
-| `decision_conflicting_deviations` | error | Two local decisions deviate from the same inherited one |
+| `decision_conflicting_deviations` | error | Two accepted local decisions deviate from the same inherited one |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `decision_orphan_seal` | warning | A seal has no matching decision |
