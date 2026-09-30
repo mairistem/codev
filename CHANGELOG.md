@@ -8,6 +8,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-30
+
 ### Changed
 
 - **BREAKING:** codev now speaks English throughout — CLI output and help,
@@ -160,7 +162,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
   `codev validate --strict`, project-configured MCP integration, and prebuilt
   binaries for macOS and Linux.
 
-[Unreleased]: https://github.com/mairistem/codev/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/mairistem/codev/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/mairistem/codev/releases/tag/v0.4.0
 [0.3.2]: https://github.com/mairistem/codev/releases/tag/v0.3.2
 [0.3.1]: https://github.com/mairistem/codev/releases/tag/v0.3.1
 [0.3.0]: https://github.com/mairistem/codev/releases/tag/v0.3.0

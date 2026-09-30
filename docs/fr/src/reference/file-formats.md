@@ -301,7 +301,7 @@ allowed-tools: "Bash(codev:*), Read, Glob, Grep"
 license: MIT
 metadata:
   generator: codev
-  version: "0.3.2"
+  version: "0.4.0"
 ---
 
 <workflow instructions>

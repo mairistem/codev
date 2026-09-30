@@ -36,7 +36,7 @@ export PATH="$HOME/.local/bin:$PATH"
 Pour installer une version précise, définissez `CODEV_VERSION` :
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.3.2 sh
+curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.4.0 sh
 ```
 
 Le script nécessite `curl`, `tar`, ainsi que `sha256sum` ou `shasum`.
@@ -68,7 +68,7 @@ modification prenne effet.
 Pour installer une version précise :
 
 ```powershell
-$env:CODEV_VERSION = '0.3.2'
+$env:CODEV_VERSION = '0.4.0'
 iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
 ```
 
