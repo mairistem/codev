@@ -14,7 +14,9 @@ Claude Code vous accordiez sur ce qu'il faut construire avant d'écrire la
 moindre ligne de code — et pour que les décisions d'architecture, une fois
 prises, cessent d'être remises en débat à chaque change.
 
-<!-- demo: docs/assets/demo.gif (to record with vhs, see docs/assets/demo.tape) -->
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Enregistrement de terminal : codev init, un change dont le plan est validé puis archivé, et la spec vivante qui en résulte" width="800">
+</p>
 
 ## Pourquoi
 

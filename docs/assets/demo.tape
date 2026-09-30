@@ -5,7 +5,9 @@
 #
 #   vhs docs/assets/demo.tape
 #
-# The output, docs/assets/demo.gif, is referenced from README.md once recorded.
+# The plan of the demo change (proposal, spec delta, design, tasks) lives in
+# docs/assets/demo/add-dark-mode/: it stands for what `/codev-propose` writes
+# in Claude Code, so the recording needs no model and is reproducible.
 
 Output docs/assets/demo.gif
 
@@ -17,32 +19,67 @@ Set FontSize 16
 Set Width 1200
 Set Height 720
 Set Padding 24
-Set TypingSpeed 45ms
+Set TypingSpeed 40ms
 Set Theme "Catppuccin Mocha"
 
 # Start from a fresh, empty repository, off camera.
 Hide
-Type "export PS1='$ ' && rm -rf /tmp/codev-demo && mkdir -p /tmp/codev-demo/acme-app && cd /tmp/codev-demo/acme-app && git init -q && clear"
+Type `export PS1='$ ' LANG=en_US.UTF-8 DEMO_PLAN="$PWD/docs/assets/demo/add-dark-mode" && rm -rf /tmp/acme-app && mkdir /tmp/acme-app && cd /tmp/acme-app && git init -q && clear`
 Enter
 Show
 
-Type "codev init --yes --language en"
-Sleep 400ms
+Type "codev init --yes"
+Sleep 300ms
 Enter
 Sleep 3s
 
-Type "codev new change add-dark-mode --goal 'Let users switch the UI to a dark theme'"
-Sleep 400ms
+Hide
+Type "clear"
+Enter
+Show
+
+Type "codev new change add-dark-mode"
+Sleep 300ms
+Enter
+Sleep 1500ms
+
+Type "# In Claude Code, /codev-propose now writes the plan: proposal, spec delta, design, tasks."
+Sleep 300ms
+Enter
+Sleep 1500ms
+
+Hide
+Type `cp -R "$DEMO_PLAN/." _codev/changes/add-dark-mode/`
+Enter
+Show
+
+Type "codev status"
+Sleep 300ms
 Enter
 Sleep 2500ms
 
-Type "codev status"
-Sleep 400ms
+Hide
+Type "clear"
+Enter
+Show
+
+Type "codev validate"
+Sleep 300ms
+Enter
+Sleep 2500ms
+
+Type "codev archive --change add-dark-mode"
+Sleep 300ms
 Enter
 Sleep 3s
 
-# A fresh change has no spec delta yet: validation says what is missing.
-Type "codev validate"
-Sleep 400ms
+Hide
+Type "clear"
 Enter
-Sleep 4s
+Show
+
+# The delta is now part of the living spec.
+Type "cat _codev/specs/ui/theme/spec.md"
+Sleep 300ms
+Enter
+Sleep 5s

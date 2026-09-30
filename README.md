@@ -14,7 +14,9 @@ Claude Code agree on what must be built before a line of code is written — and
 so that architecture decisions, once made, stop being re-debated on every
 change.
 
-<!-- demo: docs/assets/demo.gif (to record with vhs, see docs/assets/demo.tape) -->
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Terminal recording: codev init, a new change whose plan is validated and archived, and the resulting living spec" width="800">
+</p>
 
 ## Why
 
