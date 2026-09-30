@@ -25,6 +25,9 @@
   --rule: #ff5331;
   --note-rule: #00c39b;
   --note-bg: rgba(0, 195, 155, .07);
+  --warning-rule: #ff5331;
+  --warning-bg: rgba(255, 83, 49, .06);
+  --warning-title: #c4361b;
   --max-width: 800px;
   color-scheme: light;
 }
@@ -46,6 +49,8 @@
     --link: #ffab03;
     --link-hover: #ffffff;
     --note-bg: rgba(0, 195, 155, .09);
+    --warning-bg: rgba(255, 83, 49, .1);
+    --warning-title: #ffab03;
     color-scheme: dark;
   }
 }
@@ -224,7 +229,7 @@ img {
   border-radius: 14px;
 }
 
-/* Callouts: every blockquote reads as a note (green rule, soft background) */
+/* Callouts: a blockquote reads as a note (green rule, soft background) */
 blockquote {
   margin: 0 0 24px;
   padding: 16px 20px;
@@ -232,6 +237,16 @@ blockquote {
   background: var(--note-bg);
   border-left: 3px solid var(--note-rule);
   border-radius: 2px 12px 12px 2px;
+}
+
+/* Warning callouts (`> **Warning**`, `> **Attention**`): coral rule */
+blockquote.warning {
+  background: var(--warning-bg);
+  border-left-color: var(--warning-rule);
+}
+
+blockquote.warning > p:first-child > strong:first-child {
+  color: var(--warning-title);
 }
 
 blockquote > :last-child {

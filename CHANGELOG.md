@@ -46,10 +46,19 @@ Detailed notes for each version are on the corresponding GitHub Release.
   `language` field.
 - Documentation in English and French, published as a website and embedded in
   the binary. `codev docs --lang en|fr` selects the language.
+- The documentation website follows the Mairistem design system, with a
+  landing page, light and dark themes, and a language switch between the
+  English and French editions; `codev docs` renders in the same style.
 - Continuous integration: formatting, lints, tests on Linux, macOS and
   Windows, a minimum Rust version check, validation of codev's own specs, and
   a dependency audit.
 - Issue forms for bug reports and feature requests.
+
+### Dependencies
+
+- Updated `dialoguer` to 0.12, `toml` to 1.1, `pulldown-cmark` to 0.13 and
+  `sha2` to 0.11, plus minor updates. Existing seals and `codev.lock` files
+  are read and written exactly as before.
 
 ### Fixed
 

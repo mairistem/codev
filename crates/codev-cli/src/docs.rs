@@ -124,6 +124,7 @@ pub fn render_html(md: &str, lang: Lang, version: &str) -> String {
 
     let mut body_html = String::new();
     html::push_html(&mut body_html, events.into_iter());
+    let body_html = mark_warning_callouts(&body_html);
 
     format!(
         "<!doctype html>\n\
@@ -149,6 +150,24 @@ pub fn render_html(md: &str, lang: Lang, version: &str) -> String {
         version = version,
         body_html = body_html,
     )
+}
+
+/// Titles that turn a blockquote into a warning callout, in both languages —
+/// the same set the website's theme recognizes.
+const WARNING_TITLES: &[&str] = &["Warning", "Attention"];
+
+/// Gives `class="warning"` to the blockquotes that open on a warning title
+/// (`> **Warning**`, `> **Attention**`), so the stylesheet can tell them apart
+/// from notes. Other blockquotes are left as they are.
+fn mark_warning_callouts(html: &str) -> String {
+    let mut out = html.to_string();
+    for title in WARNING_TITLES {
+        out = out.replace(
+            &format!("<blockquote>\n<p><strong>{title}</strong>"),
+            &format!("<blockquote class=\"warning\">\n<p><strong>{title}</strong>"),
+        );
+    }
+    out
 }
 
 /// Default path to write the HTML to — in the system temp directory, with
@@ -387,6 +406,23 @@ mod tests {
         assert!(
             !out.contains("<script src=\"http"),
             "no external <script src> expected"
+        );
+    }
+
+    #[test]
+    fn warning_callouts_get_their_own_class() {
+        let md =
+            "> **Warning**\n> Careful.\n\n> **Attention**\n> Prudence.\n\n> **Note**\n> Fine.\n";
+        let out = render_html(md, Lang::En, "0.1.0");
+        assert_eq!(
+            out.matches("<blockquote class=\"warning\">").count(),
+            2,
+            "{out}"
+        );
+        assert_eq!(
+            out.matches("<blockquote>").count(),
+            1,
+            "the note stays a plain blockquote"
         );
     }
 

@@ -62,9 +62,18 @@
   // French interface strings -----------------------------------------------
   if (lang !== 'fr') { return; }
 
+  // mdBook writes its clipboard tooltip ("Copied!") into the button's first
+  // child after each copy; translate it as soon as it appears.
+  var clipboardMessages = { 'Copied!': 'Copié\u00a0!', 'Clipboard error!': 'Échec de la copie' };
   document.querySelectorAll('pre > .buttons button.clip-button').forEach(function (button) {
     button.setAttribute('title', 'Copier dans le presse-papiers');
     button.setAttribute('aria-label', 'Copier dans le presse-papiers');
+    var tooltip = button.firstChild;
+    if (!tooltip || !window.MutationObserver) { return; }
+    new MutationObserver(function () {
+      var translated = clipboardMessages[tooltip.textContent];
+      if (translated) { tooltip.textContent = translated; }
+    }).observe(tooltip, { childList: true, characterData: true, subtree: true });
   });
 
   var header = document.getElementById('mdbook-searchresults-header');
