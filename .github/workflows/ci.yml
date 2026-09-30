@@ -47,8 +47,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      # Keep in sync with `rust-version` in the workspace Cargo.toml.
-      - uses: dtolnay/rust-toolchain@1.120
+      # Keep in sync with `rust-version` in the workspace Cargo.toml. The
+      # version is an input rather than the action's ref, so that Dependabot
+      # never mistakes the MSRV for an outdated action version.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.89"
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --locked
 
