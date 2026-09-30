@@ -283,8 +283,8 @@ applied.
   "Our alternative"`
 - **THEN** no file is written
 - **AND** the `cannot_supersede_inherited` error message explains that an
-  inherited decision is read-only and suggests "deviating" from it — the
-  name of the operation that K6 will deliver
+  inherited decision is read-only and suggests deviating from it with
+  `codev decision deviate`
 
 ### Requirement: Stable JSON contract for all commands
 
@@ -627,7 +627,7 @@ reported.
 `codev decision deviate <qualified-id> <title>` MUST create a local
 `accepted` ADR with `deviates_from: ["<qualified-id>"]` and a valid
 frontmatter (`id`, `title`, `status: accepted`, `date`), sealed by the
-same effect plan — consistent with K3.
+same effect plan, like every accepted decision.
 
 The command MUST refuse:
 
@@ -741,7 +741,7 @@ transparency takes precedence over hiding.
 
 `codev decision promote <change> <title>` MUST create a new local ADR
 under `_codev/decisions/NNNN-<slug>.md`, with `status: accepted`, sealed
-per K3, whose body reproduces **verbatim** the content of the
+like every accepted decision, whose body reproduces **verbatim** the content of the
 `### Decision: <title>` block found under the `## Decisions` section of
 the change's `design.md`. The new ADR contains a `## Decision` section
 carrying that body, and the `## Context`, `## Consequences` and
@@ -776,7 +776,7 @@ Explicit refusals — stable codes:
 - **AND** its body contains a `## Decision` section with the two
   paragraphs of rationale, byte for byte
 - **AND** an entry is added to `_codev/decisions/seal.yaml` for this
-  ADR — consistent with K3
+  ADR
 
 #### Scenario: Refusal of an archived change
 

@@ -115,9 +115,9 @@ Without a non-interactive flag, `codev init` MUST ask exactly the
 following two questions, in this order:
 
 1. **Workflows to install** — a choice among three presets, defaulting
-   to "Full (7)":
-   - `Full (7)` — `propose`, `explore`, `onboard`, `apply`, `sync`,
-     `archive`, `update`.
+   to "Full (8)":
+   - `Full (8)` — `propose`, `explore`, `onboard`, `apply`, `sync`,
+     `archive`, `update`, `configure`.
    - `Minimal (3)` — `propose`, `explore`, `onboard`.
    - `Custom` — the user ticks each workflow one by one.
 2. **Project context** — free text added to the generated `context:`.
@@ -136,7 +136,7 @@ detection, not asked for).
 - **WHEN** the user runs `codev init`
 - **THEN** exactly two prompts are displayed — workflows, then
   context
-- **AND** the workflows prompt has "Full (7)" as its default option
+- **AND** the workflows prompt has "Full (8)" as its default option
 
 ### Requirement: Non-interactive flags compose cleanly
 
@@ -145,10 +145,9 @@ detection, not asked for).
 - `--yes` (`-y`) — applies the defaults for every question, no
   prompt displayed.
 - `--no-detect` — disables the probe.
-- `--preset <complet|minimal|personnalise>` — preselects the answer
-  to question 1 (`complet` is the full preset, `personnalise` the
-  custom one); in interactive mode, `personnalise` still triggers the
-  sub-prompt, while `complet` and `minimal` skip it.
+- `--preset <full|minimal|custom>` — preselects the answer to
+  question 1; in interactive mode, `custom` still triggers the
+  sub-prompt, while `full` and `minimal` skip it.
 - `--force` — unchanged, rewrites skills even when they were modified
   by hand.
 
@@ -161,7 +160,7 @@ applied. This guarantees scriptability and pipeline behavior.
 - **GIVEN** an interactive TTY
 - **WHEN** the user runs `codev init --yes`
 - **THEN** no prompt is displayed
-- **AND** the 7 workflows are installed
+- **AND** the 8 workflows are installed
 - **AND** the generated `context:` carries only what detection
   produced
 
