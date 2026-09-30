@@ -118,13 +118,13 @@ et lancez `mdbook serve docs/fr`.
 Les changements visibles par les utilisateurs font l'objet d'une entrée sous
 `## [Unreleased]` dans [CHANGELOG.md](CHANGELOG.md).
 
-## Archives historiques en français
+## Décisions d'architecture en français
 
-Les décisions d'architecture de `_codev/decisions/` et les changes archivés
-de `_codev/changes/archive/` antérieurs à la version 0.4 sont rédigés en
-français. Ce sont des enregistrements scellés et immuables de la construction
-de codev, volontairement conservés tels quels. Les nouvelles décisions et les
-nouveaux changes sont rédigés en anglais.
+Les six décisions d'architecture acceptées de `_codev/decisions/` sont
+antérieures à la version 0.4 et rédigées en français. Une décision acceptée
+est scellée et immuable — c'est la règle que codev lui-même applique — elles
+sont donc conservées telles quelles. Les nouvelles décisions, comme tous les
+autres fichiers du dépôt, sont rédigées en anglais.
 
 ## Processus de release
 
