@@ -40,6 +40,23 @@ Detailed notes for each version are on the corresponding GitHub Release.
   a dependency audit.
 - Issue forms for bug reports and feature requests.
 
+### Fixed
+
+- `codev sync` validates the change first and refuses on errors, like
+  `codev archive`; both now report the stable JSON code `validation_failed`.
+- A `RENAMED` delta written with the template's `### Requirement: <name>` form
+  is applied instead of being silently ignored, and renaming a requirement
+  that does not exist is reported as `rename_source_missing`.
+- Renaming and modifying the same requirement in one delta now works.
+- A `MODIFIED` merge keeps the blank line before the next requirement.
+- Validation reports unexpected headings inside delta sections
+  (`delta_unexpected_heading`) and empty delta sections
+  (`delta_section_empty`).
+- The `subpath` of a git inherited source now also applies to its decisions.
+- `codev init` counts the generated `config.yaml` among the files it created.
+- `codev docs --print` no longer prints an error when its output is piped to a
+  command that exits early, such as `head`.
+
 ## [0.3.2] - 2026-09-28
 
 ### Fixed
