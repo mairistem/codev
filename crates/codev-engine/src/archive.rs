@@ -15,7 +15,6 @@ use crate::config::ResolvedConfig;
 use crate::error::{EngineError, Result};
 use crate::ports::{Clock, FileSystem};
 use crate::sync::{self, SyncPlan};
-use crate::validate;
 
 /// Full plan of an `archive`: the sync and the final move.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,8 +38,9 @@ pub struct ArchiveOutcome {
     pub moved_to: PathBuf,
 }
 
-/// Builds the plan without writing. Checks with `validate` first — if the
-/// change has any error at all, it refuses without even preparing the plan.
+/// Builds the plan without writing. Checks with `validate` first (through
+/// [`sync::plan_sync`]) — if the change has any error at all, it refuses
+/// without even preparing the plan.
 pub fn plan_archive(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -48,18 +48,8 @@ pub fn plan_archive(
     clock: &dyn Clock,
     change_id: &ChangeId,
 ) -> Result<ArchivePlan> {
-    // Preflight: the validator is the source of truth. An error finding → refusal.
-    let report = validate::validate_change(fs, layout, config, change_id)?;
-    if report.has_errors() {
-        return Err(EngineError::Invalid {
-            path: layout.change_dir(change_id),
-            reason: format!(
-                "validation_failed: change `{change_id}` has errors; \
-                 run `codev validate {change_id}` for details"
-            ),
-        });
-    }
-
+    // Preflight: `plan_sync` runs the validator first — an error finding
+    // is a refusal before the plan is even prepared.
     let sync_plan = sync::plan_sync(fs, layout, config, change_id)?;
 
     // Move target: `changes/archive/<date>-<name>/`. The date prefix
@@ -239,8 +229,8 @@ mod tests {
             &ChangeId::parse("buggy").unwrap(),
         )
         .unwrap_err();
-        assert_eq!(err.code(), "invalid");
-        assert!(err.to_string().contains("validation_failed"), "{err}");
+        assert_eq!(err.code(), "validation_failed");
+        assert!(err.to_string().contains("codev validate buggy"), "{err}");
         // No main spec created.
         assert!(fs.read("/p/_codev/specs/x/spec.md").is_none());
         // Change left intact.

@@ -113,3 +113,34 @@ fn two_successive_syncs_give_the_same_result() {
     let after_two = merge(&after_one, delta);
     assert_eq!(after_one, after_two);
 }
+
+#[test]
+fn modified_preserves_the_blank_line_around_the_replaced_requirement() {
+    // The fixture is in canonical form: replacing a requirement must change
+    // its own lines and nothing else — in particular not the blank line
+    // before the next `### Requirement:` or the next `## ` section.
+    let login = "## MODIFIED Requirements\n\n### Requirement: Login\n\nThe system SHALL emit a JWT upon successful login.\n\n#### Scenario: Valid credentials\n\n- **WHEN** the user submits valid credentials\n- **THEN** a token is returned\n";
+    assert_eq!(
+        merge(SPEC_BEFORE, login),
+        SPEC_BEFORE.replace("emit a token upon", "emit a JWT upon")
+    );
+
+    let last = "## MODIFIED Requirements\n\n### Requirement: Session Expiration\n\nThe system MUST expire sessions after 15 minutes.\n\n#### Scenario: Idle timeout\n\n- **WHEN** 30 minutes pass without activity\n- **THEN** the session is invalidated\n";
+    assert_eq!(
+        merge(SPEC_BEFORE, last),
+        SPEC_BEFORE.replace("after 30 minutes.", "after 15 minutes.")
+    );
+}
+
+#[test]
+fn renamed_with_the_template_form_retitles() {
+    // The form the `spec.md` template shows: the full heading in backticks.
+    let delta = "## RENAMED Requirements\n\n- FROM: `### Requirement: Session Expiration`\n- TO: `### Requirement: Session Timeout`\n";
+    assert_eq!(
+        merge(SPEC_BEFORE, delta),
+        SPEC_BEFORE.replace(
+            "### Requirement: Session Expiration",
+            "### Requirement: Session Timeout"
+        )
+    );
+}

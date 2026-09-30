@@ -50,6 +50,9 @@ impl MergePlan {
 pub enum MergeError {
     /// A `MODIFIED` targets a requirement that does not exist in the main spec.
     ModifiedTargetMissing { name: String },
+    /// A `RENAMED.FROM` names no requirement of the main spec, and the
+    /// rename has not been applied already (`TO` is absent too).
+    RenameSourceMissing { name: String },
     /// A `REMOVED` would leave the spec without any requirement.
     ///
     /// This requires `retire_capabilities: true` in `change.yaml`, and
@@ -69,6 +72,7 @@ impl MergeError {
     pub fn code(&self) -> &'static str {
         match self {
             Self::ModifiedTargetMissing { .. } => "modified_target_missing",
+            Self::RenameSourceMissing { .. } => "rename_source_missing",
             Self::WouldLeaveSpecWithoutRequirement { .. } => "would_leave_spec_without_requirement",
             Self::NewCapabilityWithoutPurpose => "new_capability_without_purpose",
             Self::NoRequirementsSection => "no_requirements_section",
@@ -80,6 +84,10 @@ impl MergeError {
             Self::ModifiedTargetMissing { name } => format!(
                 "MODIFIED: requirement `{name}` does not exist in the main spec — \
                  use ADDED if it is new, or fix the name"
+            ),
+            Self::RenameSourceMissing { name } => format!(
+                "RENAMED: requirement `{name}` does not exist in the main spec — \
+                 use the exact name of an existing requirement"
             ),
             Self::WouldLeaveSpecWithoutRequirement { name } => format!(
                 "REMOVED: removing `{name}` would leave the spec without any requirement; \
@@ -125,6 +133,38 @@ pub fn merge_into_existing(
         .map(|(idx, r)| (r.name.as_str(), idx))
         .collect();
 
+    // A `MODIFIED` carries the NEW name of a requirement renamed by the same
+    // delta (`modified_uses_old_name` enforces it), while the main spec still
+    // has the old one: resolve it through the rename.
+    let renamed_from: BTreeMap<&str, &str> = delta
+        .sections
+        .iter()
+        .filter_map(|s| match s {
+            DeltaSection::Renamed { renames, .. } => Some(renames),
+            _ => None,
+        })
+        .flatten()
+        .map(|r| (r.to.as_str(), r.from.as_str()))
+        .collect();
+    let find_modified = |name: &str| {
+        by_name
+            .get(name)
+            .or_else(|| renamed_from.get(name).and_then(|from| by_name.get(from)))
+            .copied()
+    };
+    // The requirements a MODIFIED rewrites whole, new heading included: their
+    // rename must not also edit the heading line — two overlapping edits.
+    let modified_targets: std::collections::BTreeSet<usize> = delta
+        .sections
+        .iter()
+        .filter_map(|s| match s {
+            DeltaSection::Modified { requirements, .. } => Some(requirements),
+            _ => None,
+        })
+        .flatten()
+        .filter_map(|r| find_modified(&r.name))
+        .collect();
+
     // Count the REMOVED entries to detect a full emptying before writing.
     let mut removed_count = 0usize;
 
@@ -132,16 +172,22 @@ pub fn merge_into_existing(
         match section {
             DeltaSection::Modified { requirements, .. } => {
                 for new_req in requirements {
-                    let Some(&idx) = by_name.get(new_req.name.as_str()) else {
+                    let Some(idx) = find_modified(&new_req.name) else {
                         return Err(MergeError::ModifiedTargetMissing {
                             name: new_req.name.clone(),
                         });
                     };
                     let target = &spec.requirements[idx];
-                    edits.push(Edit::new(
-                        target.span.byte_range.clone(),
-                        render::requirement(new_req),
-                    ));
+                    // The target's span runs up to the next heading, so it
+                    // carries the blank line that separates it from the next
+                    // block. The canonical rendering ends on a single `\n`:
+                    // keep the original separation, or the next
+                    // `### Requirement:` ends up glued to this one.
+                    let original = &spec_source[target.span.byte_range.clone()];
+                    let separation = &original[original.trim_end().len()..];
+                    let mut replacement = render::requirement(new_req).trim_end().to_string();
+                    replacement.push_str(separation);
+                    edits.push(Edit::new(target.span.byte_range.clone(), replacement));
                 }
             }
             DeltaSection::Removed { removals, .. } => {
@@ -161,10 +207,20 @@ pub fn merge_into_existing(
                     // Find the requirement by its old name; retitle *only* the
                     // heading line, leaving the body and scenarios intact.
                     let Some(&idx) = by_name.get(rename.from.as_str()) else {
-                        // Renaming a missing requirement is a silent no-op —
-                        // the validator reports it separately.
-                        continue;
+                        // Already renamed by an earlier sync: a no-op, for
+                        // idempotence. Otherwise the rename points at nothing
+                        // — the validator reports it, and the merge refuses
+                        // rather than drop it silently.
+                        if by_name.contains_key(rename.to.as_str()) {
+                            continue;
+                        }
+                        return Err(MergeError::RenameSourceMissing {
+                            name: rename.from.clone(),
+                        });
                     };
+                    if modified_targets.contains(&idx) {
+                        continue;
+                    }
                     let target = &spec.requirements[idx];
                     let start = target.span.byte_range.start;
                     // End of the heading line: first `\n` after `start`.
@@ -319,6 +375,17 @@ mod tests {
     }
 
     #[test]
+    fn modified_keeps_the_blank_line_before_the_next_requirement() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Logout\nThe system SHALL y.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST x twice.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let out = merged(spec_source, delta_source);
+        assert!(
+            out.contains("- **THEN** b\n\n### Requirement: Logout"),
+            "the separation must survive the merge:\n{out}"
+        );
+    }
+
+    #[test]
     fn modified_without_target_fails() {
         let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let delta_source = "## MODIFIED Requirements\n\n### Requirement: Ghost\nThe system SHALL y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
@@ -391,6 +458,47 @@ mod tests {
         // The body is intact.
         assert!(out.contains("The system MUST expire."));
         assert!(out.contains("#### Scenario: Idle"));
+    }
+
+    #[test]
+    fn renamed_accepts_the_backticked_heading_form() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n";
+        let delta_source = "## RENAMED Requirements\n\n- FROM: `### Requirement: Session Expiration`\n- TO: `### Requirement: Session Timeout`\n";
+        let out = merged(spec_source, delta_source);
+        assert!(out.contains("### Requirement: Session Timeout\n"), "{out}");
+        assert!(!out.contains("Session Expiration"));
+        // Applied once, the rename is a no-op the second time.
+        assert_eq!(merged(&out, delta_source), out);
+    }
+
+    #[test]
+    fn renamed_and_modified_together_apply_both() {
+        // MODIFIED uses the new name, as `modified_uses_old_name` requires.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Session Timeout\nThe system MUST expire after 15 minutes.\n\n#### Scenario: Idle\n- **WHEN** idle\n- **THEN** expire\n\n## RENAMED Requirements\n\n- FROM: Session Expiration\n- TO: Session Timeout\n";
+        let out = merged(spec_source, delta_source);
+        assert!(
+            out.contains(
+                "### Requirement: Session Timeout\n\nThe system MUST expire after 15 minutes."
+            ),
+            "{out}"
+        );
+        assert!(!out.contains("Session Expiration"), "{out}");
+        assert!(
+            out.contains("- **THEN** expire\n\n### Requirement: Login"),
+            "{out}"
+        );
+        assert_eq!(merged(&out, delta_source), out, "idempotent");
+    }
+
+    #[test]
+    fn renamed_from_an_unknown_requirement_fails() {
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## RENAMED Requirements\n\n- FROM: Log in\n- TO: Sign in\n";
+        let (spec, delta) = parse_pair(spec_source, delta_source);
+        let err = merge_into_existing(spec_source, &spec, &delta, false).unwrap_err();
+        assert_eq!(err.code(), "rename_source_missing");
+        assert!(err.to_string().contains("Log in"));
     }
 
     // ─────────────── ADDED ───────────────

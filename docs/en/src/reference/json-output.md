@@ -56,7 +56,8 @@ Common error codes:
 | `schema_not_found` | Unknown schema name |
 | `no_artifact_ready` | `instructions` without an artifact, and none is ready |
 | `template_not_found` | A schema references a missing template |
-| `invalid` | An invalid file, or a change refused by archive validation |
+| `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
+| `invalid` | An invalid file, or a delta that cannot be merged into its main spec |
 | `unreadable` | A file could not be read |
 | `write_failed` | A file could not be written |
 

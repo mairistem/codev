@@ -94,6 +94,7 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
             .map(|next| next.header_index)
             .unwrap_or(lines.len());
         let span = block_span(&scanned, start, end);
+        findings.extend(unexpected_headings(&scanned, start + 1, end, *kind));
 
         match kind {
             DeltaKind::Added | DeltaKind::Modified => {
@@ -117,10 +118,93 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
         }
     }
 
+    for section in &sections {
+        let entries = match section {
+            DeltaSection::Added { requirements, .. }
+            | DeltaSection::Modified { requirements, .. } => requirements.len(),
+            DeltaSection::Removed { removals, .. } => removals.len(),
+            DeltaSection::Renamed { renames, .. } => renames.len(),
+        };
+        if entries == 0 {
+            let line = section.span().start_line();
+            let expected = match section {
+                DeltaSection::Renamed { .. } => "a `FROM:` / `TO:` pair",
+                _ => "a `### Requirement: <name>` block",
+            };
+            findings.push(Finding::warning(
+                super::codes::DELTA_SECTION_EMPTY,
+                line,
+                format!(
+                    "line {line}: `## {} Requirements` has no entry, so nothing of it \
+                     will be merged; add {expected}, or remove the section",
+                    kind_label(section_kind(section))
+                ),
+            ));
+        }
+    }
+
     Parsed {
         value: Delta { purpose, sections },
         findings,
     }
+}
+
+fn section_kind(section: &DeltaSection) -> DeltaKind {
+    match section {
+        DeltaSection::Added { .. } => DeltaKind::Added,
+        DeltaSection::Modified { .. } => DeltaKind::Modified,
+        DeltaSection::Removed { .. } => DeltaKind::Removed,
+        DeltaSection::Renamed { .. } => DeltaKind::Renamed,
+    }
+}
+
+/// Reports every `###` heading of a delta section that the merge would not
+/// understand.
+///
+/// The keywords are English whatever the artifact language: a
+/// `### Exigence :` would otherwise be skipped silently, leaving the
+/// section empty and the validation green. `### Scenario:` is left to
+/// `scenario_wrong_heading_level`, which already names the fix.
+fn unexpected_headings(
+    scanned: &[ScannedLine],
+    start: usize,
+    end: usize,
+    kind: DeltaKind,
+) -> Vec<Finding> {
+    let mut findings = Vec::new();
+    for entry in &scanned[start..end.min(scanned.len())] {
+        if entry.literal {
+            continue;
+        }
+        let trimmed = entry.text.trim_start();
+        let Some(title) = trimmed.strip_prefix("### ") else {
+            continue;
+        };
+        let title = title.trim();
+        let is_requirement = title.starts_with("Requirement:");
+        let expected = match kind {
+            DeltaKind::Renamed => {
+                // RENAMED takes `FROM:` / `TO:` lines, no heading at all.
+                "`- FROM:` / `- TO:` lines, not headings"
+            }
+            _ if is_requirement => continue,
+            _ if title.starts_with("Scenario:") => continue,
+            _ => {
+                "`### Requirement: <name>` — the keyword stays in English whatever the artifact language"
+            }
+        };
+        findings.push(Finding::error(
+            super::codes::DELTA_UNEXPECTED_HEADING,
+            entry.line_number,
+            format!(
+                "line {}: `### {title}` is not understood in `## {} Requirements`; \
+                 expected {expected}",
+                entry.line_number,
+                kind_label(kind)
+            ),
+        ));
+    }
+    findings
 }
 
 fn kind_label(k: DeltaKind) -> &'static str {
@@ -228,19 +312,39 @@ fn parse_renames(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Renam
             .unwrap_or(trimmed);
 
         if let Some(rest) = payload.strip_prefix("FROM:") {
-            current_from = Some((rest.trim().to_string(), i));
+            current_from = Some((rename_target(rest), i));
         } else if let Some(rest) = payload.strip_prefix("TO:")
             && let Some((from, from_line)) = current_from.take()
         {
             let span = span_across(scanned, from_line, i + 1);
             renames.push(Rename {
                 from,
-                to: rest.trim().to_string(),
+                to: rename_target(rest),
                 span,
             });
         }
     }
     renames
+}
+
+/// The requirement name after `FROM:` or `TO:`.
+///
+/// Two spellings are accepted: the bare name, and the full heading in
+/// backticks — `` `### Requirement: <name>` ``, the form the template
+/// shows. Both must name the same requirement, otherwise a rename copied
+/// from the template would silently match nothing.
+fn rename_target(raw: &str) -> String {
+    let trimmed = raw.trim();
+    let unquoted = trimmed
+        .strip_prefix('`')
+        .and_then(|rest| rest.strip_suffix('`'))
+        .unwrap_or(trimmed)
+        .trim();
+    unquoted
+        .strip_prefix("### Requirement:")
+        .unwrap_or(unquoted)
+        .trim()
+        .to_string()
 }
 
 fn span_across(scanned: &[ScannedLine], start_line: usize, end_line: usize) -> Span {
@@ -318,6 +422,78 @@ mod tests {
         assert_eq!(renames.len(), 1);
         assert_eq!(renames[0].from, "Old Name");
         assert_eq!(renames[0].to, "New Name");
+    }
+
+    #[test]
+    fn renamed_accepts_the_backticked_heading_of_the_template() {
+        let source = "## RENAMED Requirements\n\n- FROM: `### Requirement: Old Name`\n- TO: `### Requirement: New Name`\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Renamed { renames, .. } = &parsed.value.sections[0] else {
+            panic!("expected Renamed");
+        };
+        assert_eq!(renames.len(), 1);
+        assert_eq!(renames[0].from, "Old Name");
+        assert_eq!(renames[0].to, "New Name");
+    }
+
+    #[test]
+    fn translated_requirement_heading_is_reported() {
+        let source = "## ADDED Requirements\n\n### Exigence : Connexion\nLe système DOIT x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let heading = parsed
+            .findings
+            .iter()
+            .find(|f| f.code == "delta_unexpected_heading")
+            .expect("the translated heading must be reported");
+        assert_eq!(heading.severity, crate::parser::ast::Severity::Error);
+        assert_eq!(heading.line, 3);
+        assert!(
+            heading.message.contains("### Exigence : Connexion"),
+            "{}",
+            heading.message
+        );
+        // The section it leaves empty is reported too.
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_section_empty"
+                    && f.severity == crate::parser::ast::Severity::Warning)
+        );
+    }
+
+    #[test]
+    fn well_formed_sections_report_no_heading_or_emptiness() {
+        let source = "## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## RENAMED Requirements\n\n- FROM: Old\n- TO: New\n";
+        let parsed = parse_delta(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+    }
+
+    #[test]
+    fn heading_in_renamed_section_is_reported() {
+        let source = "## RENAMED Requirements\n\n### Requirement: Old\n";
+        let parsed = parse_delta(source);
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_unexpected_heading")
+        );
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_section_empty")
+        );
+    }
+
+    #[test]
+    fn three_hash_scenario_is_reported_once() {
+        // `### Scenario:` keeps its dedicated code, without a second finding.
+        let source = "## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let codes: Vec<&str> = parsed.findings.iter().map(|f| f.code).collect();
+        assert_eq!(codes, vec!["scenario_wrong_heading_level"]);
     }
 
     #[test]

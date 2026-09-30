@@ -309,9 +309,9 @@ Options:
   -h, --help             Print help
 ```
 
-Merges the change's deltas into the main specs, without moving the change.
-Running it again reports the specs as unchanged. It does not run validation:
-run `codev validate <name>` first. See [Sync](../workflow.md#sync).
+Validates the change, refuses if validation reports an error, then merges its
+deltas into the main specs, without moving the change. Running it again
+reports the specs as unchanged. See [Sync](../workflow.md#sync).
 
 ### codev archive
 

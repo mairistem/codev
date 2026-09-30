@@ -67,11 +67,15 @@ pub fn validate_change(
                 reason: e.to_string(),
             })?;
         let parsed = parse_delta(&source);
+        let main_spec = read_main_spec(fs, layout, &change_dir, &delta_path)?;
 
         for f in parsed
             .findings
             .iter()
             .chain(core_validate::check_delta(&parsed.value).iter())
+            .chain(
+                core_validate::check_delta_against_spec(&parsed.value, main_spec.as_ref()).iter(),
+            )
         {
             findings.push(LocatedFinding::from_finding(f.clone(), relative.clone()));
         }
@@ -304,6 +308,29 @@ pub fn validate_decisions(
     })
 }
 
+/// The parsed main spec a delta targets, or `None` for a new capability.
+fn read_main_spec(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    change_dir: &std::path::Path,
+    delta_path: &std::path::Path,
+) -> Result<Option<codev_core::parser::ast::Spec>> {
+    let Some(capability) = crate::sync::capability_from_delta_path(change_dir, delta_path) else {
+        return Ok(None);
+    };
+    let path = layout.spec_file(&capability);
+    if !fs.exists(&path) {
+        return Ok(None);
+    }
+    let source = fs
+        .read_to_string(&path)
+        .map_err(|e| EngineError::Unreadable {
+            path: path.clone(),
+            reason: e.to_string(),
+        })?;
+    Ok(Some(parse_spec(&source).value))
+}
+
 /// Locates the `*.md` files under `changes/<name>/specs/**`.
 fn locate_deltas(fs: &dyn FileSystem, change_dir: &std::path::Path) -> Result<Vec<PathBuf>> {
     let specs_dir = change_dir.join("specs");
@@ -385,6 +412,38 @@ mod tests {
             "unexpected findings: {:?}",
             report.findings
         );
+    }
+
+    #[test]
+    fn change_report_flags_a_rename_of_an_unknown_requirement() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/changes/ren/change.yaml", "schema: spec-driven")
+            .with_file(
+                "/p/_codev/specs/user-auth/spec.md",
+                "## Purpose\n\nAuth.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
+            )
+            .with_file(
+                "/p/_codev/changes/ren/specs/user-auth/spec.md",
+                "## RENAMED Requirements\n\n- FROM: `### Requirement: Log in`\n- TO: `### Requirement: Sign in`\n",
+            );
+        let cfg = config(&fs);
+        let report = validate_change(
+            &fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("ren").unwrap(),
+        )
+        .unwrap();
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.finding.code == rule_codes::RENAME_SOURCE_MISSING),
+            "{:?}",
+            report.findings
+        );
+        assert!(report.has_errors());
     }
 
     #[test]

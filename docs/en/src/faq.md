@@ -91,28 +91,34 @@ configuration.
 Every `.md` file in `_codev/decisions/` is parsed as a decision. Move other
 Markdown files, such as a README, out of that folder.
 
-### Archive refuses a change
+### Sync or archive refuses a change
 
 ```text
-error: … is invalid: validation_failed: change `add-dark-mode` has errors; run `codev validate add-dark-mode` for details
+error: change `add-dark-mode` has errors; run `codev validate add-dark-mode` for details
 ```
 
-Run the suggested `codev validate` command, fix the findings, and archive
-again. An archive refused because a `MODIFIED` requirement does not exist in
+With `--json`, the error code is `validation_failed`. Run the suggested
+`codev validate` command, fix the findings, and sync or archive again. An archive refused because a `MODIFIED` requirement does not exist in
 the main spec means the name differs from the one in the main spec: fix the
 name, or use `ADDED` if the requirement is new.
 
-### A renamed requirement keeps its old name
+### `codev validate` reports `rename_source_missing`
 
-Write the bare requirement names in `## RENAMED Requirements`:
+The name after `FROM:` in `## RENAMED Requirements` matches no
+`### Requirement:` heading of the main spec. It must match exactly, whether
+you write the bare name or the full heading in backticks:
 
 ```markdown
-- FROM: The chosen theme is remembered
-- TO: The chosen theme follows the user
+- FROM: `### Requirement: The chosen theme is remembered`
+- TO: `### Requirement: The chosen theme follows the user`
 ```
 
-The name after `FROM:` must match the main spec's `### Requirement:` heading
-exactly.
+### `codev validate` reports `delta_unexpected_heading`
+
+A `###` heading in a delta section is not `### Requirement:` — usually a
+translated keyword such as `### Exigence :`. The keywords stay in English
+whatever the artifact language; see
+[Artifact language](guides/artifact-language.md).
 
 ### `/codev-propose` ignores my ticket
 

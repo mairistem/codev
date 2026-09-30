@@ -109,14 +109,14 @@ pub fn index(
     // 2. Decisions from inherited sources — path AND locked git.
     let states = crate::sources::list_source_states(fs, env, layout)?;
     for state in states {
-        let Some(resolved_path) = state.resolved_path else {
+        let Some(project_root) = state.project_root() else {
             continue;
         };
         let origin = match state.kind {
             crate::sources::SourceKind::Path => Origin::Path(state.address.clone()),
             crate::sources::SourceKind::Git => Origin::Git(state.address.clone()),
         };
-        let decisions_dir = resolved_path.join("_codev").join("decisions");
+        let decisions_dir = Layout::new(&project_root).decisions_dir();
         collect_from(fs, &decisions_dir, origin, &mut entries, &mut findings)?;
     }
     let _ = config; // kept for signature compatibility
@@ -492,6 +492,39 @@ mod tests {
         format!(
             "---\nid: \"{id}\"\ntitle: \"ADR {id}\"\nstatus: {status}\ndate: 2026-09-08\n{sup}---\n\n## Context\n\nx\n"
         )
+    }
+
+    #[test]
+    fn git_source_decisions_are_read_under_its_subpath() {
+        // Same resolution as the inherited config: `<cache>/<subpath>/_codev`.
+        let lock = "version = 1\n\n[[source]]\ngit = \"url\"\nref = \"main\"\nsubpath = \"standards\"\ncommit = \"deadbeef\"\nresolved_at = \"2026-09-08\"\n";
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_codev/config.yaml",
+                "inherits:\n  - git: url\n    ref: main\n    subpath: standards\n",
+            )
+            .with_file("/p/_codev/codev.lock", lock)
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/standards/_codev/config.yaml",
+                "",
+            )
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/standards/_codev/decisions/0100-shared.md",
+                adr("0100", "accepted", &[]),
+            )
+            // Outside the subpath: not part of the source.
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/_codev/decisions/0200-root.md",
+                adr("0200", "accepted", &[]),
+            );
+        let cfg = resolved(&fs);
+        let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        let ids: Vec<String> = idx
+            .entries
+            .iter()
+            .map(|e| e.qualified_id.as_str())
+            .collect();
+        assert_eq!(ids, vec!["git:url/0100".to_string()], "{ids:?}");
     }
 
     #[test]

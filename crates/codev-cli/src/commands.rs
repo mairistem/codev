@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use codev_agents::claude::ClaudeCode;
 use codev_agents::target::AgentTarget;
 use codev_agents::workflows;
-use codev_core::{ChangeId, ChangeStatus, CoreError, Layout};
+use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
 use codev_engine::archive as engine_archive;
 use codev_engine::archive::ArchiveOutcome;
@@ -120,7 +120,10 @@ pub fn init(
     let config_path = layout.project_root().join("_codev").join("config.yaml");
 
     // Writes the generated config.yaml ONLY if missing — an existing file is
-    // never touched; the user's configuration stays in charge.
+    // never touched; the user's configuration stays in charge. It goes
+    // through a plan like every other write, so that it is counted among
+    // the created files.
+    let mut config_written = Applied::default();
     if !ctx.fs.exists(&config_path) {
         let detected = if opts.no_detect {
             codev_core::detect::Detected::empty()
@@ -130,29 +133,26 @@ pub fn init(
         let choices = crate::init_prompts::run(&detected, opts)
             .map_err(|e| Failure::new("prompt_failed", e.to_string()))?;
         let generated = codev_core::config::from_detected(&detected, &choices);
-        let yaml = codev_core::config::render(&generated);
-        if let Some(parent) = config_path.parent() {
-            ctx.fs
-                .create_dir_all(parent)
-                .map_err(|source| EngineError::Write {
-                    path: config_path.clone(),
-                    source,
-                })?;
-        }
-        ctx.fs
-            .write(&config_path, &yaml)
-            .map_err(|source| EngineError::Write {
-                path: config_path.clone(),
-                source,
-            })?;
+        let mut plan = Plan::new();
+        plan.dir(layout.planning_dir()).write(
+            &config_path,
+            codev_core::config::render(&generated),
+            WriteMode::CreateOnly,
+        );
+        config_written = apply::execute(&plan, ctx.fs)?;
     }
 
     // Scaffold to create the missing folders (specs/, changes/, etc.) — it
-    // does not rewrite the existing config.yaml thanks to
+    // does not rewrite the config.yaml written above thanks to
     // WriteMode::CreateOnly.
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
     let mut outcome = install_skills(ctx, &layout, force)?;
+    outcome.absorb(config_written);
     outcome.absorb(scaffolded);
+    // The scaffold reports the config written above as untouched: it is
+    // listed once, as created.
+    let created = outcome.created.clone();
+    outcome.untouched.retain(|p| !created.contains(p));
     Ok(outcome)
 }
 
@@ -1185,6 +1185,23 @@ mod tests {
     }
 
     #[test]
+    fn init_counts_the_generated_config_among_the_created_files() {
+        let h = Harness::new();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+
+        let config = PathBuf::from("/p/_codev/config.yaml");
+        assert_eq!(
+            outcome.created.iter().filter(|p| **p == config).count(),
+            1,
+            "created: {:?}",
+            outcome.created
+        );
+        assert!(!outcome.untouched.contains(&config));
+        // 8 skills + config.yaml + 5 `.gitkeep`.
+        assert_eq!(outcome.created.len(), 14, "{:?}", outcome.created);
+    }
+
+    #[test]
     fn rerunning_init_changes_nothing() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
@@ -1455,7 +1472,7 @@ edition = "2024"
     }
 
     #[test]
-    fn archive_with_validation_error_fails_with_a_useful_code() {
+    fn archive_with_validation_error_fails_with_the_validation_failed_code() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "buggy", None, None).unwrap();
@@ -1466,8 +1483,12 @@ edition = "2024"
             "## Purpose\n\nx.\n\n## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n",
         );
         let err = archive(&h.ctx(), None).unwrap_err();
-        assert_eq!(err.code, "invalid");
-        assert!(err.message.contains("validation_failed"), "{}", err.message);
+        assert_eq!(err.code, "validation_failed");
+        assert!(
+            err.message.contains("codev validate buggy"),
+            "{}",
+            err.message
+        );
         // The change has not moved.
         assert!(h.fs.read("/p/_codev/changes/buggy/change.yaml").is_some());
     }

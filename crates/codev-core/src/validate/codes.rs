@@ -20,6 +20,10 @@ pub const CROSS_SECTION_CONFLICT: &str = "cross_section_conflict";
 /// A `RENAMED.TO` coincides with an `ADDED` of the same name in the same delta.
 pub const RENAME_TARGET_COLLISION: &str = "rename_target_collision";
 
+/// A `RENAMED.FROM` names no requirement of the main spec (and the rename
+/// has not already been applied: `TO` does not exist either).
+pub const RENAME_SOURCE_MISSING: &str = "rename_source_missing";
+
 /// A `MODIFIED` references a `RENAMED.FROM` — the new name must be
 /// used instead.
 pub const MODIFIED_USES_OLD_NAME: &str = "modified_uses_old_name";

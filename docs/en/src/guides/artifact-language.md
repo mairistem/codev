@@ -38,9 +38,10 @@ codev init --language pt-BR
 language: pt-BR
 ```
 
-Detection keeps only the language part of the locale: with
-`LANG=pt_BR.UTF-8`, `codev init` writes `language: pt`. Pass `--language` to
-record a region. `--no-detect` disables locale detection along with the rest
+Detection keeps only the language part of the locale — `fr_FR.UTF-8` gives
+`fr` — except where the region changes the written language: `pt_BR` gives
+`pt-BR`, `zh_TW` and `zh_HK` give `zh-Hant`, `zh_CN` and `zh_SG` give
+`zh-Hans`. Pass `--language` to record any other region. `--no-detect` disables locale detection along with the rest
 of the environment probe.
 
 On a project that already has a `_codev/config.yaml`, `codev init` does not
@@ -79,9 +80,9 @@ L'application SHALL s'afficher avec le thème du système tant que l'utilisateur
 
 > **Warning**
 > A translated keyword is a broken artifact. codev does not recognize
-> `### Exigence :` as a requirement, so the block is not merged into the main
-> spec — and validation does not always catch it. A requirement without
-> `SHALL` or `MUST`, on the other hand, fails validation.
+> `### Exigence :` as a requirement: in a delta section, validation reports it
+> (`delta_unexpected_heading`), and the sync and the archive refuse the change.
+> A requirement without `SHALL` or `MUST` fails validation too.
 
 ## Which skills use it
 

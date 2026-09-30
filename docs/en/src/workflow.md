@@ -89,9 +89,9 @@ archiving.
 Syncing is idempotent: running it again reports the specs as unchanged. In
 the usual case you skip this step — archiving syncs for you.
 
-> **Warning**
-> `codev sync` does not run validation first. Run `codev validate <name>`
-> before syncing; `codev archive` does it for you.
+Like archiving, syncing validates the change first and refuses if validation
+reports an error: nothing is written, and `codev validate <name>` shows the
+findings.
 
 ## Archive
 

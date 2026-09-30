@@ -199,12 +199,11 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                 let git_content_dir = resolve_git_source_dir(fs, env, layout, &url, &git_ref);
                 match git_content_dir {
                     GitResolution::Ok(content_root) => {
-                        let source_layout = Layout::new(&content_root);
-                        let source_config_path = if let Some(sub) = &subpath {
-                            content_root.join(sub).join("_codev").join("config.yaml")
-                        } else {
-                            source_layout.config_file()
-                        };
+                        let source_config_path = Layout::new(crate::sources::project_root(
+                            &content_root,
+                            subpath.as_deref(),
+                        ))
+                        .config_file();
                         let origin = format!("git:{url}");
                         if let Ok(Some(inherited)) = load(fs, &source_config_path) {
                             if !inherited.inherits.is_empty() {

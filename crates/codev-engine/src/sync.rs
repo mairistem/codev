@@ -71,6 +71,16 @@ pub fn plan_sync(
         });
     }
 
+    // Preflight: the validator is the source of truth, for `sync` as for
+    // `archive` — a delta that validation rejects (no `SHALL`, no scenario,
+    // a stray heading…) must never reach a main spec.
+    let report = crate::validate::validate_change(fs, layout, config, change_id)?;
+    if report.has_errors() {
+        return Err(EngineError::ValidationFailed {
+            change: change_id.to_string(),
+        });
+    }
+
     // Load the change context to know `retire_capabilities` — without it,
     // a total REMOVED cannot be told apart from an error.
     let ctx = crate::change::load(fs, layout, config, change_id.clone())?;
@@ -96,19 +106,8 @@ pub fn plan_sync(
                 path: delta_path.clone(),
                 reason: e.to_string(),
             })?;
+        // The preflight above already refused any parser error.
         let delta_parsed = parse_delta(&delta_source);
-        if delta_parsed.has_errors() {
-            // Refuse to sync if the delta has an error-level finding —
-            // reporting it is the validator's job, but a broken delta would
-            // corrupt the merge.
-            return Err(EngineError::Invalid {
-                path: delta_path.clone(),
-                reason: format!(
-                    "delta contains {} error finding(s); run `codev validate` first",
-                    delta_parsed.findings.len()
-                ),
-            });
-        }
         let delta = delta_parsed.value;
 
         let main_spec_path = layout.spec_file(&capability);
@@ -219,7 +218,7 @@ fn locate_delta_files(fs: &dyn FileSystem, change_dir: &Path) -> Result<Vec<Path
 }
 
 /// Extracts `<capability-path>` from `changes/<name>/specs/<capability-path>/spec.md`.
-fn capability_from_delta_path(change_dir: &Path, delta_path: &Path) -> Option<String> {
+pub(crate) fn capability_from_delta_path(change_dir: &Path, delta_path: &Path) -> Option<String> {
     let specs_dir = change_dir.join("specs");
     let relative = delta_path.strip_prefix(&specs_dir).ok()?;
     let parent = relative.parent()?;
@@ -367,6 +366,25 @@ mod tests {
             fs.read("/p/_codev/specs/x/spec.md")
                 .is_some_and(|s| s.contains("Login") && !s.contains("Ghost"))
         );
+    }
+
+    #[test]
+    fn sync_refuses_a_change_that_fails_validation() {
+        // A requirement with neither SHALL/MUST nor a scenario: the parser
+        // accepts it, the validator does not — sync must not merge it.
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/changes/weak/change.yaml", "schema: spec-driven")
+            .with_file(
+                "/p/_codev/changes/weak/specs/x/spec.md",
+                "## Purpose\n\nCap.\n\n## ADDED Requirements\n\n### Requirement: Vague\nThe system does things.\n",
+            );
+        let layout = Layout::new("/p");
+        let cfg = resolved(&fs);
+        let err = execute_sync(&fs, &layout, &cfg, &ChangeId::parse("weak").unwrap()).unwrap_err();
+        assert_eq!(err.code(), "validation_failed");
+        assert!(err.to_string().contains("codev validate weak"), "{err}");
+        assert!(fs.read("/p/_codev/specs/x/spec.md").is_none());
     }
 
     #[test]

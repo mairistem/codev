@@ -92,16 +92,22 @@ The application SHALL restore the theme the user last picked, on every device th
 | `## REMOVED Requirements` | A `### Requirement:` heading with `**Reason**:` and `**Migration**:` lines | The requirement is deleted |
 | `## RENAMED Requirements` | `FROM:` / `TO:` line pairs, with or without a leading `- ` | The heading is retitled; body and scenarios are untouched |
 
-In `RENAMED`, write the bare requirement names after `FROM:` and `TO:`, as
-above.
+In `RENAMED`, write after `FROM:` and `TO:` either the bare requirement name,
+as above, or the full heading in backticks, as the template does:
+`` - FROM: `### Requirement: <old name>` ``.
 
 Rules checked by validation:
 
 - A requirement appears in at most one of `ADDED`, `MODIFIED` and `REMOVED`
   (`cross_section_conflict`), and at most once per section
   (`duplicate_requirement`).
-- A `RENAMED` target cannot also be `ADDED` (`rename_target_collision`), and
-  `MODIFIED` uses the new name of a renamed requirement, not the old one
+- Inside a delta section, every `###` heading is a `### Requirement:`
+  (`delta_unexpected_heading`); a section with no entry is reported as a
+  warning (`delta_section_empty`).
+- A `RENAMED` source must exist in the main spec (`rename_source_missing`,
+  unless the rename was already applied by an earlier sync); a `RENAMED`
+  target cannot also be `ADDED` (`rename_target_collision`); and `MODIFIED`
+  uses the new name of a renamed requirement, not the old one
   (`modified_uses_old_name`).
 - `MODIFIED` and `REMOVED` names must exist in the main spec; this is checked
   when the delta is merged (`modified_target_missing`).
@@ -311,7 +317,9 @@ may be reworded between versions; codes are not.
 | `requirement_no_scenario` | error | A requirement without a scenario |
 | `scenario_wrong_heading_level` | error | A scenario written with three `#` instead of four |
 | `duplicate_requirement` | error | The same requirement twice in one delta section |
+| `delta_unexpected_heading` | error | A `###` heading in a delta section that is not `### Requirement:`, such as a translated keyword |
 | `cross_section_conflict` | error | The same requirement in two of `ADDED`, `MODIFIED`, `REMOVED` |
+| `rename_source_missing` | error | A `RENAMED` source names no requirement of the main spec |
 | `rename_target_collision` | error | A `RENAMED` target is also `ADDED` |
 | `modified_uses_old_name` | error | `MODIFIED` uses the old name of a renamed requirement |
 | `zero_delta_without_marker` | error | A change has no delta and does not declare `skip_specs: true` |
@@ -322,6 +330,7 @@ may be reworded between versions; codes are not.
 | `decision_field_type_mismatch` | error | A frontmatter field has the wrong shape |
 | `decision_seal_mismatch` | error | A sealed decision's body was edited |
 | `decision_conflicting_deviations` | error | Two local decisions deviate from the same inherited one |
+| `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `decision_orphan_seal` | warning | A seal has no matching decision |
 | `decision_supersedes_unknown` | warning | `supersedes` names an unknown decision |

@@ -25,6 +25,15 @@ pub const SCENARIO_WRONG_HEADING_LEVEL: &str = "scenario_wrong_heading_level";
 /// Two requirements with the same name in the same section of a delta.
 pub const DUPLICATE_REQUIREMENT: &str = "duplicate_requirement";
 
+/// A `###` heading inside a delta section that is not `### Requirement:` —
+/// typically a translated keyword (`### Exigence :`). The parser would
+/// otherwise skip the block without a word.
+pub const DELTA_UNEXPECTED_HEADING: &str = "delta_unexpected_heading";
+
+/// A delta section (`## ADDED Requirements`…) with no entry: nothing of
+/// it would be merged.
+pub const DELTA_SECTION_EMPTY: &str = "delta_section_empty";
+
 // ─────────────────────────── decision parser codes ───────────────────────────
 
 /// The decision file has no YAML frontmatter delimited by `---`.
@@ -74,6 +83,8 @@ pub const ALL: &[&str] = &[
     DELTA_HEADER_IN_MAIN_SPEC,
     SCENARIO_WRONG_HEADING_LEVEL,
     DUPLICATE_REQUIREMENT,
+    DELTA_UNEXPECTED_HEADING,
+    DELTA_SECTION_EMPTY,
     DECISION_MISSING_FRONTMATTER,
     DECISION_MISSING_FIELD,
     DECISION_UNKNOWN_STATUS,

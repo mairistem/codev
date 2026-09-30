@@ -190,6 +190,15 @@ impl Finding {
             message: message.into(),
         }
     }
+
+    pub fn warning(code: &'static str, line: u32, message: impl Into<String>) -> Self {
+        Self {
+            severity: Severity::Warning,
+            code,
+            line,
+            message: message.into(),
+        }
+    }
 }
 
 /// What a parser returns: the reconstructed value — even partial — and the

@@ -87,6 +87,26 @@ pub struct SourceStatus {
     pub resolved_path: Option<PathBuf>,
 }
 
+impl SourceStatus {
+    /// The root of the source's codev project: `resolved_path`, joined
+    /// with `subpath` when the project lives in a folder of the repository.
+    ///
+    /// Everything read from a source (config, decisions) goes through it,
+    /// so that `subpath` applies to all of them alike.
+    pub fn project_root(&self) -> Option<PathBuf> {
+        let root = self.resolved_path.as_ref()?;
+        Some(project_root(root, self.subpath.as_deref()))
+    }
+}
+
+/// `content_root`, joined with `subpath` when one is declared.
+pub fn project_root(content_root: &std::path::Path, subpath: Option<&str>) -> PathBuf {
+    match subpath {
+        Some(sub) => content_root.join(sub),
+        None => content_root.to_path_buf(),
+    }
+}
+
 /// Gathers the state of every source declared by the project.
 pub fn list_source_states(
     fs: &dyn FileSystem,

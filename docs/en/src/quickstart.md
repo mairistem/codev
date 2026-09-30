@@ -30,7 +30,7 @@ codev initialized in /home/you/acme-app
   Structure   _codev/ — specs, decisions, changes, schemas
   Skills      codev-propose, codev-explore, codev-onboard, codev-apply, codev-sync, codev-archive, codev-update, codev-configure → .claude/skills/
 
-  13 file(s) created, 0 updated
+  14 file(s) created, 0 updated
 
 → Recommended next step: in Claude Code, run /codev-configure.
   Claude will analyze the project and enrich _codev/config.yaml

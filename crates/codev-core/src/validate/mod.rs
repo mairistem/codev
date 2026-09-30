@@ -57,6 +57,43 @@ pub fn check_delta(delta: &Delta) -> Vec<Finding> {
     RULES.iter().flat_map(|r| r.check_delta(delta)).collect()
 }
 
+/// Codes of the checks that read a delta together with its main spec.
+///
+/// Kept apart from [`RULES`]: a [`Rule`] sees one file, these need two.
+pub const CROSS_FILE_CODES: &[&str] = &[codes::RENAME_SOURCE_MISSING];
+
+/// Checks a delta against the main spec it targets — `None` when the
+/// capability has no main spec yet.
+///
+/// A `RENAMED.FROM` must name an existing requirement. A rename already
+/// applied by an earlier `sync` (`FROM` gone, `TO` present) is not an
+/// error: re-syncing, then archiving, must stay possible.
+pub fn check_delta_against_spec(delta: &Delta, spec: Option<&Spec>) -> Vec<Finding> {
+    let exists = |name: &str| spec.is_some_and(|s| s.requirements.iter().any(|r| r.name == name));
+    let mut findings = Vec::new();
+    for section in &delta.sections {
+        let crate::parser::ast::DeltaSection::Renamed { renames, .. } = section else {
+            continue;
+        };
+        for rename in renames {
+            if exists(&rename.from) || exists(&rename.to) {
+                continue;
+            }
+            let line = rename.span.start_line();
+            findings.push(Finding::error(
+                codes::RENAME_SOURCE_MISSING,
+                line,
+                format!(
+                    "line {line}: `FROM: {}` matches no requirement of the main spec; \
+                     use the exact name of an existing `### Requirement:`",
+                    rename.from
+                ),
+            ));
+        }
+    }
+    findings
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,5 +124,39 @@ mod tests {
                 rule.code()
             );
         }
+        for code in CROSS_FILE_CODES {
+            assert!(seen.insert(code), "cross-file code duplicates: {code}");
+        }
+    }
+
+    fn spec(source: &str) -> Spec {
+        crate::parser::parse_spec(source).value
+    }
+
+    fn delta(source: &str) -> Delta {
+        crate::parser::parse_delta(source).value
+    }
+
+    const MAIN: &str = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+
+    #[test]
+    fn rename_from_an_unknown_requirement_is_an_error() {
+        let d = delta("## RENAMED Requirements\n\n- FROM: Session Expiry\n- TO: Session Timeout\n");
+        let findings = check_delta_against_spec(&d, Some(&spec(MAIN)));
+        assert_eq!(findings.len(), 1, "{findings:?}");
+        assert_eq!(findings[0].code, codes::RENAME_SOURCE_MISSING);
+        assert!(findings[0].message.contains("Session Expiry"));
+        // No main spec at all: nothing to rename either.
+        assert_eq!(check_delta_against_spec(&d, None).len(), 1);
+    }
+
+    #[test]
+    fn rename_from_an_existing_or_already_renamed_requirement_passes() {
+        let backticked = delta(
+            "## RENAMED Requirements\n\n- FROM: `### Requirement: Session Expiration`\n- TO: `### Requirement: Session Timeout`\n",
+        );
+        assert!(check_delta_against_spec(&backticked, Some(&spec(MAIN))).is_empty());
+        let applied = spec(&MAIN.replace("Session Expiration", "Session Timeout"));
+        assert!(check_delta_against_spec(&backticked, Some(&applied)).is_empty());
     }
 }

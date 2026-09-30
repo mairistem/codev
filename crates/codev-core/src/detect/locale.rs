@@ -39,22 +39,39 @@ pub fn detect(lookup: impl Fn(&str) -> Option<String>) -> Option<DetectedLocale>
 
 /// Extracts the language code from a locale string.
 ///
-/// `fr_FR.UTF-8` → `fr`, `en_US` → `en`, `de` → `de`, `pt_BR@euro` → `pt`.
+/// `fr_FR.UTF-8` → `fr`, `en_US` → `en`, `de` → `de`. The region is dropped,
+/// except where it changes the written language: `pt_BR` → `pt-BR`,
+/// `zh_TW` / `zh_HK` → `zh-Hant`, `zh_CN` / `zh_SG` → `zh-Hans`.
 /// Returns `None` for `C`, `POSIX`, `C.UTF-8`, or anything that is not a
 /// valid language code.
 pub fn language_from_locale(locale: &str) -> Option<String> {
-    let head = locale
+    let mut parts = locale
         .split(['.', '@'])
         .next()
         .unwrap_or_default()
-        .split(['_', '-'])
-        .next()
-        .unwrap_or_default()
-        .to_ascii_lowercase();
-    if head == "c" || head == "posix" {
+        .split(['_', '-']);
+    let head = parts.next().unwrap_or_default().to_ascii_lowercase();
+    if head == "c" || head == "posix" || !is_valid_language_code(&head) {
         return None;
     }
-    is_valid_language_code(&head).then_some(head)
+    let region = parts.next().unwrap_or_default().to_ascii_uppercase();
+    Some(written_variant(&head, &region).unwrap_or(head))
+}
+
+/// The written variant a region implies, for the few languages where the
+/// artifact prose would otherwise come out in the wrong script or spelling.
+///
+/// Every other region is dropped on purpose: `fr-FR`, `en-US` or `de-AT`
+/// would only make the `language:` key noisier without changing what the
+/// agent writes.
+fn written_variant(language: &str, region: &str) -> Option<String> {
+    let variant = match (language, region) {
+        ("pt", "BR") => "pt-BR",
+        ("zh", "TW" | "HK" | "MO") => "zh-Hant",
+        ("zh", "CN" | "SG") => "zh-Hans",
+        _ => return None,
+    };
+    Some(variant.to_string())
 }
 
 /// Whether `code` is an acceptable value for the `language:` key.
@@ -83,7 +100,34 @@ mod tests {
         assert_eq!(language_from_locale("fr_FR.UTF-8").as_deref(), Some("fr"));
         assert_eq!(language_from_locale("en_US").as_deref(), Some("en"));
         assert_eq!(language_from_locale("de").as_deref(), Some("de"));
-        assert_eq!(language_from_locale("pt_BR@euro").as_deref(), Some("pt"));
+        assert_eq!(language_from_locale("en_GB.UTF-8").as_deref(), Some("en"));
+        assert_eq!(language_from_locale("pt_PT.UTF-8").as_deref(), Some("pt"));
+    }
+
+    #[test]
+    fn keeps_the_region_only_where_it_changes_the_written_language() {
+        assert_eq!(
+            language_from_locale("pt_BR.UTF-8").as_deref(),
+            Some("pt-BR")
+        );
+        assert_eq!(language_from_locale("pt_BR@euro").as_deref(), Some("pt-BR"));
+        assert_eq!(
+            language_from_locale("zh_TW.UTF-8").as_deref(),
+            Some("zh-Hant")
+        );
+        assert_eq!(language_from_locale("zh_HK").as_deref(), Some("zh-Hant"));
+        assert_eq!(
+            language_from_locale("zh_CN.UTF-8").as_deref(),
+            Some("zh-Hans")
+        );
+        assert_eq!(language_from_locale("zh_SG").as_deref(), Some("zh-Hans"));
+        // A bare `zh` names no script: leave it to the user.
+        assert_eq!(language_from_locale("zh").as_deref(), Some("zh"));
+        // Every detected value must be accepted by `language:`.
+        for locale in ["pt_BR", "zh_TW", "zh_CN"] {
+            let code = language_from_locale(locale).unwrap();
+            assert!(is_valid_language_code(&code), "{code}");
+        }
     }
 
     #[test]

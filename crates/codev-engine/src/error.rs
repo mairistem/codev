@@ -34,6 +34,12 @@ pub enum EngineError {
     #[error("{path} is invalid: {reason}")]
     Invalid { path: PathBuf, reason: String },
 
+    /// The validation preflight of `sync` or `archive` found errors. A
+    /// variant of its own, not an `Invalid`, so that the stable code a
+    /// consumer tests is the code itself, not a word inside the message.
+    #[error("change `{change}` has errors; run `codev validate {change}` for details")]
+    ValidationFailed { change: String },
+
     #[error("failed to write {path}: {source}")]
     Write {
         path: PathBuf,
@@ -60,6 +66,7 @@ impl EngineError {
             Self::TemplateNotFound { .. } => "template_not_found",
             Self::Unreadable { .. } => "unreadable",
             Self::Invalid { .. } => "invalid",
+            Self::ValidationFailed { .. } => "validation_failed",
             Self::Write { .. } => "write_failed",
             Self::Core(inner) => inner.code(),
         }
