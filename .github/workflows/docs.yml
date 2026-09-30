@@ -24,7 +24,7 @@ jobs:
     name: Build the documentation site
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: taiki-e/install-action@v2
         with:
           tool: mdbook
@@ -42,7 +42,7 @@ jobs:
           <link rel="canonical" href="en/">
           <p><a href="en/">English</a> · <a href="fr/">Français</a></p>
           HTML
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -59,4 +59,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
