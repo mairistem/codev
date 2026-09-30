@@ -287,8 +287,7 @@ mod tests {
         // `### Scenario:` instead of `#### Scenario:`: this is the silent
         // failure we refuse. The requirement still appears, without this
         // scenario.
-        let source = "## Purpose\n\nx\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n### Scenario: Fake\n
-- **WHEN** a\n- **THEN** b\n";
+        let source = "## Purpose\n\nx\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n### Scenario: Fake\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_spec(source);
         assert!(
             parsed

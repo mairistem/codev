@@ -481,7 +481,6 @@ mod tests {
         // deny_unknown_fields — consistent with ChangeMetadata and ProjectConfig.
         let source =
             "---\nid: 0001\ntitle: T\nstatus: accepted\ndate: 2026-09-08\nauthor: X\n---\n";
-
         let parsed = parse_decision(source);
         assert!(
             parsed
