@@ -105,7 +105,10 @@ pub fn body_hash(adr_source: &str) -> Result<String, SealError> {
     let mut hasher = Sha256::new();
     hasher.update(body.as_bytes());
     let digest = hasher.finalize();
-    Ok(format!("sha256:{:x}", digest))
+    // Lowercase hex written out byte by byte: the format of every existing
+    // seal, independent of how the digest type chooses to format itself.
+    let hex: String = digest.iter().map(|byte| format!("{byte:02x}")).collect();
+    Ok(format!("sha256:{hex}"))
 }
 
 /// Extracts the ADR body: the substring starting right after the
