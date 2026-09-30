@@ -1,0 +1,11 @@
+[book]
+title = "codev"
+description = "Spec-driven development for Claude Code"
+authors = ["The codev contributors"]
+language = "en"
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/mairistem/codev"
+edit-url-template = "https://github.com/mairistem/codev/edit/main/docs/en/{path}"
+site-url = "/codev/en/"
