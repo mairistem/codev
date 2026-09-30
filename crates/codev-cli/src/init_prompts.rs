@@ -113,7 +113,7 @@ fn pick_workflows(opts: &InitOptions, interactive: bool) -> Result<Vec<String>> 
     let theme = ColorfulTheme::default();
     let choice = Select::with_theme(&theme)
         .with_prompt("Which workflows should be installed?")
-        .items(&[
+        .items([
             "Full (8) — propose, explore, onboard, apply, sync, archive, update, configure",
             "Minimal (4) — propose, explore, onboard, configure",
             "Custom — pick them one by one",
