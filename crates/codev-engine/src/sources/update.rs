@@ -1,5 +1,5 @@
-//! Résolution et téléchargement des sources git — la seule commande de
-//! codev qui touche à internet.
+//! Resolution and download of git sources — the only codev command that
+//! touches the internet.
 
 use std::path::PathBuf;
 
@@ -10,7 +10,7 @@ use crate::ports::{Clock, Env, FileSystem, ProcessRunner};
 use super::cache;
 use super::lockfile::{self, LockEntry, Lockfile};
 
-/// Un fetch à effectuer.
+/// A fetch to perform.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FetchStep {
     pub url: String,
@@ -19,7 +19,7 @@ pub struct FetchStep {
     pub content_dir: PathBuf,
 }
 
-/// L'état d'une résolution — inchangé / nouveau / déplacé.
+/// The state of a resolution — unchanged / added / moved.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PinChange {
     Added {
@@ -53,15 +53,15 @@ pub struct SourcesUpdatePlan {
     pub diff: Vec<PinChange>,
 }
 
-/// Construit le plan à partir des sources déclarées, du lock actuel, et
-/// des SHA fraîchement résolus par `git ls-remote`.
+/// Builds the plan from the declared sources, the current lock, and the
+/// SHAs freshly resolved by `git ls-remote`.
 pub fn plan_sources_update(
     inherits_git: &[GitSourceInput],
     current_lock: Option<&Lockfile>,
     resolutions: &[(String, String, String)], // (url, ref, sha)
     today: &str,
 ) -> SourcesUpdatePlan {
-    let cache_root = std::path::Path::new(""); // rempli à l'exécution
+    let cache_root = std::path::Path::new(""); // filled in at execution time
     let mut fetches = Vec::new();
     let mut new_entries = Vec::new();
     let mut diff = Vec::new();
@@ -74,7 +74,7 @@ pub fn plan_sources_update(
         let Some(sha) = sha else {
             continue;
         };
-        // Calculer l'état par rapport au lock actuel.
+        // Compute the state relative to the current lock.
         let previous = LockEntry::find_matching(current_lock, &src.git, &src.git_ref);
         match previous {
             Some(prev) if prev.commit == sha => {
@@ -97,9 +97,9 @@ pub fn plan_sources_update(
             }),
         }
 
-        // Un fetch par entrée qui a résolu — le fetch en cache peut être
-        // no-op côté git si le SHA est déjà présent, on ne le détecte pas
-        // ici.
+        // One fetch per resolved entry — the cached fetch may be a no-op on
+        // the git side if the SHA is already present; that is not detected
+        // here.
         let url_hash = cache::url_hash(&src.git);
         fetches.push(FetchStep {
             url: src.git.clone(),
@@ -127,7 +127,7 @@ pub fn plan_sources_update(
     }
 }
 
-/// Entrée typée pour le plan — sans les Option de la déclaration YAML.
+/// Typed input for the plan — without the `Option`s of the YAML declaration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GitSourceInput {
     pub git: String,
@@ -136,9 +136,9 @@ pub struct GitSourceInput {
 }
 
 impl GitSourceInput {
-    /// Extrait les entrées `git:` d'une liste `inherits`. Les entrées sans
-    /// URL, ou avec un URL git mais sans `ref`, sont ignorées silencieusement
-    /// (le validateur les remontera ailleurs).
+    /// Extracts the `git:` entries from an `inherits` list. Entries without
+    /// a URL, or with a git URL but no `ref`, are silently ignored (the
+    /// validator reports them elsewhere).
     pub fn from_inherits(inherits: &[InheritSource]) -> Vec<Self> {
         inherits
             .iter()
@@ -155,7 +155,7 @@ impl GitSourceInput {
     }
 }
 
-/// Ce que `run_sources_update` a effectivement fait.
+/// What `run_sources_update` actually did.
 #[derive(Debug)]
 pub struct UpdateOutcome {
     pub root: PathBuf,
@@ -163,8 +163,8 @@ pub struct UpdateOutcome {
     pub lock_written: bool,
 }
 
-/// Exécute l'update : résolution des refs, fetches dans le cache, écriture
-/// du lock.
+/// Runs the update: ref resolution, fetches into the cache, lock
+/// writing.
 pub fn run_sources_update(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -181,7 +181,7 @@ pub fn run_sources_update(
         });
     }
 
-    // 1. Vérifier que `git` est disponible.
+    // 1. Check that `git` is available.
     match runner.run("git", &["--version"], None) {
         Ok(out) if out.exit_code == 127 => {
             return Err(EngineError::Invalid {
@@ -198,79 +198,75 @@ pub fn run_sources_update(
         }
     }
 
-    // 2. `ls-remote` pour chaque source.
+    // 2. `ls-remote` for each source.
     let mut resolutions = Vec::new();
     for src in inherits_git {
         let out = runner
             .run("git", &["ls-remote", &src.git, &src.git_ref], None)
             .map_err(|e| EngineError::Invalid {
                 path: PathBuf::from(&src.git),
-                reason: format!("ls-remote a échoué : {e}"),
+                reason: format!("ls-remote failed: {e}"),
             })?;
         if !out.is_ok() {
             return Err(EngineError::Invalid {
                 path: PathBuf::from(&src.git),
                 reason: format!(
-                    "ls-remote pour « {} » a échoué : {}",
+                    "ls-remote for `{}` failed: {}",
                     src.git,
                     out.stderr_str().trim()
                 ),
             });
         }
         let stdout = out.stdout_str();
-        // Ligne du format `<sha>\t<ref>`
+        // Line in the `<sha>\t<ref>` format
         let sha = stdout
             .lines()
             .next()
             .and_then(|l| l.split_whitespace().next())
             .ok_or_else(|| EngineError::Invalid {
                 path: PathBuf::from(&src.git),
-                reason: format!(
-                    "sortie ls-remote inattendue pour « {} »",
-                    src.git
-                ),
+                reason: format!("unexpected ls-remote output for `{}`", src.git),
             })?;
         resolutions.push((src.git.clone(), src.git_ref.clone(), sha.to_string()));
     }
 
-    // 3. Construire le plan.
+    // 3. Build the plan.
     let today = clock.today();
     let cache_root = cache::root(env);
     let lock_path = layout.planning_dir().join("codev.lock");
     let current_lock = lockfile::load(fs, &lock_path)?;
-    let plan = plan_sources_update(
-        inherits_git,
-        current_lock.as_ref(),
-        &resolutions,
-        &today,
-    );
+    let plan = plan_sources_update(inherits_git, current_lock.as_ref(), &resolutions, &today);
 
-    // 4. Fetches — on ne les rejoue pas si le contenu est déjà en cache.
+    // 4. Fetches — not replayed if the content is already cached.
     for fetch in &plan.fetches {
         let bare = cache_root.join("git").join(cache::url_hash(&fetch.url));
         let content = cache_root.join("content").join(&fetch.sha);
 
-        // Init bare repo si absent.
+        // Init the bare repo if missing.
         if !fs.exists(&bare) {
             fs.create_dir_all(&bare).map_err(|e| EngineError::Write {
                 path: bare.clone(),
                 source: e,
             })?;
             let out = runner
-                .run("git", &["init", "--bare", bare.to_str().unwrap_or("")], None)
+                .run(
+                    "git",
+                    &["init", "--bare", bare.to_str().unwrap_or("")],
+                    None,
+                )
                 .map_err(|e| EngineError::Invalid {
                     path: bare.clone(),
-                    reason: format!("git init a échoué : {e}"),
+                    reason: format!("git init failed: {e}"),
                 })?;
             if !out.is_ok() {
                 return Err(EngineError::Invalid {
                     path: bare.clone(),
-                    reason: format!("git init : {}", out.stderr_str().trim()),
+                    reason: format!("git init: {}", out.stderr_str().trim()),
                 });
             }
         }
 
-        // Fetch le SHA.
+        // Fetch the SHA.
         let out = runner
             .run(
                 "git",
@@ -288,21 +284,22 @@ pub fn run_sources_update(
             )
             .map_err(|e| EngineError::Invalid {
                 path: bare.clone(),
-                reason: format!("git fetch : {e}"),
+                reason: format!("git fetch: {e}"),
             })?;
         if !out.is_ok() {
             return Err(EngineError::Invalid {
                 path: bare.clone(),
-                reason: format!("git fetch : {}", out.stderr_str().trim()),
+                reason: format!("git fetch: {}", out.stderr_str().trim()),
             });
         }
 
-        // Extraire le contenu du SHA vers `content/<sha>/` si absent.
+        // Check out the SHA's content into `content/<sha>/` if missing.
         if !fs.exists(&content) {
-            fs.create_dir_all(&content).map_err(|e| EngineError::Write {
-                path: content.clone(),
-                source: e,
-            })?;
+            fs.create_dir_all(&content)
+                .map_err(|e| EngineError::Write {
+                    path: content.clone(),
+                    source: e,
+                })?;
             let out = runner
                 .run(
                     "git",
@@ -319,31 +316,31 @@ pub fn run_sources_update(
                 )
                 .map_err(|e| EngineError::Invalid {
                     path: content.clone(),
-                    reason: format!("git worktree : {e}"),
+                    reason: format!("git worktree: {e}"),
                 })?;
             if !out.is_ok() {
                 return Err(EngineError::Invalid {
                     path: content.clone(),
-                    reason: format!("git worktree : {}", out.stderr_str().trim()),
+                    reason: format!("git worktree: {}", out.stderr_str().trim()),
                 });
             }
         }
     }
 
-    // 5. Écriture du lock, comparaison contenu-à-contenu pour idempotence.
-    let serialized = lockfile::serialize(&plan.new_lock).map_err(|reason| {
-        EngineError::Invalid {
+    // 5. Write the lock, comparing content to content for idempotency.
+    let serialized =
+        lockfile::serialize(&plan.new_lock).map_err(|reason| EngineError::Invalid {
             path: lock_path.clone(),
             reason,
-        }
-    })?;
+        })?;
     let lock_written = match fs.read_to_string(&lock_path) {
         Ok(existing) if existing == serialized => false,
         _ => {
-            fs.write(&lock_path, &serialized).map_err(|e| EngineError::Write {
-                path: lock_path.clone(),
-                source: e,
-            })?;
+            fs.write(&lock_path, &serialized)
+                .map_err(|e| EngineError::Write {
+                    path: lock_path.clone(),
+                    source: e,
+                })?;
             true
         }
     };
@@ -384,7 +381,7 @@ mod tests {
     }
 
     #[test]
-    fn plan_produit_un_fetch_par_nouvelle_source() {
+    fn plan_produces_one_fetch_per_new_source() {
         let sources = vec![source("git@github.com:acme/shared.git", "main")];
         let plan = plan_sources_update(&sources, None, &resolutions_ok(), "2026-09-08");
         assert_eq!(plan.fetches.len(), 1);
@@ -393,7 +390,7 @@ mod tests {
     }
 
     #[test]
-    fn diff_distingue_add_move_unchanged() {
+    fn diff_distinguishes_add_move_unchanged() {
         let sources = vec![source("url", "main")];
         // Add.
         let p = plan_sources_update(
@@ -435,12 +432,12 @@ mod tests {
                 assert_eq!(from, "aa");
                 assert_eq!(to, "bb");
             }
-            other => panic!("attendu Moved, obtenu {other:?}"),
+            other => panic!("expected Moved, got {other:?}"),
         }
     }
 
     #[test]
-    fn run_avec_mock_runner_ecrit_le_lock() {
+    fn run_with_mock_runner_writes_the_lock() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let runner = MockProcessRunner::new()
             .with_response(
@@ -472,7 +469,7 @@ mod tests {
             )
             .with_response(
                 "git",
-                &["-C"], // couvre init, fetch, worktree via le préfixe court
+                &["-C"], // covers init, fetch, worktree through the short prefix
                 ProcessOutput {
                     stdout: Vec::new(),
                     stderr: Vec::new(),
@@ -492,13 +489,13 @@ mod tests {
         .unwrap();
 
         assert!(outcome.lock_written);
-        let lock_str = fs.read("/p/_codev/codev.lock").expect("lock écrit");
+        let lock_str = fs.read("/p/_codev/codev.lock").expect("lock written");
         assert!(lock_str.contains("git = \"git@github.com:acme/shared.git\""));
         assert!(lock_str.contains("commit = \"9f2c1ab7\""));
     }
 
     #[test]
-    fn deuxieme_update_ne_reecrit_pas_le_lock() {
+    fn second_update_does_not_rewrite_the_lock() {
         let existing_lock = "version = 1\n\n[[source]]\ngit = \"url\"\nref = \"main\"\ncommit = \"aa\"\nresolved_at = \"2026-09-08\"\n";
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
@@ -532,9 +529,9 @@ mod tests {
                 },
             );
 
-        // Simule un cache déjà peuplé.
+        // Simulate an already populated cache.
         let sources = vec![source("url", "main")];
-        // Injecter le bare et le content pour éviter un `init`.
+        // Inject the bare repo and the content to avoid an `init`.
         let bare_hash = cache::url_hash("url");
         let bare_path = format!("/home/.cache/codev/git/{bare_hash}");
         let content_path = "/home/.cache/codev/content/aa";
@@ -553,11 +550,11 @@ mod tests {
         .unwrap();
 
         assert!(matches!(outcome.diff[0], PinChange::Unchanged { .. }));
-        assert!(!outcome.lock_written, "lock inchangé sur un update no-op");
+        assert!(!outcome.lock_written, "lock unchanged on a no-op update");
     }
 
     #[test]
-    fn git_absent_est_signale() {
+    fn missing_git_is_reported() {
         let fs = MemoryFileSystem::new();
         let runner = MockProcessRunner::new().with_response(
             "git",
@@ -582,7 +579,7 @@ mod tests {
     }
 
     #[test]
-    fn aucune_source_git_est_un_no_op() {
+    fn no_git_source_is_a_no_op() {
         let fs = MemoryFileSystem::new();
         let runner = MockProcessRunner::new();
         let outcome = run_sources_update(

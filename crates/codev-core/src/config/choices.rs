@@ -1,21 +1,21 @@
-//! Choix collectés au prompt (ou fournis par les flags CLI) pour produire
-//! le YAML final.
+//! Choices collected at the prompt (or supplied through CLI flags) to produce
+//! the final YAML.
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserChoices {
-    /// Les workflows à installer, dans l'ordre voulu dans le YAML.
+    /// The workflows to install, in the order they should appear in the YAML.
     pub workflows: Vec<String>,
-    /// Le texte libre ajouté par l'utilisateur au bloc `context:`.
-    /// `None` ou chaîne vide → aucun ajout, seule la détection remplit
-    /// le contexte.
+    /// Free-form text the user adds to the `context:` block.
+    /// `None` or an empty string → nothing added; detection alone fills
+    /// the context.
     pub context_addition: Option<String>,
-    /// Le tool ID MCP Jira retenu, s'il y en a un.
+    /// The selected Jira MCP tool ID, if any.
     pub jira_tool_confirmed: Option<String>,
 }
 
 impl UserChoices {
-    /// Un ensemble de choix « défaut complet » — 7 workflows, aucune
-    /// personnalisation.
+    /// A "full default" set of choices — 7 workflows, no
+    /// customization.
     pub fn defaults_full() -> Self {
         Self {
             workflows: vec![
@@ -32,7 +32,7 @@ impl UserChoices {
         }
     }
 
-    /// Un ensemble « minimal » — 3 workflows, aucune personnalisation.
+    /// A "minimal" set — 3 workflows, no customization.
     pub fn defaults_minimal() -> Self {
         Self {
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],

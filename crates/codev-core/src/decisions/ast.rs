@@ -1,18 +1,18 @@
-//! Types du domaine « décision d'architecture », alimentés par le parseur.
+//! Types for the "architecture decision" domain, populated by the parser.
 //!
-//! Une décision est vue comme un frontmatter typé plus un corps markdown ;
-//! le corps est découpé en sections `## …` de premier niveau — même
-//! mécanique que la spec principale — pour qu'un consommateur puisse
-//! afficher ce qu'il veut sans re-parser.
+//! A decision is seen as a typed frontmatter plus a markdown body; the
+//! body is split into top-level `## …` sections — the same mechanism as
+//! the main spec — so that a consumer can display whatever it wants
+//! without re-parsing.
 
 use crate::parser::ast::Span;
 
-/// Statut d'une décision. Seuls `Accepted` et `Superseded` interviennent
-/// dans le calcul « en vigueur » ; les autres sont exposés tels quels pour
-/// que l'index reste lisible sans jamais mentir sur l'effet.
+/// Status of a decision. Only `Accepted` and `Superseded` take part in
+/// the "in effect" computation; the others are exposed as-is so the
+/// index stays readable without ever misrepresenting the effect.
 ///
-/// `Unknown(String)` porte la valeur brute rencontrée dans le frontmatter,
-/// pour qu'un finding puisse la nommer et qu'un rendu puisse l'afficher.
+/// `Unknown(String)` carries the raw value found in the frontmatter, so
+/// that a finding can name it and a renderer can display it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DecisionStatus {
     Accepted,
@@ -46,19 +46,19 @@ impl DecisionStatus {
         }
     }
 
-    /// Une décision est *candidate à être en vigueur* si son statut est
-    /// `Accepted`. La supersession se joue au niveau de l'index, avec la
-    /// vue d'ensemble.
+    /// A decision is a *candidate for being in effect* if its status is
+    /// `Accepted`. Supersession is resolved at the index level, with the
+    /// full picture.
     pub fn is_candidate_for_effect(&self) -> bool {
         matches!(self, Self::Accepted)
     }
 }
 
-/// Une section `## <name>` du corps de la décision.
+/// A `## <name>` section of the decision body.
 ///
-/// La spec ne prescrit pas de titres particuliers — chaque équipe peut
-/// choisir ses sections (Contexte / Décision / Conséquences… ou autres).
-/// Ce type expose ce qui est trouvé, sans l'imposer.
+/// The spec does not prescribe particular headings — each team may
+/// choose its sections (Context / Decision / Consequences… or others).
+/// This type exposes what is found, without enforcing it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Section {
     pub name: String,
@@ -66,7 +66,7 @@ pub struct Section {
     pub span: Span,
 }
 
-/// Une décision parsée, à partir d'un fichier markdown à frontmatter.
+/// A parsed decision, from a markdown file with frontmatter.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
     pub id: String,
@@ -75,14 +75,14 @@ pub struct Decision {
     pub date: String,
     pub tags: Vec<String>,
     pub supersedes: Vec<String>,
-    /// Dérives locales : quand cet ADR est local et référence une décision
-    /// héritée (`path:` ou `git:`) dont il choisit de s'écarter. Chaque
-    /// entrée est un `qualified-id` (`<origin>/<id>`), jamais un id nu.
-    /// Champ additif : les ADR antérieurs à K6 sortent avec une liste vide.
+    /// Local deviations: when this ADR is local and references an
+    /// inherited decision (`path:` or `git:`) it chooses to depart from.
+    /// Each entry is a `qualified-id` (`<origin>/<id>`), never a bare id.
+    /// Additive field: ADRs written before deviations existed come out with an empty list.
     pub deviates_from: Vec<String>,
     pub sections: Vec<Section>,
-    /// Position du frontmatter dans le source — utile pour un futur outil
-    /// qui voudrait le réécrire (K5) sans toucher au corps.
+    /// Position of the frontmatter in the source — useful for a future
+    /// tool that would rewrite it without touching the body.
     pub frontmatter_span: Span,
 }
 
@@ -91,16 +91,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn status_reconnait_les_cinq_valeurs_documentees() {
-        assert_eq!(DecisionStatus::from_raw("accepted"), DecisionStatus::Accepted);
-        assert_eq!(DecisionStatus::from_raw("superseded"), DecisionStatus::Superseded);
-        assert_eq!(DecisionStatus::from_raw("proposed"), DecisionStatus::Proposed);
-        assert_eq!(DecisionStatus::from_raw("deprecated"), DecisionStatus::Deprecated);
-        assert_eq!(DecisionStatus::from_raw("rejected"), DecisionStatus::Rejected);
+    fn status_recognizes_the_five_documented_values() {
+        assert_eq!(
+            DecisionStatus::from_raw("accepted"),
+            DecisionStatus::Accepted
+        );
+        assert_eq!(
+            DecisionStatus::from_raw("superseded"),
+            DecisionStatus::Superseded
+        );
+        assert_eq!(
+            DecisionStatus::from_raw("proposed"),
+            DecisionStatus::Proposed
+        );
+        assert_eq!(
+            DecisionStatus::from_raw("deprecated"),
+            DecisionStatus::Deprecated
+        );
+        assert_eq!(
+            DecisionStatus::from_raw("rejected"),
+            DecisionStatus::Rejected
+        );
     }
 
     #[test]
-    fn status_inconnu_conserve_la_valeur_brute() {
+    fn unknown_status_keeps_the_raw_value() {
         let s = DecisionStatus::from_raw("pending");
         assert_eq!(s.as_str(), "pending");
         assert!(matches!(s, DecisionStatus::Unknown(_)));
@@ -108,23 +123,23 @@ mod tests {
     }
 
     #[test]
-    fn seul_accepted_est_candidat_a_effet() {
+    fn only_accepted_is_candidate_for_effect() {
         assert!(DecisionStatus::Accepted.is_candidate_for_effect());
-        for autre in [
+        for other in [
             DecisionStatus::Superseded,
             DecisionStatus::Proposed,
             DecisionStatus::Deprecated,
             DecisionStatus::Rejected,
         ] {
             assert!(
-                !autre.is_candidate_for_effect(),
-                "{autre:?} ne doit pas être candidat"
+                !other.is_candidate_for_effect(),
+                "{other:?} must not be a candidate"
             );
         }
     }
 
     #[test]
-    fn les_types_dast_se_construisent_a_la_main() {
+    fn ast_types_can_be_built_by_hand() {
         let span = Span::new(0..1, 1..2);
         let decision = Decision {
             id: "0001".into(),
@@ -135,7 +150,7 @@ mod tests {
             supersedes: vec![],
             deviates_from: vec![],
             sections: vec![Section {
-                name: "Contexte".into(),
+                name: "Context".into(),
                 body: "x".into(),
                 span: span.clone(),
             }],

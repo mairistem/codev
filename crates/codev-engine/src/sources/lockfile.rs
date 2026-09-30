@@ -1,7 +1,7 @@
-//! Fichier de verrouillage des sources héritées : `_codev/codev.lock`.
+//! Lock file for inherited sources: `_codev/codev.lock`.
 //!
-//! Format TOML, à la convention `<outil>.lock`. Une seule commande
-//! l'écrit : `codev sources update`.
+//! TOML format, following the `<tool>.lock` convention. A single command
+//! writes it: `codev sources update`.
 
 use std::path::Path;
 
@@ -12,8 +12,8 @@ use crate::ports::FileSystem;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Lockfile {
-    /// Version du format — permet une évolution future sans casser les
-    /// lecteurs anciens.
+    /// Format version — allows future evolution without breaking older
+    /// readers.
     #[serde(default = "default_version")]
     pub version: u32,
     #[serde(default, rename = "source")]
@@ -36,8 +36,8 @@ impl Default for Lockfile {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LockEntry {
     pub git: String,
-    /// Le champ `ref` est un mot-clé Rust — on l'écrit `ref` dans le TOML
-    /// via `#[serde(rename)]`.
+    /// `ref` is a Rust keyword — the field is written as `ref` in the TOML
+    /// through `#[serde(rename)]`.
     #[serde(rename = "ref")]
     pub git_ref: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -59,20 +59,24 @@ impl LockEntry {
     }
 }
 
-/// Charge le lock. Un fichier absent rend `Ok(None)` — le projet n'a pas
-/// encore fait de `codev sources update`.
+/// Loads the lock. A missing file returns `Ok(None)` — the project has not
+/// run `codev sources update` yet.
 pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<Lockfile>> {
     if !fs.exists(path) {
         return Ok(None);
     }
-    let raw = fs.read_to_string(path).map_err(|e| EngineError::Unreadable {
-        path: path.to_path_buf(),
-        reason: e.to_string(),
-    })?;
-    parse(&raw).map(Some).map_err(|reason| EngineError::Invalid {
-        path: path.to_path_buf(),
-        reason,
-    })
+    let raw = fs
+        .read_to_string(path)
+        .map_err(|e| EngineError::Unreadable {
+            path: path.to_path_buf(),
+            reason: e.to_string(),
+        })?;
+    parse(&raw)
+        .map(Some)
+        .map_err(|reason| EngineError::Invalid {
+            path: path.to_path_buf(),
+            reason,
+        })
 }
 
 pub fn parse(source: &str) -> std::result::Result<Lockfile, String> {
@@ -99,20 +103,20 @@ mod tests {
     }
 
     #[test]
-    fn le_champ_ref_est_ecrit_sans_backtick() {
+    fn the_ref_field_is_written_without_backticks() {
         let lock = Lockfile {
             version: 1,
             sources: vec![entry("git@github.com:o/r.git", "main", "abc123")],
         };
         let serialized = serialize(&lock).unwrap();
-        // Le nom TOML est `ref`, pas `git_ref` — c'est le rename qui joue.
+        // The TOML name is `ref`, not `git_ref` — that is the rename at work.
         assert!(serialized.contains("ref = \"main\""), "{serialized}");
         assert!(!serialized.contains("git_ref"), "{serialized}");
         assert!(serialized.contains("[[source]]"), "{serialized}");
     }
 
     #[test]
-    fn serialise_puis_reparse_est_identite() {
+    fn serialize_then_reparse_is_identity() {
         let lock = Lockfile {
             version: 1,
             sources: vec![
@@ -129,14 +133,14 @@ mod tests {
     }
 
     #[test]
-    fn absent_est_none() {
+    fn missing_is_none() {
         let fs = MemoryFileSystem::new();
         let out = load(&fs, Path::new("/p/_codev/codev.lock")).unwrap();
         assert!(out.is_none());
     }
 
     #[test]
-    fn find_matching_reconnait_par_url_et_ref() {
+    fn find_matching_matches_by_url_and_ref() {
         let lock = Lockfile {
             version: 1,
             sources: vec![

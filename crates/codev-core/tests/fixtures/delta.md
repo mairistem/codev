@@ -1,6 +1,6 @@
 ## Purpose
 
-Ajoute la double authentification et retire l'ancien mécanisme « Remember Me ».
+Adds two-factor authentication and removes the old "Remember Me" mechanism.
 
 ## ADDED Requirements
 

@@ -1,6 +1,6 @@
 [package]
 name = "codev-core"
-description = "Modèle de domaine, schémas et graphe d'artefacts de codev — cœur pur, sans entrée-sortie"
+description = "Domain model, schemas and artifact graph for codev — pure core, no I/O"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

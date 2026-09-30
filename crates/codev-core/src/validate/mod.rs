@@ -1,24 +1,24 @@
-//! Règles de validation, appliquées à un AST déjà parsé.
+//! Validation rules, applied to an already-parsed AST.
 //!
-//! Deux temps, comme partout : décider n'est pas exécuter. Ici on décide, à
-//! partir de la seule structure du contenu — aucune I/O. La coordination
-//! (marche du disque, groupement, rapport) vit dans `codev-engine::validate`.
+//! Two phases, as everywhere: deciding is not executing. Here we decide, from
+//! the structure of the content alone — no I/O. The coordination
+//! (disk walk, grouping, reporting) lives in `codev-engine::validate`.
 //!
-//! Une règle est une implémentation de [`Rule`] enregistrée dans [`RULES`].
-//! Ajouter une règle E4 (warnings du lot 2) sera une struct de plus dans le
-//! registre, sans toucher aux appelants.
+//! A rule is an implementation of [`Rule`] registered in [`RULES`].
+//! Adding an E4 rule (batch 2 warnings) will be one more struct in the
+//! registry, without touching the callers.
 
 use crate::parser::ast::{Delta, Finding, Spec};
 
 pub mod codes;
 pub mod rules;
 
-/// Contrat d'une règle : elle sait dire son `code` stable et se déclencher au
-/// choix sur une spec principale ou un delta.
+/// Contract of a rule: it can report its stable `code` and fire on
+/// a main spec, a delta, or both.
 ///
-/// Les deux méthodes de `check_*` sont optionnelles pour qu'une règle
-/// spécialisée (par exemple `SpecNoRequirement`) ne se dérange pas sur le
-/// type qu'elle n'intéresse pas.
+/// Both `check_*` methods are optional so that a specialized rule
+/// (for example `SpecNoRequirement`) need not bother with the
+/// type it does not care about.
 pub trait Rule: Sync {
     fn code(&self) -> &'static str;
 
@@ -31,12 +31,12 @@ pub trait Rule: Sync {
     }
 }
 
-/// Le catalogue des règles jouées par `codev validate`.
+/// The catalog of rules run by `codev validate`.
 ///
-/// L'ordre est signifiant : les findings d'un même fichier apparaissent
-/// dans cet ordre, ce qui rend la sortie stable et donc testable par
-/// snapshot. Insérer une règle au milieu n'est pas une décision anodine —
-/// c'est une modification du contrat visible.
+/// Order is significant: findings for the same file appear
+/// in this order, which keeps the output stable and therefore testable by
+/// snapshot. Inserting a rule in the middle is not a trivial decision —
+/// it changes the visible contract.
 pub const RULES: &[&dyn Rule] = &[
     &rules::RequirementNoShall,
     &rules::RequirementNoScenario,
@@ -46,13 +46,13 @@ pub const RULES: &[&dyn Rule] = &[
     &rules::ModifiedUsesOldName,
 ];
 
-/// Applique toutes les règles à une spec principale et concatène leurs
-/// `Finding`.
+/// Applies every rule to a main spec and concatenates their
+/// `Finding`s.
 pub fn check_spec(spec: &Spec) -> Vec<Finding> {
     RULES.iter().flat_map(|r| r.check_spec(spec)).collect()
 }
 
-/// Applique toutes les règles à un delta et concatène leurs `Finding`.
+/// Applies every rule to a delta and concatenates their `Finding`s.
 pub fn check_delta(delta: &Delta) -> Vec<Finding> {
     RULES.iter().flat_map(|r| r.check_delta(delta)).collect()
 }
@@ -63,30 +63,27 @@ mod tests {
     use std::collections::BTreeSet;
 
     #[test]
-    fn registry_liste_au_moins_une_regle() {
-        // Le catalogue doit contenir les 6 règles annoncées ; si l'une
-        // disparaît par erreur, la commande `validate` couvrirait moins que
-        // ce que la spec promet.
+    fn registry_lists_all_rules() {
+        // The catalog must contain the 6 advertised rules; if one
+        // disappeared by mistake, the `validate` command would cover less than
+        // what the spec promises.
         assert_eq!(RULES.len(), 6);
     }
 
     #[test]
-    fn codes_de_findings_sont_uniques() {
-        // Le contrat public : chaque `code` identifie UN défaut. Une
-        // collision entre parseur et validate — ou entre deux règles —
-        // ferait qu'un consommateur qui teste sur `code` traite deux cas
-        // pour un.
-        let mut vus: BTreeSet<&'static str> = BTreeSet::new();
+    fn finding_codes_are_unique() {
+        // The public contract: each `code` identifies ONE defect. A
+        // collision between the parser and validate — or between two rules —
+        // would make a consumer that matches on `code` treat two cases
+        // as one.
+        let mut seen: BTreeSet<&'static str> = BTreeSet::new();
         for code in crate::parser::codes::ALL {
-            assert!(
-                vus.insert(code),
-                "code du parseur en doublon : {code}"
-            );
+            assert!(seen.insert(code), "duplicate parser code: {code}");
         }
         for rule in RULES {
             assert!(
-                vus.insert(rule.code()),
-                "code de règle en doublon avec ce qui précède : {}",
+                seen.insert(rule.code()),
+                "rule code duplicates an earlier one: {}",
                 rule.code()
             );
         }

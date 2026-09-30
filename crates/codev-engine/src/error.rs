@@ -8,33 +8,33 @@ pub type Result<T> = std::result::Result<T, EngineError>;
 
 #[derive(Debug, Error)]
 pub enum EngineError {
-    #[error("aucun projet codev trouvé depuis {from} — lance `codev init` à la racine du projet")]
+    #[error("no codev project found from {from} — run `codev init` at the project root")]
     NoRoot { from: PathBuf },
 
-    #[error("le change « {change} » n'existe pas — `codev list` montre ceux qui existent")]
+    #[error("change `{change}` does not exist — `codev list` shows the existing ones")]
     UnknownChange { change: String },
 
-    #[error("le change « {change} » existe déjà")]
+    #[error("change `{change}` already exists")]
     ChangeExists { change: String },
 
-    #[error("schéma « {name} » introuvable — `codev schemas` liste ceux qui sont disponibles")]
+    #[error("schema `{name}` not found — `codev schemas` lists the available ones")]
     SchemaNotFound { name: String },
 
     #[error(
-        "aucun artefact prêt pour le change « {change} » — `codev status --change {change}` dit pourquoi"
+        "no artifact ready for change `{change}` — `codev status --change {change}` explains why"
     )]
     NoArtifactReady { change: String },
 
-    #[error("template « {template} » introuvable pour l'artefact « {artifact} »")]
+    #[error("template `{template}` not found for artifact `{artifact}`")]
     TemplateNotFound { artifact: String, template: String },
 
-    #[error("{path} est illisible : {reason}")]
+    #[error("{path} is unreadable: {reason}")]
     Unreadable { path: PathBuf, reason: String },
 
-    #[error("{path} est invalide : {reason}")]
+    #[error("{path} is invalid: {reason}")]
     Invalid { path: PathBuf, reason: String },
 
-    #[error("erreur d'écriture sur {path} : {source}")]
+    #[error("failed to write {path}: {source}")]
     Write {
         path: PathBuf,
         #[source]
@@ -46,10 +46,10 @@ pub enum EngineError {
 }
 
 impl EngineError {
-    /// Code stable, exposé dans le tableau `status[]` du contrat JSON.
+    /// Stable code, exposed in the `status[]` array of the JSON contract.
     ///
-    /// Le message est libre de changer de formulation ; le code, non — un
-    /// consommateur peut s'y fier.
+    /// The message is free to change its wording; the code is not — a
+    /// consumer can rely on it.
     pub fn code(&self) -> &'static str {
         match self {
             Self::NoRoot { .. } => "no_codev_root",
@@ -66,12 +66,12 @@ impl EngineError {
     }
 }
 
-/// Un constat non bloquant, remonté à l'utilisateur sans faire échouer la
-/// commande.
+/// A non-blocking finding, reported to the user without failing the
+/// command.
 ///
-/// Une source héritée introuvable en est l'exemple type : la commande doit
-/// aboutir avec ce qu'elle a, en disant clairement ce qui manque et comment le
-/// réparer.
+/// A missing inherited source is the typical example: the command must
+/// succeed with what it has, while clearly saying what is missing and how to
+/// fix it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Warning {
     pub code: &'static str,

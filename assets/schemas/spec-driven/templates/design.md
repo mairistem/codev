@@ -1,35 +1,35 @@
-# Design : <titre du change>
+# Design: <change title>
 
-## Contexte
+## Context
 
-<!-- L'état actuel et les contraintes nécessaires pour comprendre l'approche.
-     Renvoie au proposal pour la motivation au lieu de la répéter. -->
+<!-- The current state and the constraints needed to understand the approach.
+     Refer to the proposal for the motivation instead of repeating it. -->
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-<!-- Les frontières de niveau conception. Ne redis pas le périmètre du proposal. -->
+<!-- Design-level boundaries. Do not restate the proposal's scope. -->
 
-## Décisions
+## Decisions
 
-### Décision : <le choix>
+### Decision: <the choice>
 
-<!-- Ce qui est retenu, et pourquoi celui-ci plutôt qu'un autre.
-     Cite la ou les décisions de `_codev/decisions/` qui contraignent ce choix.
-     Si tu proposes de s'écarter de l'une d'elles, dis-le explicitement. -->
+<!-- What was chosen, and why this option over the others.
+     Cite the decision(s) in `_codev/decisions/` that constrain this choice.
+     If you propose to deviate from one of them, say so explicitly. -->
 
-**Alternatives considérées** :
+**Alternatives considered**:
 
-<!-- Ce qui a été écarté, et pour quelle raison. -->
+<!-- What was rejected, and why. -->
 
-## Risques et compromis
+## Risks / Trade-offs
 
-<!-- [Risque] → Atténuation -->
+<!-- [Risk] → Mitigation -->
 
-## Plan de migration
+## Migration Plan
 
-<!-- Étapes de déploiement, stratégie de retour arrière. Supprime si sans objet. -->
+<!-- Rollout steps, rollback strategy. Remove if not applicable. -->
 
-## Questions ouvertes
+## Open Questions
 
-<!-- Uniquement les inconnues réellement reportables : celles qui ne changent ni
-     les specs, ni l'approche, ni le découpage des tâches. Supprime si aucune. -->
+<!-- Only the unknowns that can genuinely be deferred: those that change neither
+     the specs, the approach, nor the task breakdown. Remove if none. -->

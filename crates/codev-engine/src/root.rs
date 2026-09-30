@@ -5,12 +5,11 @@ use codev_core::Layout;
 use crate::error::{EngineError, Result};
 use crate::ports::{Env, FileSystem};
 
-/// Trouve la racine du projet en remontant depuis `start`.
+/// Finds the project root by walking up from `start`.
 ///
-/// Une seule règle : le premier ancêtre qui contient un dossier `_codev/`
-/// gagne. Pas de registre de projets, pas de variable d'environnement, pas de
-/// flag `--store` : c'est le comportement de `git`, et il n'a besoin d'aucune
-/// explication.
+/// A single rule: the first ancestor that contains a `_codev/` directory
+/// wins. No project registry, no environment variable, no `--store` flag:
+/// this is how `git` behaves, and it needs no explanation.
 pub fn discover(fs: &dyn FileSystem, start: &Path) -> Result<Layout> {
     for ancestor in start.ancestors() {
         let layout = Layout::new(ancestor);
@@ -37,37 +36,37 @@ mod tests {
     use crate::ports::MemoryFileSystem;
 
     #[test]
-    fn remonte_jusqua_la_racine() {
+    fn walks_up_to_the_root() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
-        let layout = discover(fs_ref(&fs), Path::new("/p/crates/truc/src")).unwrap();
+        let layout = discover(fs_ref(&fs), Path::new("/p/crates/thing/src")).unwrap();
         assert_eq!(layout.project_root(), Path::new("/p"));
     }
 
     #[test]
-    fn trouve_la_racine_sur_place() {
+    fn finds_the_root_in_place() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let layout = discover(fs_ref(&fs), Path::new("/p")).unwrap();
         assert_eq!(layout.project_root(), Path::new("/p"));
     }
 
     #[test]
-    fn echoue_en_nommant_le_point_de_depart() {
+    fn fails_naming_the_starting_point() {
         let fs = MemoryFileSystem::new();
-        let err = discover(fs_ref(&fs), Path::new("/ailleurs/ici")).unwrap_err();
+        let err = discover(fs_ref(&fs), Path::new("/elsewhere/here")).unwrap_err();
         assert_eq!(err.code(), "no_codev_root");
-        assert!(err.to_string().contains("/ailleurs/ici"), "{err}");
+        assert!(err.to_string().contains("/elsewhere/here"), "{err}");
         assert!(err.to_string().contains("codev init"), "{err}");
     }
 
     #[test]
-    fn prend_la_racine_la_plus_proche() {
-        // Un dépôt imbriqué dans un autre : le travail appartient au plus
-        // proche, jamais au parent.
+    fn picks_the_nearest_root() {
+        // A repository nested inside another: the work belongs to the nearest
+        // one, never to the parent.
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/sous-projet/_codev/config.yaml", "");
-        let layout = discover(fs_ref(&fs), Path::new("/p/sous-projet/src")).unwrap();
-        assert_eq!(layout.project_root(), Path::new("/p/sous-projet"));
+            .with_file("/p/sub-project/_codev/config.yaml", "");
+        let layout = discover(fs_ref(&fs), Path::new("/p/sub-project/src")).unwrap();
+        assert_eq!(layout.project_root(), Path::new("/p/sub-project"));
     }
 
     fn fs_ref(fs: &MemoryFileSystem) -> &dyn FileSystem {

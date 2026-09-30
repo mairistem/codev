@@ -1,34 +1,34 @@
-# Proposal : <titre du change>
+# Proposal: <change title>
 
-## Pourquoi
+## Why
 
-<!-- Le problème ou l'opportunité, en une ou deux phrases. Pourquoi maintenant ? -->
+<!-- The problem or opportunity, in one or two sentences. Why now? -->
 
-## Ce qui change
+## What Changes
 
-<!-- Liste à puces, précise sur les capacités ajoutées, modifiées ou retirées.
-     Marque toute rupture de compatibilité par **RUPTURE**. -->
+<!-- Bullet list, specific about the capabilities added, modified or removed.
+     Mark any breaking change with **BREAKING**. -->
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-<!-- Une ligne par capacité, au format `chemin/de-la-capacite`. Chacune donnera
-     un fichier `specs/<chemin>/spec.md`. Laisse vide si aucune. -->
+<!-- One line per capability, in the form `path/of-the-capability`. Each one
+     produces a `specs/<path>/spec.md` file. Leave empty if none. -->
 
-### Capacités modifiées
+### Modified Capabilities
 
-<!-- Une ligne par capacité dont les EXIGENCES changent, avec son chemin exact
-     sous `_codev/specs/`. Laisse vide si aucune. -->
+<!-- One line per capability whose REQUIREMENTS change, with its exact path
+     under `_codev/specs/`. Leave empty if none. -->
 
-### Capacités retirées
+### Removed Capabilities
 
-<!-- Une ligne par capacité que ce change retire entièrement. Chaque entrée
-     est le chemin exact sous `_codev/specs/`. Requiert `retire_capabilities:
-     true` dans `change.yaml` et un `## REMOVED Requirements` qui vide la spec.
-     Sans le marqueur, la sync/archive refusera plutôt que d'agir sur un
-     geste irréversible. Laisse vide si aucune. -->
+<!-- One line per capability this change removes entirely. Each entry is the
+     exact path under `_codev/specs/`. Requires `retire_capabilities: true`
+     in `change.yaml` and a `## REMOVED Requirements` section that empties
+     the spec. Without the marker, sync/archive refuses rather than perform
+     an irreversible operation. Leave empty if none. -->
 
 ## Impact
 
-<!-- Code, API, dépendances et systèmes affectés. -->
+<!-- Affected code, APIs, dependencies and systems. -->

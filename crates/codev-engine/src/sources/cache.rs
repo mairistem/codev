@@ -1,8 +1,8 @@
-//! Disposition du cache local pour les sources git héritées.
+//! Layout of the local cache for inherited git sources.
 //!
-//! Racine : `$XDG_CACHE_HOME/codev/` ou `~/.cache/codev/`. Deux sous-arbres :
-//! `git/<hash-de-l-url>/` pour les dépôts *bare*, `content/<sha>/` pour le
-//! contenu extrait à un SHA donné.
+//! Root: `$XDG_CACHE_HOME/codev/` or `~/.cache/codev/`. Two subtrees:
+//! `git/<url-hash>/` for the *bare* repositories, `content/<sha>/` for the
+//! content checked out at a given SHA.
 
 use std::path::PathBuf;
 
@@ -10,12 +10,12 @@ use sha2::{Digest, Sha256};
 
 use crate::ports::Env;
 
-/// Rend la racine du cache.
+/// Returns the cache root.
 ///
-/// Ordre de priorité :
-/// 1. `$XDG_CACHE_HOME/codev/` si `XDG_CACHE_HOME` est défini et non vide ;
-/// 2. `$HOME/.cache/codev/` sinon ;
-/// 3. `/tmp/codev/` en dernier recours, si `$HOME` est aussi absent.
+/// Order of precedence:
+/// 1. `$XDG_CACHE_HOME/codev/` if `XDG_CACHE_HOME` is set and non-empty;
+/// 2. `$HOME/.cache/codev/` otherwise;
+/// 3. `/tmp/codev/` as a last resort, if `$HOME` is missing too.
 pub fn root(env: &dyn Env) -> PathBuf {
     if let Some(xdg) = env.var("XDG_CACHE_HOME").filter(|v| !v.is_empty()) {
         return PathBuf::from(xdg).join("codev");
@@ -26,9 +26,9 @@ pub fn root(env: &dyn Env) -> PathBuf {
     PathBuf::from("/tmp/codev")
 }
 
-/// Hash déterministe d'une URL git — 16 hex de SHA-256, largement suffisant
-/// pour éviter les collisions en pratique et pour rester lisible dans un
-/// nom de dossier.
+/// Deterministic hash of a git URL — 16 hex digits of SHA-256, more than
+/// enough to avoid collisions in practice while staying readable in a
+/// directory name.
 pub fn url_hash(url: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(url.as_bytes());
@@ -44,12 +44,12 @@ fn hex_16(bytes: &[u8]) -> String {
     out
 }
 
-/// Chemin du dépôt bare pour une URL donnée.
+/// Path of the bare repository for a given URL.
 pub fn bare_repo_dir(cache_root: &std::path::Path, url_hash: &str) -> PathBuf {
     cache_root.join("git").join(url_hash)
 }
 
-/// Chemin du contenu extrait pour un SHA donné.
+/// Path of the checked-out content for a given SHA.
 pub fn content_dir(cache_root: &std::path::Path, sha: &str) -> PathBuf {
     cache_root.join("content").join(sha)
 }
@@ -68,27 +68,27 @@ mod tests {
     }
 
     #[test]
-    fn respecte_xdg_cache_home() {
+    fn honors_xdg_cache_home() {
         let env = env_with(&[("XDG_CACHE_HOME", "/opt/xdg"), ("HOME", "/home")]);
         assert_eq!(root(&env), PathBuf::from("/opt/xdg/codev"));
     }
 
     #[test]
-    fn retombe_sur_home_cache() {
+    fn falls_back_to_home_cache() {
         let env = env_with(&[("HOME", "/Users/x")]);
         assert_eq!(root(&env), PathBuf::from("/Users/x/.cache/codev"));
     }
 
     #[test]
-    fn xdg_vide_est_ignore() {
-        // Une variable définie à la chaîne vide ne compte pas — le comportement
-        // XDG standard.
+    fn empty_xdg_is_ignored() {
+        // A variable set to the empty string does not count — the standard
+        // XDG behavior.
         let env = env_with(&[("XDG_CACHE_HOME", ""), ("HOME", "/h")]);
         assert_eq!(root(&env), PathBuf::from("/h/.cache/codev"));
     }
 
     #[test]
-    fn hash_est_stable_pour_une_meme_url() {
+    fn hash_is_stable_for_the_same_url() {
         let a = url_hash("git@github.com:acme/repo.git");
         let b = url_hash("git@github.com:acme/repo.git");
         assert_eq!(a, b);
@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn hash_differe_pour_des_url_distinctes() {
+    fn hash_differs_for_distinct_urls() {
         assert_ne!(
             url_hash("git@github.com:a/b.git"),
             url_hash("git@github.com:a/c.git")
@@ -104,7 +104,7 @@ mod tests {
     }
 
     #[test]
-    fn chemins_calcules_correctement() {
+    fn paths_are_computed_correctly() {
         let root = std::path::Path::new("/cache");
         assert_eq!(
             bare_repo_dir(root, "abc123"),

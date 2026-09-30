@@ -5,22 +5,22 @@ use codev_core::{Plan, WriteMode};
 use crate::error::{EngineError, Result};
 use crate::ports::FileSystem;
 
-/// Ce qu'une exécution de plan a réellement fait.
+/// What a plan execution actually did.
 ///
-/// Distinguer les trois cas n'est pas cosmétique : c'est ce qui permet à
-/// `init` de dire « rien à faire » plutôt que « 12 fichiers écrits » sur un
-/// projet déjà initialisé.
+/// Telling the three cases apart is not cosmetic: it is what lets `init`
+/// say "nothing to do" rather than "12 files written" on an already
+/// initialized project.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Applied {
     pub created: Vec<PathBuf>,
     pub overwritten: Vec<PathBuf>,
-    /// Déjà conformes, ou protégés par [`WriteMode::CreateOnly`].
+    /// Already up to date, or protected by [`WriteMode::CreateOnly`].
     pub untouched: Vec<PathBuf>,
-    /// Suppressions effectivement appliquées. Un fichier absent au
-    /// moment de la deletion n'y figure pas (ce n'est pas une erreur —
-    /// le change peut avoir déjà été appliqué).
+    /// Deletions actually applied. A file that is missing at deletion
+    /// time is not listed (this is not an error — the change may already
+    /// have been applied).
     pub deleted: Vec<PathBuf>,
-    /// Déplacements effectués — `(from, to)`.
+    /// Moves performed — `(from, to)`.
     pub moved: Vec<(PathBuf, PathBuf)>,
 }
 
@@ -33,36 +33,37 @@ impl Applied {
     }
 }
 
-/// Exécute un plan.
+/// Executes a plan.
 ///
-/// La coquille impérative : aucune décision ici, seulement des écritures. Tout
-/// ce qui relève du choix a été tranché en amont, dans une fonction pure.
+/// The imperative shell: no decisions here, only writes. Every choice has
+/// been settled upstream, in a pure function.
 pub fn execute(plan: &Plan, fs: &dyn FileSystem) -> Result<Applied> {
     let mut applied = Applied::default();
 
     for dir in &plan.dirs {
-        fs.create_dir_all(dir).map_err(|source| EngineError::Write {
-            path: dir.clone(),
-            source,
-        })?;
+        fs.create_dir_all(dir)
+            .map_err(|source| EngineError::Write {
+                path: dir.clone(),
+                source,
+            })?;
     }
 
     for write in &plan.writes {
-        let existe = fs.exists(&write.path);
+        let exists = fs.exists(&write.path);
         match write.mode {
-            WriteMode::CreateOnly if existe => {
+            WriteMode::CreateOnly if exists => {
                 applied.untouched.push(write.path.clone());
                 continue;
             }
-            WriteMode::Overwrite if existe => {
-                // Comparer avant d'écrire : sans cela, `codev update` annoncerait
-                // avoir modifié des fichiers identiques, et l'utilisateur ne
-                // saurait plus ce qui a vraiment bougé.
-                let identique = fs
+            WriteMode::Overwrite if exists => {
+                // Compare before writing: otherwise `codev update` would report
+                // having modified identical files, and the user would no
+                // longer know what actually changed.
+                let identical = fs
                     .read_to_string(&write.path)
-                    .map(|actuel| actuel == write.contents)
+                    .map(|current| current == write.contents)
                     .unwrap_or(false);
-                if identique {
+                if identical {
                     applied.untouched.push(write.path.clone());
                     continue;
                 }
@@ -76,17 +77,16 @@ pub fn execute(plan: &Plan, fs: &dyn FileSystem) -> Result<Applied> {
         applied.created.push(write.path.clone());
     }
 
-    // Les deletions viennent après les writes : « on écrit ce qui est
-    // neuf, on retire ce qui n'a plus lieu d'être », et avant les moves
-    // pour préserver l'atomicité du geste destructeur. Un fichier
-    // absent au moment de la deletion n'est pas une erreur — le change
-    // peut avoir été appliqué déjà, ou le fichier peut avoir été
-    // supprimé manuellement entre le plan et l'exécution.
+    // Deletions come after writes — "write what is new, remove what no
+    // longer belongs" — and before moves, to keep the destructive step
+    // atomic. A file missing at deletion time is not an error — the
+    // change may already have been applied, or the file may have been
+    // deleted by hand between planning and execution.
     for path in &plan.deletions {
         match fs.remove_file(path) {
             Ok(()) => applied.deleted.push(path.clone()),
             Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-                // Idempotent — pas de trace dans `applied.deleted`.
+                // Idempotent — no trace in `applied.deleted`.
             }
             Err(source) => {
                 return Err(EngineError::Write {
@@ -97,15 +97,15 @@ pub fn execute(plan: &Plan, fs: &dyn FileSystem) -> Result<Applied> {
         }
     }
 
-    // Les déplacements en dernier. Un `Move` peut avoir besoin qu'un
-    // dossier de destination existe (couvert par la boucle `dirs`) et qu'un
-    // fichier de source ait été écrit à l'endroit qu'on va déplacer (couvert
-    // par la boucle `writes`).
+    // Moves last. A `Move` may need a destination directory to exist
+    // (covered by the `dirs` loop) and a source file to have been written
+    // at the location about to be moved (covered by the `writes` loop).
     for mv in &plan.moves {
-        fs.rename(&mv.from, &mv.to).map_err(|source| EngineError::Write {
-            path: mv.from.clone(),
-            source,
-        })?;
+        fs.rename(&mv.from, &mv.to)
+            .map_err(|source| EngineError::Write {
+                path: mv.from.clone(),
+                source,
+            })?;
         applied.moved.push((mv.from.clone(), mv.to.clone()));
     }
 
@@ -124,24 +124,34 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn cree_ce_qui_manque() {
+    fn creates_what_is_missing() {
         let fs = MemoryFileSystem::new();
         let mut plan = Plan::new();
-        plan.dir("/p/_codev")
-            .write("/p/_codev/config.yaml", "schema: spec-driven", WriteMode::CreateOnly);
+        plan.dir("/p/_codev").write(
+            "/p/_codev/config.yaml",
+            "schema: spec-driven",
+            WriteMode::CreateOnly,
+        );
 
         let applied = execute(&plan, &fs).unwrap();
 
         assert_eq!(applied.created, [PathBuf::from("/p/_codev/config.yaml")]);
         assert!(applied.untouched.is_empty());
-        assert_eq!(fs.read("/p/_codev/config.yaml").as_deref(), Some("schema: spec-driven"));
+        assert_eq!(
+            fs.read("/p/_codev/config.yaml").as_deref(),
+            Some("schema: spec-driven")
+        );
     }
 
     #[test]
-    fn create_only_protege_le_travail_de_lutilisateur() {
-        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "ma config à moi");
+    fn create_only_protects_the_users_work() {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "my own config");
         let mut plan = Plan::new();
-        plan.write("/p/_codev/config.yaml", "config générée", WriteMode::CreateOnly);
+        plan.write(
+            "/p/_codev/config.yaml",
+            "generated config",
+            WriteMode::CreateOnly,
+        );
 
         let applied = execute(&plan, &fs).unwrap();
 
@@ -149,40 +159,40 @@ mod tests {
         assert!(!applied.changed_anything());
         assert_eq!(
             fs.read("/p/_codev/config.yaml").as_deref(),
-            Some("ma config à moi"),
-            "le contenu existant doit être intact"
+            Some("my own config"),
+            "existing content must be left intact"
         );
     }
 
     #[test]
-    fn overwrite_ne_signale_que_les_vrais_changements() {
-        let fs = MemoryFileSystem::new().with_file("/s/SKILL.md", "identique");
+    fn overwrite_reports_only_real_changes() {
+        let fs = MemoryFileSystem::new().with_file("/s/SKILL.md", "identical");
         let mut plan = Plan::new();
-        plan.write("/s/SKILL.md", "identique", WriteMode::Overwrite);
+        plan.write("/s/SKILL.md", "identical", WriteMode::Overwrite);
 
         let applied = execute(&plan, &fs).unwrap();
 
-        assert!(applied.overwritten.is_empty(), "rien n'a changé");
+        assert!(applied.overwritten.is_empty(), "nothing changed");
         assert_eq!(applied.untouched, [PathBuf::from("/s/SKILL.md")]);
     }
 
     #[test]
-    fn overwrite_remplace_un_contenu_different() {
-        let fs = MemoryFileSystem::new().with_file("/s/SKILL.md", "ancienne version");
+    fn overwrite_replaces_different_content() {
+        let fs = MemoryFileSystem::new().with_file("/s/SKILL.md", "old version");
         let mut plan = Plan::new();
-        plan.write("/s/SKILL.md", "nouvelle version", WriteMode::Overwrite);
+        plan.write("/s/SKILL.md", "new version", WriteMode::Overwrite);
 
         let applied = execute(&plan, &fs).unwrap();
 
         assert_eq!(applied.overwritten, [PathBuf::from("/s/SKILL.md")]);
-        assert_eq!(fs.read("/s/SKILL.md").as_deref(), Some("nouvelle version"));
+        assert_eq!(fs.read("/s/SKILL.md").as_deref(), Some("new version"));
     }
 
     #[test]
-    fn execute_deplace_apres_avoir_ecrit() {
-        // L'ordre importe : le `Move` ne fonctionne que si le fichier de
-        // source vient d'être écrit — c'est le contrat qu'utilise `archive`
-        // pour déplacer un dossier qu'on vient éventuellement de compléter.
+    fn execute_moves_after_writing() {
+        // Order matters: the `Move` only works if the source file has just
+        // been written — this is the contract `archive` relies on to move a
+        // directory it may have just completed.
         let fs = MemoryFileSystem::new();
         let mut plan = Plan::new();
         plan.write("/p/a/file.md", "x", WriteMode::Overwrite);
@@ -191,35 +201,41 @@ mod tests {
         let applied = execute(&plan, &fs).unwrap();
 
         assert_eq!(applied.created, [PathBuf::from("/p/a/file.md")]);
-        assert_eq!(applied.moved, [(PathBuf::from("/p/a"), PathBuf::from("/p/b"))]);
+        assert_eq!(
+            applied.moved,
+            [(PathBuf::from("/p/a"), PathBuf::from("/p/b"))]
+        );
         assert!(!fs.exists(Path::new("/p/a/file.md")));
         assert_eq!(fs.read("/p/b/file.md").as_deref(), Some("x"));
     }
 
     #[test]
-    fn execute_move_seul_change_letat() {
+    fn execute_move_alone_changes_state() {
         let fs = MemoryFileSystem::new().with_file("/p/x", "content");
         let mut plan = Plan::new();
         plan.move_dir("/p/x", "/q/x");
 
         let applied = execute(&plan, &fs).unwrap();
 
-        assert!(applied.changed_anything(), "un move seul compte comme un vrai changement");
+        assert!(
+            applied.changed_anything(),
+            "a move alone counts as a real change"
+        );
         assert_eq!(applied.moved.len(), 1);
     }
 
     #[test]
-    fn execute_move_source_absente_est_une_erreur_typee() {
+    fn execute_move_with_missing_source_is_a_typed_error() {
         let fs = MemoryFileSystem::new();
         let mut plan = Plan::new();
-        plan.move_dir("/pas/la", "/ailleurs");
+        plan.move_dir("/not/there", "/elsewhere");
 
         let err = execute(&plan, &fs).unwrap_err();
         assert_eq!(err.code(), "write_failed");
     }
 
     #[test]
-    fn deletion_supprime_un_fichier_existant() {
+    fn deletion_removes_an_existing_file() {
         let fs = MemoryFileSystem::new().with_file("/p/a.md", "x");
         let mut plan = Plan::new();
         plan.delete("/p/a.md");
@@ -230,9 +246,9 @@ mod tests {
     }
 
     #[test]
-    fn deletion_sur_absent_est_silencieuse() {
-        // Idempotence — un plan relancé après suppression ne remonte pas
-        // d'erreur, et ne signale rien.
+    fn deletion_of_missing_file_is_silent() {
+        // Idempotence — a plan rerun after deletion raises no error and
+        // reports nothing.
         let fs = MemoryFileSystem::new();
         let mut plan = Plan::new();
         plan.delete("/p/absent.md");
@@ -243,37 +259,37 @@ mod tests {
     }
 
     #[test]
-    fn deletion_apres_writes_et_avant_moves() {
-        // Ordre exigé par le design : dirs → writes → deletions → moves.
+    fn deletion_after_writes_and_before_moves() {
+        // Order required by the design: dirs → writes → deletions → moves.
         let fs = MemoryFileSystem::new()
-            .with_file("/p/vieux.md", "à retirer")
-            .with_file("/p/dossier/nouveau.md", "sera écrit avant");
+            .with_file("/p/old.md", "to remove")
+            .with_file("/p/folder/new.md", "will be written first");
         let mut plan = Plan::new();
-        plan.write("/p/dossier/nouveau.md", "modifié", WriteMode::Overwrite);
-        plan.delete("/p/vieux.md");
-        plan.move_dir("/p/dossier", "/p/dossier-renomme");
+        plan.write("/p/folder/new.md", "modified", WriteMode::Overwrite);
+        plan.delete("/p/old.md");
+        plan.move_dir("/p/folder", "/p/folder-renamed");
 
         let applied = execute(&plan, &fs).unwrap();
 
-        // Le write a bien eu lieu (dans le dossier d'origine, avant move).
-        assert_eq!(
-            applied.overwritten,
-            [PathBuf::from("/p/dossier/nouveau.md")]
-        );
-        assert_eq!(applied.deleted, [PathBuf::from("/p/vieux.md")]);
+        // The write did happen (in the original directory, before the move).
+        assert_eq!(applied.overwritten, [PathBuf::from("/p/folder/new.md")]);
+        assert_eq!(applied.deleted, [PathBuf::from("/p/old.md")]);
         assert_eq!(applied.moved.len(), 1);
-        assert!(!fs.exists(Path::new("/p/vieux.md")));
-        assert!(fs.exists(Path::new("/p/dossier-renomme/nouveau.md")));
+        assert!(!fs.exists(Path::new("/p/old.md")));
+        assert!(fs.exists(Path::new("/p/folder-renamed/new.md")));
     }
 
     #[test]
-    fn rejouer_un_plan_est_sans_effet() {
-        // L'idempotence est ce qui rend `codev init` et `codev update`
-        // relançables sans y penser.
+    fn replaying_a_plan_has_no_effect() {
+        // Idempotence is what makes `codev init` and `codev update`
+        // safe to rerun without a second thought.
         let fs = MemoryFileSystem::new();
         let mut plan = Plan::new();
-        plan.write("/p/a.md", "x", WriteMode::CreateOnly)
-            .write("/p/b.md", "y", WriteMode::Overwrite);
+        plan.write("/p/a.md", "x", WriteMode::CreateOnly).write(
+            "/p/b.md",
+            "y",
+            WriteMode::Overwrite,
+        );
 
         assert!(execute(&plan, &fs).unwrap().changed_anything());
         assert!(!execute(&plan, &fs).unwrap().changed_anything());

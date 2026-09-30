@@ -1,15 +1,15 @@
-//! Parseur d'une spec principale : `## Purpose`, `## Requirements`, avec ses
-//! `### Requirement:` et leurs `#### Scenario:`.
+//! Parser for a main spec: `## Purpose`, `## Requirements`, with its
+//! `### Requirement:` entries and their `#### Scenario:` entries.
 //!
-//! Ligne à ligne, un seul passage sur la source, avec le masque de fences
-//! précalculé. Voir `design.md` de `parse-specs-and-deltas` pour le pourquoi.
+//! Line by line, a single pass over the source, with the precomputed fence
+//! mask. See `design.md` of `parse-specs-and-deltas` for the rationale.
 
 use super::ast::{Finding, Parsed, PurposeBlock, Requirement, Spec};
 use super::codes;
 use super::fence;
 use super::shared::{
-    block_span, collect_scenarios, is_delta_header, line_starts, requirement_from_lines,
-    section_header, trim_body, ScannedLine,
+    ScannedLine, block_span, collect_scenarios, is_delta_header, line_starts,
+    requirement_from_lines, section_header, trim_body,
 };
 
 pub fn parse_spec(source: &str) -> Parsed<Spec> {
@@ -21,9 +21,8 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
     let mut purpose: Option<PurposeBlock> = None;
     let mut requirements: Vec<Requirement> = Vec::new();
 
-    // Repérer les sections `##` de premier niveau, en dehors des zones
-    // littérales. On travaille sur `ScannedLine` pour porter la ligne
-    // 1-indexée et le décalage en octets.
+    // Locate the top-level `##` sections, outside literal zones. We work on
+    // `ScannedLine` to carry the 1-indexed line and the byte offset.
     let scanned: Vec<ScannedLine> = (0..lines.len())
         .map(|i| ScannedLine {
             text: lines[i],
@@ -33,7 +32,7 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
         })
         .collect();
 
-    // Repérage des sections de premier niveau.
+    // Locate the top-level sections.
     #[derive(Debug)]
     struct H2 {
         title: String,
@@ -52,7 +51,7 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
         }
     }
 
-    // Détection des en-têtes de delta perdus dans une spec principale.
+    // Detect delta headings that strayed into a main spec.
     for entry in &scanned {
         if entry.literal {
             continue;
@@ -62,8 +61,8 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
                 codes::DELTA_HEADER_IN_MAIN_SPEC,
                 entry.line_number,
                 format!(
-                    "ligne {} : « {} » n'appartient qu'aux fichiers de change ; \
-                     retire-le d'une spec principale",
+                    "line {}: `{}` only belongs in change files; \
+                     remove it from the main spec",
                     entry.line_number,
                     entry.text.trim()
                 ),
@@ -71,7 +70,7 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
         }
     }
 
-    // Purpose : premier `## Purpose` de premier niveau.
+    // Purpose: first top-level `## Purpose`.
     let purpose_idx = h2
         .iter()
         .position(|h| h.title.eq_ignore_ascii_case("Purpose"));
@@ -88,19 +87,19 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
         findings.push(Finding::error(
             codes::SPEC_PURPOSE_MISSING,
             1,
-            "la spec principale n'a pas de section `## Purpose`",
+            "the main spec has no `## Purpose` section",
         ));
     }
 
-    // Requirements : premier `## Requirements` — les exigences hors de cette
-    // section sont signalées.
+    // Requirements: first `## Requirements` — requirements outside this
+    // section are reported.
     let requirements_idx = h2
         .iter()
         .position(|h| h.title.eq_ignore_ascii_case("Requirements"));
 
-    // `requirements_section_end` : point d'insertion des ADDED, en octets.
-    // C'est le début de la prochaine section `##` de premier niveau après
-    // `## Requirements`, ou la longueur du source si aucune ne suit.
+    // `requirements_section_end`: insertion point for ADDED entries, in
+    // bytes. It is the start of the next top-level `##` section after
+    // `## Requirements`, or the length of the source if none follows.
     let requirements_section_end = requirements_idx.map(|idx| {
         h2.get(idx + 1)
             .map(|next| scanned[next.header_index].byte_offset)
@@ -119,8 +118,8 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
         None => (None, lines.len()),
     };
 
-    // Repérer toutes les exigences de la source (même hors section) pour
-    // pouvoir en signaler l'errance.
+    // Locate all requirements in the source (even outside the section) so
+    // that stray ones can be reported.
     let requirement_positions = super::shared::find_requirement_positions(&scanned);
 
     for pos in &requirement_positions {
@@ -133,14 +132,14 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
                 codes::REQUIREMENT_OUTSIDE_SECTION,
                 pos.line_number,
                 format!(
-                    "ligne {} : `### Requirement:` hors de `## Requirements`",
+                    "line {}: `### Requirement:` outside `## Requirements`",
                     pos.line_number
                 ),
             ));
         }
     }
 
-    // Extraction des exigences valides.
+    // Extract the valid requirements.
     if let Some(start) = req_start {
         let inside: Vec<_> = requirement_positions
             .iter()
@@ -179,16 +178,16 @@ mod tests {
     use crate::parser::ast::Severity;
 
     fn purpose_only() -> &'static str {
-        "# Auth Specification\n\n## Purpose\n\nAuthentification pour l'appli.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire sessions after inactivity.\n\n#### Scenario: Idle\n\n- **WHEN** the user is idle\n- **THEN** the session expires\n"
+        "# Auth Specification\n\n## Purpose\n\nAuthentication for the app.\n\n## Requirements\n\n### Requirement: Session Expiration\nThe system MUST expire sessions after inactivity.\n\n#### Scenario: Idle\n\n- **WHEN** the user is idle\n- **THEN** the session expires\n"
     }
 
     #[test]
-    fn extrait_purpose_et_une_exigence_avec_scenario() {
+    fn extracts_purpose_and_a_requirement_with_scenario() {
         let parsed = parse_spec(purpose_only());
-        assert!(!parsed.has_errors(), "findings : {:?}", parsed.findings);
+        assert!(!parsed.has_errors(), "findings: {:?}", parsed.findings);
 
-        let purpose = parsed.value.purpose.expect("purpose attendu");
-        assert!(purpose.text.contains("Authentification"));
+        let purpose = parsed.value.purpose.expect("purpose expected");
+        assert!(purpose.text.contains("Authentication"));
 
         assert_eq!(parsed.value.requirements.len(), 1);
         let req = &parsed.value.requirements[0];
@@ -198,94 +197,105 @@ mod tests {
     }
 
     #[test]
-    fn purpose_manquant_est_un_finding_localise() {
+    fn missing_purpose_is_a_located_finding() {
         let source = "## Requirements\n\n### Requirement: X\nThe system SHALL x.\n\n#### Scenario: Y\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_spec(source);
-        assert!(parsed
-            .findings
-            .iter()
-            .any(|f| f.code == "spec_purpose_missing" && f.severity == Severity::Error));
-        // L'exigence reste extractible.
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "spec_purpose_missing" && f.severity == Severity::Error)
+        );
+        // The requirement remains extractable.
         assert_eq!(parsed.value.requirements.len(), 1);
     }
 
     #[test]
-    fn exigence_hors_section_est_signalee() {
-        // Requirement placé AVANT `## Requirements`.
-        let source = "## Purpose\n\nx\n\n### Requirement: Errante\nThe system MUST y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Requirements\n";
+    fn requirement_outside_section_is_reported() {
+        // Requirement placed BEFORE `## Requirements`.
+        let source = "## Purpose\n\nx\n\n### Requirement: Stray\nThe system MUST y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Requirements\n";
         let parsed = parse_spec(source);
         let f = parsed
             .findings
             .iter()
             .find(|f| f.code == "requirement_outside_section")
-            .expect("finding attendu");
-        assert!(f.message.contains("hors de"), "{}", f.message);
+            .expect("finding expected");
+        assert!(f.message.contains("outside"), "{}", f.message);
     }
 
     #[test]
-    fn header_de_delta_dans_main_spec_est_signale() {
+    fn delta_header_in_main_spec_is_reported() {
         let source = "## Purpose\n\nx\n\n## ADDED Requirements\n\n### Requirement: X\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_spec(source);
         let f = parsed
             .findings
             .iter()
             .find(|f| f.code == "delta_header_in_main_spec")
-            .expect("finding attendu");
+            .expect("finding expected");
         assert!(f.message.contains("ADDED"), "{}", f.message);
     }
 
     #[test]
-    fn exigence_dans_fence_est_ignoree() {
-        // Le piège : un `### Requirement: Exemple` dans un bloc de code n'est
-        // pas une vraie exigence, et n'apparaît donc pas dans le résultat.
-        let source = "## Purpose\n\nExemple :\n\n```\n### Requirement: Faux\n```\n\n## Requirements\n";
+    fn requirement_inside_fence_is_ignored() {
+        // The trap: a `### Requirement: Example` in a code block is not a
+        // real requirement, and therefore does not appear in the result.
+        let source =
+            "## Purpose\n\nExample:\n\n```\n### Requirement: Fake\n```\n\n## Requirements\n";
         let parsed = parse_spec(source);
         assert!(parsed.value.requirements.is_empty());
-        // Et surtout pas de finding « requirement_outside_section », le
-        // masquage doit intervenir avant.
-        assert!(!parsed
-            .findings
-            .iter()
-            .any(|f| f.code == "requirement_outside_section"));
-    }
-
-    #[test]
-    fn requirements_section_end_est_avant_section_libre_qui_suit() {
-        // La section Requirements est suivie d'une `## Notes` : le point
-        // d'insertion des ADDED doit être juste avant cette section, pas à
-        // la fin du fichier.
-        let source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Notes\n\nBonus.\n";
-        let parsed = parse_spec(source);
-        let end = parsed.value.requirements_section_end.expect("Requirements présent");
-        assert_eq!(
-            &source[end..end + 8],
-            "## Notes",
-            "l'insertion doit tomber juste au début de la section suivante"
+        // And above all no "requirement_outside_section" finding: masking
+        // must happen first.
+        assert!(
+            !parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "requirement_outside_section")
         );
     }
 
     #[test]
-    fn requirements_section_end_va_a_la_fin_sans_section_suivante() {
+    fn requirements_section_end_is_before_following_free_section() {
+        // The Requirements section is followed by a `## Notes`: the
+        // insertion point for ADDED entries must be just before that
+        // section, not at the end of the file.
+        let source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Notes\n\nBonus.\n";
+        let parsed = parse_spec(source);
+        let end = parsed
+            .value
+            .requirements_section_end
+            .expect("Requirements present");
+        assert_eq!(
+            &source[end..end + 8],
+            "## Notes",
+            "the insertion must land right at the start of the next section"
+        );
+    }
+
+    #[test]
+    fn requirements_section_end_goes_to_the_end_without_next_section() {
         let source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_spec(source);
         assert_eq!(
             parsed.value.requirements_section_end,
             Some(source.len()),
-            "sans section suivante, on va au bout du fichier"
+            "without a next section, it goes to the end of the file"
         );
     }
 
     #[test]
-    fn scenario_trois_dieses_est_signale() {
-        // `### Scenario:` au lieu de `#### Scenario:` : c'est le drame
-        // silencieux qu'on refuse. L'exigence continue d'apparaître, sans ce
-        // scénario.
-        let source = "## Purpose\n\nx\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n### Scenario: Faux\n- **WHEN** a\n- **THEN** b\n";
+    fn three_hash_scenario_is_reported() {
+        // `### Scenario:` instead of `#### Scenario:`: this is the silent
+        // failure we refuse. The requirement still appears, without this
+        // scenario.
+        let source = "## Purpose\n\nx\n\n## Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n### Scenario: Fake\n
+- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_spec(source);
-        assert!(parsed
-            .findings
-            .iter()
-            .any(|f| f.code == "scenario_wrong_heading_level"));
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "scenario_wrong_heading_level")
+        );
         assert_eq!(parsed.value.requirements.len(), 1);
         assert!(parsed.value.requirements[0].scenarios.is_empty());
     }
