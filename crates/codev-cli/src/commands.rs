@@ -6,30 +6,30 @@ use codev_agents::target::AgentTarget;
 use codev_agents::workflows;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout};
 use codev_engine::apply::{self, Applied};
-use codev_engine::config;
-use codev_engine::instructions::Instructions;
-use codev_engine::metadata::ChangeMetadata;
 use codev_engine::archive as engine_archive;
 use codev_engine::archive::ArchiveOutcome;
-use codev_engine::sync as engine_sync;
-use codev_engine::sync::SyncOutcome;
+use codev_engine::config;
 use codev_engine::decisions as engine_decisions;
 use codev_engine::decisions_actions as engine_actions;
+use codev_engine::instructions::Instructions;
+use codev_engine::metadata::ChangeMetadata;
 use codev_engine::sources as engine_sources;
+use codev_engine::sync as engine_sync;
+use codev_engine::sync::SyncOutcome;
 use codev_engine::validate as engine_validate;
 use codev_engine::validate::ValidateReport;
-use codev_engine::{change, instructions, root, scaffold, schemas, specs};
 use codev_engine::{
     Clock, EngineError, Env, FileSystem, ProcessRunner, RealProcessRunner, Warning,
 };
+use codev_engine::{change, instructions, root, scaffold, schemas, specs};
 
-/// Un échec de commande, réduit à ce dont les deux sorties ont besoin : un code
-/// stable pour le JSON, un message lisible pour le terminal.
+/// A command failure, reduced to what both outputs need: a stable code for
+/// the JSON, a readable message for the terminal.
 #[derive(Debug)]
 pub struct Failure {
     pub code: String,
     pub message: String,
-    /// La correction à proposer, quand elle est connue.
+    /// The fix to suggest, when it is known.
     pub fix: Option<String>,
 }
 
@@ -68,8 +68,8 @@ impl From<CoreError> for Failure {
 
 pub type Result<T> = std::result::Result<T, Failure>;
 
-/// Les ports, réunis. Le seul objet que les commandes reçoivent du monde
-/// extérieur.
+/// The ports, bundled together. The only object the commands receive from
+/// the outside world.
 pub struct Ctx<'a> {
     pub fs: &'a dyn FileSystem,
     pub env: &'a dyn Env,
@@ -88,26 +88,27 @@ pub struct SetupOutcome {
     pub preserved: Vec<PathBuf>,
     pub skills: Vec<String>,
     pub warnings: Vec<Warning>,
-    /// Vrai si le `_codev/config.yaml` résolu est thin (contexte court +
-    /// pas de rules). Sert à décider la nudge en sortie humaine ;
-    /// n'apparaît pas dans le contrat JSON.
+    /// True if the resolved `_codev/config.yaml` is thin (no rules). Used to
+    /// decide on the hint in human output; does not appear in the JSON
+    /// contract.
     pub config_thin: bool,
 }
 
-/// Initialise codev dans un projet.
+/// Initializes codev in a project.
 ///
-/// Trois temps, et l'ordre compte :
+/// Three stages, and the order matters:
 ///
-/// 1. **Sonde** (sauf `--no-detect`) : lecture des manifestes, MCPs, licence,
-///    CI — pas d'écriture.
-/// 2. **Prompts** (sauf `--yes` ou stdin non-TTY) : deux questions, plus une
-///    confirmation MCP éventuelle.
-/// 3. **Scaffolding + génération** : si `_codev/config.yaml` est absent, on
-///    l'écrit prérempli avec commentaires de provenance ; sinon on ne le
-///    touche pas (comportement idempotent). Puis on **relit** la
-///    configuration résolue pour installer les skills.
+/// 1. **Probe** (unless `--no-detect`): reads manifests, MCPs, license, CI —
+///    no writing.
+/// 2. **Prompts** (unless `--yes` or non-TTY stdin): two questions, plus an
+///    optional MCP confirmation.
+/// 3. **Scaffolding + generation**: if `_codev/config.yaml` is missing, it is
+///    written prefilled with provenance comments; otherwise it is left
+///    untouched (idempotent behavior). Then the resolved configuration is
+///    **read back** to install the skills.
 ///
-/// Un projet qui avait déjà choisi ses workflows garde donc son choix.
+/// A project that had already chosen its workflows therefore keeps its
+/// choice.
 pub fn init(
     ctx: &Ctx,
     path: &str,
@@ -118,8 +119,8 @@ pub fn init(
     let layout = Layout::new(&root_path);
     let config_path = layout.project_root().join("_codev").join("config.yaml");
 
-    // Écrit le config.yaml généré UNIQUEMENT si absent — on ne touche pas à
-    // un fichier existant, la configuration de l'utilisateur reste souveraine.
+    // Writes the generated config.yaml ONLY if missing — an existing file is
+    // never touched; the user's configuration stays in charge.
     if !ctx.fs.exists(&config_path) {
         let detected = if opts.no_detect {
             codev_core::detect::Detected::empty()
@@ -146,18 +147,19 @@ pub fn init(
             })?;
     }
 
-    // Scaffold pour créer les dossiers manquants (specs/, changes/, etc.) —
-    // il ne réécrit pas le config.yaml existant grâce à WriteMode::CreateOnly.
+    // Scaffold to create the missing folders (specs/, changes/, etc.) — it
+    // does not rewrite the existing config.yaml thanks to
+    // WriteMode::CreateOnly.
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
     let mut outcome = install_skills(ctx, &layout, force)?;
     outcome.absorb(scaffolded);
     Ok(outcome)
 }
 
-/// Régénère les skills d'un projet déjà initialisé.
+/// Regenerates the skills of an already initialized project.
 ///
-/// Passe aussi le plan de scaffolding : en mode « ne crée que ce qui manque »,
-/// il restaure un dossier supprimé sans rien toucher d'autre.
+/// Also runs the scaffolding plan: in "create only what is missing" mode, it
+/// restores a deleted folder without touching anything else.
 pub fn update(ctx: &Ctx, force: bool) -> Result<SetupOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
@@ -171,26 +173,20 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
     let (selected, mut warnings) = workflows::select(config.workflows.as_deref());
     warnings.extend(config.warnings.clone());
 
-    // Le contexte de rendu porte la config MCP du projet : nom du tool
-    // Jira à injecter dans le frontmatter, autres MCP à venir. Sans
-    // config, RenderCtx est vide et le placeholder est retiré proprement.
+    // The render context carries the project's MCP config: the name of the
+    // Jira tool to inject into the frontmatter, other MCPs to come. Without
+    // config, RenderCtx is empty and the placeholder is removed cleanly.
     let target = ClaudeCode::with_ctx(codev_agents::claude::RenderCtx {
         jira_mcp_tool: config.mcp.jira_tool.clone(),
     });
-    let planned = target.plan_skills(
-        ctx.fs,
-        layout.project_root(),
-        &selected,
-        ctx.version,
-        force,
-    );
+    let planned = target.plan_skills(ctx.fs, layout.project_root(), &selected, ctx.version, force);
     let applied = apply::execute(&planned.plan, ctx.fs)?;
 
-    // Nudge indicator — évalué sur la config résolue. Sert à décider si la
-    // sortie humaine de `codev init` doit inciter à `/codev-configure`.
-    // Base la décision uniquement sur l'absence de `rules:` : le
-    // `context:` est souvent auto-rempli par la sonde et n'est pas un
-    // signal fiable d'intention utilisateur.
+    // Hint indicator — evaluated on the resolved config. Used to decide
+    // whether the human output of `codev init` should point to
+    // `/codev-configure`. The decision rests solely on the absence of
+    // `rules:`: `context:` is often auto-filled by the probe and is not a
+    // reliable signal of user intent.
     let config_thin = codev_core::config::is_config_thin(config.rules.is_empty());
 
     let mut outcome = SetupOutcome {
@@ -250,14 +246,13 @@ pub fn new_change(
         .into());
     }
 
-    // Le schéma est résolu maintenant, pas à la première commande qui en aura
-    // besoin : un nom fautif doit échouer ici, avant qu'un dossier de change ne
-    // porte une métadonnée invalide.
+    // The schema is resolved now, not at the first command that needs it: a
+    // wrong name must fail here, before a change folder carries invalid
+    // metadata.
     let schema_name = schema.unwrap_or(&config.schema).to_string();
     let resolved = schemas::resolve(ctx.fs, &layout, &schema_name)?;
 
-    let metadata =
-        ChangeMetadata::new(resolved.name(), ctx.clock.today()).with_goal(goal);
+    let metadata = ChangeMetadata::new(resolved.name(), ctx.clock.today()).with_goal(goal);
     let applied = apply::execute(
         &scaffold::plan_new_change(&layout, &change, &metadata),
         ctx.fs,
@@ -373,11 +368,11 @@ pub fn list_schemas(ctx: &Ctx) -> Result<SchemasOutcome> {
                     .map(|a| a.id.clone())
                     .collect(),
             }),
-            // Un schéma maison cassé ne doit pas empêcher de lister les autres :
-            // c'est justement la commande qu'on lance pour comprendre.
+            // A broken custom schema must not prevent listing the others: it is
+            // precisely the command one runs to understand what is going on.
             Err(err) => warnings.push(Warning::new(
                 "schema_unusable",
-                format!("le schéma « {name} » ({}) est inutilisable : {err}", origin.label()),
+                format!("schema `{name}` ({}) is unusable: {err}", origin.label()),
             )),
         }
     }
@@ -396,7 +391,9 @@ pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
 
     match scope {
-        ValidateArgs::All => Ok(engine_validate::validate_all(ctx.fs, ctx.env, &layout, &config)?),
+        ValidateArgs::All => Ok(engine_validate::validate_all(
+            ctx.fs, ctx.env, &layout, &config,
+        )?),
         ValidateArgs::Changes => {
             let mut items = Vec::new();
             for change_id in change::list(ctx.fs, &layout) {
@@ -412,7 +409,11 @@ pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
         ValidateArgs::Specs => {
             let mut items = Vec::new();
             for capability in specs::list(ctx.fs, &layout) {
-                items.push(engine_validate::validate_spec(ctx.fs, &layout, &capability)?);
+                items.push(engine_validate::validate_spec(
+                    ctx.fs,
+                    &layout,
+                    &capability,
+                )?);
             }
             Ok(ValidateReport {
                 root: layout.project_root().to_path_buf(),
@@ -429,9 +430,9 @@ pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
     }
 }
 
-/// Comment `validate` a été appelée. `Item` porte une `String` plutôt qu'un
-/// `&str` parce que le nom peut venir d'un argument CLI dont le CLI est
-/// propriétaire — un `&str` obligerait à propager sa durée de vie.
+/// How `validate` was called. `Item` carries a `String` rather than a `&str`
+/// because the name may come from a CLI argument owned by the CLI — a `&str`
+/// would force its lifetime to be propagated.
 #[derive(Debug, Clone)]
 pub enum ValidateArgs {
     All,
@@ -446,8 +447,8 @@ fn resolve_validate_item(
     config: &config::ResolvedConfig,
     name: &str,
 ) -> Result<engine_validate::ItemReport> {
-    // Un même nom peut désigner un change ET une capacité de spec — dans ce
-    // cas on refuse plutôt que de deviner, en nommant les candidats.
+    // The same name may designate a change AND a spec capability — in that
+    // case refuse rather than guess, naming the candidates.
     let changes: Vec<ChangeId> = change::list(fs, layout)
         .into_iter()
         .filter(|c| c.as_str() == name)
@@ -458,17 +459,26 @@ fn resolve_validate_item(
         .collect();
 
     match (changes.len(), matching_specs.len()) {
-        (1, 0) => Ok(engine_validate::validate_change(fs, layout, config, &changes[0])?),
-        (0, 1) => Ok(engine_validate::validate_spec(fs, layout, &matching_specs[0])?),
+        (1, 0) => Ok(engine_validate::validate_change(
+            fs,
+            layout,
+            config,
+            &changes[0],
+        )?),
+        (0, 1) => Ok(engine_validate::validate_spec(
+            fs,
+            layout,
+            &matching_specs[0],
+        )?),
         (0, 0) => Err(Failure::new(
             "unknown_item",
-            format!("aucun change ni spec ne s'appelle « {name} »"),
+            format!("no change or spec is named `{name}`"),
         )
-        .with_fix("`codev list` et `codev list --specs` disent ce qui existe")),
+        .with_fix("`codev list` and `codev list --specs` show what exists")),
         _ => Err(Failure::new(
             "ambiguous_item",
             format!(
-                "« {name} » désigne à la fois un change et une spec ; précise avec `--changes` ou `--specs`"
+                "`{name}` refers to both a change and a spec; narrow it down with `--changes` or `--specs`"
             ),
         )),
     }
@@ -480,7 +490,9 @@ pub fn sync(ctx: &Ctx, requested: Option<&str>) -> Result<SyncOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
-    Ok(engine_sync::execute_sync(ctx.fs, &layout, &config, &change)?)
+    Ok(engine_sync::execute_sync(
+        ctx.fs, &layout, &config, &change,
+    )?)
 }
 
 pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
@@ -494,8 +506,8 @@ pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
 
 // ─────────────────────────────── decision ───────────────────────────────
 
-/// Description enrichie d'une entrée d'index — remonte l'état d'effet et
-/// la supersession pour le rendu.
+/// Enriched description of an index entry — surfaces whether it is in
+/// effect and its supersession, for rendering.
 #[derive(Debug)]
 pub struct DecisionSummary {
     pub id: String,
@@ -505,14 +517,14 @@ pub struct DecisionSummary {
     pub date: String,
     pub tags: Vec<String>,
     pub supersedes: Vec<String>,
-    /// Dérives locales — additif (K6). Vide sur les ADR antérieurs.
+    /// Local deviations — additive. Empty on older ADRs.
     pub deviates_from: Vec<String>,
     pub path: PathBuf,
     pub origin: String,
     pub in_effect: bool,
     pub superseded_by: Option<String>,
-    /// Renseigné pour les entrées héritées qu'un ADR local écarte via
-    /// `deviates_from` (K6). Additif — `None` sinon.
+    /// Set for inherited entries that a local ADR sets aside via
+    /// `deviates_from`. Additive — `None` otherwise.
     pub deviated_by: Option<String>,
 }
 
@@ -541,22 +553,22 @@ pub fn decision_show(ctx: &Ctx, id: &str) -> Result<DecisionShowOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let (idx, _) =
-        engine_actions::resolve_old_entry(&index, id).map_err(|err| Failure {
-            code: err.code().to_string(),
-            message: err.to_string(),
-            fix: None,
-        })?;
+    let (idx, _) = engine_actions::resolve_old_entry(&index, id).map_err(|err| Failure {
+        code: err.code().to_string(),
+        message: err.to_string(),
+        fix: None,
+    })?;
     let summaries = build_summaries(&index, &layout);
     let entry = &index.entries[idx];
-    let content = ctx.fs.read_to_string(&entry.path).map_err(|e| {
-        Failure::new("unreadable", format!("{}: {e}", entry.path.display()))
-    })?;
-    // Rechercher le summary correspondant.
+    let content = ctx
+        .fs
+        .read_to_string(&entry.path)
+        .map_err(|e| Failure::new("unreadable", format!("{}: {e}", entry.path.display())))?;
+    // Find the matching summary.
     let summary = summaries
         .into_iter()
         .find(|s| s.qualified_id == entry.qualified_id.as_str())
-        .expect("l'entrée résolue vient de l'index");
+        .expect("the resolved entry comes from the index");
     Ok(DecisionShowOutcome {
         root: layout.project_root().to_path_buf(),
         decision: summary,
@@ -568,8 +580,8 @@ pub struct DecisionCreatedOutcome {
     pub root: PathBuf,
     pub decision: DecisionSummary,
     pub path: PathBuf,
-    /// Hash du corps du nouvel ADR — `None` si le statut ne se scelle
-    /// pas (proposed, deprecated, rejected).
+    /// Hash of the new ADR's body — `None` if the status is not sealed
+    /// (proposed, deprecated, rejected).
     pub body_sha256: Option<String>,
 }
 
@@ -580,20 +592,14 @@ pub fn decision_new(ctx: &Ctx, title: &str, status_raw: &str) -> Result<Decision
     let status = codev_core::decisions::DecisionStatus::from_raw(status_raw);
     let today = ctx.clock.today();
     let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
-    let create_plan = engine_actions::plan_new(
-        &index,
-        &seal_file,
-        title,
-        status.clone(),
-        &today,
-        &layout,
-    )
-    .map_err(action_to_failure)?;
+    let create_plan =
+        engine_actions::plan_new(&index, &seal_file, title, status.clone(), &today, &layout)
+            .map_err(action_to_failure)?;
     apply::execute(&create_plan.plan, ctx.fs)?;
 
-    // On ne remonte le hash que si l'ADR est effectivement scellé (statuts
-    // `accepted` / `superseded`). Pour les autres, `body_sha256` reste
-    // `None` — champ additif du contrat JSON.
+    // Only surface the hash if the ADR is actually sealed (`accepted` /
+    // `superseded` statuses). For the others, `body_sha256` stays `None` —
+    // an additive field of the JSON contract.
     let body_sha256 = if matches!(
         status,
         codev_core::decisions::DecisionStatus::Accepted
@@ -604,15 +610,20 @@ pub fn decision_new(ctx: &Ctx, title: &str, status_raw: &str) -> Result<Decision
         None
     };
 
-    // Relire pour construire un summary à jour. La comparaison se fait sur
-    // l'identifiant qualifié — le `path` du summary est relatif au projet,
-    // celui du plan est absolu, ils ne coïncideraient jamais tels quels.
-    let new_qualified = format!("projet/{}", create_plan.new_id);
-    let index_apres = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let summary = build_summaries(&index_apres, &layout)
+    // Read back to build an up-to-date summary. The comparison is made on the
+    // qualified identifier — the summary's `path` is relative to the
+    // project, the plan's is absolute; they would never match as is.
+    let new_qualified = format!("project/{}", create_plan.new_id);
+    let index_after = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let summary = build_summaries(&index_after, &layout)
         .into_iter()
         .find(|s| s.qualified_id == new_qualified)
-        .ok_or_else(|| Failure::new("write_failed", "la décision créée n'a pas été relue"))?;
+        .ok_or_else(|| {
+            Failure::new(
+                "write_failed",
+                "the created decision could not be read back",
+            )
+        })?;
     Ok(DecisionCreatedOutcome {
         root: layout.project_root().to_path_buf(),
         decision: summary,
@@ -659,12 +670,17 @@ pub fn decision_supersede(
     let new_id = plan.new_id.clone();
     apply::execute(&plan.plan, ctx.fs)?;
 
-    let new_qualified = format!("projet/{new_id}");
-    let index_apres = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let new_summary = build_summaries(&index_apres, &layout)
+    let new_qualified = format!("project/{new_id}");
+    let index_after = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let new_summary = build_summaries(&index_after, &layout)
         .into_iter()
         .find(|s| s.qualified_id == new_qualified)
-        .ok_or_else(|| Failure::new("write_failed", "la décision créée n'a pas été relue"))?;
+        .ok_or_else(|| {
+            Failure::new(
+                "write_failed",
+                "the created decision could not be read back",
+            )
+        })?;
     Ok(DecisionSupersededOutcome {
         root: layout.project_root().to_path_buf(),
         new_decision: new_summary,
@@ -684,8 +700,8 @@ pub struct DecisionDeviatedOutcome {
     pub root: PathBuf,
     pub decision: DecisionSummary,
     pub path: PathBuf,
-    /// L'identifiant qualifié de la décision qu'on écarte — même forme
-    /// que celle qu'accepte `codev decision show`.
+    /// The qualified identifier of the decision being set aside — the same
+    /// form that `codev decision show` accepts.
     pub target_qualified_id: String,
     pub body_sha256: String,
 }
@@ -701,15 +717,8 @@ pub fn decision_deviate(
     let today = ctx.clock.today();
     let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
 
-    let plan = engine_actions::plan_deviate(
-        &index,
-        &seal_file,
-        target,
-        new_title,
-        &today,
-        &layout,
-    )
-    .map_err(action_to_failure)?;
+    let plan = engine_actions::plan_deviate(&index, &seal_file, target, new_title, &today, &layout)
+        .map_err(action_to_failure)?;
 
     let target_qualified_id = plan.target_qualified_id.clone();
     let new_path = plan.new_path.clone();
@@ -718,14 +727,19 @@ pub fn decision_deviate(
 
     apply::execute(&plan.plan, ctx.fs)?;
 
-    // Re-lecture pour construire un summary à jour, exactement comme
+    // Read back to build an up-to-date summary, exactly like
     // decision_new/supersede.
-    let new_qualified = format!("projet/{new_id}");
-    let index_apres = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let summary = build_summaries(&index_apres, &layout)
+    let new_qualified = format!("project/{new_id}");
+    let index_after = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let summary = build_summaries(&index_after, &layout)
         .into_iter()
         .find(|s| s.qualified_id == new_qualified)
-        .ok_or_else(|| Failure::new("write_failed", "la dérive créée n'a pas été relue"))?;
+        .ok_or_else(|| {
+            Failure::new(
+                "write_failed",
+                "the created deviation could not be read back",
+            )
+        })?;
 
     Ok(DecisionDeviatedOutcome {
         root: layout.project_root().to_path_buf(),
@@ -742,9 +756,9 @@ pub struct DecisionPromotedOutcome {
     pub decision: DecisionSummary,
     pub path: PathBuf,
     pub body_sha256: String,
-    /// Le change d'où la promotion vient.
+    /// The change the promotion comes from.
     pub source_change: String,
-    /// Le `design.md` qui a été mis à jour (chemin absolu).
+    /// The `design.md` that was updated (absolute path).
     pub design_path: PathBuf,
 }
 
@@ -756,8 +770,8 @@ pub fn decision_promote(
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
 
-    // Résolution du change — refuse d'emblée un dossier introuvable ou
-    // archivé, avec un code stable dédié pour l'archivé.
+    // Change resolution — refuses a missing or archived folder upfront, with
+    // a dedicated stable code for the archived case.
     let change_id = ChangeId::parse(change_name).map_err(Failure::from)?;
     let change_dir = layout.change_dir(&change_id);
     if !ctx.fs.exists(&change_dir) {
@@ -765,34 +779,32 @@ pub fn decision_promote(
             return Err(Failure::new(
                 "cannot_promote_from_archived",
                 format!(
-                    "le change « {change_name} » est archivé : un design \
-                     archivé est de l'histoire, la promotion se fait avant \
-                     l'archive"
+                    "change `{change_name}` is archived: an archived design \
+                     is history; promotion happens before archiving"
                 ),
             ));
         }
         return Err(Failure::new(
             "unknown_change",
-            format!("le change « {change_name} » n'existe pas"),
+            format!("change `{change_name}` does not exist"),
         ));
     }
 
-    // Design.md du change — requis pour promouvoir.
+    // The change's design.md — required to promote.
     let design_path = change_dir.join("design.md");
     if !ctx.fs.exists(&design_path) {
         return Err(Failure::new(
             "design_missing",
             format!(
-                "le change « {change_name} » n'a pas de `design.md` — rien à \
-                 promouvoir. Crée-le d'abord avec `codev-propose` ou en \
-                 éditant à la main."
+                "change `{change_name}` has no `design.md` — nothing to \
+                 promote; create it first with `codev-propose` or by hand"
             ),
         ));
     }
     let design_source = ctx.fs.read_to_string(&design_path).map_err(|e| {
         Failure::new(
             "read_failed",
-            format!("lecture de {} impossible : {e}", design_path.display()),
+            format!("cannot read {}: {e}", design_path.display()),
         )
     })?;
 
@@ -819,12 +831,17 @@ pub fn decision_promote(
 
     apply::execute(&plan.plan, ctx.fs)?;
 
-    let new_qualified = format!("projet/{new_id}");
-    let index_apres = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let summary = build_summaries(&index_apres, &layout)
+    let new_qualified = format!("project/{new_id}");
+    let index_after = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
+    let summary = build_summaries(&index_after, &layout)
         .into_iter()
         .find(|s| s.qualified_id == new_qualified)
-        .ok_or_else(|| Failure::new("write_failed", "la décision promue n'a pas été relue"))?;
+        .ok_or_else(|| {
+            Failure::new(
+                "write_failed",
+                "the promoted decision could not be read back",
+            )
+        })?;
 
     Ok(DecisionPromotedOutcome {
         root: layout.project_root().to_path_buf(),
@@ -836,10 +853,14 @@ pub fn decision_promote(
     })
 }
 
-/// Cherche un dossier `<date>-<change_name>` sous
-/// `_codev/changes/archive/`. Utilisé pour distinguer « change absent »
-/// de « change archivé ».
-fn is_change_in_archive(fs: &dyn codev_engine::FileSystem, layout: &Layout, change_name: &str) -> bool {
+/// Looks for a `<date>-<change_name>` folder under
+/// `_codev/changes/archive/`. Used to tell "missing change" apart from
+/// "archived change".
+fn is_change_in_archive(
+    fs: &dyn codev_engine::FileSystem,
+    layout: &Layout,
+    change_name: &str,
+) -> bool {
     let archive = layout.archive_dir();
     let Ok(entries) = fs.list_dir(&archive) else {
         return false;
@@ -855,8 +876,8 @@ pub struct DecisionSealedOutcome {
     pub body_sha256: String,
     pub sealed_at: String,
     pub was_noop: bool,
-    /// `true` si le sceau a été réécrit via `--force` (utile au rendu
-    /// humain : « scellé » vs « re-scellé » vs « déjà à jour »).
+    /// `true` if the seal was rewritten via `--force` (useful for human
+    /// rendering: "sealed" vs "resealed" vs "already up to date").
     pub was_forced: bool,
 }
 
@@ -867,19 +888,13 @@ pub fn decision_seal(ctx: &Ctx, id: &str, force: bool) -> Result<DecisionSealedO
     let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
     let today = ctx.clock.today();
 
-    // On note s'il y avait déjà une entrée pour distinguer, au rendu, le
-    // « scellé neuf » du « re-scellé avec force ».
+    // Note whether there already was an entry, to distinguish, when
+    // rendering, "freshly sealed" from "resealed with force".
     let had_previous_entry = seal_file.find(id).is_some();
 
-    let plan = engine_actions::plan_seal(
-        &index,
-        &seal_file,
-        id,
-        force,
-        &today,
-        &layout,
-        |path| ctx.fs.read_to_string(path),
-    )
+    let plan = engine_actions::plan_seal(&index, &seal_file, id, force, &today, &layout, |path| {
+        ctx.fs.read_to_string(path)
+    })
     .map_err(action_to_failure)?;
 
     apply::execute(&plan.plan, ctx.fs)?;
@@ -894,13 +909,14 @@ pub fn decision_seal(ctx: &Ctx, id: &str, force: bool) -> Result<DecisionSealedO
     })
 }
 
-/// Convertit l'index en `DecisionSummary` avec effet et supersession.
+/// Converts the index into `DecisionSummary` values, with effect and
+/// supersession.
 fn build_summaries(
     index: &engine_decisions::DecisionIndex,
     layout: &Layout,
 ) -> Vec<DecisionSummary> {
-    // Précalcule qui supersede qui : `superseded_by[id] = qualified_id` du
-    // superseder.
+    // Precompute who supersedes whom: `superseded_by[id] = qualified_id` of
+    // the superseding decision.
     let mut superseded_by = std::collections::BTreeMap::<String, String>::new();
     for entry in &index.entries {
         if matches!(
@@ -912,11 +928,8 @@ fn build_summaries(
             }
         }
     }
-    let in_effect_set: std::collections::BTreeSet<String> = index
-        .in_effect
-        .iter()
-        .map(|q| q.as_str())
-        .collect();
+    let in_effect_set: std::collections::BTreeSet<String> =
+        index.in_effect.iter().map(|q| q.as_str()).collect();
 
     index
         .entries
@@ -943,7 +956,7 @@ fn build_summaries(
                 deviates_from: entry.decision.deviates_from.clone(),
                 path: relative,
                 origin: match &entry.qualified_id.origin {
-                    engine_decisions::Origin::Project => "projet".into(),
+                    engine_decisions::Origin::Project => "project".into(),
                     engine_decisions::Origin::Path(raw) => format!("path:{raw}"),
                     engine_decisions::Origin::Git(url) => format!("git:{url}"),
                 },
@@ -981,11 +994,10 @@ pub fn sources_update(ctx: &Ctx) -> Result<SourcesUpdateOutcome> {
     let cfg_path = layout.config_file();
     let project = config::load(ctx.fs, &cfg_path)?.unwrap_or_default();
     let sources = engine_sources::GitSourceInput::from_inherits(&project.inherits);
-    // `sources update` est la seule commande qui pilote `git`.
+    // `sources update` is the only command that drives `git`.
     let runner: &dyn ProcessRunner = &RealProcessRunner;
-    let outcome = engine_sources::run_sources_update(
-        ctx.fs, ctx.env, runner, ctx.clock, &layout, &sources,
-    )?;
+    let outcome =
+        engine_sources::run_sources_update(ctx.fs, ctx.env, runner, ctx.clock, &layout, &sources)?;
     Ok(SourcesUpdateOutcome {
         root: outcome.root,
         diff: outcome.diff,
@@ -1008,7 +1020,7 @@ pub fn sources_show(ctx: &Ctx, target: &str) -> Result<SourcesShowOutcome> {
         .ok_or_else(|| {
             Failure::new(
                 "unknown_source",
-                format!("aucune source déclarée avec l'adresse « {target} »"),
+                format!("no declared source has the address `{target}`"),
             )
         })?;
     let files_exposed = if let Some(path) = &source.resolved_path {
@@ -1023,13 +1035,13 @@ pub fn sources_show(ctx: &Ctx, target: &str) -> Result<SourcesShowOutcome> {
     })
 }
 
-// ─────────────────────────────── aides ───────────────────────────────
+// ─────────────────────────────── helpers ───────────────────────────────
 
-/// Résout sur quel change agir.
+/// Resolves which change to act on.
 ///
-/// Sans nom explicite : s'il n'y a qu'un seul change actif, c'est celui-là — le
-/// cas courant, et l'exiger serait de la cérémonie. Au-delà, on refuse en
-/// listant les candidats plutôt que d'en choisir un au hasard.
+/// Without an explicit name: if there is only one active change, that is the
+/// one — the common case, and requiring the name would be ceremony. Beyond
+/// that, refuse and list the candidates rather than pick one at random.
 fn resolve_change(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -1039,24 +1051,23 @@ fn resolve_change(
         return Ok(ChangeId::parse(name)?);
     }
 
-    let actifs = change::list(fs, layout);
-    match actifs.len() {
-        1 => Ok(actifs.into_iter().next().expect("un seul élément")),
-        0 => Err(Failure::new(
-            "no_active_change",
-            "aucun change actif dans ce projet",
-        )
-        .with_fix("crée-en un avec `codev new change <nom>`")),
+    let active = change::list(fs, layout);
+    match active.len() {
+        1 => Ok(active.into_iter().next().expect("exactly one element")),
+        0 => Err(
+            Failure::new("no_active_change", "no active change in this project")
+                .with_fix("create one with `codev new change <name>`"),
+        ),
         _ => {
-            let noms: Vec<String> = actifs.iter().map(ToString::to_string).collect();
+            let names: Vec<String> = active.iter().map(ToString::to_string).collect();
             Err(Failure::new(
                 "ambiguous_change",
                 format!(
-                    "plusieurs changes actifs : {} — précise lequel",
-                    noms.join(", ")
+                    "several active changes: {} — specify which one",
+                    names.join(", ")
                 ),
             )
-            .with_fix(format!("`--change {}`", noms[0])))
+            .with_fix(format!("`--change {}`", names[0])))
         }
     }
 }
@@ -1067,18 +1078,21 @@ fn absolute(ctx: &Ctx, path: &str) -> Result<PathBuf> {
         candidate.to_path_buf()
     } else {
         let cwd = ctx.env.current_dir().map_err(|e| {
-            Failure::new("unreadable", format!("dossier courant illisible : {e}"))
+            Failure::new(
+                "unreadable",
+                format!("cannot read the current directory: {e}"),
+            )
         })?;
         cwd.join(candidate)
     };
     Ok(clean(joined))
 }
 
-/// Retire les composants inutiles d'un chemin.
+/// Removes the useless components of a path.
 ///
-/// Sans cela, `codev init` lancé sans argument affiche « /mon/projet/. » : le
-/// chemin est correct, mais un utilisateur qui le lit se demande ce que fait ce
-/// point. On ne canonicalise pas — le dossier peut ne pas encore exister.
+/// Without this, `codev init` run without an argument prints "/my/project/.":
+/// the path is correct, but a user reading it wonders what that dot is doing
+/// there. No canonicalization — the folder may not exist yet.
 fn clean(path: PathBuf) -> PathBuf {
     use std::path::Component;
     let mut out = PathBuf::new();
@@ -1099,9 +1113,9 @@ mod tests {
     use super::*;
     use codev_engine::ports::{FixedClock, FixedEnv, MemoryFileSystem};
 
-    /// Options d'`init` par défaut pour les tests : non-interactif (--yes),
-    /// sonde désactivée (résultats déterministes, pas de manifeste réel à
-    /// détecter dans un MemoryFileSystem par défaut).
+    /// Default `init` options for the tests: non-interactive (--yes), probe
+    /// disabled (deterministic results, no real manifest to detect in a
+    /// default MemoryFileSystem).
     fn test_init_opts() -> crate::init_prompts::InitOptions {
         crate::init_prompts::InitOptions {
             yes: true,
@@ -1110,14 +1124,14 @@ mod tests {
         }
     }
 
-    struct Harnais {
+    struct Harness {
         fs: MemoryFileSystem,
         env: FixedEnv,
         clock: FixedClock,
     }
 
-    impl Harnais {
-        fn neuf() -> Self {
+    impl Harness {
+        fn new() -> Self {
             let mut env = FixedEnv::at("/p");
             env.vars.insert("HOME".into(), "/home".into());
             Self {
@@ -1127,7 +1141,7 @@ mod tests {
             }
         }
 
-        fn avec(mut self, path: &str, contents: &str) -> Self {
+        fn with(mut self, path: &str, contents: &str) -> Self {
             self.fs = self.fs.with_file(path, contents);
             self
         }
@@ -1143,8 +1157,8 @@ mod tests {
     }
 
     #[test]
-    fn init_cree_la_structure_et_les_skills() {
-        let h = Harnais::neuf();
+    fn init_creates_the_structure_and_the_skills() {
+        let h = Harness::new();
         let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
 
         assert_eq!(outcome.root, PathBuf::from("/p"));
@@ -1162,40 +1176,43 @@ mod tests {
             ]
         );
         assert!(h.fs.read("/p/_codev/config.yaml").is_some());
-        assert!(h
-            .fs
-            .read("/p/.claude/skills/codev-propose/SKILL.md")
-            .is_some_and(|c| c.contains("name: codev-propose")));
+        assert!(
+            h.fs.read("/p/.claude/skills/codev-propose/SKILL.md")
+                .is_some_and(|c| c.contains("name: codev-propose"))
+        );
         assert!(outcome.changed_anything());
     }
 
     #[test]
-    fn relancer_init_ne_change_rien() {
-        let h = Harnais::neuf();
+    fn rerunning_init_changes_nothing() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let second = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         assert!(
             !second.changed_anything(),
-            "créé : {:?}, mis à jour : {:?}",
+            "created: {:?}, updated: {:?}",
             second.created,
             second.updated
         );
     }
 
     #[test]
-    fn init_respecte_les_workflows_deja_configures() {
-        let h = Harnais::neuf().avec("/p/_codev/config.yaml", "workflows:\n  - explore\n");
+    fn init_respects_already_configured_workflows() {
+        let h = Harness::new().with("/p/_codev/config.yaml", "workflows:\n  - explore\n");
         let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         assert_eq!(outcome.skills, ["codev-explore"]);
-        assert!(h.fs.read("/p/.claude/skills/codev-propose/SKILL.md").is_none());
+        assert!(
+            h.fs.read("/p/.claude/skills/codev-propose/SKILL.md")
+                .is_none()
+        );
     }
 
     #[test]
-    fn init_yes_avec_sonde_genere_config_provenance() {
-        // Scénario réaliste : projet Rust workspace + .mcp.json Atlassian.
-        // `codev init --yes` (sans --no-detect) doit produire un
-        // _codev/config.yaml qui reflète la détection avec commentaires
-        // de provenance.
+    fn init_yes_with_probe_generates_config_with_provenance() {
+        // Realistic scenario: Rust workspace project + Atlassian .mcp.json.
+        // `codev init --yes` (without --no-detect) must produce a
+        // _codev/config.yaml that reflects the detection, with provenance
+        // comments.
         const CARGO_WS: &str = r#"
 [workspace]
 members = ["a", "b"]
@@ -1207,11 +1224,11 @@ edition = "2024"
                 "claude.ai Atlassian Rovo": { "url": "https://mcp.atlassian.com/" }
             }
         }"#;
-        let h = Harnais::neuf()
-            .avec("/p/Cargo.toml", CARGO_WS)
-            .avec("/p/.mcp.json", MCP);
+        let h = Harness::new()
+            .with("/p/Cargo.toml", CARGO_WS)
+            .with("/p/.mcp.json", MCP);
 
-        // --yes seul (pas --no-detect), pour que la sonde tourne.
+        // --yes alone (no --no-detect), so that the probe runs.
         let opts = crate::init_prompts::InitOptions {
             yes: true,
             no_detect: false,
@@ -1219,70 +1236,73 @@ edition = "2024"
         };
         let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
 
-        // 8 skills installées (défaut complet — 7 workflows du cycle + configure).
+        // 8 skills installed (full default — 7 cycle workflows + configure).
         assert_eq!(outcome.skills.len(), 8);
         assert!(outcome.skills.iter().any(|s| s == "codev-apply"));
         assert!(outcome.skills.iter().any(|s| s == "codev-configure"));
 
-        // Le config.yaml existe et porte le tool MCP + le contexte détecté.
-        let cfg = h.fs.read("/p/_codev/config.yaml").expect("config.yaml écrit");
+        // The config.yaml exists and carries the MCP tool + the detected
+        // context.
+        let cfg =
+            h.fs.read("/p/_codev/config.yaml")
+                .expect("config.yaml written");
         assert!(
             cfg.contains("mcp__claude_ai_Atlassian_Rovo__getJiraIssue"),
-            "config doit contenir le tool_id normalisé : {cfg}"
+            "config must contain the normalized tool_id: {cfg}"
         );
         assert!(
-            cfg.contains("détecté depuis .mcp.json"),
-            "config doit citer la provenance MCP : {cfg}"
+            cfg.contains("detected from .mcp.json"),
+            "config must cite the MCP provenance: {cfg}"
         );
         assert!(
             cfg.contains("Rust workspace"),
-            "config doit citer la stack détectée : {cfg}"
+            "config must cite the detected stack: {cfg}"
         );
         assert!(
-            cfg.contains("détecté depuis Cargo.toml"),
-            "config doit citer la provenance stack : {cfg}"
+            cfg.contains("detected from Cargo.toml"),
+            "config must cite the stack provenance: {cfg}"
         );
     }
 
     #[test]
-    fn init_yes_sans_detection_produit_config_minimale() {
-        // --no-detect court-circuite la sonde ; le config.yaml n'a que le
-        // schéma et les 7 workflows.
-        let h = Harnais::neuf();
+    fn init_yes_without_detection_produces_a_minimal_config() {
+        // --no-detect skips the probe; the config.yaml only has the schema
+        // and the workflows.
+        let h = Harness::new();
         let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         assert_eq!(outcome.skills.len(), 8);
         let cfg = h.fs.read("/p/_codev/config.yaml").unwrap();
         assert!(cfg.contains("schema: spec-driven"));
         assert!(cfg.contains("- propose"));
-        assert!(!cfg.contains("mcp:"), "aucun mcp: sans détection : {cfg}");
-        assert!(!cfg.contains("context: |"), "aucun context sans détection");
+        assert!(!cfg.contains("mcp:"), "no mcp: without detection: {cfg}");
+        assert!(!cfg.contains("context: |"), "no context without detection");
     }
 
     #[test]
-    fn update_exige_un_projet_existant() {
-        let h = Harnais::neuf();
+    fn update_requires_an_existing_project() {
+        let h = Harness::new();
         let err = update(&h.ctx(), false).unwrap_err();
         assert_eq!(err.code, "no_codev_root");
     }
 
     #[test]
-    fn le_cycle_complet_mene_a_des_instructions() {
-        // La tranche verticale du lot 1, de bout en bout : init, new change,
-        // status, instructions.
-        let h = Harnais::neuf();
+    fn the_full_cycle_leads_to_instructions() {
+        // The first vertical slice, end to end: init, new change, status,
+        // instructions.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
 
-        let cree = new_change(&h.ctx(), "add-auth", None, Some("Ajouter l'auth".into())).unwrap();
-        assert_eq!(cree.schema_name, "spec-driven");
-        assert!(h
-            .fs
-            .read("/p/_codev/changes/add-auth/change.yaml")
-            .is_some_and(|c| c.contains("created: 2026-09-08")));
+        let created = new_change(&h.ctx(), "add-auth", None, Some("Add auth".into())).unwrap();
+        assert_eq!(created.schema_name, "spec-driven");
+        assert!(
+            h.fs.read("/p/_codev/changes/add-auth/change.yaml")
+                .is_some_and(|c| c.contains("created: 2026-09-08"))
+        );
 
-        // Sans `--change` : un seul change actif, donc pas d'ambiguïté.
-        let statut = status(&h.ctx(), None).unwrap();
-        assert_eq!(statut.status.change.as_str(), "add-auth");
-        assert!(!statut.status.planning_complete);
+        // Without `--change`: a single active change, hence no ambiguity.
+        let outcome = status(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.status.change.as_str(), "add-auth");
+        assert!(!outcome.status.planning_complete);
 
         let instr = artifact_instructions(&h.ctx(), None, None).unwrap();
         assert_eq!(instr.artifact_id, "proposal");
@@ -1291,16 +1311,16 @@ edition = "2024"
     }
 
     #[test]
-    fn refuse_un_nom_de_change_invalide() {
-        let h = Harnais::neuf();
+    fn rejects_an_invalid_change_name() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = new_change(&h.ctx(), "Add Auth", None, None).unwrap_err();
         assert_eq!(err.code, "invalid_change_id");
     }
 
     #[test]
-    fn refuse_un_change_deja_existant() {
-        let h = Harnais::neuf();
+    fn rejects_an_already_existing_change() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         let err = new_change(&h.ctx(), "add-auth", None, None).unwrap_err();
@@ -1308,20 +1328,21 @@ edition = "2024"
     }
 
     #[test]
-    fn refuse_un_schema_inconnu_avant_de_creer_le_dossier() {
-        let h = Harnais::neuf();
+    fn rejects_an_unknown_schema_before_creating_the_folder() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let err = new_change(&h.ctx(), "add-auth", Some("fantaisie"), None).unwrap_err();
+        let err = new_change(&h.ctx(), "add-auth", Some("imaginary"), None).unwrap_err();
         assert_eq!(err.code, "schema_not_found");
         assert!(
-            h.fs.read("/p/_codev/changes/add-auth/change.yaml").is_none(),
-            "aucun dossier ne doit rester derrière un échec"
+            h.fs.read("/p/_codev/changes/add-auth/change.yaml")
+                .is_none(),
+            "no folder may be left behind after a failure"
         );
     }
 
     #[test]
-    fn status_sans_change_actif_oriente_vers_la_creation() {
-        let h = Harnais::neuf();
+    fn status_without_active_change_points_to_creation() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let err = status(&h.ctx(), None).unwrap_err();
         assert_eq!(err.code, "no_active_change");
@@ -1329,8 +1350,8 @@ edition = "2024"
     }
 
     #[test]
-    fn status_avec_plusieurs_changes_refuse_de_deviner() {
-        let h = Harnais::neuf();
+    fn status_with_several_changes_refuses_to_guess() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         new_change(&h.ctx(), "fix-bug", None, None).unwrap();
@@ -1341,14 +1362,18 @@ edition = "2024"
     }
 
     #[test]
-    fn liste_les_changes_et_les_specs() {
-        let h = Harnais::neuf().avec("/p/_codev/specs/user-auth/spec.md", "# spec");
+    fn lists_the_changes_and_the_specs() {
+        let h = Harness::new().with("/p/_codev/specs/user-auth/spec.md", "# spec");
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
 
         let changes = list_changes(&h.ctx()).unwrap();
         assert_eq!(
-            changes.changes.iter().map(ToString::to_string).collect::<Vec<_>>(),
+            changes
+                .changes
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
             ["add-auth"]
         );
 
@@ -1357,14 +1382,14 @@ edition = "2024"
     }
 
     #[test]
-    fn liste_les_schemas_avec_leur_enchainement() {
-        let h = Harnais::neuf();
+    fn lists_the_schemas_with_their_flow() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = list_schemas(&h.ctx()).unwrap();
 
         assert_eq!(outcome.schemas.len(), 1);
         assert_eq!(outcome.schemas[0].name, "spec-driven");
-        assert_eq!(outcome.schemas[0].origin, "intégré");
+        assert_eq!(outcome.schemas[0].origin, "built-in");
         assert_eq!(
             outcome.schemas[0].flow,
             ["proposal", "specs", "design", "tasks"]
@@ -1372,9 +1397,9 @@ edition = "2024"
     }
 
     #[test]
-    fn sync_un_seul_change_actif_est_implicite() {
-        // Un seul change actif → sync sans nom marche.
-        let h = Harnais::neuf();
+    fn sync_with_a_single_active_change_is_implicit() {
+        // A single active change → sync without a name works.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         write_helper(
@@ -1388,56 +1413,56 @@ edition = "2024"
     }
 
     #[test]
-    fn archive_avec_validate_erreur_echoue_code_util() {
-        let h = Harnais::neuf();
+    fn archive_with_validation_error_fails_with_a_useful_code() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "buggy", None, None).unwrap();
         write_helper(
             &h,
             "/p/_codev/changes/buggy/specs/x/spec.md",
-            // Doublon → validate le remonte.
+            // Duplicate → validate reports it.
             "## Purpose\n\nx.\n\n## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n",
         );
         let err = archive(&h.ctx(), None).unwrap_err();
         assert_eq!(err.code, "invalid");
         assert!(err.message.contains("validation_failed"), "{}", err.message);
-        // Le change n'a pas bougé.
+        // The change has not moved.
         assert!(h.fs.read("/p/_codev/changes/buggy/change.yaml").is_some());
     }
 
     #[test]
-    fn validate_projet_propre_ne_produit_aucun_finding() {
-        let h = Harnais::neuf();
+    fn validate_clean_project_produces_no_finding() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
-        // Un delta bien formé sous le change.
+        // A well-formed delta under the change.
         write_helper(
             &h,
             "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
-            "## Purpose\n\nAuthentification des utilisateurs.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
+            "## Purpose\n\nUser authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
         );
 
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
         assert!(
             !report.has_errors(),
-            "aucun finding attendu ; obtenu : {:#?}",
+            "no finding expected; got: {:#?}",
             report
         );
-        // 1 change + 1 item décisions (toujours présent, même sans ADR).
+        // 1 change + 1 decisions item (always present, even without ADRs).
         assert_eq!(report.items.len(), 2);
     }
 
     #[test]
-    fn validate_attrape_les_findings_du_parseur_et_des_regles() {
-        let h = Harnais::neuf();
+    fn validate_catches_parser_and_rule_findings() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "buggy", None, None).unwrap();
-        // Un delta où SHALL manque (règle E1) et le scénario est mal formé
-        // (règle du parseur) : les deux findings doivent remonter.
+        // A delta where SHALL is missing (rule E1) and the scenario is
+        // malformed (parser rule): both findings must surface.
         write_helper(
             &h,
             "/p/_codev/changes/buggy/specs/x/spec.md",
-            "## Purpose\n\nCapacité de test des règles.\n\n## ADDED Requirements\n\n### Requirement: X\nThe system does x.\n\n### Scenario: MalForme\n- **WHEN** a\n- **THEN** b\n",
+            "## Purpose\n\nCapability for testing the rules.\n\n## ADDED Requirements\n\n### Requirement: X\nThe system does x.\n\n### Scenario: Malformed\n- **WHEN** a\n- **THEN** b\n",
         );
 
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
@@ -1450,34 +1475,36 @@ edition = "2024"
             .collect();
         assert!(
             codes.contains(&"requirement_no_shall"),
-            "règle E1 attendue ; codes : {codes:?}"
+            "rule E1 expected; codes: {codes:?}"
         );
         assert!(
             codes.contains(&"scenario_wrong_heading_level"),
-            "règle du parseur attendue ; codes : {codes:?}"
+            "parser rule expected; codes: {codes:?}"
         );
     }
 
     #[test]
-    fn validate_zero_delta_sans_marqueur_echoue() {
-        // La règle E3 : un change sans delta et sans skip_specs échoue.
-        let h = Harnais::neuf();
+    fn validate_zero_delta_without_marker_fails() {
+        // Rule E3: a change with no delta and no skip_specs fails.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "refactor", None, None).unwrap();
 
         let report = validate(&h.ctx(), ValidateArgs::Changes).unwrap();
         assert!(report.has_errors());
-        assert!(report.items[0]
-            .findings
-            .iter()
-            .any(|f| f.finding.code == "zero_delta_without_marker"));
+        assert!(
+            report.items[0]
+                .findings
+                .iter()
+                .any(|f| f.finding.code == "zero_delta_without_marker")
+        );
     }
 
     #[test]
-    fn validate_scope_specs_ignore_les_changes() {
-        // Un change en erreur mais on demande seulement les specs : rien à
-        // remonter, exit 0.
-        let h = Harnais::neuf();
+    fn validate_specs_scope_ignores_the_changes() {
+        // A change in error, but only the specs are requested: nothing to
+        // report, exit 0.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "refactor", None, None).unwrap(); // zero-delta
 
@@ -1487,318 +1514,305 @@ edition = "2024"
     }
 
     #[test]
-    fn validate_item_inconnu_echoue_avec_code_utile() {
-        let h = Harnais::neuf();
+    fn validate_unknown_item_fails_with_a_useful_code() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let err = validate(&h.ctx(), ValidateArgs::Item("fantome".into())).unwrap_err();
+        let err = validate(&h.ctx(), ValidateArgs::Item("ghost".into())).unwrap_err();
         assert_eq!(err.code, "unknown_item");
         assert!(err.fix.is_some_and(|f| f.contains("codev list")));
     }
 
-    /// Petit helper qui insère un fichier dans le FS en mémoire du harnais.
+    /// Small helper that inserts a file into the harness's in-memory FS.
     ///
-    /// Vit ici plutôt que dans `Harnais` parce qu'il n'est utile qu'aux tests
-    /// de `validate` — les autres commandes n'ajoutent pas de contenu manuel.
-    fn write_helper(h: &Harnais, path: &str, contents: &str) {
+    /// Lives here rather than in `Harness` because it is only useful to the
+    /// `validate` tests — the other commands add no manual content.
+    fn write_helper(h: &Harness, path: &str, contents: &str) {
         use codev_engine::FileSystem;
         h.fs.write(std::path::Path::new(path), contents).unwrap();
     }
 
     #[test]
-    fn un_schema_maison_casse_est_signale_sans_masquer_les_autres() {
-        let h = Harnais::neuf().avec(
-            "/p/_codev/schemas/casse/schema.yaml",
-            "name: casse\nartifacts:\n  - id: a\n    generates: a.md\n    requires: [fantome]\napply:\n  requires: [a]\n  tracks: a.md\n",
+    fn a_broken_custom_schema_is_reported_without_hiding_the_others() {
+        let h = Harness::new().with(
+            "/p/_codev/schemas/broken/schema.yaml",
+            "name: broken\nartifacts:\n  - id: a\n    generates: a.md\n    requires: [ghost]\napply:\n  requires: [a]\n  tracks: a.md\n",
         );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let outcome = list_schemas(&h.ctx()).unwrap();
 
-        assert_eq!(outcome.schemas.len(), 1, "spec-driven reste listé");
+        assert_eq!(outcome.schemas.len(), 1, "spec-driven stays listed");
         assert_eq!(outcome.warnings.len(), 1);
         assert_eq!(outcome.warnings[0].code, "schema_unusable");
     }
 
-    // ─────────────── decision seal (K3) ───────────────
+    // ─────────────── decision seal ───────────────
 
     #[test]
-    fn decision_new_scelle_lentree_et_expose_le_hash() {
-        // Un `decision new` crée l'ADR ET l'entrée de sceau ; le hash
-        // remonte dans l'outcome pour le contrat JSON.
-        let h = Harnais::neuf();
+    fn decision_new_seals_the_entry_and_exposes_the_hash() {
+        // A `decision new` creates the ADR AND the seal entry; the hash
+        // surfaces in the outcome for the JSON contract.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let outcome = decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
+        let outcome = decision_new(&h.ctx(), "A first choice", "accepted").unwrap();
         assert!(outcome.body_sha256.is_some());
         assert!(outcome.body_sha256.as_ref().unwrap().starts_with("sha256:"));
 
-        // Le fichier de sceau existe et référence 0001.
+        // The seal file exists and references 0001.
         use codev_engine::FileSystem;
-        let seal_content = h
-            .fs
-            .read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
-            .unwrap();
+        let seal_content =
+            h.fs.read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
+                .unwrap();
         assert!(seal_content.contains("0001"));
     }
 
     #[test]
-    fn decision_new_proposed_ne_scelle_pas_ni_nexpose_de_hash() {
-        // Un statut `proposed` n'engage pas d'immutabilité — pas de sceau,
-        // pas de hash dans l'outcome.
-        let h = Harnais::neuf();
+    fn decision_new_proposed_neither_seals_nor_exposes_a_hash() {
+        // A `proposed` status commits to no immutability — no seal, no hash
+        // in the outcome.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let outcome = decision_new(&h.ctx(), "Piste", "proposed").unwrap();
+        let outcome = decision_new(&h.ctx(), "Lead", "proposed").unwrap();
         assert!(outcome.body_sha256.is_none());
 
         use codev_engine::FileSystem;
-        assert!(!h
-            .fs
-            .exists(std::path::Path::new("/p/_codev/decisions/seal.yaml")));
+        assert!(
+            !h.fs
+                .exists(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
+        );
     }
 
     #[test]
-    fn decision_seal_est_noop_apres_decision_new() {
-        // `decision new` scelle déjà l'ADR ; un `decision seal` juste
-        // après doit être un no-op silencieux.
-        let h = Harnais::neuf();
+    fn decision_seal_is_a_noop_after_decision_new() {
+        // `decision new` already seals the ADR; a `decision seal` right
+        // after must be a silent no-op.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
+        decision_new(&h.ctx(), "A first choice", "accepted").unwrap();
         let outcome = decision_seal(&h.ctx(), "0001", false).unwrap();
         assert!(outcome.was_noop);
         assert!(!outcome.was_forced);
     }
 
     #[test]
-    fn decision_seal_refuse_sans_force_apres_modification_du_corps() {
-        let h = Harnais::neuf();
+    fn decision_seal_refuses_without_force_after_the_body_changed() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
+        decision_new(&h.ctx(), "A first choice", "accepted").unwrap();
 
-        // On corrompt le corps de l'ADR après scellement.
+        // Corrupt the ADR's body after sealing.
         use codev_engine::FileSystem;
-        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-un-premier-choix.md");
+        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-a-first-choice.md");
         let source = h.fs.read_to_string(adr_path).unwrap();
-        let modifie = source.replace("## Contexte", "## Contexte MODIFIÉ EN PLACE");
-        assert_ne!(modifie, source, "la substitution doit changer le corps");
-        h.fs.write(adr_path, &modifie).unwrap();
+        let modified = source.replace("## Context", "## Context MODIFIED IN PLACE");
+        assert_ne!(modified, source, "the substitution must change the body");
+        h.fs.write(adr_path, &modified).unwrap();
 
         let err = decision_seal(&h.ctx(), "0001", false).unwrap_err();
         assert_eq!(err.code, "seal_conflict");
     }
 
     #[test]
-    fn decision_seal_avec_force_reecrit_apres_modification() {
-        let h = Harnais::neuf();
+    fn decision_seal_with_force_rewrites_after_a_change() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
+        decision_new(&h.ctx(), "A first choice", "accepted").unwrap();
 
         use codev_engine::FileSystem;
-        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-un-premier-choix.md");
+        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-a-first-choice.md");
         let source = h.fs.read_to_string(adr_path).unwrap();
-        let modifie = source.replace("## Contexte", "## Contexte MODIFIÉ EN PLACE");
-        assert_ne!(modifie, source, "la substitution doit changer le corps");
-        h.fs.write(adr_path, &modifie).unwrap();
+        let modified = source.replace("## Context", "## Context MODIFIED IN PLACE");
+        assert_ne!(modified, source, "the substitution must change the body");
+        h.fs.write(adr_path, &modified).unwrap();
 
         let outcome = decision_seal(&h.ctx(), "0001", true).unwrap();
         assert!(!outcome.was_noop);
         assert!(outcome.was_forced);
     }
 
-    // ─────────────── decision promote (K7) ───────────────
+    // ─────────────── decision promote ───────────────
 
-    const DESIGN_AVEC_BLOC: &str = "\
-# Design : add-auth
+    const DESIGN_WITH_BLOCK: &str = "\
+# Design: add-auth
 
-## Décisions
+## Decisions
 
-### Décision : Utiliser JWT
+### Decision: Use JWT
 
-Le rationale du choix.
+The rationale for the choice.
 
-## Fin
+## End
 ";
 
     #[test]
-    fn decision_promote_cree_un_adr_et_reference_le_design() {
-        let h = Harnais::neuf();
+    fn decision_promote_creates_an_adr_and_references_the_design() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
-        // Un design.md avec un bloc de décision.
+        // A design.md with a decision block.
         use codev_engine::FileSystem;
-        h.fs
-            .write(
-                std::path::Path::new("/p/_codev/changes/add-auth/design.md"),
-                DESIGN_AVEC_BLOC,
-            )
-            .unwrap();
+        h.fs.write(
+            std::path::Path::new("/p/_codev/changes/add-auth/design.md"),
+            DESIGN_WITH_BLOCK,
+        )
+        .unwrap();
 
-        let outcome = decision_promote(&h.ctx(), "add-auth", "Utiliser JWT").unwrap();
+        let outcome = decision_promote(&h.ctx(), "add-auth", "Use JWT").unwrap();
         assert_eq!(outcome.decision.id, "0001");
         assert_eq!(outcome.source_change, "add-auth");
         assert!(outcome.body_sha256.starts_with("sha256:"));
 
-        // L'ADR existe.
-        assert!(h.fs.exists(std::path::Path::new(
-            "/p/_codev/decisions/0001-utiliser-jwt.md"
-        )));
-        // Le design a été réécrit avec la référence.
-        let design = h
-            .fs
-            .read_to_string(std::path::Path::new("/p/_codev/changes/add-auth/design.md"))
-            .unwrap();
-        assert!(design.contains("### Décision : Utiliser JWT\n\n> Promue en ADR **0001**"));
-        assert!(!design.contains("Le rationale du choix."));
+        // The ADR exists.
+        assert!(h.fs.exists(std::path::Path::new("/p/_codev/decisions/0001-use-jwt.md")));
+        // The design was rewritten with the reference.
+        let design =
+            h.fs.read_to_string(std::path::Path::new("/p/_codev/changes/add-auth/design.md"))
+                .unwrap();
+        assert!(design.contains("### Decision: Use JWT\n\n> Promoted to ADR **0001**"));
+        assert!(!design.contains("The rationale for the choice."));
     }
 
     #[test]
-    fn decision_promote_refuse_un_change_absent() {
-        let h = Harnais::neuf();
+    fn decision_promote_rejects_a_missing_change() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let err = decision_promote(&h.ctx(), "fantome", "X").unwrap_err();
+        let err = decision_promote(&h.ctx(), "ghost", "X").unwrap_err();
         assert_eq!(err.code, "unknown_change");
     }
 
     #[test]
-    fn decision_promote_refuse_un_design_absent() {
-        let h = Harnais::neuf();
+    fn decision_promote_rejects_a_missing_design() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
-        // Pas de design.md créé.
+        // No design.md created.
         let err = decision_promote(&h.ctx(), "add-auth", "X").unwrap_err();
         assert_eq!(err.code, "design_missing");
     }
 
     #[test]
-    fn decision_promote_refuse_un_titre_absent() {
-        let h = Harnais::neuf();
+    fn decision_promote_rejects_a_missing_title() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
         use codev_engine::FileSystem;
-        h.fs
-            .write(
-                std::path::Path::new("/p/_codev/changes/add-auth/design.md"),
-                DESIGN_AVEC_BLOC,
-            )
-            .unwrap();
-        let err = decision_promote(&h.ctx(), "add-auth", "Fantome").unwrap_err();
+        h.fs.write(
+            std::path::Path::new("/p/_codev/changes/add-auth/design.md"),
+            DESIGN_WITH_BLOCK,
+        )
+        .unwrap();
+        let err = decision_promote(&h.ctx(), "add-auth", "Ghost").unwrap_err();
         assert_eq!(err.code, "decision_heading_not_found");
     }
 
     #[test]
-    fn decision_promote_refuse_un_change_archive() {
-        // On simule un change archivé en créant directement le dossier
-        // sous `archive/<date>-<name>/`.
-        let h = Harnais::neuf().avec(
+    fn decision_promote_rejects_an_archived_change() {
+        // Simulate an archived change by creating the folder directly under
+        // `archive/<date>-<name>/`.
+        let h = Harness::new().with(
             "/p/_codev/changes/archive/2026-09-01-old/design.md",
-            DESIGN_AVEC_BLOC,
+            DESIGN_WITH_BLOCK,
         );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let err = decision_promote(&h.ctx(), "old", "Utiliser JWT").unwrap_err();
+        let err = decision_promote(&h.ctx(), "old", "Use JWT").unwrap_err();
         assert_eq!(err.code, "cannot_promote_from_archived");
     }
 
-    // ─────────────── decision deviate (K6) ───────────────
+    // ─────────────── decision deviate ───────────────
 
-    fn adr_heritee(id: &str) -> String {
+    fn inherited_adr(id: &str) -> String {
         format!(
-            "---\nid: \"{id}\"\ntitle: Choix source\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\nx\n"
+            "---\nid: \"{id}\"\ntitle: Source choice\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nx\n"
         )
     }
 
     #[test]
-    fn decision_deviate_cree_un_adr_local_et_le_scelle() {
-        let h = Harnais::neuf()
-            .avec(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .avec(
-                "/home/partage/_codev/decisions/0100.md",
-                &adr_heritee("0100"),
+    fn decision_deviate_creates_a_local_adr_and_seals_it() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with(
+                "/home/shared/_codev/decisions/0100.md",
+                &inherited_adr("0100"),
             );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let outcome = decision_deviate(&h.ctx(), "path:~/partage/0100", "Notre alternative").unwrap();
+        let outcome = decision_deviate(&h.ctx(), "path:~/shared/0100", "Our alternative").unwrap();
 
-        assert_eq!(outcome.target_qualified_id, "path:~/partage/0100");
+        assert_eq!(outcome.target_qualified_id, "path:~/shared/0100");
         assert!(outcome.body_sha256.starts_with("sha256:"));
         assert_eq!(outcome.decision.id, "0001");
-        assert_eq!(outcome.decision.deviates_from, vec!["path:~/partage/0100"]);
+        assert_eq!(outcome.decision.deviates_from, vec!["path:~/shared/0100"]);
 
-        // Le sceau existe et référence 0001.
+        // The seal exists and references 0001.
         use codev_engine::FileSystem;
-        let seal_content = h
-            .fs
-            .read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
-            .unwrap();
+        let seal_content =
+            h.fs.read_to_string(std::path::Path::new("/p/_codev/decisions/seal.yaml"))
+                .unwrap();
         assert!(seal_content.contains("0001"));
     }
 
     #[test]
-    fn decision_deviate_refuse_une_locale_avec_renvoi_vers_supersede() {
-        let h = Harnais::neuf();
+    fn decision_deviate_rejects_a_local_one_and_points_to_supersede() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_new(&h.ctx(), "Un local", "accepted").unwrap();
-        let err = decision_deviate(&h.ctx(), "projet/0001", "…").unwrap_err();
+        decision_new(&h.ctx(), "A local one", "accepted").unwrap();
+        let err = decision_deviate(&h.ctx(), "project/0001", "…").unwrap_err();
         assert_eq!(err.code, "cannot_deviate_from_local");
         assert!(err.message.contains("supersede"));
     }
 
     #[test]
-    fn decision_deviate_refuse_une_cible_inconnue() {
-        let h = Harnais::neuf();
+    fn decision_deviate_rejects_an_unknown_target() {
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        let err = decision_deviate(&h.ctx(), "path:~/inconnue/0100", "…").unwrap_err();
+        let err = decision_deviate(&h.ctx(), "path:~/unknown/0100", "…").unwrap_err();
         assert_eq!(err.code, "unknown_decision_id");
     }
 
     #[test]
-    fn decision_list_expose_deviated_by_sur_lheritée() {
-        let h = Harnais::neuf()
-            .avec(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .avec(
-                "/home/partage/_codev/decisions/0100.md",
-                &adr_heritee("0100"),
+    fn decision_list_exposes_deviated_by_on_the_inherited_one() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with(
+                "/home/shared/_codev/decisions/0100.md",
+                &inherited_adr("0100"),
             );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_deviate(&h.ctx(), "path:~/partage/0100", "Notre alt").unwrap();
+        decision_deviate(&h.ctx(), "path:~/shared/0100", "Our alt").unwrap();
         let list = decision_list(&h.ctx()).unwrap();
 
-        let heritee = list
+        let inherited = list
             .decisions
             .iter()
-            .find(|d| d.qualified_id == "path:~/partage/0100")
-            .expect("héritée présente dans le listing");
-        assert_eq!(heritee.deviated_by.as_deref(), Some("projet/0001"));
-        assert!(!heritee.in_effect);
+            .find(|d| d.qualified_id == "path:~/shared/0100")
+            .expect("inherited decision present in the listing");
+        assert_eq!(inherited.deviated_by.as_deref(), Some("project/0001"));
+        assert!(!inherited.in_effect);
 
-        let locale = list
+        let local = list
             .decisions
             .iter()
-            .find(|d| d.qualified_id == "projet/0001")
-            .expect("locale présente");
-        assert_eq!(locale.deviates_from, vec!["path:~/partage/0100"]);
-        assert!(locale.in_effect);
+            .find(|d| d.qualified_id == "project/0001")
+            .expect("local decision present");
+        assert_eq!(local.deviates_from, vec!["path:~/shared/0100"]);
+        assert!(local.in_effect);
     }
 
-    // ─────────────── validate --strict (E5) ───────────────
+    // ─────────────── validate --strict ───────────────
 
     #[test]
-    fn validate_projet_propre_na_ni_erreur_ni_warning() {
-        // Baseline pour le mode strict : sans finding, ni `has_errors`
-        // ni `has_warnings` ne remontent.
-        let h = Harnais::neuf();
+    fn validate_clean_project_has_neither_error_nor_warning() {
+        // Baseline for strict mode: without findings, neither `has_errors`
+        // nor `has_warnings` is raised.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         new_change(&h.ctx(), "add-auth", None, None).unwrap();
-        // Un seul artefact suffisant pour que validate_change ne remonte pas
-        // d'erreur (proposal simple).
+        // A single artifact is enough for validate_change to report no error
+        // (simple proposal).
         use codev_engine::FileSystem;
-        h.fs
-            .write(
-                std::path::Path::new("/p/_codev/changes/add-auth/proposal.md"),
-                "# Proposal\n\n## Pourquoi\n\nT\n\n## Ce qui change\n\n- x\n",
-            )
-            .unwrap();
+        h.fs.write(
+            std::path::Path::new("/p/_codev/changes/add-auth/proposal.md"),
+            "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n",
+        )
+        .unwrap();
         h.fs
             .write(
                 std::path::Path::new("/p/_codev/changes/add-auth/specs/x/spec.md"),
@@ -1811,37 +1825,37 @@ Le rationale du choix.
     }
 
     #[test]
-    fn validate_avec_adr_non_scelle_a_warnings_mais_pas_derreurs() {
-        // Un ADR local `accepted` sans sceal.yaml → warning
-        // `decision_unsealed`. C'est le cas typique où `--strict`
-        // fera basculer l'exit code du CLI.
-        let h = Harnais::neuf().avec(
+    fn validate_with_unsealed_adr_has_warnings_but_no_errors() {
+        // A local `accepted` ADR without seal.yaml → `decision_unsealed`
+        // warning. It is the typical case where `--strict` flips the CLI's
+        // exit code.
+        let h = Harness::new().with(
             "/p/_codev/decisions/0001.md",
-            "---\nid: \"0001\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\nx\n",
+            "---\nid: \"0001\"\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nx\n",
         );
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
-        assert!(!report.has_errors(), "warnings uniquement");
-        assert!(report.has_warnings(), "au moins un warning attendu");
+        assert!(!report.has_errors(), "warnings only");
+        assert!(report.has_warnings(), "at least one warning expected");
     }
 
     #[test]
-    fn validate_avec_seal_mismatch_a_erreur() {
-        // Un mismatch est une erreur, indépendante du mode strict.
-        let h = Harnais::neuf();
+    fn validate_with_seal_mismatch_has_an_error() {
+        // A mismatch is an error, independent of strict mode.
+        let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        decision_new(&h.ctx(), "Un premier choix", "accepted").unwrap();
-        // On corrompt le corps de l'ADR après scellement.
+        decision_new(&h.ctx(), "A first choice", "accepted").unwrap();
+        // Corrupt the ADR's body after sealing.
         use codev_engine::FileSystem;
-        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-un-premier-choix.md");
+        let adr_path = std::path::Path::new("/p/_codev/decisions/0001-a-first-choice.md");
         let source = h.fs.read_to_string(adr_path).unwrap();
-        let modifie = source.replace("## Contexte", "## Contexte ALTÉRÉ");
-        h.fs.write(adr_path, &modifie).unwrap();
+        let modified = source.replace("## Context", "## Context ALTERED");
+        h.fs.write(adr_path, &modified).unwrap();
 
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
-        assert!(report.has_errors(), "mismatch → erreur");
-        // Le mismatch n'est pas un warning ; has_warnings peut être
-        // faux ou vrai selon les autres findings, mais l'exit code
-        // aurait basculé sur `has_errors` seul, sans dépendre de strict.
+        assert!(report.has_errors(), "mismatch → error");
+        // The mismatch is not a warning; has_warnings may be false or true
+        // depending on the other findings, but the exit code would have
+        // flipped on `has_errors` alone, without depending on strict.
     }
 }

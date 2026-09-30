@@ -1,96 +1,94 @@
-Clore un change codev : fusionner ses deltas dans les specs principales et
-déplacer le dossier vers `_codev/changes/archive/<date>-<nom>/`.
+Close a codev change: merge its deltas into the main specs and move the
+folder to `_codev/changes/archive/<date>-<name>/`.
 
-**Quand l'utiliser.** Après un `codev-apply` réussi, quand toutes les tâches
-de `tasks.md` sont cochées et que le change est prêt à être classé.
+**When to use it.** After a successful `codev-apply`, when every task in
+`tasks.md` is checked and the change is ready to be filed away.
 
-**Refus strict en cas d'erreur de validation.** Le CLI fait un pré-flight
-`validate` interne ; s'il remonte une erreur, la skill n'insiste pas et
-renvoie vers `codev validate` pour le détail.
+**Strict refusal on validation errors.** The CLI runs an internal
+`validate` pre-flight; if it reports an error, the skill does not insist
+and points to `codev validate` for the details.
 
 ---
 
-## Entrée
+## Input
 
-Un nom de change en argument, ou rien (résolution implicite s'il n'y en a
-qu'un seul actif).
+A change name as argument, or nothing (implicit resolution if there is only
+one active change).
 
-## Étapes
+## Steps
 
-### 1. Résoudre le change et vérifier la planification
+### 1. Resolve the change and check the planning
 
-Sans nom explicite :
+Without an explicit name:
 
 ```bash
 codev list
 ```
 
-- Un seul change actif → c'est celui-là.
-- Plusieurs → demande à l'utilisateur, en listant les noms.
-- Aucun → dis-le et arrête-toi.
+- A single active change → use it.
+- Several → ask the user, listing the names.
+- None → say so and stop.
 
-Puis :
-
-```bash
-codev status --change "<nom>" --json
-```
-
-Si `isPlanningComplete` est `false`, arrête : la planification n'est pas
-prête. Nomme ce qui manque et propose `/codev-propose` ; ne lance pas
-`archive`.
-
-### 2. Lancer l'archive en mode JSON
+Then:
 
 ```bash
-codev archive --change "<nom>" --json
+codev status --change "<name>" --json
 ```
 
-En cas de **succès** (exit 0), le JSON reçu est un `ArchiveReportV1` —
-contrat public, versionné. Champs à utiliser :
+If `isPlanningComplete` is `false`, stop: planning is not ready. Name what
+is missing and suggest `/codev-propose`; do not run `archive`.
 
-- `changeName` — pour confirmer sur quoi on a agi ;
-- `created[]` — chemins des specs principales qui viennent d'être créées ;
-- `updated[]` — chemins des specs principales qui viennent d'être modifiées ;
-- `unchanged[]` — chemins des specs déjà à jour au moment de la fusion ;
-- `movedTo` — chemin d'archive datée du dossier de change ;
-- `status[]` — vide.
+### 2. Run the archive in JSON mode
 
-En cas d'**exit non nul**, lis `status[0].code` :
+```bash
+codev archive --change "<name>" --json
+```
 
-- Si `code == "validation_failed"` → réponds **exactement** :
-  > Le change a des erreurs. Lance `codev validate "<nom>"` pour voir le
-  > détail.
-  Rien de plus. Ne retente pas. Ne devine pas. Ne cite pas le message
-  humain (qui peut être reformulé).
-- Pour **tout autre code** → relaye `status[0].message` tel quel, et
-  arrête-toi. La skill n'interprète pas.
+On **success** (exit 0), the JSON received is an `ArchiveReportV1` — a
+public, versioned contract. Fields to use:
 
-### 3. Rendre compte à l'utilisateur (succès)
+- `changeName` — to confirm what was acted on;
+- `created[]` — paths of main specs that were just created;
+- `updated[]` — paths of main specs that were just modified;
+- `unchanged[]` — paths of specs already up to date at merge time;
+- `movedTo` — dated archive path of the change folder;
+- `status[]` — empty.
 
-Résumé attendu, une ligne :
+On a **non-zero exit**, read `status[0].code`:
 
-> ✓ Archive de « `<changeName>` » — `N` spec(s) créée(s), `M` mise(s) à
-> jour, `K` inchangée(s).
+- If `code == "validation_failed"` → reply **exactly**:
+  > The change has errors. Run `codev validate <name>` to see the details.
+  Nothing more. Do not retry. Do not guess. Do not quote the human
+  message (it may be reworded).
+- For **any other code** → relay `status[0].message` as is, and stop.
+  The skill does not interpret.
 
-Puis les listes par catégorie si non vides (comme `sync`).
+### 3. Report to the user (success)
 
-Enfin, sur sa propre ligne :
+Expected summary, one line:
 
-> Déplacé vers : `<movedTo>`
+> ✓ Archived "`<changeName>`" — `N` spec(s) created, `M` updated,
+> `K` unchanged.
 
-## Sortie
+Then the lists by category if non-empty (as for `sync`).
 
-Le rendu de succès de l'étape 3, ou le refus court en cas d'erreur de
-validation, ou le message brut du CLI en cas d'autre erreur.
+Finally, on its own line:
 
-## Garde-fous
+> Moved to: `<movedTo>`
 
-- **N'écris rien toi-même** — tout passe par `codev archive`. La skill ne
-  modifie ni les specs ni les dossiers en direct.
-- **Ne contourne pas un refus de validation** — un `validation_failed`
-  arrête la skill. Corriger, c'est le travail de l'utilisateur guidé par
-  `codev validate`, pas de la skill.
-- **Ne parse pas d'autre JSON que celui de `archive`** — la skill ne
-  connaît la forme d'aucun autre contrat.
-- **Ne réinvente pas les messages du CLI** — pour tout code d'erreur autre
-  que `validation_failed`, le `message` du JSON est relayé tel quel.
+## Output
+
+The success report from step 3, or the short refusal on a validation
+error, or the raw CLI message on any other error.
+
+## Guardrails
+
+- **Write nothing yourself** — everything goes through `codev archive`. The
+  skill never modifies specs or folders directly.
+- **Do not work around a validation refusal** — a `validation_failed`
+  stops the skill. Fixing is the user's job, guided by `codev validate`,
+  not the skill's.
+- **Do not parse any JSON other than `archive`'s** — the skill knows the
+  shape of no other contract.
+- **Do not reinvent the CLI's messages** — for any error code other than
+  `validation_failed`, the JSON `message` is relayed as is.

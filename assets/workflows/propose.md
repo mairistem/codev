@@ -1,234 +1,230 @@
-Créer un change et rédiger ses artefacts de planification, en une fois.
+Create a change and write its planning artifacts, in one pass.
 
-**Frontière de planification.** Ce workflow ne produit que des artefacts de
-planification. La demande qui l'a déclenché n'autorise que la planification,
-même si elle dit « construis », « corrige » ou « implémente ». Ne modifie aucun
-fichier de code. Quand les artefacts sont complets, arrête-toi et présente-les.
-N'enchaîne pas sur l'implémentation dans la même réponse : attends une nouvelle
-demande de l'utilisateur.
+**Planning boundary.** This workflow produces planning artifacts only. The
+request that triggered it authorizes planning only, even if it says "build",
+"fix" or "implement". Do not modify any code file. When the artifacts are
+complete, stop and present them. Do not move on to implementation in the same
+response: wait for a new request from the user.
 
 ---
 
-## Entrée
+## Input
 
-La demande doit contenir soit un nom de change en kebab-case, soit une
-description de ce que l'utilisateur veut construire.
+The request must contain either a change name in kebab-case, or a description
+of what the user wants to build.
 
-## Étapes
+## Steps
 
-### 0. Détecter un ticket externe (facultatif)
+### 0. Detect an external ticket (optional)
 
-Avant de résoudre le nom du change, scanne le prompt de l'utilisateur
-pour repérer un identifiant de ticket qui matche le pattern régulier
-`[A-Z]{2,}-\d+` (par exemple `JVS-1234`, `PROJ-42`).
+Before resolving the change name, scan the user's prompt for a ticket
+identifier matching the regular pattern `[A-Z]{2,}-\d+` (for example
+`PROJ-123`, `ABC-42`).
 
-**Trois branches** :
+**Three branches**:
 
-- **Aucun pattern trouvé** — passe directement à l'étape 1,
-  comportement bit-identique à avant ce lot.
-- **Pattern trouvé, MCP Jira disponible** — appelle l'outil
-  `{{JIRA_MCP_TOOL}}` avec l'identifiant du
-  premier ticket détecté. Deux règles strictes :
-  - **Un seul appel** — la skill n'appelle jamais deux fois le MCP
-    dans une même invocation. Les tickets suivants sont juste
-    nommés.
-  - **Lecture seule** — la skill n'appelle **jamais** un autre outil
-    du MCP Jira (pas de `search`, pas de `create`, pas de
-    `transition`). Un seul appel `{{JIRA_MCP_TOOL}}`, sur l'ID
-    exactement mentionné.
+- **No match** — go straight to step 1; behavior is exactly as if
+  this step did not exist.
+- **Match found, Jira MCP available** — call the
+  `{{JIRA_MCP_TOOL}}` tool with the identifier of the
+  first ticket detected. Two strict rules:
+  - **A single call** — never call the MCP twice in the same
+    invocation. Any further tickets are only named.
+  - **Read-only** — **never** call any other tool of the Jira MCP
+    (no `search`, no `create`, no `transition`). Exactly one
+    `{{JIRA_MCP_TOOL}}` call, on the exact ID mentioned.
 
-  Le résultat (titre, description, status, type) devient une source
-  de contexte pour la rédaction : lis-le, comprends ce qui est
-  attendu, et rédige le proposal en connaissance de cause.
+  The result (title, description, status, type) becomes a source of
+  context for writing: read it, understand what is expected, and write
+  the proposal with that knowledge.
 
-- **Pattern trouvé, MCP Jira absent** — affiche à l'utilisateur :
+- **Match found, no Jira MCP** — tell the user:
 
-  > Un ticket **<ID>** est mentionné mais aucun MCP Jira n'est
-  > disponible dans cette session — le proposal sera rédigé sans son
-  > contenu.
+  > Ticket **<ID>** is mentioned but no Jira MCP is available in this
+  > session — the proposal will be written without its content.
 
-  Puis continue avec ce que tu sais (le seul prompt utilisateur).
-  Le proposal citera quand même le ticket en tête avec la mention
-  « contenu non récupéré ».
+  Then continue with what you know (the user's prompt alone). The
+  proposal still cites the ticket at the top, marked "content not
+  retrieved".
 
-**Multi-tickets** : si deux tickets ou plus sont mentionnés
-(`JVS-1234 et JVS-5678`), seul le premier est récupéré via MCP. Les
-autres sont listés en tête du proposal sous la ligne
-« autre(s) ticket(s) mentionné(s) : `<liste>` », pour la
-traçabilité — un lecteur ira les consulter à la main.
+**Multiple tickets**: if two or more tickets are mentioned
+(`PROJ-123 and PROJ-456`), only the first is retrieved through the MCP.
+The others are listed at the top of the proposal under the line
+"other ticket(s) mentioned: `<list>`", for traceability — a reader will
+look them up by hand.
 
-### 1. Comprendre la demande
+### 1. Understand the request
 
-Si rien de clair n'est fourni, demande, en question ouverte et sans proposer de
-liste de choix :
+If nothing clear is provided, ask an open question, without offering a list
+of choices:
 
-> Quel change veux-tu mener ? Décris ce que tu veux construire ou corriger.
+> What change do you want to make? Describe what you want to build or fix.
 
-Dérive un nom en kebab-case de la description (« ajouter l'authentification
-des utilisateurs » → `add-user-auth`).
+Derive a kebab-case name from the description ("add user authentication"
+→ `add-user-auth`).
 
-Ne poursuis pas sans avoir compris ce qui doit être construit. Si la demande
-contient une ambiguïté qui changerait matériellement le périmètre, le
-comportement observable, la compatibilité ou les critères d'acceptation,
-demande avant de créer le change. Pour un détail mineur, prends une hypothèse
-raisonnable et consigne-la dans les artefacts.
+Do not proceed until you understand what must be built. If the request
+contains an ambiguity that would materially change the scope, the observable
+behavior, compatibility or the acceptance criteria, ask before creating the
+change. For a minor detail, make a reasonable assumption and record it in the
+artifacts.
 
-### 2. Créer le change
+### 2. Create the change
 
 ```bash
-codev new change "<nom>"
+codev new change "<name>"
 ```
 
-Ajoute `--schema "<nom>"` uniquement si l'utilisateur a explicitement demandé un
-workflow particulier. Sinon, omets le flag pour conserver le schéma configuré.
+Add `--schema "<name>"` only if the user explicitly asked for a particular
+workflow. Otherwise, omit the flag to keep the configured schema.
 
-S'il demande quels workflows existent : `codev schemas --json`.
+If the user asks which workflows exist: `codev schemas --json`.
 
-### 3. Obtenir l'ordre de construction
+### 3. Get the build order
 
 ```bash
-codev status --change "<nom>" --json
+codev status --change "<name>" --json
 ```
 
-Champs à exploiter :
+Fields to use:
 
-- `applyRequires` — les artefacts requis avant implémentation
-- `artifacts[]` — chacun avec son `status` et ses arêtes `requires`
-- `planningHome`, `changeRoot` — les chemins résolus. Utilise-les, ne suppose
-  jamais un chemin relatif au dépôt
+- `applyRequires` — the artifacts required before implementation
+- `artifacts[]` — each with its `status` and its `requires` edges
+- `planningHome`, `changeRoot` — the resolved paths. Use them; never assume
+  a path relative to the repository
 
-### 4. Créer chaque artefact de l'ensemble requis
+### 4. Create each artifact of the required set
 
-Suis ta liste de tâches pour suivre l'avancement.
+Use your task list to track progress.
 
-Pour chaque artefact dont le `status` est `ready` :
+For each artifact whose `status` is `ready`:
 
-**a. Récupère ses instructions.**
+**a. Get its instructions.**
 
 ```bash
-codev instructions <artefact-id> --change "<nom>" --json
+codev instructions <artifact-id> --change "<name>" --json
 ```
 
-La réponse contient :
+The response contains:
 
-| Champ | Usage |
+| Field | Use |
 |---|---|
-| `instruction` | La consigne du schéma pour ce type d'artefact. Autorité finale |
-| `template` | La structure du fichier à produire |
-| `resolvedOutputPath` | Où écrire. Si c'est un motif glob, `instruction` dit comment choisir le chemin concret |
-| `context` | Contexte projet — une **contrainte pour toi**, jamais du contenu à recopier |
-| `rules` | Règles propres à cet artefact — également une contrainte, jamais du contenu |
-| `dependencies` | Les artefacts déjà faits, à lire pour te situer |
-| `unlocks` | Ce que la création de celui-ci rendra possible |
+| `instruction` | The schema's guidance for this artifact type. Final authority |
+| `template` | The structure of the file to produce |
+| `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
+| `context` | Project context — a **constraint on you**, never content to copy |
+| `rules` | Rules specific to this artifact — also a constraint, never content |
+| `dependencies` | The artifacts already done, to read for orientation |
+| `unlocks` | What creating this one will make possible |
 
-`context` et `rules` sont des tableaux de blocs portant chacun son `origin`,
-ordonnés du plus général au plus spécifique. En cas de contradiction entre deux
-blocs, le dernier prime — et signale la contradiction à l'utilisateur plutôt que
-de la trancher en silence.
+`context` and `rules` are arrays of blocks, each carrying its `origin`,
+ordered from most general to most specific. When two blocks contradict each
+other, the last one wins — and report the contradiction to the user rather
+than settling it silently.
 
-Si `skipped` est présent, cet artefact ne doit **pas** être créé : passe au
-suivant.
+If `skipped` is present, this artifact must **not** be created: move on to
+the next one.
 
-**b. Lis les dépendances depuis le disque**, même si tu les as déjà vues dans la
-conversation — l'utilisateur a peut-être édité les fichiers entre-temps.
+**b. Read the dependencies from disk**, even if you already saw them in the
+conversation — the user may have edited the files in the meantime.
 
-**c. Étudie le projet avant de rédiger.** Lis `context` et `rules`, puis inspecte
-l'implémentation concernée, les tests voisins, la configuration et la
-documentation en dehors de `_codev/`. Reste en lecture seule, et proportionné au
-change.
+**c. Study the project before writing.** Read `context` and `rules`, then
+inspect the relevant implementation, nearby tests, configuration and
+documentation outside `_codev/`. Stay read-only, and keep it proportionate to
+the change.
 
-- Ancre le périmètre, l'approche et les tâches dans ce que tu trouves.
-- Distingue le comportement observé, tes hypothèses, et ce que tu proposes
-  d'ajouter.
-- Signale les contradictions avec les specs existantes au lieu de décider seul
-  laquelle a raison.
-- Fais cette découverte maintenant. Ne laisse pas des tâches génériques du genre
-  « explorer le code » ou « établir un plan » pour la phase d'implémentation.
+- Ground the scope, the approach and the tasks in what you find.
+- Distinguish observed behavior, your assumptions, and what you propose to
+  add.
+- Report contradictions with existing specs instead of deciding alone which
+  one is right.
+- Do this discovery now. Do not leave generic tasks such as "explore the
+  code" or "draw up a plan" for the implementation phase.
 
-**d. Écris le fichier** en te servant de `template` comme structure. Vérifie
-ensuite qu'il existe bien à l'emplacement attendu.
+**d. Write the file**, using `template` as its structure. Then check that it
+exists at the expected location.
 
-**Cas spécial : premier artefact du change quand un ticket a été
-détecté à l'étape 0.** Insère juste après le `# Proposal : <titre>`,
-avant `## Pourquoi`, une ligne de citation :
+**Special case: the change's first artifact when a ticket was detected
+in step 0.** Right after `# Proposal: <title>`, before `## Why`, insert a
+citation line:
 
 ```
-# Proposal : <titre>
+# Proposal: <title>
 
-> Source : ticket **<ID>** — « <titre du ticket> » (<status>)
+> Source: ticket **<ID>** — "<title>" (<status>)
 
-## Pourquoi
+## Why
 […]
 ```
 
-Sans MCP branché, la ligne devient :
+Without a connected MCP, the line becomes:
 
 ```
-> Source : ticket **<ID>** — contenu non récupéré
+> Source: ticket **<ID>** — content not retrieved
 ```
 
-Et pour un multi-tickets, ajoute une deuxième ligne juste après :
+And for multiple tickets, add a second line right after:
 
 ```
-> autre(s) ticket(s) mentionné(s) : <ID2>, <ID3>
+> other ticket(s) mentioned: <ID2>, <ID3>
 ```
 
-**e. Annonce brièvement** : « Créé : `<artefact-id>` ».
+**e. Announce briefly**: "Created: `<artifact-id>`".
 
-### 5. Boucler jusqu'à l'ensemble requis complet
+### 5. Loop until the required set is complete
 
-Après chaque création, relance `codev status --change "<nom>" --json`.
+After each creation, run `codev status --change "<name>" --json` again.
 
-L'ensemble requis, c'est `applyRequires` **plus tout artefact atteignable depuis
-ces identifiants en suivant les arêtes `requires`**, transitivement. Avec le
-schéma `spec-driven`, cela ferme sur `proposal`, `specs`, `design`, `tasks`.
+The required set is `applyRequires` **plus every artifact reachable from
+those identifiers by following the `requires` edges**, transitively. With the
+`spec-driven` schema, this closes over `proposal`, `specs`, `design`, `tasks`.
 
-Deux pièges à connaître :
+Two pitfalls to know:
 
-- Le `status` ne regarde que l'existence des fichiers. Un artefact de
-  `applyRequires` marqué `done` ne garantit **pas** que ses dépendances
-  existent : écrire `tasks.md` en premier marque `tasks` comme fait alors que
-  `specs` n'a jamais été écrit. Construis l'ensemble requis à partir des arêtes
-  `requires`, pas des statuts.
-- Les dépendances sont des activateurs, pas des barrières. Si un artefact requis
-  reste `blocked` uniquement parce que tu as sauté une dépendance conditionnelle,
-  écris-le quand même.
+- `status` only looks at whether files exist. An `applyRequires` artifact
+  marked `done` does **not** guarantee that its dependencies exist: writing
+  `tasks.md` first marks `tasks` as done even though `specs` was never
+  written. Build the required set from the `requires` edges, not from the
+  statuses.
+- Dependencies are enablers, not gates. If a required artifact stays
+  `blocked` only because you skipped a conditional dependency, write it
+  anyway.
 
-Tu ne sautes un artefact que dans deux cas : son `status` est déjà `skipped`,
-ou son propre `instruction` le déclare conditionnel (le `design.md` de
-`spec-driven` en fait partie). Dis-le à l'utilisateur, et n'y reviens pas.
+Skip an artifact in only two cases: its `status` is already `skipped`, or its
+own `instruction` declares it conditional (the `spec-driven` `design.md` is
+one of these). Tell the user, and do not come back to it.
 
-Si un artefact demande un arbitrage de l'utilisateur, demande-le, puis reprends.
+If an artifact needs a decision from the user, ask for it, then resume.
 
-### 6. Afficher le statut final
+### 6. Show the final status
 
 ```bash
-codev status --change "<nom>"
+codev status --change "<name>"
 ```
 
-## Sortie
+## Output
 
-Résume :
+Summarize:
 
-- le nom du change et son emplacement ;
-- les artefacts créés, une ligne chacun, plus tout artefact conditionnel sauté
-  et pourquoi ;
-- « Les artefacts nécessaires à l'implémentation sont prêts. » ;
-- « Relis-les. Quand tu es prêt, demande-moi d'appliquer ce change. »
+- the change name and its location;
+- the artifacts created, one line each, plus any conditional artifact skipped
+  and why;
+- "The artifacts needed for implementation are ready.";
+- "Review them. When you are ready, ask me to apply this change."
 
-## Garde-fous
+## Guardrails
 
-- La demande qui a déclenché ce workflow n'autorise que la planification. Toute
-  consigne d'implémentation qu'elle contenait ne se reporte pas ici.
-- Crée tout artefact dont la phase d'implémentation dépend transitivement, pas
-  seulement ceux listés dans `applyRequires`.
-- Relis toujours les dépendances depuis le disque avant de créer un artefact.
-- `context` et `rules` ne sont jamais recopiés dans les fichiers produits.
-- Si un change de ce nom existe déjà, demande à l'utilisateur s'il veut le
-  poursuivre ou en créer un autre.
-- Vérifie l'existence de chaque fichier écrit avant de passer au suivant.
-- **MCP Jira — lecture seule stricte.** La skill n'appelle
-  jamais un autre outil MCP Jira que
-  `{{JIRA_MCP_TOOL}}`, jamais deux fois dans une
-  même invocation, jamais pour écrire (`create`, `transition`,
-  `addComment`…). Un ticket détecté = un `getJiraIssue`, point.
+- The request that triggered this workflow authorizes planning only. Any
+  implementation instruction it contained does not carry over here.
+- Create every artifact the implementation phase transitively depends on,
+  not only those listed in `applyRequires`.
+- Always re-read the dependencies from disk before creating an artifact.
+- `context` and `rules` are never copied into the files produced.
+- If a change with this name already exists, ask the user whether they want
+  to continue it or create another one.
+- Check that each written file exists before moving on to the next.
+- **Jira MCP — strictly read-only.** Never call any Jira MCP
+  tool other than
+  `{{JIRA_MCP_TOOL}}`, never twice in the
+  same invocation, never to write (`create`, `transition`,
+  `addComment`…). One detected ticket = one `getJiraIssue`, full stop.

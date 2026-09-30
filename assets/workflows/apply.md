@@ -1,137 +1,134 @@
-Implémenter les tâches d'un change codev — traiter chaque case `- [ ]` de
-`tasks.md` dans l'ordre, cocher au fur et à mesure, s'arrêter au premier
-blocage.
+Implement the tasks of a codev change — work through each `- [ ]` box in
+`tasks.md` in order, check them off as you go, stop at the first blocker.
 
-**Frontière d'implémentation.** Ce workflow **écrit du code du projet** :
-c'est le seul de codev qui touche à autre chose que le dossier `_codev/`. En
-contrepartie, il se cantonne strictement au change nommé : il ne modifie
-aucun autre change, il n'archive pas, il ne sync pas. Ces derniers sont des
-pas suivants explicites, à demander par l'utilisateur.
+**Implementation boundary.** This workflow **writes project code**: it is
+the only codev workflow that touches anything outside the `_codev/` folder.
+In return, it is strictly confined to the named change: it modifies no other
+change, it does not archive, it does not sync. Those are explicit next
+steps, for the user to request.
 
 ---
 
-## Entrée
+## Input
 
-Un nom de change en argument, ou rien (auquel cas le change est résolu
-implicitement s'il n'y en a qu'un seul actif).
+A change name as argument, or nothing (in which case the change is resolved
+implicitly if there is only one active change).
 
-## Étapes
+## Steps
 
-### 1. Résoudre le change et vérifier que la planification est complète
+### 1. Resolve the change and check that planning is complete
 
-Si l'utilisateur a nommé un change, prends celui-là. Sinon, appelle :
+If the user named a change, use that one. Otherwise, run:
 
 ```bash
 codev list
 ```
 
-- Un seul change actif → c'est celui-là.
-- Plusieurs changes actifs → demande à l'utilisateur lequel, en listant les
-  noms. Ne devine pas.
-- Aucun change actif → dis-le, propose `/codev-propose` pour en créer un.
+- A single active change → use it.
+- Several active changes → ask the user which one, listing the names. Do
+  not guess.
+- No active change → say so, and suggest `/codev-propose` to create one.
 
-Puis vérifie la planification :
+Then check the planning:
 
 ```bash
-codev status --change "<nom>" --json
+codev status --change "<name>" --json
 ```
 
-Si `isPlanningComplete` est `false`, arrête : la planification n'est pas
-prête. Indique quels artefacts manquent et propose `/codev-propose` ou
-l'édition manuelle. N'implémente rien.
+If `isPlanningComplete` is `false`, stop: planning is not ready. Say which
+artifacts are missing and suggest `/codev-propose` or editing by hand.
+Implement nothing.
 
-### 2. Lire les tâches
+### 2. Read the tasks
 
 ```
-Read _codev/changes/<nom>/tasks.md
+Read _codev/changes/<name>/tasks.md
 ```
 
-Le format attendu est strict :
+The expected format is strict:
 
-- une tâche : `- [ ] X.Y Description, vérifiée par <test ou commande>`
-- une tâche cochée : `- [x] X.Y …`
-- des groupes sous des titres `## N. …`
+- a task: `- [ ] X.Y Description, verified by <test or command>`
+- a checked task: `- [x] X.Y …`
+- groups under `## N. …` headings
 
-Si tu trouves un format différent (`-[ ]` sans espace, `- [X]` majuscule,
-`- [-]` autre marqueur), signale-le à l'utilisateur et propose de corriger
-avant de continuer.
+If you find a different format (`-[ ]` without a space, uppercase `- [X]`,
+another marker such as `- [-]`), point it out to the user and offer to fix
+it before continuing.
 
-### 3. Traiter chaque tâche non cochée, dans l'ordre du fichier
+### 3. Work through each unchecked task, in file order
 
-Pour chaque `- [ ]` rencontrée, dans l'ordre où elle apparaît :
+For each `- [ ]` encountered, in the order it appears:
 
-**a. Annonce.** « Tâche X.Y : <description résumée en un fragment>. »
+**a. Announce.** "Task X.Y: <description summarized in a fragment>."
 
-**b. Étudie.** Lis les fichiers concernés par la tâche. Reste en lecture
-seule le temps de comprendre, écris ensuite. Chaque tâche du `tasks.md`
-énonce comment vérifier qu'elle est faite — cette vérification est le
-critère d'acceptation, pas une suggestion.
+**b. Study.** Read the files the task concerns. Stay read-only while you
+build understanding, then write. Each task in `tasks.md` states how to
+verify it is done — that verification is the acceptance criterion, not a
+suggestion.
 
-**c. Implémente.** Écris le code, les tests, la configuration. Cible ce que
-la tâche demande, rien de plus.
+**c. Implement.** Write the code, the tests, the configuration. Target
+what the task asks for, nothing more.
 
-**d. Vérifie.** Lance la commande, le test, l'observation citée par la
-tâche. Une compilation qui échoue, un test qui tombe rouge, un
-comportement absent : la tâche n'est pas faite. Corrige, relance.
+**d. Verify.** Run the command, the test, the observation the task cites.
+A failing build, a test turning red, a missing behavior: the task is not
+done. Fix, run again.
 
-**e. Coche.** Modifie `tasks.md` avec `Edit` : la ligne `- [ ] X.Y …`
-devient `- [x] X.Y …`. Reste précis — un `replace_all` remplacerait aussi
-les tâches d'autres changes lues précédemment, à éviter. Utilise l'ancienne
-ligne complète comme repère.
+**e. Check off.** Edit `tasks.md` with `Edit`: the line `- [ ] X.Y …`
+becomes `- [x] X.Y …`. Be precise — a `replace_all` would also replace
+tasks from other changes read earlier; avoid it. Use the full old line as
+the anchor.
 
-**f. Court retour à l'utilisateur.** « ✓ X.Y — <ce que ça a produit en une
-ligne> ». Continue à la suivante.
+**f. Brief feedback to the user.** "✓ X.Y — <what it produced, in one
+line>". Move on to the next one.
 
-### 4. Arrêt sur ambiguïté ou blocage
+### 4. Stop on ambiguity or blocker
 
-Une tâche n'est pas exécutable dans deux cas :
+A task cannot be carried out in two cases:
 
-- **Ambiguïté matérielle** : sa formulation admet plusieurs interprétations
-  qui changeraient matériellement le résultat (choix d'API, format de
-  sortie, comportement sur cas limite). Dans ce cas :
-  - **ne coche pas**,
-  - décris les interprétations à l'utilisateur,
-  - propose que la tâche soit scindée en `X.Y.a` / `X.Y.b` dans `tasks.md`
-    — mais laisse l'utilisateur trancher ou reformuler.
-- **Blocage technique** : dépendance manquante, test qui ne peut pas
-  s'exécuter, une commande qui exige une intervention manuelle. Dans ce
-  cas :
-  - **ne coche pas**,
-  - décris le blocage,
-  - propose la piste de résolution qui te semble la meilleure, sans
-    l'appliquer.
+- **Material ambiguity**: its wording allows several interpretations that
+  would materially change the result (API choice, output format, behavior
+  on an edge case). In that case:
+  - **do not check it off**,
+  - describe the interpretations to the user,
+  - suggest splitting the task into `X.Y.a` / `X.Y.b` in `tasks.md`
+    — but let the user decide or rephrase.
+- **Technical blocker**: missing dependency, a test that cannot run, a
+  command that requires manual intervention. In that case:
+  - **do not check it off**,
+  - describe the blocker,
+  - suggest the resolution you think is best, without applying it.
 
-Dans les deux cas, tu t'arrêtes après la tâche courante. Les tâches
-suivantes ne sont pas traitées tant que l'obstacle n'est pas levé.
+In both cases, stop after the current task. The following tasks are not
+processed until the obstacle is cleared.
 
-### 5. Fin — inviter à archive comme pas suivant explicite
+### 5. Finish — suggest archiving as an explicit next step
 
-Quand toutes les cases sont cochées, résume :
+When every box is checked, summarize:
 
-- nombre de tâches faites,
-- fichiers principaux touchés (une ligne),
-- « Le change est prêt à être archivé. Lance `/codev-archive` (à venir) ou
-  `codev archive` en pas suivant. »
+- number of tasks done,
+- main files touched (one line),
+- "The change is ready to be archived. Run `/codev-archive` or
+  `codev archive` as the next step."
 
-**N'archive pas toi-même.** L'utilisateur doit relire d'abord.
+**Do not archive yourself.** The user must review first.
 
-## Sortie
+## Output
 
-Un résumé final, comme décrit à l'étape 5.
+A final summary, as described in step 5.
 
-## Garde-fous
+## Guardrails
 
-- **Frontière du change** : ne modifie aucun fichier d'un autre change
-  actif ou archivé. Si une tâche te force à toucher un autre change, c'est
-  un signe que le change présent est mal cadré — arrête et demande.
-- **Pas de sync ni d'archive automatique** : ces opérations sont des
-  décisions à part, prises par l'utilisateur.
-- **Pas de contournement d'erreur** : un test qui échoue n'est pas coché.
-  `--no-verify`, `#[ignore]`, un `expect_err` complaisant : chacune est un
-  drapeau rouge qui remplace le silence par un mensonge.
-- **Vérifications avant de cocher** : cocher une case sans avoir vérifié la
-  ligne de vérification citée dans la tâche = régression annoncée. Toujours
-  vérifier.
-- **Édition ciblée de tasks.md** : la ligne changée est identifiée par son
-  texte complet, jamais par un `- [ ]` seul. Sans cela, une autre case
-  serait cochée par accident.
+- **Change boundary**: do not modify any file of another active or
+  archived change. If a task forces you to touch another change, that is a
+  sign the current change is poorly scoped — stop and ask.
+- **No automatic sync or archive**: these operations are separate
+  decisions, made by the user.
+- **No working around errors**: a failing test is not checked off.
+  `--no-verify`, `#[ignore]`, a convenient `expect_err`: each is a red flag
+  that replaces silence with a lie.
+- **Verify before checking off**: checking a box without having run the
+  verification the task cites = a regression waiting to happen. Always
+  verify.
+- **Targeted editing of tasks.md**: the changed line is identified by its
+  full text, never by a bare `- [ ]`. Otherwise, another box would be
+  checked by accident.
