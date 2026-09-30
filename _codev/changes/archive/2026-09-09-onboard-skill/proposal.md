@@ -1,88 +1,87 @@
-# Proposal : livrer `/codev-onboard`
+# Proposal: deliver `/codev-onboard`
 
-## Pourquoi
+## Why
 
-Un utilisateur qui découvre codev — soit qu'il vient d'installer le
-binaire, soit qu'il ouvre Claude Code sur un projet où quelqu'un
-d'autre a déjà lancé `codev init` — ne sait pas par quoi commencer. Les
-six skills existantes (`propose`, `explore`, `apply`, `sync`, `archive`,
-`update`) suffisent pour **travailler**, mais aucune ne se présente. Le
-README explique le concept, mais Claude Code ne le lit pas.
+A user discovering codev — whether they have just installed the
+binary, or they open Claude Code on a project where someone else has
+already run `codev init` — does not know where to start. The six
+existing skills (`propose`, `explore`, `apply`, `sync`, `archive`,
+`update`) are enough to **work**, but none introduces itself. The
+README explains the concept, but Claude Code does not read it.
 
-Résultat aujourd'hui : les nouveaux utilisateurs tapent `/help`, voient
-une liste de slash-commands sans hiérarchie, et n'ont aucun repère pour
-distinguer « par où entrer » de « quand utiliser ». `/codev-onboard`
-livre ce repère — une seule invocation, une carte du terrain, une
-recommandation d'action.
+Result today: new users type `/help`, see a list of slash commands
+without hierarchy, and have no landmark to tell "where to enter" from
+"when to use". `/codev-onboard` delivers that landmark — a single
+invocation, a map of the terrain, a recommended action.
 
-Utile aussi aux nouveaux **workflows MCP** : quand le premier vrai
-projet JVS branchera un MCP Jira, l'utilisateur qui l'ouvrira pour la
-première fois voudra un point d'entrée qui explique « voici comment
-cette combinaison codev + Jira marche ici ». La skill onboard, du
-projet-parent ou héritée, tiendra ce rôle.
+Also useful for the new **MCP workflows**: when the first real JVS
+project plugs in a Jira MCP, the user opening it for the first time
+will want an entry point explaining "here is how this codev + Jira
+combination works here". The onboard skill, from the parent project or
+inherited, will play that role.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau workflow `onboard`** dans le catalogue, invocable
-  `/codev-onboard`. Rôle : montrer l'état actuel du projet
-  (initialisé ou non, specs présentes, changes actifs, décisions
-  indexées) et recommander la prochaine action.
-- **Nouveau fichier `assets/workflows/onboard.md`** — le corps de la
-  skill, chargé via `include_str!` comme les six autres.
-- **`onboard` est ajouté à `DEFAULT_WORKFLOWS`** — passage de
-  `["propose", "explore"]` à `["propose", "explore", "onboard"]`. Un
-  utilisateur qui lance `codev init` dans un projet neuf voit donc
-  `/codev-onboard` disponible immédiatement, sans opt-in à ajouter
-  dans `config.yaml`.
-- **Frontière stricte lecture seule** — pas d'écriture, pas de
-  création de change, pas d'appel à `codev init`. La skill **guide**,
-  elle **n'agit pas** à la place de l'utilisateur.
-- **`allowed-tools` restreint** — `Bash(codev:*), Read, Glob`. Pas de
-  `Bash` général ; pas d'`Edit`, pas de `Write`.
+- **New `onboard` workflow** in the catalog, invocable as
+  `/codev-onboard`. Role: show the current state of the project
+  (initialized or not, specs present, active changes, indexed
+  decisions) and recommend the next action.
+- **New file `assets/workflows/onboard.md`** — the skill's body, loaded
+  via `include_str!` like the six others.
+- **`onboard` is added to `DEFAULT_WORKFLOWS`** — going from
+  `["propose", "explore"]` to `["propose", "explore", "onboard"]`. A
+  user who runs `codev init` in a new project therefore sees
+  `/codev-onboard` available immediately, with no opt-in to add in
+  `config.yaml`.
+- **Strict read-only boundary** — no writes, no change creation, no
+  call to `codev init`. The skill **guides**, it **does not act** in
+  the user's place.
+- **Restricted `allowed-tools`** — `Bash(codev:*), Read, Glob`. No
+  general `Bash`; no `Edit`, no `Write`.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — deux nouvelles exigences ADDED : présence de `onboard`
-  dans le catalogue, et son inclusion dans `DEFAULT_WORKFLOWS`.
+- `skills` — two new ADDED requirements: presence of `onboard` in the
+  catalog, and its inclusion in `DEFAULT_WORKFLOWS`.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** : nouvelle entrée `Workflow { id: "onboard", … }` dans le
-  `CATALOG` de `codev-agents::workflows`, `DEFAULT_WORKFLOWS` étendu à
-  trois entrées, et deux tests dédiés (présence, `allowed-tools`).
-- **Test existant `sans_demande_installe_le_catalogue_par_defaut`** —
-  ajustement mineur : la liste attendue passe de deux à trois entrées,
-  et la vérification « opt-in » passe de 4 à 3 workflows
-  (`apply`, `sync`, `archive`, `update` restent opt-in ; `onboard`
-  devient default).
-- **Test `chaque_workflow_a_un_corps_…`** — couvre automatiquement
+- **Code**: new entry `Workflow { id: "onboard", … }` in the `CATALOG`
+  of `codev-agents::workflows`, `DEFAULT_WORKFLOWS` extended to three
+  entries, and two dedicated tests (presence, `allowed-tools`).
+- **Existing test `sans_demande_installe_le_catalogue_par_defaut`** —
+  minor adjustment: the expected list goes from two to three entries,
+  and the "opt-in" check goes from 4 to 3 workflows
+  (`apply`, `sync`, `archive`, `update` stay opt-in; `onboard`
+  becomes default).
+- **Test `chaque_workflow_a_un_corps_…`** — automatically covers
   `onboard`.
-- **Config du dépôt** : `_codev/config.yaml` gagne `- onboard` à sa
-  liste `workflows` — pour dogfood, puisque le dépôt utilise ce qu'il
-  fabrique.
-- **Contrat JSON** : rien. La skill lit des JSON existants (`codev list
-  --specs --json` n'existe pas encore — la skill lira les sorties
-  humaines qui existent, cohérent avec `apply`/`update`).
-- **Migration** : aucune. Les projets qui ont déjà un `config.yaml`
-  avec une liste explicite `workflows:` **ne** gagnent **pas**
-  `onboard` automatiquement (le default ne s'applique que quand la
-  clef est absente) — ils l'ajoutent quand ils veulent.
-- **Hors périmètre** :
-  - **Un tutoriel interactif étape par étape** (« maintenant tape
-    ceci, puis ça… ») — trop injonctif ; la skill informe et propose,
-    l'utilisateur agit.
-  - **Un mode `--refresh` qui reset l'état** — pas un problème de
-    présentation, pas la responsabilité de cette skill.
-  - **Détection automatique de patterns MCP** (numéros de tickets,
-    URL Figma) — c'est le rôle des skills d'action (`propose`,
-    `apply`), pas de `onboard`.
+- **Repository config**: `_codev/config.yaml` gains `- onboard` in its
+  `workflows` list — for dogfooding, since the repository uses what it
+  builds.
+- **JSON contract**: nothing. The skill reads existing JSON (`codev list
+  --specs --json` does not exist yet — the skill will read the existing
+  human outputs, consistent with `apply`/`update`).
+- **Migration**: none. Projects that already have a `config.yaml` with
+  an explicit `workflows:` list do **not** gain `onboard`
+  automatically (the default only applies when the key is absent) —
+  they add it when they want.
+- **Out of scope**:
+  - **A step-by-step interactive tutorial** ("now type this, then
+    that…") — too prescriptive; the skill informs and proposes, the
+    user acts.
+  - **A `--refresh` mode that resets state** — not a presentation
+    problem, not this skill's responsibility.
+  - **Automatic detection of MCP patterns** (ticket numbers, Figma
+    URLs) — that is the role of action skills (`propose`, `apply`),
+    not of `onboard`.

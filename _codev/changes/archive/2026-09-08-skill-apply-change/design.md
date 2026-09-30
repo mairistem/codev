@@ -1,84 +1,84 @@
-# Design : livrer `/codev-apply`
+# Design: ship `/codev-apply`
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Deux workflows existent déjà —
-`propose` et `explore` — chacun est un couple {entrée dans le `CATALOG`,
-fichier markdown sous `assets/workflows/`}. Ce design reprend la même
-mécanique sans rien y ajouter côté code ; l'essentiel est le contenu du
-markdown.
+See `proposal.md` for the motivation. Two workflows already exist —
+`propose` and `explore` — each is a pair {entry in the `CATALOG`, markdown
+file under `assets/workflows/`}. This design reuses the same mechanism
+without adding anything on the code side; the essence is the markdown
+content.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- l'ajout d'une entrée dans le `CATALOG` — trivial, mais listé ici pour
-  clore explicitement la boucle avec les tests d'invariant existants ;
-- la structure et les invariants du corps de la skill.
+- adding an entry to the `CATALOG` — trivial, but listed here to
+  explicitly close the loop with the existing invariant tests;
+- the structure and invariants of the skill body.
 
-Il ne cadre **pas** les skills `sync`/`archive`/`update` (proposal hors
-périmètre), ni l'ajout de `apply` à `DEFAULT_WORKFLOWS` — décision reportée
-au retour d'expérience.
+It does **not** cover the `sync`/`archive`/`update` skills (proposal out of
+scope), nor adding `apply` to `DEFAULT_WORKFLOWS` — a decision deferred
+until feedback is in.
 
-## Décisions
+## Decisions
 
-### Décision : `allowed-tools` inclut `Bash` en plus de `Bash(codev:*)`
+### Decision: `allowed-tools` includes `Bash` in addition to `Bash(codev:*)`
 
-`apply` doit pouvoir lancer les commandes de vérification écrites dans
-`tasks.md` (`cargo test …`, `cargo build …`, etc.). Restreindre à
-`Bash(codev:*)` comme `propose` et `explore` empêcherait la vérification
-qu'exige justement chaque tâche.
+`apply` must be able to run the verification commands written in
+`tasks.md` (`cargo test …`, `cargo build …`, etc.). Restricting to
+`Bash(codev:*)` like `propose` and `explore` would prevent the verification
+that each task specifically requires.
 
-Décidé de lister explicitement : `Bash(codev:*), Read, Write, Edit, Glob,
-Grep, Bash`. L'ordre a une signification pour l'utilisateur qui lit le
-frontmatter — le préfixe `Bash(codev:*)` en premier documente l'usage
-principal ; `Bash` seul en dernier documente l'ouverture nécessaire.
+Decided to list explicitly: `Bash(codev:*), Read, Write, Edit, Glob,
+Grep, Bash`. The order carries meaning for the user reading the
+frontmatter — the `Bash(codev:*)` prefix first documents the main usage;
+plain `Bash` last documents the necessary opening.
 
-**Alternative écartée** : restreindre à `Bash(cargo:*), Bash(codev:*)`. Trop
-étroit — un test peut exiger `git`, `npm`, `python`. Le contexte projet
-décide ; codev n'a pas à préjuger de la boîte à outils.
+**Rejected alternative**: restrict to `Bash(cargo:*), Bash(codev:*)`. Too
+narrow — a test may require `git`, `npm`, `python`. The project context
+decides; codev has no business prejudging the toolbox.
 
-### Décision : la skill cocher les cases via `Edit`, pas via une commande CLI
+### Decision: the skill checks boxes via `Edit`, not via a CLI command
 
-Il n'existe pas de commande `codev task check <n>` — et il n'y en aura pas
-tant que le format `tasks.md` reste stable, cf. la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) : le
-cœur ne touche pas au disque, et le format markdown est la source de vérité
-lue par `codev status`. La skill utilise donc `Edit` pour transformer
-`- [ ] X.Y` en `- [x] X.Y` sur la ligne de la tâche.
+There is no `codev task check <n>` command — and there will not be one
+as long as the `tasks.md` format stays stable, cf. decision
+[0001](../../decisions/0001-functional-core-imperative-shell.md): the
+core does not touch the disk, and the markdown format is the source of
+truth read by `codev status`. The skill therefore uses `Edit` to turn
+`- [ ] X.Y` into `- [x] X.Y` on the task's line.
 
-**Rationale** : introduire une commande dédiée dupliquerait la logique du
-parser de tasks (B3, non encore livré) sans gain — l'agent voit déjà les
-lignes du fichier via `Read`, sait faire un `Edit` ciblé, et le round-trip
-est trivial. Le jour où B3 arrivera, la skill pourra migrer sans casser son
-contrat public.
+**Rationale**: introducing a dedicated command would duplicate the tasks
+parser logic (B3, not yet shipped) with no gain — the agent already sees
+the file's lines via `Read`, knows how to make a targeted `Edit`, and the
+round-trip is trivial. The day B3 arrives, the skill can migrate without
+breaking its public contract.
 
-### Décision : la skill s'arrête au dernier `[x]` et invite à archive
+### Decision: the skill stops at the last `[x]` and invites to archive
 
-Un `apply` qui déclencherait automatiquement `archive` violerait la règle
-« une skill fait une chose » — et surtout, l'utilisateur veut relire le
-résultat avant d'archiver. La skill dit explicitement quel change est prêt
-et laisse le pas suivant à l'utilisateur.
+An `apply` that automatically triggered `archive` would violate the rule
+"a skill does one thing" — and above all, the user wants to review the
+result before archiving. The skill states explicitly which change is ready
+and leaves the next step to the user.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Une tâche mal formulée bloque tout**. Une case qui décrit deux choses
-  différentes force la skill à s'arrêter et demander. → **Compromis
-  assumé** : c'est le comportement voulu. L'alternative — deviner — mène à
-  la dette silencieuse. Le message d'arrêt cite la tâche et propose de la
-  scinder en deux `X.Y.a` / `X.Y.b`, sans imposer.
-- **Le format `- [ ]` est fragile aux espacements**. Un `-[ ]` sans espace,
-  un `- [X]` majuscule, une case avec `- [-]` — chacun casse la
-  reconnaissance. → **Atténuation** : la skill décrit exactement le format
-  attendu (`- [ ]` avec espaces) et invite à corriger si autre chose est
-  trouvé. Plus tard, B3 pourra tolérer les variantes.
-- **Long tasks.md → session interminable**. La skill peut passer une heure
-  sur une trentaine de tâches. → **Compromis assumé** : c'est l'objet même
-  d'`apply`. Un futur `apply --batch <N>` limitera si le besoin apparaît.
+- **A badly worded task blocks everything**. A box that describes two
+  different things forces the skill to stop and ask. → **Accepted
+  trade-off**: this is the intended behavior. The alternative — guessing —
+  leads to silent debt. The stop message quotes the task and suggests
+  splitting it into two `X.Y.a` / `X.Y.b`, without imposing it.
+- **The `- [ ]` format is fragile to spacing**. A `-[ ]` without a space,
+  an uppercase `- [X]`, a box with `- [-]` — each breaks recognition.
+  → **Mitigation**: the skill describes the expected format exactly
+  (`- [ ]` with spaces) and invites correction if something else is
+  found. Later, B3 may tolerate the variants.
+- **Long tasks.md → endless session**. The skill may spend an hour on
+  some thirty tasks. → **Accepted trade-off**: that is the very purpose of
+  `apply`. A future `apply --batch <N>` will limit it if the need arises.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet — c'est une nouvelle skill. Un projet existant qui a `workflows:
-[propose, explore]` dans son `config.yaml` doit y ajouter `apply` et
-relancer `codev update` pour l'installer. Le message de `codev update`
-indique déjà la nouvelle skill quand elle apparaît.
+Not applicable — this is a new skill. An existing project that has
+`workflows: [propose, explore]` in its `config.yaml` must add `apply` to it
+and rerun `codev update` to install it. The `codev update` message already
+points out the new skill when it appears.

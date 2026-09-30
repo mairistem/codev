@@ -1,42 +1,42 @@
 use std::path::PathBuf;
 
-/// Ce qu'une opération veut écrire, calculé **avant** la moindre écriture.
+/// What an operation wants to write, computed **before** any write happens.
 ///
-/// C'est le pivot de l'architecture : le cœur ne touche jamais au disque, il
-/// produit un plan ; la coquille l'exécute. On y gagne `--dry-run`, la
-/// prévisualisation `--json`, l'atomicité — le plan est validé entièrement
-/// avant la première écriture — et des tests sans répertoire temporaire.
-/// Voir `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
+/// This is the pivot of the architecture: the core never touches the disk, it
+/// produces a plan; the imperative shell executes it. This buys us `--dry-run`, the
+/// `--json` preview, atomicity — the plan is fully validated
+/// before the first write — and tests without a temporary directory.
+/// See `_codev/decisions/0001-functional-core-imperative-shell.md`.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Plan {
     pub dirs: Vec<PathBuf>,
     pub writes: Vec<FileWrite>,
-    /// Suppressions de fichiers — appliquées après les writes et avant
-    /// les moves. Un `Plan` sans deletion se comporte comme avant.
+    /// File deletions — applied after the writes and before
+    /// the moves. A `Plan` without deletions behaves as before.
     ///
-    /// Séparer des writes n'est pas cosmétique : un fichier légitimement
-    /// vide (un `write` avec `contents: ""`) ne doit **jamais** être
-    /// confondu avec une suppression. Le geste destructeur mérite son
-    /// champ propre, et l'exécuteur peut refuser une deletion sans
-    /// confirmation dans un futur mode `--dry-run` sans avoir à
-    /// reparser des `contents=""`.
+    /// Keeping them apart from writes is not cosmetic: a legitimately
+    /// empty file (a `write` with `contents: ""`) must **never** be
+    /// mistaken for a deletion. The destructive action deserves its
+    /// own field, and the executor can refuse an unconfirmed deletion
+    /// in a future `--dry-run` mode without having to
+    /// re-parse `contents=""`.
     pub deletions: Vec<PathBuf>,
-    /// Déplacements de dossiers (ou fichiers) — appliqués après les écritures.
+    /// Directory (or file) moves — applied after the writes.
     ///
-    /// L'ordre importe : un `Move` peut avoir besoin qu'un dossier parent
-    /// existe côté destination (donc dirs d'abord), et un `Move` peut aussi
-    /// venir « emballer » des fichiers qui viennent d'être écrits (donc
-    /// writes d'abord). C'est la coquille qui joue cet ordre ; ici on ne
-    /// fait que le collecter.
+    /// Order matters: a `Move` may need a parent directory to
+    /// exist at the destination (hence dirs first), and a `Move` may also
+    /// "wrap up" files that were just written (hence
+    /// writes first). The imperative shell enforces that order; here we
+    /// merely collect it.
     pub moves: Vec<Move>,
 }
 
-/// Un déplacement `from → to`.
+/// A `from → to` move.
 ///
-/// Toute modification du disque doit passer par un `Plan` — voir la décision
-/// [0001](_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md).
-/// Un déplacement qui vivrait à côté du plan rouvrirait la porte à un état
-/// incohérent : main spec écrite, dossier non déplacé. On ne veut pas ça.
+/// Every disk modification must go through a `Plan` — see decision
+/// [0001](_codev/decisions/0001-functional-core-imperative-shell.md).
+/// A move living outside the plan would reopen the door to an inconsistent
+/// state: main spec written, directory not moved. We do not want that.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Move {
     pub from: PathBuf,
@@ -52,16 +52,16 @@ pub struct FileWrite {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WriteMode {
-    /// N'écrit que si le fichier est absent.
+    /// Writes only if the file is absent.
     ///
-    /// Le mode du scaffolding : ni `init` ni `new change` ne doivent jamais
-    /// écraser ce que l'utilisateur a écrit. Relancer `init` sur un projet déjà
-    /// initialisé doit donc être sans effet et sans danger.
+    /// The scaffolding mode: neither `init` nor `new change` may ever
+    /// overwrite what the user wrote. Re-running `init` on an already
+    /// initialized project must therefore be a harmless no-op.
     CreateOnly,
-    /// Écrase le fichier existant.
+    /// Overwrites the existing file.
     ///
-    /// Réservé aux fichiers dont codev est propriétaire — les skills générées.
-    /// Tout ce qui porte ce mode est régénérable, donc perdable.
+    /// Reserved for files codev owns — the generated skills.
+    /// Anything written in this mode is regenerable, hence expendable.
     Overwrite,
 }
 
@@ -92,8 +92,8 @@ impl Plan {
         self
     }
 
-    /// Planifie la suppression d'un fichier. Un même chemin n'entre qu'une
-    /// fois — deux deletions identiques masqueraient un bug de composition.
+    /// Schedules a file deletion. A given path is added only
+    /// once — two identical deletions would hide a composition bug.
     pub fn delete(&mut self, path: impl Into<PathBuf>) -> &mut Self {
         let path = path.into();
         if !self.deletions.contains(&path) {
@@ -102,9 +102,9 @@ impl Plan {
         self
     }
 
-    /// Planifie un déplacement. Un même `(from, to)` n'entre qu'une fois —
-    /// deux moves identiques n'ont aucun sens et masqueraient un bug de
-    /// composition.
+    /// Schedules a move. A given `(from, to)` is added only once —
+    /// two identical moves make no sense and would hide a composition
+    /// bug.
     pub fn move_dir(&mut self, from: impl Into<PathBuf>, to: impl Into<PathBuf>) -> &mut Self {
         let mv = Move {
             from: from.into(),
@@ -116,9 +116,9 @@ impl Plan {
         self
     }
 
-    /// Absorbe un autre plan. Sert à composer : le CLI réunit le plan de
-    /// scaffolding de l'engine et celui des skills de `codev-agents`, puis
-    /// exécute l'ensemble en une passe.
+    /// Absorbs another plan. Used for composition: the CLI combines the engine's
+    /// scaffolding plan with the `codev-agents` skills plan, then
+    /// executes the whole thing in a single pass.
     pub fn merge(&mut self, other: Plan) {
         for dir in other.dirs {
             self.dir(dir);
@@ -145,64 +145,70 @@ mod tests {
     use super::*;
 
     #[test]
-    fn deduplique_les_dossiers() {
+    fn deduplicates_directories() {
         let mut plan = Plan::new();
         plan.dir("/a").dir("/b").dir("/a");
         assert_eq!(plan.dirs, [PathBuf::from("/a"), PathBuf::from("/b")]);
     }
 
     #[test]
-    fn fusionne_deux_plans() {
-        let mut premier = Plan::new();
-        premier.dir("/a").write("/a/x", "x", WriteMode::CreateOnly);
+    fn merges_two_plans() {
+        let mut first = Plan::new();
+        first.dir("/a").write("/a/x", "x", WriteMode::CreateOnly);
 
         let mut second = Plan::new();
         second.dir("/a").write("/a/y", "y", WriteMode::Overwrite);
 
-        premier.merge(second);
-        assert_eq!(premier.dirs, [PathBuf::from("/a")]);
-        assert_eq!(premier.writes.len(), 2);
+        first.merge(second);
+        assert_eq!(first.dirs, [PathBuf::from("/a")]);
+        assert_eq!(first.writes.len(), 2);
     }
 
     #[test]
-    fn move_est_planifiable_et_deduplicable() {
+    fn move_is_plannable_and_deduplicated() {
         let mut plan = Plan::new();
         plan.move_dir("/a/x", "/a/y")
             .move_dir("/b/x", "/b/y")
-            .move_dir("/a/x", "/a/y"); // doublon
+            .move_dir("/a/x", "/a/y"); // duplicate
 
         assert_eq!(
             plan.moves,
             [
-                Move { from: "/a/x".into(), to: "/a/y".into() },
-                Move { from: "/b/x".into(), to: "/b/y".into() },
+                Move {
+                    from: "/a/x".into(),
+                    to: "/a/y".into()
+                },
+                Move {
+                    from: "/b/x".into(),
+                    to: "/b/y".into()
+                },
             ]
         );
     }
 
     #[test]
-    fn merge_absorbe_les_moves() {
-        let mut premier = Plan::new();
-        premier.move_dir("/a", "/z/a");
+    fn merge_absorbs_moves() {
+        let mut first = Plan::new();
+        first.move_dir("/a", "/z/a");
 
         let mut second = Plan::new();
         second.move_dir("/b", "/z/b");
 
-        premier.merge(second);
-        assert_eq!(premier.moves.len(), 2);
+        first.merge(second);
+        assert_eq!(first.moves.len(), 2);
     }
 
     #[test]
-    fn is_empty_couvre_aussi_les_moves() {
+    fn is_empty_also_covers_moves() {
         let mut plan = Plan::new();
         plan.move_dir("/from", "/to");
         assert!(!plan.is_empty());
     }
 
     #[test]
-    fn delete_est_planifiable_et_dedupliquable() {
+    fn delete_is_plannable_and_deduplicated() {
         let mut plan = Plan::new();
-        plan.delete("/a/x").delete("/b/y").delete("/a/x"); // doublon
+        plan.delete("/a/x").delete("/b/y").delete("/a/x"); // duplicate
         assert_eq!(
             plan.deletions,
             [PathBuf::from("/a/x"), PathBuf::from("/b/y")]
@@ -210,22 +216,19 @@ mod tests {
     }
 
     #[test]
-    fn merge_absorbe_les_deletions() {
-        let mut premier = Plan::new();
-        premier.delete("/a");
+    fn merge_absorbs_deletions() {
+        let mut first = Plan::new();
+        first.delete("/a");
 
         let mut second = Plan::new();
-        second.delete("/b").delete("/a"); // /a est déjà là
+        second.delete("/b").delete("/a"); // /a is already there
 
-        premier.merge(second);
-        assert_eq!(
-            premier.deletions,
-            [PathBuf::from("/a"), PathBuf::from("/b")]
-        );
+        first.merge(second);
+        assert_eq!(first.deletions, [PathBuf::from("/a"), PathBuf::from("/b")]);
     }
 
     #[test]
-    fn is_empty_couvre_aussi_les_deletions() {
+    fn is_empty_also_covers_deletions() {
         let mut plan = Plan::new();
         plan.delete("/a");
         assert!(!plan.is_empty());

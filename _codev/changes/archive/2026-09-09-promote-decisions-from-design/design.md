@@ -1,123 +1,123 @@
-# Design : promotion d'une décision depuis un `design.md`
+# Design: promoting a decision from a `design.md`
 
-## Contexte
+## Context
 
-Voir `proposal.md`. K7 est le dernier trou du cycle de vie des décisions :
-K3 verrouille l'immutabilité, K6 permet la dérive sur héritées, K7 fait
-naître un ADR à partir d'une réflexion vécue dans un change.
+See `proposal.md`. K7 is the last gap in the decision lifecycle: K3
+locks immutability, K6 allows deviation from inherited decisions, K7
+gives birth to an ADR from reasoning carried out within a change.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre : la sélection du bloc, la génération du corps de l'ADR,
-la réécriture du design, la commande CLI, le contrat JSON, les refus.
-Il ne cadre pas : la promotion multiple en une commande, la
-structuration auto en Contexte/Décision/Conséquences (impossible sans
-ambiguïté), ni un `unpromote`.
+This design frames: the selection of the block, the generation of the
+ADR body, the rewriting of the design, the CLI command, the JSON
+contract, the refusals. It does not frame: multiple promotion in one
+command, automatic structuring into Context/Decision/Consequences
+(impossible without ambiguity), nor an `unpromote`.
 
-## Décisions
+## Decisions
 
-### Décision : parser léger en interne, pas de dépendance markdown
+### Decision: lightweight internal parser, no markdown dependency
 
-Le format des blocs à extraire est très contraint :
+The format of the blocks to extract is highly constrained:
 
 ```
-## Décisions
-### Décision : <titre>
-<corps>
-### Décision : <autre titre>
-<corps>
+## Decisions
+### Decision: <title>
+<body>
+### Decision: <other title>
+<body>
 ```
 
-Un scan ligne à ligne suffit : trouver `## Décisions`, puis boucler sur
-`### Décision : ...`, et récupérer les octets entre deux `###` (ou
-jusqu'au prochain `## `). Aligné avec la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) —
-le parseur est pur et vit dans un nouveau module `codev-engine::design`
-(la fonction pure prend le source du design en argument, la coquille
-fait la lecture disque).
+A line-by-line scan is enough: find `## Decisions`, then loop over
+`### Decision: ...`, and collect the bytes between two `###` (or up to
+the next `## `). Aligned with decision
+[0001](../../decisions/0001-functional-core-imperative-shell.md) —
+the parser is pure and lives in a new module `codev-engine::design`
+(the pure function takes the design source as an argument, the shell
+does the disk read).
 
-**Alternative écartée** : réutiliser un parseur markdown existant
-(pulldown-cmark, comrak). Coût dépendance et parsing riche pour un
-besoin ultra-cadré. Le codev a une tradition de parseurs à la main dans
-`codev-core::parser` — on la suit.
+**Rejected alternative**: reuse an existing markdown parser
+(pulldown-cmark, comrak). Dependency cost and rich parsing for an
+ultra-constrained need. codev has a tradition of hand-written parsers in
+`codev-core::parser` — we follow it.
 
-### Décision : le corps est reproduit verbatim
+### Decision: the body is reproduced verbatim
 
-Le corps d'un bloc `### Décision : <titre>` va **byte pour byte** dans
-la section `## Décision` du nouvel ADR — pas de trim, pas de
-reformatage, pas de dédentation. C'est ce qui permet à l'auteur de
-retrouver son texte à l'identique et de le ventiler ensuite en
-Contexte / Décision / Conséquences / Alternatives écartées sans avoir
-à deviner ce qu'on aurait modifié.
+The body of a `### Decision: <title>` block goes **byte for byte** into
+the `## Decision` section of the new ADR — no trim, no reformatting, no
+dedenting. This is what lets the author find their text identically
+and then split it into Context / Decision / Consequences / Rejected
+Alternatives without having to guess what might have been modified.
 
-**Alignement** avec la décision de K3 : le corps d'un ADR est traité
-byte pour byte pour le hash de sceau. Cohérent d'un bout à l'autre.
+**Aligned** with the K3 decision: an ADR's body is treated byte for
+byte for the seal hash. Consistent from end to end.
 
-### Décision : la référence dans le design est du texte, pas un lien
+### Decision: the reference in the design is text, not a link
 
-`> Promue en ADR **NNNN** — voir `` `_codev/decisions/NNNN-<slug>.md` ``.
+`> Promoted to ADR **NNNN** — see `` `_codev/decisions/NNNN-<slug>.md` ``.
 
-Un lien `[..](../../decisions/NNNN-slug.md)` fonctionnerait tant que le
-change est actif (`_codev/changes/<nom>/design.md` → `../../decisions/`
-résout à `_codev/decisions/`), mais casserait après archive
-(`_codev/changes/archive/<date>-<nom>/design.md` → `../../decisions/`
-résout à `_codev/changes/decisions/`, inexistant). Le chemin sous forme
-de texte reste **compréhensible** depuis n'importe quelle profondeur ;
-l'humain trouve.
+A link `[..](../../decisions/NNNN-slug.md)` would work while the change
+is active (`_codev/changes/<name>/design.md` → `../../decisions/`
+resolves to `_codev/decisions/`), but would break after archive
+(`_codev/changes/archive/<date>-<name>/design.md` → `../../decisions/`
+resolves to `_codev/changes/decisions/`, which does not exist). The
+path as text stays **understandable** from any depth; the human finds
+it.
 
-**Alternative écartée** : lien absolu `/_codev/decisions/...`. Marche
-sur un site web servi depuis la racine du repo, mais pas dans un simple
-`less design.md`. Trop de suppositions sur l'environnement de lecture.
+**Rejected alternative**: absolute link `/_codev/decisions/...`. Works
+on a website served from the repo root, but not in a plain
+`less design.md`. Too many assumptions about the reading environment.
 
-### Décision : le titre du bloc reste, seul le corps est remplacé
+### Decision: the block heading stays, only the body is replaced
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Retirer le bloc entier** | Design plus court après plusieurs promotions | L'historique de « on a discuté X » disparaît du design ; le lecteur ne sait plus pourquoi l'ADR existe |
-| **B. Garder `### Décision : <titre>` + citation** | Traçabilité maintenue, le sujet reste lisible dans le design | Fichier légèrement plus long |
+| **A. Remove the whole block** | Shorter design after several promotions | The history of "we discussed X" disappears from the design; the reader no longer knows why the ADR exists |
+| **B. Keep `### Decision: <title>` + quote** | Traceability maintained, the subject stays readable in the design | Slightly longer file |
 
-**Choisi : B.** Le design reste une trace de la discussion ; un lecteur
-qui parcourt `design.md` après coup voit toujours quels arbitrages ont
-été faits — et voit qu'ils ont été *hissés* au rang d'ADR. C'est
-précisément la valeur qu'ajoute la promotion.
+**Chosen: B.** The design remains a trace of the discussion; a reader
+going through `design.md` afterwards still sees which trade-offs were
+made — and sees that they were *raised* to the rank of ADR. That is
+precisely the value promotion adds.
 
-### Décision : `plan_promote` réutilise `plan_new_decision` de K3
+### Decision: `plan_promote` reuses `plan_new_decision` from K3
 
-Pas de nouvelle fonction pure de création d'ADR — on réutilise
-`decisions_actions::plan_new_decision` en lui passant le titre extrait
-et un corps « prérempli » (via une variante du rendu qui prend le corps
-en argument). Le sceau est ajouté au plan, comme pour toute nouvelle
-décision `accepted`. Le plan gagne en plus **un write** pour la
-substitution du bloc dans `design.md` — d'où un plan atomique à 3
-écritures : ADR + seal.yaml + design.md.
+No new pure ADR-creation function — we reuse
+`decisions_actions::plan_new_decision`, passing it the extracted title
+and a "prefilled" body (via a variant of the rendering that takes the
+body as an argument). The seal is added to the plan, as for any new
+`accepted` decision. The plan additionally gains **one write** for the
+block substitution in `design.md` — hence an atomic plan with 3
+writes: ADR + seal.yaml + design.md.
 
-### Décision : refus des archivés est explicite via `codev list`
+### Decision: refusal of archived changes is explicit via `codev list`
 
-Comme dans K3 (`decision seal`) et K6 (`decision deviate`), la commande
-refuse si le nom du change ne figure pas dans `codev list` (qui ne montre
-que les actifs). Code stable dédié `cannot_promote_from_archived` pour
-que l'agent puisse distinguer d'un `unknown_change` (par exemple pour
-proposer à l'utilisateur d'ouvrir manuellement l'archive s'il insiste).
+As in K3 (`decision seal`) and K6 (`decision deviate`), the command
+refuses if the change name does not appear in `codev list` (which only
+shows active ones). Dedicated stable code `cannot_promote_from_archived`
+so that the agent can distinguish it from an `unknown_change` (for
+example to propose that the user open the archive manually if they
+insist).
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Le corps verbatim peut inclure du markdown incohérent** — un `###`
-  imbriqué dans le corps (peu probable mais possible) tromperait le
-  scan. → **Compromis assumé** : la spec dit « jusqu'au prochain
-  `###` », c'est le contrat ; l'auteur qui écrit un `###` dans un bloc
-  de décision aura un ADR tronqué. Documenté. Un warning validate
-  pourrait venir plus tard.
-- **Un design édité entre le calcul du plan et son application** — un
-  auteur qui édite `design.md` pendant que la commande tourne verrait
-  sa modification écrasée. → **Compromis assumé** : atomicité à
-  l'échelle du processus seulement, comme pour toutes les commandes.
-- **Deux titres ambigus** — l'auteur peut avoir dupliqué un titre en
-  itérant sur sa formulation. → **Traité** par le refus
-  `ambiguous_decision_heading` qui nomme les deux positions dans le
-  fichier (numéros de ligne).
+- **The verbatim body may include inconsistent markdown** — a `###`
+  nested in the body (unlikely but possible) would mislead the scan.
+  → **Accepted trade-off**: the spec says "up to the next `###`", that
+  is the contract; an author who writes a `###` in a decision block
+  will get a truncated ADR. Documented. A validate warning could come
+  later.
+- **A design edited between computing the plan and applying it** — an
+  author who edits `design.md` while the command runs would see their
+  modification overwritten. → **Accepted trade-off**: atomicity at
+  process scale only, as for all commands.
+- **Two ambiguous titles** — the author may have duplicated a title
+  while iterating on the wording. → **Handled** by the refusal
+  `ambiguous_decision_heading`, which names both positions in the file
+  (line numbers).
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Les designs existants ne changent pas ; la commande est opt-in.
+None. Existing designs do not change; the command is opt-in.

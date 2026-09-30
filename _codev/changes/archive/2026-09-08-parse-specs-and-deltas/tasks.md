@@ -1,117 +1,117 @@
-# Tâches
+# Tasks
 
-## 1. Fondations dans `codev-core`
+## 1. Foundations in `codev-core`
 
-- [x] 1.1 Créer le module `parser` dans `codev-core` (`parser/mod.rs`,
+- [x] 1.1 Create the `parser` module in `codev-core` (`parser/mod.rs`,
       `parser/ast.rs`, `parser/fence.rs`, `parser/spec.rs`, `parser/delta.rs`),
-      exposer les items publics depuis `lib.rs`, vérifié par `cargo build -p
-      codev-core` puis `cargo doc -p codev-core --no-deps`.
-- [x] 1.2 Définir les types d'AST — `Spec`, `Delta`, `Requirement`,
-      `Scenario`, l'énumération `DeltaOp`, les structures `Finding` et
-      `Parsed<T>` — sans logique, avec `#[derive(Debug, Clone, PartialEq)]`,
-      vérifié par un test compilant qui construit chaque variante à la main.
-- [x] 1.3 Définir `Span { byte_range: Range<usize>, line_range: Range<u32> }`
-      et l'attacher à chaque nœud d'AST comme champ, vérifié par un test qui
-      construit un `Span` et lit ses deux plages.
+      expose the public items from `lib.rs`, verified by `cargo build -p
+      codev-core` then `cargo doc -p codev-core --no-deps`.
+- [x] 1.2 Define the AST types — `Spec`, `Delta`, `Requirement`,
+      `Scenario`, the `DeltaOp` enumeration, the `Finding` and `Parsed<T>`
+      structures — without logic, with `#[derive(Debug, Clone, PartialEq)]`,
+      verified by a compiling test that builds each variant by hand.
+- [x] 1.3 Define `Span { byte_range: Range<usize>, line_range: Range<u32> }`
+      and attach it to each AST node as a field, verified by a test that
+      builds a `Span` and reads both of its ranges.
 
-## 2. Masquage des zones littérales
+## 2. Masking literal zones
 
-- [x] 2.1 Écrire `build_fence_mask(source: &str) -> Vec<bool>` dans
-      `parser/fence.rs` — un booléen par ligne, vrai si la ligne fait partie
-      d'un bloc de code (fence d'ouverture, fermeture, contenu). Vérifié par
-      les tests `fence::mask_reconnait_backticks_et_tildes`,
-      `fence::mask_refuse_une_fermeture_de_marqueur_different` et
+- [x] 2.1 Write `build_fence_mask(source: &str) -> Vec<bool>` in
+      `parser/fence.rs` — one boolean per line, true if the line belongs to
+      a code block (opening fence, closing fence, content). Verified by the
+      tests `fence::mask_reconnait_backticks_et_tildes`,
+      `fence::mask_refuse_une_fermeture_de_marqueur_different` and
       `fence::mask_traite_deux_blocs_successifs`.
-- [x] 2.2 Étendre le masque aux commentaires HTML `<!-- … -->` multi-lignes
-      hors fences, vérifié par le test
-      `fence::commentaire_multi_lignes_est_masque` (le commentaire enferme un
-      faux `### Requirement:` qui ne doit pas apparaître dans l'AST plus tard).
+- [x] 2.2 Extend the mask to multi-line HTML comments `<!-- … -->` outside
+      fences, verified by the test
+      `fence::commentaire_multi_lignes_est_masque` (the comment encloses a
+      fake `### Requirement:` that must not show up in the AST later).
 
-## 3. Parseur de spec principale
+## 3. Main spec parser
 
-- [x] 3.1 Implémenter `parse_spec(source: &str) -> Parsed<Spec>` — extraction
-      de `## Purpose` et `## Requirements`, itération des `### Requirement:`
-      dans `## Requirements` uniquement, itération des `#### Scenario:` dans
-      chaque exigence. Vérifié par
-      `spec::extrait_purpose_et_une_exigence_avec_scenario` (le premier
-      scénario du fichier `Purpose et exigences bien formées` de la spec).
-- [x] 3.2 Purpose manquant remonté en `Finding` de sévérité `Error` sans
-      empêcher l'extraction des exigences, vérifié par
-      `spec::purpose_manquant_est_un_finding_localise` (scénario homonyme).
-- [x] 3.3 Un `### Requirement:` hors de `## Requirements` produit un `Finding`
-      qui nomme la ligne et le fait que la section attendue est
-      `## Requirements`, vérifié par
+- [x] 3.1 Implement `parse_spec(source: &str) -> Parsed<Spec>` — extraction
+      of `## Purpose` and `## Requirements`, iteration over the
+      `### Requirement:` headings within `## Requirements` only, iteration
+      over the `#### Scenario:` headings within each requirement. Verified by
+      `spec::extrait_purpose_et_une_exigence_avec_scenario` (the spec's
+      first scenario, `Well-formed Purpose and requirements`).
+- [x] 3.2 Missing Purpose reported as a `Finding` with `Error` severity
+      without preventing extraction of the requirements, verified by
+      `spec::purpose_manquant_est_un_finding_localise` (scenario of the same
+      name).
+- [x] 3.3 A `### Requirement:` outside `## Requirements` produces a
+      `Finding` that names the line and states that the expected section is
+      `## Requirements`, verified by
       `spec::exigence_hors_section_est_signalee`.
-- [x] 3.4 Un en-tête de delta rencontré dans une spec principale produit un
-      `Finding` nommant la ligne, vérifié par
-      `spec::header_de_delta_dans_main_spec_est_signale` (scénario
-      `En-tête de delta dans une spec principale`).
+- [x] 3.4 A delta header encountered in a main spec produces a `Finding`
+      naming the line, verified by
+      `spec::header_de_delta_dans_main_spec_est_signale` (scenario
+      `Delta header in a main spec`).
 
-## 4. Parseur de delta
+## 4. Delta parser
 
-- [x] 4.1 Implémenter `parse_delta(source: &str) -> Parsed<Delta>` avec la
-      reconnaissance des quatre sections `## ADDED|MODIFIED|REMOVED|RENAMED
-      Requirements`, vérifié par `delta::reconnait_les_quatre_sections`.
-- [x] 4.2 Extraire les blocs d'exigence complets sous `ADDED` et `MODIFIED`
-      — nom depuis `### Requirement: <nom>`, texte descriptif jusqu'au
-      prochain en-tête, scénarios en `#### Scenario:`. Vérifié par
-      `delta::bloc_added_porte_exigence_et_scenario` (scénario
-      `Bloc ADDED avec exigence et scénario`).
-- [x] 4.3 Extraire sous `REMOVED` le nom, la ligne `**Reason**:` et la ligne
-      `**Migration**:`, vérifié par
+- [x] 4.1 Implement `parse_delta(source: &str) -> Parsed<Delta>` with
+      recognition of the four sections `## ADDED|MODIFIED|REMOVED|RENAMED
+      Requirements`, verified by `delta::reconnait_les_quatre_sections`.
+- [x] 4.2 Extract the complete requirement blocks under `ADDED` and
+      `MODIFIED` — name from `### Requirement: <name>`, descriptive text up
+      to the next heading, scenarios as `#### Scenario:`. Verified by
+      `delta::bloc_added_porte_exigence_et_scenario` (scenario
+      `ADDED block with requirement and scenario`).
+- [x] 4.3 Extract under `REMOVED` the name, the `**Reason**:` line and the
+      `**Migration**:` line, verified by
       `delta::bloc_removed_porte_raison_et_migration`.
-- [x] 4.4 Extraire sous `RENAMED` les couples `FROM: <ancien>` / `TO:
-      <nouveau>`, vérifié par `delta::bloc_renamed_associe_from_et_to`.
-- [x] 4.5 Extraire un `## Purpose` optionnel en tête de delta (nouvelle
-      capacité), vérifié par `delta::purpose_de_nouvelle_capacite_est_extrait`
-      (scénario `Delta d'une capacité nouvelle avec Purpose`).
-- [x] 4.6 Deux exigences de même nom dans une même section produisent un
-      `Finding` nommant les deux lignes et la section, vérifié par
-      `delta::doublon_dans_added_est_signale` (scénario
-      `Exigence dupliquée dans une même section`).
+- [x] 4.4 Extract under `RENAMED` the `FROM: <old>` / `TO: <new>` pairs,
+      verified by `delta::bloc_renamed_associe_from_et_to`.
+- [x] 4.5 Extract an optional `## Purpose` at the top of a delta (new
+      capability), verified by `delta::purpose_de_nouvelle_capacite_est_extrait`
+      (scenario `Delta for a new capability with Purpose`).
+- [x] 4.6 Two requirements with the same name in the same section produce a
+      `Finding` naming both lines and the section, verified by
+      `delta::doublon_dans_added_est_signale` (scenario
+      `Duplicate requirement within one section`).
 
-## 5. Zones littérales appliquées
+## 5. Literal zones applied
 
-- [x] 5.1 Une exigence apparaissant dans un bloc de code d'une spec principale
-      n'apparaît pas dans l'AST, vérifié par
-      `spec::exigence_dans_fence_est_ignoree` (scénario
-      `Exemple d'exigence à l'intérieur d'un bloc de code`).
-- [x] 5.2 Un en-tête de delta dans un commentaire HTML n'est pas compté,
-      vérifié par `delta::header_dans_commentaire_html_est_ignore` (scénario
-      `En-tête de delta à l'intérieur d'un commentaire`).
+- [x] 5.1 A requirement appearing in a code block of a main spec does not
+      appear in the AST, verified by
+      `spec::exigence_dans_fence_est_ignoree` (scenario
+      `Example requirement inside a code block`).
+- [x] 5.2 A delta header inside an HTML comment is not counted, verified by
+      `delta::header_dans_commentaire_html_est_ignore` (scenario
+      `Delta header inside a comment`).
 
-## 6. Position d'origine et invariant
+## 6. Source position and invariant
 
-- [x] 6.1 Chaque nœud extrait — Purpose, Requirement, Scenario, chaque bloc
-      d'opération de delta — porte un `Span` dont `line_range.start` égale la
-      ligne (1-indexée) de son en-tête dans la source, vérifié par
-      `spans::scenario_expose_sa_ligne_de_debut` (scénario
-      `Position en ligne d'un scénario`, ancré sur la ligne 42).
-- [x] 6.2 Un scénario écrit avec trois dièses produit un `Finding` de code
-      `scenario_wrong_heading_level` et l'exigence apparaît sans ce scénario,
-      vérifié par `spec::scenario_trois_dieses_est_signale` (scénario
-      `Scénario écrit avec trois dièses`).
-- [x] 6.3 Test d'invariant `spans::round_trip_preserve_la_source_a_loctet` :
-      pour un fichier d'exemple, prendre chaque nœud, extraire
-      `source[node.span.byte_range]`, remplacer chaque plage par elle-même
-      dans une nouvelle chaîne, vérifier l'égalité octet à octet avec
-      l'original.
+- [x] 6.1 Each extracted node — Purpose, Requirement, Scenario, each delta
+      operation block — carries a `Span` whose `line_range.start` equals the
+      (1-indexed) line of its heading in the source, verified by
+      `spans::scenario_expose_sa_ligne_de_debut` (scenario
+      `Line position of a scenario`, anchored on line 42).
+- [x] 6.2 A scenario written with three hashes produces a `Finding` with
+      code `scenario_wrong_heading_level` and the requirement appears without
+      that scenario, verified by `spec::scenario_trois_dieses_est_signale`
+      (scenario `Scenario written with three hashes`).
+- [x] 6.3 Invariant test `spans::round_trip_preserve_la_source_a_loctet`:
+      for a sample file, take each node, extract
+      `source[node.span.byte_range]`, replace each range with itself in a
+      new string, check byte-for-byte equality with the original.
 
 ## 7. Golden tests
 
-- [x] 7.1 Créer `crates/codev-core/tests/parser_golden.rs` avec au moins un
-      exemple de spec principale complète et un exemple de delta complet
-      (fichiers d'entrée dans `crates/codev-core/tests/fixtures/`), attendus
-      sérialisés en `Debug`. Vérifié par
+- [x] 7.1 Create `crates/codev-core/tests/parser_golden.rs` with at least
+      one complete main spec example and one complete delta example (input
+      files in `crates/codev-core/tests/fixtures/`), expectations serialized
+      as `Debug`. Verified by
       `cargo test -p codev-core --test parser_golden`.
-- [x] 7.2 Ajouter à `parser_golden` le cas d'une réécriture ciblée d'un bloc
-      `MODIFIED` : extraire son `byte_range`, y injecter un nouveau texte,
-      vérifier que le reste du fichier — y compris les espacements — est
-      identique. Vérifié par `parser_golden::reecriture_ciblee_ne_touche_pas`.
+- [x] 7.2 Add to `parser_golden` the case of a targeted rewrite of a
+      `MODIFIED` block: extract its `byte_range`, inject new text into it,
+      check that the rest of the file — including whitespace — is
+      identical. Verified by `parser_golden::reecriture_ciblee_ne_touche_pas`.
 
-## 8. Intégration workspace
+## 8. Workspace integration
 
-- [x] 8.1 `cargo test --workspace` reste vert et compte au moins 15 tests de
-      plus qu'avant ce change.
-- [x] 8.2 `cargo clippy --workspace --all-targets` reste sans avertissement,
-      hors ceux préexistants documentés.
+- [x] 8.1 `cargo test --workspace` stays green and counts at least 15 more
+      tests than before this change.
+- [x] 8.2 `cargo clippy --workspace --all-targets` stays warning-free,
+      apart from documented pre-existing ones.

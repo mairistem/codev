@@ -1,126 +1,126 @@
-# Design : parseur de specs et de deltas
+# Design: spec and delta parser
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Le parseur vit dans `codev-core`, donc
-en pur — aucune `std::fs`, aucune horloge — conformément à la décision
-[0001 — Cœur fonctionnel, coquille impérative](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md).
+See `proposal.md` for the motivation. The parser lives in `codev-core`, so
+it is pure — no `std::fs`, no clock — in line with decision
+[0001 — Functional core, imperative shell](../../decisions/0001-functional-core-imperative-shell.md).
 
-Il sera consommé par `codev-engine` (via des modules à venir : `validate`,
-`sync`, `archive`), pas par le CLI directement. Le graphe de crates suffit à
-faire respecter le sens du flux, cf.
-[0002 — Le graphe de crates applique la règle de dépendance](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+It will be consumed by `codev-engine` (through upcoming modules: `validate`,
+`sync`, `archive`), not by the CLI directly. The crate graph is enough to
+enforce the direction of the flow, cf.
+[0002 — The crate graph enforces the dependency rule](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre uniquement le parseur — sa forme d'AST, ses frontières
-d'erreur, sa gestion des zones littérales. La fusion sémantique
-(`sync`/`archive`) et les règles de validation cross-fichier restent hors
-périmètre : elles habiteront leurs propres modules dans `codev-engine`, chacun
-avec son design.
+This design covers only the parser — the shape of its AST, its error
+boundaries, its handling of literal zones. Semantic merging
+(`sync`/`archive`) and cross-file validation rules remain out of scope:
+they will live in their own modules in `codev-engine`, each with its own
+design.
 
-## Décisions
+## Decisions
 
-### Décision : parseur maison ligne à ligne, sans dépendance markdown
+### Decision: hand-written line-by-line parser, no markdown dependency
 
-Le format est un sous-ensemble strict de CommonMark qu'on contrôle : quelques
-en-têtes de niveau 2, 3 et 4, plus un traitement particulier des blocs de code
-et des commentaires HTML. La référence OpenSpec fait tout son parsing en
-~1 200 lignes de TypeScript sans dépendance markdown.
+The format is a strict subset of CommonMark that we control: a few level 2,
+3 and 4 headings, plus special handling of code blocks and HTML comments.
+The OpenSpec reference does all its parsing in ~1,200 lines of TypeScript
+with no markdown dependency.
 
-Une passe ligne à ligne, avec un masque de fences précalculé, couvre 100 % du
-besoin et garde `codev-core` sans nouvelle dépendance.
+A line-by-line pass, with a precomputed fence mask, covers 100% of the need
+and keeps `codev-core` free of any new dependency.
 
-**Alternatives considérées** :
+**Alternatives considered**:
 
-- **`pulldown-cmark`** — pull parser CommonMark, léger, très utilisé. Écarté :
-  il produit des événements CommonMark génériques dont il faut extraire nos
-  concepts, et sa notion de « position » est un `Range<usize>` par événement
-  qu'il faut regrouper à la main. On paierait la dépendance sans gagner de
-  code.
-- **`comrak`** — AST GitHub-Flavored Markdown complet. Écarté : plus lourd,
-  arbre non nécessaire pour cette structure plate.
-- **`markdown` 1.0** — CommonMark en Rust avec AST. Mêmes objections que
-  `comrak`, moins connu.
+- **`pulldown-cmark`** — CommonMark pull parser, lightweight, widely used.
+  Rejected: it produces generic CommonMark events from which our concepts
+  must be extracted, and its notion of "position" is a `Range<usize>` per
+  event that has to be grouped by hand. We would pay for the dependency
+  without saving any code.
+- **`comrak`** — full GitHub-Flavored Markdown AST. Rejected: heavier, and a
+  tree is unnecessary for this flat structure.
+- **`markdown` 1.0** — CommonMark in Rust with an AST. Same objections as
+  `comrak`, less well known.
 
-### Décision : deux types de sortie distincts, `Spec` et `Delta`
+### Decision: two distinct output types, `Spec` and `Delta`
 
-Une spec principale et un delta se ressemblent en surface, mais un `MODIFIED`
-qui apparaîtrait dans une spec principale est une erreur, et un `Purpose` dans
-un delta n'a de sens que pour une nouvelle capacité. Deux types produisent une
-API où le mauvais mélange ne compile pas, plutôt qu'un type commun où chaque
-consommateur re-vérifie ce qu'il tient.
+A main spec and a delta look alike on the surface, but a `MODIFIED` that
+showed up in a main spec is an error, and a `Purpose` in a delta only makes
+sense for a new capability. Two types give an API where the wrong mix does
+not compile, rather than a common type where every consumer re-checks what
+it holds.
 
-Signature envisagée :
+Planned signature:
 
 ```rust
 pub fn parse_spec(source: &str) -> Parsed<Spec>;
 pub fn parse_delta(source: &str) -> Parsed<Delta>;
 ```
 
-Aucun `Result` en sortie : un fichier catastrophiquement illisible se
-distingue mal d'un fichier partiellement récupérable, et le second cas est le
-plus fréquent. La distinction se fait via `Parsed`.
+No `Result` in the output: a catastrophically unreadable file is hard to
+tell apart from a partially recoverable one, and the latter is the more
+frequent case. The distinction is made through `Parsed`.
 
-### Décision : rapport de défauts porté par le résultat, jamais par une erreur
+### Decision: defect report carried by the result, never by an error
 
-`Parsed<T>` porte à la fois l'AST reconstruit — même partiel — et une liste de
-`Finding` structurels typés `{ line, column, code, message }`. Un consommateur
-comme `validate` remonte les findings à l'utilisateur ; `sync` et `archive`
-refusent d'écrire dès qu'il y en a un de sévérité `Error`.
+`Parsed<T>` carries both the reconstructed AST — even partial — and a list
+of structural `Finding`s typed `{ line, column, code, message }`. A consumer
+such as `validate` reports the findings to the user; `sync` and `archive`
+refuse to write as soon as there is one with `Error` severity.
 
-C'est la même logique que le contrat JSON du CLI : le message peut être
-reformulé sans préavis, le `code` est stable et testable. Aligne avec
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) — décider
-n'est pas exécuter — puisque le parseur *décrit* les défauts, et laisse au
-consommateur de *décider* quoi en faire.
+This is the same logic as the CLI's JSON contract: the message may be
+reworded without notice, the `code` is stable and testable. It aligns with
+[0001](../../decisions/0001-functional-core-imperative-shell.md) —
+deciding is not executing — since the parser *describes* the defects and
+leaves it to the consumer to *decide* what to do about them.
 
-### Décision : spans en octets **et** en lignes, sans emprunter la source
+### Decision: spans in bytes **and** in lines, without borrowing the source
 
-Chaque nœud de l'AST porte deux vues du même intervalle : `byte_range:
-Range<usize>` pour une réécriture au caractère près, `line_range: Range<u32>`
-pour un message d'erreur lisible.
+Each AST node carries two views of the same interval: `byte_range:
+Range<usize>` for character-exact rewriting, `line_range: Range<u32>`
+for a readable error message.
 
-L'AST **ne possède pas** de `&str` empruntés au source : ses champs sont
-des `String` ou des `Range<usize>`. Le consommateur qui veut réécrire tient
-le source original et le combine avec les spans. Cela permet à un `Parsed`
-d'être `Send + 'static` — condition nécessaire pour traverser une frontière
-de fonction sans lifetime dans les signatures publiques.
+The AST **does not hold** `&str`s borrowed from the source: its fields are
+`String`s or `Range<usize>`s. A consumer that wants to rewrite holds the
+original source and combines it with the spans. This allows a `Parsed` to
+be `Send + 'static` — a necessary condition for crossing a function
+boundary without lifetimes in the public signatures.
 
-**Alternative** : emprunter le source (`Spec<'a>`). Zéro copie, mais impose
-des lifetimes dans tout ce qui manipule un AST — y compris `codev-engine`,
-qui deviendrait générique sur des durées de vie pour un gain négligeable
-puisqu'un `Requirement` fait quelques centaines d'octets et qu'on en a
-quelques dizaines par fichier.
+**Alternative**: borrow the source (`Spec<'a>`). Zero copy, but it forces
+lifetimes on everything that handles an AST — including `codev-engine`,
+which would become generic over lifetimes for a negligible gain, since a
+`Requirement` is a few hundred bytes and there are a few dozen per file.
 
-### Décision : les fences suivent la règle « premier ouvert, premier fermé »
+### Decision: fences follow the "first opened, first closed" rule
 
-Une fence ouverte par ` ``` ` ferme sur ` ``` ` (ou plus long, du même
-caractère) et n'accepte pas un `~~~` comme fermeture. Une fence ouverte par
-`~~~` ferme symétriquement. Le contenu à l'intérieur — y compris d'autres
-fences apparentes du **même** marqueur mais plus courtes — est traité comme
-littéral. Ce comportement suit CommonMark et OpenSpec.
+A fence opened by ` ``` ` closes on ` ``` ` (or longer, of the same
+character) and does not accept `~~~` as a closer. A fence opened by `~~~`
+closes symmetrically. The content inside — including other apparent fences
+of the **same** marker but shorter — is treated as literal. This behavior
+follows CommonMark and OpenSpec.
 
-Les commentaires HTML sont détectés de leur `<!--` à leur `-->`, sur plusieurs
-lignes si besoin, en dehors des fences uniquement (à l'intérieur, ils sont
-déjà littéraux).
+HTML comments are detected from their `<!--` to their `-->`, across
+multiple lines if needed, outside fences only (inside, they are already
+literal).
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Fins de ligne mixtes** — Un fichier CRLF donne des positions de span
-  faussées si on convertit en interne. → **Atténuation** : le parseur opère
-  sur `&str` sans normalisation, et les spans sont en octets sur le source
-  d'entrée tel qu'il est.
-- **Fenêtre de bug entre spec parseur et fusion sémantique** — Un `Finding`
-  raté ici devient une réécriture destructive dans `archive`. →
-  **Atténuation** : golden tests dès ce change (fichiers d'entrée + AST
-  attendu sérialisé), et un test d'invariant qui vérifie qu'écrire chaque
-  bloc via son span puis reconcaténer reproduit la source à l'octet près.
-- **Extensibilité du delta** — Ajouter une cinquième opération demanderait de
-  modifier l'énumération. → **Compromis assumé** : les quatre opérations sont
-  gravées dans le format, une cinquième mériterait une décision au sens
-  `_codev/decisions/`, pas un simple ajout d'`enum` variant.
+- **Mixed line endings** — A CRLF file yields skewed span positions if
+  converted internally. → **Mitigation**: the parser operates on `&str`
+  without normalization, and spans are in bytes over the input source as
+  is.
+- **Bug window between parser spec and semantic merge** — A `Finding`
+  missed here becomes a destructive rewrite in `archive`. →
+  **Mitigation**: golden tests from this change on (input files + expected
+  serialized AST), and an invariant test that checks that writing each
+  block through its span and then re-concatenating reproduces the source
+  byte for byte.
+- **Delta extensibility** — Adding a fifth operation would require
+  modifying the enumeration. → **Accepted trade-off**: the four operations
+  are set in stone in the format; a fifth would deserve a decision in the
+  `_codev/decisions/` sense, not a mere added `enum` variant.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet : capacité nouvelle, aucun code à faire évoluer.
+Not applicable: new capability, no code to evolve.

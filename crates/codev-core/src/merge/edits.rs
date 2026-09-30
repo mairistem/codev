@@ -1,9 +1,9 @@
-//! Un édit ponctuel sur une chaîne — `[start..end)` remplacé par un texte.
+//! A single edit on a string — `[start..end)` replaced by a text.
 //!
-//! La fusion est pure : elle produit une liste d'édits que la coquille
-//! applique sur la source de la spec principale. C'est ce qui rend possible
-//! `--dry-run`, la prévisualisation JSON, et surtout l'atomicité — le plan
-//! est calculé entièrement avant qu'une seule écriture ne touche le disque.
+//! The merge is pure: it produces a list of edits that the shell applies
+//! to the main spec source. This is what makes `--dry-run`, the JSON
+//! preview, and above all atomicity possible — the plan is fully computed
+//! before a single write touches the disk.
 
 use std::ops::Range;
 
@@ -22,20 +22,20 @@ impl Edit {
     }
 }
 
-/// Applique une série d'édits à un source, en préservant les offsets restants.
+/// Applies a series of edits to a source, preserving the remaining offsets.
 ///
-/// Les édits sont triés par `byte_range.end` **décroissant** avant application.
-/// Un tri par la fin, pas par le début : deux édits qui se terminent au même
-/// point mais commencent différemment (impossibles dans nos cas) resteraient
-/// alors dans l'ordre d'insertion, ce qui est prévisible.
+/// Edits are sorted by **descending** `byte_range.end` before being applied.
+/// Sorting by end, not by start: two edits ending at the same point but
+/// starting differently (impossible in our cases) would then stay in
+/// insertion order, which is predictable.
 ///
-/// Un édit dont `byte_range.end > source.len()` est refusé — c'est le seul
-/// invariant de sûreté ; le reste est déjà validé par la couche appelante.
+/// An edit whose `byte_range.end > source.len()` is rejected — this is the
+/// only safety invariant; the rest is already validated by the calling layer.
 pub fn apply_edits(source: &str, edits: &[Edit]) -> String {
     let mut ordered = edits.to_vec();
-    // Tri stable par end décroissant : les derniers segments modifiés en
-    // premier, laissent les offsets antérieurs intacts. `sort_by_key` +
-    // `Reverse` évite la double comparaison signalée par clippy.
+    // Stable sort by descending end: the last modified segments go first,
+    // leaving earlier offsets intact. `sort_by_key` + `Reverse` avoids the
+    // double comparison flagged by clippy.
     ordered.sort_by_key(|e| std::cmp::Reverse(e.byte_range.end));
 
     let mut out = source.to_string();
@@ -52,10 +52,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn apply_est_stable_meme_avec_ordre_melange() {
+    fn apply_is_stable_even_with_shuffled_order() {
         let source = "AAAA BBBB CCCC";
         let edits = vec![
-            // Ordre volontairement inversé de la position.
+            // Order deliberately reversed relative to position.
             Edit::new(10..14, "cccc"),
             Edit::new(0..4, "aaaa"),
             Edit::new(5..9, "bbbb"),
@@ -64,31 +64,31 @@ mod tests {
     }
 
     #[test]
-    fn apply_preserve_le_contenu_hors_ranges() {
-        let source = "avant [ICI] apres";
-        let edits = vec![Edit::new(6..11, "[LA]")];
-        assert_eq!(apply_edits(source, &edits), "avant [LA] apres");
+    fn apply_preserves_content_outside_ranges() {
+        let source = "before [HERE] after";
+        let edits = vec![Edit::new(7..13, "[THERE]")];
+        assert_eq!(apply_edits(source, &edits), "before [THERE] after");
     }
 
     #[test]
-    fn edit_vide_a_meme_position_insere() {
+    fn empty_edit_at_same_position_inserts() {
         let source = "abcXYZ";
         let edits = vec![Edit::new(3..3, "INS")];
         assert_eq!(apply_edits(source, &edits), "abcINSXYZ");
     }
 
     #[test]
-    fn edit_vide_avec_replacement_vide_est_un_no_op() {
+    fn empty_edit_with_empty_replacement_is_a_no_op() {
         let source = "hello";
         let edits = vec![Edit::new(2..2, "")];
         assert_eq!(apply_edits(source, &edits), "hello");
     }
 
     #[test]
-    fn edit_hors_source_est_clampe_sans_paniquer() {
-        // Sécurité contre un bug de calcul en amont : plutôt que de paniquer
-        // sur un range hors bornes, on clamp — le test golden qui repasse
-        // sur la source d'origine trouvera l'incohérence.
+    fn out_of_bounds_edit_is_clamped_without_panicking() {
+        // Safety net against an upstream computation bug: rather than
+        // panicking on an out-of-bounds range, we clamp — the golden test
+        // that re-runs on the original source will catch the inconsistency.
         let source = "abc";
         let edits = vec![Edit::new(2..999, "XYZ")];
         assert_eq!(apply_edits(source, &edits), "abXYZ");

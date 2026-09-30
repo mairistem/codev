@@ -1,15 +1,15 @@
 use std::ops::Range;
 
-/// L'intervalle qu'occupe un nœud dans le texte source.
+/// The range a node occupies in the source text.
 ///
-/// Deux vues du même intervalle, et c'est délibéré : `byte_range` sert aux
-/// réécritures au caractère près, `line_range` sert aux messages. Les deux se
-/// déduisent l'un de l'autre à la construction, une seule fois, plutôt que le
-/// consommateur le refasse à chaque diagnostic.
+/// Two views of the same range, and that is deliberate: `byte_range` serves
+/// character-exact rewrites, `line_range` serves messages. Each is derived
+/// from the other at construction, once, rather than having the consumer
+/// redo it for every diagnostic.
 ///
-/// Les lignes sont **1-indexées** (comme un éditeur les affiche), les octets
-/// sont 0-indexés (comme `str::get`). Le fait qu'ils diffèrent est le prix à
-/// payer pour ne pas mentir aux deux côtés.
+/// Lines are **1-indexed** (as an editor displays them), bytes are
+/// 0-indexed (as with `str::get`). Their difference is the price to pay for
+/// not lying to either side.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
     pub byte_range: Range<usize>,
@@ -18,7 +18,10 @@ pub struct Span {
 
 impl Span {
     pub fn new(byte_range: Range<usize>, line_range: Range<u32>) -> Self {
-        Self { byte_range, line_range }
+        Self {
+            byte_range,
+            line_range,
+        }
     }
 
     pub fn start_line(&self) -> u32 {
@@ -26,12 +29,12 @@ impl Span {
     }
 }
 
-/// Le bloc `## Purpose` d'une spec principale, ou d'un delta de nouvelle
-/// capacité.
+/// The `## Purpose` block of a main spec, or of a new-capability delta.
 ///
-/// Le texte est fourni **nettoyé** — sans son en-tête, sans blanc de fin —
-/// pour qu'un consommateur puisse l'insérer directement. Le span, lui, couvre
-/// l'en-tête inclus, pour qu'une réécriture remplace le bloc en entier.
+/// The text is provided **cleaned** — without its heading, without trailing
+/// whitespace — so that a consumer can insert it directly. The span, on the
+/// other hand, includes the heading, so that a rewrite replaces the whole
+/// block.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PurposeBlock {
     pub text: String,
@@ -41,8 +44,8 @@ pub struct PurposeBlock {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Requirement {
     pub name: String,
-    /// Le paragraphe descriptif entre l'en-tête `### Requirement:` et le
-    /// premier `#### Scenario:`.
+    /// The descriptive paragraph between the `### Requirement:` heading and
+    /// the first `#### Scenario:`.
     pub description: String,
     pub scenarios: Vec<Scenario>,
     pub span: Span,
@@ -51,7 +54,7 @@ pub struct Requirement {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Scenario {
     pub name: String,
-    /// Les lignes du corps du scénario, sans l'en-tête.
+    /// The lines of the scenario body, without the heading.
     pub body: String,
     pub span: Span,
 }
@@ -71,11 +74,11 @@ pub struct Rename {
     pub span: Span,
 }
 
-/// L'opération que déclare un en-tête `## <OP> Requirements`.
+/// The operation declared by a `## <OP> Requirements` heading.
 ///
-/// Un `enum` fermé plutôt qu'une `String` : ajouter une cinquième opération
-/// est une décision structurante — cf. l'avertissement dans `design.md` — pas
-/// un simple ajout de variante à faire distraitement.
+/// A closed `enum` rather than a `String`: adding a fifth operation is a
+/// structural decision — see the warning in `design.md` — not a mere
+/// variant to add absent-mindedly.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeltaOp {
     Added,
@@ -84,10 +87,10 @@ pub enum DeltaOp {
     Renamed,
 }
 
-/// Une section du delta, portant sa charge utile spécifique.
+/// A delta section, carrying its specific payload.
 ///
-/// Un enum plutôt qu'une structure aux champs conditionnels : le compilateur
-/// interdit alors « `Removed` avec des scénarios », qui n'a aucun sens.
+/// An enum rather than a struct with conditional fields: the compiler then
+/// forbids "`Removed` with scenarios", which makes no sense.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeltaSection {
     Added {
@@ -128,37 +131,37 @@ impl DeltaSection {
     }
 }
 
-/// Une spec principale lue depuis `_codev/specs/<capability>/spec.md`.
+/// A main spec read from `_codev/specs/<capability>/spec.md`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Spec {
     pub purpose: Option<PurposeBlock>,
     pub requirements: Vec<Requirement>,
-    /// Point d'insertion des ADDED : offset en octets juste avant la prochaine
-    /// section `##` de premier niveau après `## Requirements`, ou la longueur
-    /// du source si aucune section ne suit.
+    /// Insertion point for ADDED entries: byte offset just before the next
+    /// top-level `##` section after `## Requirements`, or the length of the
+    /// source if no section follows.
     ///
-    /// `None` quand la spec n'a pas de section `## Requirements` — dans ce
-    /// cas, tout `ADDED` doit être refusé en amont par le validateur, et le
-    /// merge ne devrait jamais être appelé.
+    /// `None` when the spec has no `## Requirements` section — in that case,
+    /// any `ADDED` must be rejected upstream by the validator, and the merge
+    /// should never be called.
     pub requirements_section_end: Option<usize>,
 }
 
-/// Un delta lu depuis `_codev/changes/<name>/specs/<capability>/spec.md`.
+/// A delta read from `_codev/changes/<name>/specs/<capability>/spec.md`.
 ///
-/// `purpose` n'a de sens que pour une nouvelle capacité — un delta d'une
-/// capacité existante qui en porterait un doit être signalé par le validateur
-/// (hors périmètre du parseur : ici on l'extrait tel qu'il est).
+/// `purpose` only makes sense for a new capability — a delta for an
+/// existing capability that carries one must be reported by the validator
+/// (outside the parser's scope: here it is extracted as-is).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Delta {
     pub purpose: Option<PurposeBlock>,
     pub sections: Vec<DeltaSection>,
 }
 
-/// Sévérité d'un défaut structurel.
+/// Severity of a structural defect.
 ///
-/// `Error` interdit à `sync` et `archive` d'écrire, `Warning` et `Info` sont
-/// des observations. La distinction se fait ici, dans les données ; les
-/// consommateurs ne l'interprètent pas différemment.
+/// `Error` forbids `sync` and `archive` from writing, `Warning` and `Info`
+/// are observations. The distinction is made here, in the data; consumers
+/// do not interpret it differently.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
     Error,
@@ -166,11 +169,10 @@ pub enum Severity {
     Info,
 }
 
-/// Un défaut structurel localisé.
+/// A located structural defect.
 ///
-/// `code` est stable — un consommateur peut s'y fier ; `message` est libre de
-/// reformulation. Mêmes règles que le contrat JSON du CLI, pour les mêmes
-/// raisons.
+/// `code` is stable — a consumer can rely on it; `message` may be reworded
+/// freely. Same rules as the CLI's JSON contract, for the same reasons.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Finding {
     pub severity: Severity,
@@ -188,14 +190,23 @@ impl Finding {
             message: message.into(),
         }
     }
+
+    pub fn warning(code: &'static str, line: u32, message: impl Into<String>) -> Self {
+        Self {
+            severity: Severity::Warning,
+            code,
+            line,
+            message: message.into(),
+        }
+    }
 }
 
-/// Ce que rend un parseur : la valeur reconstruite — même partielle — et la
-/// liste des défauts rencontrés.
+/// What a parser returns: the reconstructed value — even partial — and the
+/// list of defects encountered.
 ///
-/// Pas de `Result` : un fichier catastrophiquement illisible se distingue mal
-/// d'un fichier partiellement récupérable, et le second est le cas courant.
-/// Un consommateur qui refuse la moindre erreur teste `has_errors()`.
+/// No `Result`: a catastrophically unreadable file is hard to tell apart
+/// from a partially recoverable one, and the latter is the common case.
+/// A consumer that refuses any error checks `has_errors()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Parsed<T> {
     pub value: T,
@@ -220,10 +231,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn les_types_dast_se_construisent_a_la_main() {
-        // Le test « ça compile » : si une variante manque un champ ou change
-        // de forme, ce test tombe le premier, dans un contexte qui rend
-        // évident le contrat public.
+    fn ast_types_can_be_built_by_hand() {
+        // The "it compiles" test: if a variant is missing a field or changes
+        // shape, this test fails first, in a context that makes the public
+        // contract obvious.
         let span = Span::new(0..10, 1..2);
         assert_eq!(span.start_line(), 1);
 
@@ -258,7 +269,7 @@ mod tests {
                 DeltaSection::Removed {
                     removals: vec![Removal {
                         name: "X".into(),
-                        reason: Some("obsolète".into()),
+                        reason: Some("obsolete".into()),
                         migration: None,
                         span: span.clone(),
                     }],
@@ -279,11 +290,9 @@ mod tests {
     }
 
     #[test]
-    fn parsed_distingue_les_erreurs_des_avertissements() {
+    fn parsed_distinguishes_errors_from_warnings() {
         let mut parsed = Parsed::new(0u32);
-        parsed
-            .findings
-            .push(Finding::error("x", 1, "message"));
+        parsed.findings.push(Finding::error("x", 1, "message"));
         assert!(parsed.has_errors());
 
         let info = Parsed {

@@ -1,82 +1,83 @@
-# Proposal : verrouiller l'immutabilité des décisions par le CLI
+# Proposal: enforce decision immutability through the CLI
 
-## Pourquoi
+## Why
 
-Une décision `accepted` doit être une trace figée : « voici le choix qu'on
-a tranché et sur lequel on s'appuie ». Aujourd'hui, cette immutabilité
-n'est que sociale — le fichier `_codev/decisions/0003-*.md` peut être
-édité en place, silencieusement, sans que ni le CLI ni `validate` ne
-s'en rendent compte. Un `git blame` finira par le voir, mais tout le
-raisonnement de l'outil qui s'appuie sur les décisions en vigueur (injection
-dans les instructions de `design`, index, résolution des supersessions)
-tourne à partir du contenu **courant** du fichier, pas de celui qui avait
-été accepté.
+An `accepted` decision must be a frozen trace: "here is the choice we
+settled and that we rely on". Today, this immutability is only social —
+the file `_codev/decisions/0003-*.md` can be edited in place, silently,
+without either the CLI or `validate` noticing. A `git blame` will
+eventually see it, but all of the tool's reasoning that relies on the
+decisions in effect (injection into the `design` instructions, index,
+supersession resolution) runs from the **current** content of the file,
+not from the content that was accepted.
 
-C'est le prérequis de K6 (dérives permises des décisions héritées) : on ne
-peut raisonner sur une dérive que par rapport à une base immuable.
+This is the prerequisite for K6 (permitted deviations from inherited
+decisions): a deviation can only be reasoned about against an immutable
+base.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau fichier `_codev/decisions/seal.yaml`** — versionné avec le
-  projet, tenu à jour par le CLI. Une entrée par ADR local `accepted` ou
-  `superseded`, portant l'`id`, le hash SHA-256 du **corps** de l'ADR (ce
-  qui suit le frontmatter), et la date à laquelle le sceau a été apposé.
-- **`codev decision new` scelle en même temps qu'il écrit** — un seul plan
-  d'effets porte les deux écritures (ADR + entrée du sceau), soit les deux
-  réussissent, soit aucune.
-- **`codev decision supersede` scelle le nouvel ADR** — le corps de
-  l'ancien restant byte-identique (déjà exigé par la spec), son sceau
-  reste valide sans manipulation.
-- **`codev validate` remonte trois nouveaux findings stables** —
-  `decision_unsealed` (warning : ADR sans entrée de sceau, migration
-  attendue), `decision_seal_mismatch` (**erreur** : le corps ne correspond
-  plus à son sceau, quelqu'un a édité en place), et
-  `decision_orphan_seal` (warning : entrée de sceau pour un ADR qui
-  n'existe plus).
-- **Nouvelle commande `codev decision seal <id>`** — pour la migration
-  initiale (les 6 ADRs actuels du dépôt seront flagués `unsealed` au
-  premier `validate`) et pour ré-approuver un corps qui a délibérément
-  changé (`--force` obligatoire si un sceau différent existait déjà).
-- **Rien qui ne casse le contrat JSON existant** — les commandes actuelles
-  gagnent au plus un champ additionnel dans leur réponse (le hash quand
-  pertinent), aucun champ n'est retiré ni renommé.
+- **New file `_codev/decisions/seal.yaml`** — versioned with the
+  project, kept up to date by the CLI. One entry per local `accepted` or
+  `superseded` ADR, carrying the `id`, the SHA-256 hash of the ADR's
+  **body** (what follows the frontmatter), and the date on which the
+  seal was applied.
+- **`codev decision new` seals as it writes** — a single effect plan
+  carries both writes (ADR + seal entry), either both succeed or
+  neither does.
+- **`codev decision supersede` seals the new ADR** — since the old one's
+  body stays byte-identical (already required by the spec), its seal
+  stays valid without any manipulation.
+- **`codev validate` surfaces three new stable findings** —
+  `decision_unsealed` (warning: ADR without a seal entry, migration
+  expected), `decision_seal_mismatch` (**error**: the body no longer
+  matches its seal, someone edited in place), and
+  `decision_orphan_seal` (warning: seal entry for an ADR that no longer
+  exists).
+- **New command `codev decision seal <id>`** — for the initial
+  migration (the repository's 6 current ADRs will be flagged `unsealed`
+  on the first `validate`) and to re-approve a body that deliberately
+  changed (`--force` required if a different seal already existed).
+- **Nothing that breaks the existing JSON contract** — current commands
+  gain at most one additional field in their response (the hash where
+  relevant), no field is removed or renamed.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `decisions` — quatre nouvelles exigences pour le scellement : format et
-  emplacement du sceau, écriture par `decision new`, écriture par
-  `decision supersede`, findings de `validate`, et commande
-  `decision seal`.
+- `decisions` — four new requirements for sealing: format and location
+  of the seal, writing by `decision new`, writing by
+  `decision supersede`, `validate` findings, and the
+  `decision seal` command.
 
 ## Impact
 
-- **Code** : nouveau module `codev-core::decisions::seal` (calcul du hash,
-  parsing/écriture de `seal.yaml`, comparaison), extension du plan
-  produit par `plan_new_decision` et `plan_supersede` pour inclure l'écriture
-  du sceau, extension de `validate` pour émettre les trois findings.
-- **Contrat JSON** : ajout d'un champ `bodySha256` (optionnel) dans
-  l'entrée `decision` de `decision new --json` et `decision seal --json`.
-  Le tableau `status` gagne les trois nouveaux `code`, respectant le
-  format déjà versionné.
-- **Fichier écrit** : `_codev/decisions/seal.yaml`, format YAML aligné
-  avec `codev.lock` (fichier de vérité tenu par le CLI, éditable en cas
-  de besoin mais normalement pas manipulé à la main).
-- **Migration** : au premier `validate` après cette livraison, les 6 ADRs
-  du dépôt actuel remontent en `decision_unsealed`. Un `codev decision
-  seal --all` (ou six `codev decision seal <id>` séquentiels) suffit à
-  fermer la migration.
-- **Hors périmètre** :
-  - Le scellement des décisions **héritées** — c'est le projet source qui
-    en est responsable, pas le projet consommateur. K6 dira comment le
-    projet consommateur peut *dévier* d'une décision héritée sans
-    prétendre à en modifier le contenu.
-  - La signature cryptographique (GPG, signify) — le sceau atteste de
-    l'intégrité, pas de l'authenticité. Reportable si le besoin apparaît.
-  - Un mode `--strict` de `validate` qui transformerait tout warning en
-    erreur — c'est le change E5 séparé.
+- **Code**: new module `codev-core::decisions::seal` (hash computation,
+  parsing/writing of `seal.yaml`, comparison), extension of the plan
+  produced by `plan_new_decision` and `plan_supersede` to include the
+  seal write, extension of `validate` to emit the three findings.
+- **JSON contract**: addition of a `bodySha256` field (optional) in the
+  `decision` entry of `decision new --json` and `decision seal --json`.
+  The `status` array gains the three new `code`s, following the format
+  already versioned.
+- **File written**: `_codev/decisions/seal.yaml`, YAML format aligned
+  with `codev.lock` (a source-of-truth file kept by the CLI, editable if
+  needed but normally not handled by hand).
+- **Migration**: on the first `validate` after this delivery, the 6
+  ADRs of the current repository surface as `decision_unsealed`. A
+  `codev decision seal --all` (or six sequential `codev decision seal
+  <id>`) is enough to close the migration.
+- **Out of scope**:
+  - Sealing **inherited** decisions — the source project is responsible
+    for that, not the consumer project. K6 will say how the consumer
+    project can *deviate* from an inherited decision without claiming
+    to modify its content.
+  - Cryptographic signing (GPG, signify) — the seal attests integrity,
+    not authenticity. Can be deferred if the need arises.
+  - A `--strict` mode for `validate` that would turn every warning into
+    an error — that is the separate change E5.

@@ -1,20 +1,21 @@
-//! Détection de l'environnement projet — parties pures.
+//! Project environment detection — pure parts.
 //!
-//! Ce module reçoit des `&[u8]` (contenus de manifestes lus par la coquille)
-//! et retourne un rapport typé. Il n'ouvre aucun fichier, ne lance aucun
-//! processus. L'orchestration qui interroge le système de fichiers vit
-//! côté `codev-engine::detect`.
+//! This module receives `&[u8]` (manifest contents read by the imperative shell)
+//! and returns a typed report. It opens no files and spawns no
+//! processes. The orchestration that queries the file system lives
+//! in `codev-engine::detect`.
 
 pub mod license;
+pub mod locale;
 pub mod mcp;
 pub mod stack;
 
-/// Ce que la sonde a extrait d'un projet.
+/// What the probe extracted from a project.
 ///
-/// Chaque champ est optionnel : la détection est best-effort — un manifeste
-/// absent ou illisible produit `None`, jamais une valeur inventée. Un projet
-/// sans manifeste connu produit un `Detected` majoritairement vide, ce n'est
-/// pas une erreur.
+/// Every field is optional: detection is best-effort — a missing or
+/// unreadable manifest yields `None`, never a made-up value. A project
+/// with no known manifest yields a mostly empty `Detected`; that is
+/// not an error.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Detected {
     pub stack: Option<stack::Stack>,
@@ -23,11 +24,13 @@ pub struct Detected {
     pub has_ci: bool,
     pub is_git_repo: bool,
     pub mcps: Vec<mcp::DetectedMcp>,
+    /// The user's language, inferred from the locale variables.
+    pub locale: Option<locale::DetectedLocale>,
 }
 
 impl Detected {
-    /// Un rapport totalement vide — pour les tests, et comme point de départ
-    /// de l'orchestrateur qui l'enrichit champ par champ.
+    /// A completely empty report — for tests, and as the starting point
+    /// for the orchestrator, which fills it in field by field.
     pub fn empty() -> Self {
         Self::default()
     }

@@ -1,46 +1,47 @@
-//! Parseur léger des blocs `### Décision : ...` d'un `design.md` de change.
+//! Lightweight parser for the `### Decision: ...` blocks of a change's
+//! `design.md`.
 //!
-//! Format très cadré : la section `## Décisions` contient N blocs, chacun
-//! commençant par `### Décision : <titre>`, et se terminant au prochain
-//! `### ` ou `## ` (au niveau H3 ou H2). Un scan ligne à ligne suffit — pas
-//! besoin d'un parseur markdown complet, comme la décision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md` le
-//! rappelle : ce module est pur, aucune I/O, il vit côté engine parce
-//! qu'appelé par des fonctions qui ont besoin des ports.
+//! Tightly constrained format: the `## Decisions` section contains N blocks,
+//! each starting with `### Decision: <title>` and ending at the next
+//! `### ` or `## ` (at H3 or H2 level). A line-by-line scan is enough — no
+//! need for a full markdown parser, as the decision
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`
+//! reminds us: this module is pure, with no I/O; it lives on the engine side
+//! because it is called by functions that need the ports.
 //!
-//! Le corps d'un bloc est extrait **byte pour byte** — cohérent avec K3
-//! (sceau sur le corps d'ADR byte pour byte) : un consommateur qui
-//! promeut un bloc en ADR retrouve son texte exactement.
+//! A block's body is extracted **byte for byte** — consistent with decision
+//! sealing (the seal covers the ADR body byte for byte): a consumer that promotes a block
+//! to an ADR gets its text back exactly.
 
 use std::ops::Range;
 
-const H2_DECISIONS: &str = "## Décisions";
-const H3_DECISION_PREFIX: &str = "### Décision : ";
+const H2_DECISIONS: &str = "## Decisions";
+const H3_DECISION_PREFIX: &str = "### Decision: ";
 
-/// Un bloc `### Décision : <titre>` extrait d'un `design.md`.
+/// A `### Decision: <title>` block extracted from a `design.md`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecisionBlock {
-    /// Ce qui suit `### Décision : `, trimmé.
+    /// What follows `### Decision: `, trimmed.
     pub title: String,
-    /// Les octets entre la fin de la ligne de titre et le début du bloc
-    /// suivant (ou la fin du fichier), **verbatim**.
+    /// The bytes between the end of the title line and the start of the
+    /// next block (or the end of the file), **verbatim**.
     pub body: String,
-    /// Position du bloc dans la source — utile pour la substitution du
-    /// design lors de la promotion.
+    /// Position of the block in the source — useful for rewriting the
+    /// design during promotion.
     pub byte_range: Range<usize>,
-    /// Ligne du titre (1-indexée) — utile pour signaler une ambiguïté.
+    /// Line of the title (1-indexed) — useful for reporting an ambiguity.
     pub line: u32,
 }
 
-/// Extrait tous les blocs `### Décision : <titre>` sous la section
-/// `## Décisions` du source.
+/// Extracts every `### Decision: <title>` block under the source's
+/// `## Decisions` section.
 ///
-/// Retourne une liste vide si :
-/// - le source ne contient pas `## Décisions` ;
-/// - la section `## Décisions` existe mais ne porte aucun bloc `###
-///   Décision : ...`.
+/// Returns an empty list if:
+/// - the source does not contain `## Decisions`;
+/// - the `## Decisions` section exists but holds no `###
+///   Decision: ...` block.
 ///
-/// Les blocs sont retournés dans leur ordre d'apparition.
+/// Blocks are returned in the order they appear.
 pub fn extract_decision_blocks(source: &str) -> Vec<DecisionBlock> {
     let Some((section_start, section_end)) = find_decisions_section(source) else {
         return Vec::new();
@@ -49,8 +50,8 @@ pub fn extract_decision_blocks(source: &str) -> Vec<DecisionBlock> {
     let section = &source[section_start..section_end];
     let base_offset = section_start;
 
-    // Étape 1 : collecter les positions (relatives à `section`) des lignes
-    // `### Décision : <titre>`.
+    // Step 1: collect the positions (relative to `section`) of the
+    // `### Decision: <title>` lines.
     let mut heads: Vec<(usize, String, u32)> = Vec::new();
     let mut rel = 0usize;
     for line in section.split_inclusive('\n') {
@@ -63,20 +64,23 @@ pub fn extract_decision_blocks(source: &str) -> Vec<DecisionBlock> {
         rel += line.len();
     }
 
-    // Étape 2 : construire les blocs — un bloc s'étend de la ligne de
-    // titre jusqu'au début de la ligne suivante marquée `### ` ou `## `
-    // (ou la fin de la section).
+    // Step 2: build the blocks — a block spans from the title line up to
+    // the start of the next line marked `### ` or `## `
+    // (or the end of the section).
     let mut blocks = Vec::with_capacity(heads.len());
     for (i, (head_rel, title, line)) in heads.iter().enumerate() {
         let block_start = *head_rel;
-        let block_end = heads.get(i + 1).map(|(next, _, _)| *next).unwrap_or(section.len());
+        let block_end = heads
+            .get(i + 1)
+            .map(|(next, _, _)| *next)
+            .unwrap_or(section.len());
 
-        // Fin de la ligne de titre = premier `\n` après `head_rel`.
+        // End of the title line = first `\n` after `head_rel`.
         let title_line_end = section[*head_rel..]
             .find('\n')
             .map(|off| head_rel + off + 1)
             .unwrap_or(section.len());
-        // Corps = octets entre fin de la ligne de titre et début du bloc suivant.
+        // Body = bytes between the end of the title line and the start of the next block.
         let body = section[title_line_end..block_end].to_string();
 
         blocks.push(DecisionBlock {
@@ -90,11 +94,11 @@ pub fn extract_decision_blocks(source: &str) -> Vec<DecisionBlock> {
     blocks
 }
 
-/// Repère la portée de la section `## Décisions` : de la ligne du titre
-/// (inclus) jusqu'à la ligne du prochain `## ` (exclu) ou la fin du
-/// fichier.
+/// Locates the extent of the `## Decisions` section: from the title line
+/// (inclusive) to the line of the next `## ` (exclusive) or the end of the
+/// file.
 ///
-/// Retourne `None` si la section est absente.
+/// Returns `None` if the section is missing.
 fn find_decisions_section(source: &str) -> Option<(usize, usize)> {
     let mut cursor = 0usize;
     let mut section_start: Option<usize> = None;
@@ -108,7 +112,7 @@ fn find_decisions_section(source: &str) -> Option<(usize, usize)> {
                 }
             }
             Some(_) => {
-                // Une nouvelle section H2 clôt la section Décisions.
+                // A new H2 section closes the Decisions section.
                 if trimmed.starts_with("## ") && !trimmed.starts_with(H3_DECISION_PREFIX) {
                     section_end = cursor;
                     break;
@@ -125,15 +129,15 @@ fn line_at_byte(source: &str, byte: usize) -> u32 {
     1 + source[..clamped].bytes().filter(|&b| b == b'\n').count() as u32
 }
 
-/// Erreurs de recherche par titre — codes stables portés côté action.
+/// Title lookup errors — stable codes carried on the action side.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LookupError {
     NotFound,
     Ambiguous { lines: Vec<u32> },
 }
 
-/// Cherche un bloc par son titre exact (après trim). Retourne l'index
-/// dans la slice, ou une erreur.
+/// Looks up a block by its exact title (after trimming). Returns its index
+/// in the slice, or an error.
 pub fn find_decision_block(blocks: &[DecisionBlock], title: &str) -> Result<usize, LookupError> {
     let matches: Vec<usize> = blocks
         .iter()
@@ -157,31 +161,30 @@ mod tests {
     // ─────────────── extract_decision_blocks ───────────────
 
     #[test]
-    fn source_sans_section_decisions_donne_liste_vide() {
-        let source = "# Design\n\n## Contexte\n\nx\n\n## Autre\n\ny\n";
+    fn source_without_decisions_section_yields_empty_list() {
+        let source = "# Design\n\n## Context\n\nx\n\n## Other\n\ny\n";
         assert!(extract_decision_blocks(source).is_empty());
     }
 
     #[test]
-    fn section_vide_donne_liste_vide() {
-        let source = "# Design\n\n## Décisions\n\n## Après\n";
+    fn empty_section_yields_empty_list() {
+        let source = "# Design\n\n## Decisions\n\n## After\n";
         assert!(extract_decision_blocks(source).is_empty());
     }
 
     #[test]
-    fn un_bloc_extrait_titre_et_corps() {
-        let source =
-            "# Design\n\n## Décisions\n\n### Décision : Utiliser JWT\n\nLe rationale.\n\nDeuxième paragraphe.\n\n## Après\n\nz\n";
+    fn one_block_extracts_title_and_body() {
+        let source = "# Design\n\n## Decisions\n\n### Decision: Use JWT\n\nThe rationale.\n\nSecond paragraph.\n\n## After\n\nz\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(blocks.len(), 1);
-        assert_eq!(blocks[0].title, "Utiliser JWT");
-        assert_eq!(blocks[0].body, "\nLe rationale.\n\nDeuxième paragraphe.\n\n");
+        assert_eq!(blocks[0].title, "Use JWT");
+        assert_eq!(blocks[0].body, "\nThe rationale.\n\nSecond paragraph.\n\n");
     }
 
     #[test]
-    fn deux_blocs_sont_extraits_dans_lordre() {
+    fn two_blocks_are_extracted_in_order() {
         let source =
-            "## Décisions\n\n### Décision : Alpha\n\nA1\n\n### Décision : Beta\n\nB1\n\n## Fin\n";
+            "## Decisions\n\n### Decision: Alpha\n\nA1\n\n### Decision: Beta\n\nB1\n\n## End\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(blocks.len(), 2);
         assert_eq!(blocks[0].title, "Alpha");
@@ -191,80 +194,77 @@ mod tests {
     }
 
     #[test]
-    fn corps_est_verbatim_meme_avec_markdown_riche() {
-        // Tableau, code fence, italique — tout reste dans le corps.
-        let source =
-            "## Décisions\n\n### Décision : Table\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n```\ncode\n```\n\n*emphase*\n\n## Après\n";
+    fn body_is_verbatim_even_with_rich_markdown() {
+        // Table, code fence, italics — everything stays in the body.
+        let source = "## Decisions\n\n### Decision: Table\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n```\ncode\n```\n\n*emphasis*\n\n## After\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(blocks.len(), 1);
         assert!(blocks[0].body.contains("| A | B |"));
         assert!(blocks[0].body.contains("```\ncode\n```"));
-        assert!(blocks[0].body.contains("*emphase*"));
+        assert!(blocks[0].body.contains("*emphasis*"));
     }
 
     #[test]
-    fn byte_range_permet_la_substitution() {
+    fn byte_range_allows_substitution() {
         let source =
-            "AVANT\n## Décisions\n\n### Décision : X\n\nCorps X.\n\n### Décision : Y\n\nCorps Y.\n";
+            "BEFORE\n## Decisions\n\n### Decision: X\n\nBody X.\n\n### Decision: Y\n\nBody Y.\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(blocks.len(), 2);
-        // Extraire par byte_range doit reproduire chaque bloc entier
-        // (ligne de titre + corps).
-        let bloc0 = &source[blocks[0].byte_range.clone()];
-        assert!(bloc0.starts_with("### Décision : X\n"));
-        assert!(bloc0.ends_with("Corps X.\n\n"));
-        let bloc1 = &source[blocks[1].byte_range.clone()];
-        assert!(bloc1.starts_with("### Décision : Y\n"));
-        assert!(bloc1.ends_with("Corps Y.\n"));
+        // Slicing by byte_range must reproduce each whole block
+        // (title line + body).
+        let block0 = &source[blocks[0].byte_range.clone()];
+        assert!(block0.starts_with("### Decision: X\n"));
+        assert!(block0.ends_with("Body X.\n\n"));
+        let block1 = &source[blocks[1].byte_range.clone()];
+        assert!(block1.starts_with("### Decision: Y\n"));
+        assert!(block1.ends_with("Body Y.\n"));
     }
 
     #[test]
-    fn ligne_du_titre_est_reportee() {
-        let source = "L1\nL2\n## Décisions\n\n### Décision : X\n\ncorps\n";
+    fn title_line_is_reported() {
+        let source = "L1\nL2\n## Decisions\n\n### Decision: X\n\nbody\n";
         let blocks = extract_decision_blocks(source);
-        // Titre est ligne 5 (L1, L2, blank-after-L2? no just 2 lignes puis ##
-        // Décisions puis blank puis ###).
+        // The title is on line 5 (L1, L2, then ## Decisions, then a blank
+        // line, then ###).
         assert_eq!(blocks[0].line, 5);
     }
 
     #[test]
-    fn titre_est_trime() {
-        let source = "## Décisions\n\n### Décision :    Avec espaces    \n\ncorps\n";
+    fn title_is_trimmed() {
+        let source = "## Decisions\n\n### Decision:    With spaces    \n\nbody\n";
         let blocks = extract_decision_blocks(source);
-        assert_eq!(blocks[0].title, "Avec espaces");
+        assert_eq!(blocks[0].title, "With spaces");
     }
 
     // ─────────────── find_decision_block ───────────────
 
     #[test]
-    fn lookup_trouve_par_titre_exact() {
-        let source =
-            "## Décisions\n\n### Décision : Alpha\n\nA\n\n### Décision : Beta\n\nB\n";
+    fn lookup_finds_by_exact_title() {
+        let source = "## Decisions\n\n### Decision: Alpha\n\nA\n\n### Decision: Beta\n\nB\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(find_decision_block(&blocks, "Beta").unwrap(), 1);
     }
 
     #[test]
-    fn lookup_absent_retourne_not_found() {
-        let source = "## Décisions\n\n### Décision : Alpha\n\nA\n";
+    fn lookup_missing_returns_not_found() {
+        let source = "## Decisions\n\n### Decision: Alpha\n\nA\n";
         let blocks = extract_decision_blocks(source);
         assert_eq!(
-            find_decision_block(&blocks, "Fantome").unwrap_err(),
+            find_decision_block(&blocks, "Ghost").unwrap_err(),
             LookupError::NotFound
         );
     }
 
     #[test]
-    fn lookup_ambigu_retourne_positions() {
-        let source =
-            "## Décisions\n\n### Décision : X\n\nv1\n\n### Décision : X\n\nv2\n";
+    fn lookup_ambiguous_returns_positions() {
+        let source = "## Decisions\n\n### Decision: X\n\nv1\n\n### Decision: X\n\nv2\n";
         let blocks = extract_decision_blocks(source);
         let err = find_decision_block(&blocks, "X").unwrap_err();
         match err {
             LookupError::Ambiguous { lines } => {
                 assert_eq!(lines.len(), 2);
             }
-            other => panic!("attendu Ambiguous, reçu {:?}", other),
+            other => panic!("expected Ambiguous, got {:?}", other),
         }
     }
 }

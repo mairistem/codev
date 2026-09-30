@@ -1,23 +1,23 @@
-# Fichier tenu par codev — voir `codev decision seal`.
-# Le hash du corps d'un ADR y est enregistré à son acceptation ;
-# `codev validate` compare ce hash avec le corps courant.
+# File maintained by codev — see `codev decision seal`.
+# The hash of an ADR body is recorded here when it is accepted;
+# `codev validate` compares this hash with the current body.
 version: 1
 seals:
 - id: '0001'
-  bodySha256: sha256:5a4d3c46988ba0c0b4ce3ac808795d1ca90ea6f6127536aef870700a37fdaf15
-  sealedAt: 2026-09-09
+  bodySha256: sha256:9d46b487285b80ebf5be52a8c0be8679a7c7812610935a1a69ec4d7e27d1a5c2
+  sealedAt: 2026-09-30
 - id: '0002'
-  bodySha256: sha256:4a5fa160f9891f3ac11562e2a6910670253e195d3c021a7455035d2f1eb1727e
-  sealedAt: 2026-09-09
+  bodySha256: sha256:0661083693ba68c56863999fcd691ac6281a78069654211573aa81b8b31d8205
+  sealedAt: 2026-09-30
 - id: '0003'
-  bodySha256: sha256:93ce0fbec14e47075a2596ee9793f3d313a0d8b0a9ee896de1bbff637519f6c0
-  sealedAt: 2026-09-09
+  bodySha256: sha256:e65ea477b2b4cb98cce7c94460f3d1b49599e4dc823aaaf1871587c1add588da
+  sealedAt: 2026-09-30
 - id: '0004'
-  bodySha256: sha256:8c4b01d8e652046e2fcbe8dd1c7a8e49a240f077673723df324dfd26ef48db14
-  sealedAt: 2026-09-09
+  bodySha256: sha256:fd4512794f023b5c95d9f3e1afbea3524f08ce863639dea73b478e7639a8dbb4
+  sealedAt: 2026-09-30
 - id: '0005'
-  bodySha256: sha256:99565646a447ade92b594016ebdaf2146abf1de2e29ca1b51baef8cd17b81d78
-  sealedAt: 2026-09-09
+  bodySha256: sha256:415d4c39ad3470b7b4f50261c9f4f009b5b142dbdfeb0d2d86f7992eea6fb28f
+  sealedAt: 2026-09-30
 - id: '0006'
-  bodySha256: sha256:53e7b2404ba55cf973a3b6ce697ac0cd6298e571367c311a06dcf7f439406462
-  sealedAt: 2026-09-09
+  bodySha256: sha256:3405742904b76de931d9094807c89ea03fa67e65ff2ad5a2c979f0cea95d6a81
+  sealedAt: 2026-09-30

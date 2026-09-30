@@ -1,87 +1,87 @@
 ## ADDED Requirements
 
-### Requirement: Suppression atomique d'une spec vidée quand `retire_capabilities`
+### Requirement: Atomic deletion of an emptied spec when `retire_capabilities`
 
-Quand un change porte `retire_capabilities: true` dans son
-`change.yaml`, et qu'un delta `## REMOVED Requirements` retire **toutes**
-les exigences d'une spec principale, `codev sync` MUST écrire un plan
-qui **supprime** le fichier `_codev/specs/<capa>/spec.md` en une seule
-opération atomique, plutôt que de le laisser vide ou de le refuser.
+When a change carries `retire_capabilities: true` in its
+`change.yaml`, and a `## REMOVED Requirements` delta removes **all**
+the requirements of a main spec, `codev sync` MUST write a plan that
+**deletes** the file `_codev/specs/<capa>/spec.md` in a single atomic
+operation, rather than leaving it empty or refusing.
 
-Sans le marqueur, le comportement reste celui d'aujourd'hui : refus avec
-le code stable `would_leave_spec_without_requirement`.
+Without the marker, the behavior remains as today: refusal with the
+stable code `would_leave_spec_without_requirement`.
 
-#### Scenario: Retirer une capacité avec le marqueur → fichier supprimé
+#### Scenario: Removing a capability with the marker → file deleted
 
-- **GIVEN** un projet contenant une spec principale
-  `_codev/specs/user-auth/spec.md` avec une seule exigence `Login`
-- **AND** un change dont `change.yaml` porte `retire_capabilities: true`
-- **AND** un delta `_codev/changes/<c>/specs/user-auth/spec.md` qui
-  `## REMOVED Requirements` l'exigence `Login`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** le fichier `_codev/specs/user-auth/spec.md` n'existe plus
-  après l'exécution
-- **AND** le rapport de sync liste le fichier dans `deleted[]`
+- **GIVEN** a project containing a main spec
+  `_codev/specs/user-auth/spec.md` with a single requirement `Login`
+- **AND** a change whose `change.yaml` carries `retire_capabilities: true`
+- **AND** a delta `_codev/changes/<c>/specs/user-auth/spec.md` that
+  lists the requirement `Login` under `## REMOVED Requirements`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** the file `_codev/specs/user-auth/spec.md` no longer exists
+  after execution
+- **AND** the sync report lists the file in `deleted[]`
 
-#### Scenario: Retirer une capacité sans le marqueur → refus
+#### Scenario: Removing a capability without the marker → refusal
 
-- **GIVEN** le même contexte, mais **sans** `retire_capabilities: true`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** aucune écriture ni suppression n'a lieu sur `_codev/specs/`
-- **AND** le message d'erreur nomme le code stable
+- **GIVEN** the same context, but **without** `retire_capabilities: true`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** no write or deletion happens on `_codev/specs/`
+- **AND** the error message names the stable code
   `would_leave_spec_without_requirement`
 
-#### Scenario: `retire_capabilities` sans effet quand une exigence reste
+#### Scenario: `retire_capabilities` has no effect when a requirement remains
 
-- **GIVEN** une spec principale avec les exigences `Login` et `Logout`
-- **AND** un change `retire_capabilities: true` dont le delta retire
-  uniquement `Login`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** le fichier `_codev/specs/<capa>/spec.md` existe toujours,
-  contient encore `Logout`, et n'apparaît pas dans `deleted[]`
-- **AND** le marqueur n'a rien déclenché de plus qu'un merge normal
+- **GIVEN** a main spec with the requirements `Login` and `Logout`
+- **AND** a `retire_capabilities: true` change whose delta removes
+  only `Login`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** the file `_codev/specs/<capa>/spec.md` still exists,
+  still contains `Logout`, and does not appear in `deleted[]`
+- **AND** the marker triggered nothing beyond a normal merge
 
-### Requirement: `deletions` est une opération de premier ordre du plan
+### Requirement: `deletions` is a first-class operation of the plan
 
-Le type `Plan` du cœur MUST porter un champ `deletions: Vec<PathBuf>`
-distinct de `writes` et de `moves`, et la coquille MUST appliquer les
-deletions dans un ordre déterministe : **après** les writes et **avant**
-les moves. Un `Plan` sans deletion garde le comportement historique bit-
-identique.
+The core's `Plan` type MUST carry a `deletions: Vec<PathBuf>` field
+distinct from `writes` and `moves`, and the shell MUST apply the
+deletions in a deterministic order: **after** the writes and
+**before** the moves. A `Plan` without deletions keeps the historical
+behavior bit-identical.
 
-#### Scenario: Le plan expose deletions séparément
+#### Scenario: The plan exposes deletions separately
 
-- **GIVEN** un `plan_sync` sur un change qui retire une capacité
-- **WHEN** l'inspecteur regarde le `Plan` produit
-- **THEN** l'entrée du fichier à supprimer figure dans `plan.deletions`
-- **AND** ne figure pas dans `plan.writes` (aucun write d'une chaîne vide)
+- **GIVEN** a `plan_sync` on a change that removes a capability
+- **WHEN** the inspector looks at the produced `Plan`
+- **THEN** the entry for the file to delete appears in `plan.deletions`
+- **AND** does not appear in `plan.writes` (no write of an empty string)
 
-#### Scenario: Ordre d'exécution — deletions après writes
+#### Scenario: Execution order — deletions after writes
 
-- **GIVEN** un plan qui à la fois modifie une spec `A` (write) et
-  supprime une spec `B` (deletion)
-- **WHEN** la coquille exécute le plan
-- **THEN** l'écriture sur `A` est appliquée avant la suppression de `B`
-- **AND** la suppression de `B` est appliquée avant tout `move`
+- **GIVEN** a plan that both modifies a spec `A` (write) and
+  deletes a spec `B` (deletion)
+- **WHEN** the shell executes the plan
+- **THEN** the write to `A` is applied before the deletion of `B`
+- **AND** the deletion of `B` is applied before any `move`
 
-### Requirement: Contrat JSON `sync` et `archive` expose `deleted`
+### Requirement: `sync` and `archive` JSON contract exposes `deleted`
 
-Le rapport JSON de `codev sync --json` (contrat `SyncReportV1`) et de
-`codev archive --json` (contrat `ArchiveReportV1`) MUST porter un champ
-additif `deleted: Vec<String>`, toujours présent, vide dans le cas
-courant. Le champ contient les chemins absolus des specs principales
-supprimées par le change, dans un ordre déterministe.
+The JSON report of `codev sync --json` (contract `SyncReportV1`) and
+of `codev archive --json` (contract `ArchiveReportV1`) MUST carry an
+additive field `deleted: Vec<String>`, always present, empty in the
+usual case. The field contains the absolute paths of the main specs
+deleted by the change, in a deterministic order.
 
-#### Scenario: `sync --json` avec une capacité retirée
+#### Scenario: `sync --json` with a removed capability
 
-- **GIVEN** un projet avec une spec `user-auth`, un change
-  `retire_capabilities: true` qui retire l'unique exigence
-- **WHEN** l'utilisateur lance `codev sync <c> --json`
-- **THEN** le document JSON porte `"deleted": ["<abs>/…/user-auth/spec.md"]`
-- **AND** `updated`, `created`, `unchanged` ne mentionnent PAS ce chemin
+- **GIVEN** a project with a `user-auth` spec, and a
+  `retire_capabilities: true` change that removes its only requirement
+- **WHEN** the user runs `codev sync <c> --json`
+- **THEN** the JSON document carries `"deleted": ["<abs>/…/user-auth/spec.md"]`
+- **AND** `updated`, `created`, `unchanged` do NOT mention that path
 
-#### Scenario: `deleted` toujours présent, vide par défaut
+#### Scenario: `deleted` always present, empty by default
 
-- **GIVEN** un change sans suppression
-- **WHEN** l'utilisateur lance `codev sync <c> --json`
-- **THEN** le document JSON porte `"deleted": []`
+- **GIVEN** a change without any deletion
+- **WHEN** the user runs `codev sync <c> --json`
+- **THEN** the JSON document carries `"deleted": []`

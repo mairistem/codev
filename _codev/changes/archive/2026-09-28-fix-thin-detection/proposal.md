@@ -1,110 +1,106 @@
-# Proposal : la détection « thin » regarde uniquement les règles
+# Proposal: "thin" detection looks only at the rules
 
-## Pourquoi
+## Why
 
-Le lot `configure-skill-with-nudge` a introduit la fonction
-`is_config_thin(context, rules_empty) -> bool` avec un seuil sur la
-longueur du `context:` (200 caractères). L'intention était :
-« un contexte long OU des règles présentes signifient que
-l'utilisateur a rempli sa config ».
+The `configure-skill-with-nudge` batch introduced the function
+`is_config_thin(context, rules_empty) -> bool` with a threshold on the
+length of `context:` (200 characters). The intent was:
+"a long context OR rules being present mean that the user has filled
+in their config".
 
-Testé sur un vrai projet **mira** (TypeScript, ~10 dépendances), le
-comportement observé casse cette intention :
+Tested on a real project, **mira** (TypeScript, ~10 dependencies), the
+observed behavior breaks that intent:
 
-- `codev init` détecte la stack et écrit un contexte de **280
-  caractères** — uniquement composé de la liste des dépendances
-  détectées et de « CI GitHub Actions active ».
-- `is_config_thin` retourne `false` — le seuil de 200 est franchi.
-- **Aucune nudge n'apparaît**, alors que la config n'a en réalité
-  reçu aucune contribution humaine et que `/codev-configure` a
-  exactement quelque chose à offrir.
+- `codev init` detects the stack and writes a context of **280
+  characters** — made up solely of the list of detected dependencies
+  and "CI GitHub Actions active".
+- `is_config_thin` returns `false` — the 200 threshold is crossed.
+- **No hint appears**, even though the config has in fact received no
+  human contribution at all and `/codev-configure` has exactly
+  something to offer.
 
-Le seuil sur le contexte est le mauvais critère. Il ne distingue pas
-« contexte auto-détecté par la sonde » de « contexte rédigé par
-l'utilisateur ». Or seul le second traduit une intention.
+The threshold on the context is the wrong criterion. It does not
+distinguish "context auto-detected by the probe" from "context written
+by the user". Yet only the latter reflects an intent.
 
-## Ce qui change
+## What Changes
 
-**Simplification** : `is_config_thin` prend **une seule primitive** —
-`rules_empty: bool` — et retourne exactement `rules_empty`. La
-signature devient :
+**Simplification**: `is_config_thin` takes **a single primitive** —
+`rules_empty: bool` — and returns exactly `rules_empty`. The signature
+becomes:
 
 ```rust
 pub fn is_config_thin(rules_empty: bool) -> bool
 ```
 
-**Justification** : les `rules:` par artefact sont toujours un choix
-utilisateur — jamais auto-détectées, jamais renseignées par la
-sonde. Leur présence est un indicateur fiable et binaire :
+**Rationale**: per-artifact `rules:` are always a user choice — never
+auto-detected, never filled in by the probe. Their presence is a
+reliable, binary indicator:
 
-- `rules:` vide → l'utilisateur n'a pas encore rempli sa config → la
-  nudge est utile → thin.
-- `rules:` non vide → l'utilisateur a pris la peine d'écrire au
-  moins une règle → sa config n'est plus vierge → pas thin.
+- empty `rules:` → the user has not filled in their config yet → the
+  hint is useful → thin.
+- non-empty `rules:` → the user took the trouble to write at least one
+  rule → their config is no longer blank → not thin.
 
-Le champ `context:` est ignoré parce qu'on ne peut pas différencier
-sans marqueur ce qui vient de la sonde de ce qui vient de
-l'utilisateur — et on ne veut pas ajouter un marqueur pour un signal
-qui reste secondaire.
+The `context:` field is ignored because, without a marker, what comes
+from the probe cannot be told apart from what comes from the user —
+and we do not want to add a marker for a signal that remains
+secondary.
 
-**Effet observable** : sur un projet qui n'a pas encore été enrichi
-par `/codev-configure` (ou à la main), la nudge apparaît
-**systématiquement** — dans `codev init`, dans `codev status`, dans
-`/codev-onboard`. Dès qu'une règle est écrite (par `configure` ou à
-la main), la nudge disparaît.
+**Observable effect**: on a project that has not yet been enriched by
+`/codev-configure` (or by hand), the hint appears **systematically** —
+in `codev init`, in `codev status`, in `/codev-onboard`. As soon as a
+rule is written (by `configure` or by hand), the hint disappears.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- **`configure`** — une phrase du `## Purpose` mentionnait le seuil
-  de contexte ; à supprimer dans le body de la skill uniquement (pas
-  dans la spec, qui ne le mentionne pas).
-- **`init`** — la Requirement « incite à `/codev-configure` quand la
-  config générée est thin » et son scenario évoquent « context < 200
-  caractères ET rules vides ». À réécrire pour ne parler que de la
-  clé `rules:` vide.
-- **`skills`** — la Requirement « Skill `onboard` présente codev »
-  évoque « context < 200 chars, rules vides ». À réécrire.
+- **`configure`** — a sentence of the `## Purpose` mentioned the
+  context threshold; to be removed from the skill body only (not from
+  the spec, which does not mention it).
+- **`init`** — the Requirement "prompts for `/codev-configure` when the
+  generated config is thin" and its scenario mention "context < 200
+  characters AND empty rules". To be rewritten to talk only about an
+  empty `rules:` key.
+- **`skills`** — the Requirement "Skill `onboard` presents codev"
+  mentions "context < 200 chars, empty rules". To be rewritten.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** :
-  - `codev-core::config::is_config_thin` — signature simplifiée.
-  - Tests unitaires — 3 cas ré-écrits.
-  - Trois lieux d'appel simplifiés :
-    - `codev-cli::commands::install_skills` (dans le calcul de
+- **Code**:
+  - `codev-core::config::is_config_thin` — simplified signature.
+  - Unit tests — 3 cases rewritten.
+  - Three call sites simplified:
+    - `codev-cli::commands::install_skills` (in the computation of
       `SetupOutcome.config_thin`).
-    - `codev-cli::main::config_is_thin` (helper pour le nudge de
-      `codev status`).
-    - Aucun autre — la skill `onboard` lit directement le YAML, pas
-      la fonction Rust.
-  - `assets/workflows/onboard.md` — la mention du seuil « context <
-    200 chars » retirée ; ne reste que la vérification `rules:`
-    vides.
-  - `assets/workflows/configure.md` — n'évoque pas le seuil, mais
-    vérifier que rien ne dépend implicitement de la nouvelle
-    définition.
-- **Contrat JSON** : rien ne change. `is_config_thin` ne sort pas
-  dans le contrat.
-- **Backward compat** : parfait. Les configs existantes voient
-  simplement une évaluation plus stricte de « thin » — dans le sens
-  où « une config avec des règles n'est plus thin ». Une config
-  sans règles reste thin (comme avant). Ce qui change : une config
-  sans règles mais avec long contexte auto-détecté redevient thin
-  (c'était le bug).
-- **Migration** : aucune.
-- **Hors périmètre** :
-  - Marqueur `# rédigé par /codev-configure` — reporté ; la
-    simplification `rules_empty` seule suffit à corriger le
-    symptôme observé.
-  - Introduction d'un mode `--force-nudge` en flag — pas utile,
-    l'utilisateur peut toujours ignorer la nudge.
+    - `codev-cli::main::config_is_thin` (helper for the `codev status`
+      hint).
+    - No other — the `onboard` skill reads the YAML directly, not the
+      Rust function.
+  - `assets/workflows/onboard.md` — the mention of the "context < 200
+    chars" threshold removed; only the empty `rules:` check remains.
+  - `assets/workflows/configure.md` — does not mention the threshold,
+    but check that nothing implicitly depends on the new definition.
+- **JSON contract**: nothing changes. `is_config_thin` does not appear
+  in the contract.
+- **Backward compat**: perfect. Existing configs simply see a stricter
+  evaluation of "thin" — in the sense that "a config with rules is no
+  longer thin". A config without rules stays thin (as before). What
+  changes: a config without rules but with a long auto-detected
+  context becomes thin again (that was the bug).
+- **Migration**: none.
+- **Out of scope**:
+  - A `# written by /codev-configure` marker — deferred; the
+    `rules_empty`-only simplification is enough to fix the observed
+    symptom.
+  - Introducing a `--force-nudge` flag mode — not useful, the user can
+    always ignore the hint.

@@ -2,26 +2,26 @@ use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, CoreError>;
 
-/// Erreurs du cœur.
+/// Core errors.
 ///
-/// Chaque variante porte un code stable via [`CoreError::code`]. Le code est ce
-/// que le contrat JSON expose dans son tableau `status[]` : le message peut être
-/// reformulé sans casser un consommateur, le code non.
+/// Each variant carries a stable code via [`CoreError::code`]. The code is what
+/// the JSON contract exposes in its `status[]` array: the message can be
+/// reworded without breaking a consumer, the code cannot.
 #[derive(Debug, Error)]
 pub enum CoreError {
-    #[error("nom de change invalide « {raw} » : {reason}")]
+    #[error("invalid change name `{raw}`: {reason}")]
     InvalidChangeId { raw: String, reason: String },
 
-    #[error("schéma illisible : {0}")]
+    #[error("unreadable schema: {0}")]
     SchemaUnreadable(String),
 
-    #[error("schéma « {schema} » invalide : {reason}")]
+    #[error("invalid schema `{schema}`: {reason}")]
     SchemaInvalid { schema: String, reason: String },
 
-    #[error("artefact inconnu « {artifact} » dans le schéma « {schema} »")]
+    #[error("unknown artifact `{artifact}` in schema `{schema}`")]
     UnknownArtifact { schema: String, artifact: String },
 
-    #[error("motif de sortie invalide « {pattern} » : {reason}")]
+    #[error("invalid output pattern `{pattern}`: {reason}")]
     InvalidOutputPattern { pattern: String, reason: String },
 }
 

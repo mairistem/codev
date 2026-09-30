@@ -1,98 +1,98 @@
-# Proposal : polir codev pour le lancement public
+# Proposal: polish codev for the public launch
 
-## Pourquoi
+## Why
 
-Le repo `mairistem/codev` vient de passer en public. Un visiteur qui
-tombe dessus doit **comprendre en dix secondes** :
+The `mairistem/codev` repo has just gone public. A visitor who lands
+on it must **understand within ten seconds**:
 
-- ce que fait codev ;
-- comment l'installer ;
-- comment contribuer ;
-- que le projet est vivant, maintenu, et respecte les conventions
-  open source de base.
+- what codev does;
+- how to install it;
+- how to contribute;
+- that the project is alive, maintained, and follows basic open
+  source conventions.
 
-Aujourd'hui le README est technique et minimal, il n'y a pas de
-`CONTRIBUTING`, pas de `CHANGELOG`, pas de `CODE_OF_CONDUCT`, pas de
-`SECURITY`, pas de templates d'issue/PR, et **rien ne crédite
-OpenSpec** — dont on s'est ouvertement inspiré au début du projet
-(exploration, listing des features, décisions d'écart).
+Today the README is technical and minimal, there is no
+`CONTRIBUTING`, no `CHANGELOG`, no `CODE_OF_CONDUCT`, no
+`SECURITY`, no issue/PR templates, and **nothing credits
+OpenSpec** — which openly inspired the project at its start
+(exploration, feature listing, divergence decisions).
 
-Ce lot n'ajoute **aucune capacité fonctionnelle** — c'est un change
-de **méta et documentation**, prévu explicitement par le schéma
-spec-driven via le marqueur `skip_specs: true`.
+This batch adds **no functional capability** — it is a **meta and
+documentation** change, explicitly provided for by the spec-driven
+schema through the `skip_specs: true` marker.
 
-## Ce qui change
+## What Changes
 
-**Fichiers ajoutés à la racine** :
+**Files added at the root**:
 
-- `CONTRIBUTING.md` — comment contribuer via le cycle codev
-  lui-même (fork, `codev init` si nécessaire, `/codev-propose`,
-  `/codev-apply`, PR). Meta et cohérent avec l'outil.
-- `CHANGELOG.md` — versions publiées avec leurs changes archivés,
-  format Keep-a-Changelog. Renvoie vers les GitHub Releases pour
-  les notes complètes.
-- `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 standard,
-  contact `mairistem` par défaut.
-- `SECURITY.md` — procédure de report de faille : email privé
-  (`security@…` ou GitHub Security Advisories), délai de réponse
-  cible 72h.
+- `CONTRIBUTING.md` — how to contribute through the codev cycle
+  itself (fork, `codev init` if needed, `/codev-propose`,
+  `/codev-apply`, PR). Meta and consistent with the tool.
+- `CHANGELOG.md` — published versions with their archived changes,
+  Keep-a-Changelog format. Points to the GitHub Releases for the
+  full notes.
+- `CODE_OF_CONDUCT.md` — standard Contributor Covenant 2.1,
+  `mairistem` contact by default.
+- `SECURITY.md` — vulnerability reporting procedure: private email
+  (`security@…` or GitHub Security Advisories), target response
+  time 72h.
 
-**Fichiers ajoutés sous `.github/`** :
+**Files added under `.github/`**:
 
-- `.github/ISSUE_TEMPLATE/bug_report.md` — template bug.
-- `.github/ISSUE_TEMPLATE/feature_request.md` — template feature.
-- `.github/ISSUE_TEMPLATE/config.yml` — désactive les issues vides,
-  pointe vers CONTRIBUTING et Discussions.
-- `.github/PULL_REQUEST_TEMPLATE.md` — checklist PR : change codev
-  associé, tests verts, doc à jour.
+- `.github/ISSUE_TEMPLATE/bug_report.md` — bug template.
+- `.github/ISSUE_TEMPLATE/feature_request.md` — feature template.
+- `.github/ISSUE_TEMPLATE/config.yml` — disables blank issues,
+  points to CONTRIBUTING and Discussions.
+- `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist: associated
+  codev change, green tests, up-to-date docs.
 
-**Fichiers modifiés** :
+**Files modified**:
 
-- `README.md` — refonte :
-  - En-tête avec badges (build status, latest release, license MIT,
-    plateformes supportées).
-  - Bloc « Inspiré par [OpenSpec] » dans les premières lignes.
-  - Table des matières explicite pour un lecteur qui scroll.
-  - Un exemple visuel du cycle (`ASCII art` du cycle propose →
-    apply → archive).
-  - Lien vers `docs/codev.md` pour le manuel complet.
-- `docs/codev.md` — nouvelle sous-section **« Origines »** dans la
-  section 1 (Pourquoi codev), qui crédite OpenSpec explicitement,
-  liste ce qu'on a repris à l'idée et ce qu'on a écarté.
+- `README.md` — overhaul:
+  - Header with badges (build status, latest release, MIT license,
+    supported platforms).
+  - "Inspired by [OpenSpec]" block in the first lines.
+  - Explicit table of contents for a reader who scrolls.
+  - A visual example of the cycle (`ASCII art` of the propose →
+    apply → archive cycle).
+  - Link to `docs/codev.md` for the full manual.
+- `docs/codev.md` — new **"Origins"** subsection in section 1
+  (Why codev), which explicitly credits OpenSpec, and lists what
+  was taken from the idea and what was set aside.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune.
+None.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
-*(Change marqué `skip_specs: true` — pure méta / documentation, pas
-d'exigence observable nouvelle sur le comportement de codev.)*
+*(Change marked `skip_specs: true` — pure meta / documentation, no
+new observable requirement on codev's behavior.)*
 
 ## Impact
 
-- **Code** : rien dans les crates Rust ni dans les scripts d'install.
-  Uniquement des fichiers markdown à la racine et sous `.github/`.
-- **Contrat JSON** : rien.
-- **Fichier écrit** : 8 fichiers nouveaux, 2 fichiers modifiés (README,
-  docs/codev.md). Aucun test à écrire — la doc n'a pas de tests
-  automatiques.
-- **Migration** : aucune.
-- **Hors périmètre** :
-  - **`docs.rs`** — nécessite `crates.io`, potentiellement plus tard.
-  - **Site web dédié** — `codev docs` suffit pour l'instant.
-  - **Traduction anglaise du README** — reportable au premier
-    utilisateur non-francophone qui se manifeste.
-  - **Badges sur nombre de downloads / stars** — trop précoce ; on
-    ajoutera quand il y aura des chiffres à montrer.
-  - **Automatisation du CHANGELOG à chaque tag** — la version V1
-    est éditée à la main lors du bump ; on automatisera à partir de
-    `_codev/changes/archive/` dans un cycle dédié si le besoin est là.
+- **Code**: nothing in the Rust crates or in the install scripts.
+  Only markdown files at the root and under `.github/`.
+- **JSON contract**: nothing.
+- **Files written**: 8 new files, 2 modified files (README,
+  docs/codev.md). No tests to write — the docs have no automated
+  tests.
+- **Migration**: none.
+- **Out of scope**:
+  - **`docs.rs`** — requires `crates.io`, potentially later.
+  - **Dedicated website** — `codev docs` is enough for now.
+  - **English translation of the README** — can wait for the first
+    non-French-speaking user who shows up.
+  - **Download / star count badges** — too early; they will be
+    added when there are numbers to show.
+  - **Automating the CHANGELOG on each tag** — the V1 version is
+    edited by hand at bump time; it will be automated from
+    `_codev/changes/archive/` in a dedicated cycle if the need arises.

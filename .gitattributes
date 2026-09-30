@@ -1,0 +1,7 @@
+# Keep LF line endings in the repository on every platform. Templates and
+# fixtures are embedded with include_str!, so a CRLF checkout would change
+# what the binary writes and what the tests compare.
+* text=auto eol=lf
+
+*.gif binary
+*.png binary

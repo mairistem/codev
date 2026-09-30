@@ -1,14 +1,14 @@
-//! Ce qui a besoin du monde extérieur : disposition disque, configuration,
-//! résolution de schémas, exécution des plans.
+//! Everything that needs the outside world: on-disk layout, configuration,
+//! schema resolution, plan execution.
 //!
-//! Les effets passent par les ports de [`ports`] — `FileSystem`, `Clock`,
-//! `Env` — et jamais directement. Ce n'est pas pour « pouvoir changer de
-//! système de fichiers », mais pour que `init`, `new change` et `archive`
-//! soient testables en mémoire.
+//! Effects go through the ports in [`ports`] — `FileSystem`, `Clock`,
+//! `Env` — and never directly. This is not about "being able to swap the
+//! file system", but about making `init`, `new change` and `archive`
+//! testable in memory.
 //!
-//! Ce crate ne planifie pas les skills : c'est `codev-agents` qui sait ce
-//! qu'attend Claude Code. Le CLI réunit les deux plans et les exécute en une
-//! passe.
+//! This crate does not plan skills: `codev-agents` is the one that knows what
+//! Claude Code expects. The CLI combines both plans and executes them in a
+//! single pass.
 
 pub mod apply;
 pub mod archive;

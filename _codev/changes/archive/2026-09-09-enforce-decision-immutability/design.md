@@ -1,147 +1,148 @@
-# Design : verrouiller l'immutabilité des décisions
+# Design: enforce decision immutability
 
-## Contexte
+## Context
 
-Voir `proposal.md`. L'enjeu : rendre l'immutabilité **mécaniquement**
-vérifiable — pas seulement énoncée dans une convention. Sans ça, K6
-(dérives permises des décisions héritées) n'a pas de base solide sur
-laquelle raisonner.
+See `proposal.md`. The stake: make immutability **mechanically**
+verifiable — not merely stated in a convention. Without it, K6
+(permitted deviations from inherited decisions) has no solid base to
+reason on.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre l'emplacement du sceau, ce sur quoi le hash porte, la
-séparation cœur/coquille, et les commandes CLI touchées. Il ne cadre
-pas la signature cryptographique (GPG et cie), ni la promotion des
-décisions depuis `design.md` (c'est K7).
+This design frames the location of the seal, what the hash covers, the
+core/shell separation, and the CLI commands affected. It does not frame
+cryptographic signing (GPG and the like), nor the promotion of
+decisions from `design.md` (that is K7).
 
-## Décisions
+## Decisions
 
-### Décision : sceau dans un fichier séparé `_codev/decisions/seal.yaml`
+### Decision: seal in a separate file `_codev/decisions/seal.yaml`
 
-Deux options considérées :
+Two options considered:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Champ `bodySha256` dans le frontmatter de chaque ADR** | Self-contained ; `git diff` révèle direct la falsification | Ajoute un champ « machine » qui pollue la lecture humaine d'un ADR ; oblige à répondre à la question « et le hash lui-même, il est dans le hash ? » (non — mais c'est déroutant à première lecture) |
-| **B. Fichier séparé `seal.yaml` à côté des ADR** | ADR reste propre pour l'œil humain ; aligné avec le pattern déjà en place (`codev.lock` pour les sources) | Un fichier de plus à tenir cohérent |
+| **A. `bodySha256` field in each ADR's frontmatter** | Self-contained; `git diff` directly reveals tampering | Adds a "machine" field that clutters human reading of an ADR; forces answering the question "and the hash itself, is it in the hash?" (no — but it is confusing on first read) |
+| **B. Separate `seal.yaml` file next to the ADRs** | The ADR stays clean for the human eye; aligned with the pattern already in place (`codev.lock` for sources) | One more file to keep consistent |
 
-**Choisi : B.** Le motif dépasse ce cas — codev a déjà un fichier de
-vérité tenu par le CLI (`codev.lock` pour les sources), on répète le
-motif au lieu d'inventer un mode nouveau. Le fichier `seal.yaml` vit
-sous `_codev/decisions/` pour rester au plus près de son sujet, et
-`serde_norway` le parse comme le reste du YAML — cohérent avec la
-décision [0006](../../decisions/0006-serde-norway-pour-yaml.md).
+**Chosen: B.** The pattern goes beyond this case — codev already has a
+source-of-truth file kept by the CLI (`codev.lock` for sources), we
+repeat the pattern instead of inventing a new mode. The `seal.yaml` file
+lives under `_codev/decisions/` to stay as close as possible to its
+subject, and `serde_norway` parses it like the rest of the YAML —
+consistent with decision
+[0006](../../decisions/0006-serde-norway-for-yaml.md).
 
-### Décision : le hash porte sur le **corps**, pas sur le fichier entier
+### Decision: the hash covers the **body**, not the whole file
 
-Le frontmatter d'un ADR est conçu pour évoluer légitimement — un ADR
-`accepted` devient `superseded` par une écriture explicite de
-`codev decision supersede`. Hasher le fichier entier obligerait à
-re-sceller à chaque transition, ce qui priverait l'exigence
-« supersede ne touche pas au corps » (déjà dans la spec) de son
-attribut vérifiable.
+An ADR's frontmatter is designed to evolve legitimately — an `accepted`
+ADR becomes `superseded` through an explicit write by
+`codev decision supersede`. Hashing the whole file would require
+re-sealing on every transition, which would deprive the requirement
+"supersede does not touch the body" (already in the spec) of its
+verifiable attribute.
 
-**Corollaire** : le calcul du hash coupe au premier `\n---\n` (ou
-`\n---\r\n` pour Windows) qui suit la ligne `---` d'ouverture, et hashe
-tout ce qui vient après, byte pour byte, sans normalisation. Une
-normalisation implicite (trim, LF↔CRLF) casserait la promesse
-« identique au caractère près ».
+**Corollary**: the hash computation cuts at the first `\n---\n` (or
+`\n---\r\n` for Windows) following the opening `---` line, and hashes
+everything that comes after, byte for byte, without normalization. An
+implicit normalization (trim, LF↔CRLF) would break the promise
+"identical to the character".
 
-### Décision : `plan_new_decision` et `plan_supersede` retournent un plan
-qui inclut l'écriture du sceau
+### Decision: `plan_new_decision` and `plan_supersede` return a plan
+that includes the seal write
 
-Alignement direct avec la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) :
-le cœur produit un `Plan { writes, moves, … }` complet ; la coquille
-l'exécute d'un bloc. Ajouter l'écriture de `seal.yaml` au plan préserve
-l'atomicité — soit l'ADR et le sceau sont écrits, soit rien ne l'est,
-sans avoir à inventer une compensation.
+Directly aligned with decision
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
+the core produces a complete `Plan { writes, moves, … }`; the shell
+executes it in one go. Adding the `seal.yaml` write to the plan
+preserves atomicity — either the ADR and the seal are written, or
+nothing is, without having to invent a compensation.
 
-**Corollaire** : la fonction pure qui produit le plan a besoin de lire le
-`seal.yaml` **actuel** pour le fusionner avec la nouvelle entrée. Elle
-reçoit son contenu en argument (le port `FileSystem` de la coquille l'a
-lu au préalable), elle ne le lit pas elle-même — décision
-[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+**Corollary**: the pure function that produces the plan needs to read
+the **current** `seal.yaml` to merge it with the new entry. It receives
+its content as an argument (the shell's `FileSystem` port read it
+beforehand), it does not read it itself — decision
+[0002](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
-### Décision : `validate` remonte des findings, pas des exceptions
+### Decision: `validate` surfaces findings, not exceptions
 
-`decision_unsealed` est un **warning** (code sortie 0), pas une erreur :
-sur un projet existant, tous les ADR sont d'abord unsealed — un errno
-non nul empêcherait tous les autres flows (`codev status`, `codev sync`,
-`codev archive`) de tourner jusqu'à ce que le sceau soit fait. Le
-warning attire l'attention sans bloquer.
+`decision_unsealed` is a **warning** (exit code 0), not an error: on an
+existing project, all ADRs start unsealed — a non-zero errno would
+prevent every other flow (`codev status`, `codev sync`,
+`codev archive`) from running until sealing is done. The warning draws
+attention without blocking.
 
-`decision_seal_mismatch` est une **erreur** (code sortie non nul) : un
-corps qui ne correspond plus au sceau, c'est de la falsification (ou une
-édition volontaire non ré-approuvée) — l'index de décisions ne peut
-plus être considéré fiable tant que ce n'est pas résolu.
+`decision_seal_mismatch` is an **error** (non-zero exit code): a body
+that no longer matches the seal is tampering (or a deliberate edit not
+re-approved) — the decision index can no longer be considered reliable
+until it is resolved.
 
-`decision_orphan_seal` est un **warning** : un ADR peut avoir été
-supprimé volontairement (peu probable mais possible) ; l'orphan lock
-seul ne compromet rien de gravement.
+`decision_orphan_seal` is a **warning**: an ADR may have been deleted
+deliberately (unlikely but possible); the orphan lock alone does not
+seriously compromise anything.
 
-**Alternative écartée** : tout aligner en erreur. Rend la migration
-impraticable — première `codev validate` post-livraison échoue sur les 6
-ADR existants, cassant `sync`, `archive` et le reste. Coûte trop cher
-pour ce qu'on gagne.
+**Rejected alternative**: align everything as errors. Makes migration
+impractical — the first post-delivery `codev validate` fails on the 6
+existing ADRs, breaking `sync`, `archive` and the rest. Costs too much
+for what we gain.
 
-### Décision : commande CLI `codev decision seal <id>` unique, avec `--force`
+### Decision: a single CLI command `codev decision seal <id>`, with `--force`
 
-Une seule commande, deux modes selon l'état :
+A single command, two modes depending on state:
 
-- ADR non scellé → ajoute l'entrée sans discussion (cas de migration).
-- ADR scellé et le corps a changé → **refuse** sans `--force`, avec le
-  code stable `seal_conflict` ; avec `--force`, réécrit le
-  `bodySha256` et rafraîchit `sealedAt`.
-- ADR scellé et le corps est inchangé → no-op silencieux (le sceau est
-  déjà correct).
+- Unsealed ADR → adds the entry without discussion (migration case).
+- Sealed ADR and the body has changed → **refuses** without `--force`,
+  with the stable code `seal_conflict`; with `--force`, rewrites the
+  `bodySha256` and refreshes `sealedAt`.
+- Sealed ADR and the body is unchanged → silent no-op (the seal is
+  already correct).
 
-Une commande `codev decision seal --all` (bulk) pour la migration
-initiale est reportée : `for id in $(codev decision list --json | jq
--r …); do codev decision seal "$id"; done` fait le travail sur les 6
-ADR de ce dépôt sans nécessiter un chemin dédié dans le CLI. Si le
-pattern devient récurrent, on l'ajoutera plus tard.
+A `codev decision seal --all` (bulk) command for the initial migration
+is deferred: `for id in $(codev decision list --json | jq
+-r …); do codev decision seal "$id"; done` does the job on the 6 ADRs
+of this repository without requiring a dedicated path in the CLI. If
+the pattern becomes recurrent, we will add it later.
 
-### Décision : les décisions héritées ne sont **pas** scellées par le consommateur
+### Decision: inherited decisions are **not** sealed by the consumer
 
-Un projet consommateur ne peut pas apposer un sceau sur un ADR qu'il n'a
-pas écrit — ce serait usurper le geste d'acceptation du projet source.
-Le sceau vit dans le projet source ; le consommateur, quand il indexera
-les décisions héritées (déjà en place), pourra optionnellement vérifier
-leur `seal.yaml` distant s'il y en a un (reportable, pas dans ce
-change).
+A consumer project cannot apply a seal to an ADR it did not write —
+that would usurp the source project's act of acceptance. The seal lives
+in the source project; the consumer, when it indexes inherited
+decisions (already in place), may optionally verify their remote
+`seal.yaml` if there is one (can be deferred, not in this change).
 
-**Alignement** avec la décision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md) : les
-sources héritées sont en lecture seule. `codev decision seal
-path:~/partage/0100` renvoie donc `cannot_seal_inherited`.
+**Aligned** with decision
+[0005](../../decisions/0005-read-only-inherited-sources.md):
+inherited sources are read-only. `codev decision seal
+path:~/shared/0100` therefore returns `cannot_seal_inherited`.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Migration silencieuse manquée.** Si l'utilisateur ne voit pas les
-  warnings `decision_unsealed` (par exemple parce qu'il ne lance jamais
-  `validate` manuellement — il passe par `sync` ou `archive` qui font
-  un pré-flight `validate`), il pourrait laisser ses ADR sans sceau
-  longtemps. → **Atténuation** : `codev status` (qui n'a pas encore de
-  pré-flight validate) gagnera le comptage des warnings dans son résumé
-  humain, dans un change futur. Pour l'instant, la mention dans le
-  résumé de `sync`/`archive` est suffisante.
-- **Faux positif sur les fins de ligne.** Le hash byte-pour-byte
-  attrapera un `LF → CRLF` malencontreux (git config `core.autocrlf`,
-  éditeur qui reformate). → **Compromis assumé** : `codev decision seal
-  --force` est la voie officielle. Documenter dans le message d'erreur.
-- **Le sceau ne protège pas contre l'auteur qui édite en connaissance
-  de cause.** Un développeur peut lancer `--force` sans réfléchir. →
-  **Compromis assumé** : le sceau est un garde-fou technique, pas un
-  contrôle d'accès. `git blame` reste l'ultime trace.
+- **Silently missed migration.** If the user does not see the
+  `decision_unsealed` warnings (for example because they never run
+  `validate` manually — they go through `sync` or `archive`, which do a
+  `validate` pre-flight), they could leave their ADRs unsealed for a
+  long time. → **Mitigation**: `codev status` (which does not yet have
+  a validate pre-flight) will gain the warning count in its human
+  summary, in a future change. For now, the mention in the `sync` /
+  `archive` summary is sufficient.
+- **False positive on line endings.** The byte-for-byte hash will catch
+  an accidental `LF → CRLF` (git config `core.autocrlf`, an editor that
+  reformats). → **Accepted trade-off**: `codev decision seal --force` is
+  the official path. Document it in the error message.
+- **The seal does not protect against an author who edits knowingly.**
+  A developer can run `--force` without thinking. → **Accepted
+  trade-off**: the seal is a technical guardrail, not an access
+  control. `git blame` remains the ultimate trace.
 
-## Plan de migration
+## Migration Plan
 
-Après livraison :
+After delivery:
 
-1. `codev validate` remonte 6 warnings `decision_unsealed` sur ce dépôt.
-2. Boucle courte : `codev decision list --json | jq -r '.decisions[] |
-   select(.origin == "projet") | .id' | while read id; do codev
-   decision seal "$id"; done`. Un commit unique porte les 6 sceaux
-   ajoutés dans `_codev/decisions/seal.yaml`.
-3. `codev validate` redevient à 0 warning côté décisions.
+1. `codev validate` surfaces 6 `decision_unsealed` warnings on this
+   repository.
+2. Short loop: `codev decision list --json | jq -r '.decisions[] |
+   select(.origin == "project") | .id' | while read id; do codev
+   decision seal "$id"; done`. A single commit carries the 6 seals
+   added in `_codev/decisions/seal.yaml`.
+3. `codev validate` returns to 0 warnings on the decisions side.

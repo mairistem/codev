@@ -1,37 +1,36 @@
-# Design : `/codev-onboard`
+# Design: `/codev-onboard`
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Un ajout de skill de plus dans le catalogue, sur le
-même pattern que les six existantes — mais avec deux spécificités : un
-rôle strictement informatif (lecture seule) et une place dans le
-catalogue par défaut.
+See `proposal.md`. One more skill added to the catalog, on the same
+pattern as the six existing ones — but with two specifics: a strictly
+informative role (read-only) and a place in the default catalog.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre le contenu de la skill, ses `allowed-tools`, sa place
-dans `DEFAULT_WORKFLOWS`, et les deux tests d'invariant. Il ne cadre
-pas un tutoriel interactif ni une auto-détection MCP.
+This design frames the skill's content, its `allowed-tools`, its place
+in `DEFAULT_WORKFLOWS`, and the two invariant tests. It does not frame
+an interactive tutorial or MCP auto-detection.
 
-## Décisions
+## Decisions
 
-### Décision : `onboard` entre dans `DEFAULT_WORKFLOWS`
+### Decision: `onboard` enters `DEFAULT_WORKFLOWS`
 
-C'est la seule skill dont le rôle est de **s'expliquer elle-même** et
-de guider un utilisateur qui n'a rien demandé. La cacher derrière un
-opt-in serait absurde : celui qui aurait besoin de la découvrir ne
-saurait pas l'activer.
+It is the only skill whose role is to **explain itself** and to guide
+a user who has asked for nothing. Hiding it behind an opt-in would be
+absurd: whoever would need to discover it would not know how to enable
+it.
 
-**Alternative écartée** : garder `DEFAULT_WORKFLOWS = ["propose",
-"explore"]` et laisser `onboard` en opt-in. Rejeté — casse le
-principe même de la skill. Un utilisateur nouveau ne pense pas à
-éditer `_codev/config.yaml` avant d'invoquer une skill.
+**Rejected alternative**: keep `DEFAULT_WORKFLOWS = ["propose",
+"explore"]` and leave `onboard` as opt-in. Rejected — it breaks the
+very principle of the skill. A new user does not think of editing
+`_codev/config.yaml` before invoking a skill.
 
-### Décision : `allowed-tools = Bash(codev:*), Read, Glob`
+### Decision: `allowed-tools = Bash(codev:*), Read, Glob`
 
-Comparaison avec les six autres :
+Comparison with the six others:
 
-| Skill | `Bash(codev:*)` | `Read` | `Glob` | `Grep` | `Write` | `Edit` | `Bash` général |
+| Skill | `Bash(codev:*)` | `Read` | `Glob` | `Grep` | `Write` | `Edit` | General `Bash` |
 |---|---|---|---|---|---|---|---|
 | `propose` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 | `explore` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ |
@@ -41,80 +40,79 @@ Comparaison avec les six autres :
 | `update` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | **`onboard`** | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ |
 
-`Read` + `Glob` sans `Grep` : la skill ne cherche pas de motif dans le
-code — elle regarde des chemins bien connus (`_codev/config.yaml`,
-`_codev/decisions/`, listing des changes actifs). Pas besoin de
-grep. **La règle « seule `apply` a le `Bash` général »** est
-préservée.
+`Read` + `Glob` without `Grep`: the skill does not search for patterns
+in code — it looks at well-known paths (`_codev/config.yaml`,
+`_codev/decisions/`, listing of active changes). No need for grep.
+**The rule "only `apply` has general `Bash`"** is preserved.
 
-### Décision : la skill lit la sortie **humaine** du CLI
+### Decision: the skill reads the CLI's **human** output
 
-`codev list`, `codev list --specs`, `codev status <change>` — sans
-`--json`. Cohérent avec `apply` et `update` : ces skills sont
-conversationnelles, elles ne consomment pas de contrat structuré. La
-sortie humaine est plus courte, plus lisible pour l'agent, et
-n'introduit pas de dépendance à un format versionné.
+`codev list`, `codev list --specs`, `codev status <change>` — without
+`--json`. Consistent with `apply` and `update`: these skills are
+conversational, they do not consume a structured contract. The human
+output is shorter, more readable for the agent, and introduces no
+dependency on a versioned format.
 
-**Alternative écartée** : lire le JSON pour être robuste. Utile si un
-jour la sortie humaine changeait sans crier gare — mais elle est
-stable de fait, et les autres skills « guides » (`apply`, `update`) ne
-consomment pas de JSON non plus.
+**Rejected alternative**: read JSON to be robust. Useful if the human
+output ever changed without warning — but it is stable in practice,
+and the other "guide" skills (`apply`, `update`) do not consume JSON
+either.
 
-### Décision : la skill **ne lance jamais** `codev init`
+### Decision: the skill **never runs** `codev init`
 
-Un utilisateur qui découvre codev sur un dépôt non initialisé pourrait
-attendre que la skill le fasse pour lui. Elle **refuse** : `init` est
-une écriture sur disque, non triviale (scaffolding complet), et
-demande une intention explicite de l'utilisateur. La skill affiche
-donc `codev init` comme une **suggestion**, pas une action.
+A user discovering codev on an uninitialized repository might expect
+the skill to do it for them. It **refuses**: `init` is a disk write,
+non-trivial (full scaffolding), and requires an explicit intention from
+the user. The skill therefore displays `codev init` as a
+**suggestion**, not an action.
 
-**Alignement** avec la décision de séparer geste et action — même
-philosophie que `sync` qui invite à archiver mais n'archive pas.
+**Aligned** with the decision to separate gesture and action — the
+same philosophy as `sync`, which invites archiving but does not
+archive.
 
-### Décision : la skill s'accommode d'un dépôt non initialisé
+### Decision: the skill copes with an uninitialized repository
 
-Un `codev list` sur un dossier sans `_codev/` remonte une erreur avec
-un code stable connu (`no_codev_root`). La skill intercepte ce cas
-comme une **information** — pas une erreur — et bascule sur la branche
-« suggère `codev init` ». Le rendu final reste utile.
+A `codev list` on a folder without `_codev/` surfaces an error with a
+known stable code (`no_codev_root`). The skill intercepts this case as
+**information** — not an error — and switches to the "suggest
+`codev init`" branch. The final rendering stays useful.
 
-### Décision : la recommandation d'action dépend d'un arbre de cas simple
+### Decision: the action recommendation depends on a simple case tree
 
-Cinq branches, mutuellement exclusives, résolues dans l'ordre :
+Five branches, mutually exclusive, resolved in order:
 
 ```
-sans _codev/           → codev init
-sans change actif      → /codev-propose <idée>
-1 change, planif OK    → /codev-apply <nom>
-1 change, planif KO    → /codev-propose <nom> (poursuivre)
-≥ 2 changes actifs     → lister, laisser l'utilisateur choisir
+no _codev/             → codev init
+no active change       → /codev-propose <idea>
+1 change, planning OK  → /codev-apply <name>
+1 change, planning KO  → /codev-propose <name> (continue)
+≥ 2 active changes     → list them, let the user choose
 ```
 
-Cet arbre vit dans le body markdown de la skill, pas dans du code
-Rust. C'est l'agent qui l'exécute — la skill dit **quoi lire** et
-**quoi recommander en fonction**, l'agent regarde, choisit, répond.
+This tree lives in the skill's markdown body, not in Rust code. The
+agent executes it — the skill says **what to read** and **what to
+recommend accordingly**, the agent looks, chooses, answers.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **La skill dit « lance `codev init` » mais l'utilisateur n'a pas
-  installé le binaire.** → **Compromis assumé** : sans `codev` dans
-  le PATH, la skill n'aurait pas pu être installée par un `codev
-  update`. Cas de bord improbable, non traité.
-- **La skill devient dense quand le projet a beaucoup de specs et
-  changes.** → **Atténuation** : le rendu ne liste **pas** chaque
-  spec ni chaque décision individuellement — il donne des **comptes**
-  (« 5 specs », « 6 décisions »). L'utilisateur qui veut le détail
-  lance `/codev-explore` ou les commandes `codev list --specs` /
-  `codev decision list`.
-- **Une évolution future du catalogue casse le contrat d'invariant
-  « le body cite les trois blocs ».** → **Traité** par un test dédié
-  `onboard_cite_ses_trois_blocs` qui vérifie la présence des mots-clés
-  attendus (« description », « état », « action » — à ajuster selon la
-  rédaction finale).
+- **The skill says "run `codev init`" but the user has not installed
+  the binary.** → **Accepted trade-off**: without `codev` in the PATH,
+  the skill could not have been installed by a `codev update`.
+  Improbable edge case, not handled.
+- **The skill becomes dense when the project has many specs and
+  changes.** → **Mitigation**: the rendering does **not** list each
+  spec or each decision individually — it gives **counts** ("5 specs",
+  "6 decisions"). A user who wants the detail runs `/codev-explore` or
+  the commands `codev list --specs` / `codev decision list`.
+- **A future evolution of the catalog breaks the invariant contract
+  "the body cites the three blocks".** → **Handled** by a dedicated
+  test `onboard_cite_ses_trois_blocs` that checks the presence of the
+  expected keywords ("description", "state", "action" — to be adjusted
+  according to the final wording).
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Les projets qui déclarent explicitement `workflows:` dans leur
-`config.yaml` gardent leur liste ; ils ajoutent `onboard` quand ils
-veulent. Les projets neufs (sans clef `workflows:`) obtiennent la
-skill au premier `codev init` / `codev update`.
+None. Projects that explicitly declare `workflows:` in their
+`config.yaml` keep their list; they add `onboard` when they want. New
+projects (without a `workflows:` key) get the skill on the first
+`codev init` / `codev update`.

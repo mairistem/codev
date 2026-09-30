@@ -1,154 +1,154 @@
 ## ADDED Requirements
 
-### Requirement: Sceau du corps enregistré par le CLI
+### Requirement: Body seal recorded by the CLI
 
-Le CLI SHALL maintenir un fichier `_codev/decisions/seal.yaml` — versionné
-avec le projet — qui recense les décisions locales scellées, avec pour
-chaque entrée l'`id` de la décision, le hash SHA-256 du **corps** de l'ADR
-(tout ce qui suit le séparateur `---` fermant le frontmatter), et la date
-à laquelle le sceau a été apposé. Seules les décisions locales sont
-scellées — les décisions héritées relèvent du projet source, pas du
-consommateur.
+The CLI SHALL maintain a file `_codev/decisions/seal.yaml` — versioned
+with the project — that lists the sealed local decisions, with, for
+each entry, the decision's `id`, the SHA-256 hash of the ADR's **body**
+(everything that follows the `---` separator closing the frontmatter),
+and the date on which the seal was applied. Only local decisions are
+sealed — inherited decisions belong to the source project, not to the
+consumer.
 
-Le fichier ne contient que la version du schéma et la liste des sceaux —
-un sceau, c'est un `id`, un `bodySha256` préfixé `sha256:`, et un `sealedAt`
-au format `AAAA-MM-JJ`.
+The file contains only the schema version and the list of seals — a
+seal is an `id`, a `bodySha256` prefixed with `sha256:`, and a `sealedAt`
+in `YYYY-MM-DD` format.
 
-#### Scenario: Sceau écrit à la création d'un projet
+#### Scenario: Seal written when a project creates a decision
 
-- **GIVEN** un projet dont `_codev/decisions/seal.yaml` n'existe pas
-- **WHEN** l'utilisateur lance `codev decision new "Un premier choix"`
-- **THEN** le fichier `_codev/decisions/seal.yaml` est créé
-- **AND** il contient une entrée dont l'`id` est `"0001"` et dont le
-  `bodySha256` correspond au SHA-256 hexadécimal du corps du fichier
-  `0001-un-premier-choix.md` (préfixé `sha256:`)
+- **GIVEN** a project where `_codev/decisions/seal.yaml` does not exist
+- **WHEN** the user runs `codev decision new "A first choice"`
+- **THEN** the file `_codev/decisions/seal.yaml` is created
+- **AND** it contains an entry whose `id` is `"0001"` and whose
+  `bodySha256` matches the hexadecimal SHA-256 of the body of the file
+  `0001-a-first-choice.md` (prefixed with `sha256:`)
 
-#### Scenario: Format du fichier de sceau
+#### Scenario: Seal file format
 
-- **GIVEN** le fichier `_codev/decisions/seal.yaml` créé par le CLI
-- **WHEN** un humain l'ouvre
-- **THEN** il contient une clé `version: 1` en tête
-- **AND** une clé `seals` portant une liste dont chaque entrée a
-  exactement les champs `id`, `bodySha256`, `sealedAt`
-- **AND** aucun autre champ inconnu
+- **GIVEN** the file `_codev/decisions/seal.yaml` created by the CLI
+- **WHEN** a human opens it
+- **THEN** it contains a `version: 1` key first
+- **AND** a `seals` key carrying a list whose every entry has exactly
+  the fields `id`, `bodySha256`, `sealedAt`
+- **AND** no other unknown field
 
-### Requirement: `decision new` écrit l'ADR et le sceau dans le même plan
+### Requirement: `decision new` writes the ADR and the seal in the same plan
 
-L'opération `codev decision new <titre>` MUST produire un plan d'effets
-qui écrit à la fois l'ADR **et** l'entrée correspondante dans
-`_codev/decisions/seal.yaml`. Si l'un des deux échoue, aucun n'est écrit
-— la commande ne laisse jamais un ADR sans sceau ni un sceau sans ADR.
+The operation `codev decision new <title>` MUST produce an effect plan
+that writes both the ADR **and** the corresponding entry in
+`_codev/decisions/seal.yaml`. If either fails, neither is written — the
+command never leaves an ADR without a seal nor a seal without an ADR.
 
-#### Scenario: Échec d'écriture du sceau annule la création
+#### Scenario: Failure to write the seal cancels the creation
 
-- **GIVEN** un projet dans lequel `_codev/decisions/seal.yaml` est
-  verrouillé en écriture par le système
-- **WHEN** l'utilisateur lance `codev decision new "Titre"`
-- **THEN** aucun fichier ADR n'est écrit dans `_codev/decisions/`
-- **AND** le fichier `seal.yaml` reste inchangé
+- **GIVEN** a project in which `_codev/decisions/seal.yaml` is
+  write-locked by the system
+- **WHEN** the user runs `codev decision new "Title"`
+- **THEN** no ADR file is written in `_codev/decisions/`
+- **AND** the `seal.yaml` file stays unchanged
 
-### Requirement: `decision supersede` scelle le nouvel ADR sans toucher au sceau de l'ancien
+### Requirement: `decision supersede` seals the new ADR without touching the old one's seal
 
-L'opération `codev decision supersede <id> <titre>` MUST ajouter une
-entrée de sceau pour le nouvel ADR créé, et MUST NOT modifier l'entrée de
-sceau de l'ancien — puisque son corps reste identique au caractère près
-(exigence déjà en vigueur), son sceau reste valide.
+The operation `codev decision supersede <id> <title>` MUST add a seal
+entry for the newly created ADR, and MUST NOT modify the seal entry of
+the old one — since its body stays identical to the character (a
+requirement already in effect), its seal stays valid.
 
-#### Scenario: Supersession scelle uniquement le nouveau
+#### Scenario: Supersession seals only the new one
 
-- **GIVEN** un projet contenant un ADR `0003 accepted` scellé et référencé
-  dans `seal.yaml` sous `id: "0003"`
-- **WHEN** l'utilisateur lance `codev decision supersede 0003 "Nouveau choix"`
-- **THEN** le fichier `seal.yaml` contient maintenant deux entrées : celle
-  de `0003` (inchangée) et une nouvelle pour l'ADR créé (par exemple
+- **GIVEN** a project containing an ADR `0003 accepted` that is sealed
+  and referenced in `seal.yaml` under `id: "0003"`
+- **WHEN** the user runs `codev decision supersede 0003 "New choice"`
+- **THEN** the `seal.yaml` file now contains two entries: the one for
+  `0003` (unchanged) and a new one for the created ADR (for example
   `0007`)
-- **AND** l'entrée `0003` a exactement le même `bodySha256` qu'avant la
-  supersession
+- **AND** the `0003` entry has exactly the same `bodySha256` as before
+  the supersession
 
-### Requirement: `validate` détecte les altérations du corps
+### Requirement: `validate` detects body alterations
 
-`codev validate` MUST émettre trois nouveaux findings de code stable
-pour signaler les écarts entre les ADR et leur sceau :
+`codev validate` MUST emit three new findings with stable codes to
+report discrepancies between ADRs and their seal:
 
-- `decision_unsealed` — **warning** émis pour tout ADR local de statut
-  `accepted` ou `superseded` qui n'a pas d'entrée dans `seal.yaml`. Le
-  message rappelle que la migration se fait par `codev decision seal`.
-- `decision_seal_mismatch` — **erreur** émise pour tout ADR dont le
-  `bodySha256` calculé ne correspond plus à celui enregistré dans
-  `seal.yaml`. Le message nomme l'ADR concerné et rappelle qu'une
-  modification délibérée passe par `codev decision seal --force`.
-- `decision_orphan_seal` — **warning** émis pour toute entrée de
-  `seal.yaml` dont l'ADR référencé n'existe plus dans
-  `_codev/decisions/`.
+- `decision_unsealed` — **warning** emitted for any local ADR with
+  status `accepted` or `superseded` that has no entry in `seal.yaml`.
+  The message recalls that migration is done with `codev decision seal`.
+- `decision_seal_mismatch` — **error** emitted for any ADR whose
+  computed `bodySha256` no longer matches the one recorded in
+  `seal.yaml`. The message names the ADR concerned and recalls that a
+  deliberate modification goes through `codev decision seal --force`.
+- `decision_orphan_seal` — **warning** emitted for any `seal.yaml`
+  entry whose referenced ADR no longer exists in `_codev/decisions/`.
 
-#### Scenario: Détection d'un corps modifié en place
+#### Scenario: Detection of a body modified in place
 
-- **GIVEN** un projet dont l'ADR `0001` est scellé
-- **AND** un humain a édité le corps du fichier `0001-*.md` sans mettre à
-  jour `seal.yaml`
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** la sortie contient un finding de code `decision_seal_mismatch`
-  nommant `0001`
-- **AND** le code d'erreur de la commande est non nul
+- **GIVEN** a project whose ADR `0001` is sealed
+- **AND** a human has edited the body of the file `0001-*.md` without
+  updating `seal.yaml`
+- **WHEN** the user runs `codev validate`
+- **THEN** the output contains a finding with code
+  `decision_seal_mismatch` naming `0001`
+- **AND** the command's exit code is non-zero
 
-#### Scenario: Détection d'un ADR non scellé
+#### Scenario: Detection of an unsealed ADR
 
-- **GIVEN** un projet contenant six ADR locaux `accepted`, tous sans
-  entrée dans `seal.yaml` (état de migration initial)
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** la sortie contient six findings de code `decision_unsealed`,
-  un par ADR
-- **AND** le code d'erreur de la commande est nul (warnings, pas erreurs)
+- **GIVEN** a project containing six local `accepted` ADRs, all without
+  an entry in `seal.yaml` (initial migration state)
+- **WHEN** the user runs `codev validate`
+- **THEN** the output contains six findings with code
+  `decision_unsealed`, one per ADR
+- **AND** the command's exit code is zero (warnings, not errors)
 
-#### Scenario: Détection d'un sceau orphelin
+#### Scenario: Detection of an orphan seal
 
-- **GIVEN** un projet dont `seal.yaml` contient une entrée pour
-  l'ADR `0004`
-- **AND** le fichier `0004-*.md` a été supprimé
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** la sortie contient un finding `decision_orphan_seal` nommant
+- **GIVEN** a project whose `seal.yaml` contains an entry for ADR
   `0004`
-- **AND** le code d'erreur de la commande est nul (warning, pas erreur)
+- **AND** the file `0004-*.md` has been deleted
+- **WHEN** the user runs `codev validate`
+- **THEN** the output contains a `decision_orphan_seal` finding naming
+  `0004`
+- **AND** the command's exit code is zero (warning, not error)
 
-### Requirement: `decision seal` ajoute ou renouvelle une entrée de sceau
+### Requirement: `decision seal` adds or renews a seal entry
 
-`codev decision seal <id>` MUST créer une entrée de sceau pour un ADR
-local qui n'en a pas — c'est le geste de migration. Pour un ADR déjà
-scellé dont le corps a changé, la commande MUST refuser sans `--force` et
-rappeler que l'immutabilité est intentionnelle. Avec `--force`, elle
-réécrit le `bodySha256` et met à jour `sealedAt`. Un ADR héritée ne peut
-pas être scellé par le projet consommateur (le scellement appartient au
-projet source).
+`codev decision seal <id>` MUST create a seal entry for a local ADR
+that has none — this is the migration gesture. For an already sealed
+ADR whose body has changed, the command MUST refuse without `--force`
+and recall that immutability is intentional. With `--force`, it
+rewrites the `bodySha256` and updates `sealedAt`. An inherited ADR
+cannot be sealed by the consumer project (sealing belongs to the source
+project).
 
-#### Scenario: Migration d'un ADR non scellé
+#### Scenario: Migration of an unsealed ADR
 
-- **GIVEN** un projet contenant un ADR `0001 accepted` sans entrée dans
-  `seal.yaml`
-- **WHEN** l'utilisateur lance `codev decision seal 0001`
-- **THEN** `seal.yaml` porte maintenant une entrée pour `0001` dont le
-  `bodySha256` correspond au corps courant du fichier
+- **GIVEN** a project containing an ADR `0001 accepted` with no entry
+  in `seal.yaml`
+- **WHEN** the user runs `codev decision seal 0001`
+- **THEN** `seal.yaml` now carries an entry for `0001` whose
+  `bodySha256` matches the current body of the file
 
-#### Scenario: Refus de re-sceller sans `--force`
+#### Scenario: Refusal to re-seal without `--force`
 
-- **GIVEN** un projet dont l'ADR `0001` est scellé, et dont le corps a
-  ensuite été édité en place
-- **WHEN** l'utilisateur lance `codev decision seal 0001`
-- **THEN** `seal.yaml` reste inchangé
-- **AND** le message d'erreur nomme le code stable `seal_conflict` et
-  rappelle que `--force` réécrit délibérément le sceau
+- **GIVEN** a project whose ADR `0001` is sealed, and whose body was
+  then edited in place
+- **WHEN** the user runs `codev decision seal 0001`
+- **THEN** `seal.yaml` stays unchanged
+- **AND** the error message names the stable code `seal_conflict` and
+  recalls that `--force` deliberately rewrites the seal
 
-#### Scenario: Re-sceau avec `--force`
+#### Scenario: Re-seal with `--force`
 
-- **GIVEN** le même contexte
-- **WHEN** l'utilisateur lance `codev decision seal 0001 --force`
-- **THEN** l'entrée `0001` dans `seal.yaml` porte maintenant le nouveau
-  `bodySha256` et une date `sealedAt` correspondant à la date du jour
+- **GIVEN** the same context
+- **WHEN** the user runs `codev decision seal 0001 --force`
+- **THEN** the `0001` entry in `seal.yaml` now carries the new
+  `bodySha256` and a `sealedAt` date matching today's date
 
-#### Scenario: Refus de sceller une décision héritée
+#### Scenario: Refusal to seal an inherited decision
 
-- **GIVEN** un projet héritant d'une source contenant `path:~/partage/0100`
-- **WHEN** l'utilisateur lance `codev decision seal path:~/partage/0100`
-- **THEN** aucune écriture n'a lieu
-- **AND** le message d'erreur nomme le code stable
-  `cannot_seal_inherited` et rappelle que le scellement appartient au
-  projet source
+- **GIVEN** a project inheriting from a source containing
+  `path:~/shared/0100`
+- **WHEN** the user runs `codev decision seal path:~/shared/0100`
+- **THEN** no write takes place
+- **AND** the error message names the stable code
+  `cannot_seal_inherited` and recalls that sealing belongs to the
+  source project

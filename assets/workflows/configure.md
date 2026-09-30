@@ -1,165 +1,165 @@
-Enrichir `_codev/config.yaml` en analysant le projet — proposer un
-`context:` détaillé et des `rules:` par artefact, sans jamais toucher
-aux workflows, aux MCPs ou au schéma.
+Enrich `_codev/config.yaml` by analyzing the project — propose a detailed
+`context:` and per-artifact `rules:`, without ever touching the
+workflows, the MCPs or the schema.
 
-**Frontière stricte.** Cette skill :
+**Strict boundary.** This skill:
 
-- Lit le projet en surface, dans un **budget** défini plus bas.
-- Modifie **uniquement** les champs `context` et `rules` de
+- Reads the project at surface level, within a **budget** defined below.
+- Modifies **only** the `context` and `rules` fields of
   `_codev/config.yaml`.
-- **Préserve** `schema`, `workflows`, `mcp`, `inherits` et tous les
-  commentaires existants — la sonde de `codev init` a rempli ces
-  champs, on ne les rejoue pas.
-- **N'écrit rien sans confirmation** — affiche le diff, demande, écrit.
+- **Preserves** `schema`, `language`, `workflows`, `mcp`, `inherits` and every
+  existing comment — the `codev init` probe filled those fields; they
+  are not replayed.
+- **Writes nothing without confirmation** — show the diff, ask, write.
 
-Elle **refuse d'agir** si `_codev/config.yaml` est absent : dans ce
-cas, renvoyer l'utilisateur vers `codev init` et arrêter.
+It **refuses to act** if `_codev/config.yaml` is missing: in that case,
+point the user to `codev init` and stop.
 
 ---
 
-## Entrée
+## Input
 
-Aucune. Si l'utilisateur pose une question, on répond dans la même
-frontière — pas d'écriture jusqu'à la confirmation finale.
+None. If the user asks a question, answer within the same boundary — no
+writing until the final confirmation.
 
-## Étapes
+## Steps
 
-### 1. Vérifier la présence de `_codev/config.yaml`
+### 1. Check that `_codev/config.yaml` exists
 
 ```bash
 codev status --json
 ```
 
-Si la commande échoue avec `no_codev_root`, dire :
+If the command fails with `no_codev_root`, say:
 
-> Ce projet n'a pas de `_codev/`. Lance d'abord `codev init`, puis
-> reviens à `/codev-configure`.
+> This project has no `_codev/`. Run `codev init` first, then
+> come back to `/codev-configure`.
 
-Puis arrêter.
+Then stop.
 
-Sinon, lire le fichier :
+Otherwise, read the file:
 
 ```
 Read _codev/config.yaml
 ```
 
-Retenir la valeur actuelle de `context:` et `rules:` — c'est le point
-de comparaison.
+Note the current value of `context:` and `rules:` — it is the baseline
+for comparison.
 
-### 2. Explorer le projet — dans le budget
+### 2. Explore the project — within the budget
 
-**Lecture obligatoire** (si présents) :
+**Mandatory reading** (if present):
 
-- `README.md` racine — lecture complète.
-- `CONTRIBUTING.md` racine — lecture complète.
+- Root `README.md` — read in full.
+- Root `CONTRIBUTING.md` — read in full.
 
-**Lecture ciblée** :
+**Targeted reading**:
 
-- `docs/**/*.md` — au plus **5** fichiers, priorisés par taille
-  croissante (les plus courts sont souvent des index et vues
-  d'ensemble).
-- **8 fichiers source maximum**, priorisés par récence
+- `docs/**/*.md` — at most **5** files, prioritized by increasing size
+  (the shortest are often indexes and overviews).
+- **At most 8 source files**, prioritized by recency
   (`git log --since='6 months ago' --pretty=format: --name-only | sort | uniq -c | sort -rn | head -20`
-  puis filtrer par extension du langage détecté).
-- `ls _codev/` et `ls src/` (ou équivalent selon la stack) — **un
-  seul niveau**, juste pour saisir la structure.
+  then filter by the extension of the detected language).
+- `ls _codev/` and `ls src/` (or equivalent for the stack) — **one
+  level only**, just to grasp the structure.
 
-**Ne pas** :
+**Do not**:
 
-- Ouvrir les dossiers `target/`, `node_modules/`, `dist/`, `.git/`
-  (sauf `.git/config` en dernier recours, jamais nécessaire).
-- Lire plus de fichiers que le budget — ça fait dériver la sortie.
-- Faire des `grep` massifs.
+- Open the `target/`, `node_modules/`, `dist/`, `.git/` folders
+  (except `.git/config` as a last resort, never necessary).
+- Read more files than the budget — it makes the output drift.
+- Run sweeping `grep`s.
 
-### 3. Rédiger la proposition
+### 3. Draft the proposal
 
-Deux blocs à produire, séparés :
+Two blocks to produce, kept separate:
 
-**`context:`** — 2 à 5 lignes, factuelles, orientées « ce qu'un
-agent doit savoir avant d'écrire ». Doit couvrir :
+**`context:`** — 2 to 5 lines, factual, focused on "what an agent must
+know before writing". It must cover:
 
-- La stack au-delà du langage (frameworks, bibliothèques
-  structurantes).
-- Le style de gestion d'erreur (result-based, exceptions,
-  panic-libre, etc.).
-- Les conventions d'API si le projet en expose (REST, gRPC, GraphQL,
+- The stack beyond the language (frameworks, structuring libraries).
+- The error-handling style (result-based, exceptions, panic-free,
+  etc.).
+- The API conventions if the project exposes any (REST, gRPC, GraphQL,
   CLI…).
-- Le ton des commentaires (langue, format, ce qu'ils expliquent).
-- Un choix structurant du projet — pas plus d'un ou deux.
+- The tone of comments (language, format, what they explain).
+- One structuring choice of the project — no more than one or two.
 
-**Ne pas répéter** ce que la stack détectée contient déjà. Compléter.
+**Do not repeat** what the detected stack already contains. Complement it.
 
-**`rules:`** — 1 à 2 règles par artefact, sur `specs`, `design`,
-`tasks`. Chaque règle DOIT être :
+**`rules:`** — 1 to 2 rules per artifact, for `specs`, `design`,
+`tasks`. Each rule MUST be:
 
-- **Positive** — dire ce qu'on veut, pas ce qu'on ne veut pas.
-- **Vérifiable à la relecture** — pas de « clean », pas d'« élégant ».
-- **Ancrée** dans ce que le projet fait, pas générique.
+- **Positive** — say what is wanted, not what is not.
+- **Checkable on review** — no "clean", no "elegant".
+- **Grounded** in what the project does, not generic.
 
-### 4. Afficher le diff
+Write both blocks in the language set by the `language:` key of the same
+file (`en` when absent): the team reads and maintains them.
 
-Format attendu :
+### 4. Show the diff
+
+Expected format:
 
 ```
-Voici le patch proposé pour _codev/config.yaml :
+Here is the proposed patch for _codev/config.yaml:
 
---- context: (actuel) ---
-Projet Rust, 2024.
+--- context: (current) ---
+Rust project, 2024.
 
---- context: (proposé) ---
-Projet Rust workspace (4 crates), édition 2024. Erreurs typées avec
-thiserror dans les libs, anyhow uniquement dans la CLI. Commentaires
-en français, ils expliquent le pourquoi.
+--- context: (proposed) ---
+Rust workspace (4 crates), edition 2024. Typed errors with
+thiserror in the libraries, anyhow only in the CLI. Comments
+in English; they explain the why.
 
---- rules: (actuel) ---
-(vide)
+--- rules: (current) ---
+(empty)
 
---- rules: (proposé) ---
+--- rules: (proposed) ---
 specs:
-  - Décrire un comportement observable, jamais une implémentation.
+  - Describe observable behavior, never an implementation.
 design:
-  - Citer une décision de _codev/decisions/ qui contraint le choix.
+  - Cite a decision from _codev/decisions/ that constrains the choice.
 tasks:
-  - Chaque tâche énonce comment vérifier qu'elle est faite.
+  - Each task states how to verify that it is done.
 ```
 
-### 5. Demander la confirmation, puis écrire
+### 5. Ask for confirmation, then write
 
-Question exacte :
+Exact question:
 
-> Applique ce patch à `_codev/config.yaml` ? [oui/non]
+> Apply this patch to `_codev/config.yaml`? [yes/no]
 
-Si `oui` :
+If `yes`:
 
-- **Editer** `_codev/config.yaml` — remplacer uniquement les
-  sections `context:` et `rules:`. **Préserver** `schema`,
-  `workflows`, `mcp`, `inherits`, et **tous les commentaires**.
-- Ajouter un commentaire au-dessus de `context:` :
-  `# rédigé par /codev-configure`. S'il y en avait déjà un
-  (« détecté depuis Cargo.toml »), le remplacer par le nouveau.
-- Confirmer : « ✓ `_codev/config.yaml` enrichi. »
+- **Edit** `_codev/config.yaml` — replace only the `context:` and
+  `rules:` sections. **Preserve** `schema`, `language`, `workflows`,
+  `mcp`, `inherits`, and **every comment**.
+- Add a comment above `context:`:
+  `# written by /codev-configure`. If there was already one
+  (e.g. "detected from Cargo.toml"), replace it with the new one.
+- Confirm: "✓ `_codev/config.yaml` enriched."
 
-Si `non` :
+If `no`:
 
-- Ne rien écrire.
-- Dire : « Aucune modification. Relance `/codev-configure` quand tu
-  veux réessayer. »
+- Write nothing.
+- Say: "No changes made. Run `/codev-configure` again whenever you
+  want to retry."
 
-## Sortie
+## Output
 
-Le diff proposé, la question de confirmation, et selon la réponse :
-un accusé d'écriture ou un refus poli.
+The proposed diff, the confirmation question, and depending on the
+answer: a write acknowledgment or a polite refusal.
 
-## Garde-fous
+## Guardrails
 
-- **Aucune écriture avant la confirmation explicite** — même partielle,
-  même « juste pour tester ».
-- **Champs préservés stricts** : `schema`, `workflows`, `mcp`,
-  `inherits`. Si le patch touchait autre chose, c'est un bug de la
-  skill, arrête et signale-le à l'utilisateur.
-- **Refuse si `_codev/config.yaml` absent** — jamais de création
-  ex nihilo par cette skill.
-- **Respecte le budget de lecture** — 5 docs, 8 fichiers source
-  maximum, un seul niveau de `ls`. Un projet plus gros ne mérite pas
-  plus de lecture : ce qui compte tient dans les fichiers les plus
-  vus.
+- **No writing before explicit confirmation** — not even partially, not
+  even "just to test".
+- **Strictly preserved fields**: `schema`, `workflows`, `mcp`,
+  `inherits`. If the patch touched anything else, that is a bug in the
+  skill: stop and report it to the user.
+- **Refuse if `_codev/config.yaml` is missing** — this skill never
+  creates it from scratch.
+- **Respect the reading budget** — at most 5 docs and 8 source files,
+  a single level of `ls`. A bigger project does not deserve more
+  reading: what matters fits in the most-touched files.

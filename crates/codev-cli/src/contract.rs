@@ -1,27 +1,27 @@
-//! Le contrat JSON, version 1.
+//! The JSON contract, version 1.
 //!
-//! **C'est une API publique.** Elle est consommée par des skills déjà
-//! installées chez les utilisateurs, qui ne se régénèrent pas quand on
-//! recompile. D'où la règle : ces types ne dérivent pas du modèle de domaine,
-//! ils le traduisent. Un refactor interne peut donc casser une conversion, ce
-//! que le compilateur signale, plutôt que la forme du JSON, que personne ne
-//! remarquerait avant l'utilisateur.
+//! **This is a public API.** It is consumed by skills already installed on
+//! users' machines, which are not regenerated when we recompile. Hence the
+//! rule: these types do not derive from the domain model, they translate it.
+//! An internal refactor can therefore break a conversion, which the compiler
+//! reports, rather than the shape of the JSON, which nobody would notice
+//! before the user.
 //!
-//! Deux invariants tenus par tout le module :
-//! - stdout ne porte **qu'un seul** document JSON, y compris en cas d'échec ;
-//! - tout document porte un tableau `status`, éventuellement vide.
+//! Two invariants held by the whole module:
+//! - stdout carries **exactly one** JSON document, including on failure;
+//! - every document carries a `status` array, possibly empty.
 
 use codev_core::{ArtifactState, ChangeStatus};
+use codev_engine::Warning;
 use codev_engine::config::Block;
 use codev_engine::instructions::Instructions;
-use codev_engine::Warning;
 use serde::Serialize;
 use serde_json::json;
 
-/// Une entrée du tableau `status` : un constat, pas de la prose.
+/// An entry of the `status` array: a finding, not prose.
 ///
-/// `code` est stable et fait pour être testé par un consommateur ; `message`
-/// est fait pour être lu, et peut être reformulé sans préavis.
+/// `code` is stable and meant to be tested by a consumer; `message` is meant
+/// to be read, and may be reworded without notice.
 #[derive(Debug, Serialize)]
 pub struct StatusEntry {
     pub level: &'static str,
@@ -78,8 +78,8 @@ pub struct ArtifactV1 {
 pub struct StatusV1 {
     pub change_name: String,
     pub schema_name: String,
-    /// La racine du projet, résolue. Les skills doivent s'en servir plutôt que
-    /// de supposer un chemin relatif au dossier courant.
+    /// The project root, resolved. Skills must use it rather than assume a
+    /// path relative to the current folder.
     pub planning_home: String,
     pub change_root: String,
     pub apply_requires: Vec<String>,
@@ -152,9 +152,9 @@ pub struct DecisionRefV1 {
     pub origin: String,
 }
 
-/// La forme complète d'une décision — utilisée par `list` (chaque entrée
-/// du tableau) et par `show` (au niveau racine). Un consommateur qui
-/// veut le contenu du fichier le lit lui-même via `path`.
+/// The complete shape of a decision — used by `list` (each entry of the
+/// array) and by `show` (at the root level). A consumer who wants the file's
+/// content reads it themselves via `path`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecisionV1 {
@@ -165,18 +165,19 @@ pub struct DecisionV1 {
     pub date: String,
     pub tags: Vec<String>,
     pub supersedes: Vec<String>,
-    /// Champ additif (K6) — identifiants qualifiés dont cet ADR local
-    /// s'écarte volontairement. Vide pour les ADR antérieurs.
+    /// Additive field (local deviation) — qualified identifiers this local
+    /// ADR deliberately departs from. Empty for older ADRs.
     pub deviates_from: Vec<String>,
     pub path: String,
     pub origin: String,
-    /// Vrai si la décision est en vigueur.
+    /// True if the decision is in effect.
     pub in_effect: bool,
-    /// Identifiant qualifié de la décision qui la supersede, s'il y en a.
+    /// Qualified identifier of the decision that supersedes it, if any.
     pub superseded_by: Option<String>,
-    /// Champ additif (K6) — pour une décision héritée qu'un ADR local
-    /// écarte via `deviates_from`, l'identifiant qualifié de l'ADR
-    /// local qui la remplace. Absent si aucune dérive locale.
+    /// Additive field (local deviation) — for an inherited decision that a
+    /// local ADR sets aside via `deviates_from`, the qualified identifier of
+    /// the local ADR that replaces it. Absent if there is no local
+    /// deviation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deviated_by: Option<String>,
 }
@@ -194,8 +195,8 @@ pub struct DecisionListReportV1 {
 pub struct DecisionShowReportV1 {
     pub root: String,
     pub decision: Option<DecisionV1>,
-    /// Contenu markdown complet du fichier — inclus pour éviter à un
-    /// consommateur de re-lire le disque après un `show`.
+    /// Full markdown content of the file — included so that a consumer does
+    /// not have to read the disk again after a `show`.
     pub content: Option<String>,
     pub status: Vec<StatusEntry>,
 }
@@ -206,11 +207,11 @@ pub struct DecisionCreatedV1 {
     pub root: String,
     pub decision: Option<DecisionV1>,
     pub path: Option<String>,
-    /// Hash du corps de l'ADR créé, préfixé `sha256:`.
+    /// Hash of the created ADR's body, prefixed with `sha256:`.
     ///
-    /// Champ additif — présent dès qu'un ADR est effectivement scellé
-    /// (statut `accepted`/`superseded`), absent sinon. Un consommateur du
-    /// contrat antérieur au sceau ignorera ce champ sans souci.
+    /// Additive field — present as soon as an ADR is actually sealed
+    /// (`accepted`/`superseded` status), absent otherwise. A consumer of the
+    /// contract predating the seal will safely ignore this field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body_sha256: Option<String>,
     pub status: Vec<StatusEntry>,
@@ -279,7 +280,12 @@ impl PinChangeV1 {
                 from: None,
                 to: to.clone(),
             },
-            Moved { url, git_ref, from, to } => Self {
+            Moved {
+                url,
+                git_ref,
+                from,
+                to,
+            } => Self {
                 kind: "moved",
                 url: url.clone(),
                 git_ref: git_ref.clone(),
@@ -327,10 +333,10 @@ pub struct DecisionSupersededV1 {
     pub status: Vec<StatusEntry>,
 }
 
-/// Une entrée de sceau exposée par le contrat JSON.
+/// A seal entry exposed by the JSON contract.
 ///
-/// Les noms sérialisés sont camelCase — même règle que le reste du
-/// contrat public.
+/// Serialized names are camelCase — the same rule as the rest of the public
+/// contract.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SealEntryV1 {
@@ -339,45 +345,61 @@ pub struct SealEntryV1 {
     pub sealed_at: String,
 }
 
-/// Le retour de `codev decision seal --json`.
+/// The output of `codev decision seal --json`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecisionSealedV1 {
     pub root: String,
     pub seal: Option<SealEntryV1>,
-    /// `true` si l'appel n'a rien écrit — le sceau était déjà à jour.
+    /// `true` if the call wrote nothing — the seal was already up to date.
     pub was_noop: bool,
     pub status: Vec<StatusEntry>,
 }
 
-/// Le retour de `codev decision deviate --json`.
+/// The output of `codev decision deviate --json`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecisionDeviatedV1 {
     pub root: String,
     pub decision: Option<DecisionV1>,
     pub path: Option<String>,
-    /// L'identifiant qualifié de la décision héritée qu'on écarte.
+    /// The qualified identifier of the inherited decision being set aside.
     pub target_qualified_id: Option<String>,
-    /// Hash du corps du nouvel ADR local — scellé par K3.
+    /// Hash of the new local ADR's body — the ADR is sealed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body_sha256: Option<String>,
     pub status: Vec<StatusEntry>,
 }
 
-/// Le retour de `codev decision promote --json`.
+/// The output of `codev decision accept --json`.
+///
+/// Same fields as `DecisionCreatedV1`: the accepted decision, its file and
+/// the hash now recorded in `seal.yaml`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DecisionAcceptedV1 {
+    pub root: String,
+    pub decision: Option<DecisionV1>,
+    pub path: Option<String>,
+    /// Hash of the accepted ADR's body, prefixed with `sha256:`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_sha256: Option<String>,
+    pub status: Vec<StatusEntry>,
+}
+
+/// The output of `codev decision promote --json`.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecisionPromotedV1 {
     pub root: String,
     pub decision: Option<DecisionV1>,
     pub path: Option<String>,
-    /// Hash du corps du nouvel ADR — scellé par K3.
+    /// Hash of the new ADR's body — the ADR is sealed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body_sha256: Option<String>,
-    /// Le change d'où la promotion vient.
+    /// The change the promotion comes from.
     pub source_change: Option<String>,
-    /// Le `design.md` qui a été mis à jour.
+    /// The `design.md` that was updated.
     pub design_path: Option<String>,
     pub status: Vec<StatusEntry>,
 }
@@ -392,15 +414,19 @@ pub struct InstructionsV1 {
     pub resolved_output_path: String,
     pub instruction: Option<String>,
     pub template: Option<String>,
-    /// Du plus général au plus spécifique. Contraintes pour l'agent, jamais du
-    /// contenu à recopier dans le fichier produit.
+    /// Language of the prose to write (ISO 639 code, from `language:` in
+    /// the config, `en` by default). Structural keywords of the template
+    /// stay in English whatever the language.
+    pub language: String,
+    /// From most general to most specific. Constraints for the agent, never
+    /// content to copy into the produced file.
     pub context: Vec<BlockV1>,
     pub rules: Vec<BlockV1>,
     pub dependencies: Vec<DependencyV1>,
     pub unlocks: Vec<String>,
-    /// Décisions d'architecture **en vigueur** — rempli pour l'artefact
-    /// `design`, présent mais vide pour les autres. Le consommateur teste
-    /// `decisions.length` sans branche conditionnelle.
+    /// Architecture decisions **in effect** — filled for the `design`
+    /// artifact, present but empty for the others. The consumer tests
+    /// `decisions.length` without a conditional branch.
     pub decisions: Vec<DecisionRefV1>,
     pub skipped: bool,
     pub status: Vec<StatusEntry>,
@@ -416,6 +442,7 @@ impl From<&Instructions> for InstructionsV1 {
             resolved_output_path: instructions.resolved_output_path.display().to_string(),
             instruction: instructions.instruction.clone(),
             template: instructions.template.clone(),
+            language: instructions.language.clone(),
             context: instructions.context.iter().map(BlockV1::from).collect(),
             rules: instructions.rules.iter().map(BlockV1::from).collect(),
             dependencies: instructions
@@ -482,7 +509,7 @@ pub struct SetupV1 {
     pub created: Vec<String>,
     pub updated: Vec<String>,
     pub untouched: Vec<String>,
-    /// Les skills laissées en place parce qu'éditées à la main.
+    /// The skills left in place because they were edited by hand.
     pub preserved: Vec<String>,
     pub skills: Vec<String>,
     pub status: Vec<StatusEntry>,
@@ -491,7 +518,7 @@ pub struct SetupV1 {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FindingV1 {
-    /// Chemin relatif au projet, en séparateurs `/` — jamais absolu.
+    /// Path relative to the project, with `/` separators — never absolute.
     pub path: String,
     pub line: u32,
     pub severity: &'static str,
@@ -502,7 +529,7 @@ pub struct FindingV1 {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemReportV1 {
-    /// `"change"` ou `"spec"` — les seuls types actuels.
+    /// `"change"`, `"spec"` or `"decisions"` — the only current kinds.
     pub kind: &'static str,
     pub name: String,
     pub path: String,
@@ -514,9 +541,9 @@ pub struct ItemReportV1 {
 pub struct ValidateReportV1 {
     pub root: String,
     pub items: Vec<ItemReportV1>,
-    /// `true` dès qu'un finding `Warning` est présent dans le rapport.
-    /// Champ informatif — le vrai signal de sortie reste l'exit code
-    /// (voir `--strict` sur la CLI). Toujours présent.
+    /// `true` as soon as a `Warning` finding is present in the report.
+    /// Informative field — the real output signal remains the exit code
+    /// (see `--strict` on the CLI). Always present.
     pub has_warnings: bool,
     pub status: Vec<StatusEntry>,
 }
@@ -562,19 +589,18 @@ impl ValidateReportV1 {
     }
 }
 
-/// Écrit un `Path` avec des séparateurs `/`, quel que soit le système.
+/// Writes a `Path` with `/` separators, whatever the system.
 ///
-/// Le contrat JSON est consommé par des skills qui n'ont pas à connaître
-/// l'OS de l'utilisateur ; imposer un séparateur unique évite les branches
-/// conditionnelles côté agent.
+/// The JSON contract is consumed by skills that do not need to know the
+/// user's OS; enforcing a single separator avoids conditional branches on
+/// the agent's side.
 ///
-/// Détail piégeux : sur Unix, `path.components()` d'un chemin absolu produit
-/// un premier `Component::RootDir` dont `as_os_str()` vaut déjà `"/"`. Un
-/// `join("/")` naïf ajoute alors un séparateur en tête et produit
-/// `"//Users/…"` — bug observable dans les rapports JSON avant ce correctif.
-/// On passe donc par `to_string_lossy` sur le chemin entier et on remplace
-/// uniquement le séparateur Windows, qui reste le seul cas où le chemin
-/// natif diffère.
+/// Tricky detail: on Unix, `path.components()` of an absolute path yields a
+/// first `Component::RootDir` whose `as_os_str()` is already `"/"`. A naive
+/// `join("/")` then adds a leading separator and produces `"//Users/…"` — a
+/// bug observable in JSON reports before this fix. So we go through
+/// `to_string_lossy` on the whole path and only replace the Windows
+/// separator, which remains the only case where the native path differs.
 fn to_slash(path: &std::path::Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
@@ -587,8 +613,8 @@ pub struct SyncReportV1 {
     pub updated: Vec<String>,
     pub created: Vec<String>,
     pub unchanged: Vec<String>,
-    /// Main specs supprimées par le change (F5). Champ additif, toujours
-    /// présent, vide dans le cas courant.
+    /// Main specs deleted by the change (capability removal). Additive
+    /// field, always present, empty in the common case.
     pub deleted: Vec<String>,
     pub status: Vec<StatusEntry>,
 }
@@ -615,8 +641,8 @@ pub struct ArchiveReportV1 {
     pub updated: Vec<String>,
     pub created: Vec<String>,
     pub unchanged: Vec<String>,
-    /// Main specs supprimées par le change (F5). Champ additif, toujours
-    /// présent, vide dans le cas courant.
+    /// Main specs deleted by the change (capability removal). Additive
+    /// field, always present, empty in the common case.
     pub deleted: Vec<String>,
     pub moved_to: String,
     pub status: Vec<StatusEntry>,
@@ -651,18 +677,18 @@ pub struct NewChangeV1 {
     pub status: Vec<StatusEntry>,
 }
 
-/// La forme nulle d'une commande, complétée par l'erreur qui l'a provoquée.
+/// The null shape of a command, completed with the error that caused it.
 ///
-/// Un consommateur doit pouvoir désérialiser la réponse d'un échec avec le même
-/// code que celle d'un succès : c'est pourquoi l'échec garde la forme de la
-/// commande, avec ses champs vides, plutôt qu'un objet d'erreur d'une autre
-/// forme.
+/// A consumer must be able to deserialize a failure response with the same
+/// code as a success response: that is why a failure keeps the command's
+/// shape, with its fields empty, rather than an error object of a different
+/// shape.
 pub fn failure(mut shape: serde_json::Value, code: &str, message: &str) -> serde_json::Value {
     if let Some(object) = shape.as_object_mut() {
         let entry = StatusEntry::error(code, message);
         object.insert(
             "status".into(),
-            json!([serde_json::to_value(entry).expect("une entrée de status est sérialisable")]),
+            json!([serde_json::to_value(entry).expect("a status entry is serializable")]),
         );
     }
     shape
@@ -672,7 +698,7 @@ pub fn failure(mut shape: serde_json::Value, code: &str, message: &str) -> serde
 mod tests {
     use super::*;
     use codev_core::parser::ast::{Finding, Severity};
-    use codev_core::{status, ArtifactGraph, ChangeId};
+    use codev_core::{ArtifactGraph, ChangeId, status};
     use codev_engine::validate::{ItemKind, ItemReport, LocatedFinding, ValidateReport};
     use std::collections::BTreeSet;
     use std::path::PathBuf;
@@ -690,7 +716,7 @@ apply:
   tracks: proposal.md
 "#;
 
-    fn statut_json() -> serde_json::Value {
+    fn status_json() -> serde_json::Value {
         let graph = ArtifactGraph::from_yaml(SPEC_DRIVEN).unwrap();
         let change = ChangeId::parse("add-auth").unwrap();
         let existing: BTreeSet<String> = ["proposal".to_string()].into_iter().collect();
@@ -699,15 +725,15 @@ apply:
             &status,
             "/p".into(),
             "/p/_codev/changes/add-auth".into(),
-            &[Warning::new("inherit_unresolved", "source absente")],
+            &[Warning::new("inherit_unresolved", "missing source")],
         );
         serde_json::to_value(v1).unwrap()
     }
 
     #[test]
-    fn le_statut_expose_les_champs_du_contrat_en_camel_case() {
-        let json = statut_json();
-        for champ in [
+    fn status_exposes_the_contract_fields_in_camel_case() {
+        let json = status_json();
+        for field in [
             "changeName",
             "schemaName",
             "planningHome",
@@ -717,13 +743,13 @@ apply:
             "artifacts",
             "status",
         ] {
-            assert!(json.get(champ).is_some(), "champ « {champ} » manquant");
+            assert!(json.get(field).is_some(), "missing field `{field}`");
         }
     }
 
     #[test]
-    fn les_etats_dartefact_sont_des_libelles_stables() {
-        let json = statut_json();
+    fn artifact_states_are_stable_labels() {
+        let json = status_json();
         let artifacts = json["artifacts"].as_array().unwrap();
         assert_eq!(artifacts[0]["status"], "done");
         assert_eq!(artifacts[1]["status"], "ready");
@@ -732,21 +758,23 @@ apply:
     }
 
     #[test]
-    fn to_slash_ne_double_pas_le_separateur_sur_chemin_absolu() {
-        // Régression : `path.components().join("/")` produisait `//Users/x`
-        // pour un chemin absolu Unix, parce que `Component::RootDir` vaut
-        // déjà `"/"` et se retrouvait recollé par le `join("/")`. Le contrat
-        // JSON parlait alors à ses consommateurs de chemins qui n'existaient
-        // pas.
+    fn to_slash_does_not_double_the_separator_on_an_absolute_path() {
+        // Regression: `path.components().join("/")` produced `//Users/x` for
+        // an absolute Unix path, because `Component::RootDir` is already
+        // `"/"` and got glued back by the `join("/")`. The JSON contract
+        // then told its consumers about paths that did not exist.
         assert_eq!(to_slash(std::path::Path::new("/Users/x/y")), "/Users/x/y");
         assert_eq!(to_slash(std::path::Path::new("/")), "/");
-        assert_eq!(to_slash(std::path::Path::new("relative/path")), "relative/path");
+        assert_eq!(
+            to_slash(std::path::Path::new("relative/path")),
+            "relative/path"
+        );
     }
 
     #[test]
-    fn to_slash_traduit_le_separateur_windows() {
-        // Simule le résultat naturel d'un `path.to_string_lossy()` sur
-        // Windows sans dépendre du système sous-jacent.
+    fn to_slash_translates_the_windows_separator() {
+        // Simulates the natural result of a `path.to_string_lossy()` on
+        // Windows without depending on the underlying system.
         assert_eq!(
             to_slash(std::path::Path::new("relative\\sub\\file.md")),
             "relative/sub/file.md"
@@ -754,8 +782,8 @@ apply:
     }
 
     #[test]
-    fn les_avertissements_remontent_dans_le_tableau_status() {
-        let json = statut_json();
+    fn warnings_surface_in_the_status_array() {
+        let json = status_json();
         let status = json["status"].as_array().unwrap();
         assert_eq!(status.len(), 1);
         assert_eq!(status[0]["level"], "warning");
@@ -763,12 +791,12 @@ apply:
     }
 
     #[test]
-    fn validate_report_expose_les_champs_attendus_en_camel_case() {
+    fn validate_report_exposes_the_expected_fields_in_camel_case() {
         let finding = Finding {
             severity: Severity::Error,
             code: "requirement_no_shall",
             line: 12,
-            message: "manque SHALL".into(),
+            message: "missing SHALL".into(),
         };
         let item = ItemReport {
             kind: ItemKind::Change,
@@ -786,16 +814,16 @@ apply:
         let v1 = ValidateReportV1::from(&report);
         let json = serde_json::to_value(&v1).unwrap();
 
-        // Racine du contrat.
-        for champ in ["root", "items", "status"] {
-            assert!(json.get(champ).is_some(), "champ « {champ} » manquant");
+        // Contract root.
+        for field in ["root", "items", "status"] {
+            assert!(json.get(field).is_some(), "missing field `{field}`");
         }
         // Item.
         let item_json = &json["items"][0];
-        for champ in ["kind", "name", "path", "findings"] {
+        for field in ["kind", "name", "path", "findings"] {
             assert!(
-                item_json.get(champ).is_some(),
-                "item : champ « {champ} » manquant"
+                item_json.get(field).is_some(),
+                "item: missing field `{field}`"
             );
         }
         assert_eq!(item_json["kind"], "change");
@@ -809,13 +837,13 @@ apply:
             finding_json["path"],
             "_codev/changes/add-auth/specs/user-auth/spec.md"
         );
-        assert_eq!(finding_json["message"], "manque SHALL");
+        assert_eq!(finding_json["message"], "missing SHALL");
     }
 
     #[test]
-    fn validate_report_echec_garde_la_forme() {
+    fn validate_report_failure_keeps_the_shape() {
         let shape = json!({ "root": null, "items": [] });
-        let json = failure(shape, "no_codev_root", "aucun projet codev trouvé");
+        let json = failure(shape, "no_codev_root", "no codev project found");
         assert_eq!(json["items"], json!([]));
         assert_eq!(json["root"], serde_json::Value::Null);
         assert_eq!(json["status"][0]["code"], "no_codev_root");
@@ -833,11 +861,34 @@ apply:
             deleted: vec![],
         };
         let json = serde_json::to_value(SyncReportV1::from(&outcome)).unwrap();
-        for champ in ["changeName", "root", "updated", "created", "unchanged", "status"] {
-            assert!(json.get(champ).is_some(), "sync : « {champ} » manquant");
+        for field in [
+            "changeName",
+            "root",
+            "updated",
+            "created",
+            "unchanged",
+            "status",
+        ] {
+            assert!(json.get(field).is_some(), "sync: missing `{field}`");
         }
         assert_eq!(json["changeName"], "add-auth");
         assert_eq!(json["updated"][0], "_codev/specs/a/spec.md");
+    }
+
+    #[test]
+    fn accepted_report_exposes_the_expected_fields_in_camel_case() {
+        let report = DecisionAcceptedV1 {
+            root: "/p".into(),
+            decision: None,
+            path: Some("/p/_codev/decisions/0007-x.md".into()),
+            body_sha256: Some("sha256:abc".into()),
+            status: Vec::new(),
+        };
+        let json = serde_json::to_value(&report).unwrap();
+        for field in ["root", "decision", "path", "bodySha256", "status"] {
+            assert!(json.get(field).is_some(), "accept: missing `{field}`");
+        }
+        assert_eq!(json["bodySha256"], "sha256:abc");
     }
 
     #[test]
@@ -853,7 +904,7 @@ apply:
             moved_to: PathBuf::from("_codev/changes/archive/2026-09-08-add-auth"),
         };
         let json = serde_json::to_value(ArchiveReportV1::from(&outcome)).unwrap();
-        for champ in [
+        for field in [
             "changeName",
             "root",
             "updated",
@@ -862,7 +913,7 @@ apply:
             "movedTo",
             "status",
         ] {
-            assert!(json.get(champ).is_some(), "archive : « {champ} » manquant");
+            assert!(json.get(field).is_some(), "archive: missing `{field}`");
         }
         assert_eq!(
             json["movedTo"],
@@ -871,9 +922,9 @@ apply:
     }
 
     #[test]
-    fn un_echec_garde_la_forme_de_la_commande() {
+    fn a_failure_keeps_the_shape_of_the_command() {
         let shape = json!({ "changes": [], "root": null });
-        let json = failure(shape, "no_codev_root", "aucun projet codev trouvé");
+        let json = failure(shape, "no_codev_root", "no codev project found");
 
         assert_eq!(json["changes"], json!([]));
         assert_eq!(json["root"], serde_json::Value::Null);

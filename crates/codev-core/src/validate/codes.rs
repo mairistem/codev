@@ -1,31 +1,35 @@
-//! Codes stables émis par les règles de `validate`.
+//! Stable codes emitted by the `validate` rules.
 //!
-//! Séparé des codes du parseur pour rendre la provenance évidente : un
-//! `code` en `spec_purpose_missing` vient du parseur, un `code` en
-//! `requirement_no_shall` vient d'ici.
+//! Kept apart from the parser codes to make provenance obvious: a
+//! `code` of `spec_purpose_missing` comes from the parser, a `code` of
+//! `requirement_no_shall` comes from here.
 
-/// Une exigence dont la description ne contient ni `SHALL` ni `MUST`.
+/// A requirement whose description contains neither `SHALL` nor `MUST`.
 pub const REQUIREMENT_NO_SHALL: &str = "requirement_no_shall";
 
-/// Une exigence sans aucun scénario.
+/// A requirement without any scenario.
 pub const REQUIREMENT_NO_SCENARIO: &str = "requirement_no_scenario";
 
-/// Une spec principale sans aucune exigence extractible.
+/// A main spec without any extractable requirement.
 pub const SPEC_NO_REQUIREMENT: &str = "spec_no_requirement";
 
-/// Une même exigence figure dans deux sections `ADDED`/`MODIFIED`/`REMOVED`
-/// d'un même delta.
+/// The same requirement appears in two `ADDED`/`MODIFIED`/`REMOVED` sections
+/// of the same delta.
 pub const CROSS_SECTION_CONFLICT: &str = "cross_section_conflict";
 
-/// Un `RENAMED.TO` coïncide avec un `ADDED` de même nom dans le même delta.
+/// A `RENAMED.TO` coincides with an `ADDED` of the same name in the same delta.
 pub const RENAME_TARGET_COLLISION: &str = "rename_target_collision";
 
-/// Un `MODIFIED` référence un `RENAMED.FROM` — le nouveau nom doit être
-/// utilisé à la place.
+/// A `RENAMED.FROM` names no requirement of the main spec (and the rename
+/// has not already been applied: `TO` does not exist either).
+pub const RENAME_SOURCE_MISSING: &str = "rename_source_missing";
+
+/// A `MODIFIED` references a `RENAMED.FROM` — the new name must be
+/// used instead.
 pub const MODIFIED_USES_OLD_NAME: &str = "modified_uses_old_name";
 
-/// Un change sans aucun delta et sans `skip_specs: true` en métadonnée.
+/// A change with no delta at all and no `skip_specs: true` in its metadata.
 pub const ZERO_DELTA_WITHOUT_MARKER: &str = "zero_delta_without_marker";
 
-/// `skip_specs: true` déclaré, mais des fichiers de delta existent.
+/// `skip_specs: true` is declared, but delta files exist.
 pub const SKIP_SPECS_CONFLICT: &str = "skip_specs_conflict";

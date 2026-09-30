@@ -1,171 +1,176 @@
 # Changelog
 
-Toutes les évolutions notables de codev sont listées ici.
+All notable changes to codev are documented in this file.
 
-Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
-versionnage [SemVer](https://semver.org/lang/fr/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Detailed notes for each version are on the corresponding GitHub Release.
 
-Les notes détaillées de chaque version vivent dans la Release GitHub
-correspondante — cette page en donne la vue résumée.
+## [Unreleased]
 
-## [0.3.2] — 2026-09-28
-
-### Fixed
-
-- **Détection `is_config_thin`** — la fonction ne regarde plus la
-  longueur du `context:` (souvent auto-remplie par la sonde de
-  `codev init`), et base sa décision uniquement sur `rules.is_empty()`.
-  Un projet TypeScript, Java Maven ou tout projet à stack riche
-  recevait un contexte auto-détecté de plus de 200 caractères qui
-  inhibait la nudge `/codev-configure` — alors qu'aucune règle
-  n'avait été rédigée. Désormais, la nudge apparaît systématiquement
-  tant que `rules:` est absente ou vide, et disparaît dès qu'une
-  entrée est écrite. Signature simplifiée : `is_config_thin(rules_empty: bool)`.
-
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.3.2
-
-## [0.3.1] — 2026-09-28
-
-### Added
-
-- **Skill `/codev-configure`** — la 8ème skill du cycle, qui enrichit
-  `_codev/config.yaml` en analysant le projet. Elle lit `README.md`,
-  `CONTRIBUTING.md`, `docs/`, un échantillon des fichiers source les
-  plus édités, et rédige un patch pour `context:` (2-5 lignes) et
-  `rules:` par artefact. Elle **affiche un diff** et n'écrit qu'après
-  confirmation. Elle préserve strictement `schema`, `workflows`,
-  `mcp` et `inherits` — c'est le complément à la sonde de `codev
-  init`, pas son remplaçant.
-- **Nudges automatiques** — `codev init` et `codev status` (cas
-  « aucun change actif ») incitent explicitement à `/codev-configure`
-  quand la config est **thin** (contexte < 200 caractères, aucune
-  `rules:`). Détection uniforme via
-  `codev-core::config::is_config_thin`. La sortie JSON reste
-  inchangée — les nudges vivent en sortie humaine seulement.
-- **Onboard prend en compte la config thin** — la skill
-  `/codev-onboard` recommande `/codev-configure` en premier sur un
-  projet fraîchement initialisé dont la config n'a pas encore été
-  enrichie.
+## [0.4.0] - 2026-09-30
 
 ### Changed
 
-- **Défaut de `codev init` et `codev update`** : passe de 7 à **8
-  workflows** avec l'ajout de `configure`. Un projet qui restreint
-  via `workflows:` explicite continue à obtenir seulement ce qu'il
-  a demandé.
-
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.3.1
-
-## [0.3.0] — 2026-09-28
+- **BREAKING:** codev now speaks English throughout — CLI output and help,
+  skills, and artifact templates. Template headings are now English
+  (`# Proposal:`, `## Why`, `## What Changes`, `## Capabilities`, `## Impact`,
+  `## Context`, `## Decisions`, `# Tasks`…). Scripts or tooling that relied on
+  French output or headings must be updated; run `codev update` to regenerate
+  the skills.
+- **BREAKING:** `codev init --preset` takes `full`, `minimal` or `custom`.
+- The minimal preset now installs `propose`, `explore`, `onboard` and
+  `configure`, and the full preset includes `configure` (eight workflows).
+- Decisions of the project itself are identified as `project/NNNN` in
+  qualified ids and in the JSON output.
+- The installers print their messages in English. On Windows, `install.ps1`
+  now suggests a PATH command that updates only the user `PATH`, instead of
+  `setx`, which can truncate it.
+- `codev decision new` now creates a `proposed` decision, unsealed, so its
+  body can be written before it is sealed; accept it with
+  `codev decision accept`. Pass `--status accepted` to create and seal it at
+  once, as before.
 
 ### Added
 
-- **`codev init` interactif avec auto-détection** — au premier init sur
-  un projet neuf, `codev init` sonde silencieusement l'environnement
-  (stack via `Cargo.toml`/`package.json`/`pyproject.toml`/`go.mod`/`pom.xml`,
-  licence, CI, MCPs configurés dans `.mcp.json`/`~/.claude.json`), puis
-  pose au plus **deux** questions (workflows, contexte projet), et
-  génère un `_codev/config.yaml` prérempli avec des **commentaires de
-  provenance** au-dessus de chaque champ détecté.
-- **Détection des MCPs Jira/Atlassian** — les serveurs déclarés dans
-  les fichiers Claude Code sont matchés par regex (`jira`, `atlassian`)
-  et convertis en tool_id via la convention Claude Code
-  (`mcp__<name_normalized>__getJiraIssue`).
-- **Flags CLI** — `codev init` accepte désormais `--yes` (`-y`),
-  `--no-detect`, et `--preset <complet|minimal|personnalise>`.
-  Sans TTY sur stdin, `--yes` est implicite (scriptabilité en CI).
+- `codev decision accept <ID>` sets a local `proposed` decision to `accepted`
+  and seals its body in the same step. It refuses inherited decisions
+  (`cannot_accept_inherited`) and decisions that are not `proposed`
+  (`decision_not_proposed`).
+
+- Artifact language: a `language:` key in `_codev/config.yaml` (an ISO 639
+  code such as `en`, `fr` or `pt-BR`) sets the language skills write proposals,
+  specs, designs and tasks in. Structural keywords stay in English.
+- `codev init --language <CODE>` sets it; otherwise it is detected from the
+  locale, falling back to `en`. `codev instructions --json` exposes it in a
+  `language` field.
+- Documentation in English and French, published as a website and embedded in
+  the binary. `codev docs --lang en|fr` selects the language.
+- Continuous integration: formatting, lints, tests on Linux, macOS and
+  Windows, a minimum Rust version check, validation of codev's own specs, and
+  a dependency audit.
+- Issue forms for bug reports and feature requests.
+
+### Fixed
+
+- `codev sync` validates the change first and refuses on errors, like
+  `codev archive`; both now report the stable JSON code `validation_failed`.
+- A `RENAMED` delta written with the template's `### Requirement: <name>` form
+  is applied instead of being silently ignored, and renaming a requirement
+  that does not exist is reported as `rename_source_missing`.
+- Renaming and modifying the same requirement in one delta now works.
+- A `MODIFIED` merge keeps the blank line before the next requirement.
+- Validation reports unexpected headings inside delta sections
+  (`delta_unexpected_heading`) and empty delta sections
+  (`delta_section_empty`).
+- The `subpath` of a git inherited source now also applies to its decisions.
+- `codev init` counts the generated `config.yaml` among the files it created.
+- `codev docs --print` no longer prints an error when its output is piped to a
+  command that exits early, such as `head`.
+- Decisions saved with Windows (CRLF) line endings are parsed, and changing
+  their status keeps their sealed body intact.
+
+## [0.3.2] - 2026-09-28
+
+### Fixed
+
+- `codev init` and `codev status` now recommend `/codev-configure` whenever the
+  configuration has no `rules:`. A long auto-detected `context:` no longer
+  hides the recommendation.
+
+## [0.3.1] - 2026-09-28
+
+### Added
+
+- `/codev-configure` skill: analyzes the project (README, contributing guide,
+  docs, a sample of the code) and proposes a richer `context:` and
+  per-artifact `rules:` for `_codev/config.yaml`. It shows a diff and writes
+  only after confirmation.
+- `codev init`, and `codev status` when there is no active change, recommend
+  `/codev-configure` while the configuration is sparse. JSON output is
+  unchanged.
+- `/codev-onboard` recommends `/codev-configure` first on a freshly
+  initialized project.
 
 ### Changed
 
-- **Défaut de `codev init` et `codev update`** : les **7 workflows**
-  sont installés par défaut (propose, explore, onboard, apply, sync,
-  archive, update), plus seulement les 3 premiers. Un projet qui veut
-  moins de skills déclare `workflows:` explicite avec un sous-ensemble
-  choisi (voie **opt-out**). Ce changement règle un problème de
-  découverte : l'ancien défaut cachait `/codev-apply` derrière un
-  opt-in que les nouveaux utilisateurs ne trouvaient jamais.
+- `codev init` and `codev update` install eight workflows by default, adding
+  `configure`. Projects that list `workflows:` explicitly are unaffected.
 
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.3.0
-
-## [0.2.2] — 2026-09-24
+## [0.3.0] - 2026-09-28
 
 ### Added
 
-- **`docs/codev.md` §3.5** — nouveau tutoriel « Ta première évolution,
-  en cinq minutes » : parcours complet propose → apply → valide →
-  archive sur un cas concret (`codev list --json`), avec les deux
-  voies (skill Claude Code et CLI pure) à chaque étape.
-- **Trois diagrammes Mermaid** dans `docs/codev.md` : machine à
-  états d'un change (§3), graphe de crates (§5), cycle de vie d'un
-  delta (§5). GitHub les rend nativement ; le HTML embarqué de
-  `codev docs` dégrade proprement en bloc de code (l'autonomie
-  hors-ligne du HTML est préservée).
+- Interactive `codev init` with environment detection: it reads the project's
+  manifests, license, CI setup and MCP servers, asks at most two questions
+  (workflows and project context), and writes a `_codev/config.yaml` with a
+  comment giving the source of each detected value.
+- Detection of Jira and Atlassian MCP servers declared in Claude Code's
+  configuration files, filled into `mcp.jira_tool`.
+- `codev init` options `--yes` (`-y`), `--no-detect` and `--preset`. Without a
+  terminal on stdin, `--yes` is implied.
 
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.2.2
+### Changed
 
-## [0.2.1] — 2026-09-24
+- `codev init` and `codev update` install all seven workflows by default —
+  propose, explore, onboard, apply, sync, archive, update — instead of three.
+  Projects can still restrict the list with `workflows:`.
+
+## [0.2.2] - 2026-09-24
 
 ### Added
 
-- Documents standards de projet open source : `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1 FR),
-  `SECURITY.md`, templates GitHub d'issues et de PR.
-- Crédit explicite à [OpenSpec](https://github.com/Fission-AI/OpenSpec)
-  en tête de `README.md` et via une nouvelle sous-section « Origines »
-  de `docs/codev.md`.
-- `README.md` : 4 badges (release / latest / license / plateformes),
-  sommaire, section « Le cycle » avec schéma ASCII.
+- A five-minute tutorial covering the whole cycle, from proposal to archive.
+- Diagrams of a change's lifecycle, the crate graph and a delta's lifecycle in
+  the documentation.
+
+## [0.2.1] - 2026-09-24
+
+### Added
+
+- Standard open-source project files: contributing guide, changelog, code of
+  conduct, security policy, and GitHub issue and pull request templates.
+- Explicit credit to [OpenSpec](https://github.com/Fission-AI/OpenSpec) in the
+  README and the documentation.
+- README badges, table of contents and a diagram of the cycle.
 
 ### Fixed
 
-- Spec `distribution` — l'exigence « La documentation cite les
-  trois voies d'installation » avait perdu son scénario au moment
-  de l'ajout du support Windows, et sa dernière phrase était
-  tronquée. Réparée. `codev validate --strict` est désormais vert.
+- The distribution spec validates again with `codev validate --strict`.
 
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.2.1
-
-## [0.2.0] — 2026-09-24
+## [0.2.0] - 2026-09-24
 
 ### Added
 
-- Cible **Windows x86_64-pc-windows-msvc** dans les binaires
-  précompilés, avec le script `install.ps1` pour une installation
-  sans Rust.
-- **Documentation embarquée** : `codev docs` ouvre un manuel HTML
-  autonome dans le navigateur, sans dépendance réseau.
-- **Complétions shell** : `codev completions <shell>` pour bash,
-  zsh, fish, powershell, elvish.
-- **`codev docs --write PATH`** pour diffusion ciblée (impression,
-  hébergement statique, etc.).
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.2.0
+- Prebuilt Windows x86_64 binary, and an `install.ps1` script to install it
+  without Rust.
+- `codev docs`: opens the documentation, embedded in the binary, as a
+  self-contained HTML page. `--write <PATH>` writes it to a file instead.
+- `codev completions <SHELL>` for bash, zsh, fish, PowerShell and elvish.
 
-## [0.1.1] — 2026-09-23
+## [0.1.1] - 2026-09-23
 
 ### Fixed
 
-- CI Release : cross-compilation `x86_64-apple-darwin` depuis
-  `macos-14`, les runners `macos-13` gratuits n'étant plus
-  fiablement disponibles.
+- Release builds for Intel macOS are cross-compiled from Apple Silicon
+  runners.
 
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.1.1
-
-## [0.1.0] — 2026-09-23
+## [0.1.0] - 2026-09-23
 
 ### Added
 
-- Import initial : cycle propose → apply → sync → archive,
-  7 skills Claude Code, gouvernance des décisions
-  (K3 sceau, K6 déviation, K7 promotion), `codev validate --strict`,
-  intégration MCP configurable côté projet, distribution
-  précompilée macOS et Linux.
+- Initial release: the propose → apply → sync → archive cycle, seven Claude
+  Code skills, architecture decisions with sealing, deviations and promotion,
+  `codev validate --strict`, project-configured MCP integration, and prebuilt
+  binaries for macOS and Linux.
 
-Notes complètes :
-https://github.com/mairistem/codev/releases/tag/v0.1.0
+[Unreleased]: https://github.com/mairistem/codev/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/mairistem/codev/releases/tag/v0.4.0
+[0.3.2]: https://github.com/mairistem/codev/releases/tag/v0.3.2
+[0.3.1]: https://github.com/mairistem/codev/releases/tag/v0.3.1
+[0.3.0]: https://github.com/mairistem/codev/releases/tag/v0.3.0
+[0.2.2]: https://github.com/mairistem/codev/releases/tag/v0.2.2
+[0.2.1]: https://github.com/mairistem/codev/releases/tag/v0.2.1
+[0.2.0]: https://github.com/mairistem/codev/releases/tag/v0.2.0
+[0.1.1]: https://github.com/mairistem/codev/releases/tag/v0.1.1
+[0.1.0]: https://github.com/mairistem/codev/releases/tag/v0.1.0

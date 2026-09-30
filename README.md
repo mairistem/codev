@@ -1,165 +1,206 @@
 # codev
 
-[![Release](https://github.com/mairistem/codev/actions/workflows/release.yml/badge.svg)](https://github.com/mairistem/codev/actions/workflows/release.yml)
+**Spec-driven development for Claude Code.**
+
+[![CI](https://github.com/mairistem/codev/actions/workflows/ci.yml/badge.svg)](https://github.com/mairistem/codev/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/mairistem/codev)](https://github.com/mairistem/codev/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](docs/codev.md)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](https://github.com/mairistem/codev/releases/latest)
 
-Développement piloté par les specs, pour Claude Code.
+English · [Français](README.fr.md)
 
-`codev` ajoute à un dépôt une fine couche de specs pour que toi et ton agent
-soyez d'accord sur **ce qui doit être construit** avant qu'une ligne de code ne
-soit écrite — et pour que les décisions d'architecture déjà tranchées cessent
-d'être re-débattues à chaque projet.
+codev adds a thin layer of specifications to your repository, so that you and
+Claude Code agree on what must be built before a line of code is written — and
+so that architecture decisions, once made, stop being re-debated on every
+change.
 
-L'outil n'appelle jamais de LLM. Il gère des fichiers markdown, un graphe de
-dépendances entre artefacts, la validation et la fusion des specs. C'est ton
-agent qui rédige ; `codev` lui dit quoi écrire, où, et avec quelles
-contraintes.
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Terminal recording: codev init, a new change whose plan is validated and archived, and the resulting living spec" width="800">
+</p>
 
-> Inspiré par [OpenSpec](https://github.com/Fission-AI/OpenSpec) — reconstruit
-> en Rust avec ses propres choix. Voir la section
-> [Origines](docs/codev.md#origines) de la documentation pour le détail.
+## Why
 
-## Sommaire
+Without specs, intent lives in chat history and in people's heads. With codev,
+every change starts as a small plan in `_codev/changes/`: why, what, how, and
+a **spec delta** that states the behavior it adds or modifies.
 
-- [Démarrage](#démarrage)
-- [Les deux moitiés](#les-deux-moitiés)
-- [Le cycle](#le-cycle)
-- [Le modèle](#le-modèle)
-- [Partage entre projets](#partage-entre-projets)
-- [Documentation](#documentation)
-- [État du projet](#état-du-projet)
-- [Contribuer](#contribuer)
-- [Licence](#licence)
+A change adds one requirement:
 
-## Démarrage
+```markdown
+## ADDED Requirements
+
+### Requirement: The chosen theme is remembered
+
+The application SHALL restore the theme the user last picked, on every device they sign in from.
+
+#### Scenario: Returning user
+
+- **GIVEN** a user who picked the dark theme on their laptop
+- **WHEN** they sign in on their phone
+- **THEN** the application renders with the dark theme
+```
+
+When the change is archived, codev merges the delta into the living spec,
+`_codev/specs/ui/theme/spec.md`, and leaves everything else in it untouched:
+
+```markdown
+# Theme Specification
+
+## Purpose
+
+Let users choose the color theme of the interface.
+
+## Requirements
+
+### Requirement: Theme follows the system preference by default
+
+The application SHALL render with the operating system's color scheme until the user picks a theme.
+
+#### Scenario: No theme chosen yet
+…
+
+### Requirement: The chosen theme is remembered
+
+The application SHALL restore the theme the user last picked, on every device they sign in from.
+
+#### Scenario: Returning user
+…
+```
+
+The spec always describes what the system does today, and each archived
+change records why it changed. codev never calls a model itself: Claude Code
+writes, and codev tells it what to write, where, and under which constraints.
+
+## Getting started
+
+Install codev — no Rust toolchain needed.
+
+macOS and Linux:
 
 ```bash
-# Installation (sans Rust) — macOS ou Linux
 curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
 ```
 
+Windows (PowerShell):
+
 ```powershell
-# Installation (sans Rust) — Windows, dans PowerShell
 iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
 ```
 
-```bash
-# ou, en tant que contributeur (n'importe quel OS) :
-cargo install --path crates/codev-cli
+Both scripts verify the SHA-256 of the binary they download. You can also
+download a binary from the
+[releases page](https://github.com/mairistem/codev/releases/latest), or build
+from source with `cargo install --path crates/codev-cli`; see the
+[installation guide](https://mairistem.github.io/codev/en/installation.html).
 
-cd mon-projet
+**Requirements:** macOS (Apple Silicon or Intel), Linux x86_64 or Windows
+x86_64, and [Claude Code](https://claude.com/claude-code) to use the skills.
+
+### Quick start
+
+```bash
+cd your-project
 codev init
 ```
 
-Pour le détail des voies d'installation (téléchargement manuel,
-version épinglée, PATH…), voir la section Installation de la
-documentation : `codev docs`.
-
-Puis, dans Claude Code :
+Then, in Claude Code:
 
 ```text
-/codev-explore        # défricher une idée, sans rien engager
-/codev-propose        # créer un change et rédiger ses artefacts de planification
+/codev-propose add a dark mode that follows the system preference
+/codev-apply add-dark-mode
+/codev-archive add-dark-mode
 ```
 
-## Les deux moitiés
+The [quickstart](https://mairistem.github.io/codev/en/quickstart.html) walks
+through it step by step.
 
-| Où | Quoi | Exemple |
-|---|---|---|
-| **Ton terminal** | le binaire `codev` — le moteur | `codev init`, `codev status`, `codev archive` |
-| **Le chat de Claude Code** | des skills générées — le volant | `/codev-propose`, `/codev-apply` |
+## How it works
 
-`codev init` installe les skills dans `.claude/skills/`. Ensuite tu vis dans le
-chat, et les skills pilotent le CLI.
+Every change follows the same cycle, with one Claude Code skill per step:
 
-## Le cycle
-
-Quatre étapes, une skill par étape, et un artefact par étape :
-
-```
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│ propose  │──▶│  apply   │──▶│   sync   │──▶│ archive  │
-│ planifie │   │  code    │   │  fusion  │   │  classe  │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘
+```text
+┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
+│  propose  │───▶│   apply   │───▶│   sync    │───▶│  archive  │
+│ plan it   │    │ build it  │    │ merge the │    │ file it   │
+│           │    │           │    │ deltas    │    │ away      │
+└───────────┘    └───────────┘    └───────────┘    └───────────┘
 ```
 
-- `propose` — on décrit ce qu'on veut, sans coder.
-- `apply` — on code, on teste, on coche.
-- `sync` — on fusionne les deltas de spec dans le principal (facultatif —
-  souvent enchaîné avec `archive`).
-- `archive` — on classe le change dans `_codev/changes/archive/` et on met
-  les specs principales à jour définitivement.
+- **propose** — writes the plan: proposal, spec deltas, design, tasks. No code.
+- **apply** — implements the tasks, running their verification and checking
+  them off.
+- **sync** — merges the deltas into the main specs (optional; archive does it).
+- **archive** — validates, merges, and moves the change to a dated archive.
 
-## Le modèle
+`/codev-explore`, `/codev-update`, `/codev-onboard` and `/codev-configure`
+complete the set. Behind the skills, the `codev` CLI does the atomic work —
+status, instructions, validation, merging — with a stable JSON output.
 
-```
+Everything lives in a visible folder at the root of your repository:
+
+```text
 _codev/
-├── specs/          # contrats de comportement — CE QUE fait le système
-├── decisions/      # décisions d'architecture — POURQUOI c'est fait comme ça
-├── changes/        # le travail en cours, qui modifie les deux
-│   └── <nom>/      #   proposal.md, design.md, tasks.md, specs/**  (deltas)
-├── schemas/        # workflows maison (optionnel)
-└── config.yaml
+├── specs/        # behavior contracts — what the system does
+├── decisions/    # architecture decisions — why it is built this way
+├── changes/      # work in progress, and the dated archive
+└── config.yaml   # context, rules, language, inherited sources
 ```
 
-Deux idées portent tout le reste :
+- **Changes are deltas.** A change declares `ADDED`, `MODIFIED`, `REMOVED` or
+  `RENAMED` requirements instead of rewriting specs, which makes codev work on
+  existing code, not only on new projects.
+- **Decisions are immutable.** Accepted ADRs are sealed with a hash; changing
+  one means superseding it, and `codev validate` catches silent edits.
+- **Conventions can be shared.** A project can inherit context, rules and
+  decisions from another repository, read-only and pinned to a git commit.
+- **Your language.** Artifacts are written in the language your team sets;
+  their structure stays machine-readable.
 
-- **Les changes sont des deltas.** Un change ne réécrit pas une spec entière, il
-  déclare `ADDED` / `MODIFIED` / `REMOVED` / `RENAMED`. C'est ce qui rend
-  l'outil utilisable sur du code existant, et non seulement en greenfield.
-- **Les décisions sont immuables.** Une décision acceptée ne se modifie pas : on
-  en écrit une nouvelle qui la remplace. La supersession *est* leur mécanisme de
-  delta.
+## Comparison
 
-## Partage entre projets
+codev is one of several spec-driven tools for coding agents. A summary of
+documented features, as of September 2026:
 
-Un projet peut hériter en lecture seule des conventions, specs et décisions
-d'un autre dépôt — depuis le poste, ou depuis un dépôt git distant sans jamais
-en garder de copie de travail :
+| | codev | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | [Spec Kit](https://github.com/github/spec-kit) |
+|---|---|---|---|
+| Distribution | Single native binary | npm package (Node.js) | Python CLI (installed with uv) |
+| Supported agents | Claude Code | 30+ tools | Many, including GitHub Copilot |
+| Spec deltas merged into living specs | Yes | Yes | No — artifacts per feature |
+| Architecture decisions (ADRs) | Yes, sealed against edits | No | No — a project constitution instead |
+| Sharing across repositories | Read-only sources pinned by git commit | Stores (beta) | — |
+| License | MIT | MIT | MIT |
 
-```yaml
-# _codev/config.yaml
-inherits:
-  - path: ~/codev/shared/back
-  - git: git@github.com:mon-orga/codev-decisions.git
-    ref: main
-```
-
-Le SHA résolu est épinglé dans `_codev/codev.lock`. Rien n'est lu « flottant »,
-et rien d'exécutable n'est jamais hérité.
+codev builds directly on OpenSpec's ideas: the propose → apply → archive
+cycle, changes as the unit of work, and the `ADDED` / `MODIFIED` / `REMOVED` /
+`RENAMED` delta operations all come from OpenSpec. If you need an agent other
+than Claude Code, OpenSpec and Spec Kit are the better fit. If something in
+this table is out of date, please open an issue.
 
 ## Documentation
 
-Le manuel complet vit dans `docs/codev.md` — installation détaillée, cycle,
-concepts (K1…K7), CLI, configuration.
-
-Pour l'ouvrir localement dans le navigateur, sans aucune dépendance :
+The full documentation is at
+**[mairistem.github.io/codev](https://mairistem.github.io/codev/en/)** —
+workflow, concepts, guides, and the CLI, configuration and file format
+references. It is also embedded in the binary, readable offline:
 
 ```bash
 codev docs
 ```
 
-Un lecteur qui veut juste un aperçu peut aussi consulter `docs/codev.md`
-directement sur GitHub.
+## Contributing
 
-## État du projet
+Contributions are welcome. codev is developed with codev: small fixes go
+through a regular pull request, and everything else starts as a codev change.
+See [CONTRIBUTING.md](CONTRIBUTING.md), and the [roadmap](ROADMAP.md) for what
+is planned.
 
-Chantier en cours. Voir [docs/inventory.md](docs/inventory.md) pour le
-périmètre et son séquencement, et [docs/architecture.md](docs/architecture.md)
-pour les partis pris.
+Please report security issues privately, as described in
+[SECURITY.md](SECURITY.md). This project follows a
+[code of conduct](CODE_OF_CONDUCT.md).
 
-## Contribuer
+## License
 
-Codev se contribue **avec codev**. Fork, `codev init` sur le fork si ce n'est
-pas déjà fait, `/codev-propose <mon-idée>` dans Claude Code, puis
-`/codev-apply` quand la planification est prête. Détails complets dans
-[CONTRIBUTING.md](CONTRIBUTING.md).
+codev is released under the [MIT License](LICENSE).
 
-Signalement de faille : voir [SECURITY.md](SECURITY.md).
-Charte de la communauté : voir [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
-## Licence
-
-MIT — voir [LICENSE](LICENSE).
+codev is inspired by [OpenSpec](https://github.com/Fission-AI/OpenSpec), by
+Fission AI, also released under the MIT License.

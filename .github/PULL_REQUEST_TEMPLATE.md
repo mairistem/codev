@@ -1,21 +1,24 @@
-## Change codev associé
+## Summary
 
-<!-- Nom du dossier sous `_codev/changes/` ou lien vers son archive.
-     Une PR sans change codev est acceptable pour un fix trivial
-     (typo, correction de doc). -->
+<!-- What this pull request changes, in one or two sentences. -->
 
-## Résumé
+## Related codev change
 
-<!-- Ce que la PR apporte, en une ou deux phrases. -->
+<!-- Folder name under `_codev/changes/`, or its archive path.
+     A trivial fix (typo, documentation wording) does not need a codev change. -->
 
-## Vérifications
+Closes #
 
-- [ ] `cargo test --workspace` vert.
-- [ ] `cargo clippy --workspace --all-targets` sans avertissement.
-- [ ] `codev validate --strict` vert.
-- [ ] Documentation à jour (`docs/codev.md`, `README.md` si besoin).
+## Checklist
 
-## Points d'attention pour le reviewer
+- [ ] `cargo fmt --all --check` passes.
+- [ ] `cargo clippy --workspace --all-targets -- -D warnings` passes.
+- [ ] `cargo test --workspace` passes.
+- [ ] `codev validate --strict` passes.
+- [ ] Documentation updated in **both** `docs/en/` and `docs/fr/` if behavior changed.
+- [ ] `CHANGELOG.md` updated under `[Unreleased]` for user-visible changes.
 
-<!-- Zones sensibles, choix discutables, tests manquants connus.
-     Vaut mieux les nommer ici que les laisser en surprise. -->
+## Notes for reviewers
+
+<!-- Sensitive areas, debatable choices, known gaps.
+     Better named here than discovered in review. -->

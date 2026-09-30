@@ -2,145 +2,164 @@
 
 ## Purpose
 
-Fournir à codev une lecture structurée et fiable des specs principales et des
-deltas écrits en markdown, sur laquelle validation, sync et archive puissent
-s'appuyer sans risquer une réécriture destructive.
+Give codev a structured, reliable reading of main specs and deltas written
+in markdown, on which validation, sync and archive can rely without risking
+a destructive rewrite.
 
 ## Requirements
 
-### Requirement: Structure d'une spec principale extraite
+### Requirement: Structure of a main spec extracted
 
-Le parseur SHALL extraire d'un fichier markdown de spec principale sa section
-`## Purpose`, sa section `## Requirements`, et pour chaque exigence son nom, son
-texte descriptif et ses scénarios.
+The parser SHALL extract from a main spec markdown file its `## Purpose`
+section, its `## Requirements` section, and for each requirement its name,
+its descriptive text and its scenarios.
 
-#### Scenario: Purpose et exigences bien formées
+#### Scenario: Well-formed Purpose and requirements
 
-- **GIVEN** un fichier contenant `## Purpose`, une phrase, puis `## Requirements`,
-  puis un `### Requirement: Session Expiration` suivi d'un `#### Scenario: Idle`
-  avec des lignes **WHEN** / **THEN**
-- **WHEN** le parseur lit le fichier
-- **THEN** le résultat expose le texte du Purpose
-- **AND** expose une exigence nommée `Session Expiration` porteuse de son
-  scénario nommé `Idle`
+- **GIVEN** a file containing `## Purpose`, a sentence, then `## Requirements`,
+  then a `### Requirement: Session Expiration` followed by a `#### Scenario: Idle`
+  with **WHEN** / **THEN** lines
+- **WHEN** the parser reads the file
+- **THEN** the result exposes the Purpose text
+- **AND** exposes a requirement named `Session Expiration` carrying its
+  scenario named `Idle`
 
-#### Scenario: Purpose manquant sur une spec principale
+#### Scenario: Missing Purpose in a main spec
 
-- **GIVEN** un fichier de spec principale sans section `## Purpose`
-- **WHEN** le parseur lit le fichier
-- **THEN** le résultat signale l'absence de Purpose comme un défaut structurel
-  nommant la nature du manque
-- **AND** le reste des exigences reste extractible
+- **GIVEN** a main spec file without a `## Purpose` section
+- **WHEN** the parser reads the file
+- **THEN** the result reports the missing Purpose as a structural defect
+  naming the nature of what is missing
+- **AND** the remaining requirements are still extractable
 
-### Requirement: Opérations d'un delta reconnues
+### Requirement: Delta operations recognized
 
-Le parseur MUST reconnaître les quatre opérations d'un delta et associer
-chacune à sa charge utile : le bloc d'exigence complet pour `ADDED` et
-`MODIFIED`, le nom accompagné de `**Raison**` et `**Migration**` pour
-`REMOVED`, et le couple `FROM:` / `TO:` pour `RENAMED`.
+The parser MUST recognize the four operations of a delta and associate
+each with its payload: the full requirement block for `ADDED` and
+`MODIFIED`, the name accompanied by `**Reason**` and `**Migration**`
+for `REMOVED`, and the `FROM:` / `TO:` pair for `RENAMED`. A `FROM:` or
+`TO:` value MAY be the bare name or the heading form
+`` `### Requirement: <name>` ``; both designate the same requirement.
 
-#### Scenario: Bloc ADDED avec exigence et scénario
+#### Scenario: ADDED block with requirement and scenario
 
-- **GIVEN** un delta contenant `## ADDED Requirements` puis
-  `### Requirement: Two-Factor Authentication` avec un `#### Scenario: Enrolment`
-- **WHEN** le parseur lit le delta
-- **THEN** l'opération `ADDED` porte l'exigence `Two-Factor Authentication`
-- **AND** cette exigence porte son scénario `Enrolment`
+- **GIVEN** a delta containing `## ADDED Requirements` then
+  `### Requirement: Two-Factor Authentication` with a `#### Scenario: Enrolment`
+- **WHEN** the parser reads the delta
+- **THEN** the `ADDED` operation carries the requirement `Two-Factor Authentication`
+- **AND** that requirement carries its scenario `Enrolment`
 
-#### Scenario: Bloc REMOVED avec raison et migration
+#### Scenario: REMOVED block with reason and migration
 
-- **GIVEN** un delta contenant `## REMOVED Requirements` puis
-  `### Requirement: Remember Me` suivi de `**Reason**: <texte>` et
-  `**Migration**: <texte>`
-- **WHEN** le parseur lit le delta
-- **THEN** l'opération `REMOVED` porte le nom `Remember Me`, sa raison et sa
-  migration
+- **GIVEN** a delta containing `## REMOVED Requirements` then
+  `### Requirement: Remember Me` followed by `**Reason**: <text>` and
+  `**Migration**: <text>`
+- **WHEN** the parser reads the delta
+- **THEN** the `REMOVED` operation carries the name `Remember Me`, its reason
+  and its migration
 
-#### Scenario: Bloc RENAMED avec FROM et TO
+#### Scenario: RENAMED block with FROM and TO
 
-- **GIVEN** un delta contenant `## RENAMED Requirements` puis les lignes
-  `FROM: Old Name` et `TO: New Name`
-- **WHEN** le parseur lit le delta
-- **THEN** l'opération `RENAMED` associe l'ancien nom `Old Name` au nouveau
-  nom `New Name`
+- **GIVEN** a delta containing `## RENAMED Requirements` then the lines
+  `FROM: Old Name` and `TO: New Name`
+- **WHEN** the parser reads the delta
+- **THEN** the `RENAMED` operation associates the old name `Old Name` with
+  the new name `New Name`
 
-#### Scenario: Delta d'une capacité nouvelle avec Purpose
+#### Scenario: Delta for a new capability with Purpose
 
-- **GIVEN** un delta qui débute par `## Purpose` suivi d'une phrase, puis
-  contient un bloc `## ADDED Requirements`
-- **WHEN** le parseur lit le delta
-- **THEN** le résultat porte le texte du Purpose, à recopier tel quel lors de
-  la création d'une nouvelle spec principale
+- **GIVEN** a delta that starts with `## Purpose` followed by a sentence, then
+  contains an `## ADDED Requirements` block
+- **WHEN** the parser reads the delta
+- **THEN** the result carries the Purpose text, to be copied verbatim when
+  creating a new main spec
 
-### Requirement: Zones littérales ignorées
+#### Scenario: RENAMED written with the heading form
 
-Le parseur MUST ignorer toute structure — titres, exigences, scénarios,
-en-têtes de delta — qui apparaît à l'intérieur d'un bloc de code délimité par
-` ``` ` ou `~~~`, ou à l'intérieur d'un commentaire HTML `<!-- … -->`.
+- **GIVEN** a delta containing `## RENAMED Requirements` then the lines
+  ``- FROM: `### Requirement: Old Name` `` and
+  ``- TO: `### Requirement: New Name` ``
+- **WHEN** the parser reads the delta
+- **THEN** the `RENAMED` operation associates `Old Name` with `New Name`
 
-#### Scenario: Exemple d'exigence à l'intérieur d'un bloc de code
+### Requirement: Literal zones ignored
 
-- **GIVEN** un fichier dont la section Purpose contient un bloc ` ``` ` où figure
-  la ligne `### Requirement: Exemple`
-- **WHEN** le parseur lit le fichier
-- **THEN** aucune exigence nommée `Exemple` n'apparaît dans le résultat
+The parser MUST ignore any structure — headings, requirements, scenarios,
+delta headers — that appears inside a code block fenced by ` ``` ` or
+`~~~`, or inside an HTML comment `<!-- … -->`.
 
-#### Scenario: En-tête de delta à l'intérieur d'un commentaire
+#### Scenario: Example requirement inside a code block
 
-- **GIVEN** un delta contenant un commentaire `<!-- ## ADDED Requirements … -->`
-  suivi, plus bas, d'un vrai `## ADDED Requirements` avec une exigence
-- **WHEN** le parseur lit le delta
-- **THEN** l'opération `ADDED` n'est comptée qu'une fois, avec l'exigence
-  du vrai bloc
+- **GIVEN** a file whose Purpose section contains a ` ``` ` block containing
+  the line `### Requirement: Example`
+- **WHEN** the parser reads the file
+- **THEN** no requirement named `Example` appears in the result
 
-### Requirement: Position d'origine préservée
+#### Scenario: Delta header inside a comment
 
-Chaque élément extrait — Purpose, exigence, scénario, bloc de delta — SHALL
-porter l'intervalle exact `[début, fin)` qu'il occupe dans le texte source, en
-octets et en lignes.
+- **GIVEN** a delta containing a comment `<!-- ## ADDED Requirements … -->`
+  followed, further down, by a real `## ADDED Requirements` with a requirement
+- **WHEN** the parser reads the delta
+- **THEN** the `ADDED` operation is counted only once, with the requirement
+  from the real block
 
-#### Scenario: Réécriture d'un bloc sans toucher au reste
+### Requirement: Original position preserved
 
-- **GIVEN** un fichier de spec principale contenant deux exigences successives
-- **WHEN** un consommateur remplace le texte source occupé par la première
-  exigence par un nouveau bloc de longueur différente
-- **THEN** la seconde exigence, ses scénarios et l'espacement qui les entoure
-  restent identiques au caractère près
+Every extracted element — Purpose, requirement, scenario, delta block — SHALL
+carry the exact `[start, end)` range it occupies in the source text, in
+bytes and in lines.
 
-#### Scenario: Position en ligne d'un scénario
+#### Scenario: Rewriting a block without touching the rest
 
-- **GIVEN** un fichier où le scénario `Idle` d'une exigence commence à la
-  ligne 42
-- **WHEN** le parseur lit le fichier
-- **THEN** l'élément représentant ce scénario expose la ligne 42 comme début
+- **GIVEN** a main spec file containing two successive requirements
+- **WHEN** a consumer replaces the source text occupied by the first
+  requirement with a new block of different length
+- **THEN** the second requirement, its scenarios and the surrounding
+  whitespace remain identical down to the character
 
-### Requirement: Défauts structurels localisés
+#### Scenario: Line position of a scenario
 
-Face à un fichier mal formé, le parseur MUST produire un rapport nommant la
-ligne concernée, le type de défaut, et un message lisible ; il ne SHALL PAS
-échouer en bloc sur un fichier partiellement récupérable.
+- **GIVEN** a file where the `Idle` scenario of a requirement starts at
+  line 42
+- **WHEN** the parser reads the file
+- **THEN** the element representing that scenario exposes line 42 as its start
 
-#### Scenario: Scénario écrit avec trois dièses
+### Requirement: Localized structural defects
 
-- **GIVEN** une exigence dont le scénario est écrit `### Scenario:` au lieu de
+When faced with a malformed file, the parser MUST produce a report naming the
+line concerned, the defect type, and a readable message; it SHALL NOT
+fail wholesale on a partially recoverable file.
+
+#### Scenario: Scenario written with three hashes
+
+- **GIVEN** a requirement whose scenario is written `### Scenario:` instead of
   `#### Scenario:`
-- **WHEN** le parseur lit le fichier
-- **THEN** un défaut structurel signale la ligne, indique que le scénario doit
-  porter quatre dièses
-- **AND** l'exigence continue d'apparaître dans le résultat, sans ce scénario
+- **WHEN** the parser reads the file
+- **THEN** a structural defect reports the line and indicates that the
+  scenario must carry four hashes
+- **AND** the requirement still appears in the result, without that scenario
 
-#### Scenario: Exigence dupliquée dans une même section
+#### Scenario: Duplicate requirement within the same section
 
-- **GIVEN** un delta `## ADDED Requirements` contenant deux exigences portant
-  exactement le même nom
-- **WHEN** le parseur lit le delta
-- **THEN** un défaut signale les deux lignes des exigences en double
-- **AND** nomme la section `ADDED` comme lieu du conflit
+- **GIVEN** an `## ADDED Requirements` delta containing two requirements with
+  exactly the same name
+- **WHEN** the parser reads the delta
+- **THEN** a defect reports both lines of the duplicate requirements
+- **AND** names the `ADDED` section as the location of the conflict
 
-#### Scenario: En-tête de delta dans une spec principale
+#### Scenario: Delta header in a main spec
 
-- **GIVEN** un fichier de spec principale qui contient par erreur un
+- **GIVEN** a main spec file that mistakenly contains an
   `## ADDED Requirements`
-- **WHEN** le parseur lit le fichier
-- **THEN** un défaut signale la ligne, précise que les en-têtes de delta
-  n'appartiennent qu'aux fichiers de change
+- **WHEN** the parser reads the file
+- **THEN** a defect reports the line and specifies that delta headers
+  belong only in change files
+
+#### Scenario: Unexpected heading inside a delta section
+
+- **GIVEN** an `## ADDED Requirements` section containing a heading
+  `### Exigence : Mode sombre` instead of `### Requirement: …`
+- **WHEN** the parser reads the delta
+- **THEN** an error `delta_unexpected_heading` reports the line
+- **AND** the section is also reported as empty with the warning
+  `delta_section_empty`

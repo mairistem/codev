@@ -1,4 +1,4 @@
-//! Parseur d'un delta : `## ADDED | MODIFIED | REMOVED | RENAMED Requirements`.
+//! Parser for a delta: `## ADDED | MODIFIED | REMOVED | RENAMED Requirements`.
 
 use std::collections::BTreeMap;
 
@@ -7,8 +7,8 @@ use super::ast::{
 };
 use super::fence;
 use super::shared::{
-    block_span, collect_scenarios, delta_section_kind, line_starts, requirement_from_lines,
-    section_header, trim_body, DeltaKind, ScannedLine,
+    DeltaKind, ScannedLine, block_span, collect_scenarios, delta_section_kind, line_starts,
+    requirement_from_lines, section_header, trim_body,
 };
 
 pub fn parse_delta(source: &str) -> Parsed<Delta> {
@@ -27,7 +27,7 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
 
     let mut findings = Vec::new();
 
-    // Repérer toutes les sections `##` de premier niveau (Purpose + delta).
+    // Locate all top-level `##` sections (Purpose + delta).
     #[derive(Debug)]
     struct H2 {
         kind: SectionKind,
@@ -65,8 +65,8 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
         }
     }
 
-    // Purpose optionnel — la sémantique « nouvelle capacité uniquement » est
-    // affaire du validateur, pas du parseur.
+    // Optional Purpose — the "new capability only" semantics are the
+    // validator's business, not the parser's.
     let mut purpose: Option<PurposeBlock> = None;
     if let Some(idx) = h2
         .iter()
@@ -82,7 +82,7 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
         purpose = Some(PurposeBlock { text, span });
     }
 
-    // Reconstruction des sections de delta.
+    // Rebuild the delta sections.
     let mut sections: Vec<DeltaSection> = Vec::new();
     for (i, h) in h2.iter().enumerate() {
         let SectionKind::Delta(kind) = &h.kind else {
@@ -94,6 +94,7 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
             .map(|next| next.header_index)
             .unwrap_or(lines.len());
         let span = block_span(&scanned, start, end);
+        findings.extend(unexpected_headings(&scanned, start + 1, end, *kind));
 
         match kind {
             DeltaKind::Added | DeltaKind::Modified => {
@@ -117,10 +118,93 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
         }
     }
 
+    for section in &sections {
+        let entries = match section {
+            DeltaSection::Added { requirements, .. }
+            | DeltaSection::Modified { requirements, .. } => requirements.len(),
+            DeltaSection::Removed { removals, .. } => removals.len(),
+            DeltaSection::Renamed { renames, .. } => renames.len(),
+        };
+        if entries == 0 {
+            let line = section.span().start_line();
+            let expected = match section {
+                DeltaSection::Renamed { .. } => "a `FROM:` / `TO:` pair",
+                _ => "a `### Requirement: <name>` block",
+            };
+            findings.push(Finding::warning(
+                super::codes::DELTA_SECTION_EMPTY,
+                line,
+                format!(
+                    "line {line}: `## {} Requirements` has no entry, so nothing of it \
+                     will be merged; add {expected}, or remove the section",
+                    kind_label(section_kind(section))
+                ),
+            ));
+        }
+    }
+
     Parsed {
         value: Delta { purpose, sections },
         findings,
     }
+}
+
+fn section_kind(section: &DeltaSection) -> DeltaKind {
+    match section {
+        DeltaSection::Added { .. } => DeltaKind::Added,
+        DeltaSection::Modified { .. } => DeltaKind::Modified,
+        DeltaSection::Removed { .. } => DeltaKind::Removed,
+        DeltaSection::Renamed { .. } => DeltaKind::Renamed,
+    }
+}
+
+/// Reports every `###` heading of a delta section that the merge would not
+/// understand.
+///
+/// The keywords are English whatever the artifact language: a
+/// `### Exigence :` would otherwise be skipped silently, leaving the
+/// section empty and the validation green. `### Scenario:` is left to
+/// `scenario_wrong_heading_level`, which already names the fix.
+fn unexpected_headings(
+    scanned: &[ScannedLine],
+    start: usize,
+    end: usize,
+    kind: DeltaKind,
+) -> Vec<Finding> {
+    let mut findings = Vec::new();
+    for entry in &scanned[start..end.min(scanned.len())] {
+        if entry.literal {
+            continue;
+        }
+        let trimmed = entry.text.trim_start();
+        let Some(title) = trimmed.strip_prefix("### ") else {
+            continue;
+        };
+        let title = title.trim();
+        let is_requirement = title.starts_with("Requirement:");
+        let expected = match kind {
+            DeltaKind::Renamed => {
+                // RENAMED takes `FROM:` / `TO:` lines, no heading at all.
+                "`- FROM:` / `- TO:` lines, not headings"
+            }
+            _ if is_requirement => continue,
+            _ if title.starts_with("Scenario:") => continue,
+            _ => {
+                "`### Requirement: <name>` — the keyword stays in English whatever the artifact language"
+            }
+        };
+        findings.push(Finding::error(
+            super::codes::DELTA_UNEXPECTED_HEADING,
+            entry.line_number,
+            format!(
+                "line {}: `### {title}` is not understood in `## {} Requirements`; \
+                 expected {expected}",
+                entry.line_number,
+                kind_label(kind)
+            ),
+        ));
+    }
+    findings
 }
 
 fn kind_label(k: DeltaKind) -> &'static str {
@@ -132,8 +216,8 @@ fn kind_label(k: DeltaKind) -> &'static str {
     }
 }
 
-/// Rassemble les blocs `### Requirement:` d'une plage donnée en `Requirement`s
-/// complets, avec détection des doublons.
+/// Gathers the `### Requirement:` blocks of a given range into complete
+/// `Requirement`s, with duplicate detection.
 fn parse_requirement_blocks(
     scanned: &[ScannedLine],
     start: usize,
@@ -151,15 +235,12 @@ fn parse_requirement_blocks(
                 super::codes::DUPLICATE_REQUIREMENT,
                 pos.line_number,
                 format!(
-                    "section {section_label} : exigence « {} » dupliquée (déjà vue ligne {previous_line}, redéfinie ligne {})",
+                    "{section_label} section: duplicate requirement `{}` (first seen at line {previous_line}, redefined at line {})",
                     pos.name, pos.line_number
                 ),
             ));
         }
-        let next_start = all
-            .get(rank + 1)
-            .map(|p| p.header_index)
-            .unwrap_or(end);
+        let next_start = all.get(rank + 1).map(|p| p.header_index).unwrap_or(end);
         let (requirement, sub_findings) = requirement_from_lines(
             scanned,
             pos.header_index,
@@ -182,7 +263,7 @@ fn parse_removals(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Remo
             .map(|p| p.header_index)
             .unwrap_or(end);
         let body = &scanned[pos.header_index + 1..next_start];
-        let reason = find_labelled_line(body, "Reason").or_else(|| find_labelled_line(body, "Raison"));
+        let reason = find_labelled_line(body, "Reason");
         let migration = find_labelled_line(body, "Migration");
         let span = block_span(scanned, pos.header_index, next_start);
         removals.push(Removal {
@@ -195,7 +276,7 @@ fn parse_removals(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Remo
     removals
 }
 
-/// Cherche une ligne « **Label**: … » dans un bloc, tolérante aux espaces.
+/// Looks for a "**Label**: …" line in a block, tolerant of whitespace.
 fn find_labelled_line(lines: &[ScannedLine], label: &str) -> Option<String> {
     let needle_star = format!("**{label}**:");
     let needle_bare = format!("{label}:");
@@ -223,27 +304,47 @@ fn parse_renames(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Renam
         }
         let trimmed = entry.text.trim_start();
 
-        // Une ligne « - FROM: X » est aussi acceptée que « FROM: X » : les
-        // deux formes sont naturelles au clavier, et le validateur normalise.
+        // A "- FROM: X" line is accepted just like "FROM: X": both forms
+        // come naturally when typing, and the validator normalizes.
         let payload = trimmed
             .strip_prefix("- ")
             .or_else(|| trimmed.strip_prefix("* "))
             .unwrap_or(trimmed);
 
         if let Some(rest) = payload.strip_prefix("FROM:") {
-            current_from = Some((rest.trim().to_string(), i));
+            current_from = Some((rename_target(rest), i));
         } else if let Some(rest) = payload.strip_prefix("TO:")
             && let Some((from, from_line)) = current_from.take()
         {
             let span = span_across(scanned, from_line, i + 1);
             renames.push(Rename {
                 from,
-                to: rest.trim().to_string(),
+                to: rename_target(rest),
                 span,
             });
         }
     }
     renames
+}
+
+/// The requirement name after `FROM:` or `TO:`.
+///
+/// Two spellings are accepted: the bare name, and the full heading in
+/// backticks — `` `### Requirement: <name>` ``, the form the template
+/// shows. Both must name the same requirement, otherwise a rename copied
+/// from the template would silently match nothing.
+fn rename_target(raw: &str) -> String {
+    let trimmed = raw.trim();
+    let unquoted = trimmed
+        .strip_prefix('`')
+        .and_then(|rest| rest.strip_suffix('`'))
+        .unwrap_or(trimmed)
+        .trim();
+    unquoted
+        .strip_prefix("### Requirement:")
+        .unwrap_or(unquoted)
+        .trim()
+        .to_string()
 }
 
 fn span_across(scanned: &[ScannedLine], start_line: usize, end_line: usize) -> Span {
@@ -252,7 +353,7 @@ fn span_across(scanned: &[ScannedLine], start_line: usize, end_line: usize) -> S
         .get(end_line)
         .map(|e| e.byte_offset)
         .unwrap_or_else(|| {
-            let last = scanned.last().expect("au moins une ligne");
+            let last = scanned.last().expect("at least one line");
             last.byte_offset + last.text.len()
         });
     let start_ln = scanned[start_line].line_number;
@@ -269,23 +370,28 @@ mod tests {
     use crate::parser::ast::DeltaOp;
 
     #[test]
-    fn reconnait_les_quatre_sections() {
+    fn recognizes_the_four_sections() {
         let source = "## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## MODIFIED Requirements\n\n### Requirement: B\nThe system SHALL b.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n\n## REMOVED Requirements\n\n### Requirement: C\n**Reason**: obsolete\n**Migration**: use D\n\n## RENAMED Requirements\n\n- FROM: Old\n- TO: New\n";
         let parsed = parse_delta(source);
-        assert!(!parsed.has_errors(), "findings : {:?}", parsed.findings);
+        assert!(!parsed.has_errors(), "findings: {:?}", parsed.findings);
         let ops: Vec<DeltaOp> = parsed.value.sections.iter().map(|s| s.op()).collect();
         assert_eq!(
             ops,
-            vec![DeltaOp::Added, DeltaOp::Modified, DeltaOp::Removed, DeltaOp::Renamed]
+            vec![
+                DeltaOp::Added,
+                DeltaOp::Modified,
+                DeltaOp::Removed,
+                DeltaOp::Renamed
+            ]
         );
     }
 
     #[test]
-    fn bloc_added_porte_exigence_et_scenario() {
+    fn added_block_carries_requirement_and_scenario() {
         let source = "## ADDED Requirements\n\n### Requirement: Two-Factor Authentication\nThe system MUST support TOTP.\n\n#### Scenario: Enrolment\n- **WHEN** a user enables 2FA\n- **THEN** a QR code is displayed\n";
         let parsed = parse_delta(source);
         let DeltaSection::Added { requirements, .. } = &parsed.value.sections[0] else {
-            panic!("attendu Added");
+            panic!("expected Added");
         };
         assert_eq!(requirements.len(), 1);
         assert_eq!(requirements[0].name, "Two-Factor Authentication");
@@ -294,11 +400,11 @@ mod tests {
     }
 
     #[test]
-    fn bloc_removed_porte_raison_et_migration() {
+    fn removed_block_carries_reason_and_migration() {
         let source = "## REMOVED Requirements\n\n### Requirement: Remember Me\n**Reason**: obsolete\n**Migration**: use 2FA\n";
         let parsed = parse_delta(source);
         let DeltaSection::Removed { removals, .. } = &parsed.value.sections[0] else {
-            panic!("attendu Removed");
+            panic!("expected Removed");
         };
         assert_eq!(removals.len(), 1);
         assert_eq!(removals[0].name, "Remember Me");
@@ -307,11 +413,11 @@ mod tests {
     }
 
     #[test]
-    fn bloc_renamed_associe_from_et_to() {
+    fn renamed_block_pairs_from_and_to() {
         let source = "## RENAMED Requirements\n\n- FROM: Old Name\n- TO: New Name\n";
         let parsed = parse_delta(source);
         let DeltaSection::Renamed { renames, .. } = &parsed.value.sections[0] else {
-            panic!("attendu Renamed");
+            panic!("expected Renamed");
         };
         assert_eq!(renames.len(), 1);
         assert_eq!(renames[0].from, "Old Name");
@@ -319,37 +425,109 @@ mod tests {
     }
 
     #[test]
-    fn purpose_de_nouvelle_capacite_est_extrait() {
+    fn renamed_accepts_the_backticked_heading_of_the_template() {
+        let source = "## RENAMED Requirements\n\n- FROM: `### Requirement: Old Name`\n- TO: `### Requirement: New Name`\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Renamed { renames, .. } = &parsed.value.sections[0] else {
+            panic!("expected Renamed");
+        };
+        assert_eq!(renames.len(), 1);
+        assert_eq!(renames[0].from, "Old Name");
+        assert_eq!(renames[0].to, "New Name");
+    }
+
+    #[test]
+    fn translated_requirement_heading_is_reported() {
+        let source = "## ADDED Requirements\n\n### Exigence : Connexion\nLe système DOIT x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let heading = parsed
+            .findings
+            .iter()
+            .find(|f| f.code == "delta_unexpected_heading")
+            .expect("the translated heading must be reported");
+        assert_eq!(heading.severity, crate::parser::ast::Severity::Error);
+        assert_eq!(heading.line, 3);
+        assert!(
+            heading.message.contains("### Exigence : Connexion"),
+            "{}",
+            heading.message
+        );
+        // The section it leaves empty is reported too.
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_section_empty"
+                    && f.severity == crate::parser::ast::Severity::Warning)
+        );
+    }
+
+    #[test]
+    fn well_formed_sections_report_no_heading_or_emptiness() {
+        let source = "## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## RENAMED Requirements\n\n- FROM: Old\n- TO: New\n";
+        let parsed = parse_delta(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+    }
+
+    #[test]
+    fn heading_in_renamed_section_is_reported() {
+        let source = "## RENAMED Requirements\n\n### Requirement: Old\n";
+        let parsed = parse_delta(source);
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_unexpected_heading")
+        );
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_section_empty")
+        );
+    }
+
+    #[test]
+    fn three_hash_scenario_is_reported_once() {
+        // `### Scenario:` keeps its dedicated code, without a second finding.
+        let source = "## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let codes: Vec<&str> = parsed.findings.iter().map(|f| f.code).collect();
+        assert_eq!(codes, vec!["scenario_wrong_heading_level"]);
+    }
+
+    #[test]
+    fn new_capability_purpose_is_extracted() {
         let source = "## Purpose\n\nLets users export their data.\n\n## ADDED Requirements\n\n### Requirement: R\nThe system SHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_delta(source);
-        let p = parsed.value.purpose.expect("purpose attendu");
+        let p = parsed.value.purpose.expect("purpose expected");
         assert!(p.text.contains("export their data"));
     }
 
     #[test]
-    fn doublon_dans_added_est_signale() {
+    fn duplicate_in_added_is_reported() {
         let source = "## ADDED Requirements\n\n### Requirement: X\nSHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: X\nSHALL x again.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n";
         let parsed = parse_delta(source);
         let f = parsed
             .findings
             .iter()
             .find(|f| f.code == "duplicate_requirement")
-            .expect("finding attendu");
+            .expect("finding expected");
         assert!(f.message.contains("ADDED"), "{}", f.message);
-        assert!(f.message.contains("dupliquée"), "{}", f.message);
+        assert!(f.message.contains("duplicate"), "{}", f.message);
     }
 
     #[test]
-    fn header_dans_commentaire_html_est_ignore() {
-        // Un `## ADDED Requirements` dans un commentaire ne compte pas, seul
-        // le vrai plus bas compte.
-        let source = "<!--\n## ADDED Requirements\n\n### Requirement: Faux\n-->\n\n## ADDED Requirements\n\n### Requirement: Vrai\nSHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+    fn header_inside_html_comment_is_ignored() {
+        // An `## ADDED Requirements` inside a comment does not count; only
+        // the real one further down does.
+        let source = "<!--\n## ADDED Requirements\n\n### Requirement: Fake\n-->\n\n## ADDED Requirements\n\n### Requirement: Real\nSHALL r.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_delta(source);
-        assert_eq!(parsed.value.sections.len(), 1, "un seul ADDED");
+        assert_eq!(parsed.value.sections.len(), 1, "a single ADDED");
         let DeltaSection::Added { requirements, .. } = &parsed.value.sections[0] else {
             panic!();
         };
         assert_eq!(requirements.len(), 1);
-        assert_eq!(requirements[0].name, "Vrai");
+        assert_eq!(requirements[0].name, "Real");
     }
 }

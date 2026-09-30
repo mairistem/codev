@@ -2,287 +2,286 @@
 
 ## Purpose
 
-Faire entrer un delta dans les specs principales sans dommage collatéral : ce
-que le delta décrit change ; tout le reste — commentaires, ordre, espacement,
-sections libres — reste au caractère près ce qu'il était. Boucler le cycle
-d'un change par un déplacement chronologique vers l'archive.
+Bring a delta into the main specs without collateral damage: what the
+delta describes changes; everything else — comments, order, whitespace,
+free-form sections — stays exactly as it was, down to the character. Close
+the cycle of a change with a chronological move into the archive.
 
 ## Requirements
 
-### Requirement: Fusion sémantique par opération
+### Requirement: Semantic merge per operation
 
-Un sync SHALL appliquer chaque opération d'un delta selon sa sémantique
-propre : `ADDED` insère à la fin de la section `## Requirements`, `MODIFIED`
-remplace le bloc de l'exigence homonyme au caractère près, `REMOVED` supprime
-le bloc entier, `RENAMED` retitre uniquement l'en-tête `### Requirement:` sans
-toucher au corps.
+A sync SHALL apply each operation of a delta according to its own
+semantics: `ADDED` inserts at the end of the `## Requirements` section,
+`MODIFIED` replaces the block of the requirement with the same name down to
+the character, `REMOVED` deletes the entire block, `RENAMED` retitles only
+the `### Requirement:` header without touching the body.
 
-#### Scenario: ADDED apparaît à la fin de Requirements
+#### Scenario: ADDED appears at the end of Requirements
 
-- **GIVEN** une spec principale `user-auth` contenant `## Requirements` avec
-  une exigence `Login`
-- **AND** un delta `ADDED` portant une exigence `Two-Factor Authentication`
-  avec son scénario
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** la spec principale contient désormais `Login` en premier puis
+- **GIVEN** a main spec `user-auth` containing `## Requirements` with
+  a requirement `Login`
+- **AND** an `ADDED` delta carrying a requirement `Two-Factor Authentication`
+  with its scenario
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the main spec now contains `Login` first, then
   `Two-Factor Authentication`
-- **AND** le bloc de `Login` — son en-tête, sa description, ses scénarios — est
-  identique au caractère près à ce qu'il était
+- **AND** the `Login` block — its header, its description, its scenarios —
+  is identical down to the character to what it was
 
-#### Scenario: MODIFIED remplace le bloc de l'exigence sans toucher aux autres
+#### Scenario: MODIFIED replaces the requirement block without touching the others
 
-- **GIVEN** une spec principale contenant deux exigences `Login` et
-  `Session Expiration`, dans cet ordre
-- **AND** un delta `MODIFIED` portant `Session Expiration` avec un nouveau
-  scénario
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** le bloc de `Session Expiration` a été remplacé par la version du
-  delta
-- **AND** le bloc de `Login` et l'espacement qui sépare les deux exigences
-  restent identiques au caractère près
+- **GIVEN** a main spec containing two requirements `Login` and
+  `Session Expiration`, in that order
+- **AND** a `MODIFIED` delta carrying `Session Expiration` with a new
+  scenario
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the `Session Expiration` block has been replaced by the delta's
+  version
+- **AND** the `Login` block and the whitespace separating the two
+  requirements remain identical down to the character
 
-#### Scenario: REMOVED supprime le bloc entier de l'exigence
+#### Scenario: REMOVED deletes the entire requirement block
 
-- **GIVEN** une spec principale contenant `Login` et `Remember Me`
-- **AND** un delta `REMOVED` portant `Remember Me`
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** la spec principale ne contient plus aucune trace de `Remember Me`
-- **AND** le bloc de `Login` reste identique au caractère près
+- **GIVEN** a main spec containing `Login` and `Remember Me`
+- **AND** a `REMOVED` delta carrying `Remember Me`
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the main spec no longer contains any trace of `Remember Me`
+- **AND** the `Login` block remains identical down to the character
 
-#### Scenario: RENAMED retitre l'en-tête et rien d'autre
+#### Scenario: RENAMED retitles the header and nothing else
 
-- **GIVEN** une spec principale contenant `Session Expiration` avec ses
-  scénarios
-- **AND** un delta `RENAMED` associant `Session Expiration` à `Session Timeout`
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** l'en-tête de l'exigence est devenu `### Requirement: Session Timeout`
-- **AND** la description et les scénarios de cette exigence sont identiques
-  au caractère près
+- **GIVEN** a main spec containing `Session Expiration` with its
+  scenarios
+- **AND** a `RENAMED` delta mapping `Session Expiration` to `Session Timeout`
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the requirement header has become `### Requirement: Session Timeout`
+- **AND** the description and scenarios of that requirement are identical
+  down to the character
 
-### Requirement: Préservation du contenu non mentionné
+### Requirement: Preservation of unmentioned content
 
-Un sync MUST laisser strictement inchangé tout ce que le delta ne mentionne
-pas : les autres exigences, les commentaires HTML, les blocs de code fencés,
-les sections libres après `## Requirements`, et jusqu'aux espacements entre
-les exigences.
+A sync MUST leave strictly unchanged everything the delta does not
+mention: the other requirements, HTML comments, fenced code blocks,
+free-form sections after `## Requirements`, and even the whitespace between
+requirements.
 
-#### Scenario: Une section libre après Requirements survit à un sync
+#### Scenario: A free-form section after Requirements survives a sync
 
-- **GIVEN** une spec principale qui contient, après `## Requirements`, une
-  section `## Notes` avec un paragraphe
-- **AND** un delta qui ne mentionne pas cette section
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** la section `## Notes` est présente au caractère près dans le fichier
-  après sync
+- **GIVEN** a main spec that contains, after `## Requirements`, a
+  `## Notes` section with a paragraph
+- **AND** a delta that does not mention that section
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the `## Notes` section is present, down to the character, in the
+  file after the sync
 
-#### Scenario: Un commentaire HTML dans une exigence non touchée survit
+#### Scenario: An HTML comment in an untouched requirement survives
 
-- **GIVEN** une exigence `Login` contenant un commentaire HTML dans sa
+- **GIVEN** a requirement `Login` containing an HTML comment in its
   description
-- **AND** un delta qui ne touche pas à `Login`
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** le commentaire HTML de `Login` reste identique au caractère près
+- **AND** a delta that does not touch `Login`
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the HTML comment of `Login` remains identical down to the character
 
-### Requirement: Création d'une spec principale pour une nouvelle capacité
+### Requirement: Creation of a main spec for a new capability
 
-Lorsque le delta cible une capacité qui n'a pas encore de spec principale
-sous `_codev/specs/`, un sync SHALL créer le fichier `_codev/specs/<chemin>/spec.md`
-à partir du `## Purpose` du delta et de ses exigences `ADDED`.
+When the delta targets a capability that does not yet have a main spec
+under `_codev/specs/`, a sync SHALL create the file `_codev/specs/<path>/spec.md`
+from the delta's `## Purpose` and its `ADDED` requirements.
 
-#### Scenario: Nouvelle capacité créée depuis Purpose et ADDED
+#### Scenario: New capability created from Purpose and ADDED
 
-- **GIVEN** aucune spec principale sous `_codev/specs/user-auth/`
-- **AND** un delta portant `## Purpose` et une exigence `ADDED: Login`
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** le fichier `_codev/specs/user-auth/spec.md` existe désormais
-- **AND** il commence par la section `## Purpose` du delta
-- **AND** il contient sous `## Requirements` l'exigence `Login` du delta
+- **GIVEN** no main spec under `_codev/specs/user-auth/`
+- **AND** a delta carrying `## Purpose` and an `ADDED: Login` requirement
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the file `_codev/specs/user-auth/spec.md` now exists
+- **AND** it starts with the delta's `## Purpose` section
+- **AND** it contains the delta's `Login` requirement under `## Requirements`
 
-#### Scenario: Nouvelle capacité sans Purpose est refusée
+#### Scenario: New capability without Purpose is rejected
 
-- **GIVEN** aucune spec principale sous `_codev/specs/x/`
-- **AND** un delta portant uniquement des `ADDED` sans `## Purpose`
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** aucune écriture n'a lieu
-- **AND** un message d'erreur nomme la capacité, indique que `## Purpose` est
-  requis pour une nouvelle capacité, et rappelle le code stable
+- **GIVEN** no main spec under `_codev/specs/x/`
+- **AND** a delta carrying only `ADDED` operations without `## Purpose`
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** no write takes place
+- **AND** an error message names the capability, states that `## Purpose` is
+  required for a new capability, and recalls the stable code
   `new_capability_without_purpose`
 
-### Requirement: Atomicité du plan de fusion
+### Requirement: Atomicity of the merge plan
 
-Un sync ou un archive MUST valider son plan complet — chaque main spec à
-réécrire, chaque main spec à créer, chaque déplacement — avant d'effectuer la
-moindre écriture. Une seule opération irrésolue empêche toutes les autres.
+A sync or an archive MUST validate its complete plan — every main spec to
+rewrite, every main spec to create, every move — before performing any
+write at all. A single unresolved operation blocks all the others.
 
-#### Scenario: MODIFIED sur une exigence absente refuse tout le sync
+#### Scenario: MODIFIED on a missing requirement rejects the whole sync
 
-- **GIVEN** un delta contenant deux `MODIFIED`, l'un sur `Login` qui existe,
-  l'autre sur `Fantome` qui n'existe pas dans la spec principale
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** aucune écriture n'a lieu sur la spec principale
-- **AND** un message d'erreur nomme `Fantome`, indique que la spec principale
-  ne le contient pas, et rappelle le code stable `modified_target_missing`
+- **GIVEN** a delta containing two `MODIFIED` operations, one on `Login`,
+  which exists, the other on `Ghost`, which does not exist in the main spec
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** no write takes place on the main spec
+- **AND** an error message names `Ghost`, states that the main spec does
+  not contain it, and recalls the stable code `modified_target_missing`
 
-#### Scenario: REMOVED sur la dernière exigence refuse l'opération
+#### Scenario: REMOVED on the last requirement rejects the operation
 
-- **GIVEN** une spec principale ne contenant qu'une seule exigence
-- **AND** un delta contenant un `REMOVED` sur cette exigence
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** aucune écriture n'a lieu
-- **AND** un message d'erreur pointe le code stable
-  `would_leave_spec_without_requirement` et explique que `retire_capabilities`
-  n'est pas encore pris en charge
+- **GIVEN** a main spec containing a single requirement
+- **AND** a delta containing a `REMOVED` on that requirement
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** no write takes place
+- **AND** an error message points to the stable code
+  `would_leave_spec_without_requirement` and explains that
+  `retire_capabilities` is not yet supported
 
-### Requirement: Sync laisse le change actif ; archive le déplace
+### Requirement: Sync leaves the change active; archive moves it
 
-Un sync SHALL laisser le dossier du change à sa place ; un archive MUST le
-déplacer vers `_codev/changes/archive/<date>-<nom>/`, où `<date>` est la date
-locale au format `AAAA-MM-JJ` et `<nom>` l'identifiant du change.
+A sync SHALL leave the change directory where it is; an archive MUST move
+it to `_codev/changes/archive/<date>-<name>/`, where `<date>` is the local
+date in `YYYY-MM-DD` format and `<name>` is the change identifier.
 
-#### Scenario: Sync ne déplace pas le change
+#### Scenario: Sync does not move the change
 
-- **GIVEN** un change `add-auth` dont la fusion réussit
-- **WHEN** l'utilisateur lance `codev sync add-auth`
-- **THEN** le dossier `_codev/changes/add-auth/` existe toujours à cet endroit
-- **AND** son contenu est identique à ce qu'il était avant le sync
+- **GIVEN** a change `add-auth` whose merge succeeds
+- **WHEN** the user runs `codev sync add-auth`
+- **THEN** the `_codev/changes/add-auth/` directory still exists at that location
+- **AND** its contents are identical to what they were before the sync
 
-#### Scenario: Archive déplace le change vers l'archive datée
+#### Scenario: Archive moves the change to the dated archive
 
-- **GIVEN** un change `add-auth` dont la fusion réussit à la date `2026-09-08`
-- **WHEN** l'utilisateur lance `codev archive add-auth`
-- **THEN** `_codev/changes/add-auth/` n'existe plus
-- **AND** `_codev/changes/archive/2026-09-08-add-auth/` existe, avec tous les
-  fichiers du change préservés
+- **GIVEN** a change `add-auth` whose merge succeeds on `2026-09-08`
+- **WHEN** the user runs `codev archive add-auth`
+- **THEN** `_codev/changes/add-auth/` no longer exists
+- **AND** `_codev/changes/archive/2026-09-08-add-auth/` exists, with all the
+  files of the change preserved
 
-### Requirement: Pré-flight de validation avant archive
+### Requirement: Validation pre-flight before sync and archive
 
-`codev archive` MUST refuser d'agir si `codev validate <change>` remonte au
-moins une erreur ; il MUST le faire sans procéder à la fusion, sans écrire, et
-sans déplacer.
+`codev sync` and `codev archive` MUST refuse to act if
+`codev validate <change>` reports at least one error; they MUST do so
+without performing the merge, without writing, and without moving anything,
+and report the stable code `validation_failed`.
 
-#### Scenario: Un change avec erreur de validation ne s'archive pas
+#### Scenario: A change with a validation error is not archived
 
-- **GIVEN** un change dont un delta présente un `duplicate_requirement`
-- **WHEN** l'utilisateur lance `codev archive <change>`
-- **THEN** aucune spec principale n'est modifiée
-- **AND** le change reste actif à son emplacement d'origine
-- **AND** le message d'erreur nomme le code `validation_failed` et invite à
-  lancer `codev validate <change>` pour voir le détail
+- **GIVEN** a change in which a delta has a `duplicate_requirement`
+- **WHEN** the user runs `codev archive <change>`
+- **THEN** no main spec is modified
+- **AND** the change remains active at its original location
+- **AND** the error message names the code `validation_failed` and invites
+  the user to run `codev validate <change>` to see the details
 
-#### Scenario: Un sync n'exige pas la validation complète
+#### Scenario: A sync with a validation error merges nothing
 
-- **GIVEN** un change contenant un delta bien formé mais aussi une exigence
-  sans `SHALL` (finding d'erreur signalé par validate)
-- **WHEN** l'utilisateur lance `codev sync <change>`
-- **THEN** la fusion a lieu ; le pré-flight de sync se limite aux invariants
-  strictement nécessaires à la fusion (existence des cibles `MODIFIED`,
-  présence d'un Purpose pour une nouvelle capacité)
+- **GIVEN** a change containing a well-formed delta but also a requirement
+  without `SHALL` (an error finding reported by validate)
+- **WHEN** the user runs `codev sync --change <change>`
+- **THEN** no main spec is modified
+- **AND** the JSON error carries the code `validation_failed`
 
-### Requirement: Rapport avec contrat stable
+### Requirement: Report with a stable contract
 
-Sur demande `--json`, sync et archive MUST écrire sur stdout exactement un
-document JSON dont la forme est figée par version, listant les fichiers
-écrits, créés, ou déplacés, avec un tableau `status` racine pour les erreurs
-d'exécution.
+When `--json` is requested, sync and archive MUST write exactly one JSON
+document to stdout whose shape is frozen per version, listing the files
+written, created, or moved, with a root `status` array for execution
+errors.
 
-#### Scenario: Rapport JSON d'un sync réussi
+#### Scenario: JSON report of a successful sync
 
-- **GIVEN** un change dont la fusion touche une seule spec principale
-  existante
-- **WHEN** l'utilisateur lance `codev sync <change> --json`
-- **THEN** stdout porte un seul document JSON contenant le champ `updated`
-  avec le chemin de la spec principale modifiée, le champ `created` vide, et
-  un `status` racine vide
+- **GIVEN** a change whose merge touches a single existing main spec
+- **WHEN** the user runs `codev sync <change> --json`
+- **THEN** stdout carries a single JSON document containing the `updated`
+  field with the path of the modified main spec, an empty `created` field,
+  and an empty root `status`
 
-#### Scenario: Rapport JSON d'un archive réussi
+#### Scenario: JSON report of a successful archive
 
-- **GIVEN** un change dont l'archive réussit
-- **WHEN** l'utilisateur lance `codev archive <change> --json`
-- **THEN** le document JSON contient en plus le champ `movedTo` avec le
-  chemin sous `changes/archive/<date>-<nom>/`
+- **GIVEN** a change whose archive succeeds
+- **WHEN** the user runs `codev archive <change> --json`
+- **THEN** the JSON document additionally contains the `movedTo` field with
+  the path under `changes/archive/<date>-<name>/`
 
-### Requirement: Suppression atomique d'une spec vidée quand `retire_capabilities`
+### Requirement: Atomic deletion of an emptied spec under `retire_capabilities`
 
-Quand un change porte `retire_capabilities: true` dans son
-`change.yaml`, et qu'un delta `## REMOVED Requirements` retire **toutes**
-les exigences d'une spec principale, `codev sync` MUST écrire un plan
-qui **supprime** le fichier `_codev/specs/<capa>/spec.md` en une seule
-opération atomique, plutôt que de le laisser vide ou de le refuser.
+When a change carries `retire_capabilities: true` in its
+`change.yaml`, and a `## REMOVED Requirements` delta removes **all**
+the requirements of a main spec, `codev sync` MUST write a plan that
+**deletes** the file `_codev/specs/<capability>/spec.md` in a single
+atomic operation, rather than leaving it empty or rejecting it.
 
-Sans le marqueur, le comportement reste celui d'aujourd'hui : refus avec
-le code stable `would_leave_spec_without_requirement`.
+Without the marker, the behavior remains the current one: rejection with
+the stable code `would_leave_spec_without_requirement`.
 
-#### Scenario: Retirer une capacité avec le marqueur → fichier supprimé
+#### Scenario: Retiring a capability with the marker → file deleted
 
-- **GIVEN** un projet contenant une spec principale
-  `_codev/specs/user-auth/spec.md` avec une seule exigence `Login`
-- **AND** un change dont `change.yaml` porte `retire_capabilities: true`
-- **AND** un delta `_codev/changes/<c>/specs/user-auth/spec.md` qui
-  `## REMOVED Requirements` l'exigence `Login`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** le fichier `_codev/specs/user-auth/spec.md` n'existe plus
-  après l'exécution
-- **AND** le rapport de sync liste le fichier dans `deleted[]`
+- **GIVEN** a project containing a main spec
+  `_codev/specs/user-auth/spec.md` with a single requirement `Login`
+- **AND** a change whose `change.yaml` carries `retire_capabilities: true`
+- **AND** a delta `_codev/changes/<c>/specs/user-auth/spec.md` that
+  lists the `Login` requirement under `## REMOVED Requirements`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** the file `_codev/specs/user-auth/spec.md` no longer exists
+  after execution
+- **AND** the sync report lists the file in `deleted[]`
 
-#### Scenario: Retirer une capacité sans le marqueur → refus
+#### Scenario: Retiring a capability without the marker → rejection
 
-- **GIVEN** le même contexte, mais **sans** `retire_capabilities: true`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** aucune écriture ni suppression n'a lieu sur `_codev/specs/`
-- **AND** le message d'erreur nomme le code stable
+- **GIVEN** the same context, but **without** `retire_capabilities: true`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** no write or deletion takes place in `_codev/specs/`
+- **AND** the error message names the stable code
   `would_leave_spec_without_requirement`
 
-#### Scenario: `retire_capabilities` sans effet quand une exigence reste
+#### Scenario: `retire_capabilities` has no effect when a requirement remains
 
-- **GIVEN** une spec principale avec les exigences `Login` et `Logout`
-- **AND** un change `retire_capabilities: true` dont le delta retire
-  uniquement `Login`
-- **WHEN** l'utilisateur lance `codev sync <c>`
-- **THEN** le fichier `_codev/specs/<capa>/spec.md` existe toujours,
-  contient encore `Logout`, et n'apparaît pas dans `deleted[]`
-- **AND** le marqueur n'a rien déclenché de plus qu'un merge normal
+- **GIVEN** a main spec with the requirements `Login` and `Logout`
+- **AND** a `retire_capabilities: true` change whose delta removes
+  only `Login`
+- **WHEN** the user runs `codev sync <c>`
+- **THEN** the file `_codev/specs/<capability>/spec.md` still exists,
+  still contains `Logout`, and does not appear in `deleted[]`
+- **AND** the marker triggered nothing beyond a normal merge
 
-### Requirement: `deletions` est une opération de premier ordre du plan
+### Requirement: `deletions` is a first-class plan operation
 
-Le type `Plan` du cœur MUST porter un champ `deletions: Vec<PathBuf>`
-distinct de `writes` et de `moves`, et la coquille MUST appliquer les
-deletions dans un ordre déterministe : **après** les writes et **avant**
-les moves. Un `Plan` sans deletion garde le comportement historique bit-
-identique.
+The core `Plan` type MUST carry a `deletions: Vec<PathBuf>` field
+distinct from `writes` and `moves`, and the shell MUST apply the
+deletions in a deterministic order: **after** the writes and **before**
+the moves. A `Plan` without deletions keeps the historical behavior
+bit-for-bit.
 
-#### Scenario: Le plan expose deletions séparément
+#### Scenario: The plan exposes deletions separately
 
-- **GIVEN** un `plan_sync` sur un change qui retire une capacité
-- **WHEN** l'inspecteur regarde le `Plan` produit
-- **THEN** l'entrée du fichier à supprimer figure dans `plan.deletions`
-- **AND** ne figure pas dans `plan.writes` (aucun write d'une chaîne vide)
+- **GIVEN** a `plan_sync` on a change that retires a capability
+- **WHEN** the inspector looks at the produced `Plan`
+- **THEN** the entry for the file to delete appears in `plan.deletions`
+- **AND** does not appear in `plan.writes` (no write of an empty string)
 
-#### Scenario: Ordre d'exécution — deletions après writes
+#### Scenario: Execution order — deletions after writes
 
-- **GIVEN** un plan qui à la fois modifie une spec `A` (write) et
-  supprime une spec `B` (deletion)
-- **WHEN** la coquille exécute le plan
-- **THEN** l'écriture sur `A` est appliquée avant la suppression de `B`
-- **AND** la suppression de `B` est appliquée avant tout `move`
+- **GIVEN** a plan that both modifies a spec `A` (write) and
+  deletes a spec `B` (deletion)
+- **WHEN** the shell executes the plan
+- **THEN** the write to `A` is applied before the deletion of `B`
+- **AND** the deletion of `B` is applied before any `move`
 
-### Requirement: Contrat JSON `sync` et `archive` expose `deleted`
+### Requirement: The `sync` and `archive` JSON contract exposes `deleted`
 
-Le rapport JSON de `codev sync --json` (contrat `SyncReportV1`) et de
-`codev archive --json` (contrat `ArchiveReportV1`) MUST porter un champ
-additif `deleted: Vec<String>`, toujours présent, vide dans le cas
-courant. Le champ contient les chemins absolus des specs principales
-supprimées par le change, dans un ordre déterministe.
+The JSON report of `codev sync --json` (contract `SyncReportV1`) and of
+`codev archive --json` (contract `ArchiveReportV1`) MUST carry an
+additive field `deleted: Vec<String>`, always present, empty in the
+common case. The field contains the absolute paths of the main specs
+deleted by the change, in a deterministic order.
 
-#### Scenario: `sync --json` avec une capacité retirée
+#### Scenario: `sync --json` with a retired capability
 
-- **GIVEN** un projet avec une spec `user-auth`, un change
-  `retire_capabilities: true` qui retire l'unique exigence
-- **WHEN** l'utilisateur lance `codev sync <c> --json`
-- **THEN** le document JSON porte `"deleted": ["<abs>/…/user-auth/spec.md"]`
-- **AND** `updated`, `created`, `unchanged` ne mentionnent PAS ce chemin
+- **GIVEN** a project with a `user-auth` spec, and a
+  `retire_capabilities: true` change that removes its only requirement
+- **WHEN** the user runs `codev sync <c> --json`
+- **THEN** the JSON document carries `"deleted": ["<abs>/…/user-auth/spec.md"]`
+- **AND** `updated`, `created`, `unchanged` do NOT mention that path
 
-#### Scenario: `deleted` toujours présent, vide par défaut
+#### Scenario: `deleted` always present, empty by default
 
-- **GIVEN** un change sans suppression
-- **WHEN** l'utilisateur lance `codev sync <c> --json`
-- **THEN** le document JSON porte `"deleted": []`
+- **GIVEN** a change without deletions
+- **WHEN** the user runs `codev sync <c> --json`
+- **THEN** the JSON document carries `"deleted": []`

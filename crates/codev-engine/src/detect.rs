@@ -1,25 +1,24 @@
-//! Orchestrateur de la sonde `codev init`.
+//! Orchestrator for the `codev init` probe.
 //!
-//! Coordonne l'accès disque (via `FileSystem`) et l'accès environnement
-//! (`Env` — pour `~/.claude.json`). Chaque champ est best-effort : un
-//! fichier absent n'est pas une erreur, il produit un warning silencieux.
+//! Coordinates disk access (via `FileSystem`) and environment access
+//! (`Env` — for `~/.claude.json`). Every field is best-effort: a missing
+//! file is not an error, it produces a silent warning.
 //!
-//! Les fonctions pures qui parsent chaque manifeste vivent dans
-//! `codev-core::detect` — elles sont testables sans I/O. Ici on se
-//! contente d'appeler les bons ports dans le bon ordre.
+//! The pure functions that parse each manifest live in
+//! `codev-core::detect` — they are testable without I/O. Here we merely
+//! call the right ports in the right order.
 
 use std::path::{Path, PathBuf};
 
 use codev_core::detect::{
-    license, mcp,
+    Detected, license, locale, mcp,
     stack::{self, Stack},
-    Detected,
 };
 
 use crate::ports::{Env, FileSystem};
 
-/// Ordre de recherche de manifestes de stack. Le premier trouvé fixe la
-/// stack primaire, les autres sont ignorés.
+/// Search order for stack manifests. The first one found sets the primary
+/// stack; the others are ignored.
 const MANIFESTS: &[(&str, StackKind)] = &[
     ("Cargo.toml", StackKind::Cargo),
     ("package.json", StackKind::PackageJson),
@@ -28,8 +27,8 @@ const MANIFESTS: &[(&str, StackKind)] = &[
     ("pom.xml", StackKind::PomXml),
 ];
 
-/// Ordre de recherche des configs MCP. Le premier gagne en cas de doublon
-/// de nom de serveur (config projet gagne sur config utilisateur globale).
+/// Search order for MCP configs. The first one wins when a server name is
+/// duplicated (project config wins over global user config).
 fn mcp_sources(project_root: &Path, home: Option<&Path>) -> Vec<(PathBuf, String)> {
     let mut out = vec![
         (project_root.join(".mcp.json"), ".mcp.json".to_string()),
@@ -56,10 +55,11 @@ enum StackKind {
     PomXml,
 }
 
-/// Sonde le dossier courant et retourne un rapport `Detected`.
+/// Probes the current directory and returns a `Detected` report.
 ///
-/// - `project_root` — la racine du projet inspecté.
-/// - `env` — pour résoudre `~/.claude.json` via `HOME` / `USERPROFILE`.
+/// - `project_root` — the root of the inspected project.
+/// - `env` — to resolve `~/.claude.json` via `HOME` / `USERPROFILE`, and
+///   to read the locale variables that suggest the artifact language.
 pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected {
     let home = env.home_dir();
 
@@ -68,6 +68,7 @@ pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected 
     let has_ci = detect_ci(fs, project_root);
     let is_git_repo = fs.exists(&project_root.join(".git"));
     let mcps = detect_mcps(fs, project_root, home.as_deref());
+    let locale = locale::detect(|var| env.var(var));
 
     Detected {
         stack,
@@ -76,6 +77,7 @@ pub fn run(fs: &dyn FileSystem, env: &dyn Env, project_root: &Path) -> Detected 
         has_ci,
         is_git_repo,
         mcps,
+        locale,
     }
 }
 
@@ -184,23 +186,23 @@ edition = "2024"
 serde = "1"
 "#;
 
-    const MCP_PROJET: &str = r#"{
+    const MCP_PROJECT: &str = r#"{
         "mcpServers": {
             "claude.ai Atlassian Rovo": { "url": "https://mcp.atlassian.com/" }
         }
     }"#;
 
     #[test]
-    fn workspace_rust_avec_mcp_atlassian_detecte_tout() {
+    fn rust_workspace_with_atlassian_mcp_detects_everything() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/Cargo.toml", CARGO_WS)
-            .with_file("/p/.mcp.json", MCP_PROJET)
+            .with_file("/p/.mcp.json", MCP_PROJECT)
             .with_file("/p/.github/workflows/ci.yml", "name: CI")
             .with_file("/p/LICENSE", "MIT License\n\nPermission is hereby granted");
         let env = FakeEnv::with_home("/home/x");
         let d = run(&fs, &env, Path::new("/p"));
 
-        let stack = d.stack.expect("stack Rust attendue");
+        let stack = d.stack.expect("expected a Rust stack");
         assert_eq!(stack.language, "Rust");
         assert_eq!(stack.workspace_crate_count, Some(4));
         assert_eq!(d.license.as_deref(), Some("MIT"));
@@ -212,7 +214,7 @@ serde = "1"
     }
 
     #[test]
-    fn dossier_vide_produit_detected_essentiellement_vide() {
+    fn empty_directory_yields_essentially_empty_detected() {
         let fs = MemoryFileSystem::new();
         let env = FakeEnv::with_home("/home/x");
         let d = run(&fs, &env, Path::new("/p"));
@@ -225,23 +227,23 @@ serde = "1"
     }
 
     #[test]
-    fn mcp_projet_gagne_sur_mcp_global_quand_meme_nom() {
+    fn project_mcp_wins_over_global_mcp_with_same_name() {
         const GLOBAL: &str = r#"{"mcpServers": {"Atlassian": {"url": "https://global"}}}"#;
-        const PROJET: &str = r#"{"mcpServers": {"Atlassian": {"url": "https://projet"}}}"#;
+        const PROJECT: &str = r#"{"mcpServers": {"Atlassian": {"url": "https://project"}}}"#;
         let fs = MemoryFileSystem::new()
-            .with_file("/p/.mcp.json", PROJET)
+            .with_file("/p/.mcp.json", PROJECT)
             .with_file("/home/x/.claude.json", GLOBAL);
         let env = FakeEnv::with_home("/home/x");
         let d = run(&fs, &env, Path::new("/p"));
         assert_eq!(d.mcps.len(), 1);
-        assert_eq!(d.mcps[0].url.as_deref(), Some("https://projet"));
+        assert_eq!(d.mcps[0].url.as_deref(), Some("https://project"));
         assert_eq!(d.mcps[0].source, ".mcp.json");
     }
 
     #[test]
-    fn premier_manifeste_trouve_gagne() {
-        // Un dossier qui a à la fois Cargo.toml (Rust) et package.json (JS)
-        // → Rust gagne parce qu'il vient en premier dans MANIFESTS.
+    fn first_manifest_found_wins() {
+        // A directory with both Cargo.toml (Rust) and package.json (JS)
+        // → Rust wins because it comes first in MANIFESTS.
         let fs = MemoryFileSystem::new()
             .with_file("/p/Cargo.toml", CARGO_WS)
             .with_file("/p/package.json", r#"{"name": "a", "dependencies": {}}"#);

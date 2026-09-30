@@ -1,18 +1,17 @@
-//! Reconnaissance des zones littérales : blocs de code ` ``` ` et `~~~`, plus
-//! commentaires HTML `<!-- … -->`.
+//! Recognition of literal zones: ` ``` ` and `~~~` code blocks, plus
+//! HTML comments `<!-- … -->`.
 //!
-//! La logique vit ici, et non dans chaque parseur, pour la même raison qu'en
-//! amont chez OpenSpec : trois parseurs indépendants qui la ré-implémentent
-//! dérivent et finissent par accepter des faux positifs — un
-//! `### Requirement:` à l'intérieur d'un bloc de code pris pour de vrai.
-//! Le drame silencieux qu'on refuse.
+//! The logic lives here, not in each parser, for the same reason as
+//! upstream in OpenSpec: three independent parsers re-implementing it
+//! drift apart and end up accepting false positives — a
+//! `### Requirement:` inside a code block taken for real.
+//! The silent failure we refuse.
 
-/// Un masque par ligne : `true` si la ligne appartient à une zone littérale
-/// (fence d'ouverture, fermeture, contenu ; ligne d'un commentaire HTML
-/// multi-lignes).
+/// A per-line mask: `true` if the line belongs to a literal zone (opening
+/// fence, closing fence, content; line of a multi-line HTML comment).
 ///
-/// Les parseurs de spec et de delta consultent ce masque avant de reconnaître
-/// un en-tête. C'est ce qui rend une exigence à l'intérieur d'un bloc de code
+/// The spec and delta parsers consult this mask before recognizing a
+/// heading. This is what makes a requirement inside a code block
 /// invisible.
 pub fn build_fence_mask(source: &str) -> Vec<bool> {
     let lines: Vec<&str> = source.split('\n').collect();
@@ -22,9 +21,8 @@ pub fn build_fence_mask(source: &str) -> Vec<bool> {
     let mut html_comment_open = false;
 
     for (i, line) in lines.iter().enumerate() {
-        // À l'intérieur d'une fence : tout est littéral, y compris un éventuel
-        // début de commentaire HTML — d'où le traitement de la fence en
-        // premier.
+        // Inside a fence: everything is literal, including a possible HTML
+        // comment start — hence handling the fence first.
         if let Some(fence) = &active_fence {
             mask[i] = true;
             if is_closing_fence(line, fence) {
@@ -39,9 +37,9 @@ pub fn build_fence_mask(source: &str) -> Vec<bool> {
             continue;
         }
 
-        // Hors fence : traiter les commentaires HTML. Un commentaire peut
-        // s'étendre sur plusieurs lignes ; tant qu'il n'est pas refermé, les
-        // lignes suivantes sont masquées.
+        // Outside a fence: handle HTML comments. A comment may span several
+        // lines; as long as it is not closed, the following lines are
+        // masked.
         if html_comment_open {
             mask[i] = true;
             if line.contains("-->") {
@@ -50,9 +48,9 @@ pub fn build_fence_mask(source: &str) -> Vec<bool> {
             continue;
         }
 
-        // Détection sur cette ligne. Un `<!--` suivi d'un `-->` **sur la même
-        // ligne** est un commentaire clos qui masque quand même cette ligne,
-        // sans ouvrir de fenêtre pour les suivantes.
+        // Detection on this line. A `<!--` followed by a `-->` **on the same
+        // line** is a closed comment that still masks this line, without
+        // opening a window for the following ones.
         if let Some(start) = line.find("<!--") {
             let after = &line[start + 4..];
             if after.contains("-->") {
@@ -69,12 +67,12 @@ pub fn build_fence_mask(source: &str) -> Vec<bool> {
 
 #[derive(Debug, Clone, Copy)]
 struct ActiveFence {
-    marker: u8, // b'`' ou b'~'
+    marker: u8, // b'`' or b'~'
     length: usize,
 }
 
-/// Reconnaît l'ouverture d'une fence : au moins trois `\`` ou `~`, optionnels
-/// blancs devant, un « info string » optionnel (`rust`, `text`, …) après.
+/// Recognizes a fence opening: at least three `\`` or `~`, optional leading
+/// whitespace, an optional "info string" (`rust`, `text`, …) after.
 fn opening_fence(line: &str) -> Option<ActiveFence> {
     let trimmed_left = line.trim_start();
     if trimmed_left.is_empty() {
@@ -84,10 +82,7 @@ fn opening_fence(line: &str) -> Option<ActiveFence> {
     if first != b'`' && first != b'~' {
         return None;
     }
-    let length = trimmed_left
-        .bytes()
-        .take_while(|&b| b == first)
-        .count();
+    let length = trimmed_left.bytes().take_while(|&b| b == first).count();
     if length < 3 {
         return None;
     }
@@ -97,9 +92,9 @@ fn opening_fence(line: &str) -> Option<ActiveFence> {
     })
 }
 
-/// Reconnaît la fermeture d'une fence : le même marqueur, au moins aussi long,
-/// éventuellement suivi de blancs — mais rien d'autre. C'est la règle
-/// CommonMark, et l'écart chez OpenSpec.
+/// Recognizes a fence closing: the same marker, at least as long, possibly
+/// followed by whitespace — but nothing else. This is the CommonMark rule,
+/// and where OpenSpec deviates.
 fn is_closing_fence(line: &str, fence: &ActiveFence) -> bool {
     let trimmed = line.trim();
     if trimmed.is_empty() {
@@ -114,22 +109,22 @@ fn is_closing_fence(line: &str, fence: &ActiveFence) -> bool {
 mod tests {
     use super::*;
 
-    // `source.split('\n')` produit une ligne vide finale quand le source se
-    // termine par `\n`. Le masque doit donc porter une valeur pour cette
-    // ligne aussi. Un helper centralise la vérification, sinon chaque test
-    // recompte les `\n` à la main et se trompe.
+    // `source.split('\n')` produces a trailing empty line when the source
+    // ends with `\n`. The mask must therefore carry a value for that line
+    // too. A helper centralizes the check; otherwise each test recounts the
+    // `\n` by hand and gets it wrong.
     fn check(source: &str, expected: Vec<bool>) {
         let observed = build_fence_mask(source);
         assert_eq!(
             observed.len(),
             source.split('\n').count(),
-            "le masque doit avoir la même longueur que split('\\n')",
+            "the mask must have the same length as split('\\n')",
         );
         assert_eq!(observed, expected);
     }
 
     #[test]
-    fn mask_reconnait_backticks_et_tildes() {
+    fn mask_recognizes_backticks_and_tildes() {
         let source = "```\ninside\n```\n\ntop\n~~~\nalso inside\n~~~\n";
         check(
             source,
@@ -138,41 +133,40 @@ mod tests {
     }
 
     #[test]
-    fn mask_refuse_une_fermeture_de_marqueur_different() {
+    fn mask_rejects_a_closing_with_a_different_marker() {
         let source = "```\nfoo\n~~~\nbar\n```\nout\n";
         check(source, vec![true, true, true, true, true, false, false]);
     }
 
     #[test]
-    fn mask_traite_deux_blocs_successifs() {
+    fn mask_handles_two_consecutive_blocks() {
         let source = "```\na\n```\n```\nb\n```\n";
         check(source, vec![true, true, true, true, true, true, false]);
     }
 
     #[test]
-    fn mask_ignore_une_fermeture_trop_courte() {
-        // Ouverture ````, fermeture ``` : la fermeture doit être au moins
-        // aussi longue que l'ouverture.
+    fn mask_ignores_a_too_short_closing() {
+        // Opening ````, closing ```: the closing must be at least as long
+        // as the opening.
         let source = "````\nx\n```\ny\n````\n";
         check(source, vec![true, true, true, true, true, false]);
     }
 
     #[test]
-    fn commentaire_multi_lignes_est_masque() {
-        let source =
-            "avant\n<!-- début du commentaire\n### Requirement: Faux\nfin du commentaire -->\napres\n";
+    fn multi_line_comment_is_masked() {
+        let source = "before\n<!-- start of the comment\n### Requirement: Fake\nend of the comment -->\nafter\n";
         check(source, vec![false, true, true, true, false, false]);
     }
 
     #[test]
-    fn commentaire_sur_une_seule_ligne_est_masque_sans_ouvrir_de_fenetre() {
-        let source = "avant\n<!-- inline -->\napres\n### Requirement: Vrai\n";
+    fn single_line_comment_is_masked_without_opening_a_window() {
+        let source = "before\n<!-- inline -->\nafter\n### Requirement: Real\n";
         check(source, vec![false, true, false, false, false]);
     }
 
     #[test]
-    fn commentaire_dans_une_fence_reste_litteral_via_la_fence() {
-        let source = "```\n<!-- pas un vrai commentaire\n```\napres\n";
+    fn comment_inside_a_fence_stays_literal_via_the_fence() {
+        let source = "```\n<!-- not a real comment\n```\nafter\n";
         check(source, vec![true, true, true, false, false]);
     }
 }

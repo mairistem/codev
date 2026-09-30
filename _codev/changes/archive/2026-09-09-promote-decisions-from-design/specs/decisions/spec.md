@@ -1,116 +1,117 @@
 ## ADDED Requirements
 
-### Requirement: Commande `codev decision promote` extrait un bloc du design en ADR
+### Requirement: `codev decision promote` command extracts a design block into an ADR
 
-`codev decision promote <change> <titre>` MUST créer un nouvel ADR local
-sous `_codev/decisions/NNNN-<slug>.md`, avec `status: accepted`, scellé
-par K3, dont le corps reproduit **verbatim** le contenu du bloc
-`### Décision : <titre>` trouvé sous la section `## Décisions` du
-`design.md` du change. Le nouvel ADR contient une section `## Décision`
-qui porte ce corps, et les sections `## Contexte`, `## Conséquences` et
-`## Alternatives écartées` sont émises avec un `<!-- placeholder -->`
-inviant l'auteur à ventiler.
+`codev decision promote <change> <title>` MUST create a new local ADR
+under `_codev/decisions/NNNN-<slug>.md`, with `status: accepted`,
+sealed by K3, whose body reproduces **verbatim** the content of the
+`### Decision: <title>` block found under the `## Decisions` section of
+the change's `design.md`. The new ADR contains a `## Decision` section
+carrying that body, and the `## Context`, `## Consequences` and
+`## Rejected Alternatives` sections are emitted with a
+`<!-- placeholder -->` inviting the author to split the content.
 
-Le corps « verbatim » du bloc s'entend comme : tout le texte qui suit la
-ligne `### Décision : <titre>` jusqu'à la prochaine ligne commençant par
-`### ` ou `## ` (exclu), sans normalisation.
+The "verbatim" body of the block means: all the text that follows the
+`### Decision: <title>` line up to the next line starting with `### `
+or `## ` (excluded), without normalization.
 
-Refus explicites — codes stables :
+Explicit refusals — stable codes:
 
-- `unknown_change` : le change n'est pas dans `codev list`.
-- `cannot_promote_from_archived` : la cible pointe vers un dossier sous
-  `changes/archive/` — un design archivé est de l'histoire.
-- `design_missing` : le change n'a pas de `design.md`.
-- `decision_heading_not_found` : aucun bloc `### Décision : <titre>` ne
-  correspond dans le design.
-- `ambiguous_decision_heading` : plusieurs blocs portent le même titre —
-  l'utilisateur précise en éditant.
+- `unknown_change`: the change is not in `codev list`.
+- `cannot_promote_from_archived`: the target points to a folder under
+  `changes/archive/` — an archived design is history.
+- `design_missing`: the change has no `design.md`.
+- `decision_heading_not_found`: no `### Decision: <title>` block
+  matches in the design.
+- `ambiguous_decision_heading`: several blocks carry the same title —
+  the user clarifies by editing.
 
-#### Scenario: Promotion réussie
+#### Scenario: Successful promotion
 
-- **GIVEN** un change `add-auth` dont `design.md` contient sous
-  `## Décisions` un bloc `### Décision : Utiliser JWT` avec deux
-  paragraphes de rationale
-- **WHEN** l'utilisateur lance `codev decision promote add-auth
-  "Utiliser JWT"`
-- **THEN** un nouvel ADR est créé sous
-  `_codev/decisions/NNNN-utiliser-jwt.md` avec `status: accepted`, `date`
-  du jour, et un frontmatter valide
-- **AND** son corps contient une section `## Décision` avec les deux
-  paragraphes de rationale, byte pour byte
-- **AND** une entrée est ajoutée à `_codev/decisions/seal.yaml` pour cet
-  ADR — cohérence avec K3
+- **GIVEN** a change `add-auth` whose `design.md` contains, under
+  `## Decisions`, a block `### Decision: Use JWT` with two paragraphs
+  of rationale
+- **WHEN** the user runs `codev decision promote add-auth
+  "Use JWT"`
+- **THEN** a new ADR is created under
+  `_codev/decisions/NNNN-use-jwt.md` with `status: accepted`, today's
+  `date`, and a valid frontmatter
+- **AND** its body contains a `## Decision` section with the two
+  paragraphs of rationale, byte for byte
+- **AND** an entry is added to `_codev/decisions/seal.yaml` for this
+  ADR — consistent with K3
 
-#### Scenario: Refus d'un change archivé
+#### Scenario: Refusal of an archived change
 
-- **GIVEN** un change qui vit sous `_codev/changes/archive/…-<nom>/`
-- **WHEN** l'utilisateur lance `codev decision promote <nom> "..."`
-- **THEN** aucun fichier n'est écrit
-- **AND** le message d'erreur nomme le code stable
+- **GIVEN** a change that lives under `_codev/changes/archive/…-<name>/`
+- **WHEN** the user runs `codev decision promote <name> "..."`
+- **THEN** no file is written
+- **AND** the error message names the stable code
   `cannot_promote_from_archived`
 
-#### Scenario: Titre introuvable
+#### Scenario: Title not found
 
-- **GIVEN** un change `add-auth` dont le `design.md` ne mentionne pas de
-  bloc « Utiliser Kerberos »
-- **WHEN** l'utilisateur lance `codev decision promote add-auth
-  "Utiliser Kerberos"`
-- **THEN** aucun fichier n'est écrit
-- **AND** le message d'erreur nomme le code stable
+- **GIVEN** a change `add-auth` whose `design.md` does not mention a
+  "Use Kerberos" block
+- **WHEN** the user runs `codev decision promote add-auth
+  "Use Kerberos"`
+- **THEN** no file is written
+- **AND** the error message names the stable code
   `decision_heading_not_found`
 
-#### Scenario: Titre ambigu
+#### Scenario: Ambiguous title
 
-- **GIVEN** un `design.md` contenant **deux** blocs
-  `### Décision : Choix de la librairie` (par exemple une version
-  révisée du premier bloc pendant la discussion)
-- **WHEN** l'utilisateur lance `codev decision promote <c> "Choix de la
-  librairie"`
-- **THEN** aucun fichier n'est écrit
-- **AND** le message d'erreur nomme le code stable
-  `ambiguous_decision_heading` et invite à éditer un des deux titres
+- **GIVEN** a `design.md` containing **two** blocks
+  `### Decision: Library choice` (for example a revised version of the
+  first block during the discussion)
+- **WHEN** the user runs `codev decision promote <c> "Library
+  choice"`
+- **THEN** no file is written
+- **AND** the error message names the stable code
+  `ambiguous_decision_heading` and invites editing one of the two
+  titles
 
-### Requirement: Le design est mis à jour avec une référence traçable
+### Requirement: The design is updated with a traceable reference
 
-Après une promotion réussie, le bloc `### Décision : <titre>` du
-`design.md` MUST être remplacé par le même titre suivi d'**une seule
-ligne** de citation textuelle qui référence le nouvel ADR :
+After a successful promotion, the `### Decision: <title>` block of the
+`design.md` MUST be replaced by the same title followed by **a single
+line** of textual quote referencing the new ADR:
 
 ```
-### Décision : <titre>
+### Decision: <title>
 
-> Promue en ADR **NNNN** — voir `_codev/decisions/NNNN-<slug>.md`.
+> Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-<slug>.md`.
 ```
 
-La référence est en texte simple (`` ` `` pour le chemin), pas un lien
-markdown — un lien `[..](../..)` casserait au moment de l'archive du
-change (où la profondeur des `..` change). Le titre du bloc est
-préservé pour permettre à un lecteur du design de comprendre le sujet
-qui a été promu.
+The reference is plain text (`` ` `` for the path), not a markdown
+link — a `[..](../..)` link would break when the change is archived
+(where the depth of the `..` changes). The block's title is preserved
+so that a reader of the design can understand the subject that was
+promoted.
 
-#### Scenario: Contenu du bloc remplacé par la référence
+#### Scenario: Block content replaced by the reference
 
-- **GIVEN** le même contexte que le scénario « Promotion réussie »
-- **WHEN** l'utilisateur lance la commande
-- **THEN** le `design.md` du change contient désormais, à
-  l'emplacement du bloc :
+- **GIVEN** the same context as the "Successful promotion" scenario
+- **WHEN** the user runs the command
+- **THEN** the change's `design.md` now contains, at the location of
+  the block:
   ```
-  ### Décision : Utiliser JWT
+  ### Decision: Use JWT
 
-  > Promue en ADR **NNNN** — voir `_codev/decisions/NNNN-utiliser-jwt.md`.
+  > Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-use-jwt.md`.
 
   ```
-- **AND** le reste du fichier (autres sections, autres blocs `###`,
-  espacement) est identique au caractère près
-- **AND** l'espacement autour du bloc reste préservé — pas de ligne
-  blanche ajoutée ni retirée
+- **AND** the rest of the file (other sections, other `###` blocks,
+  spacing) is identical to the character
+- **AND** the spacing around the block stays preserved — no blank line
+  added or removed
 
-#### Scenario: Deux promotions successives sur le même design
+#### Scenario: Two successive promotions on the same design
 
-- **GIVEN** un design contenant deux blocs distincts :
-  `### Décision : A` et `### Décision : B`
-- **AND** l'utilisateur a déjà promu `A` en ADR
-- **WHEN** l'utilisateur lance `codev decision promote <c> "B"`
-- **THEN** le bloc `B` est promu à son tour
-- **AND** la ligne de référence de `A` n'est PAS altérée par cette
-  seconde promotion — chaque promotion n'agit que sur son propre bloc
+- **GIVEN** a design containing two distinct blocks:
+  `### Decision: A` and `### Decision: B`
+- **AND** the user has already promoted `A` to an ADR
+- **WHEN** the user runs `codev decision promote <c> "B"`
+- **THEN** block `B` is promoted in turn
+- **AND** the reference line of `A` is NOT altered by this second
+  promotion — each promotion only acts on its own block

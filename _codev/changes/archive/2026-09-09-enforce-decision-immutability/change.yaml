@@ -1,3 +1,3 @@
 schema: spec-driven
 created: 2026-09-09
-goal: 'Faire respecter par le CLI l''immutabilité d''une décision acceptée : détecter et refuser toute édition en place ; n''autoriser que la supersession.'
+goal: 'Have the CLI enforce the immutability of an accepted decision: detect and refuse any in-place edit; allow only supersession.'

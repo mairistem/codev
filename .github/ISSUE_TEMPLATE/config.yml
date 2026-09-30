@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Questions et discussions
+  - name: Questions and discussions
     url: https://github.com/mairistem/codev/discussions
-    about: Pour tout ce qui n'est pas un bug ou une demande de fonctionnalité.
-  - name: Guide de contribution
+    about: For anything that is not a bug report or a feature request.
+  - name: Contributing guide
     url: https://github.com/mairistem/codev/blob/main/CONTRIBUTING.md
-    about: Comment proposer un change codev.
+    about: How to propose a change to codev.
+  - name: Report a security vulnerability
+    url: https://github.com/mairistem/codev/security/advisories/new
+    about: Please report vulnerabilities privately, never in a public issue.

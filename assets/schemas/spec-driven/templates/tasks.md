@@ -1,14 +1,14 @@
-# Tâches
+# Tasks
 
-<!-- Le format des cases à cocher est analysé pour suivre l'avancement.
-     Une tâche qui n'utilise pas `- [ ]` ne sera pas suivie.
-     Chaque tâche énonce comment vérifier qu'elle est faite. -->
+<!-- The checkbox format is parsed to track progress.
+     A task that does not use `- [ ]` will not be tracked.
+     Each task states how to verify that it is done. -->
 
-## 1. <groupe de tâches>
+## 1. <task group>
 
-- [ ] 1.1 <tâche>, vérifiée par <test nommé, commande ou comportement observable>
-- [ ] 1.2 <tâche>, vérifiée par <...>
+- [ ] 1.1 <task>, verified by <named test, command or observable behavior>
+- [ ] 1.2 <task>, verified by <...>
 
-## 2. <groupe de tâches>
+## 2. <task group>
 
-- [ ] 2.1 <tâche>, vérifiée par <...>
+- [ ] 2.1 <task>, verified by <...>

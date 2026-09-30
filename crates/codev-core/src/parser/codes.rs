@@ -1,80 +1,90 @@
-//! Codes stables des `Finding` émis par le parseur.
+//! Stable codes of the `Finding`s emitted by the parser.
 //!
-//! Nommer chaque code une fois — plutôt que de l'écrire en littéral aux
-//! sites d'émission — sert deux objectifs :
+//! Naming each code once — rather than writing it as a literal at the
+//! emission sites — serves two purposes:
 //!
-//! 1. Le module `validate` peut itérer cette liste pour vérifier que ses
-//!    propres codes ne créent aucun doublon.
-//! 2. Un renommage force à passer par cette constante et sa documentation,
-//!    en rappelant que le code est un contrat public.
+//! 1. The `validate` module can iterate over this list to check that its
+//!    own codes create no duplicates.
+//! 2. A rename has to go through this constant and its documentation,
+//!    as a reminder that the code is a public contract.
 
-/// La spec principale ne contient pas de `## Purpose`.
+/// The main spec contains no `## Purpose`.
 pub const SPEC_PURPOSE_MISSING: &str = "spec_purpose_missing";
 
-/// Un `### Requirement:` apparaît hors de la section `## Requirements`.
+/// A `### Requirement:` appears outside the `## Requirements` section.
 pub const REQUIREMENT_OUTSIDE_SECTION: &str = "requirement_outside_section";
 
-/// Un en-tête de delta (`## ADDED Requirements`, etc.) apparaît dans une spec
-/// principale.
+/// A delta heading (`## ADDED Requirements`, etc.) appears in a main
+/// spec.
 pub const DELTA_HEADER_IN_MAIN_SPEC: &str = "delta_header_in_main_spec";
 
-/// Un scénario est écrit avec trois dièses (`### Scenario:`) au lieu de
-/// quatre.
+/// A scenario is written with three hashes (`### Scenario:`) instead of
+/// four.
 pub const SCENARIO_WRONG_HEADING_LEVEL: &str = "scenario_wrong_heading_level";
 
-/// Deux exigences de même nom dans la même section d'un delta.
+/// Two requirements with the same name in the same section of a delta.
 pub const DUPLICATE_REQUIREMENT: &str = "duplicate_requirement";
 
-// ─────────────────────────── codes du parseur de décisions ───────────────────────────
+/// A `###` heading inside a delta section that is not `### Requirement:` —
+/// typically a translated keyword (`### Exigence :`). The parser would
+/// otherwise skip the block without a word.
+pub const DELTA_UNEXPECTED_HEADING: &str = "delta_unexpected_heading";
 
-/// Le fichier de décision n'a pas de frontmatter YAML délimité par `---`.
+/// A delta section (`## ADDED Requirements`…) with no entry: nothing of
+/// it would be merged.
+pub const DELTA_SECTION_EMPTY: &str = "delta_section_empty";
+
+// ─────────────────────────── decision parser codes ───────────────────────────
+
+/// The decision file has no YAML frontmatter delimited by `---`.
 pub const DECISION_MISSING_FRONTMATTER: &str = "decision_missing_frontmatter";
 
-/// Le frontmatter n'a pas un champ obligatoire (`id`, `title`, `status`,
-/// `date`), ou porte une clé inconnue.
+/// The frontmatter lacks a required field (`id`, `title`, `status`,
+/// `date`), or carries an unknown key.
 pub const DECISION_MISSING_FIELD: &str = "decision_missing_field";
 
-/// Le `status` porte une valeur qui n'est pas l'une des cinq reconnues.
+/// The `status` carries a value that is not one of the five recognized ones.
 pub const DECISION_UNKNOWN_STATUS: &str = "decision_unknown_status";
 
-// Les codes ci-dessous sont émis par l'index côté engine, pas par le
-// parseur. On les enregistre ici pour rester à un seul point d'unicité
-// contrôlé par `validate::codes_de_findings_sont_uniques`.
+// The codes below are emitted by the engine-side index, not by the
+// parser. They are registered here to keep a single point of uniqueness
+// checked by `validate::finding_codes_are_unique`.
 
-/// Un `supersedes` pointe vers un identifiant absent de l'index.
+/// A `supersedes` points to an identifier missing from the index.
 pub const DECISION_SUPERSEDES_UNKNOWN: &str = "decision_supersedes_unknown";
 
-/// Un même identifiant apparaît dans le projet et dans une source héritée.
+/// The same identifier appears in the project and in an inherited source.
 pub const DECISION_ID_COLLISION: &str = "decision_id_collision";
 
-/// Une chaîne de supersession forme un cycle — aucune décision du cycle
-/// n'entre en vigueur.
+/// A supersession chain forms a cycle — no decision in the cycle takes
+/// effect.
 pub const DECISION_SUPERSESSION_CYCLE: &str = "decision_supersession_cycle";
 
-/// Un champ typé du frontmatter (`deviates_from`, `tags`…) porte une valeur
-/// qui n'est pas de la bonne forme (par exemple une chaîne au lieu d'une
-/// liste).
+/// A typed frontmatter field (`deviates_from`, `tags`…) carries a value
+/// of the wrong shape (for example a string instead of a list).
 pub const DECISION_FIELD_TYPE_MISMATCH: &str = "decision_field_type_mismatch";
 
-/// Un `deviates_from` d'un ADR local pointe vers un `qualified-id` qui
-/// n'est plus présent dans l'index (source retirée, SHA déplacé, id changé).
+/// A local ADR's `deviates_from` points to a `qualified-id` that is no
+/// longer present in the index (source removed, SHA moved, id changed).
 pub const DECISION_DANGLING_DEVIATION: &str = "decision_dangling_deviation";
 
-/// Deux ADR locaux `accepted` référencent la même cible dans leur
-/// `deviates_from` — l'outil ne tranche pas et refuse.
+/// Two local `accepted` ADRs reference the same target in their
+/// `deviates_from` — the tool does not arbitrate and refuses.
 pub const DECISION_CONFLICTING_DEVIATIONS: &str = "decision_conflicting_deviations";
 
-/// Tous les codes du parseur, dans l'ordre de leur première apparition.
+/// All parser codes, in order of first appearance.
 ///
-/// Le module `validate` en fait un contrôle d'unicité au démarrage des tests ;
-/// une nouvelle règle dont le code entrerait en collision est refusée avant
-/// même d'être écrite.
+/// The `validate` module runs a uniqueness check on them in its tests; a
+/// new rule whose code would collide is rejected before it is even
+/// written.
 pub const ALL: &[&str] = &[
     SPEC_PURPOSE_MISSING,
     REQUIREMENT_OUTSIDE_SECTION,
     DELTA_HEADER_IN_MAIN_SPEC,
     SCENARIO_WRONG_HEADING_LEVEL,
     DUPLICATE_REQUIREMENT,
+    DELTA_UNEXPECTED_HEADING,
+    DELTA_SECTION_EMPTY,
     DECISION_MISSING_FRONTMATTER,
     DECISION_MISSING_FIELD,
     DECISION_UNKNOWN_STATUS,

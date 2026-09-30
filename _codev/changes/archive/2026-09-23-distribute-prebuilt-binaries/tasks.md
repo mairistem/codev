@@ -1,103 +1,103 @@
-# Tâches
+# Tasks
 
-## 1. Workflow GitHub Actions
+## 1. GitHub Actions workflow
 
-- [x] 1.1 Créer `.github/workflows/release.yml` avec :
+- [x] 1.1 Create `.github/workflows/release.yml` with:
       - Trigger `on: push: tags: - 'v*.*.*'`.
-      - Job `build` en matrix sur 3 targets :
+      - `build` job as a matrix over 3 targets:
         - `runner: macos-14`, `target: aarch64-apple-darwin`
         - `runner: macos-13`, `target: x86_64-apple-darwin`
         - `runner: ubuntu-24.04`, `target: x86_64-unknown-linux-musl`
-      - Étapes par job : checkout, install Rust toolchain avec le
+      - Steps per job: checkout, install the Rust toolchain with the
         target (via `dtolnay/rust-toolchain@stable`), cargo build
-        release avec `--target <target>`, empaquetage
+        release with `--target <target>`, packaging
         `codev-<version>-<target>.tar.gz`, upload artifact.
-- [x] 1.2 Sur le runner Linux musl : installer
-      `musl-tools` (`apt install -y musl-tools`) avant le build.
-- [x] 1.3 Job final `release` qui :
-      - `needs: [build]` (dépend des 3 jobs matrix)
-      - `download-artifact` récupère les trois tarballs
-      - calcule SHA-256 de chaque tarball → agrège dans `SHA256SUMS`
-      - `softprops/action-gh-release@v2` crée la Release GitHub avec
-        les trois tarballs + `SHA256SUMS` en assets, `name: ${{
+- [x] 1.2 On the Linux musl runner: install
+      `musl-tools` (`apt install -y musl-tools`) before the build.
+- [x] 1.3 Final `release` job that:
+      - `needs: [build]` (depends on the 3 matrix jobs)
+      - `download-artifact` retrieves the three tarballs
+      - computes the SHA-256 of each tarball → aggregates into `SHA256SUMS`
+      - `softprops/action-gh-release@v2` creates the GitHub Release with
+        the three tarballs + `SHA256SUMS` as assets, `name: ${{
         github.ref_name }}`, `generate_release_notes: true`.
-- [x] 1.4 Le workflow n'écrit aucun commit et n'exige aucun secret
-      autre que `GITHUB_TOKEN` (accordé automatiquement par GH pour
-      les writes de release).
+- [x] 1.4 The workflow writes no commit and requires no secret
+      other than `GITHUB_TOKEN` (granted automatically by GH for
+      release writes).
 
-## 2. Script `install.sh`
+## 2. `install.sh` script
 
-- [x] 2.1 Créer `install.sh` à la racine du dépôt, `#!/bin/sh`,
-      shebang POSIX-compatible (pas de bashisms). En-tête avec
-      description et licence.
-- [x] 2.2 Fonctions internes :
-      - `detect_target()` : combine `uname -s` (Darwin/Linux) et
-        `uname -m` (arm64/aarch64/x86_64) pour retourner un des
-        trois targets supportés, ou fail avec message.
-      - `resolve_version()` : `${CODEV_VERSION:-$(curl -s
+- [x] 2.1 Create `install.sh` at the repository root, `#!/bin/sh`,
+      POSIX-compatible shebang (no bashisms). Header with
+      description and license.
+- [x] 2.2 Internal functions:
+      - `detect_target()`: combines `uname -s` (Darwin/Linux) and
+        `uname -m` (arm64/aarch64/x86_64) to return one of the
+        three supported targets, or fails with a message.
+      - `resolve_version()`: `${CODEV_VERSION:-$(curl -s
         https://api.github.com/repos/mairistem/codev/releases/latest |
-        grep '"tag_name"' | head -1 | cut -d '"' -f 4)}`. Retire le
-        `v` en tête.
-      - `download_and_verify()` : télécharge tarball + `SHA256SUMS`,
-        vérifie via `sha256sum` (Linux) ou `shasum -a 256` (macOS).
-      - `install_binary()` : extrait dans un tempdir, `mkdir -p
+        grep '"tag_name"' | head -1 | cut -d '"' -f 4)}`. Strips the
+        leading `v`.
+      - `download_and_verify()`: downloads tarball + `SHA256SUMS`,
+        verifies via `sha256sum` (Linux) or `shasum -a 256` (macOS).
+      - `install_binary()`: extracts into a tempdir, `mkdir -p
         ~/.local/bin`, `cp <tempdir>/codev ~/.local/bin/codev`,
-        `chmod 755`, nettoyage.
-      - `check_path()` : test si `~/.local/bin` est dans `$PATH`.
-- [x] 2.3 Corps principal en enchaînant ces fonctions, avec messages
-      clairs à chaque étape (`echo "==> ..."`).
-- [x] 2.4 Messages d'erreur : « OS ou arch non supporté » →
-      fallback vers `cargo install --path`.
-- [x] 2.5 Refus si `curl` ou `tar` manquent — messages clairs.
-- [x] 2.6 Le script MUST être testable via `sh install.sh` en local
-      (sans piping), pour qu'un utilisateur puisse d'abord `curl >
-      install.sh`, `cat install.sh`, puis `sh install.sh`.
+        `chmod 755`, cleanup.
+      - `check_path()`: tests whether `~/.local/bin` is in `$PATH`.
+- [x] 2.3 Main body chaining these functions, with clear messages
+      at each step (`echo "==> ..."`).
+- [x] 2.4 Error messages: "unsupported OS or arch" →
+      fallback to `cargo install --path`.
+- [x] 2.5 Refuse if `curl` or `tar` are missing — clear messages.
+- [x] 2.6 The script MUST be testable via `sh install.sh` locally
+      (without piping), so that a user can first `curl >
+      install.sh`, `cat install.sh`, then `sh install.sh`.
 
-## 3. Section Installation de la doc
+## 3. Installation section of the docs
 
-- [x] 3.1 Refondre la section 2 (« Installation ») de
-      `docs/codev.md` avec les trois voies dans l'ordre :
-      recommandée (curl), alternative (téléchargement manuel), et
-      contributeur (cargo).
-- [x] 3.2 Détailler la voie manuelle : lien vers releases, `tar xzf`,
-      copie dans `~/.local/bin/`, vérification `sha256sum -c
+- [x] 3.1 Rework section 2 ("Installation") of
+      `docs/codev.md` with the three paths in order:
+      recommended (curl), alternative (manual download), and
+      contributor (cargo).
+- [x] 3.2 Detail the manual path: link to releases, `tar xzf`,
+      copy into `~/.local/bin/`, verification with `sha256sum -c
       SHA256SUMS`.
-- [x] 3.3 Ajouter un paragraphe court sur `$PATH` : comment vérifier,
-      comment ajouter `~/.local/bin` s'il manque.
-- [x] 3.4 Renommer la sous-section « Complétions shell » — elle
-      reste utile, mais fait sens après l'installation, pas avant.
+- [x] 3.3 Add a short paragraph on `$PATH`: how to check it,
+      how to add `~/.local/bin` if it is missing.
+- [x] 3.4 Rename the "Shell completions" subsection — it
+      remains useful, but makes sense after installation, not before.
 
 ## 4. README
 
-- [x] 4.1 Ajouter en tête du `README.md` (après une éventuelle
-      description) un bloc « Installation rapide » avec la
-      commande `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`.
-- [x] 4.2 Renvoyer vers `docs/codev.md` (ou `codev docs`) pour le
-      détail.
+- [x] 4.1 Add at the top of `README.md` (after any
+      description) a "Quick install" block with the
+      command `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`.
+- [x] 4.2 Point to `docs/codev.md` (or `codev docs`) for the
+      details.
 
-## 5. Validation à la main
+## 5. Manual validation
 
-- [x] 5.1 Lecture croisée du workflow YAML avec la documentation
-      GitHub Actions pour éviter les fautes de syntaxe (indentation
-      YAML capricieuse).
-- [x] 5.2 Test local du script (partiellement) : lancer
-      `install.sh` avec `CODEV_VERSION=0.1.0` **une fois qu'une
-      release existe pour ce tag**. Refuser d'installer si le SHA
-      diffère (test manuel : altérer le fichier téléchargé).
-- [x] 5.3 Si aucune release n'existe encore : dry-run manuel du
-      script en commentant les `curl` et en travaillant sur un
-      tarball local.
-- [x] 5.4 `codev validate --strict` reste vert.
+- [x] 5.1 Cross-read the YAML workflow against the GitHub Actions
+      documentation to avoid syntax mistakes (finicky YAML
+      indentation).
+- [x] 5.2 Local test of the script (partial): run
+      `install.sh` with `CODEV_VERSION=0.1.0` **once a
+      release exists for that tag**. Refuse to install if the SHA
+      differs (manual test: tamper with the downloaded file).
+- [x] 5.3 If no release exists yet: manual dry-run of the
+      script by commenting out the `curl` calls and working on a
+      local tarball.
+- [x] 5.4 `codev validate --strict` stays green.
 
-## 6. Livraison
+## 6. Delivery
 
-- [x] 6.1 Après merge de ce change : bump la version dans
-      `Cargo.toml` (workspace) à `0.2.0`, `git tag v0.2.0`, `git
-      push origin v0.2.0`. Le workflow tourne, la release apparaît.
-- [x] 6.2 Vérifier la release sur GitHub : trois assets tar.gz + un
+- [x] 6.1 After this change is merged: bump the version in
+      `Cargo.toml` (workspace) to `0.2.0`, `git tag v0.2.0`, `git
+      push origin v0.2.0`. The workflow runs, the release appears.
+- [x] 6.2 Check the release on GitHub: three tar.gz assets + one
       `SHA256SUMS`.
-- [x] 6.3 Test grandeur nature :
+- [x] 6.3 Full-scale test:
       `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`
-      sur une VM Linux ou un Mac vierge (sans Rust). Vérifier :
-      `codev --version` rend `0.2.0`, `codev docs` s'ouvre, `codev
-      list` fonctionne dans un dépôt initialisé.
+      on a Linux VM or a clean Mac (without Rust). Check:
+      `codev --version` returns `0.2.0`, `codev docs` opens, `codev
+      list` works in an initialized repository.

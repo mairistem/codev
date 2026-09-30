@@ -1,122 +1,122 @@
-# Proposal : configurer les noms de MCP côté projet
+# Proposal: configure MCP names at the project level
 
-## Pourquoi
+## Why
 
-Le change précédent (`propose-detects-jira-tickets`) a hardcodé
-`mcp__claude_ai_Atlassian__getJiraIssue` dans le CATALOG. Le premier
-test grandeur nature a immédiatement montré la fragilité : la même
-journée, la session de Claude Code de Ludovic voyait le MCP renommé
-en `mcp__claude_ai_Atlassian_Rovo__*`. Sur cet environnement, notre
-skill déclarait un outil qui **n'existait plus** dans les tools
-disponibles — la détection de tickets était donc silencieusement
-morte.
+The previous change (`propose-detects-jira-tickets`) hardcoded
+`mcp__claude_ai_Atlassian__getJiraIssue` in the CATALOG. The first
+real-world test immediately showed how fragile that is: the same
+day, Ludovic's Claude Code session saw the MCP renamed to
+`mcp__claude_ai_Atlassian_Rovo__*`. In that environment, our skill
+declared a tool that **no longer existed** among the available
+tools — ticket detection was therefore silently dead.
 
-Le problème est structurel : les noms de MCP sont **spécifiques à
-l'environnement Claude Code de chaque utilisateur / organisation**.
-Une skill portable ne peut pas les hardcoder — chaque projet doit
-pouvoir déclarer localement quel MCP il utilise, sans que ça
-demande de modifier le code source de codev.
+The problem is structural: MCP names are **specific to each
+user's / organization's Claude Code environment**. A portable skill
+cannot hardcode them — each project must be able to declare locally
+which MCP it uses, without that requiring a change to codev's source
+code.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau champ `mcp:` dans `_codev/config.yaml`** — un bloc
-  optionnel qui déclare les MCP que le projet utilise, avec une
-  entrée par usage :
+- **New `mcp:` field in `_codev/config.yaml`** — an optional block
+  that declares the MCPs the project uses, with one entry per use:
   ```yaml
   mcp:
     jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
   ```
-  Pour la V1, un seul champ : `jira_tool: Option<String>`. La
-  structure est extensible pour de futurs MCP (Design, Confluence…).
-- **`_codev/config.yaml.mcp.jira_tool`** est lu par `codev-engine::config`
-  et propagé à `ResolvedConfig`.
-- **CATALOG des workflows** — le `allowed_tools` de `propose` retire
-  le nom hardcodé. Il contient un **placeholder** `{{JIRA_MCP_TOOL}}`
-  qui sera substitué au moment du rendering du frontmatter :
+  For V1, a single field: `jira_tool: Option<String>`. The structure
+  is extensible for future MCPs (Design, Confluence…).
+- **`_codev/config.yaml.mcp.jira_tool`** is read by
+  `codev-engine::config` and propagated to `ResolvedConfig`.
+- **Workflow CATALOG** — the `allowed_tools` of `propose` drops the
+  hardcoded name. It contains a **placeholder** `{{JIRA_MCP_TOOL}}`
+  that will be substituted when the frontmatter is rendered:
   ```rust
   allowed_tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep, {{JIRA_MCP_TOOL}}",
   ```
-- **Le body de `propose.md`** cite lui aussi `{{JIRA_MCP_TOOL}}` là
-  où il nommait le tool avant. À l'install, la substitution rend le
-  body concret pour l'agent.
-- **`ClaudeCode::render`** gagne un contexte `RenderCtx` qui porte
-  le nom du MCP Jira (Option) et fait la substitution :
-  - **`jira_tool` défini** → le placeholder est remplacé par le nom
-    partout où il apparaît. Dans `allowed_tools`, la valeur est
-    injectée précédée d'une virgule.
-  - **`jira_tool` absent** → le placeholder est retiré proprement
-    (avec la virgule qui le précède dans `allowed_tools`), et
-    remplacé dans le body par la mention `(MCP Jira non configuré)`.
-    La skill continue de tourner, mais la détection de tickets ne
-    fera pas d'appel MCP.
-- **`codev update`** lit `_codev/config.yaml` et passe le contexte
-  au rendering.
-- **`DEFAULT_CONFIG` du scaffold** — le nouveau `_codev/config.yaml`
-  généré par `codev init` porte un bloc commenté `# mcp:` en
-  exemple.
-- **Test existant `propose_cite_la_detection_de_ticket_dans_son_body`**
-  — adapté : vérifie la présence de `{{JIRA_MCP_TOOL}}` (placeholder)
-  au lieu du nom hardcodé.
+- **The body of `propose.md`** also cites `{{JIRA_MCP_TOOL}}` where
+  it used to name the tool. At install time, the substitution makes
+  the body concrete for the agent.
+- **`ClaudeCode::render`** gains a `RenderCtx` context that carries
+  the Jira MCP name (Option) and performs the substitution:
+  - **`jira_tool` set** → the placeholder is replaced by the name
+    wherever it appears. In `allowed_tools`, the value is injected
+    preceded by a comma.
+  - **`jira_tool` absent** → the placeholder is removed cleanly
+    (with the comma that precedes it in `allowed_tools`), and
+    replaced in the body by the mention `(Jira MCP not configured)`.
+    The skill keeps running, but ticket detection will make no MCP
+    call.
+- **`codev update`** reads `_codev/config.yaml` and passes the
+  context to the rendering.
+- **Scaffold `DEFAULT_CONFIG`** — the new `_codev/config.yaml`
+  generated by `codev init` carries a commented `# mcp:` block as an
+  example.
+- **Existing test `propose_cite_la_detection_de_ticket_dans_son_body`**
+  — adapted: checks for the presence of `{{JIRA_MCP_TOOL}}`
+  (placeholder) instead of the hardcoded name.
 - **Test `propose_declare_le_mcp_atlassian_get_jira_issue`** —
-  supprimé (l'`allowed_tools` du CATALOG ne cite plus de nom
-  Atlassian) et remplacé par
-  `propose_utilise_un_placeholder_pour_le_mcp_jira` qui vérifie que
-  `{{JIRA_MCP_TOOL}}` est bien présent dans `allowed_tools`.
-- **Test `propose_ne_declare_pas_dautre_mcp_atlassian`** — devient
-  redondant (l'`allowed_tools` du CATALOG ne cite aucun MCP tout
-  court) et est retiré. Remplacé par un test au niveau `render` qui
-  vérifie qu'après substitution, `allowed_tools` ne contient qu'un
-  seul nom de MCP au maximum.
+  removed (the CATALOG's `allowed_tools` no longer cites an
+  Atlassian name) and replaced by
+  `propose_utilise_un_placeholder_pour_le_mcp_jira`, which checks
+  that `{{JIRA_MCP_TOOL}}` is indeed present in `allowed_tools`.
+- **Test `propose_ne_declare_pas_dautre_mcp_atlassian`** — becomes
+  redundant (the CATALOG's `allowed_tools` cites no MCP at all) and
+  is removed. Replaced by a test at the `render` level that checks
+  that, after substitution, `allowed_tools` contains at most one MCP
+  name.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — l'exigence « Skill `propose` détecte les tickets Jira
-  mentionnés et enrichit le proposal » est modifiée pour refléter le
-  passage du nom hardcodé à un nom configuré côté projet.
+- `skills` — the requirement "Skill `propose` detects mentioned Jira
+  tickets and enriches the proposal" is modified to reflect the move
+  from a hardcoded name to a name configured at the project level.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** :
-  - `codev-engine::config::ProjectConfig` gagne `mcp: Option<McpConfig>`
-    avec `McpConfig { jira_tool: Option<String> }`.
-  - `codev-engine::config::ResolvedConfig` gagne un
-    `mcp: McpConfig` (résolu, avec valeurs des sources héritées si
-    présentes).
+- **Code**:
+  - `codev-engine::config::ProjectConfig` gains
+    `mcp: Option<McpConfig>` with
+    `McpConfig { jira_tool: Option<String> }`.
+  - `codev-engine::config::ResolvedConfig` gains an
+    `mcp: McpConfig` (resolved, with values from inherited sources
+    if present).
   - `codev-agents::claude::RenderCtx { jira_mcp_tool:
-    Option<String> }` — nouveau type de contexte de rendu, passé à
+    Option<String> }` — a new rendering context type, passed to
     `ClaudeCode::render`.
-  - `codev-agents::claude::render` substitue `{{JIRA_MCP_TOOL}}` dans
-    `allowed_tools` et dans `body` de chaque workflow.
-  - `codev-cli::commands::update` construit le `RenderCtx` depuis
-    la config résolue.
-- **Contrat JSON** : rien. La configuration MCP est un détail
-  d'installation ; elle n'apparaît dans aucune sortie structurée.
-- **Fichier écrit** : le contenu du frontmatter des SKILL.md
-  installés change (nom du MCP substitué). `_codev/config.yaml`
-  gagne un bloc `mcp:` si l'utilisateur le déclare.
-- **Migration** :
-  - **Pour ce dépôt** : ajouter `mcp: { jira_tool:
-    mcp__claude_ai_Atlassian_Rovo__getJiraIssue }` à
-    `_codev/config.yaml` puis relancer `codev update --force`.
-  - **Pour un projet existant sans MCP branché** : le comportement
-    devient bit-identique à celui d'avant `propose-detects-jira-tickets`
-    (skill sans détection MCP fonctionnelle).
-- **Hors périmètre** :
-  - **Configuration d'autres MCP** (Design, Confluence, GitHub…) —
-    la structure `mcp:` est prête, mais on n'ajoute des champs que
-    quand un cas d'usage arrive. Pas de spéculation.
-  - **Héritage inter-projets du champ `mcp:`** — les sources
-    héritées (`inherits:`) ne propagent pas encore leur `mcp:` ;
-    chaque projet déclare le sien. Reportable si le besoin apparaît.
-  - **Un flag CLI pour tester un rendering** (`codev render-skill
-    propose`) — utile pour debug mais reportable.
+  - `codev-agents::claude::render` substitutes `{{JIRA_MCP_TOOL}}`
+    in `allowed_tools` and in the `body` of each workflow.
+  - `codev-cli::commands::update` builds the `RenderCtx` from the
+    resolved config.
+- **JSON contract**: nothing. The MCP configuration is an
+  installation detail; it appears in no structured output.
+- **File written**: the frontmatter content of the installed
+  SKILL.md files changes (MCP name substituted). `_codev/config.yaml`
+  gains an `mcp:` block if the user declares it.
+- **Migration**:
+  - **For this repository**: add `mcp: { jira_tool:
+    mcp__claude_ai_Atlassian_Rovo__getJiraIssue }` to
+    `_codev/config.yaml` then rerun `codev update --force`.
+  - **For an existing project without a connected MCP**: the
+    behavior becomes bit-identical to the one before
+    `propose-detects-jira-tickets` (skill without functional MCP
+    detection).
+- **Out of scope**:
+  - **Configuration of other MCPs** (Design, Confluence, GitHub…) —
+    the `mcp:` structure is ready, but fields are only added when a
+    use case arrives. No speculation.
+  - **Cross-project inheritance of the `mcp:` field** — inherited
+    sources (`inherits:`) do not yet propagate their `mcp:`; each
+    project declares its own. Can be deferred if the need appears.
+  - **A CLI flag to test a rendering** (`codev render-skill
+    propose`) — useful for debugging but can be deferred.

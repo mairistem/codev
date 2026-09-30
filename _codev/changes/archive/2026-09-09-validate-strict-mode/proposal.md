@@ -1,68 +1,69 @@
-# Proposal : mode `--strict` pour `codev validate`
+# Proposal: `--strict` mode for `codev validate`
 
-## Pourquoi
+## Why
 
-Aujourd'hui, `codev validate` sort avec un **exit code binaire** : 0 s'il
-n'y a pas d'erreur, 1 sinon. Les **warnings** — `decision_unsealed`,
+Today, `codev validate` exits with a **binary exit code**: 0 if there
+is no error, 1 otherwise. **Warnings** — `decision_unsealed`,
 `decision_dangling_deviation`, `git_source_unlocked`, `decision_id_collision`
-et compagnie — passent sans influencer l'exit code. C'est le bon choix par
-défaut pour l'humain qui itère (un warning ne bloque pas son flow), mais
-c'est le mauvais choix pour un consommateur **automatisé** :
+and company — pass without influencing the exit code. That is the
+right default for a human iterating (a warning does not block their
+flow), but it is the wrong choice for an **automated** consumer:
 
-- une CI qui veut refuser tout `push` qui laisserait un `unsealed` ;
-- un hook `pre-commit` qui veut interdire une dérive orpheline avant
-  qu'elle atteigne `main` ;
-- un futur workflow MCP (Jira → codev, Claude Design → codev) qui trancherait
-  sur exit-code plutôt que sur un parseur de sortie humaine.
+- a CI that wants to reject any `push` that would leave an `unsealed`;
+- a `pre-commit` hook that wants to forbid an orphaned deviation
+  before it reaches `main`;
+- a future MCP workflow (Jira → codev, Claude Design → codev) that
+  would decide on the exit code rather than on a parser of human
+  output.
 
-Le mode strict fige la garantie contractuelle « aucun finding, quelle que
-soit la sévérité ⇔ exit code 0 » que les callers automatisés attendent.
+Strict mode pins down the contractual guarantee "no finding, whatever
+the severity ⇔ exit code 0" that automated callers expect.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau flag `--strict`** sur `codev validate`, applicable à toutes
-  ses formes (`validate <item>`, `validate --all`, `validate --changes`,
+- **New `--strict` flag** on `codev validate`, applicable to all its
+  forms (`validate <item>`, `validate --all`, `validate --changes`,
   `validate --specs`).
-- **Effet** : quand `--strict` est présent, l'exit code passe à 1 dès
-  qu'un finding est émis, quelle que soit sa sévérité (Warning inclus).
-  Sans le flag, l'exit code reste binaire sur `Error` uniquement —
-  compat totale.
-- **Aucune sévérité modifiée** dans le rapport : les findings sortent
-  avec leur sévérité d'origine. Le mode strict change **le verdict de
-  sortie**, pas la nature des findings. Le rendu humain reste identique.
-- **JSON contrat** : le champ `hasWarnings: bool` est **ajouté** au
-  rapport (`ValidateReportV1`). Additif, sérialisé toujours. Le
-  consommateur peut ainsi décider indépendamment de l'exit code —
-  l'exit code est le signal, ce champ est la donnée.
+- **Effect**: when `--strict` is present, the exit code becomes 1 as
+  soon as a finding is emitted, whatever its severity (Warning
+  included). Without the flag, the exit code stays binary on `Error`
+  only — full compatibility.
+- **No severity modified** in the report: findings come out with their
+  original severity. Strict mode changes **the exit verdict**, not the
+  nature of the findings. The human rendering stays identical.
+- **JSON contract**: the field `hasWarnings: bool` is **added** to the
+  report (`ValidateReportV1`). Additive, always serialized. The
+  consumer can thus decide independently of the exit code — the exit
+  code is the signal, this field is the data.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `validation` — deux nouvelles exigences ADDED : comportement du flag
-  `--strict` sur l'exit code, et exposition de `hasWarnings` dans le
-  contrat JSON.
+- `validation` — two new ADDED requirements: behavior of the
+  `--strict` flag on the exit code, and exposure of `hasWarnings` in
+  the JSON contract.
 
 ## Impact
 
-- **Code** : ajout du flag `strict: bool` sur `Command::Validate` dans
-  `codev-cli::main`, ajout d'une méthode `has_warnings()` sur
-  `ValidateReport` dans `codev-engine::validate::report`, et un
-  changement de deux lignes dans la logique d'exit-code du CLI.
-- **Contrat JSON** : `ValidateReportV1` gagne `hasWarnings: bool`.
-  Additif — les consommateurs antérieurs ignorent le champ.
-- **Fichier écrit** : aucun. Le mode strict ne change rien sur disque.
-- **Migration** : aucune. Sans `--strict`, le comportement est
-  bit-identique à aujourd'hui.
-- **Hors périmètre** :
-  - **Un mode `--strict-level=warning|info`** — pour aujourd'hui, le
-    binaire strict/lax suffit ; si le besoin d'un seuil configurable
-    apparaît, on l'ajoutera.
-  - **Un `--fix` qui corrige automatiquement les warnings** — pas un
-    change de validation, mais un change de correction, hors périmètre.
-  - **`--archived`** qui valide aussi les changes archivés — c'est un
-    change séparé (E6 dans la roadmap noyau).
+- **Code**: add the `strict: bool` flag on `Command::Validate` in
+  `codev-cli::main`, add a `has_warnings()` method on
+  `ValidateReport` in `codev-engine::validate::report`, and a
+  two-line change in the CLI's exit-code logic.
+- **JSON contract**: `ValidateReportV1` gains `hasWarnings: bool`.
+  Additive — earlier consumers ignore the field.
+- **File written**: none. Strict mode changes nothing on disk.
+- **Migration**: none. Without `--strict`, the behavior is
+  bit-identical to today.
+- **Out of scope**:
+  - **A `--strict-level=warning|info` mode** — for now, the binary
+    strict/lax choice is enough; if the need for a configurable
+    threshold arises, we will add it.
+  - **A `--fix` that automatically corrects warnings** — not a
+    validation change but a correction change, out of scope.
+  - **`--archived`**, which would also validate archived changes —
+    that is a separate change (E6 in the core roadmap).

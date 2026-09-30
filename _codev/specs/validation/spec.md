@@ -2,223 +2,246 @@
 
 ## Purpose
 
-Fournir un verdict fiable et localisé sur un change ou une spec principale :
-tout ce qu'`archive` et `sync` refuseraient d'écrire doit être signalé ici, en
-amont, avec la ligne concernée et un code stable qu'un consommateur puisse
-tester.
+Provide a reliable, localized verdict on a change or a main spec:
+everything that `archive` and `sync` would refuse to write must be reported
+here, upstream, with the line concerned and a stable code that a consumer
+can test against.
 
 ## Requirements
 
-### Requirement: Règles structurelles au-delà du parseur
+### Requirement: Structural rules beyond the parser
 
-Le validateur MUST rejeter comme erreurs les défauts que le parseur laisse
-passer parce qu'ils exigent d'inspecter le contenu d'une exigence ou d'une
-spec : une exigence sans mot clé `SHALL` ou `MUST` dans sa description, une
-exigence dépourvue de scénario, une spec principale sans aucune exigence
-extractible.
+The validator MUST reject as errors the defects that the parser lets
+through because they require inspecting the content of a requirement or a
+spec: a requirement without a `SHALL` or `MUST` keyword in its description,
+a requirement with no scenario, a main spec with no extractable
+requirement.
 
-#### Scenario: Exigence sans SHALL ni MUST
+#### Scenario: Requirement without SHALL or MUST
 
-- **GIVEN** un delta `## ADDED Requirements` avec un `### Requirement: X`
-  dont le texte descriptif est « The system does something »
-- **WHEN** le validateur inspecte le fichier
-- **THEN** un finding de code `requirement_no_shall` signale la ligne de
-  l'en-tête et nomme l'exigence `X`
+- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: X`
+  whose descriptive text is "The system does something"
+- **WHEN** the validator inspects the file
+- **THEN** a finding with code `requirement_no_shall` reports the line of
+  the header and names the requirement `X`
 
-#### Scenario: Exigence sans aucun scénario
+#### Scenario: Requirement with no scenario at all
 
-- **GIVEN** un delta `## ADDED Requirements` avec un `### Requirement: Y`
-  suivi de son texte descriptif mais d'aucun `#### Scenario:`
-- **WHEN** le validateur inspecte le fichier
-- **THEN** un finding de code `requirement_no_scenario` signale la ligne
-  de l'exigence
+- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: Y`
+  followed by its descriptive text but no `#### Scenario:`
+- **WHEN** the validator inspects the file
+- **THEN** a finding with code `requirement_no_scenario` reports the line
+  of the requirement
 
-#### Scenario: Spec principale sans exigence
+#### Scenario: Main spec with no requirement
 
-- **GIVEN** une spec principale `_codev/specs/x/spec.md` avec `## Purpose`
-  mais dont `## Requirements` est vide
-- **WHEN** le validateur inspecte la spec
-- **THEN** un finding de code `spec_no_requirement` signale que la spec n'a
-  aucune exigence extractible
+- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`
+  but whose `## Requirements` is empty
+- **WHEN** the validator inspects the spec
+- **THEN** a finding with code `spec_no_requirement` reports that the spec
+  has no extractable requirement
 
-### Requirement: Cohérence entre sections d'un même delta
+### Requirement: Consistency between sections of the same delta
 
-Le validateur MUST détecter les incohérences entre les quatre opérations d'un
-même delta : une même exigence ne peut pas figurer dans deux sections à la
-fois, un `RENAMED.TO` ne peut pas coïncider avec un `ADDED` de même nom, et un
-`MODIFIED` ne peut pas référencer l'ancien nom d'un `RENAMED`.
+The validator MUST detect inconsistencies between the four operations of
+the same delta: the same requirement cannot appear in two sections at once,
+a `RENAMED.TO` cannot coincide with an `ADDED` of the same name, and a
+`MODIFIED` cannot reference the old name of a `RENAMED`.
 
-#### Scenario: Exigence présente dans ADDED et MODIFIED
+#### Scenario: Requirement present in both ADDED and MODIFIED
 
-- **GIVEN** un delta contenant à la fois `## ADDED Requirements` avec
-  `### Requirement: Z` et `## MODIFIED Requirements` avec `### Requirement: Z`
-- **WHEN** le validateur inspecte le delta
-- **THEN** un finding de code `cross_section_conflict` nomme l'exigence `Z`,
-  les deux sections en cause et leurs lignes respectives
+- **GIVEN** a delta containing both `## ADDED Requirements` with
+  `### Requirement: Z` and `## MODIFIED Requirements` with `### Requirement: Z`
+- **WHEN** the validator inspects the delta
+- **THEN** a finding with code `cross_section_conflict` names the requirement
+  `Z`, the two sections involved and their respective lines
 
-#### Scenario: RENAMED.TO collide avec un ADDED de même nom
+#### Scenario: RENAMED.TO collides with an ADDED of the same name
 
-- **GIVEN** un delta contenant `## ADDED Requirements` avec
-  `### Requirement: New Name` et `## RENAMED Requirements` avec
+- **GIVEN** a delta containing `## ADDED Requirements` with
+  `### Requirement: New Name` and `## RENAMED Requirements` with
   `FROM: Old Name` / `TO: New Name`
-- **WHEN** le validateur inspecte le delta
-- **THEN** un finding de code `rename_target_collision` signale la collision
-  sur `New Name`
+- **WHEN** the validator inspects the delta
+- **THEN** a finding with code `rename_target_collision` reports the collision
+  on `New Name`
 
-#### Scenario: MODIFIED référence l'ancien nom d'un RENAMED
+#### Scenario: MODIFIED references the old name of a RENAMED
 
-- **GIVEN** un delta contenant `## MODIFIED Requirements` avec
-  `### Requirement: Old Name` et `## RENAMED Requirements` avec
+- **GIVEN** a delta containing `## MODIFIED Requirements` with
+  `### Requirement: Old Name` and `## RENAMED Requirements` with
   `FROM: Old Name` / `TO: New Name`
-- **WHEN** le validateur inspecte le delta
-- **THEN** un finding de code `modified_uses_old_name` demande d'utiliser
-  `New Name` dans la section MODIFIED
+- **WHEN** the validator inspects the delta
+- **THEN** a finding with code `modified_uses_old_name` asks for
+  `New Name` to be used in the MODIFIED section
 
-### Requirement: Règle du zéro-delta explicite
+### Requirement: Explicit zero-delta rule
 
-Un change doit soit produire au moins un delta de spec, soit déclarer
-explicitement qu'il n'en produira aucun ; le validateur MUST rejeter les cas
-qui contredisent cette règle.
+A change must either produce at least one spec delta, or explicitly declare
+that it will produce none; the validator MUST reject cases that contradict
+this rule.
 
-#### Scenario: Change sans aucun delta et sans skip_specs
+#### Scenario: Change with no delta and no skip_specs
 
-- **GIVEN** un change dont le dossier `specs/` est vide et dont le
-  `change.yaml` ne pose pas `skip_specs: true`
-- **WHEN** le validateur inspecte le change
-- **THEN** un finding de code `zero_delta_without_marker` demande soit
-  d'ajouter un delta, soit de déclarer `skip_specs: true`
+- **GIVEN** a change whose `specs/` directory is empty and whose
+  `change.yaml` does not set `skip_specs: true`
+- **WHEN** the validator inspects the change
+- **THEN** a finding with code `zero_delta_without_marker` asks either to
+  add a delta or to declare `skip_specs: true`
 
-#### Scenario: skip_specs déclaré mais des specs existent
+#### Scenario: skip_specs declared but specs exist
 
-- **GIVEN** un change dont le `change.yaml` déclare `skip_specs: true` et
-  dont le dossier `specs/` contient au moins un fichier `.md`
-- **WHEN** le validateur inspecte le change
-- **THEN** un finding de code `skip_specs_conflict` demande de retirer
-  `skip_specs: true` ou de supprimer les fichiers du dossier `specs/`
+- **GIVEN** a change whose `change.yaml` declares `skip_specs: true` and
+  whose `specs/` directory contains at least one `.md` file
+- **WHEN** the validator inspects the change
+- **THEN** a finding with code `skip_specs_conflict` asks to remove
+  `skip_specs: true` or to delete the files in the `specs/` directory
 
-### Requirement: Verdict d'ensemble et code de sortie
+### Requirement: Overall verdict and exit code
 
-À la demande, le validateur MUST produire un verdict d'ensemble sur un item
-seul, sur tous les changes, sur toutes les specs, ou sur les deux ; il MUST
-distinguer une exécution sans aucune erreur d'une exécution qui en signale.
+On request, the validator MUST produce an overall verdict on a single item,
+on all changes, on all specs, or on both; it MUST distinguish a run with no
+errors from a run that reports some.
 
-#### Scenario: Validation d'un item nommé
+#### Scenario: Validating a named item
 
-- **GIVEN** un projet initialisé avec un change `add-auth`
-- **WHEN** l'utilisateur lance `codev validate add-auth`
-- **THEN** le rapport ne concerne que ce change et son code de sortie reflète
-  la présence ou l'absence d'erreur
+- **GIVEN** an initialized project with a change `add-auth`
+- **WHEN** the user runs `codev validate add-auth`
+- **THEN** the report covers only that change and its exit code reflects
+  the presence or absence of errors
 
-#### Scenario: Validation en lot
+#### Scenario: Batch validation
 
-- **GIVEN** un projet contenant deux changes et une spec principale
-- **WHEN** l'utilisateur lance `codev validate --all`
-- **THEN** le rapport couvre les trois éléments dans un même document
+- **GIVEN** a project containing two changes and one main spec
+- **WHEN** the user runs `codev validate --all`
+- **THEN** the report covers all three items in a single document
 
-#### Scenario: Aucune erreur, code de sortie zéro
+#### Scenario: No errors, exit code zero
 
-- **GIVEN** un change bien formé, sans finding d'erreur
-- **WHEN** l'utilisateur lance `codev validate add-auth`
-- **THEN** le processus se termine avec le code `0`
+- **GIVEN** a well-formed change with no error finding
+- **WHEN** the user runs `codev validate add-auth`
+- **THEN** the process exits with code `0`
 
-#### Scenario: Au moins une erreur, code de sortie non nul
+#### Scenario: At least one error, non-zero exit code
 
-- **GIVEN** un change contenant au moins un finding de sévérité `Error`
-- **WHEN** l'utilisateur lance `codev validate add-auth`
-- **THEN** le processus se termine avec le code `1`
+- **GIVEN** a change containing at least one finding of severity `Error`
+- **WHEN** the user runs `codev validate add-auth`
+- **THEN** the process exits with code `1`
 
-### Requirement: Rapport JSON à contrat stable
+### Requirement: JSON report with a stable contract
 
-Sur demande `--json`, le validateur MUST écrire sur stdout exactement un
-document JSON dont la forme est figée par version : liste des items validés,
-et pour chacun sa liste de findings avec `code`, `severity`, `path`, `line`,
-`message`, plus un tableau `status` à la racine où atterrissent les erreurs
-d'exécution (racine introuvable, item inconnu).
+When `--json` is requested, the validator MUST write exactly one JSON
+document to stdout whose shape is frozen per version: the list of validated
+items, and for each one its list of findings with `code`, `severity`,
+`path`, `line`, `message`, plus a root-level `status` array where execution
+errors land (root not found, unknown item).
 
-#### Scenario: Sortie JSON d'un run réussi
+#### Scenario: JSON output of a successful run
 
-- **GIVEN** un change bien formé
-- **WHEN** l'utilisateur lance `codev validate add-auth --json`
-- **THEN** stdout porte un seul document JSON contenant la liste des items,
-  chacun avec un tableau `findings` vide, et un `status` racine vide
+- **GIVEN** a well-formed change
+- **WHEN** the user runs `codev validate add-auth --json`
+- **THEN** stdout carries a single JSON document containing the list of
+  items, each with an empty `findings` array, and an empty root `status`
 
-#### Scenario: Sortie JSON quand la racine est introuvable
+#### Scenario: JSON output when the root cannot be found
 
-- **GIVEN** un dossier hors de toute racine `_codev/`
-- **WHEN** l'utilisateur lance `codev validate --json`
-- **THEN** stdout porte un seul document JSON de la forme du rapport, avec
-  ses listes d'items vides, et un `status` racine portant une entrée d'erreur
-  au code stable
+- **GIVEN** a directory outside any `_codev/` root
+- **WHEN** the user runs `codev validate --json`
+- **THEN** stdout carries a single JSON document with the shape of the
+  report, with its item lists empty, and a root `status` carrying an error
+  entry with a stable code
 
-### Requirement: Mode strict propage les warnings à l'exit code
+### Requirement: Strict mode propagates warnings to the exit code
 
 `codev validate [--all|--changes|--specs|<item>] [--strict]` MUST
-retourner un exit code non-nul dès qu'au moins un finding est émis,
-**quelle que soit sa sévérité**, quand `--strict` est présent. Sans
-`--strict`, le comportement reste inchangé : exit code 1 seulement en
-présence d'au moins un `Error`.
+return a non-zero exit code as soon as at least one finding is emitted,
+**whatever its severity**, when `--strict` is present. Without
+`--strict`, the behavior is unchanged: exit code 1 only when at least
+one `Error` is present.
 
-Le mode strict **ne modifie pas** la sévérité des findings dans le
-rapport ; il ne change **que** la règle de décision de l'exit code. Le
-rendu humain (texte et JSON) reste identique.
+Strict mode **does not change** the severity of findings in the
+report; it changes **only** the exit code decision rule. The human
+rendering (text and JSON) remains identical.
 
-#### Scenario: `--strict` sur un rapport propre → exit 0
+#### Scenario: `--strict` on a clean report → exit 0
 
-- **GIVEN** un projet dont `codev validate --all` ne remonte aucun
+- **GIVEN** a project for which `codev validate --all` reports no
   finding
-- **WHEN** l'utilisateur lance `codev validate --all --strict`
-- **THEN** l'exit code de la commande est 0
+- **WHEN** the user runs `codev validate --all --strict`
+- **THEN** the exit code of the command is 0
 
-#### Scenario: `--strict` sur un warning → exit non-nul
+#### Scenario: `--strict` on a warning → non-zero exit
 
-- **GIVEN** un projet contenant un ADR local `accepted` non scellé,
-  qui remonte un `decision_unsealed` (warning) au validate
-- **WHEN** l'utilisateur lance `codev validate --strict`
-- **THEN** l'exit code de la commande est non-nul (1)
-- **AND** le rendu humain porte toujours la ligne `warning` (pas
-  `erreur`) pour ce finding — la sévérité affichée est préservée
+- **GIVEN** a project containing an unsealed `accepted` local ADR,
+  which reports a `decision_unsealed` (warning) on validate
+- **WHEN** the user runs `codev validate --strict`
+- **THEN** the exit code of the command is non-zero (1)
+- **AND** the human rendering still carries the `warning` line (not
+  `error`) for this finding — the displayed severity is preserved
 
-#### Scenario: Sans `--strict`, un warning ne fait pas basculer l'exit
+#### Scenario: Without `--strict`, a warning does not flip the exit code
 
-- **GIVEN** le même contexte
-- **WHEN** l'utilisateur lance `codev validate` (sans `--strict`)
-- **THEN** l'exit code de la commande est 0
-- **AND** le warning apparaît toujours dans la sortie
+- **GIVEN** the same context
+- **WHEN** the user runs `codev validate` (without `--strict`)
+- **THEN** the exit code of the command is 0
+- **AND** the warning still appears in the output
 
-#### Scenario: Une erreur reste bloquante, même sans `--strict`
+#### Scenario: An error remains blocking, even without `--strict`
 
-- **GIVEN** un projet dont un ADR local a été édité en place après
-  scellement, qui remonte un `decision_seal_mismatch` (erreur)
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** l'exit code de la commande est non-nul (1) — le mode strict
-  n'est pas nécessaire pour les erreurs
+- **GIVEN** a project in which a local ADR was edited in place after
+  sealing, which reports a `decision_seal_mismatch` (error)
+- **WHEN** the user runs `codev validate`
+- **THEN** the exit code of the command is non-zero (1) — strict mode
+  is not needed for errors
 
-### Requirement: `hasWarnings` exposé dans le contrat JSON
+### Requirement: `hasWarnings` exposed in the JSON contract
 
-Le rapport JSON `ValidateReportV1` MUST porter un champ additif
-`hasWarnings: bool` — `true` dès qu'au moins un finding de sévérité
-`Warning` est présent, `false` sinon. Le champ est **toujours** présent
-dans la sortie, indépendamment de la valeur ou du mode strict.
+The `ValidateReportV1` JSON report MUST carry an additive field
+`hasWarnings: bool` — `true` as soon as at least one finding of severity
+`Warning` is present, `false` otherwise. The field is **always** present
+in the output, regardless of its value or of strict mode.
 
-Ce champ est **informatif** : le consommateur qui veut trancher en
-dehors du mode strict s'en sert. L'exit code reste le signal officiel.
+This field is **informational**: a consumer that wants to decide outside
+strict mode uses it. The exit code remains the official signal.
 
-#### Scenario: `hasWarnings: true` sur un rapport avec warning
+#### Scenario: `hasWarnings: true` on a report with a warning
 
-- **GIVEN** un projet qui remonte un warning `decision_unsealed`
-- **WHEN** l'utilisateur lance `codev validate --json`
-- **THEN** le document JSON porte `"hasWarnings": true` en racine
+- **GIVEN** a project that reports a `decision_unsealed` warning
+- **WHEN** the user runs `codev validate --json`
+- **THEN** the JSON document carries `"hasWarnings": true` at the root
 
-#### Scenario: `hasWarnings: false` sur un rapport propre
+#### Scenario: `hasWarnings: false` on a clean report
 
-- **GIVEN** un projet sans finding
-- **WHEN** l'utilisateur lance `codev validate --all --json`
-- **THEN** le document JSON porte `"hasWarnings": false`
+- **GIVEN** a project with no finding
+- **WHEN** the user runs `codev validate --all --json`
+- **THEN** the JSON document carries `"hasWarnings": false`
 
-#### Scenario: `hasWarnings` indépendant du mode strict
+#### Scenario: `hasWarnings` independent of strict mode
 
-- **GIVEN** un projet qui remonte un warning et aucun erreur
-- **WHEN** l'utilisateur lance `codev validate --strict --json`
-- **THEN** le document JSON porte `"hasWarnings": true`
-- **AND** l'exit code de la commande est non-nul — les deux signaux
-  coexistent sans se contredire
+- **GIVEN** a project that reports a warning and no error
+- **WHEN** the user runs `codev validate --strict --json`
+- **THEN** the JSON document carries `"hasWarnings": true`
+- **AND** the exit code of the command is non-zero — both signals
+  coexist without contradicting each other
+
+### Requirement: A delta is checked against its main spec
+
+For each delta of a change, validation SHALL read the main spec it targets
+and report as an error `rename_source_missing` every `RENAMED` whose `FROM`
+names no requirement of that spec — unless the `TO` requirement already
+exists there, which means an earlier sync already applied the rename.
+
+#### Scenario: Rename of an unknown requirement
+
+- **GIVEN** a main spec without any requirement named `Remember Me`
+- **AND** a delta renaming `Remember Me` to `Stay Signed In`
+- **WHEN** the user runs `codev validate <change>`
+- **THEN** an error `rename_source_missing` is reported
+- **AND** the exit code is non-zero
+
+#### Scenario: Rename already applied by a sync
+
+- **GIVEN** a delta renaming `Remember Me` to `Stay Signed In`
+- **AND** a main spec that already contains `Stay Signed In` and no longer
+  contains `Remember Me`
+- **WHEN** the user runs `codev validate <change>`
+- **THEN** no `rename_source_missing` is reported

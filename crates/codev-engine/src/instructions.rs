@@ -9,7 +9,7 @@ use crate::decisions::{self, Origin};
 use crate::error::{EngineError, Result, Warning};
 use crate::ports::{Env, FileSystem};
 
-/// Un artefact déjà écrit, à relire pour se situer avant d'écrire le suivant.
+/// An artifact already written, to reread for orientation before writing the next one.
 #[derive(Debug, Clone)]
 pub struct Dependency {
     pub id: String,
@@ -17,69 +17,73 @@ pub struct Dependency {
     pub done: bool,
 }
 
-/// Une référence à une décision d'architecture en vigueur.
+/// A reference to an architecture decision in effect.
 ///
-/// Volontairement une **référence** — pas le contenu complet : la skill qui
-/// consomme cette liste va lire le fichier via `path` si elle en a besoin,
-/// comme elle le fait déjà pour les dépendances. Dupliquer le corps ici
-/// ferait grossir chaque instruction sans utilité.
+/// Deliberately a **reference** — not the full content: the skill consuming
+/// this list reads the file through `path` if it needs to, just as it already
+/// does for dependencies. Duplicating the body here would bloat every
+/// instruction for no benefit.
 #[derive(Debug, Clone)]
 pub struct DecisionRef {
-    /// L'`id` court, tel qu'écrit dans le frontmatter.
+    /// The short `id`, as written in the frontmatter.
     pub id: String,
-    /// L'identifiant qualifié `origin/id` — évite les collisions entre
-    /// projet et sources héritées.
+    /// The qualified `origin/id` identifier — avoids collisions between the
+    /// project and inherited sources.
     pub qualified_id: String,
     pub title: String,
-    /// Toujours l'un des cinq statuts reconnus, sérialisé en minuscules.
-    /// Pour une décision « en vigueur » c'est `accepted` — l'exposer garde
-    /// le consommateur honnête si le calcul change plus tard.
+    /// Always one of the five recognized statuses, serialized in lowercase.
+    /// For a decision "in effect" it is `accepted` — exposing it keeps the
+    /// consumer honest if the computation changes later.
     pub status: String,
     pub tags: Vec<String>,
-    /// Chemin relatif au projet.
+    /// Path relative to the project.
     pub path: PathBuf,
-    /// `"projet"` ou `"path:<chemin déclaré>"`.
+    /// `"project"` or `"path:<declared path>"`.
     pub origin: String,
 }
 
-/// Tout ce qu'un agent doit savoir pour écrire un artefact.
+/// Everything an agent needs to know to write an artifact.
 ///
-/// C'est la pièce centrale du système : le CLI ne rédige rien, il assemble le
-/// contexte. `instruction` vient du schéma, `template` de ses fichiers,
-/// `context` et `rules` de la configuration et des sources héritées.
+/// This is the centerpiece of the system: the CLI writes nothing itself, it
+/// assembles the context. `instruction` comes from the schema, `template`
+/// from its files, `context` and `rules` from the configuration and the
+/// inherited sources.
 #[derive(Debug, Clone)]
 pub struct Instructions {
     pub change: ChangeId,
     pub schema_name: String,
     pub artifact_id: String,
     pub description: Option<String>,
-    /// Où écrire. Peut être un motif glob : `instruction` dit alors comment
-    /// choisir le chemin concret.
+    /// Where to write. May be a glob pattern: `instruction` then explains how
+    /// to pick the concrete path.
     pub resolved_output_path: PathBuf,
     pub instruction: Option<String>,
     pub template: Option<String>,
-    /// Contraintes pour l'agent, jamais du contenu à recopier dans le fichier.
+    /// Language of the prose to write (from `language:` in the config).
+    /// Structural keywords of the template stay in English whatever it is.
+    pub language: String,
+    /// Constraints for the agent, never content to copy into the file.
     pub context: Vec<Block>,
     pub rules: Vec<Block>,
     pub dependencies: Vec<Dependency>,
     pub unlocks: Vec<String>,
-    /// Les décisions d'architecture **en vigueur** — rempli pour l'artefact
-    /// `design`, laissé vide pour les autres. Une skill qui produit un
-    /// design lit ces références et ouvre les fichiers pointés avant de
-    /// rédiger. Le champ est toujours présent, éventuellement vide, pour
-    /// que le consommateur teste `decisions.length` sans branche
-    /// conditionnelle.
+    /// The architecture decisions **in effect** — filled for the `design`
+    /// artifact, left empty for the others. A skill producing a design
+    /// reads these references and opens the files they point to before
+    /// writing. The field is always present, possibly empty, so that the
+    /// consumer can test `decisions.length` without a conditional
+    /// branch.
     pub decisions: Vec<DecisionRef>,
-    /// Vrai quand le change a neutralisé cet artefact : il ne doit **pas** être
-    /// créé.
+    /// True when the change has disabled this artifact: it must **not** be
+    /// created.
     pub skipped: bool,
     pub warnings: Vec<Warning>,
 }
 
-/// Assemble les instructions d'un artefact.
+/// Assembles the instructions for an artifact.
 ///
-/// `artifact_id` à `None` demande « le prochain à écrire », c'est-à-dire le
-/// premier `Ready` dans l'ordre topologique.
+/// `artifact_id` set to `None` asks for "the next one to write", i.e. the
+/// first `Ready` artifact in topological order.
 pub fn for_artifact(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -115,13 +119,13 @@ pub fn for_artifact(
         .schema
         .graph
         .artifact(&artifact_id)
-        .expect("l'identifiant vient d'être validé contre le graphe");
+        .expect("the id was just validated against the graph");
     let state = status
         .artifacts
         .iter()
         .find(|a| a.id == artifact_id)
         .map(|a| a.state)
-        .expect("tout artefact du graphe figure dans le statut");
+        .expect("every artifact in the graph appears in the status");
 
     let change_dir = layout.change_dir(&ctx.change);
     let mut warnings = config.warnings.clone();
@@ -129,8 +133,8 @@ pub fn for_artifact(
         warnings.push(Warning::new(
             "artifact_skipped",
             format!(
-                "l'artefact « {artifact_id} » est neutralisé par `skip_specs` dans le change.yaml : \
-                 ses fichiers ne doivent pas être créés"
+                "artifact `{artifact_id}` is disabled by `skip_specs` in change.yaml: \
+                 its files must not be created"
             ),
         ));
     }
@@ -158,9 +162,8 @@ pub fn for_artifact(
         })
         .collect();
 
-    // Décisions injectées : uniquement pour `design`. Pour les autres
-    // artefacts on renvoie une liste vide plutôt que de charger l'index
-    // pour rien.
+    // Injected decisions: only for `design`. For the other artifacts we
+    // return an empty list rather than loading the index for nothing.
     let decisions = if artifact.id == "design" {
         let index = decisions::index(fs, env, layout, config)?;
         warnings.extend(
@@ -182,6 +185,7 @@ pub fn for_artifact(
         resolved_output_path: change_dir.join(&artifact.generates),
         instruction: artifact.instruction.clone(),
         template: ctx.schema.template(fs, artifact)?,
+        language: config.language.clone(),
         context: config.context.clone(),
         rules: config.rules_for(&artifact.id).to_vec(),
         dependencies,
@@ -198,31 +202,24 @@ pub fn for_artifact(
     })
 }
 
-/// Convertit les entrées `in_effect` de l'index en `DecisionRef` prêtes
-/// pour le contrat public.
+/// Converts the index's `in_effect` entries into `DecisionRef`s ready for
+/// the public contract.
 ///
-/// L'ordre est celui de `in_effect` — qui suit l'ordre naturel des
-/// entrées : projet d'abord puis sources héritées, chacun trié par id de
-/// fichier. Prévisible et testable.
-fn build_decision_refs(
-    index: &decisions::DecisionIndex,
-    layout: &Layout,
-) -> Vec<DecisionRef> {
+/// The order is that of `in_effect` — which follows the natural order of
+/// the entries: project first, then inherited sources, each sorted by file
+/// id. Predictable and testable.
+fn build_decision_refs(index: &decisions::DecisionIndex, layout: &Layout) -> Vec<DecisionRef> {
     let mut out = Vec::with_capacity(index.in_effect.len());
     for qid in &index.in_effect {
-        let Some(entry) = index
-            .entries
-            .iter()
-            .find(|e| &e.qualified_id == qid)
-        else {
-            continue; // ne devrait pas arriver — `in_effect` sort de `entries`
+        let Some(entry) = index.entries.iter().find(|e| &e.qualified_id == qid) else {
+            continue; // should not happen — `in_effect` is derived from `entries`
         };
         let status = match &entry.decision.status {
             DecisionStatus::Unknown(raw) => raw.clone(),
             other => other.as_str().to_string(),
         };
-        // Chemin relatif au projet quand c'est possible ; sinon on garde
-        // l'absolu (source héritée hors du dépôt).
+        // Path relative to the project when possible; otherwise keep the
+        // absolute path (inherited source outside the repository).
         let relative_path = entry
             .path
             .strip_prefix(layout.project_root())
@@ -236,7 +233,7 @@ fn build_decision_refs(
             tags: entry.decision.tags.clone(),
             path: relative_path,
             origin: match &entry.qualified_id.origin {
-                Origin::Project => "projet".to_string(),
+                Origin::Project => "project".to_string(),
                 Origin::Path(raw) => format!("path:{raw}"),
                 Origin::Git(url) => format!("git:{url}"),
             },
@@ -251,12 +248,12 @@ mod tests {
     use crate::ports::{FixedEnv, MemoryFileSystem};
     use codev_core::ChangeId;
 
-    fn projet(fichiers: &[(&str, &str)]) -> MemoryFileSystem {
+    fn project(files: &[(&str, &str)]) -> MemoryFileSystem {
         let mut fs = MemoryFileSystem::new().with_file(
             "/p/_codev/config.yaml",
-            "context: |\n  Pile : Rust\nrules:\n  specs:\n    - Comportement observable seulement\n  design:\n    - Citer les décisions\n",
+            "context: |\n  Stack: Rust\nrules:\n  specs:\n    - Only observable behavior\n  design:\n    - Cite the decisions\n",
         );
-        for (path, contents) in fichiers {
+        for (path, contents) in files {
             fs = fs.with_file(*path, *contents);
         }
         fs
@@ -268,18 +265,21 @@ mod tests {
         env
     }
 
-    fn instructions(fs: &MemoryFileSystem, artefact: Option<&str>) -> Result<Instructions> {
+    fn instructions(fs: &MemoryFileSystem, artifact: Option<&str>) -> Result<Instructions> {
         let layout = Layout::new("/p");
         let e = env();
         let config = crate::config::resolve(fs, &e, &layout).unwrap();
         let ctx = change::load(fs, &layout, &config, ChangeId::parse("add-auth").unwrap()).unwrap();
-        for_artifact(fs, &e, &layout, &ctx, &config, artefact)
+        for_artifact(fs, &e, &layout, &ctx, &config, artifact)
     }
 
     #[test]
-    fn sans_artefact_nomme_donne_le_prochain_a_ecrire() {
-        let fs = projet(&[
-            ("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven"),
+    fn without_a_named_artifact_returns_the_next_to_write() {
+        let fs = project(&[
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
             ("/p/_codev/changes/add-auth/proposal.md", "# Proposal"),
         ]);
         let instr = instructions(&fs, None).unwrap();
@@ -287,20 +287,20 @@ mod tests {
     }
 
     #[test]
-    fn porte_le_template_et_la_consigne_du_schema() {
-        let fs = projet(&[(
+    fn carries_the_schema_template_and_instruction() {
+        let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven",
         )]);
         let instr = instructions(&fs, Some("proposal")).unwrap();
 
         assert!(
-            instr.instruction.is_some_and(|i| i.contains("POURQUOI")),
-            "la consigne du schéma doit remonter"
+            instr.instruction.is_some_and(|i| i.contains("WHY")),
+            "the schema instruction must come through"
         );
         assert!(
-            instr.template.is_some_and(|t| t.contains("## Pourquoi")),
-            "le template embarqué doit remonter"
+            instr.template.is_some_and(|t| t.contains("## Why")),
+            "the embedded template must come through"
         );
         assert_eq!(
             instr.resolved_output_path,
@@ -309,8 +309,8 @@ mod tests {
     }
 
     #[test]
-    fn ninjecte_que_les_regles_de_lartefact_demande() {
-        let fs = projet(&[(
+    fn injects_only_the_requested_artifacts_rules() {
+        let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven",
         )]);
@@ -320,20 +320,20 @@ mod tests {
         assert!(specs.rules[0].text.contains("observable"));
 
         let proposal = instructions(&fs, Some("proposal")).unwrap();
-        assert!(
-            proposal.rules.is_empty(),
-            "proposal n'a pas de règle déclarée"
-        );
+        assert!(proposal.rules.is_empty(), "proposal has no declared rule");
 
-        // Le contexte, lui, s'applique partout.
+        // Context, on the other hand, applies everywhere.
         assert_eq!(proposal.context.len(), 1);
-        assert_eq!(proposal.context[0].origin, "projet");
+        assert_eq!(proposal.context[0].origin, "project");
     }
 
     #[test]
-    fn dit_ce_que_lartefact_debloquera_et_ce_quil_faut_relire() {
-        let fs = projet(&[
-            ("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven"),
+    fn tells_what_the_artifact_unlocks_and_what_to_reread() {
+        let fs = project(&[
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
             ("/p/_codev/changes/add-auth/proposal.md", "# Proposal"),
         ]);
         let instr = instructions(&fs, Some("specs")).unwrap();
@@ -349,52 +349,55 @@ mod tests {
     }
 
     #[test]
-    fn instructions_portent_un_champ_decisions_meme_vide() {
-        // Aucun ADR dans le projet — le champ existe mais reste vide.
-        // Toujours présent : le consommateur teste `decisions.length` sans
-        // branche.
-        let fs = projet(&[(
+    fn instructions_carry_a_decisions_field_even_when_empty() {
+        // No ADR in the project — the field exists but stays empty.
+        // Always present: the consumer tests `decisions.length` without a
+        // branch.
+        let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven",
         )]);
         let instr = instructions(&fs, Some("design")).unwrap();
-        assert!(instr.decisions.is_empty(), "aucun ADR déclaré = vide");
+        assert!(instr.decisions.is_empty(), "no declared ADR = empty");
     }
 
     #[test]
-    fn design_recoit_les_decisions_en_vigueur() {
-        let fs = projet(&[
+    fn design_receives_the_decisions_in_effect() {
+        let fs = project(&[
             (
                 "/p/_codev/changes/add-auth/change.yaml",
                 "schema: spec-driven",
             ),
             ("/p/_codev/changes/add-auth/proposal.md", "# Proposal"),
             (
-                "/p/_codev/decisions/0001-fondation.md",
-                "---\nid: 0001\ntitle: Fondation\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\nx\n",
+                "/p/_codev/decisions/0001-foundation.md",
+                "---\nid: 0001\ntitle: Foundation\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\nx\n",
             ),
         ]);
         let instr = instructions(&fs, Some("design")).unwrap();
         assert_eq!(instr.decisions.len(), 1);
         assert_eq!(instr.decisions[0].id, "0001");
-        assert_eq!(instr.decisions[0].title, "Fondation");
+        assert_eq!(instr.decisions[0].title, "Foundation");
         assert_eq!(instr.decisions[0].status, "accepted");
-        assert_eq!(instr.decisions[0].origin, "projet");
-        // Chemin relatif au projet, pas absolu.
+        assert_eq!(instr.decisions[0].origin, "project");
+        // Path relative to the project, not absolute.
         assert_eq!(
             instr.decisions[0].path,
-            PathBuf::from("_codev/decisions/0001-fondation.md")
+            PathBuf::from("_codev/decisions/0001-foundation.md")
         );
     }
 
     #[test]
-    fn proposal_ne_recoit_pas_les_decisions() {
-        // Décision présente MAIS artefact demandé n'est pas `design` : le
-        // champ existe et reste vide. Un futur change pourra étendre à
-        // d'autres artefacts sans casser ce test — il faudra le déplacer,
-        // pas juste le supprimer, pour maintenir la limite explicite.
-        let fs = projet(&[
-            ("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven"),
+    fn proposal_does_not_receive_the_decisions() {
+        // A decision is present BUT the requested artifact is not `design`:
+        // the field exists and stays empty. A future change may extend this
+        // to other artifacts without breaking this test — it will have to be
+        // moved, not just deleted, to keep the boundary explicit.
+        let fs = project(&[
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
             (
                 "/p/_codev/decisions/0001.md",
                 "---\nid: 0001\ntitle: X\nstatus: accepted\ndate: 2026-09-08\n---\n",
@@ -403,13 +406,13 @@ mod tests {
         let instr = instructions(&fs, Some("proposal")).unwrap();
         assert!(
             instr.decisions.is_empty(),
-            "seul `design` reçoit les décisions dans ce lot"
+            "only `design` receives the decisions in this batch"
         );
     }
 
     #[test]
-    fn un_artefact_neutralise_est_signale_et_non_a_creer() {
-        let fs = projet(&[(
+    fn a_disabled_artifact_is_reported_and_not_to_be_created() {
+        let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven\nskip_specs: true\n",
         )]);
@@ -419,19 +422,22 @@ mod tests {
     }
 
     #[test]
-    fn refuse_un_artefact_qui_nexiste_pas_dans_le_schema() {
-        let fs = projet(&[(
+    fn rejects_an_artifact_missing_from_the_schema() {
+        let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven",
         )]);
-        let err = instructions(&fs, Some("croquis")).unwrap_err();
+        let err = instructions(&fs, Some("sketch")).unwrap_err();
         assert_eq!(err.code(), "unknown_artifact");
     }
 
     #[test]
-    fn quand_tout_est_ecrit_il_ny_a_plus_rien_de_pret() {
-        let fs = projet(&[
-            ("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven"),
+    fn when_everything_is_written_nothing_is_ready() {
+        let fs = project(&[
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
             ("/p/_codev/changes/add-auth/proposal.md", "x"),
             ("/p/_codev/changes/add-auth/specs/user-auth/spec.md", "x"),
             ("/p/_codev/changes/add-auth/design.md", "x"),
@@ -442,23 +448,26 @@ mod tests {
     }
 
     #[test]
-    fn instructions_design_omettent_les_decisions_deviees() {
-        // Une héritée déviée par un ADR local n'apparaît PLUS dans les
-        // décisions injectées à l'artefact `design` — l'agent voit la
-        // dérive, pas la décision qu'elle remplace.
-        let adr_locale = "---\nid: \"0007\"\ntitle: Alternative locale\nstatus: accepted\ndate: 2026-09-08\ndeviates_from: [\"path:~/partage/0100\"]\n---\n\n## Contexte\n\nx\n";
-        let adr_heritee = "---\nid: \"0100\"\ntitle: Choix source\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Contexte\n\ny\n";
-        let fs = projet(&[
-            ("/p/_codev/config.yaml", "inherits:\n  - path: ~/partage\n"),
-            ("/p/_codev/decisions/0007-alternative.md", adr_locale),
-            ("/home/partage/_codev/decisions/0100-choix.md", adr_heritee),
+    fn design_instructions_omit_deviated_decisions() {
+        // An inherited decision that a local ADR deviates from NO LONGER
+        // appears among the decisions injected into the `design` artifact —
+        // the agent sees the deviation, not the decision it replaces.
+        let local_adr = "---\nid: \"0007\"\ntitle: Local alternative\nstatus: accepted\ndate: 2026-09-08\ndeviates_from: [\"path:~/shared/0100\"]\n---\n\n## Context\n\nx\n";
+        let inherited_adr = "---\nid: \"0100\"\ntitle: Source choice\nstatus: accepted\ndate: 2026-09-08\n---\n\n## Context\n\ny\n";
+        let fs = project(&[
+            ("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n"),
+            ("/p/_codev/decisions/0007-alternative.md", local_adr),
+            (
+                "/home/shared/_codev/decisions/0100-choice.md",
+                inherited_adr,
+            ),
             (
                 "/p/_codev/changes/add-auth/change.yaml",
                 "schema: spec-driven",
             ),
             (
                 "/p/_codev/changes/add-auth/proposal.md",
-                "# Proposal\n\n## Pourquoi\n\nT\n\n## Ce qui change\n\n- x\n",
+                "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n",
             ),
             (
                 "/p/_codev/changes/add-auth/specs/x/spec.md",
@@ -467,20 +476,35 @@ mod tests {
         ]);
         let instr = instructions(&fs, Some("design")).unwrap();
 
-        let ids: Vec<&str> = instr.decisions.iter().map(|d| d.qualified_id.as_str()).collect();
-        assert!(ids.contains(&"projet/0007"), "la dérive locale doit être là");
+        let ids: Vec<&str> = instr
+            .decisions
+            .iter()
+            .map(|d| d.qualified_id.as_str())
+            .collect();
         assert!(
-            !ids.contains(&"path:~/partage/0100"),
-            "l'héritée déviée doit disparaître ; ids présents : {ids:?}"
+            ids.contains(&"project/0007"),
+            "the local deviation must be present"
+        );
+        assert!(
+            !ids.contains(&"path:~/shared/0100"),
+            "the deviated inherited decision must disappear; ids present: {ids:?}"
         );
     }
 
     #[test]
-    fn les_avertissements_de_configuration_suivent_jusquaux_instructions() {
+    fn configuration_warnings_carry_through_to_instructions() {
         let mut fs = MemoryFileSystem::new()
-            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /nulle/part\n");
-        fs = fs.with_file("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven");
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /nowhere\n");
+        fs = fs.with_file(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        );
         let instr = instructions(&fs, Some("proposal")).unwrap();
-        assert!(instr.warnings.iter().any(|w| w.code == "inherit_unresolved"));
+        assert!(
+            instr
+                .warnings
+                .iter()
+                .any(|w| w.code == "inherit_unresolved")
+        );
     }
 }

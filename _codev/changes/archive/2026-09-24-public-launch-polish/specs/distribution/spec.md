@@ -1,39 +1,39 @@
 ## MODIFIED Requirements
 
-### Requirement: La documentation cite les trois voies d'installation
+### Requirement: The documentation lists the three installation paths
 
-Note : le titre historique reste « trois voies » pour préserver la
-compatibilité de nom avec la spec principale ; le contenu ci-dessous
-décrit **quatre** voies après ajout de Windows. Un renommage propre
-viendra dans un cycle dédié.
+Note: the historical title keeps "three paths" to preserve name
+compatibility with the main spec; the content below describes
+**four** paths after Windows was added. A clean rename will come in
+a dedicated cycle.
 
-La section Installation de `docs/codev.md` MUST citer, dans cet ordre :
+The Installation section of `docs/codev.md` MUST list, in this order:
 
-1. **Voie recommandée Unix** — `curl -sSL … | sh` pour macOS/Linux.
-2. **Voie recommandée Windows** — `iwr -useb … | iex` pour Windows
-   dans PowerShell.
-3. **Voie manuelle** — téléchargement depuis GitHub Releases + vérif
-   `sha256sum -c` (Unix) ou `Get-FileHash` (Windows).
-4. **Voie contributeur** — `cargo install --path crates/codev-cli`
-   depuis un clone du dépôt.
+1. **Recommended Unix path** — `curl -sSL … | sh` for macOS/Linux.
+2. **Recommended Windows path** — `iwr -useb … | iex` for Windows
+   in PowerShell.
+3. **Manual path** — download from GitHub Releases + check with
+   `sha256sum -c` (Unix) or `Get-FileHash` (Windows).
+4. **Contributor path** — `cargo install --path crates/codev-cli`
+   from a clone of the repository.
 
-Le README du dépôt MUST mentionner au moins la première **et** la
-deuxième voie (avec les one-liners `curl … | sh` et `iwr … | iex`).
+The repository README MUST mention at least the first **and** the
+second path (with the one-liners `curl … | sh` and `iwr … | iex`).
 
-#### Scenario: la section Installation de docs/codev.md liste les quatre voies dans l'ordre
+#### Scenario: the Installation section of docs/codev.md lists the four paths in order
 
-- **GIVEN** un lecteur qui ouvre `docs/codev.md` à la section
-  Installation
-- **WHEN** il parcourt les sous-sections dans l'ordre
-- **THEN** il rencontre successivement la voie Unix (`curl | sh`),
-  la voie Windows (`iwr | iex`), la voie manuelle (téléchargement
-  depuis GitHub Releases avec vérif SHA-256), et la voie contributeur
+- **GIVEN** a reader who opens `docs/codev.md` at the Installation
+  section
+- **WHEN** they go through the subsections in order
+- **THEN** they successively encounter the Unix path (`curl | sh`),
+  the Windows path (`iwr | iex`), the manual path (download from
+  GitHub Releases with SHA-256 check), and the contributor path
   (`cargo install --path`)
 
-#### Scenario: le README pointe au moins les deux voies « sans Rust » dans son Démarrage
+#### Scenario: the README points to at least the two "no Rust" paths in its Getting Started
 
-- **GIVEN** un lecteur qui ouvre `README.md` à la racine du dépôt
-- **WHEN** il parcourt la section « Démarrage »
-- **THEN** il voit l'exemple `curl -sSL … | sh` pour macOS/Linux
-- **AND** il voit l'exemple `iwr -useb … | iex` pour Windows dans
+- **GIVEN** a reader who opens `README.md` at the repository root
+- **WHEN** they go through the "Getting Started" section
+- **THEN** they see the `curl -sSL … | sh` example for macOS/Linux
+- **AND** they see the `iwr -useb … | iex` example for Windows in
   PowerShell

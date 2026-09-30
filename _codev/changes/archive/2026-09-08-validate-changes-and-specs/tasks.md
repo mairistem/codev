@@ -1,113 +1,112 @@
-# Tâches
+# Tasks
 
-## 1. Fondations dans `codev-core`
+## 1. Foundations in `codev-core`
 
-- [x] 1.1 Créer `codev-core::validate` (module `validate/mod.rs`,
-      `validate/rules.rs`), exposer `pub trait Rule` avec `code()`,
-      `check_spec()`, `check_delta()` (défauts vides), plus
-      `pub static RULES: &[&dyn Rule]`. Vérifié par
-      `cargo build -p codev-core` et un test compilant
+- [x] 1.1 Create `codev-core::validate` (module `validate/mod.rs`,
+      `validate/rules.rs`), expose `pub trait Rule` with `code()`,
+      `check_spec()`, `check_delta()` (empty defaults), plus
+      `pub static RULES: &[&dyn Rule]`. Verified by
+      `cargo build -p codev-core` and a test compiling
       `validate::registry_liste_au_moins_une_regle`.
-- [x] 1.2 Test d'invariant `validate::codes_de_findings_sont_uniques` :
-      concatène tous les codes émis par le parseur (constants dans les
-      modules parser) et par les règles, vérifie qu'ils sont deux à deux
-      distincts. Sert de garde-fou contre un doublon involontaire.
+- [x] 1.2 Invariant test `validate::codes_de_findings_sont_uniques`:
+      concatenates all the codes emitted by the parser (constants in the
+      parser modules) and by the rules, checks that they are pairwise
+      distinct. Serves as a guardrail against an accidental duplicate.
 
-## 2. Règles structurelles supplémentaires (cœur pur)
+## 2. Additional structural rules (pure core)
 
-- [x] 2.1 Règle `RequirementNoShall` : parcourt les exigences d'une `Spec`
-      et de chaque section `Added`/`Modified` d'un `Delta`, émet
-      `requirement_no_shall` si la description ne contient ni `SHALL` ni
-      `MUST` (majuscules exactes). Vérifié par
-      `validate::requirement_sans_shall_est_signalee` (scénario
-      `Exigence sans SHALL ni MUST`).
-- [x] 2.2 Règle `RequirementNoScenario` : émet `requirement_no_scenario` si
-      `scenarios` est vide. Vérifié par
-      `validate::requirement_sans_scenario_est_signalee` (scénario
-      `Exigence sans aucun scénario`).
-- [x] 2.3 Règle `SpecNoRequirement` : sur une `Spec`, émet
-      `spec_no_requirement` si `requirements` est vide. Vérifié par
-      `validate::spec_sans_requirement_est_signalee` (scénario
-      `Spec principale sans exigence`).
+- [x] 2.1 Rule `RequirementNoShall`: walks the requirements of a `Spec`
+      and of each `Added`/`Modified` section of a `Delta`, emits
+      `requirement_no_shall` if the description contains neither `SHALL`
+      nor `MUST` (exact uppercase). Verified by
+      `validate::requirement_sans_shall_est_signalee` (scenario
+      `Requirement without SHALL or MUST`).
+- [x] 2.2 Rule `RequirementNoScenario`: emits `requirement_no_scenario` if
+      `scenarios` is empty. Verified by
+      `validate::requirement_sans_scenario_est_signalee` (scenario
+      `Requirement without any scenario`).
+- [x] 2.3 Rule `SpecNoRequirement`: on a `Spec`, emits
+      `spec_no_requirement` if `requirements` is empty. Verified by
+      `validate::spec_sans_requirement_est_signalee` (scenario
+      `Main spec without a requirement`).
 
-## 3. Règles de cohérence entre sections (cœur pur)
+## 3. Consistency rules between sections (pure core)
 
-- [x] 3.1 Règle `CrossSectionConflict` : indexe les noms d'exigences par
-      section (Added/Modified/Removed), émet `cross_section_conflict` pour
-      chaque nom présent dans deux sections, avec la liste des sections en
-      cause et leurs lignes. Vérifié par
-      `validate::exigence_dans_added_et_modified_est_signalee` (scénario
-      `Exigence présente dans ADDED et MODIFIED`).
-- [x] 3.2 Règle `RenameTargetCollision` : si un `RENAMED.TO` existe déjà
-      comme `ADDED`, émet `rename_target_collision`. Vérifié par
-      `validate::rename_to_qui_collide_avec_added_est_signale` (scénario
-      `RENAMED.TO collide avec un ADDED de même nom`).
-- [x] 3.3 Règle `ModifiedUsesOldName` : si un `MODIFIED` référence un
-      `RENAMED.FROM`, émet `modified_uses_old_name`. Vérifié par
+- [x] 3.1 Rule `CrossSectionConflict`: indexes requirement names by
+      section (Added/Modified/Removed), emits `cross_section_conflict` for
+      each name present in two sections, with the list of sections
+      involved and their lines. Verified by
+      `validate::exigence_dans_added_et_modified_est_signalee` (scenario
+      `Requirement present in ADDED and MODIFIED`).
+- [x] 3.2 Rule `RenameTargetCollision`: if a `RENAMED.TO` already exists
+      as an `ADDED`, emits `rename_target_collision`. Verified by
+      `validate::rename_to_qui_collide_avec_added_est_signale` (scenario
+      `RENAMED.TO collides with a same-named ADDED`).
+- [x] 3.3 Rule `ModifiedUsesOldName`: if a `MODIFIED` references a
+      `RENAMED.FROM`, emits `modified_uses_old_name`. Verified by
       `validate::modified_reference_ancien_nom_renamed_est_signale`
-      (scénario `MODIFIED référence l'ancien nom d'un RENAMED`).
+      (scenario `MODIFIED references the old name of a RENAMED`).
 
-## 4. Règle zéro-delta et conflit skip_specs (côté engine)
+## 4. Zero-delta rule and skip_specs conflict (engine side)
 
-- [x] 4.1 Étendre `codev-engine::validate` avec `check_change_metadata` qui
-      compare la présence de deltas au marqueur `skip_specs`. Émet
-      `zero_delta_without_marker` si aucun delta et marqueur absent, émet
-      `skip_specs_conflict` si marqueur présent et deltas existent. Vérifié
-      par `engine_validate::zero_delta_sans_marqueur_echoue` et
-      `engine_validate::skip_specs_avec_delta_est_un_conflit` (scénarios
-      homonymes de la spec).
+- [x] 4.1 Extend `codev-engine::validate` with `check_change_metadata`,
+      which compares the presence of deltas with the `skip_specs` marker.
+      Emits `zero_delta_without_marker` if no delta and marker absent,
+      emits `skip_specs_conflict` if marker present and deltas exist.
+      Verified by `engine_validate::zero_delta_sans_marqueur_echoue` and
+      `engine_validate::skip_specs_avec_delta_est_un_conflit` (same-named
+      scenarios of the spec).
 
-## 5. Orchestration côté engine
+## 5. Orchestration on the engine side
 
 - [x] 5.1 Type `LocatedFinding { path: PathBuf, kind: ItemKind, ..Finding }`
-      dans `codev-engine::validate`, avec `From<(&Finding, path, kind)>`.
-      Vérifié par `engine_validate::located_conserve_code_line_severite`.
-- [x] 5.2 `validate_change(fs, layout, change) -> ItemReport` : ouvre chaque
-      delta du change, appelle `parse_delta`, applique les règles
-      `check_delta`, produit les `LocatedFinding` groupés par fichier. Fait
-      aussi tourner `check_change_metadata` (tâche 4.1). Vérifié par
+      in `codev-engine::validate`, with `From<(&Finding, path, kind)>`.
+      Verified by `engine_validate::located_conserve_code_line_severite`.
+- [x] 5.2 `validate_change(fs, layout, change) -> ItemReport`: opens each
+      delta of the change, calls `parse_delta`, applies the `check_delta`
+      rules, produces the `LocatedFinding`s grouped by file. Also runs
+      `check_change_metadata` (task 4.1). Verified by
       `engine_validate::rapport_change_couvre_tous_les_fichiers_de_delta`.
-- [x] 5.3 `validate_spec(fs, layout, capability) -> ItemReport` : ouvre la
-      spec principale, appelle `parse_spec`, applique les règles `check_spec`.
-      Vérifié par `engine_validate::rapport_spec_expose_les_findings_du_parseur`.
-- [x] 5.4 `validate_all(fs, layout) -> ValidateReport` : combine les deux
-      précédents pour tous les changes actifs et toutes les specs
-      principales. Vérifié par
+- [x] 5.3 `validate_spec(fs, layout, capability) -> ItemReport`: opens the
+      main spec, calls `parse_spec`, applies the `check_spec` rules.
+      Verified by `engine_validate::rapport_spec_expose_les_findings_du_parseur`.
+- [x] 5.4 `validate_all(fs, layout) -> ValidateReport`: combines the two
+      previous ones for all active changes and all main specs. Verified by
       `engine_validate::validate_all_couvre_changes_et_specs`.
 
-## 6. Sous-commande CLI
+## 6. CLI subcommand
 
-- [x] 6.1 Ajouter la sous-commande `validate [item]` dans `codev-cli` avec
-      les flags `--all`, `--changes`, `--specs`, `--json` ; exit code `0` si
-      aucun `Finding` de sévérité `Error`, `1` sinon. Vérifié par
-      `cli_validate::exit_zero_sur_projet_propre` et
-      `cli_validate::exit_un_sur_erreur_structurelle` (harnais existant
-      `Harnais` en mémoire, cf. commandes du CLI).
-- [x] 6.2 Résolution d'`item` : si un seul change/spec correspond au nom,
-      on le prend ; ambigu → erreur `ambiguous_item` avec la liste ; absent
-      → `unknown_item`. Vérifié par
+- [x] 6.1 Add the `validate [item]` subcommand to `codev-cli` with
+      the flags `--all`, `--changes`, `--specs`, `--json`; exit code `0` if
+      no `Finding` of severity `Error`, `1` otherwise. Verified by
+      `cli_validate::exit_zero_sur_projet_propre` and
+      `cli_validate::exit_un_sur_erreur_structurelle` (existing in-memory
+      `Harnais` harness, cf. the CLI commands).
+- [x] 6.2 Resolution of `item`: if a single change/spec matches the name,
+      it is taken; ambiguous → error `ambiguous_item` with the list; absent
+      → `unknown_item`. Verified by
       `cli_validate::item_ambigu_liste_les_candidats`.
 
-## 7. Contrat JSON v1 et rendu humain
+## 7. JSON contract v1 and human rendering
 
-- [x] 7.1 `contract::v1::ValidateReport` avec `items[]` (chacun `kind`,
-      `name`, `path`, `findings[]`) et `status[]` à la racine, sérialisé en
-      camelCase, testé par snapshot dans `contract::tests` :
+- [x] 7.1 `contract::v1::ValidateReport` with `items[]` (each with `kind`,
+      `name`, `path`, `findings[]`) and `status[]` at the root, serialized
+      in camelCase, snapshot-tested in `contract::tests`:
       `validate_report_shape_stable`.
-- [x] 7.2 Rendu humain : une ligne par finding, format `path:line: code —
-      message`, précédé du titre de l'item. Vérifié par
+- [x] 7.2 Human rendering: one line per finding, format `path:line: code —
+      message`, preceded by the item's title. Verified by
       `render::validate_ecrit_ligne_par_finding_avec_path_et_ligne`.
-- [x] 7.3 Forme d'échec : quand la racine est introuvable, stdout porte
-      exactement un document JSON de la forme du rapport, listes vides,
-      `status` racine porte l'entrée d'erreur. Vérifié par
-      `cli_validate::echec_json_garde_la_forme` (scénario
-      `Sortie JSON quand la racine est introuvable`).
+- [x] 7.3 Failure shape: when the root cannot be found, stdout carries
+      exactly one JSON document with the report's shape, empty lists, and
+      a root `status` carrying the error entry. Verified by
+      `cli_validate::echec_json_garde_la_forme` (scenario
+      `JSON output when the root cannot be found`).
 
-## 8. Dogfooding et intégration workspace
+## 8. Dogfooding and workspace integration
 
-- [x] 8.1 Faire tourner `codev validate --all` sur ce dépôt et corriger tout
-      finding remonté ; vérifier que la commande passe avec exit 0. Le
-      dépôt lui-même est le premier consommateur, comme pour `codev init`.
-- [x] 8.2 `cargo test --workspace` reste vert et compte au moins 20 tests
-      supplémentaires (règles + engine + CLI + contrat + rendu).
-- [x] 8.3 `cargo clippy --workspace --all-targets` reste sans avertissement.
+- [x] 8.1 Run `codev validate --all` on this repository and fix any
+      finding reported; check that the command passes with exit 0. The
+      repository itself is the first consumer, as for `codev init`.
+- [x] 8.2 `cargo test --workspace` stays green and counts at least 20
+      additional tests (rules + engine + CLI + contract + rendering).
+- [x] 8.3 `cargo clippy --workspace --all-targets` stays warning-free.

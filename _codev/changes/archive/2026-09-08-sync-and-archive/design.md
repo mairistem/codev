@@ -1,63 +1,62 @@
-# Design : sync et archive
+# Design: sync and archive
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Le parseur donne les spans à l'octet
-près (B6), le validateur donne l'ensemble des règles E1–E3 comme pré-flight.
-Ce design assemble ces deux briques pour produire, sans écriture, un plan de
-fusion vérifié dans son intégralité.
+See `proposal.md` for the motivation. The parser provides byte-accurate
+spans (B6), the validator provides the set of rules E1–E3 as pre-flight.
+This design assembles these two building blocks to produce, without
+writing, a merge plan checked in its entirety.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- la fusion sémantique en tant que **fonction pure** produisant une liste
-  d'edits ponctuels sur la spec principale ;
-- l'extension du type [`Plan`](../../../crates/codev-core/src/plan.rs) pour
-  porter aussi un déplacement ;
-- l'orchestration côté engine (validate → merge → plan) et la coquille CLI
-  (sync/archive avec exit code binaire).
+- the semantic merge as a **pure function** producing a list of point
+  edits on the main spec;
+- the extension of the [`Plan`](../../../crates/codev-core/src/plan.rs)
+  type to also carry a move;
+- the orchestration on the engine side (validate → merge → plan) and the
+  CLI shell (sync/archive with a binary exit code).
 
-Il ne cadre pas la retraite de capacité (F5, lot 2) ni l'archive en lot (F7,
-lot 4). Un `REMOVED` qui viderait la spec est refusé ici ; c'est F5 qui
-autorisera plus tard le geste.
+It does not cover capability retirement (F5, batch 2) nor batch archive
+(F7, batch 4). A `REMOVED` that would empty the spec is refused here; F5
+will later allow that action.
 
-## Décisions
+## Decisions
 
-### Décision : la fusion produit des `Edit { byte_range, replacement }`
+### Decision: the merge produces `Edit { byte_range, replacement }`
 
-Plutôt qu'une reconstruction de l'AST cible puis une re-sérialisation en
-markdown, la fusion produit une liste d'édits ponctuels sur la source de la
-spec principale :
+Rather than rebuilding the target AST and then re-serializing it to
+markdown, the merge produces a list of point edits on the main spec's
+source:
 
-- `MODIFIED` → `Edit { byte_range: req.span, replacement: <bloc rendu> }`
-- `REMOVED`  → `Edit { byte_range: <req.span étendu à l'espacement>, replacement: "" }`
-- `RENAMED`  → `Edit { byte_range: <ligne d'en-tête seulement>, replacement: <nouvel en-tête> }`
-- `ADDED`    → `Edit { byte_range: <fin_de_requirements..fin_de_requirements>, replacement: <bloc rendu> }`
+- `MODIFIED` → `Edit { byte_range: req.span, replacement: <rendered block> }`
+- `REMOVED`  → `Edit { byte_range: <req.span extended to the spacing>, replacement: "" }`
+- `RENAMED`  → `Edit { byte_range: <heading line only>, replacement: <new heading> }`
+- `ADDED`    → `Edit { byte_range: <end_of_requirements..end_of_requirements>, replacement: <rendered block> }`
 
-Les edits sont ensuite triés par `byte_range.end` **décroissant**, puis
-appliqués : chaque application préserve les offsets des edits restants.
+The edits are then sorted by `byte_range.end` **descending**, then
+applied: each application preserves the offsets of the remaining edits.
 
-Rationale : cette approche satisfait mécaniquement la préservation du contenu
-non mentionné. Une reconstruction complète perdrait tout ce que l'AST ne
-capture pas — commentaires libres entre exigences, sections libres après
-`## Requirements`, espacements variables. Le round-trip du parseur est déjà
-testé (`spans_reproduisent_le_source_au_caractere_pres`) ; on s'appuie sur cet
-invariant plutôt que de le refaire.
+Rationale: this approach mechanically satisfies the preservation of
+unmentioned content. A full rebuild would lose everything the AST does not
+capture — free comments between requirements, free sections after
+`## Requirements`, variable spacing. The parser's round-trip is already
+tested (`spans_reproduisent_le_source_au_caractere_pres`); we rely on that
+invariant rather than redoing it.
 
-**Alternatives considérées** :
+**Alternatives considered**:
 
-- **Reconstruction complète** depuis l'AST cible. Simple à écrire, catastrophique
-  à l'usage : tout ce qui n'est pas modélisé se perd.
-- **Écritures successives sur le fichier**, une par section du delta. Les
-  offsets bougent entre deux écritures, obligeant à re-parser à chaque étape.
-  Coûte en performance et introduit des états intermédiaires que l'atomicité
-  interdit.
+- **Full rebuild** from the target AST. Simple to write, catastrophic in
+  use: everything that is not modeled gets lost.
+- **Successive writes to the file**, one per delta section. Offsets move
+  between two writes, forcing a re-parse at each step. Costs performance
+  and introduces intermediate states that atomicity forbids.
 
-### Décision : `PlanOp::Move { from, to }` étend le type `Plan`
+### Decision: `PlanOp::Move { from, to }` extends the `Plan` type
 
-Le déplacement du change vers l'archive rejoint le `Plan` existant, comme
-troisième catégorie à côté de `dirs` et `writes` :
+Moving the change to the archive joins the existing `Plan`, as a third
+category next to `dirs` and `writes`:
 
 ```rust
 pub struct Plan {
@@ -69,116 +68,117 @@ pub struct Plan {
 pub struct Move { pub from: PathBuf, pub to: PathBuf }
 ```
 
-Cela garde la propriété centrale de l'architecture : un seul plan traverse la
-coquille, un seul appel à `apply::execute` peut décider `--dry-run` ou
-prévisualiser en JSON. L'ordre d'exécution dans `apply::execute` reste :
-`dirs` → `writes` → `moves`, parce qu'un déplacement suppose que ce qu'il
-déplace a déjà été écrit et que sa destination existe.
+This keeps the central property of the architecture: a single plan goes
+through the shell, a single call to `apply::execute` can decide
+`--dry-run` or preview as JSON. The execution order in `apply::execute`
+stays: `dirs` → `writes` → `moves`, because a move assumes that what it
+moves has already been written and that its destination exists.
 
-Rationale : cité par la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) — le
-principe « décider n'est pas exécuter » impose que **toute** modification du
-disque passe par un plan. Traiter le déplacement à côté serait rouvrir la
-porte à un état incohérent (spec principale écrite, dossier non déplacé) que
-tout ce projet a été conçu pour éliminer.
+Rationale: cited by decision
+[0001](../../decisions/0001-functional-core-imperative-shell.md) — the
+principle "deciding is not executing" requires that **every** disk
+modification go through a plan. Handling the move on the side would reopen
+the door to an inconsistent state (main spec written, folder not moved)
+that this whole project was designed to eliminate.
 
-### Décision : `archive` refuse d'agir si `validate` a la moindre erreur
+### Decision: `archive` refuses to act if `validate` has the slightest error
 
-`codev archive` appelle en interne `codev_engine::validate::validate_change`
-et refuse si `has_errors()`. Aucune fusion, aucune écriture, aucun
-déplacement. Le seul dialogue avec l'utilisateur est un renvoi vers
-`codev validate <change>` pour voir le détail.
+`codev archive` internally calls `codev_engine::validate::validate_change`
+and refuses if `has_errors()`. No merge, no write, no move. The only
+dialogue with the user is a pointer to `codev validate <change>` to see
+the details.
 
-**Rationale** : le validateur (change précédent) livre déjà tous les codes
-utiles. Dupliquer les messages dans `archive` créerait deux formulations
-d'une même erreur, à maintenir en parallèle. Un renvoi est plus court à
-écrire, plus facile à lire, et impossible à contredire.
+**Rationale**: the validator (previous change) already delivers all the
+useful codes. Duplicating the messages in `archive` would create two
+wordings of the same error, to maintain in parallel. A pointer is shorter
+to write, easier to read, and impossible to contradict.
 
-`codev sync`, en revanche, se contente des invariants **strictement
-nécessaires à la fusion** : cible `MODIFIED` présente, cible `REMOVED`
-présente, `Purpose` requis si nouvelle capacité, dernière exigence non
-retirée. Un delta qui a un `requirement_no_shall` peut être synchronisé — le
-défaut sera là aussi dans la spec principale, où le prochain `validate --specs`
-le trouvera. C'est cohérent avec la sémantique d'un sync : « rends visible
-tout de suite », par opposition à archive qui clôt.
+`codev sync`, on the other hand, settles for the invariants **strictly
+necessary for the merge**: `MODIFIED` target present, `REMOVED` target
+present, `Purpose` required if new capability, last requirement not
+removed. A delta that has a `requirement_no_shall` can be synced — the
+defect will then also be in the main spec, where the next
+`validate --specs` will find it. This is consistent with the semantics of
+a sync: "make it visible right away", as opposed to archive, which closes.
 
-### Décision : `sync` sépare `changed` de `already_up_to_date` dans son rapport
+### Decision: `sync` separates `changed` from `already_up_to_date` in its report
 
-Un delta déjà fusionné (par exemple : `sync` puis relance de `sync` sans
-modification du change) ne doit pas apparaître comme un changement — même
-raisonnement que `apply::execute` sur les fichiers identiques. Le rapport
-distingue donc `updated` (fichier réellement modifié) de `unchanged`
-(fichier identique après merge). Utile en pre-commit, et rend `codev sync`
-idempotent au sens strict.
+An already merged delta (for example: `sync` then rerunning `sync` without
+modifying the change) must not appear as a change — same reasoning as
+`apply::execute` on identical files. The report therefore distinguishes
+`updated` (file actually modified) from `unchanged` (file identical after
+merge). Useful in pre-commit, and makes `codev sync` idempotent in the
+strict sense.
 
-### Décision : format des nouveaux fichiers de spec principale
+### Decision: format of new main spec files
 
-Une nouvelle spec principale est rendue selon un canon strict :
+A new main spec is rendered according to a strict canon:
 
 ```text
-# <Capacité en Title Case> Specification
+# <Capability in Title Case> Specification
 
 ## Purpose
 
-<texte du Purpose du delta>
+<Purpose text from the delta>
 
 ## Requirements
 
-<blocs des ADDED, un par ligne blanche>
+<ADDED blocks, one per blank line>
 ```
 
-Le titre `# <...>` est dérivé du chemin de la capacité (`identity/user-auth` →
-`User Auth`). Ce n'est ni parseur-critique ni utilisateur-critique — un humain
-pourra le corriger à la main plus tard — mais c'est mieux que « # spec ».
+The `# <...>` title is derived from the capability path
+(`identity/user-auth` → `User Auth`). It is neither parser-critical nor
+user-critical — a human can fix it by hand later — but it is better than
+"# spec".
 
-**Alternative écartée** : imposer un template `spec.md` externe (comme pour
-les artefacts de change). Ajouter un point de configuration pour un cas où
-l'auteur écrit lui-même la spec **une fois créée** serait de la cérémonie ; le
-canon suffit à faire démarrer.
+**Rejected alternative**: impose an external `spec.md` template (as for
+change artifacts). Adding a configuration point for a case where the
+author writes the spec themselves **once created** would be ceremony; the
+canon is enough to get started.
 
-### Décision : rapports séparés `SyncReport` et `ArchiveReport`
+### Decision: separate `SyncReport` and `ArchiveReport` reports
 
-Deux types distincts dans `contract::v1`, plutôt qu'un `MergeReport` unique
-avec un `moved_to: Option<...>` :
+Two distinct types in `contract::v1`, rather than a single `MergeReport`
+with a `moved_to: Option<...>`:
 
 ```
 SyncReport    { root, changeName, updated: [...], created: [...], unchanged: [...], status }
 ArchiveReport { root, changeName, updated: [...], created: [...], movedTo: "...", status }
 ```
 
-**Rationale** : un consommateur qui appelle `sync` ne s'attend jamais à voir
-un `movedTo` ; un consommateur qui appelle `archive` s'attend toujours à en
-voir un. Deux types séparés font disparaître la branche conditionnelle côté
-lecteur, au coût de deux structures similaires — coût mineur, gain qui vaut
-le duplicat.
+**Rationale**: a consumer calling `sync` never expects to see a
+`movedTo`; a consumer calling `archive` always expects to see one. Two
+separate types remove the conditional branch on the reader's side, at the
+cost of two similar structures — a minor cost, a gain worth the duplicate.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Fin de section `## Requirements` mal identifiée**. Les `ADDED` doivent
-  s'insérer à la fin de cette section, avant une éventuelle section libre
-  qui suit. → **Atténuation** : le parseur expose déjà via l'AST l'ordre des
-  sections `##` de premier niveau ; on ajoute un accesseur qui rend la
-  position du prochain `##` après `## Requirements`, ou la fin du fichier.
-  Un test dédié `sync::added_precede_une_section_libre_qui_suit` couvre le
-  cas.
-- **REMOVED laisse un blanc double**. Supprimer un bloc peut laisser deux
-  lignes vides consécutives. → **Compromis assumé** : on étend le
-  `byte_range` du REMOVED pour inclure l'espacement qui suit, façon qu'une
-  suppression laisse la même densité qu'avant. Un espace supplémentaire
-  autour d'une section est cosmétique et se corrige à la main.
-- **RENAMED d'une exigence référencée par un MODIFIED du même delta**. Le
-  validateur remonte déjà `modified_uses_old_name` ; ici on refuse en cas
-  d'incohérence résiduelle. → **Rationale** : la double vérification est
-  peu coûteuse et évite le drame silencieux.
-- **`Move` cross-device**. Sur macOS/Linux, `rename(2)` échoue entre volumes
-  différents. → **Atténuation** : fallback copy + remove dans le port
-  `FileSystem`, avec un test qui simule l'échec `rename` en mémoire. Improbable
-  en pratique (planning et code vivent dans le même repo), mais un test
-  documente le comportement de secours.
+- **End of the `## Requirements` section misidentified**. `ADDED` entries
+  must be inserted at the end of this section, before any free section
+  that follows. → **Mitigation**: the parser already exposes, via the AST,
+  the order of the top-level `##` sections; we add an accessor that
+  returns the position of the next `##` after `## Requirements`, or the end
+  of the file. A dedicated test `sync::added_precede_une_section_libre_qui_suit`
+  covers the case.
+- **REMOVED leaves a double blank**. Deleting a block can leave two
+  consecutive empty lines. → **Accepted trade-off**: we extend the
+  REMOVED's `byte_range` to include the following spacing, so that a
+  deletion leaves the same density as before. An extra space around a
+  section is cosmetic and can be fixed by hand.
+- **RENAMED of a requirement referenced by a MODIFIED in the same delta**.
+  The validator already reports `modified_uses_old_name`; here we refuse in
+  case of residual inconsistency. → **Rationale**: the double check is
+  cheap and avoids silent disaster.
+- **Cross-device `Move`**. On macOS/Linux, `rename(2)` fails across
+  different volumes. → **Mitigation**: copy + remove fallback in the
+  `FileSystem` port, with a test that simulates the `rename` failure in
+  memory. Unlikely in practice (planning and code live in the same repo),
+  but a test documents the fallback behavior.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet — nouvelle capacité, aucun consommateur existant. Les changes
-`parse-specs-and-deltas` et `validate-changes-and-specs` déjà présents dans
-ce dépôt deviendront les premiers **candidats à l'archive** une fois ce change
-lui-même appliqué : ils passent déjà `codev validate --all`.
+Not applicable — new capability, no existing consumer. The
+`parse-specs-and-deltas` and `validate-changes-and-specs` changes already
+present in this repository will become the first **archive candidates**
+once this change itself is applied: they already pass
+`codev validate --all`.

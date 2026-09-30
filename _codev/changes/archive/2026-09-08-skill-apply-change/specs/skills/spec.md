@@ -1,85 +1,84 @@
 ## Purpose
 
-Décrit le contrat des skills que codev installe dans Claude Code : leur nom,
-ce qu'elles doivent faire, ce qu'elles n'ont pas le droit de faire, et
-comment leur frontmatter garantit ces promesses. Les entrées sont ajoutées
-au fil des changes qui introduisent chaque workflow — un ADDED par workflow.
+Describes the contract of the skills that codev installs in Claude Code:
+their name, what they must do, what they are not allowed to do, and how
+their frontmatter guarantees these promises. Entries are added as the
+changes that introduce each workflow land — one ADDED per workflow.
 
 ## ADDED Requirements
 
-### Requirement: Skill `apply` guide l'implémentation d'un change
+### Requirement: Skill `apply` guides the implementation of a change
 
-Le catalogue de codev SHALL exposer un workflow `apply` — installé sous
-`.claude/skills/codev-apply/SKILL.md`, invocable `/codev-apply` — dont le
-rôle est de traiter les tâches non cochées du `tasks.md` d'un change, dans
-l'ordre du fichier, en cochant chaque case à mesure.
+The codev catalog SHALL expose an `apply` workflow — installed under
+`.claude/skills/codev-apply/SKILL.md`, invocable as `/codev-apply` — whose
+role is to process the unchecked tasks of a change's `tasks.md`, in file
+order, checking each box as it goes.
 
-#### Scenario: Implémentation d'un change avec un seul actif
+#### Scenario: Implementing a change with a single active one
 
-- **GIVEN** un projet avec un seul change actif dont `tasks.md` porte deux
-  tâches non cochées
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill résout implicitement le change actif
-- **AND** implémente la première tâche puis la coche
-- **AND** implémente la seconde tâche puis la coche
+- **GIVEN** a project with a single active change whose `tasks.md` has two
+  unchecked tasks
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill implicitly resolves the active change
+- **AND** implements the first task then checks it
+- **AND** implements the second task then checks it
 
-#### Scenario: Reprise après interruption
+#### Scenario: Resuming after an interruption
 
-- **GIVEN** un `tasks.md` où la première tâche est déjà cochée `- [x]` et la
-  seconde ne l'est pas
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill ignore la tâche déjà cochée
-- **AND** commence par la première tâche non cochée
+- **GIVEN** a `tasks.md` where the first task is already checked `- [x]` and
+  the second is not
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill skips the already-checked task
+- **AND** starts with the first unchecked task
 
-#### Scenario: Ambiguïté demande un choix explicite
+#### Scenario: Ambiguity requires an explicit choice
 
-- **GIVEN** deux changes actifs
-- **WHEN** l'utilisateur tape `/codev-apply` sans nom
-- **THEN** la skill demande lequel appliquer, en listant les deux noms
+- **GIVEN** two active changes
+- **WHEN** the user types `/codev-apply` without a name
+- **THEN** the skill asks which one to apply, listing both names
 
-### Requirement: Skill `apply` respecte les frontières du change
+### Requirement: Skill `apply` respects the change's boundaries
 
-Le workflow `apply` MUST se cantonner à ce qui est nécessaire pour cocher
-les tâches du change nommé : il MUST NOT modifier d'autres changes, MUST NOT
-archiver ni sync tout seul, et MUST s'arrêter dès qu'une tâche est
-ambiguë ou bloquée plutôt que de deviner.
+The `apply` workflow MUST confine itself to what is needed to check off the
+tasks of the named change: it MUST NOT modify other changes, MUST NOT
+archive or sync on its own, and MUST stop as soon as a task is ambiguous
+or blocked rather than guess.
 
-#### Scenario: Refus d'archiver depuis apply
+#### Scenario: Refusal to archive from apply
 
-- **GIVEN** un change dont toutes les tâches sont cochées
-- **WHEN** l'utilisateur tape `/codev-apply`
-- **THEN** la skill signale que le change est prêt à être archivé
-- **AND** invite explicitement à lancer `/codev-archive` ou `codev archive`
-  comme prochaine étape séparée
+- **GIVEN** a change whose tasks are all checked
+- **WHEN** the user types `/codev-apply`
+- **THEN** the skill reports that the change is ready to be archived
+- **AND** explicitly invites running `/codev-archive` or `codev archive`
+  as a separate next step
 
-#### Scenario: Tâche ambiguë interrompt le flux
+#### Scenario: Ambiguous task interrupts the flow
 
-- **GIVEN** un `tasks.md` contenant une tâche dont la formulation admet
-  plusieurs interprétations qui changeraient matériellement le résultat
-- **WHEN** la skill arrive à cette tâche
-- **THEN** la skill demande une clarification à l'utilisateur avant
-  d'implémenter
-- **AND** ne coche pas la tâche tant que la clarification n'est pas obtenue
+- **GIVEN** a `tasks.md` containing a task whose wording admits several
+  interpretations that would materially change the result
+- **WHEN** the skill reaches that task
+- **THEN** the skill asks the user for clarification before implementing
+- **AND** does not check the task until the clarification is obtained
 
-### Requirement: Contrat du frontmatter d'une skill codev
+### Requirement: Frontmatter contract of a codev skill
 
-Toute skill livrée par codev MUST porter un frontmatter YAML valide dont le
-`name` correspond au nom du dossier `.claude/skills/<name>/`, dont le champ
-`allowed-tools` inclut au moins `Bash(codev:*)`, et dont `metadata.version`
-correspond à la version du binaire qui l'a générée.
+Every skill shipped by codev MUST carry a valid YAML frontmatter whose
+`name` matches the name of the `.claude/skills/<name>/` folder, whose
+`allowed-tools` field includes at least `Bash(codev:*)`, and whose
+`metadata.version` matches the version of the binary that generated it.
 
-#### Scenario: Frontmatter parseur par un lecteur YAML tiers
+#### Scenario: Frontmatter parsed by a third-party YAML reader
 
-- **GIVEN** une skill livrée par la version courante du binaire
-- **WHEN** son frontmatter est extrait et passé à un parseur YAML standard
-- **THEN** le parseur rend `name`, `allowed-tools` et `metadata.version`
-  sans erreur
-- **AND** `metadata.version` égale la version que le binaire annonce
+- **GIVEN** a skill shipped by the current version of the binary
+- **WHEN** its frontmatter is extracted and passed to a standard YAML parser
+- **THEN** the parser returns `name`, `allowed-tools` and `metadata.version`
+  without error
+- **AND** `metadata.version` equals the version the binary announces
 
-#### Scenario: Édition à la main détectée à l'update
+#### Scenario: Manual edit detected on update
 
-- **GIVEN** une skill dont un utilisateur a édité le corps à la main, sans
-  changer sa version
-- **WHEN** l'utilisateur relance `codev update` sans `--force`
-- **THEN** la skill n'est pas écrasée
-- **AND** le rapport de l'update la signale comme préservée
+- **GIVEN** a skill whose body a user has edited by hand, without
+  changing its version
+- **WHEN** the user reruns `codev update` without `--force`
+- **THEN** the skill is not overwritten
+- **AND** the update report flags it as preserved

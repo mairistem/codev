@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use codev_core::outputs::pattern_matches_any;
-use codev_core::{status, ChangeId, ChangeStatus, Layout};
+use codev_core::{ChangeId, ChangeStatus, Layout, status};
 
 use crate::config::ResolvedConfig;
 use crate::error::{EngineError, Result};
@@ -9,8 +9,8 @@ use crate::metadata::{self, ChangeMetadata};
 use crate::ports::FileSystem;
 use crate::schemas::{self, ResolvedSchema};
 
-/// Tout ce qu'il faut pour agir sur un change : son identité, ses métadonnées,
-/// et le schéma qui le régit.
+/// Everything needed to act on a change: its identity, its metadata, and the
+/// schema that governs it.
 #[derive(Debug)]
 pub struct ChangeContext {
     pub change: ChangeId,
@@ -18,12 +18,11 @@ pub struct ChangeContext {
     pub schema: ResolvedSchema,
 }
 
-/// Charge un change existant.
+/// Loads an existing change.
 ///
-/// L'absence de `change.yaml` n'est pas fatale : un change créé à la main
-/// hérite alors du schéma de la config du projet. Refuser aurait fait de
-/// l'outil le propriétaire de dossiers que l'utilisateur a le droit de créer
-/// lui-même.
+/// A missing `change.yaml` is not fatal: a hand-made change then inherits
+/// the schema from the project config. Refusing would have made the tool the
+/// owner of directories that the user is entitled to create themselves.
 pub fn load(
     fs: &dyn FileSystem,
     layout: &Layout,
@@ -36,13 +35,14 @@ pub fn load(
         });
     }
 
-    let metadata = metadata::load(fs, &layout.change_metadata(&change))?.unwrap_or(ChangeMetadata {
-        schema: config.schema.clone(),
-        created: None,
-        goal: None,
-        skip_specs: false,
-        retire_capabilities: false,
-    });
+    let metadata =
+        metadata::load(fs, &layout.change_metadata(&change))?.unwrap_or(ChangeMetadata {
+            schema: config.schema.clone(),
+            created: None,
+            goal: None,
+            skip_specs: false,
+            retire_capabilities: false,
+        });
 
     let schema = schemas::resolve(fs, layout, &metadata.schema)?;
     Ok(ChangeContext {
@@ -52,11 +52,11 @@ pub fn load(
     })
 }
 
-/// L'état du change, déduit de ce qui existe sur le disque.
+/// The change's status, derived from what exists on disk.
 pub fn status(fs: &dyn FileSystem, layout: &Layout, ctx: &ChangeContext) -> Result<ChangeStatus> {
     let dir = layout.change_dir(&ctx.change);
-    // Un seul parcours du dossier pour tous les artefacts : les motifs se
-    // testent ensuite en mémoire, dans le cœur pur.
+    // A single walk of the directory for all artifacts: the patterns are then
+    // tested in memory, in the pure core.
     let files = fs.walk_files(&dir).map_err(|e| EngineError::Unreadable {
         path: dir.clone(),
         reason: e.to_string(),
@@ -83,11 +83,11 @@ pub fn status(fs: &dyn FileSystem, layout: &Layout, ctx: &ChangeContext) -> Resu
     ))
 }
 
-/// Les changes actifs, par ordre alphabétique.
+/// The active changes, in alphabetical order.
 ///
-/// `archive/` est exclu — il contient les changes terminés — et tout dossier
-/// dont le nom n'est pas un identifiant valide est ignoré silencieusement :
-/// l'utilisateur a le droit d'avoir des dossiers à lui là-dedans.
+/// `archive/` is excluded — it holds the finished changes — and any directory
+/// whose name is not a valid identifier is silently ignored: the user is
+/// entitled to keep directories of their own in there.
 pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<ChangeId> {
     let changes_dir = layout.changes_dir();
     let Ok(names) = fs.list_dir(&changes_dir) else {
@@ -114,74 +114,73 @@ mod tests {
         crate::config::resolve(fs, &env, layout).unwrap()
     }
 
-    fn contexte(fs: &MemoryFileSystem, nom: &str) -> ChangeContext {
+    fn context(fs: &MemoryFileSystem, name: &str) -> ChangeContext {
         let layout = Layout::new("/p");
         let cfg = config(fs, &layout);
-        load(fs, &layout, &cfg, ChangeId::parse(nom).unwrap()).unwrap()
+        load(fs, &layout, &cfg, ChangeId::parse(name).unwrap()).unwrap()
     }
 
     #[test]
-    fn un_change_inconnu_est_une_erreur_qui_oriente() {
+    fn an_unknown_change_is_an_error_that_guides() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let layout = Layout::new("/p");
         let cfg = config(&fs, &layout);
-        let err = load(&fs, &layout, &cfg, ChangeId::parse("fantome").unwrap()).unwrap_err();
+        let err = load(&fs, &layout, &cfg, ChangeId::parse("ghost").unwrap()).unwrap_err();
         assert_eq!(err.code(), "unknown_change");
         assert!(err.to_string().contains("codev list"), "{err}");
     }
 
     #[test]
-    fn un_change_sans_metadonnees_herite_du_schema_du_projet() {
+    fn a_change_without_metadata_inherits_the_project_schema() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/_codev/changes/a-la-main/proposal.md", "# Proposal");
-        let ctx = contexte(&fs, "a-la-main");
+            .with_file("/p/_codev/changes/hand-made/proposal.md", "# Proposal");
+        let ctx = context(&fs, "hand-made");
         assert_eq!(ctx.metadata.schema, DEFAULT_SCHEMA);
         assert_eq!(ctx.metadata.created, None);
     }
 
     #[test]
-    fn deduit_letat_des_artefacts_du_disque() {
+    fn derives_artifact_states_from_disk() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
             .with_file("/p/_codev/changes/add-auth/proposal.md", "# Proposal");
 
-        let ctx = contexte(&fs, "add-auth");
+        let ctx = context(&fs, "add-auth");
         let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
 
-        let etat = |id: &str| {
-            status
-                .artifacts
-                .iter()
-                .find(|a| a.id == id)
-                .unwrap()
-                .state
-        };
-        assert_eq!(etat("proposal"), ArtifactState::Done);
-        assert_eq!(etat("specs"), ArtifactState::Ready);
-        assert_eq!(etat("tasks"), ArtifactState::Blocked);
+        let state = |id: &str| status.artifacts.iter().find(|a| a.id == id).unwrap().state;
+        assert_eq!(state("proposal"), ArtifactState::Done);
+        assert_eq!(state("specs"), ArtifactState::Ready);
+        assert_eq!(state("tasks"), ArtifactState::Blocked);
     }
 
     #[test]
-    fn une_spec_imbriquee_satisfait_le_motif_de_lartefact() {
+    fn a_nested_spec_satisfies_the_artifact_pattern() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file("/p/_codev/changes/add-auth/change.yaml", "schema: spec-driven")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
             .with_file("/p/_codev/changes/add-auth/proposal.md", "x")
             .with_file(
                 "/p/_codev/changes/add-auth/specs/identity/user-auth/spec.md",
                 "y",
             );
 
-        let ctx = contexte(&fs, "add-auth");
+        let ctx = context(&fs, "add-auth");
         let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
         let specs = status.artifacts.iter().find(|a| a.id == "specs").unwrap();
         assert_eq!(specs.state, ArtifactState::Done);
     }
 
     #[test]
-    fn skip_specs_rend_tasks_ecrivable_sans_specs() {
+    fn skip_specs_makes_tasks_writable_without_specs() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
@@ -191,35 +190,25 @@ mod tests {
             .with_file("/p/_codev/changes/refactor/proposal.md", "x")
             .with_file("/p/_codev/changes/refactor/design.md", "y");
 
-        let ctx = contexte(&fs, "refactor");
+        let ctx = context(&fs, "refactor");
         let status = status(&fs, &Layout::new("/p"), &ctx).unwrap();
-        let etat = |id: &str| {
-            status
-                .artifacts
-                .iter()
-                .find(|a| a.id == id)
-                .unwrap()
-                .state
-        };
-        assert_eq!(etat("specs"), ArtifactState::Skipped);
-        assert_eq!(etat("tasks"), ArtifactState::Ready);
+        let state = |id: &str| status.artifacts.iter().find(|a| a.id == id).unwrap().state;
+        assert_eq!(state("specs"), ArtifactState::Skipped);
+        assert_eq!(state("tasks"), ArtifactState::Ready);
     }
 
     #[test]
-    fn liste_les_changes_actifs_sans_larchive() {
+    fn lists_active_changes_without_the_archive() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file("/p/_codev/changes/add-auth/proposal.md", "x")
             .with_file("/p/_codev/changes/fix-bug/proposal.md", "x")
-            .with_file(
-                "/p/_codev/changes/archive/2026-01-01-vieux/proposal.md",
-                "x",
-            );
+            .with_file("/p/_codev/changes/archive/2026-01-01-old/proposal.md", "x");
 
-        let noms: Vec<String> = list(&fs, &Layout::new("/p"))
+        let names: Vec<String> = list(&fs, &Layout::new("/p"))
             .iter()
             .map(ToString::to_string)
             .collect();
-        assert_eq!(noms, ["add-auth", "fix-bug"]);
+        assert_eq!(names, ["add-auth", "fix-bug"]);
     }
 }

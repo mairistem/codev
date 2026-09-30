@@ -1,105 +1,100 @@
-# Proposal : `codev-propose` détecte et enrichit un ticket Jira mentionné
+# Proposal: `codev-propose` detects and enriches a mentioned Jira ticket
 
-## Pourquoi
+## Why
 
-C'est la première vraie intégration MCP côté codev. Aujourd'hui,
-quand un utilisateur mentionne `JVS-1234` dans son prompt de
-`/codev-propose`, la skill traite la chaîne comme un mot opaque au
-même titre que « ajouter l'authentification » — le proposal
-sort **sans** le contexte du ticket, alors qu'un MCP Atlassian
-branché sur la même session peut le récupérer en un appel.
+This is the first real MCP integration on the codev side. Today, when
+a user mentions `PROJ-123` in their `/codev-propose` prompt, the skill
+treats the string as an opaque word, just like "add authentication"
+— the proposal comes out **without** the ticket's context, even
+though an Atlassian MCP connected to the same session could fetch it
+in a single call.
 
-C'est la stratégie que Ludovic a actée : **les futures skills codev
-détectent elles-mêmes les patterns MCP-triggerables et appellent le
-MCP directement, sans skills séparées** ([[project_codev_mcp-integration]]).
-Ce change livre le premier cas — Jira / Atlassian — dont les
-apprentissages guideront les intégrations suivantes (Design, Notion,
-GitHub Issues…).
+This is the strategy Ludovic settled on: **future codev skills detect
+MCP-triggerable patterns themselves and call the MCP directly, without
+separate skills** ([[project_codev_mcp-integration]]). This change
+delivers the first case — Jira / Atlassian — whose lessons will guide
+the following integrations (Design, Notion, GitHub Issues…).
 
-Décidé avec Ludovic après une exploration `/codev-explore`
-(2026-09-09) — les 6 questions ouvertes ont été tranchées :
+Decided with Ludovic after a `/codev-explore` exploration
+(2026-09-09) — the 6 open questions were settled:
 
-1. **Périmètre** — Jira seul, un vrai deuxième cas viendra plus tard.
-2. **MCP** — `mcp__claude_ai_Atlassian__*` (MCP officiel Claude
-   Atlassian, disponible sur Claude Code).
-3. **Pattern** — générique `[A-Z]{2,}-\d+`, pas de configuration
-   projet.
-4. **Contenu récupéré** — injecté dans le contexte de la conversation
-   **et** cité en tête du proposal pour la traçabilité.
-5. **Sans MCP branché** — message informatif, le proposal se rédige
-   quand même sans le contenu du ticket.
-6. **Où vit la logique** — dans le body markdown de la skill (le CLI
-   codev n'a pas à connaître Jira).
+1. **Scope** — Jira only; a real second case will come later.
+2. **MCP** — `mcp__claude_ai_Atlassian__*` (official Claude Atlassian
+   MCP, available on Claude Code).
+3. **Pattern** — generic `[A-Z]{2,}-\d+`, no project configuration.
+4. **Fetched content** — injected into the conversation context
+   **and** cited at the top of the proposal for traceability.
+5. **Without a connected MCP** — informational message; the proposal
+   is written anyway, without the ticket's content.
+6. **Where the logic lives** — in the skill's markdown body (the codev
+   CLI does not need to know about Jira).
 
-## Ce qui change
+## What Changes
 
-- **Le body de `assets/workflows/propose.md`** gagne une étape 0 :
-  détection d'un pattern `[A-Z]{2,}-\d+` dans le prompt de
-  l'utilisateur, avant même la résolution du nom de change.
-- **Sur détection** :
-  - Si `mcp__claude_ai_Atlassian__getJiraIssue` est disponible, la
-    skill l'appelle avec l'identifiant du ticket.
-  - Le contenu du ticket (titre, description, status, type)
-    devient une **source de contexte** que l'agent lit avant de
-    rédiger le proposal.
-  - Le proposal cite le ticket en tête, section « Contexte externe »
-    ou similaire, avec une ligne du type
-    `> Source : ticket **JVS-1234** — « <titre> » (<status>)`.
-- **Sans MCP branché** : la skill affiche
-  « Un ticket JVS-1234 est mentionné mais aucun MCP Atlassian n'est
-  disponible dans cette session — le proposal sera rédigé sans son
-  contenu. » Puis continue.
-- **`allowed-tools` de `propose`** gagne
-  `mcp__claude_ai_Atlassian__getJiraIssue`. Aucun autre outil MCP
-  n'est ajouté — la skill n'a pas besoin de rechercher ni de
-  modifier des tickets.
-- **Aucun changement de frontière** — la skill reste incapable
-  d'écrire hors de `_codev/changes/<nom>/`.
+- **The body of `assets/workflows/propose.md`** gains a step 0:
+  detection of a `[A-Z]{2,}-\d+` pattern in the user's prompt, even
+  before resolving the change name.
+- **On detection**:
+  - If `mcp__claude_ai_Atlassian__getJiraIssue` is available, the
+    skill calls it with the ticket identifier.
+  - The ticket's content (title, description, status, type) becomes
+    a **context source** that the agent reads before writing the
+    proposal.
+  - The proposal cites the ticket at the top, in an "External
+    context" section or similar, with a line such as
+    `> Source: ticket **PROJ-123** — "<title>" (<status>)`.
+- **Without a connected MCP**: the skill displays
+  "Ticket PROJ-123 is mentioned but no Atlassian MCP is available in
+  this session — the proposal will be written without its content."
+  Then it continues.
+- **`allowed-tools` of `propose`** gains
+  `mcp__claude_ai_Atlassian__getJiraIssue`. No other MCP tool is
+  added — the skill has no need to search or modify tickets.
+- **No boundary change** — the skill remains unable to write outside
+  `_codev/changes/<name>/`.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — nouvelle exigence ADDED décrivant le comportement de
-  détection et d'enrichissement de `codev-propose`. Les autres
-  exigences de propose (implicites aujourd'hui) restent inchangées.
+- `skills` — new ADDED requirement describing the detection and
+  enrichment behavior of `codev-propose`. The other propose
+  requirements (implicit today) remain unchanged.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** : édition du body `assets/workflows/propose.md` (ajout
-  d'une étape 0). Extension de l'`allowed-tools` de l'entrée
-  `Workflow { id: "propose", … }` dans le `CATALOG` de
-  `codev-agents::workflows`. Un test dédié
-  `propose_declare_le_mcp_atlassian` verrouille la présence du MCP
-  dans `allowed-tools`.
-- **Contrat JSON** : rien. La détection et l'appel MCP vivent
-  entièrement dans le body — le CLI codev n'en sait rien.
-- **Fichiers écrits** : aucun changement sur le disque hors le
-  proposal.md du change en question. La skill continue de créer le
-  change via `codev new change` comme avant.
-- **Migration** : aucune. Sans MCP Atlassian branché, comportement
-  bit-identique à aujourd'hui (message informatif au premier ticket
-  mentionné, sinon silencieux).
-- **Hors périmètre** :
-  - **Autres MCP** (Design, Notion, GitHub) — attendront un vrai
-    deuxième cas concret.
-  - **Recherche de tickets** (JQL, listing) — la skill n'appelle
-    que `getJiraIssue` pour un ID précis mentionné.
-  - **Écriture vers Jira** (transitions, commentaires) — pas dans
-    ce lot ; le proposal peut le suggérer comme travail futur si
-    utile.
-  - **Multi-tickets dans une même invocation** — la skill traite le
-    premier ticket détecté ; les autres sont juste mentionnés.
-    Reportable si le pattern devient récurrent.
-  - **Configuration projet du pattern** — pas de champ
-    `ticket_pattern:` dans `_codev/config.yaml` pour la V1. Le
-    pattern générique `[A-Z]{2,}-\d+` suffit pour toutes les orgs
-    Atlassian standard.
+- **Code**: edit of the `assets/workflows/propose.md` body (adding a
+  step 0). Extension of the `allowed-tools` of the
+  `Workflow { id: "propose", … }` entry in the `CATALOG` of
+  `codev-agents::workflows`. A dedicated test
+  `propose_declare_le_mcp_atlassian` locks in the presence of the MCP
+  in `allowed-tools`.
+- **JSON contract**: nothing. Detection and the MCP call live
+  entirely in the body — the codev CLI knows nothing about them.
+- **Files written**: no change on disk apart from the proposal.md of
+  the change in question. The skill keeps creating the change via
+  `codev new change` as before.
+- **Migration**: none. Without a connected Atlassian MCP, behavior is
+  bit-identical to today (informational message on the first
+  mentioned ticket, silent otherwise).
+- **Out of scope**:
+  - **Other MCPs** (Design, Notion, GitHub) — will wait for a real
+    second concrete case.
+  - **Ticket search** (JQL, listing) — the skill only calls
+    `getJiraIssue` for a specific mentioned ID.
+  - **Writing to Jira** (transitions, comments) — not in this batch;
+    the proposal may suggest it as future work if useful.
+  - **Multiple tickets in a single invocation** — the skill handles
+    the first detected ticket; the others are just mentioned.
+    Deferrable if the pattern becomes recurrent.
+  - **Project configuration of the pattern** — no `ticket_pattern:`
+    field in `_codev/config.yaml` for V1. The generic pattern
+    `[A-Z]{2,}-\d+` is enough for all standard Atlassian orgs.

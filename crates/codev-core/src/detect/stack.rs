@@ -1,35 +1,35 @@
-//! Reconnaissance de la stack depuis les manifestes usuels.
+//! Stack identification from the usual manifests.
 //!
-//! Chaque fonction prend les octets bruts d'un manifeste et retourne
-//! `Some(Stack)` si elle a pu extraire quelque chose de suffisamment concret.
-//! Les fonctions sont indépendantes — c'est l'orchestrateur qui choisit
-//! quel manifeste tenter en premier.
+//! Each function takes the raw bytes of a manifest and returns
+//! `Some(Stack)` if it could extract something concrete enough.
+//! The functions are independent — the orchestrator decides
+//! which manifest to try first.
 
 use serde::Deserialize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Stack {
-    /// Langage primaire : "Rust", "JavaScript/TypeScript", "Python", "Go", "Java".
+    /// Primary language: "Rust", "JavaScript/TypeScript", "Python", "Go", "Java".
     pub language: String,
-    /// Édition Rust, version langage, etc. — texte libre. `None` si non extrait.
+    /// Rust edition, language version, etc. — free-form text. `None` if not extracted.
     pub edition_or_version: Option<String>,
-    /// Nombre de crates dans un workspace Cargo. `None` pour un projet simple
-    /// ou pour un langage sans workspace.
+    /// Number of crates in a Cargo workspace. `None` for a single-crate project
+    /// or for a language without workspaces.
     pub workspace_crate_count: Option<usize>,
-    /// Aperçu court des dépendances principales — noms, sans versions.
-    /// Coupé à 10 entrées.
+    /// Short overview of the main dependencies — names, without versions.
+    /// Capped at 10 entries.
     pub dependencies_summary: Vec<String>,
 }
 
 // ─────────────────────────────── Cargo.toml ───────────────────────────────
 
-#[allow(clippy::question_mark)] // else-if let Some — plus lisible qu'un ? qui masquerait la branche workspace
+#[allow(clippy::question_mark)] // else-if let Some — more readable than a ? that would hide the workspace branch
 pub fn from_cargo_toml(bytes: &[u8]) -> Option<Stack> {
     let text = std::str::from_utf8(bytes).ok()?;
     let doc: toml::Value = toml::from_str(text).ok()?;
     let table = doc.as_table()?;
 
-    // Deux formes : `[workspace]` (workspace root) ou `[package]` (crate simple).
+    // Two shapes: `[workspace]` (workspace root) or `[package]` (single crate).
     let (edition, workspace_crate_count, dependencies) = if let Some(ws) = table.get("workspace") {
         let ws_table = ws.as_table()?;
         let edition = ws_table
@@ -101,8 +101,8 @@ struct PackageJson {
 pub fn from_package_json(bytes: &[u8]) -> Option<Stack> {
     let pkg: PackageJson = serde_json::from_slice(bytes).ok()?;
 
-    // Distingue TypeScript / JavaScript par présence de `typescript` dans les
-    // deps ou de `tsconfig.json` (le second est vérifié par l'orchestrateur).
+    // Tells TypeScript from JavaScript by the presence of `typescript` in the
+    // deps or of `tsconfig.json` (the latter is checked by the orchestrator).
     let all_deps: Vec<String> = pkg
         .dependencies
         .iter()
@@ -190,9 +190,8 @@ pub fn from_go_mod(bytes: &[u8]) -> Option<Stack> {
         .lines()
         .find_map(|l| l.trim().strip_prefix("go "))
         .map(|v| v.trim().to_string());
-    // La ligne `module <path>` est présente ; sinon ce n'est pas un go.mod.
-    text.lines()
-        .find(|l| l.trim().starts_with("module "))?;
+    // The `module <path>` line must be present; otherwise this is not a go.mod.
+    text.lines().find(|l| l.trim().starts_with("module "))?;
 
     Some(Stack {
         language: "Go".to_string(),
@@ -214,8 +213,8 @@ pub fn project_name_from_go_mod(bytes: &[u8]) -> Option<String> {
 
 pub fn from_pom_xml(bytes: &[u8]) -> Option<Stack> {
     let text = std::str::from_utf8(bytes).ok()?;
-    // Détection minimale sans dépendance XML : on cherche <project> comme
-    // marqueur, et on extrait la version Java si le tag est présent.
+    // Minimal detection without an XML dependency: look for <project> as a
+    // marker, and extract the Java version if the tag is present.
     if !text.contains("<project") {
         return None;
     }
@@ -263,7 +262,7 @@ tokio = "1"
 
     const CARGO_PACKAGE: &str = r#"
 [package]
-name = "mon-projet"
+name = "my-project"
 edition = "2021"
 
 [dependencies]
@@ -271,7 +270,7 @@ serde = "1"
 "#;
 
     #[test]
-    fn cargo_workspace_detecte_workspace_edition_et_deps() {
+    fn cargo_workspace_detects_workspace_edition_and_deps() {
         let stack = from_cargo_toml(CARGO_WORKSPACE.as_bytes()).unwrap();
         assert_eq!(stack.language, "Rust");
         assert_eq!(stack.edition_or_version.as_deref(), Some("2024"));
@@ -280,24 +279,24 @@ serde = "1"
     }
 
     #[test]
-    fn cargo_package_detecte_projet_simple() {
+    fn cargo_package_detects_single_crate_project() {
         let stack = from_cargo_toml(CARGO_PACKAGE.as_bytes()).unwrap();
         assert_eq!(stack.language, "Rust");
         assert_eq!(stack.edition_or_version.as_deref(), Some("2021"));
         assert_eq!(stack.workspace_crate_count, None);
         assert_eq!(
             project_name_from_cargo_toml(CARGO_PACKAGE.as_bytes()).as_deref(),
-            Some("mon-projet")
+            Some("my-project")
         );
     }
 
     #[test]
-    fn cargo_illisible_retourne_none() {
-        assert!(from_cargo_toml(b"pas du toml valide {{{").is_none());
+    fn unreadable_cargo_returns_none() {
+        assert!(from_cargo_toml(b"not valid toml {{{").is_none());
     }
 
     const PACKAGE_TYPESCRIPT: &str = r#"{
-        "name": "mon-app",
+        "name": "my-app",
         "dependencies": {
             "react": "^18",
             "typescript": "^5"
@@ -305,25 +304,25 @@ serde = "1"
         "engines": { "node": ">=20" }
     }"#;
 
-    const PACKAGE_JS_PUR: &str = r#"{
+    const PACKAGE_PLAIN_JS: &str = r#"{
         "name": "old-app",
         "dependencies": { "lodash": "^4" }
     }"#;
 
     #[test]
-    fn package_json_distingue_ts_de_js() {
+    fn package_json_tells_ts_from_js() {
         let ts = from_package_json(PACKAGE_TYPESCRIPT.as_bytes()).unwrap();
         assert_eq!(ts.language, "TypeScript");
         assert_eq!(ts.edition_or_version.as_deref(), Some("Node >=20"));
         assert!(ts.dependencies_summary.contains(&"react".to_string()));
 
-        let js = from_package_json(PACKAGE_JS_PUR.as_bytes()).unwrap();
+        let js = from_package_json(PACKAGE_PLAIN_JS.as_bytes()).unwrap();
         assert_eq!(js.language, "JavaScript");
         assert_eq!(js.edition_or_version, None);
 
         assert_eq!(
             project_name_from_package_json(PACKAGE_TYPESCRIPT.as_bytes()).as_deref(),
-            Some("mon-app")
+            Some("my-app")
         );
     }
 
@@ -335,7 +334,7 @@ dependencies = ["fastapi>=0.100", "pydantic~=2.0"]
 "#;
 
     #[test]
-    fn pyproject_detecte_python_et_deps() {
+    fn pyproject_detects_python_and_deps() {
         let s = from_pyproject_toml(PYPROJECT.as_bytes()).unwrap();
         assert_eq!(s.language, "Python");
         assert_eq!(s.edition_or_version.as_deref(), Some("Python >=3.11"));
@@ -347,7 +346,7 @@ dependencies = ["fastapi>=0.100", "pydantic~=2.0"]
         );
     }
 
-    const GO_MOD: &str = r#"module github.com/user/monrepo
+    const GO_MOD: &str = r#"module github.com/user/myrepo
 
 go 1.22
 
@@ -357,16 +356,19 @@ require (
 "#;
 
     #[test]
-    fn go_mod_detecte_version_et_nom() {
+    fn go_mod_detects_version_and_name() {
         let s = from_go_mod(GO_MOD.as_bytes()).unwrap();
         assert_eq!(s.language, "Go");
         assert_eq!(s.edition_or_version.as_deref(), Some("Go 1.22"));
-        assert_eq!(project_name_from_go_mod(GO_MOD.as_bytes()).as_deref(), Some("monrepo"));
+        assert_eq!(
+            project_name_from_go_mod(GO_MOD.as_bytes()).as_deref(),
+            Some("myrepo")
+        );
     }
 
     const POM_XML: &str = r#"<?xml version="1.0"?>
 <project>
-  <artifactId>mon-service</artifactId>
+  <artifactId>my-service</artifactId>
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
   </properties>
@@ -374,10 +376,13 @@ require (
 "#;
 
     #[test]
-    fn pom_xml_detecte_java_et_artifact_id() {
+    fn pom_xml_detects_java_and_artifact_id() {
         let s = from_pom_xml(POM_XML.as_bytes()).unwrap();
         assert_eq!(s.language, "Java");
         assert_eq!(s.edition_or_version.as_deref(), Some("Java 17"));
-        assert_eq!(project_name_from_pom_xml(POM_XML.as_bytes()).as_deref(), Some("mon-service"));
+        assert_eq!(
+            project_name_from_pom_xml(POM_XML.as_bytes()).as_deref(),
+            Some("my-service")
+        );
     }
 }

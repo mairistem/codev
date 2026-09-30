@@ -1,0 +1,11 @@
+[book]
+title = "codev"
+description = "Le développement piloté par les specs pour Claude Code"
+authors = ["The codev contributors"]
+language = "fr"
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/mairistem/codev"
+edit-url-template = "https://github.com/mairistem/codev/edit/main/docs/fr/{path}"
+site-url = "/codev/fr/"

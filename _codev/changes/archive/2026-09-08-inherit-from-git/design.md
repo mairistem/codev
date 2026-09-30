@@ -1,41 +1,41 @@
-# Design : hériter d'un dépôt git distant
+# Design: inherit from a remote git repository
 
-## Contexte
+## Context
 
-La couche `inherits: path:` livrée précédemment couvre le partage local ;
-elle sait résoudre un chemin, lire les décisions et les fusionner avec
-provenance. Ce change branche la même infrastructure sur un dépôt distant
-en insérant, entre la déclaration et la lecture, une étape « résolution
-par lock » qui n'exige jamais le réseau.
+The `inherits: path:` layer delivered earlier covers local sharing; it can
+resolve a path, read the decisions and merge them with provenance. This
+change plugs the same infrastructure into a remote repository by
+inserting, between the declaration and the read, a "resolution by lock"
+step that never requires the network.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- la nouvelle brique de transport (port `ProcessRunner`, appelant `git`) ;
-- la disposition du cache et l'algorithme de fetch ;
-- le format du `codev.lock` et son intégration à `config::resolve` ;
-- les trois commandes `codev sources` et leur contrat JSON.
+- the new transport building block (`ProcessRunner` port, calling `git`);
+- the cache layout and the fetch algorithm;
+- the format of `codev.lock` and its integration into `config::resolve`;
+- the three `codev sources` commands and their JSON contract.
 
-Il ne cadre **pas** le mode dégradé « sans `git` sur le PATH », le
-nettoyage de cache, la parallélisation, ni les autres protocoles
-d'authentification. Cf. la liste hors-périmètre du proposal.
+It does **not** cover the degraded "no `git` on the PATH" mode, cache
+cleanup, parallelization, or other authentication protocols. Cf. the
+proposal's out-of-scope list.
 
-## Décisions
+## Decisions
 
-### Décision : piloter le binaire `git` via un port `ProcessRunner`
+### Decision: drive the `git` binary through a `ProcessRunner` port
 
-C'est le geste que la décision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md) documente
-explicitement : « piloter le binaire `git` réutilise l'authentification
-existante ». Une bibliothèque pure-Rust comme `gix` demanderait de
-recopier la configuration `ssh`, les *credential helpers*, les proxies ;
-`git` sait déjà tout ça.
+This is the approach that decision
+[0005](../../decisions/0005-read-only-inherited-sources.md) documents
+explicitly: "driving the `git` binary reuses existing authentication". A
+pure-Rust library such as `gix` would require replicating the `ssh`
+configuration, the *credential helpers*, the proxies; `git` already knows
+all that.
 
-Le port est le quatrième annoncé par la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) :
-`FileSystem`, `Clock`, `Env`, et maintenant `ProcessRunner`. Son
-interface reste minimale :
+The port is the fourth one announced by decision
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
+`FileSystem`, `Clock`, `Env`, and now `ProcessRunner`. Its interface stays
+minimal:
 
 ```rust
 pub trait ProcessRunner {
@@ -45,42 +45,41 @@ pub trait ProcessRunner {
 pub struct ProcessOutput { pub stdout: Vec<u8>, pub stderr: Vec<u8>, pub exit_code: i32 }
 ```
 
-L'implémentation en mémoire enregistre `(program, args, cwd)` et rend un
-`Vec<ProcessOutput>` prédéfini — ce qui rend les tests des commandes
-`sources update` déterministes sans jamais toucher au réseau.
+The in-memory implementation records `(program, args, cwd)` and returns a
+predefined `Vec<ProcessOutput>` — which makes the tests of the
+`sources update` commands deterministic without ever touching the network.
 
-**Alternative écartée** : `gix`. Beau techniquement, mais coût
-d'implémentation et de compatibilité disproportionné pour un besoin
-couvert à 100 % par `git`. Reconsidérable si `git` disparaît des postes.
+**Rejected alternative**: `gix`. Technically attractive, but a
+disproportionate implementation and compatibility cost for a need covered
+100% by `git`. Worth reconsidering if `git` disappears from workstations.
 
-### Décision : cache adressé par SHA, dans un dossier respectant XDG
+### Decision: SHA-addressed cache, in an XDG-compliant folder
 
-Racine du cache :
+Cache root:
 
-- `$XDG_CACHE_HOME/codev/` si défini ;
-- sinon `~/.cache/codev/`.
+- `$XDG_CACHE_HOME/codev/` if set;
+- otherwise `~/.cache/codev/`.
 
-Sous-arbre :
+Subtree:
 
 ```
 <cache-root>/
-├── git/<hash-de-l-url>/          # dépôt bare, cloné une fois par URL
-└── content/<sha>/                # contenu extrait pour un SHA donné
+├── git/<url-hash>/               # bare repository, cloned once per URL
+└── content/<sha>/                # content extracted for a given SHA
 ```
 
-Le hash de l'URL est un `sha256` tronqué à 16 caractères — juste ce qu'il
-faut pour la lisibilité et pour éviter les collisions. Le `content/<sha>/`
-est un checkout `git worktree` sur le SHA verrouillé ; deux sources
-distinctes qui partagent un même SHA (peu probable en pratique) se
-partageraient le contenu.
+The URL hash is a `sha256` truncated to 16 characters — just enough for
+readability and to avoid collisions. The `content/<sha>/` is a
+`git worktree` checkout on the locked SHA; two distinct sources that share
+the same SHA (unlikely in practice) would share the content.
 
-**Rationale** : suit la convention XDG que respecte déjà l'écosystème
-Rust (`cargo`, `rustup`). Reconstituer le cache est bon marché, donc
-l'utilisateur peut vider `~/.cache/codev/` en cas de doute.
+**Rationale**: follows the XDG convention already honored by the Rust
+ecosystem (`cargo`, `rustup`). Rebuilding the cache is cheap, so the user
+can empty `~/.cache/codev/` when in doubt.
 
-### Décision : lock TOML, une nouvelle dépendance assumée
+### Decision: TOML lock, an accepted new dependency
 
-`_codev/codev.lock` en TOML :
+`_codev/codev.lock` in TOML:
 
 ```toml
 version = 1
@@ -88,87 +87,84 @@ version = 1
 [[source]]
 git = "git@github.com:acme/codev-shared.git"
 ref = "main"
-subpath = "shared/"                  # optionnel
+subpath = "shared/"                  # optional
 commit = "9f2c1ab77bd3…"
 resolved_at = "2026-09-08T15:22:44Z"
 ```
 
-Format aligné sur la convention `<outil>.lock` (Cargo.lock, poetry.lock,
-uv.lock). Nouvelle dépendance `toml = "0.8"` — coût accepté pour la
-convention et pour la clarté du format côté humain.
+Format aligned with the `<tool>.lock` convention (Cargo.lock, poetry.lock,
+uv.lock). New dependency `toml = "0.8"` — a cost accepted for the
+convention and for the clarity of the format for humans.
 
-**Alternative écartée** : YAML pour rester cohérent avec `config.yaml`,
-`schema.yaml`, `change.yaml`. Écartée parce qu'un lock est un fichier
-généré, pas un fichier écrit à la main — la convention TOML domine dans
-ce cas, et le YAML forcerait un `serde_norway` sur un format qu'il n'a
-pas d'intérêt à voir.
+**Rejected alternative**: YAML, to stay consistent with `config.yaml`,
+`schema.yaml`, `change.yaml`. Rejected because a lock is a generated file,
+not a hand-written one — the TOML convention dominates in that case, and
+YAML would force `serde_norway` onto a format it has no business seeing.
 
-### Décision : résolution paresseuse, jamais au moment de `config::resolve`
+### Decision: lazy resolution, never at `config::resolve` time
 
-`config::resolve` ne touche ni au réseau ni au cache. Pour un `inherits:
-git:`, la résolution consulte le lock :
+`config::resolve` touches neither the network nor the cache. For an
+`inherits: git:`, resolution consults the lock:
 
-- entrée trouvée avec un SHA en cache → chemin résolu vers
-  `<cache>/content/<sha>/[subpath]` ;
-- entrée trouvée mais SHA absent du cache → warning
-  `git_source_needs_update` ; le contenu n'est pas exposé ;
-- entrée absente du lock → warning `git_source_unlocked` ; le contenu
-  n'est pas exposé.
+- entry found with a cached SHA → path resolved to
+  `<cache>/content/<sha>/[subpath]`;
+- entry found but SHA missing from the cache → warning
+  `git_source_needs_update`; the content is not exposed;
+- entry missing from the lock → warning `git_source_unlocked`; the content
+  is not exposed.
 
-C'est la seule façon de garantir que les commandes courantes restent
-déterministes et hors ligne. `codev sources update` est le point unique
-d'écriture du lock.
+This is the only way to guarantee that everyday commands stay
+deterministic and offline. `codev sources update` is the single point
+where the lock is written.
 
-### Décision : `codev sources update` fait tout dans un `Plan`
+### Decision: `codev sources update` does everything in a `Plan`
 
-Comme le reste de l'outil : la fonction pure `plan_sources_update(index,
-lock, remote_resolutions)` produit un `SourcesUpdatePlan` avec les fetch
-à effectuer, les entrées de lock à écrire, et un diff lisible. La
-coquille CLI exécute — ordre : `git fetch` d'abord (dans le cache),
-`worktree add` ensuite, écriture du lock en dernier. Si l'utilisateur
-interrompt entre deux fetches, le lock reste inchangé — l'atomicité
-concerne le lock, pas le cache qui peut être partiellement peuplé sans
-conséquence.
+Like the rest of the tool: the pure function `plan_sources_update(index,
+lock, remote_resolutions)` produces a `SourcesUpdatePlan` with the fetches
+to perform, the lock entries to write, and a readable diff. The CLI shell
+executes — order: `git fetch` first (into the cache), `worktree add` next,
+writing the lock last. If the user interrupts between two fetches, the
+lock stays unchanged — atomicity concerns the lock, not the cache, which
+can be partially populated without consequence.
 
-### Décision : filtrer par extension `.md` et `.yaml` à la lecture
+### Decision: filter by `.md` and `.yaml` extension on read
 
-Le loader de sources héritées SHALL ne présenter que les fichiers
-d'extension `.md` et `.yaml`, même si le dépôt en contient d'autres.
-C'est la mise en œuvre matérielle du principe « aucun contenu exécutable
-hérité » de la décision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md). Un
-`.sh`, un `.py`, un binaire, un hook : tous ignorés à l'index, jamais
-exécutés.
+The inherited-source loader SHALL present only files with the `.md` and
+`.yaml` extensions, even if the repository contains others. This is the
+concrete implementation of the "no inherited executable content"
+principle of decision
+[0005](../../decisions/0005-read-only-inherited-sources.md). A
+`.sh`, a `.py`, a binary, a hook: all ignored by the index, never
+executed.
 
-Le filtrage se fait dans `codev-engine::sources::load` — un seul endroit
-à auditer.
+Filtering happens in `codev-engine::sources::load` — a single place to
+audit.
 
-**Alternative écartée** : liste blanche par nom précis. Trop rigide, et
-la validation via extension est déjà utilisée à d'autres endroits du
-code.
+**Rejected alternative**: an allowlist of exact names. Too rigid, and
+validation by extension is already used elsewhere in the code.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **`git ls-remote` sur un serveur lent bloque `codev sources update`**.
-  → **Compromis assumé** : la commande est explicitement l'endroit qui
-  touche au réseau, l'utilisateur s'attend à un peu de latence.
-- **Deux sources qui partagent la même URL avec des `ref` différents
-  clonent une seule fois le dépôt bare mais font deux worktrees**.
-  → **Correct** : le fetch peuple le bare, les worktrees pointent chacun
-  sur son SHA. Test d'invariant qui le vérifie.
-- **Cache corrompu** (SHA verrouillé mais dossier `content/<sha>/`
-  incomplet parce qu'une commande précédente a été interrompue).
-  → **Atténuation** : présence du dossier n'est pas prise comme preuve
-  suffisante ; le loader vérifie qu'il contient au moins un `_codev/` ou
-  un `.md` — sinon warning `cache_incomplete` invitant à relancer
+- **`git ls-remote` on a slow server blocks `codev sources update`**.
+  → **Accepted trade-off**: the command is explicitly the place that
+  touches the network; the user expects some latency.
+- **Two sources sharing the same URL with different `ref`s clone the bare
+  repository only once but create two worktrees**.
+  → **Correct**: the fetch populates the bare repository, and each
+  worktree points to its own SHA. An invariant test checks this.
+- **Corrupted cache** (SHA locked but `content/<sha>/` folder incomplete
+  because a previous command was interrupted).
+  → **Mitigation**: the folder's presence is not taken as sufficient
+  proof; the loader checks that it contains at least a `_codev/` or a
+  `.md` — otherwise a `cache_incomplete` warning invites the user to rerun
   `sources update`.
-- **URLs SSH avec `~` dans le chemin** ne sont pas concernées : on
-  n'expand rien dans une URL git, on la passe telle quelle à `git`. Le
-  hash de l'URL est calculé sur la chaîne exacte.
+- **SSH URLs with `~` in the path** are not affected: nothing is expanded
+  in a git URL; it is passed as is to `git`. The URL hash is computed on
+  the exact string.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet — c'est la première version. Un projet qui avait déclaré
-`inherits: git:` recevait précédemment un warning ; il verra maintenant
-soit le contenu (si un `codev sources update` a été fait), soit le
-nouveau warning `git_source_unlocked` qui lui dit exactement quoi lancer.
+Not applicable — this is the first version. A project that had declared
+`inherits: git:` previously received a warning; it will now see either the
+content (if a `codev sources update` has been run) or the new
+`git_source_unlocked` warning, which tells it exactly what to run.

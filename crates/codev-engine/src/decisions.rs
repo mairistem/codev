@@ -1,50 +1,51 @@
-//! Index des décisions d'architecture — projet + sources héritées.
+//! Index of architecture decisions — project + inherited sources.
 //!
-//! Le parseur pur (`codev-core::decisions`) transforme un fichier en
-//! `Decision`. Ici on coordonne la lecture du disque, la fusion avec les
-//! sources héritées `path:`, et le calcul des décisions « en vigueur » —
-//! celles qui ne sont supersedées par aucune autre.
+//! The pure parser (`codev-core::decisions`) turns a file into a
+//! `Decision`. Here we coordinate reading from disk, merging with the
+//! `path:` inherited sources, and computing the decisions "in effect" —
+//! those not superseded by any other.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
-use codev_core::decisions::{parse_decision, Decision, DecisionStatus};
+use codev_core::Layout;
+use codev_core::decisions::{Decision, DecisionStatus, parse_decision};
 use codev_core::parser::ast::{Finding, Severity};
 use codev_core::parser::codes;
-use codev_core::Layout;
 
 use crate::config::ResolvedConfig;
 use crate::error::{EngineError, Result};
 use crate::ports::{Env, FileSystem};
 
-/// L'origine d'une décision — projet ou source héritée.
+/// The origin of a decision — project or inherited source.
 ///
-/// Le format des sources héritées `git:` est réservé — le lot actuel ne
-/// gère que `path:`. Une nouvelle variante suivra quand `git:` sera
-/// implémenté.
+/// The format of `git:` inherited sources is reserved — the current batch
+/// only handles `path:`. A new variant will follow once `git:` is
+/// implemented.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Origin {
     Project,
     Path(String),
-    /// URL d'un dépôt `git:` — le contenu vient du cache local, mais
-    /// l'`origin` porte l'adresse d'origine pour rester lisible côté agent.
+    /// URL of a `git:` repository — the content comes from the local cache,
+    /// but the `origin` carries the original address so it stays readable
+    /// for the agent.
     Git(String),
 }
 
 impl Origin {
     pub fn as_str(&self) -> String {
         match self {
-            Self::Project => "projet".into(),
+            Self::Project => "project".into(),
             Self::Path(raw) => format!("path:{raw}"),
             Self::Git(url) => format!("git:{url}"),
         }
     }
 }
 
-/// Un identifiant qualifié — évite les collisions inter-sources.
+/// A qualified identifier — avoids collisions across sources.
 ///
-/// La forme sérialisée `"projet/0007"` ou `"path:~/partage/0100"` est
-/// exposée telle quelle dans le contrat JSON.
+/// The serialized form `"project/0007"` or `"path:~/shared/0100"` is
+/// exposed as-is in the JSON contract.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct QualifiedId {
     pub origin: Origin,
@@ -57,35 +58,35 @@ impl QualifiedId {
     }
 }
 
-/// Une entrée de l'index.
+/// An index entry.
 #[derive(Debug, Clone)]
 pub struct IndexEntry {
     pub qualified_id: QualifiedId,
     pub decision: Decision,
-    /// Chemin absolu du fichier, sur le disque tel qu'il a été lu.
+    /// Absolute path of the file, on disk as it was read.
     pub path: PathBuf,
-    /// Si cette décision est héritée et écartée par un ADR local via
-    /// `deviates_from`, l'identifiant qualifié de l'ADR qui la remplace.
-    /// Calculé par l'index, jamais persisté sur disque.
+    /// If this decision is inherited and set aside by a local ADR via
+    /// `deviates_from`, the qualified identifier of the ADR that replaces it.
+    /// Computed by the index, never persisted to disk.
     pub deviated_by: Option<QualifiedId>,
 }
 
-/// L'index complet.
+/// The full index.
 #[derive(Debug, Clone, Default)]
 pub struct DecisionIndex {
     pub entries: Vec<IndexEntry>,
-    /// Sous-ensemble des `entries` qui restent en vigueur : `Accepted` et
-    /// non supersedées par une autre décision `Accepted`.
+    /// Subset of `entries` that remain in effect: `Accepted` and not
+    /// superseded by another `Accepted` decision.
     pub in_effect: Vec<QualifiedId>,
     pub findings: Vec<Finding>,
 }
 
-/// Construit l'index à partir du projet et de ses sources héritées.
+/// Builds the index from the project and its inherited sources.
 ///
-/// `env` est nécessaire pour développer `~` dans les chemins des sources
-/// `inherits: path:` — le port utilisé doit être le même que celui de
-/// `config::resolve`, sinon les warnings de résolution et les décisions
-/// indexées divergent.
+/// `env` is needed to expand `~` in the paths of `inherits: path:`
+/// sources — the port used must be the same as the one passed to
+/// `config::resolve`, otherwise the resolution warnings and the indexed
+/// decisions diverge.
 pub fn index(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -95,35 +96,41 @@ pub fn index(
     let mut entries: Vec<IndexEntry> = Vec::new();
     let mut findings: Vec<Finding> = Vec::new();
 
-    // 1. Décisions du projet.
-    let projet_dir = layout.decisions_dir();
-    collect_from(fs, &projet_dir, Origin::Project, &mut entries, &mut findings)?;
+    // 1. Project decisions.
+    let project_dir = layout.decisions_dir();
+    collect_from(
+        fs,
+        &project_dir,
+        Origin::Project,
+        &mut entries,
+        &mut findings,
+    )?;
 
-    // 2. Décisions des sources héritées — path ET git verrouillées.
+    // 2. Decisions from inherited sources — path AND locked git.
     let states = crate::sources::list_source_states(fs, env, layout)?;
     for state in states {
-        let Some(resolved_path) = state.resolved_path else {
+        let Some(project_root) = state.project_root() else {
             continue;
         };
         let origin = match state.kind {
             crate::sources::SourceKind::Path => Origin::Path(state.address.clone()),
             crate::sources::SourceKind::Git => Origin::Git(state.address.clone()),
         };
-        let decisions_dir = resolved_path.join("_codev").join("decisions");
+        let decisions_dir = Layout::new(&project_root).decisions_dir();
         collect_from(fs, &decisions_dir, origin, &mut entries, &mut findings)?;
     }
-    let _ = config; // conservé pour compatibilité de signature
+    let _ = config; // kept for signature compatibility
 
-    // 3. Détection des collisions d'id — le projet gagne, l'hérité est
-    //    signalé.
+    // 3. Id collision detection — the project wins, the inherited one is
+    //    reported.
     detect_id_collisions(&mut entries, &mut findings);
 
-    // 4. Résolution des dérives locales — chaque héritée référencée par
-    //    un ADR local `accepted` via `deviates_from` reçoit son
-    //    `deviated_by`, et disparaîtra du calcul `in_effect`.
+    // 4. Local deviation resolution — every inherited decision referenced
+    //    by a local `accepted` ADR via `deviates_from` receives its
+    //    `deviated_by`, and will drop out of the `in_effect` computation.
     resolve_deviations(&mut entries, &mut findings);
 
-    // 5. Résolution des supersessions et calcul de `in_effect`.
+    // 5. Supersession resolution and `in_effect` computation.
     let in_effect = resolve_in_effect(&entries, &mut findings);
 
     Ok(DecisionIndex {
@@ -133,7 +140,7 @@ pub fn index(
     })
 }
 
-/// Ouvre chaque `*.md` du dossier `dir`, appelle `parse_decision`, agrège.
+/// Opens every `*.md` in the `dir` directory, calls `parse_decision`, aggregates.
 fn collect_from(
     fs: &dyn FileSystem,
     dir: &std::path::Path,
@@ -148,10 +155,12 @@ fn collect_from(
 
     for relative in files.into_iter().filter(|p| p.ends_with(".md")) {
         let path = dir.join(&relative);
-        let source = fs.read_to_string(&path).map_err(|e| EngineError::Unreadable {
-            path: path.clone(),
-            reason: e.to_string(),
-        })?;
+        let source = fs
+            .read_to_string(&path)
+            .map_err(|e| EngineError::Unreadable {
+                path: path.clone(),
+                reason: e.to_string(),
+            })?;
         let parsed = parse_decision(&source);
         findings.extend(parsed.findings);
         if let Some(decision) = parsed.value {
@@ -170,57 +179,57 @@ fn collect_from(
 }
 
 fn detect_id_collisions(entries: &mut [IndexEntry], findings: &mut Vec<Finding>) {
-    // Grouper par `id` seul (pas par qualifié). Une collision est un id qui
-    // apparaît à la fois côté `Project` et côté `Path(_)`.
-    let mut par_id: BTreeMap<&str, Vec<usize>> = BTreeMap::new();
+    // Group by bare `id` (not by qualified id). A collision is an id that
+    // appears both on the `Project` side and on the `Path(_)` side.
+    let mut by_id: BTreeMap<&str, Vec<usize>> = BTreeMap::new();
     for (i, entry) in entries.iter().enumerate() {
-        par_id.entry(entry.decision.id.as_str()).or_default().push(i);
+        by_id.entry(entry.decision.id.as_str()).or_default().push(i);
     }
-    for (id, indices) in par_id {
+    for (id, indices) in by_id {
         if indices.len() < 2 {
             continue;
         }
-        let a_projet = indices
+        let has_project = indices
             .iter()
             .any(|&i| entries[i].qualified_id.origin == Origin::Project);
-        let a_source = indices
+        let has_source = indices
             .iter()
             .any(|&i| entries[i].qualified_id.origin != Origin::Project);
-        if a_projet && a_source {
+        if has_project && has_source {
             findings.push(Finding {
                 severity: Severity::Warning,
                 code: codes::DECISION_ID_COLLISION,
                 line: 1,
                 message: format!(
-                    "l'identifiant « {id} » existe à la fois dans le projet et dans une source \
-                     héritée ; la version du projet est retenue comme en vigueur"
+                    "identifier `{id}` exists both in the project and in an inherited \
+                     source; the project version is the one kept in effect"
                 ),
             });
         }
     }
 }
 
-/// Calcule les `deviated_by` sur les entrées héritées, en s'appuyant sur
-/// le champ `deviates_from` des ADR locaux `accepted`.
+/// Computes `deviated_by` on inherited entries, based on the
+/// `deviates_from` field of local `accepted` ADRs.
 ///
-/// Émet :
-/// - `decision_dangling_deviation` (warning) quand la cible n'existe pas.
-/// - `decision_conflicting_deviations` (erreur) quand deux ADR locaux
-///   `accepted` dévient de la même cible.
+/// Emits:
+/// - `decision_dangling_deviation` (warning) when the target does not exist.
+/// - `decision_conflicting_deviations` (error) when two local `accepted`
+///   ADRs deviate from the same target.
 ///
-/// Ne fait rien pour un `deviates_from` porté par un ADR non `accepted`
-/// (un `proposed` n'engage pas encore).
+/// Does nothing for a `deviates_from` carried by a non-`accepted` ADR
+/// (a `proposed` one is not binding yet).
 fn resolve_deviations(entries: &mut [IndexEntry], findings: &mut Vec<Finding>) {
-    // Étape 1 : construire l'index qualified → position dans `entries`.
+    // Step 1: build the qualified → position-in-`entries` index.
     let by_qualified: BTreeMap<String, usize> = entries
         .iter()
         .enumerate()
         .map(|(i, e)| (e.qualified_id.as_str(), i))
         .collect();
 
-    // Étape 2 : pour chaque ADR local `accepted`, collecter ses cibles.
-    // `deviations_par_cible[target_qualified] = liste des <ADR local> qui la référencent`.
-    let mut deviations_par_cible: BTreeMap<String, Vec<QualifiedId>> = BTreeMap::new();
+    // Step 2: for every local `accepted` ADR, collect its targets.
+    // `deviations_by_target[target_qualified] = list of <local ADR>s referencing it`.
+    let mut deviations_by_target: BTreeMap<String, Vec<QualifiedId>> = BTreeMap::new();
     for entry in entries.iter() {
         if entry.qualified_id.origin != Origin::Project {
             continue;
@@ -229,27 +238,27 @@ fn resolve_deviations(entries: &mut [IndexEntry], findings: &mut Vec<Finding>) {
             continue;
         }
         for target in &entry.decision.deviates_from {
-            deviations_par_cible
+            deviations_by_target
                 .entry(target.clone())
                 .or_default()
                 .push(entry.qualified_id.clone());
         }
     }
 
-    // Étape 3 : pour chaque cible, résoudre.
-    for (target, sources) in deviations_par_cible {
-        // Cible inexistante ?
+    // Step 3: resolve each target.
+    for (target, sources) in deviations_by_target {
+        // Target missing?
         let Some(&target_idx) = by_qualified.get(&target) else {
-            // Chaque ADR local qui la référence remonte un warning.
+            // Every local ADR referencing it raises a warning.
             for source in &sources {
                 findings.push(Finding {
                     severity: Severity::Warning,
                     code: codes::DECISION_DANGLING_DEVIATION,
                     line: 1,
                     message: format!(
-                        "la décision locale « {source_qid} » dévie de \
-                         « {target} », qui n'est pas indexée (source retirée, \
-                         SHA déplacé, ou id changé)",
+                        "local decision `{source_qid}` deviates from \
+                         `{target}`, which is not indexed (source removed, \
+                         SHA moved, or id changed)",
                         source_qid = source.as_str()
                     ),
                 });
@@ -257,17 +266,17 @@ fn resolve_deviations(entries: &mut [IndexEntry], findings: &mut Vec<Finding>) {
             continue;
         };
 
-        // Cible locale ? Cas normalement refusé par `plan_deviate` en
-        // amont, mais un utilisateur pourrait avoir écrit un ADR à la
-        // main. Pas de finding dédié — la sémantique est simplement que
-        // dévier d'une locale n'a pas d'effet côté index (pas d'occultation).
+        // Local target? Normally rejected upstream by `plan_deviate`, but a
+        // user might have written an ADR by hand. No dedicated finding —
+        // the semantics are simply that deviating from a local decision has
+        // no effect on the index (nothing is hidden).
         if entries[target_idx].qualified_id.origin == Origin::Project {
             continue;
         }
 
-        // Deux ou plus ADR locaux qui dévient de la même cible → conflit.
+        // Two or more local ADRs deviating from the same target → conflict.
         if sources.len() > 1 {
-            let noms = sources
+            let names = sources
                 .iter()
                 .map(|q| q.as_str())
                 .collect::<Vec<_>>()
@@ -277,41 +286,43 @@ fn resolve_deviations(entries: &mut [IndexEntry], findings: &mut Vec<Finding>) {
                 code: codes::DECISION_CONFLICTING_DEVIATIONS,
                 line: 1,
                 message: format!(
-                    "les décisions locales {noms} dévient toutes de « {target} » — \
-                     l'outil ne tranche pas ; retire les ADR en trop ou remplace-les \
-                     par des supersessions locales"
+                    "local decisions {names} all deviate from `{target}` — \
+                     the tool will not pick one; remove the extra ADRs or replace \
+                     them with local supersessions"
                 ),
             });
-            // On marque quand même la cible du premier trouvé (ordre
-            // stable de `BTreeMap`) pour éviter que l'héritée reste
-            // en_effect si l'utilisateur ignore le finding.
+            // We still mark the target with the first one found (stable
+            // `BTreeMap` order) so the inherited decision does not stay
+            // in effect if the user ignores the finding.
         }
 
-        // Marquer la cible héritée.
+        // Mark the inherited target.
         entries[target_idx].deviated_by = Some(sources[0].clone());
     }
 }
 
 fn resolve_in_effect(entries: &[IndexEntry], findings: &mut Vec<Finding>) -> Vec<QualifiedId> {
-    // Détection de cycles : un DFS coloré par état. Toute décision touchée
-    // par un cycle est exclue de `in_effect`.
+    // Cycle detection: a DFS colored by state. Any decision caught in a
+    // cycle is excluded from `in_effect`.
     let (cycle_members, cycle_finding) = detect_cycles(entries);
     if let Some(f) = cycle_finding {
         findings.push(f);
     }
 
-    // Pour chaque décision `Accepted` non-projet en collision avec le
-    // projet, la version projet gagne — on marque l'héritée comme masquée.
-    let projet_ids: BTreeSet<&str> = entries
+    // For every non-project `Accepted` decision colliding with the
+    // project, the project version wins — the inherited one is marked as
+    // shadowed.
+    let project_ids: BTreeSet<&str> = entries
         .iter()
         .filter(|e| e.qualified_id.origin == Origin::Project)
         .map(|e| e.decision.id.as_str())
         .collect();
 
-    // Ensemble des ids supersedés par au moins une décision Accepted.
+    // Set of ids superseded by at least one Accepted decision.
     let mut supersedes_source = BTreeSet::new();
     for entry in entries.iter().filter(|e| {
-        matches!(e.decision.status, DecisionStatus::Accepted) && !cycle_members.contains(&index_of(entries, e))
+        matches!(e.decision.status, DecisionStatus::Accepted)
+            && !cycle_members.contains(&index_of(entries, e))
     }) {
         for target in &entry.decision.supersedes {
             if !entries.iter().any(|e| e.decision.id == *target) {
@@ -320,7 +331,7 @@ fn resolve_in_effect(entries: &[IndexEntry], findings: &mut Vec<Finding>) -> Vec
                     code: codes::DECISION_SUPERSEDES_UNKNOWN,
                     line: 1,
                     message: format!(
-                        "la décision « {} » supersede « {target} » qui n'existe pas dans l'index",
+                        "decision `{}` supersedes `{target}`, which does not exist in the index",
                         entry.decision.id
                     ),
                 });
@@ -332,25 +343,25 @@ fn resolve_in_effect(entries: &[IndexEntry], findings: &mut Vec<Finding>) -> Vec
 
     let mut in_effect = Vec::new();
     for (idx, entry) in entries.iter().enumerate() {
-        // Statut candidat ?
+        // Candidate status?
         if !entry.decision.status.is_candidate_for_effect() {
             continue;
         }
-        // Dans un cycle ?
+        // In a cycle?
         if cycle_members.contains(&idx) {
             continue;
         }
-        // Supersedée ?
+        // Superseded?
         if supersedes_source.contains(entry.decision.id.as_str()) {
             continue;
         }
-        // Masquée par une version projet ?
+        // Shadowed by a project version?
         if entry.qualified_id.origin != Origin::Project
-            && projet_ids.contains(entry.decision.id.as_str())
+            && project_ids.contains(entry.decision.id.as_str())
         {
             continue;
         }
-        // Déviée localement ? (K6)
+        // Deviated from locally?
         if entry.deviated_by.is_some() {
             continue;
         }
@@ -363,13 +374,13 @@ fn index_of(entries: &[IndexEntry], entry: &IndexEntry) -> usize {
     entries
         .iter()
         .position(|e| std::ptr::eq(e, entry))
-        .expect("l'entrée vient du même slice")
+        .expect("the entry comes from the same slice")
 }
 
 fn detect_cycles(entries: &[IndexEntry]) -> (BTreeSet<usize>, Option<Finding>) {
-    // Nous ne considérons pour le cycle que les chaînes de supersession
-    // entre décisions présentes dans l'index — cible manquante = pas de
-    // cycle, c'est signalé ailleurs.
+    // For cycles we only consider supersession chains between decisions
+    // present in the index — a missing target means no cycle; that is
+    // reported elsewhere.
     let by_id: BTreeMap<&str, usize> = entries
         .iter()
         .enumerate()
@@ -402,8 +413,8 @@ fn detect_cycles(entries: &[IndexEntry]) -> (BTreeSet<usize>, Option<Finding>) {
             match state[next] {
                 State::White => visit(next, entries, by_id, state, stack, members),
                 State::Gray => {
-                    // Cycle : tout ce qui est sur la pile depuis `next` en
-                    // fait partie.
+                    // Cycle: everything on the stack from `next` onward is
+                    // part of it.
                     let start = stack.iter().position(|&n| n == next).unwrap_or(0);
                     for &n in &stack[start..] {
                         members.insert(n);
@@ -418,14 +429,21 @@ fn detect_cycles(entries: &[IndexEntry]) -> (BTreeSet<usize>, Option<Finding>) {
 
     for start in 0..entries.len() {
         if state[start] == State::White {
-            visit(start, entries, &by_id, &mut state, &mut Vec::new(), &mut members);
+            visit(
+                start,
+                entries,
+                &by_id,
+                &mut state,
+                &mut Vec::new(),
+                &mut members,
+            );
         }
     }
 
     let finding = if members.is_empty() {
         None
     } else {
-        let noms: Vec<String> = members
+        let names: Vec<String> = members
             .iter()
             .map(|&i| entries[i].decision.id.clone())
             .collect();
@@ -434,8 +452,8 @@ fn detect_cycles(entries: &[IndexEntry]) -> (BTreeSet<usize>, Option<Finding>) {
             code: codes::DECISION_SUPERSESSION_CYCLE,
             line: 1,
             message: format!(
-                "cycle de supersession détecté : {} — aucune de ces décisions n'entre en vigueur",
-                noms.join(", ")
+                "supersession cycle detected: {} — none of these decisions takes effect",
+                names.join(", ")
             ),
         })
     };
@@ -472,12 +490,45 @@ mod tests {
             )
         };
         format!(
-            "---\nid: \"{id}\"\ntitle: \"ADR {id}\"\nstatus: {status}\ndate: 2026-09-08\n{sup}---\n\n## Contexte\n\nx\n"
+            "---\nid: \"{id}\"\ntitle: \"ADR {id}\"\nstatus: {status}\ndate: 2026-09-08\n{sup}---\n\n## Context\n\nx\n"
         )
     }
 
     #[test]
-    fn index_vide_sur_projet_sans_adr() {
+    fn git_source_decisions_are_read_under_its_subpath() {
+        // Same resolution as the inherited config: `<cache>/<subpath>/_codev`.
+        let lock = "version = 1\n\n[[source]]\ngit = \"url\"\nref = \"main\"\nsubpath = \"standards\"\ncommit = \"deadbeef\"\nresolved_at = \"2026-09-08\"\n";
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_codev/config.yaml",
+                "inherits:\n  - git: url\n    ref: main\n    subpath: standards\n",
+            )
+            .with_file("/p/_codev/codev.lock", lock)
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/standards/_codev/config.yaml",
+                "",
+            )
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/standards/_codev/decisions/0100-shared.md",
+                adr("0100", "accepted", &[]),
+            )
+            // Outside the subpath: not part of the source.
+            .with_file(
+                "/home/.cache/codev/content/deadbeef/_codev/decisions/0200-root.md",
+                adr("0200", "accepted", &[]),
+            );
+        let cfg = resolved(&fs);
+        let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        let ids: Vec<String> = idx
+            .entries
+            .iter()
+            .map(|e| e.qualified_id.as_str())
+            .collect();
+        assert_eq!(ids, vec!["git:url/0100".to_string()], "{ids:?}");
+    }
+
+    #[test]
+    fn empty_index_for_project_without_adrs() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "");
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
@@ -487,150 +538,139 @@ mod tests {
     }
 
     #[test]
-    fn adr_du_projet_et_dune_source_apparaissent_avec_leur_origin() {
+    fn project_and_source_adrs_appear_with_their_origin() {
         let fs = MemoryFileSystem::new()
-            .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
                 "/p/_codev/decisions/0001-local.md",
-                adr("0001", "accepted", &[]),            )
+                adr("0001", "accepted", &[]),
+            )
             .with_file(
-                "/home/partage/_codev/decisions/0100-partage.md",
-                adr("0100", "accepted", &[]),            );
+                "/home/shared/_codev/decisions/0100-shared.md",
+                adr("0100", "accepted", &[]),
+            );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
         assert_eq!(idx.entries.len(), 2);
-        assert!(idx
-            .entries
-            .iter()
-            .any(|e| e.qualified_id.as_str() == "projet/0001"));
-        assert!(idx
-            .entries
-            .iter()
-            .any(|e| e.qualified_id.as_str() == "path:~/partage/0100"));
+        assert!(
+            idx.entries
+                .iter()
+                .any(|e| e.qualified_id.as_str() == "project/0001")
+        );
+        assert!(
+            idx.entries
+                .iter()
+                .any(|e| e.qualified_id.as_str() == "path:~/shared/0100")
+        );
     }
 
     #[test]
-    fn supersession_directe_masque_la_source() {
+    fn direct_supersession_hides_the_superseded_decision() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0003.md",
-                adr("0003", "accepted", &[]),            )
+            .with_file("/p/_codev/decisions/0003.md", adr("0003", "accepted", &[]))
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr("0007", "accepted", &["0003"]),            );
+                adr("0007", "accepted", &["0003"]),
+            );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
-        let en_vigueur: Vec<String> = idx.in_effect.iter().map(|q| q.id.clone()).collect();
-        assert_eq!(en_vigueur, ["0007"]);
+        let in_effect: Vec<String> = idx.in_effect.iter().map(|q| q.id.clone()).collect();
+        assert_eq!(in_effect, ["0007"]);
     }
 
     #[test]
-    fn chaine_a_trois_maillons_laisse_le_dernier() {
+    fn three_link_chain_leaves_the_last_one() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/A.md",
-                adr("A", "accepted", &[]),            )
-            .with_file(
-                "/p/_codev/decisions/B.md",
-                adr("B", "accepted", &["A"]),            )
-            .with_file(
-                "/p/_codev/decisions/C.md",
-                adr("C", "accepted", &["B"]),            );
+            .with_file("/p/_codev/decisions/A.md", adr("A", "accepted", &[]))
+            .with_file("/p/_codev/decisions/B.md", adr("B", "accepted", &["A"]))
+            .with_file("/p/_codev/decisions/C.md", adr("C", "accepted", &["B"]));
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        let en_vigueur: Vec<String> = idx.in_effect.iter().map(|q| q.id.clone()).collect();
-        assert_eq!(en_vigueur, ["C"]);
+        let in_effect: Vec<String> = idx.in_effect.iter().map(|q| q.id.clone()).collect();
+        assert_eq!(in_effect, ["C"]);
     }
 
     #[test]
-    fn supersedes_vers_absent_est_signale() {
+    fn supersedes_pointing_to_missing_decision_is_reported() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr("0007", "accepted", &["9999"]),            );
+                adr("0007", "accepted", &["9999"]),
+            );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
         assert!(idx
             .findings
             .iter()
-            .any(|f| f.code == codes::DECISION_SUPERSEDES_UNKNOWN
-                && f.message.contains("9999")));
-        // 0007 reste en vigueur — la cible perdue ne le disqualifie pas.
+            .any(|f| f.code == codes::DECISION_SUPERSEDES_UNKNOWN && f.message.contains("9999")));
+        // 0007 stays in effect — the lost target does not disqualify it.
         assert_eq!(
-            idx.in_effect.iter().map(|q| q.id.clone()).collect::<Vec<_>>(),
+            idx.in_effect
+                .iter()
+                .map(|q| q.id.clone())
+                .collect::<Vec<_>>(),
             ["0007"]
         );
     }
 
     #[test]
-    fn collision_projet_source_projet_gagne() {
+    fn project_source_collision_project_wins() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with_file("/p/_codev/decisions/0007.md", adr("0007", "accepted", &[]))
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/p/_codev/decisions/0007.md",
-                adr("0007", "accepted", &[]),            )
-            .with_file(
-                "/home/partage/_codev/decisions/0007-doublon.md",
-                adr("0007", "accepted", &[]),            );
+                "/home/shared/_codev/decisions/0007-duplicate.md",
+                adr("0007", "accepted", &[]),
+            );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
-        assert!(idx
-            .findings
-            .iter()
-            .any(|f| f.code == codes::DECISION_ID_COLLISION));
+        assert!(
+            idx.findings
+                .iter()
+                .any(|f| f.code == codes::DECISION_ID_COLLISION)
+        );
 
-        // Une seule entrée en vigueur : celle du projet.
+        // A single entry in effect: the project's.
         assert_eq!(idx.in_effect.len(), 1);
         assert_eq!(idx.in_effect[0].origin, Origin::Project);
     }
 
     #[test]
-    fn cycle_de_supersession_est_signale() {
-        // A supersede B, B supersede A → cycle. Ni l'un ni l'autre en vigueur.
+    fn supersession_cycle_is_reported() {
+        // A supersedes B, B supersedes A → cycle. Neither is in effect.
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/A.md",
-                adr("A", "accepted", &["B"]),            )
-            .with_file(
-                "/p/_codev/decisions/B.md",
-                adr("B", "accepted", &["A"]),            );
+            .with_file("/p/_codev/decisions/A.md", adr("A", "accepted", &["B"]))
+            .with_file("/p/_codev/decisions/B.md", adr("B", "accepted", &["A"]));
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
-        assert!(idx
-            .findings
-            .iter()
-            .any(|f| f.code == codes::DECISION_SUPERSESSION_CYCLE));
+        assert!(
+            idx.findings
+                .iter()
+                .any(|f| f.code == codes::DECISION_SUPERSESSION_CYCLE)
+        );
         assert!(idx.in_effect.is_empty());
     }
 
     #[test]
-    fn statut_proposed_nentre_pas_en_vigueur() {
+    fn proposed_status_does_not_take_effect() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
-            .with_file(
-                "/p/_codev/decisions/0001.md",
-                adr("0001", "proposed", &[]),            );
+            .with_file("/p/_codev/decisions/0001.md", adr("0001", "proposed", &[]));
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
         assert_eq!(idx.entries.len(), 1);
         assert!(idx.in_effect.is_empty());
     }
 
-    // ─────────────── déviations locales (K6) ───────────────
+    // ─────────────── local deviations ───────────────
 
     fn adr_deviates(id: &str, status: &str, deviates_from: &[&str]) -> String {
         let dev = if deviates_from.is_empty() {
@@ -646,91 +686,81 @@ mod tests {
             )
         };
         format!(
-            "---\nid: \"{id}\"\ntitle: \"ADR {id}\"\nstatus: {status}\ndate: 2026-09-08\n{dev}---\n\n## Contexte\n\nx\n"
+            "---\nid: \"{id}\"\ntitle: \"ADR {id}\"\nstatus: {status}\ndate: 2026-09-08\n{dev}---\n\n## Context\n\nx\n"
         )
     }
 
     #[test]
-    fn deviation_marque_heritée_et_la_retire_du_in_effect() {
+    fn deviation_marks_inherited_and_removes_it_from_in_effect() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100.md",
+                "/home/shared/_codev/decisions/0100.md",
                 adr("0100", "accepted", &[]),
             )
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr_deviates("0007", "accepted", &["path:~/partage/0100"]),
+                adr_deviates("0007", "accepted", &["path:~/shared/0100"]),
             );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
 
-        // 2 entrées, une locale une héritée.
+        // 2 entries, one local, one inherited.
         assert_eq!(idx.entries.len(), 2);
-        let heritee = idx
+        let inherited = idx
             .entries
             .iter()
             .find(|e| e.qualified_id.origin != Origin::Project)
             .unwrap();
-        assert!(heritee.deviated_by.is_some());
+        assert!(inherited.deviated_by.is_some());
         assert_eq!(
-            heritee.deviated_by.as_ref().unwrap().as_str(),
-            "projet/0007"
+            inherited.deviated_by.as_ref().unwrap().as_str(),
+            "project/0007"
         );
-        // L'héritée est retirée du in_effect, la locale y reste.
-        assert!(!idx
-            .in_effect
-            .iter()
-            .any(|q| q.origin != Origin::Project));
-        assert!(idx
-            .in_effect
-            .iter()
-            .any(|q| q.as_str() == "projet/0007"));
+        // The inherited one is removed from in_effect, the local one stays.
+        assert!(!idx.in_effect.iter().any(|q| q.origin != Origin::Project));
+        assert!(idx.in_effect.iter().any(|q| q.as_str() == "project/0007"));
     }
 
     #[test]
-    fn deviation_dune_cible_inconnue_remonte_un_warning_et_reste_dangling() {
+    fn deviation_from_unknown_target_raises_warning_and_stays_dangling() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr_deviates("0007", "accepted", &["path:~/inconnue/9999"]),
+                adr_deviates("0007", "accepted", &["path:~/unknown/9999"]),
             );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        assert!(idx
-            .findings
-            .iter()
-            .any(|f| f.code == codes::DECISION_DANGLING_DEVIATION));
-        // Le finding est un warning, pas une erreur.
-        assert!(idx
-            .findings
-            .iter()
-            .filter(|f| f.code == codes::DECISION_DANGLING_DEVIATION)
-            .all(|f| f.severity == Severity::Warning));
+        assert!(
+            idx.findings
+                .iter()
+                .any(|f| f.code == codes::DECISION_DANGLING_DEVIATION)
+        );
+        // The finding is a warning, not an error.
+        assert!(
+            idx.findings
+                .iter()
+                .filter(|f| f.code == codes::DECISION_DANGLING_DEVIATION)
+                .all(|f| f.severity == Severity::Warning)
+        );
     }
 
     #[test]
-    fn deux_deviations_sur_meme_cible_declenchent_conflit() {
+    fn two_deviations_on_same_target_trigger_conflict() {
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100.md",
+                "/home/shared/_codev/decisions/0100.md",
                 adr("0100", "accepted", &[]),
             )
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr_deviates("0007", "accepted", &["path:~/partage/0100"]),
+                adr_deviates("0007", "accepted", &["path:~/shared/0100"]),
             )
             .with_file(
                 "/p/_codev/decisions/0008.md",
-                adr_deviates("0008", "accepted", &["path:~/partage/0100"]),
+                adr_deviates("0008", "accepted", &["path:~/shared/0100"]),
             );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
@@ -739,41 +769,43 @@ mod tests {
             .iter()
             .filter(|f| f.code == codes::DECISION_CONFLICTING_DEVIATIONS)
             .collect();
-        assert_eq!(conflicts.len(), 1, "un seul finding par cible en conflit");
+        assert_eq!(
+            conflicts.len(),
+            1,
+            "a single finding per conflicting target"
+        );
         assert_eq!(conflicts[0].severity, Severity::Error);
-        // Les deux ADR sont nommés dans le message.
-        assert!(conflicts[0].message.contains("projet/0007"));
-        assert!(conflicts[0].message.contains("projet/0008"));
+        // Both ADRs are named in the message.
+        assert!(conflicts[0].message.contains("project/0007"));
+        assert!(conflicts[0].message.contains("project/0008"));
     }
 
     #[test]
-    fn deviation_par_un_proposed_na_aucun_effet() {
-        // Un ADR proposed n'engage pas ; sa dérive n'occulte pas la cible.
+    fn deviation_by_proposed_adr_has_no_effect() {
+        // A proposed ADR is not binding; its deviation does not hide the target.
         let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
             .with_file(
-                "/p/_codev/config.yaml",
-                "inherits:\n  - path: ~/partage\n",
-            )
-            .with_file(
-                "/home/partage/_codev/decisions/0100.md",
+                "/home/shared/_codev/decisions/0100.md",
                 adr("0100", "accepted", &[]),
             )
             .with_file(
                 "/p/_codev/decisions/0007.md",
-                adr_deviates("0007", "proposed", &["path:~/partage/0100"]),
+                adr_deviates("0007", "proposed", &["path:~/shared/0100"]),
             );
         let cfg = resolved(&fs);
         let idx = index(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
-        let heritee = idx
+        let inherited = idx
             .entries
             .iter()
             .find(|e| e.qualified_id.origin != Origin::Project)
             .unwrap();
-        assert!(heritee.deviated_by.is_none());
-        // L'héritée reste bien in_effect.
-        assert!(idx
-            .in_effect
-            .iter()
-            .any(|q| q.as_str() == "path:~/partage/0100"));
+        assert!(inherited.deviated_by.is_none());
+        // The inherited one does stay in_effect.
+        assert!(
+            idx.in_effect
+                .iter()
+                .any(|q| q.as_str() == "path:~/shared/0100")
+        );
     }
 }

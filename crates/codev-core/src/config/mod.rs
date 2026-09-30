@@ -1,18 +1,17 @@
-//! Génération du `_codev/config.yaml` par `codev init`.
+//! Generation of `_codev/config.yaml` by `codev init`.
 //!
-//! Deux briques pures :
+//! Two pure building blocks:
 //!
-//! - [`GeneratedConfig`] et son rendu [`render`] — écrivent le YAML **à la
-//!   main**, caractère par caractère, avec les commentaires de provenance
-//!   au-dessus des clés qui en portent. Aucune lib de sérialisation ne
-//!   préserve les commentaires ; le rendu manuel est simple et testé par
-//!   golden.
-//! - [`from_detected`] — assemble un `GeneratedConfig` à partir du rapport
-//!   de la sonde + des choix utilisateur.
+//! - [`GeneratedConfig`] and its renderer [`render`] — write the YAML **by
+//!   hand**, character by character, with provenance comments above the
+//!   keys that carry one. No serialization library preserves comments;
+//!   manual rendering is simple and covered by golden tests.
+//! - [`from_detected`] — assembles a `GeneratedConfig` from the probe
+//!   report plus the user's choices.
 //!
-//! Le contrôle croisé « ce qu'on écrit doit être relisible par
-//! `codev-engine::config` » vit dans les tests d'intégration de
-//! `codev-engine` — sans cycle de dépendance.
+//! The cross-check "what we write must be readable by
+//! `codev-engine::config`" lives in the `codev-engine` integration
+//! tests — avoiding a dependency cycle.
 
 use crate::detect::Detected;
 
@@ -20,11 +19,11 @@ pub mod choices;
 
 pub use choices::UserChoices;
 
-/// Une valeur générée pour le YAML, avec sa source (optionnelle).
+/// A generated YAML value, with its (optional) source.
 ///
-/// La provenance devient un commentaire `# ...` sur la ligne juste
-/// au-dessus de la clé. Aucun formattage : juste l'origine, écrite
-/// telle quelle.
+/// The provenance becomes a `# ...` comment on the line directly
+/// above the key. No formatting: just the origin, written
+/// verbatim.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GeneratedValue<T> {
     pub value: T,
@@ -47,15 +46,17 @@ impl<T> GeneratedValue<T> {
     }
 }
 
-/// La config prête à être rendue en YAML.
+/// The config, ready to be rendered as YAML.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GeneratedConfig {
     pub schema: String,
-    /// Workflows retenus, dans l'ordre où on veut les voir dans le YAML.
+    /// Language of the prose skills write in artifacts (ISO 639 code).
+    pub language: GeneratedValue<String>,
+    /// Selected workflows, in the order they should appear in the YAML.
     pub workflows: Vec<String>,
-    /// Tool ID MCP Jira, si détecté et confirmé.
+    /// Jira MCP tool ID, if detected and confirmed.
     pub mcp_jira: Option<GeneratedValue<String>>,
-    /// Bloc `context:` libre. `None` = clé absente du YAML.
+    /// Free-form `context:` block. `None` = key omitted from the YAML.
     pub context: Option<GeneratedValue<String>>,
 }
 
@@ -63,6 +64,7 @@ impl Default for GeneratedConfig {
     fn default() -> Self {
         Self {
             schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
             workflows: Vec::new(),
             mcp_jira: None,
             context: None,
@@ -70,35 +72,38 @@ impl Default for GeneratedConfig {
     }
 }
 
-/// Un `_codev/config.yaml` est **thin** quand il ne porte pas encore
-/// d'indication utile pour piloter les skills. Le seul critère retenu
-/// est **l'absence de `rules:`** — c'est le seul signal fiable
-/// d'intention utilisateur, parce que les règles par artefact ne sont
-/// jamais auto-détectées.
+/// The artifact language when neither `--language` nor the locale gives one.
+pub const DEFAULT_LANGUAGE: &str = "en";
+
+/// A `_codev/config.yaml` is **thin** when it does not yet carry any
+/// guidance useful for steering the skills. The only criterion used
+/// is **the absence of `rules:`** — it is the only reliable signal of
+/// user intent, because per-artifact rules are never
+/// auto-detected.
 ///
-/// La version précédente combinait « `context:` court » et « `rules:`
-/// vides », mais le contexte est rempli automatiquement par la sonde de
-/// `codev init` (stack, dépendances, licence, CI) et son volume ne dit
-/// donc rien sur ce que l'utilisateur a écrit — un projet TypeScript à
-/// dix dépendances dépassait facilement le seuil sans qu'aucune
-/// intention utilisateur n'ait été exprimée. Voir change
+/// The previous version combined "short `context:`" and "empty
+/// `rules:`", but the context is filled automatically by the
+/// `codev init` probe (stack, dependencies, license, CI), so its size
+/// says nothing about what the user wrote — a TypeScript project with
+/// ten dependencies easily exceeded the threshold without any user
+/// intent having been expressed. See change
 /// `fix-thin-detection`.
 ///
-/// Cette fonction est le seul juge — les trois lieux de nudge
-/// (`codev init`, `codev status`, skill `onboard`) l'appellent avec la
-/// même primitive, garantissant un comportement cohérent.
+/// This function is the sole judge — the three hint sites
+/// (`codev init`, `codev status`, the `onboard` skill) call the same
+/// primitive, guaranteeing consistent behavior.
 pub fn is_config_thin(rules_empty: bool) -> bool {
     rules_empty
 }
 
-/// Assemble un `GeneratedConfig` à partir de la détection et des choix.
+/// Assembles a `GeneratedConfig` from detection results and choices.
 ///
-/// Règles :
-/// - Le contexte final est la concaténation du contexte auto-détecté (issu
-///   de la stack) et de l'ajout utilisateur, séparés par une ligne vide.
-///   Si aucun des deux n'existe, la clé `context:` reste absente.
-/// - Le tool MCP Jira n'est retenu que si un candidat a été confirmé
-///   (déterminé par la coquille — ici on prend ce que `choices` porte).
+/// Rules:
+/// - The final context is the concatenation of the auto-detected context
+///   (derived from the stack) and the user's addition, separated by a blank line.
+///   If neither exists, the `context:` key is omitted.
+/// - The Jira MCP tool is only kept if a candidate was confirmed
+///   (decided by the imperative shell — here we take whatever `choices` carries).
 pub fn from_detected(detected: &Detected, choices: &UserChoices) -> GeneratedConfig {
     let context_detected = build_context_from_detection(detected);
     let addition = choices
@@ -127,13 +132,28 @@ pub fn from_detected(detected: &Detected, choices: &UserChoices) -> GeneratedCon
             .mcps
             .iter()
             .find(|m| crate::detect::mcp::matches_jira(m))
-            .map(|m| format!("détecté depuis {} → serveur « {} »", m.source, m.name))
-            .unwrap_or_else(|| "fourni à la main".to_string());
+            .map(|m| format!("detected from {} → server \"{}\"", m.source, m.name))
+            .unwrap_or_else(|| "provided manually".to_string());
         GeneratedValue::with_source(tool_id.clone(), source)
     });
 
+    let language = match (&choices.language, &detected.locale) {
+        (Some(code), _) => {
+            GeneratedValue::with_source(code.clone(), "set with `codev init --language`")
+        }
+        (None, Some(locale)) => GeneratedValue::with_source(
+            locale.language.clone(),
+            format!("detected from {}={}", locale.var, locale.value),
+        ),
+        (None, None) => GeneratedValue::with_source(
+            DEFAULT_LANGUAGE.to_string(),
+            "default — no locale detected",
+        ),
+    };
+
     GeneratedConfig {
         schema: "spec-driven".to_string(),
+        language,
         workflows: choices.workflows.clone(),
         mcp_jira,
         context,
@@ -144,22 +164,25 @@ fn build_context_from_detection(d: &Detected) -> Option<String> {
     let mut parts: Vec<String> = Vec::new();
     if let Some(stack) = &d.stack {
         let head = match (stack.workspace_crate_count, &stack.edition_or_version) {
-            (Some(n), Some(v)) => format!("Projet {} workspace ({} crates), {}.", stack.language, n, v),
-            (Some(n), None) => format!("Projet {} workspace ({} crates).", stack.language, n),
-            (None, Some(v)) => format!("Projet {}, {}.", stack.language, v),
-            (None, None) => format!("Projet {}.", stack.language),
+            (Some(n), Some(v)) => format!(
+                "{} workspace project ({} crates), {}.",
+                stack.language, n, v
+            ),
+            (Some(n), None) => format!("{} workspace project ({} crates).", stack.language, n),
+            (None, Some(v)) => format!("{} project, {}.", stack.language, v),
+            (None, None) => format!("{} project.", stack.language),
         };
         parts.push(head);
         if !stack.dependencies_summary.is_empty() {
             let deps = stack.dependencies_summary.join(", ");
-            parts.push(format!("Dépendances principales : {deps}."));
+            parts.push(format!("Main dependencies: {deps}."));
         }
     }
     if let Some(lic) = &d.license {
-        parts.push(format!("Licence : {lic}."));
+        parts.push(format!("License: {lic}."));
     }
     if d.has_ci {
-        parts.push("CI GitHub Actions active.".to_string());
+        parts.push("GitHub Actions CI enabled.".to_string());
     }
     if parts.is_empty() {
         None
@@ -170,30 +193,39 @@ fn build_context_from_detection(d: &Detected) -> Option<String> {
 
 fn provenance_for_stack(d: &Detected) -> String {
     match d.stack.as_ref().map(|s| s.language.as_str()) {
-        Some("Rust") => "détecté depuis Cargo.toml".to_string(),
-        Some("TypeScript" | "JavaScript") => "détecté depuis package.json".to_string(),
-        Some("Python") => "détecté depuis pyproject.toml".to_string(),
-        Some("Go") => "détecté depuis go.mod".to_string(),
-        Some("Java") => "détecté depuis pom.xml".to_string(),
-        _ => "détecté depuis l'environnement".to_string(),
+        Some("Rust") => "detected from Cargo.toml".to_string(),
+        Some("TypeScript" | "JavaScript") => "detected from package.json".to_string(),
+        Some("Python") => "detected from pyproject.toml".to_string(),
+        Some("Go") => "detected from go.mod".to_string(),
+        Some("Java") => "detected from pom.xml".to_string(),
+        _ => "detected from the environment".to_string(),
     }
 }
 
-/// Rend un `GeneratedConfig` en YAML, avec commentaires de provenance.
+/// Renders a `GeneratedConfig` as YAML, with provenance comments.
 ///
-/// L'ordre des clés est fixe : `schema`, `workflows`, `mcp`, `context`.
-/// Chaque clé non triviale porte, sur la ligne au-dessus, un commentaire
-/// `# <provenance>` si l'entrée en a une.
+/// Key order is fixed: `schema`, `language`, `workflows`, `mcp`, `context`.
+/// Each non-trivial key carries, on the line above it, a
+/// `# <provenance>` comment if the entry has one.
 ///
-/// Le rendu est déterministe : mêmes entrées, mêmes bytes.
+/// Rendering is deterministic: same inputs, same bytes.
 pub fn render(config: &GeneratedConfig) -> String {
     let mut out = String::new();
 
-    out.push_str("# Configuration codev — généré par `codev init`.\n");
-    out.push_str("# Éditable à la main : chaque champ non trivial porte sa source en commentaire.\n\n");
+    out.push_str("# codev configuration — generated by `codev init`.\n");
+    out.push_str("# Hand-editable: each non-trivial field carries its source as a comment.\n\n");
 
     // schema
     out.push_str(&format!("schema: {}\n", config.schema));
+
+    // language
+    out.push_str("\n# Language of the prose skills write in artifacts (proposal, design,\n");
+    out.push_str("# tasks, specs). Structural keywords such as `## Why` or\n");
+    out.push_str("# `### Requirement:` always stay in English.\n");
+    if let Some(source) = &config.language.provenance {
+        out.push_str(&format!("# {source}\n"));
+    }
+    out.push_str(&format!("language: {}\n", config.language.value));
 
     // workflows
     if !config.workflows.is_empty() {
@@ -213,11 +245,11 @@ pub fn render(config: &GeneratedConfig) -> String {
         out.push_str(&format!("  jira_tool: {}\n", jira.value));
     }
 
-    // context — bloc littéral YAML `|`
+    // context — YAML literal block `|`
     if let Some(ctx) = &config.context {
         out.push('\n');
         if let Some(source) = &ctx.provenance {
-            out.push_str(&format!("# {source} — édite si besoin\n"));
+            out.push_str(&format!("# {source} — edit as needed\n"));
         }
         out.push_str("context: |\n");
         for line in ctx.value.lines() {
@@ -237,7 +269,7 @@ pub fn render(config: &GeneratedConfig) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::detect::{mcp::DetectedMcp, stack::Stack};
+    use crate::detect::{locale::DetectedLocale, mcp::DetectedMcp, stack::Stack};
 
     fn workspace_rust_detected() -> Detected {
         Detected {
@@ -257,18 +289,22 @@ mod tests {
                 url: Some("https://mcp.atlassian.com/".into()),
                 source: ".mcp.json".into(),
             }],
+            locale: Some(DetectedLocale {
+                var: "LANG".into(),
+                value: "fr_FR.UTF-8".into(),
+                language: "fr".into(),
+            }),
         }
     }
 
     #[test]
-    fn from_detected_full_produit_contexte_et_mcp() {
+    fn from_detected_full_produces_context_and_mcp() {
         let detected = workspace_rust_detected();
         let choices = UserChoices {
             workflows: vec!["propose".into(), "apply".into()],
-            context_addition: Some("Conventions maison : erreurs typées.".into()),
-            jira_tool_confirmed: Some(
-                "mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string(),
-            ),
+            context_addition: Some("In-house conventions: typed errors.".into()),
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         assert_eq!(g.schema, "spec-driven");
@@ -277,54 +313,97 @@ mod tests {
             g.mcp_jira.as_ref().unwrap().value,
             "mcp__claude_ai_Atlassian_Rovo__getJiraIssue"
         );
-        assert!(g
-            .mcp_jira
-            .as_ref()
-            .unwrap()
-            .provenance
-            .as_deref()
-            .unwrap()
-            .contains(".mcp.json"));
+        assert!(
+            g.mcp_jira
+                .as_ref()
+                .unwrap()
+                .provenance
+                .as_deref()
+                .unwrap()
+                .contains(".mcp.json")
+        );
         let ctx = g.context.unwrap();
         assert!(ctx.value.contains("Rust workspace"));
-        assert!(ctx.value.contains("Conventions maison"));
-        assert_eq!(ctx.provenance.as_deref(), Some("détecté depuis Cargo.toml"));
+        assert!(ctx.value.contains("In-house conventions"));
+        assert_eq!(ctx.provenance.as_deref(), Some("detected from Cargo.toml"));
     }
 
     #[test]
-    fn from_detected_vide_produit_config_minimale() {
+    fn from_detected_empty_produces_minimal_config() {
         let detected = Detected::empty();
         let choices = UserChoices {
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
             context_addition: None,
             jira_tool_confirmed: None,
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         assert_eq!(g.workflows.len(), 3);
         assert!(g.mcp_jira.is_none());
         assert!(g.context.is_none());
+        assert_eq!(g.language.value, "en");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("default — no locale detected")
+        );
     }
 
     #[test]
-    fn from_detected_mcp_seul_sans_contexte_libre() {
+    fn language_comes_from_the_locale_when_not_chosen() {
+        let g = from_detected(&workspace_rust_detected(), &UserChoices::defaults_full());
+        assert_eq!(g.language.value, "fr");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("detected from LANG=fr_FR.UTF-8")
+        );
+    }
+
+    #[test]
+    fn explicit_language_wins_over_the_locale() {
+        let choices = UserChoices {
+            language: Some("de".into()),
+            ..UserChoices::defaults_full()
+        };
+        let g = from_detected(&workspace_rust_detected(), &choices);
+        assert_eq!(g.language.value, "de");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("set with `codev init --language`")
+        );
+    }
+
+    #[test]
+    fn full_defaults_install_every_workflow() {
+        let full = UserChoices::defaults_full();
+        assert_eq!(full.workflows.len(), 8);
+        assert!(full.workflows.iter().any(|w| w == "configure"));
+    }
+
+    #[test]
+    fn from_detected_mcp_only_without_free_context() {
         let detected = workspace_rust_detected();
         let choices = UserChoices {
             workflows: vec!["propose".into()],
             context_addition: None,
-            jira_tool_confirmed: Some(
-                "mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string(),
-            ),
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
-        // Le contexte auto vient tout seul, sans l'ajout utilisateur.
+        // The auto context comes on its own, without the user's addition.
         assert!(g.context.as_ref().unwrap().value.contains("Rust workspace"));
         assert!(!g.context.as_ref().unwrap().value.contains("Conventions"));
     }
 
-    const GOLDEN_FULL: &str = "# Configuration codev — généré par `codev init`.
-# Éditable à la main : chaque champ non trivial porte sa source en commentaire.
+    const GOLDEN_FULL: &str = "# codev configuration — generated by `codev init`.
+# Hand-editable: each non-trivial field carries its source as a comment.
 
 schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+# detected from LANG=fr_FR.UTF-8
+language: fr
 
 workflows:
   - propose
@@ -335,19 +414,19 @@ workflows:
   - archive
   - update
 
-# détecté depuis .mcp.json → serveur « claude.ai Atlassian Rovo »
+# detected from .mcp.json → server \"claude.ai Atlassian Rovo\"
 mcp:
   jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
 
-# détecté depuis Cargo.toml — édite si besoin
+# detected from Cargo.toml — edit as needed
 context: |
-  Projet Rust workspace (4 crates), 2024. Dépendances principales : serde, anyhow. Licence : MIT. CI GitHub Actions active.
+  Rust workspace project (4 crates), 2024. Main dependencies: serde, anyhow. License: MIT. GitHub Actions CI enabled.
 
-  Conventions maison : erreurs typées.
+  In-house conventions: typed errors.
 ";
 
     #[test]
-    fn render_full_matche_golden() {
+    fn render_full_matches_golden() {
         let detected = workspace_rust_detected();
         let choices = UserChoices {
             workflows: vec![
@@ -359,20 +438,25 @@ context: |
                 "archive".into(),
                 "update".into(),
             ],
-            context_addition: Some("Conventions maison : erreurs typées.".into()),
-            jira_tool_confirmed: Some(
-                "mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string(),
-            ),
+            context_addition: Some("In-house conventions: typed errors.".into()),
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
         };
         let g = from_detected(&detected, &choices);
         let rendered = render(&g);
         assert_eq!(rendered, GOLDEN_FULL);
     }
 
-    const GOLDEN_MINIMAL: &str = "# Configuration codev — généré par `codev init`.
-# Éditable à la main : chaque champ non trivial porte sa source en commentaire.
+    const GOLDEN_MINIMAL: &str = "# codev configuration — generated by `codev init`.
+# Hand-editable: each non-trivial field carries its source as a comment.
 
 schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+# default
+language: en
 
 workflows:
   - propose
@@ -381,19 +465,20 @@ workflows:
 ";
 
     #[test]
-    fn is_config_thin_vrai_quand_rules_vides() {
+    fn is_config_thin_true_when_rules_empty() {
         assert!(is_config_thin(true));
     }
 
     #[test]
-    fn is_config_thin_faux_quand_rules_presentes() {
+    fn is_config_thin_false_when_rules_present() {
         assert!(!is_config_thin(false));
     }
 
     #[test]
-    fn render_minimal_matche_golden() {
+    fn render_minimal_matches_golden() {
         let g = GeneratedConfig {
             schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
             workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
             mcp_jira: None,
             context: None,

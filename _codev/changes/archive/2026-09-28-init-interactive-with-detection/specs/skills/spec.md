@@ -1,38 +1,34 @@
 ## MODIFIED Requirements
 
-### Requirement: `onboard` fait partie du catalogue par défaut
+### Requirement: `onboard` is part of the default catalog
 
-Le tableau `DEFAULT_WORKFLOWS` de `codev-agents::workflows` MUST
-contenir la **liste complète des 7 workflows** de codev : `propose`,
-`explore`, `onboard`, `apply`, `sync`, `archive` et `update`. Un
-utilisateur qui lance `codev init --yes` (ou depuis un pipe non
-interactif) sur un projet neuf, sans clé `workflows:` dans son
-`config.yaml`, obtient donc toutes les skills disponibles
-immédiatement.
+The `DEFAULT_WORKFLOWS` array of `codev-agents::workflows` MUST
+contain the **full list of the 7 codev workflows**: `propose`,
+`explore`, `onboard`, `apply`, `sync`, `archive` and `update`. A user
+who runs `codev init --yes` (or from a non-interactive pipe) on a new
+project, without a `workflows:` key in their `config.yaml`, therefore
+gets all the available skills immediately.
 
-Un projet qui veut restreindre le catalogue MUST déclarer une clé
-`workflows:` explicite avec un sous-ensemble choisi — c'est la voie
-opt-out, plutôt que l'ancienne voie opt-in.
+A project that wants to restrict the catalog MUST declare an explicit
+`workflows:` key with a chosen subset — this is the opt-out path,
+rather than the former opt-in path.
 
-Cette bascule règle un problème de découverte : sous l'ancien défaut
-(3 workflows), un utilisateur qui tapait `/codev-apply` après
-`/codev-propose` ne trouvait pas la skill et croyait qu'elle
-n'existait pas.
+This switch solves a discovery problem: under the old default (3
+workflows), a user who typed `/codev-apply` after `/codev-propose`
+did not find the skill and believed it did not exist.
 
-#### Scenario: Catalogue par défaut inclut les 7 workflows
+#### Scenario: Default catalog includes the 7 workflows
 
-- **GIVEN** un projet dont le `config.yaml` n'a pas de clé
-  `workflows:`
-- **WHEN** `select(None)` est appelé sur le catalogue
-- **THEN** la liste des `id` retournés est exactement
+- **GIVEN** a project whose `config.yaml` has no `workflows:` key
+- **WHEN** `select(None)` is called on the catalog
+- **THEN** the list of returned `id`s is exactly
   `["propose", "explore", "onboard", "apply", "sync", "archive", "update"]`
-- **AND** aucun warning n'est émis
+- **AND** no warning is emitted
 
-#### Scenario: Restriction opt-out via workflows explicite
+#### Scenario: Opt-out restriction via explicit workflows
 
-- **GIVEN** un projet dont le `config.yaml` contient
+- **GIVEN** a project whose `config.yaml` contains
   `workflows: [propose, explore, onboard]`
-- **WHEN** `select` est appelé avec cette liste
-- **THEN** seules ces trois skills sont retournées
-- **AND** `apply`, `sync`, `archive`, `update` ne sont **pas**
-  installés
+- **WHEN** `select` is called with that list
+- **THEN** only those three skills are returned
+- **AND** `apply`, `sync`, `archive`, `update` are **not** installed

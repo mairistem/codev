@@ -1,89 +1,90 @@
 ## ADDED Requirements
 
-### Requirement: Skill `update` révise un artefact de planification
+### Requirement: Skill `update` revises a planning artifact
 
-Le catalogue de codev SHALL exposer un workflow `update` — installé sous
-`.claude/skills/codev-update/SKILL.md`, invocable `/codev-update` — dont le
-rôle est de réviser un artefact de planification déjà écrit (proposal,
-specs, design ou tasks) d'un change actif, à partir d'une description libre
-donnée par l'utilisateur.
+The codev catalog SHALL expose an `update` workflow — installed under
+`.claude/skills/codev-update/SKILL.md`, invocable as `/codev-update` —
+whose role is to revise an already-written planning artifact
+(proposal, specs, design or tasks) of an active change, based on a
+free-form description given by the user.
 
-#### Scenario: Révision d'un design d'après une nouvelle contrainte
+#### Scenario: Revising a design after a new constraint
 
-- **GIVEN** un change actif dont `design.md` cite une décision technique X
-- **WHEN** l'utilisateur tape `/codev-update design "remplacer X par Y à
-  cause de la contrainte Z"`
-- **THEN** la skill lit `design.md`, applique la révision demandée, et
-  écrit la nouvelle version
-- **AND** relance `codev validate <change>` en fin de traitement
+- **GIVEN** an active change whose `design.md` cites a technical decision X
+- **WHEN** the user types `/codev-update design "replace X with Y
+  because of constraint Z"`
+- **THEN** the skill reads `design.md`, applies the requested revision,
+  and writes the new version
+- **AND** reruns `codev validate <change>` at the end of processing
 
-#### Scenario: Résolution implicite quand un seul change est actif
+#### Scenario: Implicit resolution when a single change is active
 
-- **GIVEN** un projet avec un seul change actif
-- **WHEN** l'utilisateur tape `/codev-update proposal "réduire le
-  périmètre"`
-- **THEN** la skill résout implicitement le change actif
-- **AND** applique la révision au `proposal.md` de ce change
+- **GIVEN** a project with a single active change
+- **WHEN** the user types `/codev-update proposal "reduce the
+  scope"`
+- **THEN** the skill implicitly resolves the active change
+- **AND** applies the revision to that change's `proposal.md`
 
-#### Scenario: Ambiguïté sur le change à réviser
+#### Scenario: Ambiguity about the change to revise
 
-- **GIVEN** deux changes actifs
-- **WHEN** l'utilisateur tape `/codev-update tasks "…"` sans nommer de
+- **GIVEN** two active changes
+- **WHEN** the user types `/codev-update tasks "…"` without naming a
   change
-- **THEN** la skill demande à l'utilisateur lequel réviser, en listant les
-  deux noms
-- **AND** n'écrit rien avant d'avoir la réponse
+- **THEN** the skill asks the user which one to revise, listing the
+  two names
+- **AND** writes nothing before getting the answer
 
-### Requirement: Skill `update` annonce la ripple avant d'agir
+### Requirement: Skill `update` announces the ripple before acting
 
-Quand la révision demandée sur un artefact rend un autre incohérent, la
-skill MUST le signaler à l'utilisateur et proposer la correction avant de
-l'écrire, plutôt que de laisser la spec principale, le design ou la liste
-de tâches en désaccord silencieux.
+When the requested revision of one artifact makes another
+inconsistent, the skill MUST report it to the user and propose the
+fix before writing it, rather than leaving the main spec, the design
+or the task list in silent disagreement.
 
-#### Scenario: Retirer une capacité du proposal ripple sur specs
+#### Scenario: Removing a capability from the proposal ripples onto specs
 
-- **GIVEN** un `proposal.md` déclarant deux capacités nouvelles `a` et
-  `b`, et un fichier `specs/b/spec.md` déjà écrit
-- **WHEN** l'utilisateur tape `/codev-update proposal "retirer la
-  capacité b — hors périmètre finalement"`
-- **THEN** la skill applique la révision au `proposal.md`
-- **AND** signale à l'utilisateur que `specs/b/spec.md` devient orphelin
-- **AND** propose de supprimer ce fichier ou d'appeler
-  `/codev-update specs …` pour l'ajuster
-- **AND** n'écrit pas cette seconde modification sans confirmation
+- **GIVEN** a `proposal.md` declaring two new capabilities `a` and
+  `b`, and a file `specs/b/spec.md` already written
+- **WHEN** the user types `/codev-update proposal "remove capability
+  b — out of scope after all"`
+- **THEN** the skill applies the revision to `proposal.md`
+- **AND** reports to the user that `specs/b/spec.md` becomes orphaned
+- **AND** proposes to delete that file or to call
+  `/codev-update specs …` to adjust it
+- **AND** does not write this second modification without confirmation
 
-#### Scenario: Une révision sans ripple s'applique sans confirmation supplémentaire
+#### Scenario: A revision without ripple applies without additional confirmation
 
-- **GIVEN** une révision qui ne touche qu'à `design.md` sans conséquence
-  sur les autres artefacts
-- **WHEN** l'utilisateur tape `/codev-update design "…"`
-- **THEN** la skill applique la révision sans demander de confirmation
-  additionnelle
+- **GIVEN** a revision that only touches `design.md` with no
+  consequence on the other artifacts
+- **WHEN** the user types `/codev-update design "…"`
+- **THEN** the skill applies the revision without asking for
+  additional confirmation
 
-### Requirement: Skill `update` reste dans la frontière planning
+### Requirement: Skill `update` stays within the planning boundary
 
-Le workflow `update` MUST se limiter aux fichiers sous
-`_codev/changes/<nom>/` et MUST NOT :
+The `update` workflow MUST limit itself to the files under
+`_codev/changes/<name>/` and MUST NOT:
 
-- modifier du code du projet ;
-- créer un artefact manquant (proposal, specs, design, tasks) — c'est
-  `/codev-propose` qui le fait ;
-- toucher à un change déjà archivé sous `changes/archive/`.
+- modify project code;
+- create a missing artifact (proposal, specs, design, tasks) — that is
+  what `/codev-propose` does;
+- touch an already-archived change under `changes/archive/`.
 
-#### Scenario: Refus d'écrire un artefact manquant
+#### Scenario: Refusal to write a missing artifact
 
-- **GIVEN** un change dont `design.md` n'existe pas encore
-- **WHEN** l'utilisateur tape `/codev-update design "ajouter la décision
+- **GIVEN** a change whose `design.md` does not exist yet
+- **WHEN** the user types `/codev-update design "add decision
   Z"`
-- **THEN** la skill refuse
-- **AND** invite explicitement à `/codev-propose` pour créer l'artefact
+- **THEN** the skill refuses
+- **AND** explicitly invites the user to run `/codev-propose` to
+  create the artifact
 
-#### Scenario: Refus d'un change archivé
+#### Scenario: Refusal of an archived change
 
-- **GIVEN** un change qui vit sous `changes/archive/2026-09-09-<nom>/`
-- **WHEN** l'utilisateur tape `/codev-update proposal --change
-  <archived-nom>`
-- **THEN** la skill refuse
-- **AND** rappelle qu'un change archivé est de l'histoire ; corriger
-  demande de le dé-archiver à la main
+- **GIVEN** a change living under `changes/archive/2026-09-09-<name>/`
+- **WHEN** the user types `/codev-update proposal --change
+  <archived-name>`
+- **THEN** the skill refuses
+- **AND** reminds that an archived change is history; correcting it
+  requires un-archiving it by hand

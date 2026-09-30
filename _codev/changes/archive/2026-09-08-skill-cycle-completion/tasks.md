@@ -1,92 +1,92 @@
-# Tâches
+# Tasks
 
-## 1. Contenu des deux skills
+## 1. Content of the two skills
 
-- [x] 1.1 Rédiger `assets/workflows/sync.md` — le corps de la skill `sync`.
-      Contenu attendu :
-      - entrée : nom de change optionnel, résolution implicite (un seul actif) ;
-      - vérification préalable : `codev status --change <nom> --json` pour
-        confirmer que la planification est complète (`isPlanningComplete`) ;
-      - action : `codev sync <nom> --json` ;
-      - lecture du `SyncReportV1` : `changeName`, `created[]`, `updated[]`,
-        `unchanged[]` ; rendu structuré (« ✓ N spec(s) créée(s), M mise(s) à
-        jour, K inchangée(s) » puis liste par catégorie) ;
-      - fin conditionnelle : si `created` ou `updated` est non vide, ajouter
-        « Le change est prêt à être archivé si tu veux clore le cycle. » ;
-        sinon, ne rien suggérer.
-      Vérifié par la présence du fichier et par l'invariant du CATALOG.
-- [x] 1.2 Rédiger `assets/workflows/archive.md` — le corps de la skill
-      `archive`. Contenu attendu :
-      - entrée : nom de change optionnel, résolution implicite ;
-      - vérification préalable : `codev status --change <nom> --json` pour
-        confirmer que la planification est complète ;
-      - action : `codev archive <nom> --json` ;
-      - lecture du `ArchiveReportV1` en cas de succès (exit 0) : rendu
-        structuré (nombres par catégorie + `movedTo` sur sa propre ligne) ;
-      - en cas d'exit non nul : lire le tableau `status` racine du JSON, si
-        un `code == "validation_failed"` est trouvé, dire exactement
-        « Le change a des erreurs. Lance `codev validate <nom>` pour voir le
-        détail. » ; pour tout autre code d'erreur, relayer le champ `message`
-        du JSON tel quel — pas de deviner, pas de retenter.
-      Vérifié par la présence du fichier et par l'invariant du CATALOG.
+- [x] 1.1 Write `assets/workflows/sync.md` — the body of the `sync` skill.
+      Expected content:
+      - input: optional change name, implicit resolution (only one active);
+      - prior check: `codev status --change <name> --json` to confirm that
+        planning is complete (`isPlanningComplete`);
+      - action: `codev sync <name> --json`;
+      - reading the `SyncReportV1`: `changeName`, `created[]`, `updated[]`,
+        `unchanged[]`; structured rendering ("✓ N spec(s) created, M
+        updated, K unchanged" then a list per category);
+      - conditional ending: if `created` or `updated` is non-empty, add
+        "The change is ready to be archived if you want to close the
+        cycle."; otherwise, suggest nothing.
+      Verified by the file's presence and by the CATALOG invariant.
+- [x] 1.2 Write `assets/workflows/archive.md` — the body of the `archive`
+      skill. Expected content:
+      - input: optional change name, implicit resolution;
+      - prior check: `codev status --change <name> --json` to confirm that
+        planning is complete;
+      - action: `codev archive <name> --json`;
+      - reading the `ArchiveReportV1` on success (exit 0): structured
+        rendering (counts per category + `movedTo` on its own line);
+      - on non-zero exit: read the JSON's root `status` array; if a
+        `code == "validation_failed"` is found, say exactly
+        "The change has errors. Run `codev validate <name>` to see the
+        details."; for any other error code, relay the JSON's `message`
+        field as is — no guessing, no retrying.
+      Verified by the file's presence and by the CATALOG invariant.
 
-## 2. Entrées dans le CATALOG
+## 2. CATALOG entries
 
-- [x] 2.1 Ajouter `Workflow { id: "sync", description: "…", allowed-tools:
+- [x] 2.1 Add `Workflow { id: "sync", description: "…", allowed-tools:
       "Bash(codev:*), Read", body: include_str!("../../../assets/workflows/sync.md") }`
-      au `CATALOG` de `codev-agents::workflows`. Description : « Synchroniser
-      les deltas d'un change codev déjà planifié dans les specs principales,
-      sans déplacer le change. À utiliser quand une capacité nouvelle doit
-      apparaître dans les specs avant d'être consommée par un autre change.
-      N'archive pas. »
-- [x] 2.2 Ajouter `Workflow { id: "archive", description: "…", allowed-tools:
+      to the `CATALOG` of `codev-agents::workflows`. Description: "Sync
+      the deltas of an already planned codev change into the main specs,
+      without moving the change. Use when a new capability must appear in
+      the specs before being consumed by another change. Does not
+      archive."
+- [x] 2.2 Add `Workflow { id: "archive", description: "…", allowed-tools:
       "Bash(codev:*), Read", body: include_str!("../../../assets/workflows/archive.md") }`.
-      Description : « Clore un change codev : fusionner ses deltas dans les
-      specs principales et déplacer le dossier vers l'archive datée. Refuse
-      d'agir si la validation remonte des erreurs. »
+      Description: "Close a codev change: merge its deltas into the main
+      specs and move the folder to the dated archive. Refuses to act if
+      validation reports errors."
 
-## 3. Tests d'invariant
+## 3. Invariant tests
 
-- [x] 3.1 Ajouter un test
-      `workflows::cycle_completion_skills_present_et_restreintes` qui vérifie :
-      `find("sync")` et `find("archive")` rendent `Some` ; leurs
-      `allowed_tools` égalent exactement `"Bash(codev:*), Read"` ; ni l'un ni
-      l'autre ne contient `Bash` autrement que dans le préfixe `Bash(codev:*)`.
-- [x] 3.2 Le test `apply_est_dans_le_catalogue_et_a_les_bons_outils` continue
-      de compter « exactement zéro autre workflow » qui aurait le `Bash`
-      général. Vérifié en relançant `cargo test -p codev-agents`.
-- [x] 3.3 L'invariant `chaque_workflow_a_un_corps_et_une_description_utilisables`
-      couvre les deux nouveaux workflows automatiquement (bouclage sur
-      `CATALOG`). Vérifié à la même passe.
-- [x] 3.4 L'invariant `le_frontmatter_de_chaque_skill_est_du_yaml_valide`
-      couvre également les deux nouveaux frontmatter automatiquement. Vérifié
-      à la même passe.
-- [x] 3.5 Mettre à jour `sans_demande_installe_le_catalogue_par_defaut` pour
-      affirmer que `DEFAULT_WORKFLOWS` ne contient ni `"sync"` ni `"archive"` —
-      symétriquement à ce qui est fait pour `apply`.
-- [x] 3.6 Ajouter dans `assets/workflows/sync.md` et `archive.md` des
-      références nominatives aux champs du contrat JSON (`SyncReportV1`,
-      `ArchiveReportV1`, `changeName`, `created`, `updated`, `unchanged`,
-      `movedTo`, `status[].code`) — pour qu'un `grep` sur ces noms depuis un
-      `contract.rs` renommé remonte les skills concernées. Vérifié par un
-      test `workflows::sync_et_archive_citent_les_champs_du_contrat` qui
-      cherche ces chaînes dans les `body` des deux workflows.
+- [x] 3.1 Add a test
+      `workflows::cycle_completion_skills_present_et_restreintes` that checks:
+      `find("sync")` and `find("archive")` return `Some`; their
+      `allowed_tools` equal exactly `"Bash(codev:*), Read"`; neither one
+      contains `Bash` other than in the `Bash(codev:*)` prefix.
+- [x] 3.2 The test `apply_est_dans_le_catalogue_et_a_les_bons_outils` keeps
+      counting "exactly zero other workflows" that would have general
+      `Bash`. Verified by rerunning `cargo test -p codev-agents`.
+- [x] 3.3 The invariant `chaque_workflow_a_un_corps_et_une_description_utilisables`
+      covers the two new workflows automatically (loop over `CATALOG`).
+      Verified in the same pass.
+- [x] 3.4 The invariant `le_frontmatter_de_chaque_skill_est_du_yaml_valide`
+      also covers the two new frontmatters automatically. Verified in the
+      same pass.
+- [x] 3.5 Update `sans_demande_installe_le_catalogue_par_defaut` to assert
+      that `DEFAULT_WORKFLOWS` contains neither `"sync"` nor `"archive"` —
+      symmetrically to what is done for `apply`.
+- [x] 3.6 Add to `assets/workflows/sync.md` and `archive.md` references by
+      name to the JSON contract fields (`SyncReportV1`, `ArchiveReportV1`,
+      `changeName`, `created`, `updated`, `unchanged`, `movedTo`,
+      `status[].code`) — so that a `grep` on these names from a renamed
+      `contract.rs` turns up the affected skills. Verified by a test
+      `workflows::sync_et_archive_citent_les_champs_du_contrat` that looks
+      for these strings in the `body` of both workflows.
 
-## 4. Config de ce dépôt et dogfooding
+## 4. This repository's config and dogfooding
 
-- [x] 4.1 Ajouter `- sync` et `- archive` à la liste `workflows` de
-      `_codev/config.yaml` de ce projet.
-- [x] 4.2 Lancer `cargo install --path crates/codev-cli` puis `codev update`.
-      Vérifier que `.claude/skills/codev-sync/SKILL.md` et
-      `.claude/skills/codev-archive/SKILL.md` apparaissent avec le bon
+- [x] 4.1 Add `- sync` and `- archive` to the `workflows` list of this
+      project's `_codev/config.yaml`.
+- [x] 4.2 Run `cargo install --path crates/codev-cli` then `codev update`.
+      Check that `.claude/skills/codev-sync/SKILL.md` and
+      `.claude/skills/codev-archive/SKILL.md` appear with the right
       frontmatter.
-- [x] 4.3 Vérifier que la liste des skills annoncée par `codev update`
-      contient bien les cinq workflows : `codev-propose, codev-explore,
+- [x] 4.3 Check that the list of skills announced by `codev update`
+      does contain the five workflows: `codev-propose, codev-explore,
       codev-apply, codev-sync, codev-archive`.
 
-## 5. Intégration workspace
+## 5. Workspace integration
 
-- [x] 5.1 `cargo test --workspace` reste vert et compte au moins 1 test
-      supplémentaire (`cycle_completion_skills_present_et_restreintes`).
-- [x] 5.2 `cargo clippy --workspace --all-targets` reste sans avertissement.
-- [x] 5.3 `codev validate --all` reste vert.
+- [x] 5.1 `cargo test --workspace` stays green and counts at least 1
+      additional test (`cycle_completion_skills_present_et_restreintes`).
+- [x] 5.2 `cargo clippy --workspace --all-targets` stays warning-free.
+- [x] 5.3 `codev validate --all` stays green.

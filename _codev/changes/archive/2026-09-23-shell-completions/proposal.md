@@ -1,72 +1,71 @@
-# Proposal : générer les completions shell via `codev completions`
+# Proposal: generate shell completions via `codev completions`
 
-## Pourquoi
+## Why
 
-L'utilisateur qui tape `codev de<Tab>` dans son shell aujourd'hui n'a
-rien : pas de complétion sur les sous-commandes (`decision`,
-`deviate`, `deviated`…), sur les noms de changes actifs, ni sur les
-flags. C'est un petit friction constant sur un outil qu'on utilise
-plusieurs dizaines de fois par jour.
+A user who types `codev de<Tab>` in their shell today gets
+nothing: no completion on subcommands (`decision`,
+`deviate`, `deviated`…), on active change names, or on
+flags. It is a small, constant friction on a tool used
+dozens of times a day.
 
-`clap` (utilisé par `codev-cli`) expose un compagnon officiel,
-`clap_complete`, qui génère des scripts de completion pour bash, zsh,
-fish, powershell et elvish à partir de la déclaration `#[derive(Parser)]`
-existante. Rien à écrire à la main — le résultat suit les
-sous-commandes au fur et à mesure qu'elles évoluent, sans dérive
-possible.
+`clap` (used by `codev-cli`) exposes an official companion,
+`clap_complete`, which generates completion scripts for bash, zsh,
+fish, powershell and elvish from the existing `#[derive(Parser)]`
+declaration. Nothing to write by hand — the output follows the
+subcommands as they evolve, with no possible drift.
 
-## Ce qui change
+## What Changes
 
-- **Nouvelle sous-commande `codev completions <shell>`** — imprime
-  sur stdout le script de complétion pour le shell donné.
-  `<shell>` accepte les cinq valeurs standard de `clap_complete`
+- **New `codev completions <shell>` subcommand** — prints
+  the completion script for the given shell to stdout.
+  `<shell>` accepts the five standard `clap_complete` values
   (`bash`, `zsh`, `fish`, `powershell`, `elvish`).
-- **Documentation d'installation** — le `--help` de la sous-commande
-  cite la procédure recommandée par shell (redirection vers le bon
-  fichier, `source`, etc.).
-- **Nouvelle dépendance `clap_complete = "4"`** dans
-  `crates/codev-cli/Cargo.toml` — aligné sur la version majeure de
-  `clap` déjà utilisée.
-- **Pas de scaffolding automatique** — la commande ne touche à aucun
-  fichier système ; c'est à l'utilisateur de rediriger la sortie où
-  il veut. Cohérent avec la philosophie codev (« la skill/commande
-  guide, l'utilisateur agit »).
+- **Installation documentation** — the subcommand's `--help`
+  lists the recommended procedure per shell (redirecting to the right
+  file, `source`, etc.).
+- **New `clap_complete = "4"` dependency** in
+  `crates/codev-cli/Cargo.toml` — aligned with the major version of
+  `clap` already in use.
+- **No automatic scaffolding** — the command touches no
+  system file; it is up to the user to redirect the output wherever
+  they want. Consistent with the codev philosophy ("the skill/command
+  guides, the user acts").
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-- `shell-completions` — décrit le contrat de la sous-commande
-  `codev completions` : shells supportés, format de sortie, absence
-  d'effet de bord.
+- `shell-completions` — describes the contract of the
+  `codev completions` subcommand: supported shells, output format, no
+  side effects.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune.
+None.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** :
-  - Nouvelle variante `Command::Completions { shell: Shell }` dans
-    `crates/codev-cli/src/main.rs`, où `Shell` est
+- **Code**:
+  - New variant `Command::Completions { shell: Shell }` in
+    `crates/codev-cli/src/main.rs`, where `Shell` is
     `clap_complete::Shell`.
-  - Branche du `match` qui appelle
+  - A `match` arm that calls
     `clap_complete::generate(shell, &mut Cli::command(), "codev",
     &mut io::stdout())`.
-  - Un test qui vérifie que la génération pour chacun des cinq
-    shells produit une sortie non vide et contient le nom `codev`.
-- **Contrat JSON** : rien. La sortie est du script shell, pas du
-  JSON. La commande n'a pas de flag `--json` (aucun sens).
-- **Fichier écrit** : rien — sortie sur stdout uniquement.
-- **Migration** : aucune. Feature purement additive.
-- **Hors périmètre** :
-  - **Complétion dynamique sur les noms de changes actifs** — nécessite
-    un runtime lookup, `clap_complete` génère du statique. Reportable.
-  - **Auto-installation dans `codev init`** — trop magique, dépend
-    de la config shell de l'utilisateur.
-  - **Support de shells exotiques** (nushell, xonsh) — hors des cinq
-    de `clap_complete`. Reportable si besoin réel.
+  - A test that checks that generation for each of the five
+    shells produces non-empty output and contains the name `codev`.
+- **JSON contract**: nothing. The output is shell script, not
+  JSON. The command has no `--json` flag (it would make no sense).
+- **Files written**: none — stdout output only.
+- **Migration**: none. Purely additive feature.
+- **Out of scope**:
+  - **Dynamic completion on active change names** — requires
+    a runtime lookup; `clap_complete` generates static output. Deferrable.
+  - **Auto-installation in `codev init`** — too magical, depends
+    on the user's shell configuration.
+  - **Support for exotic shells** (nushell, xonsh) — outside the five
+    of `clap_complete`. Deferrable if there is a real need.

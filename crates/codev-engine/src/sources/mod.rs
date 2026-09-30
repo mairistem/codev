@@ -1,13 +1,13 @@
-//! Sources héritées — cache local, lock, résolution de `inherits: git:`.
+//! Inherited sources — local cache, lock, resolution of `inherits: git:`.
 //!
-//! Trois couches :
+//! Three layers:
 //!
-//! - `cache` : disposition disque et hash d'URL, pur ;
-//! - `lockfile` : lecture/écriture de `_codev/codev.lock` en TOML ;
-//! - `update` : plan + exécution de `codev sources update`.
+//! - `cache`: on-disk layout and URL hash, pure;
+//! - `lockfile`: reading/writing `_codev/codev.lock` as TOML;
+//! - `update`: plan + execution of `codev sources update`.
 //!
-//! Aucune commande courante (`status`, `instructions`, `validate`, `sync`,
-//! `archive`) ne descend jamais ici. Seul `codev sources update` le fait.
+//! No everyday command (`status`, `instructions`, `validate`, `sync`,
+//! `archive`) ever goes down here. Only `codev sources update` does.
 
 pub mod cache;
 pub mod lockfile;
@@ -15,26 +15,26 @@ pub mod update;
 
 pub use lockfile::{LockEntry, Lockfile};
 pub use update::{
-    plan_sources_update, run_sources_update, GitSourceInput, PinChange, SourcesUpdatePlan,
-    UpdateOutcome,
+    GitSourceInput, PinChange, SourcesUpdatePlan, UpdateOutcome, plan_sources_update,
+    run_sources_update,
 };
 
 use std::path::PathBuf;
 
-use crate::config::{load, InheritSource};
+use crate::config::{InheritSource, load};
 use crate::error::Result;
 use crate::ports::{Env, FileSystem};
 use codev_core::Layout;
 
-/// Extensions autorisées pour du contenu hérité — mise en œuvre matérielle
-/// du principe « aucun contenu exécutable hérité » de la décision 0005.
+/// Extensions allowed for inherited content — the concrete enforcement of
+/// the "no inherited executable content" principle from decision 0005.
 ///
-/// Utilisé par `list_files_exposed` — les autres lecteurs
-/// (`decisions::index`, `config::resolve`) filtrent déjà par nom précis,
-/// c'est-à-dire un cas particulier de cette règle.
+/// Used by `list_files_exposed` — the other readers
+/// (`decisions::index`, `config::resolve`) already filter by exact name,
+/// which is a special case of this rule.
 pub const ALLOWED_EXTENSIONS: &[&str] = &["md", "yaml"];
 
-/// Type d'une source déclarée.
+/// Kind of a declared source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SourceKind {
     Path,
@@ -50,7 +50,7 @@ impl SourceKind {
     }
 }
 
-/// État de résolution d'une source.
+/// Resolution state of a source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SourceState {
     Resolved,
@@ -72,22 +72,42 @@ impl SourceState {
     }
 }
 
-/// L'état complet d'une source déclarée dans `inherits`, pour la commande
-/// `codev sources list`.
+/// The complete state of a source declared in `inherits`, for the
+/// `codev sources list` command.
 #[derive(Debug, Clone)]
 pub struct SourceStatus {
     pub kind: SourceKind,
-    /// Pour `Path` : le chemin déclaré ; pour `Git` : l'URL.
+    /// For `Path`: the declared path; for `Git`: the URL.
     pub address: String,
     pub state: SourceState,
     pub git_ref: Option<String>,
     pub subpath: Option<String>,
     pub sha: Option<String>,
-    /// Chemin résolu sur le disque, si applicable.
+    /// Resolved path on disk, if applicable.
     pub resolved_path: Option<PathBuf>,
 }
 
-/// Rassemble l'état de chaque source déclarée par le projet.
+impl SourceStatus {
+    /// The root of the source's codev project: `resolved_path`, joined
+    /// with `subpath` when the project lives in a folder of the repository.
+    ///
+    /// Everything read from a source (config, decisions) goes through it,
+    /// so that `subpath` applies to all of them alike.
+    pub fn project_root(&self) -> Option<PathBuf> {
+        let root = self.resolved_path.as_ref()?;
+        Some(project_root(root, self.subpath.as_deref()))
+    }
+}
+
+/// `content_root`, joined with `subpath` when one is declared.
+pub fn project_root(content_root: &std::path::Path, subpath: Option<&str>) -> PathBuf {
+    match subpath {
+        Some(sub) => content_root.join(sub),
+        None => content_root.to_path_buf(),
+    }
+}
+
+/// Gathers the state of every source declared by the project.
 pub fn list_source_states(
     fs: &dyn FileSystem,
     env: &dyn Env,
@@ -162,7 +182,7 @@ fn status_of(
     }
     SourceStatus {
         kind: SourceKind::Path,
-        address: "(malformée)".to_string(),
+        address: "(malformed)".to_string(),
         state: SourceState::Unreadable,
         git_ref: None,
         subpath: None,
@@ -171,8 +191,8 @@ fn status_of(
     }
 }
 
-/// Liste les fichiers **exposés** sous un chemin racine — seuls ceux dont
-/// l'extension est dans `ALLOWED_EXTENSIONS`.
+/// Lists the **exposed** files under a root path — only those whose
+/// extension is in `ALLOWED_EXTENSIONS`.
 pub fn list_files_exposed(fs: &dyn FileSystem, root: &std::path::Path) -> Vec<String> {
     let files = fs.walk_files(root).unwrap_or_default();
     files

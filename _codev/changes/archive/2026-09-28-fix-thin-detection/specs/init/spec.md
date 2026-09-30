@@ -1,58 +1,57 @@
 ## MODIFIED Requirements
 
-### Requirement: `codev init` incite à `/codev-configure` quand la config générée est thin
+### Requirement: `codev init` prompts for `/codev-configure` when the generated config is thin
 
-À la sortie de `codev init`, la sortie **humaine** SHALL évaluer si le
-`_codev/config.yaml` fraîchement écrit ou déjà présent est **thin** —
-c'est-à-dire dont la clé `rules:` est absente ou vide.
+At the end of `codev init`, the **human** output SHALL evaluate whether
+the freshly written or already present `_codev/config.yaml` is
+**thin** — that is, one whose `rules:` key is missing or empty.
 
-Le champ `context:` n'entre plus dans la définition de « thin » — la
-sonde de `codev init` le remplit systématiquement à partir des
-manifestes détectés, ce qui rend sa longueur inutile pour deviner si
-l'utilisateur a vraiment rempli sa config. Les `rules:`, à l'inverse,
-sont toujours un choix utilisateur explicite ; leur présence est le
-seul indicateur fiable.
+The `context:` field no longer enters the definition of "thin" — the
+`codev init` probe systematically fills it from the detected
+manifests, which makes its length useless for guessing whether the
+user has really filled in their config. `rules:`, on the contrary, are
+always an explicit user choice; their presence is the only reliable
+indicator.
 
-Si la config est thin, la dernière ligne de la sortie humaine MUST
-inviter l'utilisateur à lancer `/codev-configure` :
+If the config is thin, the last line of the human output MUST invite
+the user to run `/codev-configure`:
 
 ```
-→ Prochaine étape recommandée : dans Claude Code, tape /codev-configure.
-  Claude analysera ton projet et enrichira _codev/config.yaml
-  (contexte, règles par artefact) — ~30 secondes.
+→ Recommended next step: in Claude Code, type /codev-configure.
+  Claude will analyze the project and enrich _codev/config.yaml
+  (context, per-artifact rules) — ~30 seconds.
 
-Ou saute cette étape et tape /codev-propose <une-idée> directement.
+Or skip this step and type /codev-propose <an-idea> directly.
 ```
 
-Si la config n'est pas thin (l'utilisateur avait déjà écrit des
-règles, ou un `codev-configure` a déjà tourné), la sortie garde sa
-forme courte actuelle : « Redémarre Claude Code puis tape
-/codev-propose. »
+If the config is not thin (the user had already written rules, or a
+`codev-configure` has already run), the output keeps its current short
+form: "Restart Claude Code, then type /codev-propose."
 
-La sortie **JSON** MUST rester inchangée — aucun champ ajouté, aucune
-promesse cassée. L'incitation est réservée à la sortie humaine, où
-elle n'affecte pas les scripts qui consomment le rapport machine.
+The **JSON** output MUST remain unchanged — no field added, no promise
+broken. The suggestion is reserved for the human output, where it does
+not affect scripts that consume the machine report.
 
-#### Scenario: Config sans règles déclenche la nudge
+#### Scenario: Config without rules triggers the hint
 
-- **GIVEN** un projet neuf avec un `Cargo.toml` minimal (donc un
-  `context:` détecté, mais aucune `rules:` écrite)
-- **WHEN** l'utilisateur lance `codev init --yes`
-- **THEN** la sortie humaine contient le mot-clé `/codev-configure`
-- **AND** la sortie JSON (`--json`) ne le contient pas
+- **GIVEN** a new project with a minimal `Cargo.toml` (hence a
+  detected `context:`, but no `rules:` written)
+- **WHEN** the user runs `codev init --yes`
+- **THEN** the human output contains the keyword `/codev-configure`
+- **AND** the JSON output (`--json`) does not contain it
 
-#### Scenario: Config avec règles ne déclenche pas la nudge
+#### Scenario: Config with rules does not trigger the hint
 
-- **GIVEN** un projet dont le `_codev/config.yaml` existe déjà et
-  porte au moins une entrée dans `rules:` (par exemple
+- **GIVEN** a project whose `_codev/config.yaml` already exists and
+  carries at least one entry in `rules:` (for example
   `rules: { specs: [...] }`)
-- **WHEN** l'utilisateur lance `codev init --yes` (idempotence)
-- **THEN** la sortie humaine ne contient pas `/codev-configure`
+- **WHEN** the user runs `codev init --yes` (idempotence)
+- **THEN** the human output does not contain `/codev-configure`
 
-#### Scenario: Long contexte auto-détecté n'inhibe pas la nudge
+#### Scenario: Long auto-detected context does not suppress the hint
 
-- **GIVEN** un projet TypeScript avec beaucoup de dépendances
-  (contexte auto-détecté de plus de 200 caractères), sans `rules:`
-- **WHEN** l'utilisateur lance `codev init --yes`
-- **THEN** la sortie humaine contient bien `/codev-configure` — la
-  longueur du contexte auto-détecté n'inhibe plus la nudge
+- **GIVEN** a TypeScript project with many dependencies (auto-detected
+  context of more than 200 characters), without `rules:`
+- **WHEN** the user runs `codev init --yes`
+- **THEN** the human output does contain `/codev-configure` — the
+  length of the auto-detected context no longer suppresses the hint

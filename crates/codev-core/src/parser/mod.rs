@@ -1,20 +1,19 @@
-//! Parseur de specs principales et de deltas.
+//! Parser for main specs and deltas.
 //!
-//! Aucune I/O — c'est du cœur pur au sens de la décision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`. Prend une
-//! `&str`, rend un [`Parsed`] avec la valeur — même partielle — et la liste
-//! des défauts localisés.
+//! No I/O — this is pure core in the sense of decision
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`. Takes a
+//! `&str`, returns a [`Parsed`] with the value — even partial — and the list
+//! of located defects.
 //!
-//! Deux entrées publiques distinctes plutôt qu'une seule qui devinerait, pour
-//! que « mauvais mélange » ne compile pas : `parse_spec` pour une spec
-//! principale, `parse_delta` pour un fichier de change.
-
+//! Two distinct public entry points rather than a single one that would
+//! guess, so that "wrong mix" does not compile: `parse_spec` for a main
+//! spec, `parse_delta` for a change file.
 pub mod ast;
 pub mod codes;
 pub mod delta;
 pub mod fence;
-pub mod spec;
 mod shared;
+pub mod spec;
 
 pub use ast::{
     Delta, DeltaOp, DeltaSection, Finding, Parsed, PurposeBlock, Removal, Rename, Requirement,
