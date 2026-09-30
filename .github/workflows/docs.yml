@@ -27,21 +27,22 @@ jobs:
       - uses: actions/checkout@v7
       - uses: taiki-e/install-action@v2
         with:
-          tool: mdbook
+          # Pinned: the Mairistem theme (docs/theme/index.hbs) is derived
+          # from the templates of this exact mdBook version.
+          tool: mdbook@0.5.4
       - name: Build both languages
         run: |
           set -eu
           mdbook build docs/en --dest-dir "$PWD/site/en"
           mdbook build docs/fr --dest-dir "$PWD/site/fr"
-          # The site root sends visitors to the English book.
-          cat > site/index.html <<'HTML'
-          <!doctype html>
-          <meta charset="utf-8">
-          <title>codev documentation</title>
-          <meta http-equiv="refresh" content="0; url=en/">
-          <link rel="canonical" href="en/">
-          <p><a href="en/">English</a> · <a href="fr/">Français</a></p>
-          HTML
+      - name: Add the landing page at the site root
+        run: |
+          set -eu
+          cp -R docs/site/. site/
+          # The landing page shares the theme's fonts and favicon.
+          mkdir -p site/fonts
+          cp docs/theme/fonts/*.woff2 docs/theme/fonts/IBM-PLEX-LICENSE.txt site/fonts/
+          cp docs/theme/favicon.svg site/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site

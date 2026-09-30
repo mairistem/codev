@@ -1,0 +1,1601 @@
+/*
+ * Mairistem theme for the codev documentation (mdBook 0.5.4).
+ *
+ * Shared by docs/en and docs/fr: both books reach this directory through
+ * their `theme` symlink (docs/<lang>/theme -> ../theme) and load this file
+ * through `additional-css`. Values come from the Mairistem design system
+ * tokens (tokens.css); the few derived values are commented.
+ *
+ * Themes: mdBook's `light` class is Mairistem light; mdBook's `navy` class
+ * is the Mairistem dark variant. The other stock themes are not offered.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Tokens                                                             */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --mx-font: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono-font: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+  --code-font-size: 0.875em;
+
+  --sidebar-target-width: 288px;
+  --page-padding: 32px;
+  --content-max-width: 800px;
+  --menu-bar-height: 64px;
+  --searchbar-margin-block-start: 0;
+
+  --mx-radius-sm: 6px;
+  --mx-radius-md: 12px;
+  --mx-radius-lg: 14px;
+  --mx-motion: .2s ease-in-out;
+  --mx-motion-fast: .18s ease-in-out;
+}
+
+/* Mairistem light (also the no-JS default). */
+.light,
+html:not(.js) {
+  --bg: #ffffff;
+  --fg: #40565e;
+
+  --sidebar-bg: #f4f8f9;
+  --sidebar-fg: #40565e;
+  --sidebar-non-existant: #8aa3ac;
+  --sidebar-active: #004c66;
+  --sidebar-spacer: #e7edef;
+  --sidebar-header-border-color: #dce5e8;
+
+  --scrollbar: #b9cdd3;
+  --icons: #40565e;
+  --icons-hover: #004c66;
+  --links: #c4361b;
+  --inline-code-color: #00394d;
+
+  --theme-popup-bg: #ffffff;
+  --theme-popup-border: #e3eaec;
+  --theme-hover: #f4f8f9;
+
+  --quote-bg: #f4f8f9;
+  --quote-border: #dce5e8;
+  --warning-border: #ff5331;
+
+  --table-border-color: #e7edef;
+  --table-header-bg: #f4f8f9;
+  --table-alternate-bg: #ffffff;
+
+  --searchbar-border-color: #dce5e8;
+  --searchbar-bg: #ffffff;
+  --searchbar-fg: #00394d;
+  --searchbar-shadow-color: transparent;
+  --searchresults-header-fg: #5f767e;
+  --searchresults-border-color: #e7edef;
+  --searchresults-li-bg: #f4f8f9;
+  --search-mark-bg: rgba(255, 171, 3, .32);
+
+  --footnote-highlight: #ff5331;
+  --overlay-bg: rgba(0, 57, 77, .45);
+
+  --blockquote-note-color: #00806a;
+  --blockquote-tip-color: #00806a;
+  --blockquote-important-color: #004c66;
+  --blockquote-warning-color: #c4361b;
+  --blockquote-caution-color: #c4361b;
+
+  --color-scheme: light;
+
+  /* Mairistem roles */
+  --mx-heading: #004c66;
+  --mx-strong: #00394d;
+  --mx-muted: #5f767e;
+  --mx-eyebrow: #00806a;
+  --mx-link-hover: #a82d15;
+  --mx-surface: #ffffff;
+  --mx-surface-soft: #f4f8f9;
+  --mx-border-card: #e3eaec;
+  --mx-hairline: #e7edef;
+  --mx-border-field: #dce5e8;
+  --mx-border-strong: #b9cdd3;
+  --mx-code-bg: #f4f8f9;
+  --mx-code-border: #e3eaec;
+  --mx-inline-code-bg: #eff3f4;
+  --mx-control-hover: #f4f8f9;
+  --mx-active-bg: #ffffff;
+  --mx-active-fg: #004c66;
+  --mx-rule: #ff5331;
+  --mx-focus: #ff5331;
+  --mx-note-rule: #00c39b;
+  --mx-note-bg: rgba(0, 195, 155, .07);
+  --mx-note-title: #00806a;
+  --mx-warning-rule: #ff5331;
+  --mx-warning-bg: rgba(255, 83, 49, .06);
+  --mx-warning-title: #c4361b;
+  --mx-segment-bg: #004c66;
+  --mx-segment-fg: #ffffff;
+  --mx-card-shadow: 0 8px 18px 0 rgba(0, 60, 80, .13);
+  --mx-float-shadow: 0 8px 18px 0 rgba(0, 60, 80, .18);
+
+  --mx-logo-ink: #000000;
+  --mx-logo-corail: #ff5331;
+  --mx-logo-jaune: #ffab03;
+  --mx-logo-bleu: #004c66;
+  --mx-logo-vert: #00c39b;
+}
+
+/* Mairistem dark, derived from the design system's dark surfaces. */
+.navy {
+  --bg: #00394d;
+  --fg: #dce5e8;
+
+  --sidebar-bg: #003950;
+  --sidebar-fg: #dce5e8;
+  --sidebar-non-existant: #8aa3ac;
+  --sidebar-active: #ffffff;
+  --sidebar-spacer: rgba(255, 255, 255, .14);
+  --sidebar-header-border-color: rgba(255, 255, 255, .14);
+
+  --scrollbar: #5f767e;
+  --icons: #dce5e8;
+  --icons-hover: #ffffff;
+  --links: #ffab03;
+  --inline-code-color: #ffffff;
+
+  --theme-popup-bg: #004c66;
+  --theme-popup-border: rgba(255, 255, 255, .14);
+  --theme-hover: rgba(255, 255, 255, .07);
+
+  --quote-bg: #003950;
+  --quote-border: rgba(255, 255, 255, .14);
+  --warning-border: #ff5331;
+
+  --table-border-color: rgba(255, 255, 255, .14);
+  --table-header-bg: #004c66;
+  --table-alternate-bg: transparent;
+
+  --searchbar-border-color: rgba(255, 255, 255, .22);
+  --searchbar-bg: #003950;
+  --searchbar-fg: #ffffff;
+  --searchbar-shadow-color: transparent;
+  --searchresults-header-fg: #9cbac4;
+  --searchresults-border-color: rgba(255, 255, 255, .14);
+  --searchresults-li-bg: #004c66;
+  --search-mark-bg: rgba(255, 171, 3, .38);
+
+  --footnote-highlight: #ffab03;
+  --overlay-bg: rgba(0, 20, 30, .6);
+
+  --blockquote-note-color: #00c39b;
+  --blockquote-tip-color: #00c39b;
+  --blockquote-important-color: #ffffff;
+  --blockquote-warning-color: #ffab03;
+  --blockquote-caution-color: #ffab03;
+
+  --color-scheme: dark;
+
+  --mx-heading: #ffffff;
+  --mx-strong: #ffffff;
+  --mx-muted: #9cbac4;
+  --mx-eyebrow: #00c39b;
+  --mx-link-hover: #ffffff;
+  --mx-surface: #00394d;
+  --mx-surface-soft: #003950;
+  --mx-border-card: rgba(255, 255, 255, .14);
+  --mx-hairline: rgba(255, 255, 255, .14);
+  --mx-border-field: rgba(255, 255, 255, .22);
+  --mx-border-strong: rgba(255, 255, 255, .3);
+  --mx-code-bg: #003950;
+  --mx-code-border: rgba(255, 255, 255, .14);
+  --mx-inline-code-bg: rgba(255, 255, 255, .1);
+  --mx-control-hover: rgba(255, 255, 255, .07);
+  --mx-active-bg: rgba(255, 255, 255, .07);
+  --mx-active-fg: #ffffff;
+  --mx-rule: #ff5331;
+  --mx-focus: #ffab03;
+  --mx-note-rule: #00c39b;
+  --mx-note-bg: rgba(0, 195, 155, .09);
+  --mx-note-title: #00c39b;
+  --mx-warning-rule: #ff5331;
+  --mx-warning-bg: rgba(255, 83, 49, .10);
+  --mx-warning-title: #ffab03;
+  --mx-segment-bg: #ffffff;
+  --mx-segment-fg: #004c66;
+  --mx-card-shadow: 0 8px 18px 0 rgba(0, 20, 30, .35);
+  --mx-float-shadow: 0 8px 18px 0 rgba(0, 20, 30, .45);
+
+  --mx-logo-ink: #ffffff;
+  --mx-logo-corail: #ffffff;
+  --mx-logo-jaune: #ffffff;
+  --mx-logo-bleu: #ffffff;
+  --mx-logo-vert: #ffffff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                               */
+/* ------------------------------------------------------------------ */
+
+html {
+  font-family: var(--mx-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-size: 1.6rem;
+}
+
+::selection {
+  background: rgba(255, 171, 3, .35);
+}
+
+:focus-visible {
+  outline: 1px solid var(--mx-focus);
+  outline-offset: 2px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh + var(--menu-bar-height));
+  padding: 0 var(--page-padding);
+}
+
+.page > .content {
+  flex: 1 0 auto;
+}
+
+#mdbook-menu-bar-hover-placeholder {
+  margin-block: 0;
+}
+
+:target {
+  scroll-margin-top: calc(var(--menu-bar-height) + 16px);
+}
+
+/* The stock "»" marker in front of a targeted heading. */
+h1:target::before, h2:target::before, h3:target::before,
+h4:target::before, h5:target::before, h6:target::before,
+dt:target::before {
+  content: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Content                                                            */
+/* ------------------------------------------------------------------ */
+
+.content {
+  padding: 0 0 8px;
+}
+
+.content main {
+  max-width: var(--content-max-width);
+  padding-block-start: 40px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--fg);
+}
+
+.content p,
+.content ol,
+.content ul {
+  line-height: 1.65;
+}
+
+.content p {
+  margin: 0 0 16px;
+}
+
+.content ul,
+.content ol {
+  margin: 0 0 16px;
+  padding-inline-start: 24px;
+}
+
+.content li {
+  margin: 4px 0;
+}
+
+.content li > p {
+  margin-bottom: 8px;
+}
+
+.content li::marker {
+  color: var(--mx-muted);
+}
+
+.content ul > li::marker {
+  color: var(--mx-rule);
+}
+
+.content strong {
+  font-weight: 600;
+  color: var(--mx-strong);
+}
+
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  color: var(--mx-heading);
+  font-weight: 600;
+}
+
+.content h1 {
+  font-size: 38px;
+  line-height: 1.25;
+  letter-spacing: -0.76px;
+  margin: 0 0 24px;
+}
+
+.content h2 {
+  font-size: 26px;
+  line-height: 1.3;
+  letter-spacing: -0.26px;
+  margin: 56px 0 16px;
+}
+
+.content h3 {
+  font-size: 20px;
+  line-height: 1.35;
+  margin: 40px 0 12px;
+}
+
+.content h4 {
+  font-size: 18px;
+  line-height: 1.4;
+  margin: 32px 0 10px;
+}
+
+.content h5,
+.content h6 {
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 28px 0 8px;
+}
+
+.content h1 + h2,
+.content h2 + h3,
+.content h3 + h4 {
+  margin-top: 24px;
+}
+
+.content .header:link,
+.content .header:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.content .header:hover {
+  text-decoration: none;
+}
+
+/* A discreet anchor sign on hover, pointing at the heading's permalink. */
+.content h2 > a.header::after,
+.content h3 > a.header::after,
+.content h4 > a.header::after {
+  content: "#";
+  margin-inline-start: 10px;
+  color: var(--mx-border-strong);
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity var(--mx-motion-fast);
+}
+
+.content h2:hover > a.header::after,
+.content h3:hover > a.header::after,
+.content h4:hover > a.header::after,
+.content a.header:focus-visible::after {
+  opacity: 1;
+}
+
+/* Links: coral text variant, underlined so they never rely on color alone. */
+.content a:link,
+.content a:visited,
+#mdbook-searchresults a {
+  color: var(--links);
+}
+
+.content main a:not(.header) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: currentColor;
+  transition: color var(--mx-motion-fast);
+}
+
+.content main a:not(.header):hover {
+  color: var(--mx-link-hover);
+  text-decoration-thickness: 2px;
+}
+
+.content hr {
+  border: 0;
+  border-top: 1px solid var(--mx-hairline);
+  margin: 40px 0;
+}
+
+.content img,
+.content video {
+  border-radius: var(--mx-radius-lg);
+}
+
+/* Inline code */
+.content :not(pre) > code,
+.content :not(pre) > .hljs {
+  font-size: 0.875em;
+  padding: 0.12em 0.4em;
+  border-radius: var(--mx-radius-sm);
+  background: var(--mx-inline-code-bg);
+  color: var(--inline-code-color);
+  overflow-wrap: break-word;
+}
+
+.content a > code,
+.content a > .hljs,
+.content :not(pre):not(a) > a > code {
+  color: inherit !important;
+}
+
+.content h1 code,
+.content h2 code,
+.content h3 code,
+.content h4 code {
+  font-size: 0.86em;
+  padding: 0.04em 0.3em;
+  color: inherit;
+}
+
+/* Code blocks */
+.content pre {
+  position: relative;
+  margin: 0 0 20px;
+  background: var(--mx-code-bg);
+  border: 1px solid var(--mx-code-border);
+  border-radius: var(--mx-radius-md);
+  overflow: hidden;
+}
+
+.content pre > code,
+.content pre > code.hljs {
+  display: block;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.6;
+  background: transparent;
+  color: inherit;
+  scrollbar-width: thin;
+}
+
+.light .content pre > code:not(.hljs),
+html:not(.js) .content pre > code {
+  color: #00394d;
+}
+
+.navy .content pre > code:not(.hljs) {
+  color: #dce5e8;
+}
+
+/* Copy button (added by book.js) */
+.content pre > .buttons {
+  top: 12px;
+  right: 12px;
+  padding: 0;
+  z-index: 2;
+}
+
+.content pre:hover > .buttons,
+.content pre:focus-within > .buttons {
+  visibility: visible;
+  opacity: 1;
+}
+
+.content pre > .buttons button {
+  margin: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: var(--mx-muted);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border-field);
+  border-radius: var(--mx-radius-sm);
+  transition: color var(--mx-motion), border-color var(--mx-motion);
+}
+
+.content pre > .buttons :hover,
+.content pre > .buttons button:hover {
+  color: var(--mx-heading);
+  background: var(--mx-surface);
+  border-color: var(--mx-rule);
+}
+
+/* A text label instead of the stock clipboard picture: the design system
+   uses words, not pictograms, for actions. */
+.content pre > .buttons button.clip-button {
+  width: auto;
+  height: 28px;
+  padding: 0 10px;
+  font-family: var(--mx-font);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.content pre > .buttons button.clip-button::before {
+  content: "Copy";
+  filter: none;
+}
+
+html[lang="fr"] .content pre > .buttons button.clip-button::before {
+  content: "Copier";
+}
+
+.content pre > .buttons .tooltiptext {
+  top: -40px;
+  left: 50%;
+  margin: 0;
+}
+
+.tooltiptext {
+  font-family: var(--mx-font);
+  font-size: 13px;
+  color: #ffffff;
+  background: #004c66;
+  border-radius: var(--mx-radius-sm);
+}
+
+/* Tables */
+.content .table-wrapper {
+  margin: 0 0 24px;
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-lg);
+  overflow-x: auto;
+}
+
+.content table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.content table thead {
+  background: var(--table-header-bg);
+}
+
+.content table thead tr {
+  border: 0;
+}
+
+.content table th {
+  padding: 12px 16px;
+  text-align: start;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--mx-heading);
+  border-bottom: 1px solid var(--mx-border-card);
+  white-space: nowrap;
+}
+
+.content table td {
+  padding: 11px 16px;
+  border: 0;
+  border-top: 1px solid var(--mx-hairline);
+  vertical-align: top;
+}
+
+.content table tbody tr:first-child td {
+  border-top: 0;
+}
+
+.content table tbody tr:nth-child(2n) {
+  background: transparent;
+}
+
+.content table td:first-child code {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+/* Blockquotes and callouts (mairistem.js tags `> **Note**`, `> **Warning**`,
+   `> **Remarque**`, `> **Attention**`). */
+.content blockquote {
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  color: var(--fg);
+  background: var(--mx-surface-soft);
+  border: 0;
+  border-inline-start: 3px solid var(--mx-border-strong);
+  border-radius: 2px var(--mx-radius-md) var(--mx-radius-md) 2px;
+}
+
+.content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.content blockquote.mx-callout-note {
+  background: var(--mx-note-bg);
+  border-inline-start-color: var(--mx-note-rule);
+}
+
+.content blockquote.mx-callout-warning {
+  background: var(--mx-warning-bg);
+  border-inline-start-color: var(--mx-warning-rule);
+}
+
+.content blockquote .mx-callout-title {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+}
+
+.content blockquote.mx-callout-note .mx-callout-title {
+  color: var(--mx-note-title);
+}
+
+.content blockquote.mx-callout-warning .mx-callout-title {
+  color: var(--mx-warning-title);
+}
+
+/* mdBook's GitHub-style admonitions (`> [!NOTE]`), same look. */
+.content .blockquote-tag {
+  padding: 16px 20px;
+  border-inline-start-width: 3px;
+  background: var(--mx-surface-soft);
+}
+
+.content .blockquote-tag-note,
+.content .blockquote-tag-tip {
+  background: var(--mx-note-bg);
+  border-inline-start-color: var(--mx-note-rule);
+}
+
+.content .blockquote-tag-warning,
+.content .blockquote-tag-caution,
+.content .blockquote-tag-important {
+  background: var(--mx-warning-bg);
+  border-inline-start-color: var(--mx-warning-rule);
+}
+
+.content .blockquote-tag-title {
+  font-size: 13px;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+}
+
+.content .blockquote-tag-title .fa-svg {
+  display: none;
+}
+
+kbd {
+  font-family: var(--mono-font);
+  font-size: 0.8em;
+  line-height: 1;
+  padding: 3px 6px;
+  color: var(--mx-strong);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border-field);
+  border-bottom-width: 2px;
+  border-radius: var(--mx-radius-sm);
+  box-shadow: none;
+}
+
+.footnote-definition {
+  font-size: 14.5px;
+  color: var(--mx-muted);
+}
+
+dt {
+  font-weight: 600;
+  color: var(--mx-heading);
+}
+
+/* ------------------------------------------------------------------ */
+/* Menu bar                                                           */
+/* ------------------------------------------------------------------ */
+
+#mdbook-menu-bar {
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  height: var(--menu-bar-height);
+  padding: 0 var(--page-padding);
+  margin: 0 calc(0px - var(--page-padding));
+  background-color: var(--bg);
+  border-block-end: 1px solid var(--mx-hairline);
+}
+
+#mdbook-menu-bar.bordered {
+  border-block-end-color: var(--mx-hairline);
+}
+
+/* Close the gap left for the sidebar resize handle, so the bar's hairline
+   meets the sidebar brand block's and the footer band meets the sidebar. */
+@media only screen and (min-width: 620px) {
+  #mdbook-sidebar-toggle-anchor:checked ~ .page-wrapper #mdbook-menu-bar,
+  #mdbook-sidebar-toggle-anchor:checked ~ .page-wrapper .mx-footer {
+    margin-inline-start: calc(0px - var(--page-padding) - var(--sidebar-resize-indicator-width));
+    padding-inline-start: calc(var(--page-padding) + var(--sidebar-resize-indicator-width));
+  }
+}
+
+#mdbook-menu-bar .icon-button,
+#mdbook-menu-bar .right-buttons > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  line-height: 1;
+  color: var(--icons);
+  font-size: 16px;
+  border-radius: var(--mx-radius-sm);
+  transition: color var(--mx-motion), background-color var(--mx-motion), border-color var(--mx-motion);
+}
+
+#mdbook-menu-bar .icon-button:hover,
+#mdbook-menu-bar .right-buttons > a:hover {
+  color: var(--icons-hover);
+  background-color: var(--mx-control-hover);
+}
+
+#mdbook-menu-bar .fa-svg {
+  padding: 0;
+  line-height: 1;
+}
+
+#mdbook-menu-bar .fa-svg svg {
+  margin: 0;
+  display: block;
+}
+
+.left-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 0 -10px;
+}
+
+.right-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.menu-title {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--menu-bar-height);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: start;
+  color: var(--mx-heading);
+  letter-spacing: -0.2px;
+}
+
+/* Brand in the menu bar, shown only while the sidebar is hidden (the
+   sidebar carries it otherwise). */
+.mx-bar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.mx-menu-book {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mx-menu-book::before {
+  content: "";
+  width: 1px;
+  height: 24px;
+  margin-inline-end: 14px;
+  background: var(--mx-border-field);
+}
+
+html.sidebar-visible .mx-bar-brand,
+html.sidebar-visible .mx-menu-book {
+  visibility: hidden;
+}
+
+@media only screen and (max-width: 619px) {
+  /* Below 620px the open sidebar slides the page aside: keep the brand. */
+  html.sidebar-visible .mx-bar-brand,
+  html.sidebar-visible .mx-menu-book {
+    visibility: visible;
+  }
+}
+
+.mx-logo {
+  display: block;
+  height: 26px;
+  width: auto;
+  aspect-ratio: 1113 / 249;
+}
+
+.mx-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--mx-radius-sm);
+}
+
+/* Search button, drawn as a field */
+#mdbook-menu-bar .mx-search-button {
+  justify-content: flex-start;
+  width: 220px;
+  height: 40px;
+  padding: 0 8px 0 12px;
+  gap: 10px;
+  color: var(--mx-muted);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border-field);
+  font-family: inherit;
+  font-size: 14.5px;
+}
+
+#mdbook-menu-bar .mx-search-button:hover,
+#mdbook-menu-bar .mx-search-button[aria-expanded="true"] {
+  color: var(--mx-heading);
+  background: var(--mx-surface);
+  border-color: var(--mx-rule);
+}
+
+.mx-search-label {
+  flex: 1;
+  text-align: start;
+}
+
+.mx-search-key {
+  font-size: 12px;
+  padding: 2px 7px;
+  border-bottom-width: 1px;
+  color: var(--mx-muted);
+  background: var(--mx-surface-soft);
+}
+
+/* Language switch: a two-segment filter, active segment filled. */
+.mx-lang {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 2px;
+  margin: 0 4px;
+  border: 1px solid var(--mx-border-field);
+  border-radius: var(--mx-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+.mx-lang a,
+.mx-lang span {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.mx-lang a {
+  color: var(--fg);
+  text-decoration: none;
+  transition: color var(--mx-motion-fast), background-color var(--mx-motion-fast);
+}
+
+.mx-lang a:hover {
+  color: var(--mx-heading);
+  background: var(--mx-control-hover);
+}
+
+.mx-lang .mx-lang-current {
+  color: var(--mx-segment-fg);
+  background: var(--mx-segment-bg);
+}
+
+#mdbook-menu-bar .right-buttons > a.mx-github {
+  color: var(--mx-heading);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+#mdbook-menu-bar .right-buttons > a.mx-github .fa-svg {
+  font-size: 18px;
+}
+
+/* Theme popup */
+.theme-popup {
+  top: calc(var(--menu-bar-height) - 6px);
+  left: auto;
+  right: 0;
+  min-width: 168px;
+  padding: 6px;
+  font-size: 14.5px;
+  color: var(--fg);
+  background: var(--theme-popup-bg);
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-md);
+  box-shadow: var(--mx-float-shadow);
+}
+
+.right-buttons {
+  position: relative;
+}
+
+.theme-popup .theme {
+  padding: 8px 12px 8px 30px;
+  line-height: 1.4;
+  border-radius: var(--mx-radius-sm);
+  font-family: inherit;
+}
+
+.theme-popup .theme:hover {
+  color: var(--mx-heading);
+  background: var(--theme-hover);
+}
+
+.theme-selected::before {
+  color: var(--mx-rule);
+  margin-inline-start: -18px;
+  width: 18px;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* Search                                                             */
+/* ------------------------------------------------------------------ */
+
+#mdbook-search-wrapper {
+  padding: 24px 0 8px;
+}
+
+.searchbar-outer,
+.searchresults-outer {
+  max-width: var(--content-max-width);
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+}
+
+#mdbook-searchbar {
+  height: 50px;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--searchbar-fg);
+  background: var(--searchbar-bg);
+  border: 1px solid var(--mx-border-field);
+  border-radius: var(--mx-radius-sm);
+  box-shadow: none;
+  transition: border-color var(--mx-motion);
+}
+
+#mdbook-searchbar::placeholder {
+  color: var(--mx-muted);
+  opacity: 1;
+}
+
+#mdbook-searchbar:focus,
+#mdbook-searchbar.active {
+  outline: none;
+  border-color: var(--mx-focus);
+  box-shadow: none;
+}
+
+.spinner-wrapper {
+  margin-block-start: 0;
+  top: 1px;
+  bottom: 1px;
+  right: 1px;
+  padding: 15px 14px;
+  border-radius: 0 var(--mx-radius-sm) var(--mx-radius-sm) 0;
+  color: var(--mx-muted);
+  background: var(--searchbar-bg);
+}
+
+.searchresults-outer {
+  border-block-end: 1px solid var(--mx-hairline);
+  padding-bottom: 16px;
+}
+
+.searchresults-header {
+  padding: 20px 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--mx-muted);
+}
+
+ul#mdbook-searchresults {
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+ul#mdbook-searchresults li {
+  margin: 8px 0;
+  padding: 14px 18px;
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  transition: border-color var(--mx-motion), background-color var(--mx-motion);
+}
+
+ul#mdbook-searchresults li:hover,
+ul#mdbook-searchresults li.focus {
+  background: var(--searchresults-li-bg);
+  border-color: var(--mx-rule);
+}
+
+ul#mdbook-searchresults li a {
+  color: var(--mx-heading);
+}
+
+ul#mdbook-searchresults span.teaser {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--fg);
+}
+
+ul#mdbook-searchresults span.teaser em {
+  font-weight: 600;
+  color: var(--mx-strong);
+}
+
+mark {
+  color: inherit;
+  background-color: var(--search-mark-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/* Sidebar                                                            */
+/* ------------------------------------------------------------------ */
+
+.sidebar {
+  font-size: 15px;
+  background-color: var(--sidebar-bg);
+  border-inline-end: 1px solid var(--mx-hairline);
+}
+
+.mx-sidebar-brand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--menu-bar-height);
+  padding: 0 24px;
+  box-sizing: border-box;
+  background: var(--bg);
+  border-block-end: 1px solid var(--mx-hairline);
+}
+
+.mx-brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--mx-heading);
+  text-decoration: none;
+  border-radius: var(--mx-radius-sm);
+}
+
+.mx-brand-title::before {
+  content: "";
+  width: 1px;
+  height: 24px;
+  background: var(--mx-border-field);
+}
+
+.sidebar .sidebar-scrollbox {
+  top: var(--menu-bar-height);
+  padding: 20px 16px 48px;
+  scrollbar-width: thin;
+}
+
+.sidebar-iframe-outer {
+  top: var(--menu-bar-height);
+}
+
+.chapter {
+  line-height: 1.45;
+}
+
+.chapter li.chapter-item {
+  margin: 1px 0;
+  line-height: 1.45;
+}
+
+.chapter li a,
+.sidebar-iframe-inner .chapter li a {
+  display: block;
+  flex: 1;
+  padding: 6px 12px 6px 13px;
+  color: var(--sidebar-fg);
+  border-inline-start: 3px solid transparent;
+  border-radius: 0 var(--mx-radius-sm) var(--mx-radius-sm) 0;
+  transition: color var(--mx-motion-fast), background-color var(--mx-motion-fast);
+}
+
+.chapter li a:hover {
+  color: var(--mx-heading);
+  background: var(--mx-control-hover);
+  text-decoration: none;
+}
+
+.navy .chapter li a:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+.chapter li a.active {
+  color: var(--mx-active-fg);
+  font-weight: 600;
+  background: var(--mx-active-bg);
+  border-inline-start-color: var(--mx-rule);
+}
+
+.chapter li.part-title {
+  margin: 28px 0 6px;
+  padding: 0 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+  color: var(--mx-eyebrow);
+}
+
+.chapter li.chapter-item:first-child {
+  margin-top: 0;
+}
+
+.chapter .spacer {
+  height: 1px;
+  margin: 16px 0;
+  background-color: var(--mx-hairline);
+}
+
+/* "On this page": the headings of the current chapter. */
+.on-this-page {
+  margin: 4px 0 10px 16px;
+  padding-left: 0;
+  border-inline-start: 1px solid var(--sidebar-header-border-color);
+}
+
+.on-this-page > ol {
+  padding-left: 0;
+}
+
+.on-this-page .section {
+  padding-inline-start: 12px;
+}
+
+.on-this-page li a,
+.chapter .on-this-page li a {
+  padding: 3px 10px 3px 12px;
+  font-size: 14px;
+  color: var(--mx-muted);
+  border-inline-start: 0;
+  border-radius: var(--mx-radius-sm);
+}
+
+.chapter .on-this-page li a:hover,
+.chapter a.current-header {
+  color: var(--mx-heading);
+}
+
+.chapter .on-this-page a.current-header {
+  font-weight: 500;
+  background: transparent;
+}
+
+.chapter li a strong[aria-hidden="true"] {
+  font-weight: 600;
+  color: var(--mx-muted);
+}
+
+.sidebar-resize-handle .sidebar-resize-indicator {
+  color: var(--mx-border-strong);
+}
+
+.sidebar::-webkit-scrollbar {
+  background: var(--sidebar-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/* End of page: edit link, chapter navigation, footer                 */
+/* ------------------------------------------------------------------ */
+
+.mx-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  max-width: var(--content-max-width);
+  margin: 56px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--mx-hairline);
+  font-size: 14.5px;
+}
+
+.content .mx-page-meta a:link,
+.content .mx-page-meta a:visited {
+  color: var(--mx-muted);
+  text-decoration: none;
+  transition: color var(--mx-motion-fast);
+}
+
+.content .mx-page-meta a:hover {
+  color: var(--links);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mx-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: var(--content-max-width);
+  margin: 24px auto 0;
+}
+
+.content .mx-pager a.nav-chapters {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  padding: 16px 20px;
+  font-size: inherit;
+  text-align: start;
+  text-decoration: none;
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-md);
+  float: none;
+  transition: transform var(--mx-motion), box-shadow var(--mx-motion), border-color var(--mx-motion);
+}
+
+.content .mx-pager a.nav-chapters:hover {
+  background: var(--mx-surface);
+  border-color: var(--mx-rule);
+  box-shadow: var(--mx-card-shadow);
+  transform: translateY(-3px);
+}
+
+.content .mx-pager a.next {
+  grid-column: 2;
+  text-align: end;
+  align-items: flex-end;
+}
+
+.mx-pager-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+  color: var(--mx-muted);
+}
+
+.mx-pager-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--mx-heading);
+}
+
+.mx-pager .previous .mx-pager-title::before {
+  content: "← ";
+  color: var(--links);
+}
+
+.mx-pager .next .mx-pager-title::after {
+  content: " →";
+  color: var(--links);
+}
+
+.mx-footer {
+  margin: 72px calc(0px - var(--page-padding)) 0;
+  padding: 28px var(--page-padding);
+  background: #004c66;
+  color: #9cbac4;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.mx-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.mx-footer p {
+  margin: 0;
+}
+
+.mx-footer .mx-logo {
+  height: 24px;
+  --mx-logo-ink: #ffffff;
+  --mx-logo-corail: #ffffff;
+  --mx-logo-jaune: #ffffff;
+  --mx-logo-bleu: #ffffff;
+  --mx-logo-vert: #ffffff;
+}
+
+.mx-footer-logo {
+  display: inline-flex;
+  border-radius: var(--mx-radius-sm);
+}
+
+.mx-footer a:link,
+.mx-footer a:visited {
+  color: #ffab03;
+  text-decoration: none;
+  transition: color var(--mx-motion-fast);
+}
+
+.mx-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mx-footer :focus-visible {
+  outline-color: #ffab03;
+}
+
+/* The stock chapter arrows are replaced by .mx-pager. */
+.nav-wide-wrapper,
+.nav-wrapper,
+.mobile-nav-chapters {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Help popup                                                         */
+/* ------------------------------------------------------------------ */
+
+#mdbook-help-popup {
+  padding: 24px 28px;
+  color: var(--fg);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-lg);
+  box-shadow: var(--mx-float-shadow);
+}
+
+.mdbook-help-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--mx-heading);
+}
+
+/* ------------------------------------------------------------------ */
+/* Small screens                                                      */
+/* ------------------------------------------------------------------ */
+
+@media only screen and (max-width: 1080px) {
+  :root {
+    --page-padding: 24px;
+  }
+
+  #mdbook-menu-bar .mx-search-button {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .mx-search-label,
+  .mx-search-key {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 619px) {
+  :root {
+    --page-padding: 16px;
+    --menu-bar-height: 56px;
+  }
+
+  #mdbook-menu-bar {
+    gap: 4px;
+  }
+
+  .left-buttons {
+    gap: 4px;
+    margin-inline-start: -8px;
+  }
+
+  .right-buttons {
+    gap: 0;
+    margin-inline-end: -8px;
+  }
+
+  #mdbook-menu-bar .mx-search-button {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .mx-logo {
+    height: 20px;
+  }
+
+  .menu-title {
+    flex: 0 1 auto;
+    margin-inline-end: auto;
+  }
+
+  .mx-menu-book::before {
+    margin-inline-end: 10px;
+    height: 20px;
+  }
+
+  .menu-title {
+    font-size: 17px;
+  }
+
+  .mx-github-label {
+    display: none;
+  }
+
+  /* Only the other language, as a plain link. */
+  .mx-lang {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .mx-lang .mx-lang-current {
+    display: none;
+  }
+
+  .mx-lang a {
+    height: 36px;
+    padding: 0 8px;
+    border-radius: var(--mx-radius-sm);
+  }
+
+  #mdbook-menu-bar .icon-button,
+  #mdbook-menu-bar .right-buttons > a {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+  }
+
+  #mdbook-menu-bar .mx-search-button {
+    width: 36px;
+  }
+
+  .content main {
+    padding-block-start: 28px;
+    font-size: 16px;
+  }
+
+  .content h1 {
+    font-size: 30px;
+    letter-spacing: -0.6px;
+  }
+
+  .content h2 {
+    font-size: 23px;
+    margin-top: 44px;
+  }
+
+  .content h3 {
+    font-size: 19px;
+  }
+
+  .content pre > code {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+
+  .content table {
+    font-size: 14.5px;
+  }
+
+  .content table th,
+  .content table td {
+    padding: 10px 12px;
+  }
+
+  .content blockquote {
+    padding: 14px 16px;
+  }
+
+  .mx-pager {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .content .mx-pager a.next {
+    grid-column: 1;
+  }
+
+  .mx-sidebar-brand {
+    padding: 0 16px;
+  }
+}
+
+@media only screen and (max-width: 380px) {
+  .mx-logo {
+    height: 19px;
+  }
+}
+
+@media (pointer: coarse) {
+  .content pre > .buttons {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Print                                                              */
+/* ------------------------------------------------------------------ */
+
+@media print {
+  .mx-sidebar-brand,
+  .mx-page-meta,
+  .mx-pager,
+  .mx-footer,
+  #mdbook-menu-bar,
+  #mdbook-menu-bar-hover-placeholder {
+    display: none !important;
+  }
+
+  .page {
+    display: block;
+    min-height: 0;
+    margin-block-start: 0 !important;
+  }
+
+  .content main {
+    padding-top: 0;
+    max-width: none;
+  }
+
+  .content pre,
+  .content .table-wrapper,
+  .content blockquote {
+    break-inside: avoid;
+  }
+
+  .content main a:not(.header) {
+    color: #00394d;
+  }
+}

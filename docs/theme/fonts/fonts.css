@@ -1,0 +1,60 @@
+/* IBM Plex Sans, self-hosted — the Mairistem brand typeface.
+ * Licensed under the SIL Open Font License 1.1: see IBM-PLEX-LICENSE.txt.
+ * Replaces mdBook's built-in fonts (Open Sans, Source Code Pro); code uses
+ * the system monospace stack (see --mono-font in mairistem.css). */
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-Regular.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-Italic.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 450;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-Text.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-Medium.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-SemiBold.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-SemiBoldItalic.woff2" }}") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("{{ resource "fonts/IBMPlexSans-Bold.woff2" }}") format("woff2");
+}

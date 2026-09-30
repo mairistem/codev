@@ -1,0 +1,77 @@
+/*
+ * Syntax highlighting, Mairistem light theme.
+ * Replaces mdBook's highlight.css (used by the light theme). Every color is
+ * a Mairistem design-system value and passes WCAG AA (4.5:1) on the code
+ * block background #F4F8F9:
+ *   base #00394D 11.6:1 · keyword #C4361B 5.1:1 · string #00806A 4.6:1
+ *   name/number #004C66 8.8:1 · comment #40565E 7.3:1
+ */
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  color: #00394d;
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: #40565e;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-literal,
+.hljs-type,
+.hljs-doctag,
+.hljs-bullet,
+.hljs-link {
+  color: #c4361b;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-code,
+.hljs-template-tag,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #00806a;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-name,
+.hljs-section,
+.hljs-title,
+.hljs-property,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #004c66;
+  font-weight: 600;
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params,
+.hljs-subst,
+.hljs-tag {
+  color: #004c66;
+}
+
+.hljs-deletion {
+  color: #a82d15;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}
