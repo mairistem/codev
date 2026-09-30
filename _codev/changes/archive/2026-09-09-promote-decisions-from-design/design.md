@@ -31,7 +31,7 @@ The format of the blocks to extract is highly constrained:
 A line-by-line scan is enough: find `## Decisions`, then loop over
 `### Decision: ...`, and collect the bytes between two `###` (or up to
 the next `## `). Aligned with decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) —
+[0001](../../decisions/0001-functional-core-imperative-shell.md) —
 the parser is pure and lives in a new module `codev-engine::design`
 (the pure function takes the design source as an argument, the shell
 does the disk read).

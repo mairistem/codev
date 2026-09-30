@@ -38,7 +38,7 @@ never runs a verification command on the project side.
 The rule "only `apply` has general `Bash`" — locked in by
 `workflows::apply_est_dans_le_catalogue_et_a_les_bons_outils` — stays
 preserved. Directly aligned with decision
-[0004](../../decisions/0004-une-seule-identite-skill-et-commande.md) on
+[0004](../../decisions/0004-single-identity-for-skill-and-command.md) on
 the single skill/command identity: each skill does one distinct
 thing, with a distinct `allowed-tools`.
 
@@ -47,7 +47,7 @@ thing, with a distinct `allowed-tools`.
 It invokes **no editing CLI command** — none exists and there will be
 none as long as the markdown format remains the source of truth, as
 decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md)
+[0001](../../decisions/0001-functional-core-imperative-shell.md)
 requires (the core does not touch the disk). The skill uses `Edit`
 for a targeted modification and `Write` for a full rewrite — a choice
 left to its judgment depending on the scope of the revision.

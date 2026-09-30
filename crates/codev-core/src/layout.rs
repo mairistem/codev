@@ -8,7 +8,7 @@ use crate::id::ChangeId;
 /// refactor. The `_` prefix keeps it **visible** — search tools
 /// (`ripgrep`, `fd`, and therefore Claude Code's) ignore hidden directories
 /// by default, and a source of truth the agent cannot find is
-/// useless. See `_codev/decisions/0003-racine-de-planification-_codev.md`.
+/// useless. See `_codev/decisions/0003-codev-planning-root.md`.
 pub const PLANNING_DIR: &str = "_codev";
 
 pub const CONFIG_FILE: &str = "config.yaml";

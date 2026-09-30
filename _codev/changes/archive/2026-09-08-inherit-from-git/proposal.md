@@ -9,7 +9,7 @@ already there — a project can inherit from another via `inherits: path:`.
 The remote half is not: `inherits: git:` emits an `inherit_git_unsupported`
 warning and stops there. This change delivers the real transport, pinned
 by SHA, read-only, aligned with decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md).
+[0005](../../decisions/0005-read-only-inherited-sources.md).
 
 ## What Changes
 

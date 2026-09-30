@@ -1,7 +1,7 @@
 //! Parser for main specs and deltas.
 //!
 //! No I/O — this is pure core in the sense of decision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`. Takes a
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`. Takes a
 //! `&str`, returns a [`Parsed`] with the value — even partial — and the list
 //! of located defects.
 //!

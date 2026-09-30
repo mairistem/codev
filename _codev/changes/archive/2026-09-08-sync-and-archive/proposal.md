@@ -35,7 +35,7 @@ therefore for codev to be useful beyond planning.
   folder to move — checked in its entirety before a single write touches
   the disk. If a `MODIFIED` does not find its target requirement, no write
   happens anywhere else. This is the concrete implementation of decision
-  [0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) for
+  [0001](../../decisions/0001-functional-core-imperative-shell.md) for
   the tool's most delicate operation.
 - **Extension of the `Plan` type**: new variant `Move { from, to }`, so
   that moving the change is part of the same plan as the writes. A

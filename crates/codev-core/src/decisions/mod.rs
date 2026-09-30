@@ -2,9 +2,9 @@
 //!
 //! No I/O — the index and the merging of inherited sources live in
 //! `codev-engine::decisions`. Follows decisions
-//! [0001](../../../_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md)
+//! [0001](../../../_codev/decisions/0001-functional-core-imperative-shell.md)
 //! and
-//! [0002](../../../_codev/decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+//! [0002](../../../_codev/decisions/0002-crate-graph-as-dependency-rule.md).
 
 pub mod ast;
 pub mod parser;

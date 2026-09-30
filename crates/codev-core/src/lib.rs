@@ -6,7 +6,7 @@
 //!
 //! This is not discipline for its own sake: it is what makes spec merging
 //! and the JSON contract testable with golden tests, without a temporary
-//! directory. See `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
+//! directory. See `_codev/decisions/0001-functional-core-imperative-shell.md`.
 //!
 //! Note also what this crate does **not** do: it does not derive `Serialize`
 //! on its domain types. The JSON output is a public API consumed by

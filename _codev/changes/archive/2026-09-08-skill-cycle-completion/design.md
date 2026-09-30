@@ -8,7 +8,7 @@ markdown file under `assets/workflows/`}. The difference in nature from
 `apply` is that these skills write nothing themselves — they delegate the
 entire effect to the codev binary, whose "plan then execute" pattern,
 framed by decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md),
+[0001](../../decisions/0001-functional-core-imperative-shell.md),
 guarantees atomicity on the disk side.
 
 ## Goals / Non-Goals

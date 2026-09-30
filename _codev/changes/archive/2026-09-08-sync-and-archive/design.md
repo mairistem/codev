@@ -75,7 +75,7 @@ stays: `dirs` → `writes` → `moves`, because a move assumes that what it
 moves has already been written and that its destination exists.
 
 Rationale: cited by decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) — the
+[0001](../../decisions/0001-functional-core-imperative-shell.md) — the
 principle "deciding is not executing" requires that **every** disk
 modification go through a plan. Handling the move on the side would reopen
 the door to an inconsistent state (main spec written, folder not moved)

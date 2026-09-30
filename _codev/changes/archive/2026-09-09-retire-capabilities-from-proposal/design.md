@@ -31,7 +31,7 @@ deletions, moves) makes the transactional execution explicit: the
 shell can, one day, refuse a deletion without confirmation
 (`--dry-run` mode, interactive prompt), without having to re-parse
 `contents=""`. Aligned with decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
 the core describes all effects; the shell applies them.
 
 ### Decision: execution order — dirs → writes → **deletions** → moves

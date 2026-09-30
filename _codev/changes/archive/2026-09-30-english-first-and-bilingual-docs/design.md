@@ -54,7 +54,7 @@ agree. A test enforces identical chapter paths across languages, which is
 what keeps the two editions from drifting. Links between chapters are
 rewritten to in-page anchors and headings get mdBook-style ids, so an
 anchor that works on the site works on the single page. This follows the
-functional-core rule of `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`:
+functional-core rule of `_codev/decisions/0001-functional-core-imperative-shell.md`:
 the docs module only transforms strings; reading files happens at build time.
 
 ### Decision: Accepted ADRs and the project context stay as they are

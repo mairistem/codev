@@ -32,7 +32,7 @@ grouping them, computing an exit code — lives in `codev-engine::validate`
 behind the `FileSystem` and `Env` ports.
 
 This follows directly from decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
 deciding is not executing. The rules describe, the engine performs the
 reading, the CLI formats.
 
@@ -44,7 +44,7 @@ reading, the CLI formats.
   `Requirement`.
 - **Everything in `codev-core`.** Forces `codev-core` to know how to walk
   a folder, which contradicts the "no I/O" contract of
-  [0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md).
+  [0001](../../decisions/0001-functional-core-imperative-shell.md).
 
 ### Decision: `trait Rule` with a static registry
 
@@ -67,7 +67,7 @@ the registry, without touching the rest.
 
 - **An `enum RuleId` + a giant `match`.** More concise at first,
   unmanageable at fifteen rules. Also loses the extension point announced
-  in [0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+  in [0002](../../decisions/0002-crate-graph-as-dependency-rule.md).
 - **Free functions, without a trait.** Loses the single registration
   point, and thus the guarantee that a new rule is actually wired into the
   command.

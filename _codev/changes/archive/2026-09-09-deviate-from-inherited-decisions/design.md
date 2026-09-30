@@ -30,7 +30,7 @@ Two options:
 path:~/shared/0100" in it would make the reader believe that the
 source itself withdrew that decision. Deviation is a **local** gesture;
 the field must reflect its scope. Aligned with decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md):
+[0005](../../decisions/0005-read-only-inherited-sources.md):
 inherited sources are **read-only**, even the semantics of their status
 is not driven from the consumer.
 

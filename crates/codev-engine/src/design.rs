@@ -5,7 +5,7 @@
 //! each starting with `### Decision: <title>` and ending at the next
 //! `### ` or `## ` (at H3 or H2 level). A line-by-line scan is enough — no
 //! need for a full markdown parser, as the decision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`
 //! reminds us: this module is pure, with no I/O; it lives on the engine side
 //! because it is called by functions that need the ports.
 //!

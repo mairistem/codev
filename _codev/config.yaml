@@ -1,8 +1,13 @@
-# Configuration de codev pour... codev lui-même.
+# codev configuration for... codev itself.
 #
-# Ce dépôt utilise l'outil qu'il construit. C'est délibéré : le seul moyen fiable
-# de savoir si un format est agréable à écrire, c'est de l'écrire.
+# This repository uses the tool it builds. That is deliberate: the only reliable
+# way to know whether a format is pleasant to write is to write it.
 schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+language: en
 
 workflows:
   - propose
@@ -13,37 +18,41 @@ workflows:
   - update
   - onboard
 
-# Le MCP Jira disponible dans notre environnement Claude Code. Injecté dans le
-# frontmatter des skills à l'install (voir `mcp__claude_ai_Atlassian_Rovo__*`
-# dans le tool listing d'une session récente).
+# The Jira MCP available in our Claude Code environment. Injected into the
+# skills' frontmatter at install time (see `mcp__claude_ai_Atlassian_Rovo__*`
+# in the tool listing of a recent session).
 mcp:
   jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
 
 context: |
-  Projet Rust, workspace Cargo à quatre crates : codev-core (pur, aucune I/O),
-  codev-engine (effets via ports), codev-agents (cible Claude Code), codev-cli
-  (coquille impérative). Le graphe de dépendances entre crates est acyclique et
-  fait office de règle de dépendance.
+  Rust project, Cargo workspace with four crates: codev-core (pure, no I/O),
+  codev-engine (effects through ports), codev-agents (Claude Code target),
+  codev-cli (imperative shell). The dependency graph between crates is acyclic
+  and serves as the dependency rule.
 
-  Cœur fonctionnel, coquille impérative : le cœur retourne des plans d'effets,
-  la coquille les exécute. Rien dans codev-core ne touche au disque.
+  Functional core, imperative shell: the core returns plans of effects, the
+  shell executes them. Nothing in codev-core touches the disk.
 
-  Le contrat JSON de sortie est une API publique consommée par des skills déjà
-  installées : il vit dans codev-cli::contract::v1 et ne dérive jamais
-  directement du modèle de domaine.
+  The JSON output contract is a public API consumed by already installed
+  skills: it lives in codev-cli::contract::v1 and never derives directly from
+  the domain model.
 
-  Erreurs typées avec thiserror dans les bibliothèques, anyhow uniquement dans
-  le CLI. Commentaires en français, et ils expliquent le pourquoi.
+  Typed errors with thiserror in the libraries, anyhow only in the CLI.
+  Everything is written in English — code, identifiers, comments, messages —
+  and comments explain the why.
+
+  The documentation exists in English (docs/en) and French (docs/fr) with the
+  same chapters; a change to one edition is made in both.
 
 rules:
   specs:
-    - Une spec décrit un comportement observable, jamais une implémentation. Si
-      le code peut changer sans que la spec change, la spec est au bon niveau.
+    - A spec describes observable behavior, never an implementation. If the
+      code can change without the spec changing, the spec is at the right level.
   design:
-    - Citer la ou les décisions de _codev/decisions/ qui contraignent l'approche,
-      plutôt que de re-débattre un choix déjà tranché.
+    - Cite the decision(s) in _codev/decisions/ that constrain the approach,
+      rather than re-debating a choice already settled.
   tasks:
-    # Citée : un « : » suivi d'une espace dans un scalaire nu ferait de cette
-    # ligne une map aux yeux de YAML.
-    - "Chaque tâche énonce comment vérifier qu'elle est faite : un test nommé,
-       une commande, ou un comportement observable."
+    # Quoted: a ": " inside a plain scalar would make YAML read this line as a
+    # map.
+    - "Each task states how to verify it is done: a named test, a command, or
+       an observable behavior."

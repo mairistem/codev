@@ -6,7 +6,7 @@ use std::path::PathBuf;
 /// produces a plan; the imperative shell executes it. This buys us `--dry-run`, the
 /// `--json` preview, atomicity — the plan is fully validated
 /// before the first write — and tests without a temporary directory.
-/// See `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
+/// See `_codev/decisions/0001-functional-core-imperative-shell.md`.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Plan {
     pub dirs: Vec<PathBuf>,
@@ -34,7 +34,7 @@ pub struct Plan {
 /// A `from → to` move.
 ///
 /// Every disk modification must go through a `Plan` — see decision
-/// [0001](_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md).
+/// [0001](_codev/decisions/0001-functional-core-imperative-shell.md).
 /// A move living outside the plan would reopen the door to an inconsistent
 /// state: main spec written, directory not moved. We do not want that.
 #[derive(Debug, Clone, PartialEq, Eq)]

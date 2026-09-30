@@ -12,7 +12,7 @@ use crate::workflows::Workflow;
 /// automatically **and** can be invoked by the user by typing `/<name>`. That
 /// is why codev does not generate separate command files: they would be two
 /// files to keep consistent for a single workflow.
-/// See `_codev/decisions/0004-une-seule-identite-skill-et-commande.md`.
+/// See `_codev/decisions/0004-single-identity-for-skill-and-command.md`.
 ///
 /// The instance carries a `RenderCtx`: the CLI feeds it from the project
 /// config (`_codev/config.yaml.mcp.jira_tool`, …), and it feeds placeholder

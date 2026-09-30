@@ -42,7 +42,7 @@ decides; codev has no business prejudging the toolbox.
 
 There is no `codev task check <n>` command — and there will not be one
 as long as the `tasks.md` format stays stable, cf. decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md): the
+[0001](../../decisions/0001-functional-core-imperative-shell.md): the
 core does not touch the disk, and the markdown format is the source of
 truth read by `codev status`. The skill therefore uses `Edit` to turn
 `- [ ] X.Y` into `- [x] X.Y` on the task's line.

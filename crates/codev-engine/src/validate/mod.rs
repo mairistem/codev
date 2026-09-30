@@ -4,7 +4,7 @@
 //! No rule logic here — the rules are pure and live in
 //! `codev-core::validate`. We coordinate, group, and decide an exit code.
 //! This is the shell in the sense of the decision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`.
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`.
 
 pub mod metadata_rules;
 pub mod report;

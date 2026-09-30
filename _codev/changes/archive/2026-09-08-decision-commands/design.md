@@ -26,7 +26,7 @@ design (K7), or interactive editing in `$EDITOR`.
 
 They do not write — they produce a `Plan`, like `plan_init` or
 `plan_new_change`. Follows directly from decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
 deciding is not executing. The CLI shell applies the plan via
 `apply::execute`, which puts the idempotence and `--dry-run` mechanism to
 use (the latter will arrive when a consumer asks for it).
@@ -42,7 +42,7 @@ The file `assets/templates/decision.md` is included in the binary via
 `include_str!` and interpolated with the `id`, title, status and date at
 creation time. This is aligned with how artifact templates already work
 — cf. decision
-[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md),
+[0002](../../decisions/0002-crate-graph-as-dependency-rule.md),
 which prefers fixed data over premature extension points.
 
 **Accepted cost**: a project that wants a different decision skeleton will
@@ -65,7 +65,7 @@ status, not a decision.
 ### Decision: `supersede` refuses to touch an inherited decision
 
 An inherited decision is **read-only** — decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md). The
+[0005](../../decisions/0005-read-only-inherited-sources.md). The
 command refuses with code `cannot_supersede_inherited` and suggests
 deviation (K6, upcoming). This is the first time reads and writes are
 distinguished by origin; the future `deviate` and `promote` commands will

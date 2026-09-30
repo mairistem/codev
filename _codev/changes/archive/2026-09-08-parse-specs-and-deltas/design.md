@@ -4,12 +4,12 @@
 
 See `proposal.md` for the motivation. The parser lives in `codev-core`, so
 it is pure — no `std::fs`, no clock — in line with decision
-[0001 — Functional core, imperative shell](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md).
+[0001 — Functional core, imperative shell](../../decisions/0001-functional-core-imperative-shell.md).
 
 It will be consumed by `codev-engine` (through upcoming modules: `validate`,
 `sync`, `archive`), not by the CLI directly. The crate graph is enough to
 enforce the direction of the flow, cf.
-[0002 — The crate graph enforces the dependency rule](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+[0002 — The crate graph enforces the dependency rule](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
 ## Goals / Non-Goals
 
@@ -71,7 +71,7 @@ refuse to write as soon as there is one with `Error` severity.
 
 This is the same logic as the CLI's JSON contract: the message may be
 reworded without notice, the `code` is stable and testable. It aligns with
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) —
+[0001](../../decisions/0001-functional-core-imperative-shell.md) —
 deciding is not executing — since the parser *describes* the defects and
 leaves it to the consumer to *decide* what to do about them.
 

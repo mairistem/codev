@@ -31,7 +31,7 @@ repeat the pattern instead of inventing a new mode. The `seal.yaml` file
 lives under `_codev/decisions/` to stay as close as possible to its
 subject, and `serde_norway` parses it like the rest of the YAML —
 consistent with decision
-[0006](../../decisions/0006-serde-norway-pour-yaml.md).
+[0006](../../decisions/0006-serde-norway-for-yaml.md).
 
 ### Decision: the hash covers the **body**, not the whole file
 
@@ -52,7 +52,7 @@ implicit normalization (trim, LF↔CRLF) would break the promise
 that includes the seal write
 
 Directly aligned with decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
 the core produces a complete `Plan { writes, moves, … }`; the shell
 executes it in one go. Adding the `seal.yaml` write to the plan
 preserves atomicity — either the ADR and the seal are written, or
@@ -62,7 +62,7 @@ nothing is, without having to invent a compensation.
 the **current** `seal.yaml` to merge it with the new entry. It receives
 its content as an argument (the shell's `FileSystem` port read it
 beforehand), it does not read it itself — decision
-[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+[0002](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
 ### Decision: `validate` surfaces findings, not exceptions
 
@@ -112,7 +112,7 @@ decisions (already in place), may optionally verify their remote
 `seal.yaml` if there is one (can be deferred, not in this change).
 
 **Aligned** with decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md):
+[0005](../../decisions/0005-read-only-inherited-sources.md):
 inherited sources are read-only. `codev decision seal
 path:~/shared/0100` therefore returns `cannot_seal_inherited`.
 

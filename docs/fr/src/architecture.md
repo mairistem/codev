@@ -118,9 +118,6 @@ génériques servent le reste, et les enums modélisent les ensembles fermés.
 | 0005 | Les sources héritées sont en lecture seule et épinglées par commit, et non des dépôts partagés accessibles en écriture |
 | 0006 | `serde_norway` pour le YAML, le fork maintenu de `serde_yaml` |
 
-Les ADR rédigés avant la version 0.4 sont en français. Ce sont des
-enregistrements scellés, conservés tels quels.
-
 ## Conventions de code
 
 - **Erreurs.** `thiserror` et des erreurs typées dans les crates de

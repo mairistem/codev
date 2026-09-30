@@ -104,14 +104,6 @@ run `mdbook serve docs/en`.
 User-visible changes get an entry under `## [Unreleased]` in
 [CHANGELOG.md](CHANGELOG.md).
 
-## Architecture decisions in French
-
-The six accepted architecture decisions under `_codev/decisions/` predate
-version 0.4 and are written in French. Accepted decisions are sealed and
-immutable — that is the rule codev itself enforces — so they are kept as
-they are. New decisions, like every other file in the repository, are
-written in English.
-
 ## Release process
 
 For maintainers:

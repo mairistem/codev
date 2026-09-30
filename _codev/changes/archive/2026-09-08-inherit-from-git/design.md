@@ -26,14 +26,14 @@ proposal's out-of-scope list.
 ### Decision: drive the `git` binary through a `ProcessRunner` port
 
 This is the approach that decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md) documents
+[0005](../../decisions/0005-read-only-inherited-sources.md) documents
 explicitly: "driving the `git` binary reuses existing authentication". A
 pure-Rust library such as `gix` would require replicating the `ssh`
 configuration, the *credential helpers*, the proxies; `git` already knows
 all that.
 
 The port is the fourth one announced by decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+[0001](../../decisions/0001-functional-core-imperative-shell.md):
 `FileSystem`, `Clock`, `Env`, and now `ProcessRunner`. Its interface stays
 minimal:
 
@@ -133,7 +133,7 @@ The inherited-source loader SHALL present only files with the `.md` and
 `.yaml` extensions, even if the repository contains others. This is the
 concrete implementation of the "no inherited executable content"
 principle of decision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md). A
+[0005](../../decisions/0005-read-only-inherited-sources.md). A
 `.sh`, a `.py`, a binary, a hook: all ignored by the index, never
 executed.
 

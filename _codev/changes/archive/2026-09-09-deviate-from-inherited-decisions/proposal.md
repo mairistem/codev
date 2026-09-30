@@ -10,7 +10,7 @@ local context justifies it — it has **no clean way** to record it:
 - `codev decision supersede path:~/shared/0100 "…"` is already refused
   (code `cannot_supersede_inherited`) — an inherited decision stays
   read-only on the consumer side, settled since
-  [0005](../../decisions/0005-sources-heritees-en-lecture-seule.md).
+  [0005](../../decisions/0005-read-only-inherited-sources.md).
 - Writing a local ADR with no reference to the inherited one leaves the
   agent facing both decisions at once in the `design` instructions: it
   does not know which one prevails.

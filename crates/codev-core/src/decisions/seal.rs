@@ -8,9 +8,9 @@
 //! not cover the whole file.
 //!
 //! This module is pure (no I/O) — see decision
-//! `_codev/decisions/0001-coeur-fonctionnel-coquille-imperative.md`. YAML
+//! `_codev/decisions/0001-functional-core-imperative-shell.md`. YAML
 //! parsing and rendering go through `serde_norway`, in accordance with
-//! decision `_codev/decisions/0006-serde-norway-pour-yaml.md`.
+//! decision `_codev/decisions/0006-serde-norway-for-yaml.md`.
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

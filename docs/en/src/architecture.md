@@ -111,9 +111,6 @@ enums model closed sets.
 | 0005 | Inherited sources are read-only and pinned by commit, not shared writable stores |
 | 0006 | `serde_norway` for YAML, the maintained fork of `serde_yaml` |
 
-The ADRs written before version 0.4 are in French. They are sealed records and
-are kept as they are.
-
 ## Conventions
 
 - **Errors.** `thiserror` and typed errors in library crates; `anyhow` only in

@@ -6,7 +6,7 @@ See `proposal.md` for the motivation. The spec parser and its span-carrying
 AST (delivered by `parse-specs-and-deltas`) are reusable as is for reading
 an ADR's sections — no need to write a second markdown parser. The YAML
 frontmatter is handled by `serde_norway`, already present as chosen by
-decision [0006](../../decisions/0006-serde-norway-pour-yaml.md).
+decision [0006](../../decisions/0006-serde-norway-for-yaml.md).
 
 ## Goals / Non-Goals
 
@@ -35,9 +35,9 @@ The frontmatter parser borrows the already proven machinery: `serde_norway`
 on the block between the two `---`. The markdown body is parsed into
 top-level `##` sections via the building blocks of `parser::shared` —
 without rewriting literal-zone recognition. Follows directly from decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) —
+[0001](../../decisions/0001-functional-core-imperative-shell.md) —
 pure core — and the crate graph of decision
-[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+[0002](../../decisions/0002-crate-graph-as-dependency-rule.md).
 
 **Rejected alternative**: a dedicated ADR parser in a new crate. The
 volume is too small to justify one more boundary, and `codev-core` stays
@@ -64,7 +64,7 @@ implementation is a `BTreeMap` of qualifiers plus a linear sweep — the size
 
 **Rationale**: coordination touches the disk, so it lives in the engine.
 Follows decision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md).
+[0001](../../decisions/0001-functional-core-imperative-shell.md).
 
 ### Decision: qualified identifiers `origin/id`
 
