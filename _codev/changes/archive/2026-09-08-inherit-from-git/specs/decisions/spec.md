@@ -1,135 +1,134 @@
 ## ADDED Requirements
 
-### Requirement: Héritage depuis un dépôt git distant
+### Requirement: Inheriting from a remote git repository
 
-Un projet SHALL pouvoir déclarer `inherits: git:` dans son
-`_codev/config.yaml` pour hériter d'un dépôt git distant. La déclaration
-supporte les champs `git` (URL, obligatoire), `ref` (branche ou tag,
-obligatoire), et `subpath` (chemin dans le dépôt, optionnel).
+A project SHALL be able to declare `inherits: git:` in its
+`_codev/config.yaml` to inherit from a remote git repository. The
+declaration supports the fields `git` (URL, mandatory), `ref` (branch or
+tag, mandatory), and `subpath` (path within the repository, optional).
 
-#### Scenario: Décisions d'un dépôt git héritées et indexées
+#### Scenario: Decisions from a git repository inherited and indexed
 
-- **GIVEN** un projet dont `_codev/config.yaml` déclare `inherits: [{git:
+- **GIVEN** a project whose `_codev/config.yaml` declares `inherits: [{git:
   "git@github.com:acme/codev-shared.git", ref: main}]`
-- **AND** un fichier `codev.lock` verrouillant un SHA `9f2c1ab7`
-- **AND** un cache local sous `~/.cache/codev/content/9f2c1ab7/` contenant
-  un ADR `0100 accepted`
-- **WHEN** le validateur calcule l'index des décisions
-- **THEN** l'ADR `0100` apparaît dans l'index
-- **AND** son `origin` est `git:git@github.com:acme/codev-shared.git`
-- **AND** son `qualifiedId` est
+- **AND** a `codev.lock` file locking a SHA `9f2c1ab7`
+- **AND** a local cache under `~/.cache/codev/content/9f2c1ab7/` containing
+  an ADR `0100 accepted`
+- **WHEN** the validator computes the decision index
+- **THEN** ADR `0100` appears in the index
+- **AND** its `origin` is `git:git@github.com:acme/codev-shared.git`
+- **AND** its `qualifiedId` is
   `git:git@github.com:acme/codev-shared.git/0100`
 
-#### Scenario: Décisions héritées injectées dans les instructions design
+#### Scenario: Inherited decisions injected into the design instructions
 
-- **GIVEN** le même projet
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>`
-- **THEN** le tableau `decisions` de la réponse contient les décisions
-  locales **et** les décisions héritées `accepted` du dépôt git verrouillé
+- **GIVEN** the same project
+- **WHEN** the user runs `codev instructions design --change <name>`
+- **THEN** the response's `decisions` array contains the local decisions
+  **and** the inherited `accepted` decisions from the locked git repository
 
-### Requirement: Source git jamais lue depuis une branche flottante
+### Requirement: Git source never read from a floating branch
 
-Le validateur MUST refuser d'exposer le contenu d'une source `git:` tant
-qu'un SHA n'a pas été verrouillé dans `_codev/codev.lock`. Aucune
-commande courante (`list`, `show`, `status`, `instructions`, `validate`,
-`sync`, `archive`) ne SHALL contacter le réseau — c'est `codev sources
-update` seul qui déplace un pin.
+The validator MUST refuse to expose the content of a `git:` source as long
+as no SHA has been locked in `_codev/codev.lock`. No everyday command
+(`list`, `show`, `status`, `instructions`, `validate`, `sync`, `archive`)
+SHALL contact the network — `codev sources update` alone moves a pin.
 
-#### Scenario: Source git déclarée mais non verrouillée
+#### Scenario: Git source declared but not locked
 
-- **GIVEN** un projet déclarant `inherits: [{git: "…", ref: main}]`
-- **AND** un `codev.lock` absent ou sans entrée pour cette source
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>`
-- **THEN** le tableau `decisions` ne contient que les décisions locales
-- **AND** le champ `status[]` de la réponse porte un warning de code
-  stable `git_source_unlocked` invitant à lancer `codev sources update`
+- **GIVEN** a project declaring `inherits: [{git: "…", ref: main}]`
+- **AND** a `codev.lock` that is missing or has no entry for this source
+- **WHEN** the user runs `codev instructions design --change <name>`
+- **THEN** the `decisions` array contains only the local decisions
+- **AND** the response's `status[]` field carries a warning with the
+  stable code `git_source_unlocked` inviting the user to run
+  `codev sources update`
 
-#### Scenario: `codev status` ne contacte pas le réseau
+#### Scenario: `codev status` does not contact the network
 
-- **GIVEN** un projet déclarant une source `git:` avec un SHA verrouillé
-  qui n'est pas en cache
-- **WHEN** l'utilisateur lance `codev status --change <nom>` alors que
-  le réseau est indisponible
-- **THEN** la commande n'échoue pas pour raison réseau
-- **AND** aucun appel `git` n'est fait par l'exécution
+- **GIVEN** a project declaring a `git:` source with a locked SHA that is
+  not in the cache
+- **WHEN** the user runs `codev status --change <name>` while the network
+  is unavailable
+- **THEN** the command does not fail for network reasons
+- **AND** no `git` call is made during execution
 
-### Requirement: `codev sources update` résout et verrouille
+### Requirement: `codev sources update` resolves and locks
 
-La commande `codev sources update` MUST, pour chaque source `git:`
-déclarée, résoudre le `ref` demandé en SHA via `git ls-remote`, télécharger
-le contenu si le SHA n'est pas en cache, et écrire un nouveau
-`_codev/codev.lock` où le SHA de chaque source correspond à la résolution
-courante. Elle MUST afficher un diff des changements de SHA avant
-d'écrire.
+The `codev sources update` command MUST, for each declared `git:` source,
+resolve the requested `ref` into a SHA via `git ls-remote`, download the
+content if the SHA is not in the cache, and write a new
+`_codev/codev.lock` where each source's SHA matches the current
+resolution. It MUST display a diff of the SHA changes before writing.
 
-#### Scenario: Premier update sur un projet sans lock
+#### Scenario: First update on a project without a lock
 
-- **GIVEN** un projet déclarant une source `git:` mais sans `codev.lock`
-- **WHEN** l'utilisateur lance `codev sources update`
-- **THEN** `git ls-remote` est appelé pour résoudre le `ref`
-- **AND** un cache est peuplé avec le contenu du SHA
-- **AND** un nouveau `_codev/codev.lock` est écrit portant la ligne
-  résolue
+- **GIVEN** a project declaring a `git:` source but without `codev.lock`
+- **WHEN** the user runs `codev sources update`
+- **THEN** `git ls-remote` is called to resolve the `ref`
+- **AND** a cache is populated with the SHA's content
+- **AND** a new `_codev/codev.lock` is written carrying the resolved line
 
-#### Scenario: Update sans changement
+#### Scenario: Update without changes
 
-- **GIVEN** un projet dont le lock verrouille déjà le SHA résolu
-  actuellement par `git ls-remote`
-- **WHEN** l'utilisateur lance `codev sources update`
-- **THEN** aucun téléchargement supplémentaire n'est effectué
-- **AND** le fichier `codev.lock` n'est pas réécrit (comparaison contenu
-  à contenu)
+- **GIVEN** a project whose lock already locks the SHA currently resolved
+  by `git ls-remote`
+- **WHEN** the user runs `codev sources update`
+- **THEN** no additional download is performed
+- **AND** the `codev.lock` file is not rewritten (content-to-content
+  comparison)
 
-#### Scenario: Diff avant écriture d'un pin déplacé
+#### Scenario: Diff before writing a moved pin
 
-- **GIVEN** un projet dont le lock porte `commit: aaaa1111` mais
-  `git ls-remote` rend maintenant `bbbb2222`
-- **WHEN** l'utilisateur lance `codev sources update`
-- **THEN** la sortie humaine montre `aaaa1111 → bbbb2222` pour cette
-  source avant l'écriture du lock
+- **GIVEN** a project whose lock carries `commit: aaaa1111` but
+  `git ls-remote` now returns `bbbb2222`
+- **WHEN** the user runs `codev sources update`
+- **THEN** the human output shows `aaaa1111 → bbbb2222` for this source
+  before the lock is written
 
-#### Scenario: git absent du PATH
+#### Scenario: git missing from the PATH
 
-- **GIVEN** un système dont le binaire `git` est introuvable
-- **WHEN** l'utilisateur lance `codev sources update`
-- **THEN** la commande échoue avec le code stable `git_not_found`
-- **AND** le message rappelle que `codev sources update` est la seule
-  commande qui a besoin de `git`
+- **GIVEN** a system where the `git` binary cannot be found
+- **WHEN** the user runs `codev sources update`
+- **THEN** the command fails with the stable code `git_not_found`
+- **AND** the message recalls that `codev sources update` is the only
+  command that needs `git`
 
-### Requirement: `codev sources list` et `codev sources show`
+### Requirement: `codev sources list` and `codev sources show`
 
-`codev sources list` MUST lister toutes les sources déclarées avec leur
-état ; `codev sources show <ref>` MUST afficher les détails d'une source
-précise, identifiée par son URL (pour une source `git:`) ou son chemin
-(pour une `path:`).
+`codev sources list` MUST list all declared sources with their state;
+`codev sources show <ref>` MUST display the details of one specific source,
+identified by its URL (for a `git:` source) or its path (for a `path:`
+one).
 
-#### Scenario: List montre l'état de chaque source
+#### Scenario: List shows the state of each source
 
-- **GIVEN** un projet avec une `path:` et une `git:` verrouillée
-- **WHEN** l'utilisateur lance `codev sources list`
-- **THEN** deux entrées apparaissent, chacune avec son type (`path` ou
-  `git`), son adresse, et son état (`resolved`, `locked`, ou `unlocked`)
+- **GIVEN** a project with a `path:` source and a locked `git:` source
+- **WHEN** the user runs `codev sources list`
+- **THEN** two entries appear, each with its type (`path` or `git`), its
+  address, and its state (`resolved`, `locked`, or `unlocked`)
 
-#### Scenario: Show pointe vers le cache résolu
+#### Scenario: Show points to the resolved cache
 
-- **GIVEN** un projet avec une source `git:` verrouillée sur `9f2c1ab7`
-- **WHEN** l'utilisateur lance `codev sources show
+- **GIVEN** a project with a `git:` source locked on `9f2c1ab7`
+- **WHEN** the user runs `codev sources show
   "git@github.com:acme/codev-shared.git"`
-- **THEN** la sortie contient l'URL, le `ref` demandé, le SHA verrouillé,
-  et le chemin résolu dans le cache
-- **AND** liste les fichiers exposés (décisions, specs héritées)
+- **THEN** the output contains the URL, the requested `ref`, the locked
+  SHA, and the resolved path in the cache
+- **AND** lists the exposed files (decisions, inherited specs)
 
-### Requirement: Aucun contenu exécutable hérité
+### Requirement: No inherited executable content
 
-Le loader SHALL n'exposer aux consommateurs (index de décisions, index
-de specs héritées, config héritée) que des fichiers avec les extensions
-`.md` et `.yaml` — même si le dépôt source en contient d'autres. Un
-fichier `.sh`, `.py`, `.rs`, un exécutable, un hook, ne SHALL JAMAIS être
-chargé depuis une source héritée.
+The loader SHALL expose to consumers (decision index, inherited spec
+index, inherited config) only files with the `.md` and `.yaml`
+extensions — even if the source repository contains others. A `.sh`,
+`.py`, or `.rs` file, an executable, a hook, SHALL NEVER be loaded from an
+inherited source.
 
-#### Scenario: Un script dans le dépôt hérité est ignoré
+#### Scenario: A script in the inherited repository is ignored
 
-- **GIVEN** un dépôt git hérité qui contient `_codev/decisions/hook.sh`
-- **WHEN** le validateur calcule l'index
-- **THEN** aucun élément de l'index ne référence `hook.sh`
-- **AND** aucune commande de codev ne lance ce fichier
+- **GIVEN** an inherited git repository that contains
+  `_codev/decisions/hook.sh`
+- **WHEN** the validator computes the index
+- **THEN** no index element references `hook.sh`
+- **AND** no codev command runs this file

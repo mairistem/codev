@@ -1,34 +1,34 @@
-# Tâches
+# Tasks
 
-## 1. Simplification de `is_config_thin`
+## 1. Simplification of `is_config_thin`
 
-- [x] 1.1 Dans `crates/codev-core/src/config/mod.rs`, changer la signature de `is_config_thin` : passer de `is_config_thin(context: Option<&str>, rules_empty: bool) -> bool` à `is_config_thin(rules_empty: bool) -> bool` — retourner directement `rules_empty`. Retirer la doc du seuil 200.
-- [x] 1.2 Réécrire les tests unitaires : supprimer les 3 tests basés sur le seuil, les remplacer par deux tests binaires (`is_config_thin_vrai_quand_rules_vides`, `is_config_thin_faux_quand_rules_presentes`). Vérifié par `cargo test -p codev-core is_config_thin` vert.
+- [x] 1.1 In `crates/codev-core/src/config/mod.rs`, change the signature of `is_config_thin`: go from `is_config_thin(context: Option<&str>, rules_empty: bool) -> bool` to `is_config_thin(rules_empty: bool) -> bool` — return `rules_empty` directly. Remove the doc of the 200 threshold.
+- [x] 1.2 Rewrite the unit tests: delete the 3 threshold-based tests, replace them with two binary tests (`is_config_thin_vrai_quand_rules_vides`, `is_config_thin_faux_quand_rules_presentes`). Verified by `cargo test -p codev-core is_config_thin` green.
 
-## 2. Adaptation des call sites
+## 2. Adapting the call sites
 
-- [x] 2.1 Dans `crates/codev-cli/src/commands.rs`, `install_skills` : remplacer le calcul avec `context_total` par un simple `let config_thin = codev_core::config::is_config_thin(config.rules.is_empty());`. Retirer les lignes qui construisent `context_total`.
-- [x] 2.2 Dans `crates/codev-cli/src/main.rs`, `config_is_thin` : simplifier pareil — plus besoin de reconstruire `context_total`, un seul appel `is_config_thin(cfg.rules.is_empty())`. Retirer les lignes intermédiaires.
-- [x] 2.3 Vérifier que les tests de `render::setup` (test unitaire sur `config_thin: true/false`) restent verts sans modification, puisque le champ `config_thin: bool` sur `SetupOutcome` n'a pas changé de type.
+- [x] 2.1 In `crates/codev-cli/src/commands.rs`, `install_skills`: replace the computation using `context_total` with a simple `let config_thin = codev_core::config::is_config_thin(config.rules.is_empty());`. Remove the lines that build `context_total`.
+- [x] 2.2 In `crates/codev-cli/src/main.rs`, `config_is_thin`: simplify likewise — no need to rebuild `context_total` anymore, a single call `is_config_thin(cfg.rules.is_empty())`. Remove the intermediate lines.
+- [x] 2.3 Check that the `render::setup` tests (unit test on `config_thin: true/false`) stay green without modification, since the `config_thin: bool` field on `SetupOutcome` has not changed type.
 
-## 3. Mise à jour du body `onboard`
+## 3. Updating the `onboard` body
 
-- [x] 3.1 Dans `assets/workflows/onboard.md`, section « Recommander la prochaine action » : réécrire la ligne du tableau et la sous-section explicative pour ne parler que de « `rules:` vides ou absentes ». Retirer toute mention de « 200 caractères » ou de la longueur du contexte.
-- [x] 3.2 Ajuster le test `onboard_est_dans_le_catalogue_et_a_les_bons_outils` de `codev-agents::workflows` : l'assertion `body.contains("thin") || body.contains("200")` doit rester vraie (le body cite toujours « thin »). Ajouter une assertion complémentaire que le body ne cite plus « 200 caractères ».
+- [x] 3.1 In `assets/workflows/onboard.md`, section "Recommend the next action": rewrite the table row and the explanatory subsection to talk only about "empty or missing `rules:`". Remove any mention of "200 characters" or of the context length.
+- [x] 3.2 Adjust the `onboard_est_dans_le_catalogue_et_a_les_bons_outils` test of `codev-agents::workflows`: the assertion `body.contains("thin") || body.contains("200")` must remain true (the body still mentions "thin"). Add a complementary assertion that the body no longer mentions "200 characters".
 
 ## 4. Documentation
 
-- [x] 4.1 `docs/codev.md` §2 (sous-section « L'expérience `codev init` ») : la phrase « Si la config générée est thin (contexte court, aucune `rules:`) » devient « Si la config générée n'a pas encore de `rules:` ». Ajuster.
-- [x] 4.2 `CHANGELOG.md` : nouvelle entrée `[Unreleased]` en tête, section `### Fixed` : « Détection `is_config_thin` : ne regarde plus la longueur du `context:`, base la décision uniquement sur `rules.is_empty()`. Un projet à stack riche (TypeScript, Java Maven, etc.) recevait un contexte auto-détecté long qui inhibait la nudge, alors qu'aucune règle n'avait été rédigée. »
+- [x] 4.1 `docs/codev.md` §2 (subsection "The `codev init` experience"): the sentence "If the generated config is thin (short context, no `rules:`)" becomes "If the generated config does not have any `rules:` yet". Adjust.
+- [x] 4.2 `CHANGELOG.md`: new `[Unreleased]` entry at the top, `### Fixed` section: "`is_config_thin` detection: no longer looks at the length of `context:`, bases the decision solely on `rules.is_empty()`. A project with a rich stack (TypeScript, Java Maven, etc.) received a long auto-detected context that suppressed the hint, even though no rule had been written."
 
-## 5. Vérifications finales
+## 5. Final checks
 
-- [x] 5.1 `cargo test --workspace` vert (les tests adaptés + les tests existants).
-- [x] 5.2 `cargo clippy --workspace --all-targets` sans avertissement.
-- [x] 5.3 `codev validate --strict` vert.
-- [x] 5.4 Test manuel : recompiler codev, relancer sur un projet TypeScript ou avec Cargo à multiples dépendances. La nudge `/codev-configure` DOIT s'afficher dans la sortie de `codev init` et de `codev status`, alors qu'auparavant elle était absente. *(Vérifié sur `~/Sources/mira` — les deux nudges s'affichent correctement, alors qu'ils étaient absents en v0.3.1.)*
+- [x] 5.1 `cargo test --workspace` green (the adapted tests + the existing tests).
+- [x] 5.2 `cargo clippy --workspace --all-targets` with no warning.
+- [x] 5.3 `codev validate --strict` green.
+- [x] 5.4 Manual test: rebuild codev, rerun on a TypeScript project or one with Cargo and multiple dependencies. The `/codev-configure` hint MUST be displayed in the output of `codev init` and of `codev status`, whereas it was previously absent. *(Verified on `~/Sources/mira` — both hints are displayed correctly, whereas they were absent in v0.3.1.)*
 
-## 6. Livraison
+## 6. Delivery
 
-- [ ] 6.1 Bump `Cargo.toml` à `0.3.2` (patch — fix pur). Tag `v0.3.2`, `git push origin main --tags`.
-- [ ] 6.2 Dater l'entrée `[0.3.2] — <date>` dans `CHANGELOG.md`.
+- [ ] 6.1 Bump `Cargo.toml` to `0.3.2` (patch — pure fix). Tag `v0.3.2`, `git push origin main --tags`.
+- [ ] 6.2 Date the `[0.3.2] — <date>` entry in `CHANGELOG.md`.

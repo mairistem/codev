@@ -1,104 +1,104 @@
 ## Purpose
 
-Livrer une documentation complète de codev sous une forme **unique et
-diffusable** : un fichier HTML autonome (CSS embarqué, pas
-d'assets externes) que le binaire `codev` peut générer et ouvrir
-lui-même, pour compléter l'aide CLI et servir de point de partage
-avec des tiers.
+Ship complete codev documentation in a **single, shareable** form: a
+standalone HTML file (embedded CSS, no external assets) that the
+`codev` binary can generate and open by itself, to complement the
+CLI help and serve as a point of sharing with third parties.
 
 ## ADDED Requirements
 
-### Requirement: `codev docs` génère un HTML autonome et l'ouvre dans le navigateur
+### Requirement: `codev docs` generates a standalone HTML file and opens it in the browser
 
-Le binaire `codev` SHALL exposer une sous-commande `docs` qui, sans
-argument, génère un fichier HTML autonome et l'ouvre dans le
-navigateur système par défaut.
+The `codev` binary SHALL expose a `docs` subcommand that, without
+arguments, generates a standalone HTML file and opens it in the
+default system browser.
 
-Le HTML MUST :
+The HTML MUST:
 
-- porter tout son CSS **inline** dans un `<style>` de l'en-tête —
-  aucune référence à un CDN, aucune image externe, aucun script
-  runtime obligatoire ;
-- rendre correctement les six éléments markdown courants — titres,
-  paragraphes, listes, tableaux, blocs de code, citations ;
-- porter en tête le nom `codev` et la version du binaire qui l'a
-  généré ;
-- s'ouvrir dans n'importe quel navigateur récent, y compris **hors
-  ligne**.
+- carry all its CSS **inline** in a `<style>` in the head — no
+  reference to a CDN, no external image, no mandatory runtime
+  script;
+- correctly render the six common markdown elements — headings,
+  paragraphs, lists, tables, code blocks, blockquotes;
+- carry at the top the name `codev` and the version of the binary
+  that generated it;
+- open in any recent browser, including **offline**.
 
-Le chemin de sortie par défaut MUST être dans le répertoire système
-temporaire (`std::env::temp_dir()`) et porter la version dans son
-nom : `codev-docs-<version>.html`.
+The default output path MUST be in the system temporary directory
+(`std::env::temp_dir()`) and carry the version in its name:
+`codev-docs-<version>.html`.
 
-#### Scenario: `codev docs` sans argument ouvre le HTML
+#### Scenario: `codev docs` without arguments opens the HTML
 
-- **GIVEN** un binaire `codev` de version 0.1.0
-- **WHEN** l'utilisateur lance `codev docs`
-- **THEN** un fichier `codev-docs-0.1.0.html` est écrit dans
+- **GIVEN** a `codev` binary at version 0.1.0
+- **WHEN** the user runs `codev docs`
+- **THEN** a `codev-docs-0.1.0.html` file is written in
   `std::env::temp_dir()`
-- **AND** un appel système ouvre ce fichier dans le navigateur par
-  défaut (macOS `open`, Linux `xdg-open`, Windows `start`)
-- **AND** le code de retour est 0
-- **AND** le HTML porte le nom `codev` et la version `0.1.0` en tête
+- **AND** a system call opens that file in the default browser
+  (macOS `open`, Linux `xdg-open`, Windows `start`)
+- **AND** the exit code is 0
+- **AND** the HTML carries the name `codev` and the version `0.1.0`
+  at the top
 
-#### Scenario: Le HTML est autonome
+#### Scenario: The HTML is standalone
 
-- **GIVEN** le fichier généré à l'étape précédente
-- **WHEN** on l'ouvre dans un navigateur sans connexion internet
-- **THEN** la page rend correctement (CSS inline, pas de requête
-  externe)
-- **AND** aucun élément `<link>` ne pointe vers un `http(s):`
+- **GIVEN** the file generated in the previous step
+- **WHEN** it is opened in a browser without an internet connection
+- **THEN** the page renders correctly (inline CSS, no external
+  request)
+- **AND** no `<link>` element points to an `http(s):` URL
 
-### Requirement: `codev docs --print` imprime le markdown source sur stdout
+### Requirement: `codev docs --print` prints the markdown source to stdout
 
-`codev docs --print` MUST imprimer le **markdown source** de la
-documentation sur stdout, sans conversion. La sortie est utile pour
-pipeliner vers `less`, `bat`, ou un outil qui consomme du markdown
-(un LLM, par exemple).
+`codev docs --print` MUST print the documentation's **markdown
+source** to stdout, without conversion. The output is useful for
+piping into `less`, `bat`, or a tool that consumes markdown (an LLM,
+for example).
 
-Cette forme MUST NOT ouvrir de navigateur, MUST NOT écrire de
-fichier, et MUST retourner exit code 0.
+This form MUST NOT open a browser, MUST NOT write a file, and MUST
+return exit code 0.
 
-#### Scenario: `--print` sort du markdown non vide
+#### Scenario: `--print` outputs non-empty markdown
 
-- **GIVEN** le binaire courant
-- **WHEN** l'utilisateur lance `codev docs --print`
-- **THEN** stdout porte un contenu non vide (> 1000 octets — la doc
-  fait plusieurs sections)
-- **AND** le contenu commence par un titre de niveau 1
-  markdown (`# codev`)
-- **AND** aucun fichier n'est écrit
+- **GIVEN** the current binary
+- **WHEN** the user runs `codev docs --print`
+- **THEN** stdout carries non-empty content (> 1000 bytes — the
+  documentation has several sections)
+- **AND** the content starts with a level-1 markdown heading
+  (`# codev`)
+- **AND** no file is written
 
-### Requirement: `codev docs --write <PATH>` écrit sans ouvrir
+### Requirement: `codev docs --write <PATH>` writes without opening
 
-`codev docs --write <PATH>` MUST écrire le HTML autonome au chemin
-donné et **ne rien ouvrir**. C'est le mode « diffusion ciblée » —
-placer la doc dans un share drive, un dossier Confluence, un dépôt.
+`codev docs --write <PATH>` MUST write the standalone HTML to the
+given path and **open nothing**. This is the "targeted distribution"
+mode — placing the documentation in a shared drive, a Confluence
+folder, a repository.
 
-Le chemin est utilisé tel quel : la commande MUST créer les dossiers
-parents manquants **uniquement** si le chemin donné a un parent qui
-existe déjà (la commande n'invente pas d'arborescence — elle refuse
-un chemin dont plusieurs niveaux manquent).
+The path is used as is: the command MUST create missing parent
+folders **only** if the given path has a parent that already exists
+(the command does not invent a directory tree — it refuses a path
+with several missing levels).
 
-#### Scenario: `--write` produit le fichier au chemin donné
+#### Scenario: `--write` produces the file at the given path
 
-- **GIVEN** le binaire courant
-- **AND** un répertoire de travail où `./out/` existe
-- **WHEN** l'utilisateur lance `codev docs --write ./out/manuel.html`
-- **THEN** le fichier `./out/manuel.html` existe et porte le HTML
-  autonome
-- **AND** aucun navigateur n'est ouvert
-- **AND** le code de retour est 0
+- **GIVEN** the current binary
+- **AND** a working directory where `./out/` exists
+- **WHEN** the user runs `codev docs --write ./out/manuel.html`
+- **THEN** the file `./out/manuel.html` exists and carries the
+  standalone HTML
+- **AND** no browser is opened
+- **AND** the exit code is 0
 
-### Requirement: `codev docs` est indépendant d'un dépôt initialisé
+### Requirement: `codev docs` is independent of an initialized repository
 
-`codev docs` MUST NOT lire `_codev/config.yaml` ni tout autre état
-projet. La commande fonctionne dans n'importe quel répertoire, même
-sans dépôt codev, même sans `.git`.
+`codev docs` MUST NOT read `_codev/config.yaml` nor any other
+project state. The command works in any directory, even without a
+codev repository, even without `.git`.
 
-#### Scenario: Fonctionne hors d'un dépôt codev
+#### Scenario: Works outside a codev repository
 
-- **GIVEN** un utilisateur dans un répertoire qui n'a pas de `_codev/`
-- **WHEN** il lance `codev docs --print`
-- **THEN** le markdown est imprimé normalement
-- **AND** aucun message d'erreur ne mentionne `_codev`
+- **GIVEN** a user in a directory that has no `_codev/`
+- **WHEN** they run `codev docs --print`
+- **THEN** the markdown is printed normally
+- **AND** no error message mentions `_codev`

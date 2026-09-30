@@ -1,36 +1,36 @@
-# Design : `codev validate --strict`
+# Design: `codev validate --strict`
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Petit change à haute valeur pour l'automation — le
-noyau change à peine, l'API publique gagne un flag et un champ.
+See `proposal.md`. A small change with high value for automation — the
+core barely changes; the public API gains a flag and a field.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre le comportement du flag, la logique d'exit code, la
-signature JSON et le rendu humain. Il ne cadre pas `--archived` (E6),
-`--strict-level` (paramétrable), ni un mode `--fix`.
+This design covers the flag's behavior, the exit-code logic, the JSON
+signature and the human rendering. It does not cover `--archived`
+(E6), `--strict-level` (configurable), nor a `--fix` mode.
 
-## Décisions
+## Decisions
 
-### Décision : le mode strict change l'exit code, pas les sévérités
+### Decision: strict mode changes the exit code, not the severities
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Promouvoir les warnings en erreurs dans le rapport** | Rendu humain et JSON reflètent directement le verdict | Trompeur pour un lecteur qui verrait « error » sur un `decision_unsealed` juste parce que la CI a passé `--strict` |
-| **B. Changer uniquement l'exit code** | Le rapport dit ce qui est, le mode strict dit ce que ça déclenche | Il faut expliquer la nuance dans la doc |
+| **A. Promote warnings to errors in the report** | Human and JSON renderings directly reflect the verdict | Misleading for a reader who would see "error" on a `decision_unsealed` just because the CI passed `--strict` |
+| **B. Change only the exit code** | The report says what is; strict mode says what it triggers | The nuance has to be explained in the docs |
 
-**Choisi : B.** Un finding a une sévérité intrinsèque — le fait qu'un
-caller le prenne en erreur relève de son contrat, pas de la nature du
-finding. Aligne aussi le comportement avec les linters classiques
-(clippy `--deny warnings`) qui laissent les warnings warnings dans la
-sortie et changent juste le retour.
+**Chosen: B.** A finding has an intrinsic severity — the fact that a
+caller treats it as an error belongs to its contract, not to the
+nature of the finding. This also aligns the behavior with classic
+linters (clippy `--deny warnings`), which leave warnings as warnings
+in the output and just change the return code.
 
-### Décision : `has_warnings()` méthode sur `ValidateReport`, comme `has_errors()`
+### Decision: `has_warnings()` method on `ValidateReport`, like `has_errors()`
 
-Cohérent avec la méthode existante. Le CLI compose :
+Consistent with the existing method. The CLI composes:
 
 ```rust
 let exit_code = if strict {
@@ -42,39 +42,39 @@ let exit_code = if strict {
 };
 ```
 
-Ou plus court, une méthode dédiée `is_fail(strict: bool)` — mais l'expression
-littérale reste plus lisible dans une CLI qui a déjà six branches similaires.
-Je garde le calcul inline.
+Or shorter, a dedicated method `is_fail(strict: bool)` — but the
+literal expression stays more readable in a CLI that already has six
+similar branches. I keep the computation inline.
 
-### Décision : le champ JSON s'appelle `hasWarnings`, additif
+### Decision: the JSON field is named `hasWarnings`, additive
 
-Nommage cohérent avec le reste du contrat (`hasErrors` implicite via
-`has_errors()` — mais **pas** dans le contrat JSON aujourd'hui : `items[]`
-et `findings[]` suffisent). Ajouter `hasWarnings` uniquement — le champ
-`hasErrors` serait redondant (le consommateur qui parse `findings[]`
-sait déjà).
+Naming consistent with the rest of the contract (`hasErrors` implicit
+via `has_errors()` — but **not** in the JSON contract today: `items[]`
+and `findings[]` are enough). Add `hasWarnings` only — a `hasErrors`
+field would be redundant (the consumer who parses `findings[]`
+already knows).
 
-**Alternative écartée** : ajouter les deux, `hasErrors` et `hasWarnings`,
-pour la symétrie. Coût : un champ de plus, potentiellement source de
-divergence si `has_errors()` et le contenu de `findings` disent des
-choses différentes. Refusé.
+**Rejected alternative**: add both, `hasErrors` and `hasWarnings`,
+for symmetry. Cost: one more field, a potential source of divergence
+if `has_errors()` and the content of `findings` say different things.
+Refused.
 
-### Décision : `--strict` s'applique à toutes les formes de `validate`
+### Decision: `--strict` applies to all forms of `validate`
 
-Le flag est global à la sous-commande, pas restreint à `--all`. Un
-utilisateur qui valide **un** item avec `--strict` doit avoir la même
-règle de sortie. La CLI place `--strict` sur `Command::Validate` (pas
-sur une variante), pas d'aiguillage.
+The flag is global to the subcommand, not restricted to `--all`. A
+user who validates **one** item with `--strict` must get the same
+exit rule. The CLI places `--strict` on `Command::Validate` (not on a
+variant), no dispatching.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Un caller migre de « exit 0 → OK » à « exit 0 → OK sauf si strict »**
-  — pas un risque : les callers actuels ne passent pas `--strict`, donc
-  leur exit code ne bouge pas. Le flag est opt-in.
-- **Un consommateur JSON confond `hasWarnings` avec le verdict** — le
-  champ est documenté comme informatif. Le vrai verdict, c'est l'exit
-  code. C'est expliqué dans la spec et rappelé dans la doc CLI.
+- **A caller migrates from "exit 0 → OK" to "exit 0 → OK unless
+  strict"** — not a risk: current callers do not pass `--strict`, so
+  their exit code does not move. The flag is opt-in.
+- **A JSON consumer confuses `hasWarnings` with the verdict** — the
+  field is documented as informational. The real verdict is the exit
+  code. This is explained in the spec and recalled in the CLI docs.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Le flag est opt-in ; le champ JSON est additif.
+None. The flag is opt-in; the JSON field is additive.

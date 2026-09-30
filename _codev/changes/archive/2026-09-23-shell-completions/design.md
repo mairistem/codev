@@ -1,83 +1,83 @@
-# Design : `codev completions <shell>`
+# Design: `codev completions <shell>`
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Change purement additif, quelques lignes de code
-qui délèguent à `clap_complete`.
+See `proposal.md`. A purely additive change, a few lines of code
+that delegate to `clap_complete`.
 
-## Décisions
+## Decisions
 
-### Décision : dépendance `clap_complete`, pas de génération manuelle
+### Decision: `clap_complete` dependency, no manual generation
 
-`clap_complete` est le compagnon officiel de `clap` — maintenu par
-les mêmes mainteneurs, versionné en parallèle. Générer les scripts à
-la main serait long, ferait dériver la doc, et il faudrait tout
-refaire à chaque ajout de commande.
+`clap_complete` is the official companion of `clap` — maintained by
+the same maintainers, versioned in parallel. Generating the scripts by
+hand would take long, would let the docs drift, and everything would
+have to be redone each time a command is added.
 
-**Alternative écartée** : un script au bootstrap qui parse `--help` et
-génère la complétion. Fragile — le format `--help` peut changer, la
-grammaire des shells varie, et on écrit du code qui fait déjà partie
-de l'écosystème.
+**Rejected alternative**: a bootstrap script that parses `--help` and
+generates the completion. Fragile — the `--help` format can change,
+shell grammars vary, and we would be writing code that is already part
+of the ecosystem.
 
-### Décision : cinq shells, pas un choix limité
+### Decision: five shells, not a limited selection
 
-`clap_complete::Shell` liste les cinq shells (`bash`, `zsh`, `fish`,
-`powershell`, `elvish`). Les supporter tous ne coûte **rien** en
-code — un enum clap, un match à un bras. En revanche, refuser
-d'emblée `fish` ou `elvish` créerait une réclamation légitime dans
-quelques mois.
+`clap_complete::Shell` lists five shells (`bash`, `zsh`, `fish`,
+`powershell`, `elvish`). Supporting them all costs **nothing** in
+code — one clap enum, a single-arm match. On the other hand, refusing
+`fish` or `elvish` up front would create a legitimate complaint in
+a few months.
 
-### Décision : sous-commande dédiée, pas de flag global
+### Decision: dedicated subcommand, not a global flag
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. `codev --completions <shell>`** flag global | Court à taper | Casse le pattern « verb-noun » du reste de la CLI |
-| **B. `codev completions <shell>`** sous-commande | Cohérent avec `codev list`, `codev decision …` | Deux caractères de plus |
+| **A. `codev --completions <shell>`** global flag | Short to type | Breaks the "verb-noun" pattern of the rest of the CLI |
+| **B. `codev completions <shell>`** subcommand | Consistent with `codev list`, `codev decision …` | Two more characters |
 
-**Choisi : B.** Cohérence l'emporte.
+**Chosen: B.** Consistency wins.
 
-### Décision : pas d'installation automatique
+### Decision: no automatic installation
 
-`codev init` ne va **pas** essayer de deviner le shell de
-l'utilisateur, écrire dans `~/.zshrc` ou similaire. Le pattern serait
-trop magique : chaque shell a son emplacement, ses conventions,
-parfois un dossier de complétions à part (`~/.zfunc/`), parfois un
-`autoload`. Un ratage laisserait une entrée orpheline dans le fichier
-de config de l'utilisateur — impossible à annuler proprement.
+`codev init` will **not** try to guess the user's shell or
+write into `~/.zshrc` or similar. The pattern would be
+too magical: each shell has its location, its conventions,
+sometimes a separate completions folder (`~/.zfunc/`), sometimes an
+`autoload`. A failure would leave an orphan entry in the user's
+config file — impossible to undo cleanly.
 
-Le message d'aide de la commande (`codev completions --help`) MUST
-citer la procédure recommandée par shell — courte, copier-collable,
-sans ambiguïté :
+The command's help message (`codev completions --help`) MUST
+list the recommended procedure per shell — short, copy-pasteable,
+unambiguous:
 
-- **bash** : `codev completions bash > ~/.local/share/bash-completion/completions/codev`
-- **zsh** : `codev completions zsh > "${fpath[1]}/_codev"` puis
+- **bash**: `codev completions bash > ~/.local/share/bash-completion/completions/codev`
+- **zsh**: `codev completions zsh > "${fpath[1]}/_codev"` then
   `compinit`
-- **fish** : `codev completions fish > ~/.config/fish/completions/codev.fish`
-- **powershell** : `codev completions powershell | Out-String |
-  Invoke-Expression` (ou redirection vers `$PROFILE`)
-- **elvish** : la doc officielle Elvish s'occupe du reste
+- **fish**: `codev completions fish > ~/.config/fish/completions/codev.fish`
+- **powershell**: `codev completions powershell | Out-String |
+  Invoke-Expression` (or redirect to `$PROFILE`)
+- **elvish**: the official Elvish docs take care of the rest
 
-### Décision : la commande n'a pas de flag `--json`
+### Decision: the command has no `--json` flag
 
-La sortie est un script shell — pas de JSON structuré possible ni
-utile. La commande sort du contrat JSON global de codev :
-`fail(json, shape, err)` n'est pas appelé sur cette branche, et il
-n'y a pas de `Vec<StatusEntry>` à retourner. Le contrat public reste
-respecté — aucun ajout, aucun retrait dans `codev-cli::contract::v1`.
+The output is a shell script — no structured JSON is possible or
+useful. The command sits outside codev's global JSON contract:
+`fail(json, shape, err)` is not called on this branch, and there
+is no `Vec<StatusEntry>` to return. The public contract remains
+honored — nothing added, nothing removed in `codev-cli::contract::v1`.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **`clap_complete` peut évoluer et casser** — mainteneurs communs
-  avec `clap`, semver respecté. Version 4.x tant qu'on est en 4.x sur
-  clap.
-- **Complétion statique — pas de noms de changes actifs** — pour
-  compléter `codev status --change <TAB>` avec les vrais noms, il
-  faudrait générer dynamiquement à chaque appel. `clap_complete`
-  supporte ça via `ValueEnum` custom + `PossibleValue` — reportable,
-  pas dans ce lot.
+- **`clap_complete` may evolve and break** — shared maintainers
+  with `clap`, semver respected. Version 4.x as long as we are on 4.x
+  for clap.
+- **Static completion — no active change names** — to
+  complete `codev status --change <TAB>` with the real names, we
+  would have to generate dynamically at each call. `clap_complete`
+  supports this via a custom `ValueEnum` + `PossibleValue` — deferrable,
+  not in this batch.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Feature additive, opt-in.
+None. Additive, opt-in feature.

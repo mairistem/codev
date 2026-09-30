@@ -1,100 +1,99 @@
-# Proposal : distribuer codev sans exiger Rust
+# Proposal: distribute codev without requiring Rust
 
-## Pourquoi
+## Why
 
-Aujourd'hui, la seule voie d'installation documentée est
-`cargo install --path crates/codev-cli`. Ça marche pour Ludovic et
-tout développeur qui a déjà la toolchain Rust — mais **la majorité des
-utilisateurs JVS visés n'ont pas Rust**. Ils ont git, Claude Code,
-souvent Node ou Python, jamais rustc.
+Today, the only documented installation path is
+`cargo install --path crates/codev-cli`. That works for Ludovic and
+any developer who already has the Rust toolchain — but **most of the
+target JVS users do not have Rust**. They have git, Claude Code,
+often Node or Python, never rustc.
 
-Le binaire, lui, est **autonome** une fois compilé : ~4 Mo, aucune
-dépendance runtime Rust, quelques dépendances système standard.
-L'obstacle est purement à l'étape d'install.
+The binary itself is **self-contained** once compiled: ~4 MB, no Rust
+runtime dependency, a few standard system dependencies. The obstacle
+lies purely in the install step.
 
-Ce lot livre deux voies d'install additionnelles, sans casser la voie
-`cargo install` qui reste utile aux contributeurs :
+This batch ships two additional install paths, without breaking the
+`cargo install` path, which remains useful to contributors:
 
-- **GitHub Releases** avec binaires précompilés pour macOS (arm64 et
-  x86_64) et Linux (x86_64 musl statique) — l'utilisateur télécharge,
-  extrait, met sur son PATH.
-- **Script `install.sh`** pipeable via `curl … | sh` — détecte
-  OS/arch, télécharge le bon binaire, vérifie son SHA-256, installe
-  dans `~/.local/bin/`. Un utilisateur qui découvre codev tape
-  **une seule ligne** pour l'avoir.
+- **GitHub Releases** with prebuilt binaries for macOS (arm64 and
+  x86_64) and Linux (static x86_64 musl) — the user downloads,
+  extracts, puts it on their PATH.
+- **`install.sh` script** pipeable via `curl … | sh` — detects
+  OS/arch, downloads the right binary, verifies its SHA-256, installs
+  into `~/.local/bin/`. A user discovering codev types **a single
+  line** to get it.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau workflow GitHub Actions** `.github/workflows/release.yml`
-  déclenché par un tag `v*.*.*` :
-  - Trois jobs matrix, un par target : `aarch64-apple-darwin`,
+- **New GitHub Actions workflow** `.github/workflows/release.yml`
+  triggered by a `v*.*.*` tag:
+  - Three matrix jobs, one per target: `aarch64-apple-darwin`,
     `x86_64-apple-darwin`, `x86_64-unknown-linux-musl`.
-  - Chaque job `cargo build --release --bin codev --target <target>`.
-  - Empaquetage : `codev-<version>-<target>.tar.gz` contenant le
-    binaire, `README.md`, `LICENSE`, et le fichier
-    `docs/codev.md` (source de la doc).
-  - Un job final agrège les checksums SHA-256 dans un fichier
-    `SHA256SUMS` et publie la GitHub Release avec les artefacts.
-- **Nouveau script racine `install.sh`** :
-  - Détecte l'OS via `uname` (macOS/Linux) et l'arch via `uname -m`
-    (arm64/x86_64).
-  - Résout la version demandée (`$CODEV_VERSION` env var ou dernière
-    release via l'API GitHub).
-  - Télécharge le tar.gz cible et le `SHA256SUMS`.
-  - Vérifie le SHA-256 du fichier téléchargé contre celui du
+  - Each job runs `cargo build --release --bin codev --target <target>`.
+  - Packaging: `codev-<version>-<target>.tar.gz` containing the
+    binary, `README.md`, `LICENSE`, and the file
+    `docs/codev.md` (the doc source).
+  - A final job aggregates the SHA-256 checksums into a `SHA256SUMS`
+    file and publishes the GitHub Release with the artifacts.
+- **New root script `install.sh`**:
+  - Detects the OS via `uname` (macOS/Linux) and the arch via
+    `uname -m` (arm64/x86_64).
+  - Resolves the requested version (`$CODEV_VERSION` env var or the
+    latest release via the GitHub API).
+  - Downloads the target tar.gz and the `SHA256SUMS`.
+  - Verifies the SHA-256 of the downloaded file against the one in
     `SHA256SUMS`.
-  - Extrait et copie `codev` dans `~/.local/bin/`. Crée le dossier
-    si absent.
-  - Vérifie que `~/.local/bin/` est dans le `$PATH` — sinon, imprime
-    la ligne à ajouter à son `.zshrc`/`.bashrc`.
-- **Section « Installation » de `docs/codev.md`** — refondue avec
-  **trois voies** : `curl … | sh` (recommandé), téléchargement
-  manuel depuis GitHub Releases, `cargo install` (contributeurs).
-- **README.md du dépôt** — la première voie citée devient
+  - Extracts and copies `codev` into `~/.local/bin/`. Creates the
+    folder if missing.
+  - Checks that `~/.local/bin/` is in `$PATH` — otherwise, prints
+    the line to add to `.zshrc`/`.bashrc`.
+- **"Installation" section of `docs/codev.md`** — reworked with
+  **three paths**: `curl … | sh` (recommended), manual download
+  from GitHub Releases, `cargo install` (contributors).
+- **Repository README.md** — the first path mentioned becomes
   `curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh`.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-- `distribution` — décrit le contrat de distribution : quelles cibles
-  sont supportées, quel format d'artefact, quel script d'install,
-  quelle vérification d'intégrité.
+- `distribution` — describes the distribution contract: which targets
+  are supported, which artifact format, which install script,
+  which integrity check.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune.
+None.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** : rien dans les crates Rust. Le change touche exclusivement :
-  - `.github/workflows/release.yml` (nouveau)
-  - `install.sh` (nouveau)
-  - `docs/codev.md` (section Installation)
+- **Code**: nothing in the Rust crates. The change touches only:
+  - `.github/workflows/release.yml` (new)
+  - `install.sh` (new)
+  - `docs/codev.md` (Installation section)
   - `README.md` (mention)
-- **Contrat JSON** : rien. La distribution vit hors du binaire.
-- **Fichier écrit** : le workflow GH Actions écrit des artefacts sur
-  GitHub Releases ; `install.sh` écrit `~/.local/bin/codev` chez
-  l'utilisateur.
-- **Migration** : aucune. La voie `cargo install` reste documentée
-  et fonctionne.
-- **Hors périmètre** :
-  - **Windows** — les utilisateurs JVS sont majoritairement sur
-    macOS/Linux. Un utilisateur Windows qui se manifeste plus tard
-    déclenchera un change dédié.
-  - **Linux ARM64** — bonus reportable. Cargo install fonctionne en
-    attendant.
-  - **Homebrew tap** — plus lourd à maintenir (repo dédié pour le
-    tap, formule Ruby, versioning). Reportable jusqu'à demande
-    explicite.
-  - **Auto-update du binaire** — pattern à la `rustup update`. Pas
-    nécessaire pour la V1 ; `codev-<version>` réinstalle facilement.
-  - **Signature GPG / cosign** — la vérification SHA-256 depuis un
-    fichier publié par le même workflow suffit pour la V1. Une
-    vraie signature demandera une clef à gérer et à publier.
-  - **Publication sur crates.io** — nécessite cargo côté user, ne
-    résout pas le problème initial.
+- **JSON contract**: nothing. Distribution lives outside the binary.
+- **Files written**: the GH Actions workflow writes artifacts to
+  GitHub Releases; `install.sh` writes `~/.local/bin/codev` on the
+  user's machine.
+- **Migration**: none. The `cargo install` path remains documented
+  and works.
+- **Out of scope**:
+  - **Windows** — JVS users are mostly on macOS/Linux. A Windows
+    user who shows up later will trigger a dedicated change.
+  - **Linux ARM64** — deferrable bonus. Cargo install works in the
+    meantime.
+  - **Homebrew tap** — heavier to maintain (dedicated repo for the
+    tap, Ruby formula, versioning). Deferrable until explicitly
+    requested.
+  - **Binary auto-update** — a `rustup update`-style pattern. Not
+    needed for V1; `codev-<version>` reinstalls easily.
+  - **GPG / cosign signing** — SHA-256 verification against a file
+    published by the same workflow is enough for V1. A real
+    signature would require a key to manage and publish.
+  - **Publishing to crates.io** — requires cargo on the user side,
+    does not solve the original problem.

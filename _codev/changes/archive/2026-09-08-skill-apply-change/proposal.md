@@ -1,64 +1,65 @@
-# Proposal : livrer la skill `/codev-apply`
+# Proposal: ship the `/codev-apply` skill
 
-## Pourquoi
+## Why
 
-Le cycle du dépôt fonctionne aujourd'hui **jusqu'à la planification**
-(`/codev-explore` + `/codev-propose`) et **au-delà de la validation**
-(`codev sync`, `codev archive` en CLI direct). Le maillon central manque : la
-skill qui guide l'agent, dans le chat de Claude Code, à travers les tâches de
-`tasks.md`. Sans elle, l'utilisateur doit demander l'implémentation par une
-phrase libre à chaque fois — sans garde-fou, sans invariant, sans suivi.
+The repository's cycle currently works **up to planning**
+(`/codev-explore` + `/codev-propose`) and **beyond validation**
+(`codev sync`, `codev archive` as direct CLI). The central link is missing:
+the skill that guides the agent, in the Claude Code chat, through the tasks
+of `tasks.md`. Without it, the user has to request implementation with a
+free-form sentence every time — with no guardrail, no invariant, no tracking.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau workflow `apply`** dans le catalogue `codev-agents::workflows` —
-  troisième entrée à côté de `propose` et `explore`, invocable
-  `/codev-apply` une fois installée par `codev init`/`codev update`.
-- **Nouveau fichier d'assets `assets/workflows/apply.md`** — le corps de la
-  skill, chargé à la compilation via `include_str!`, comme les deux autres.
-- **Comportement attendu** :
-  - lit `tasks.md` du change nommé (déduit s'il n'y en a qu'un seul actif) ;
-  - implémente les tâches non cochées, dans l'ordre du fichier ;
-  - coche `- [ ]` → `- [x]` à mesure ;
-  - respecte la frontière d'un change : ne modifie pas d'autres changes,
-    et refuse d'archiver ou de sync — c'est un pas suivant explicite ;
-  - `allowed-tools` autorise `Bash(codev:*), Read, Write, Edit, Glob, Grep,
-    Bash` (le dernier pour les commandes de build/test des tâches).
+- **New `apply` workflow** in the `codev-agents::workflows` catalog — a
+  third entry next to `propose` and `explore`, invocable as
+  `/codev-apply` once installed by `codev init`/`codev update`.
+- **New asset file `assets/workflows/apply.md`** — the skill body, loaded
+  at compile time via `include_str!`, like the other two.
+- **Expected behavior**:
+  - reads the `tasks.md` of the named change (inferred if only one is
+    active);
+  - implements the unchecked tasks, in file order;
+  - checks `- [ ]` → `- [x]` as it goes;
+  - respects a change's boundary: does not modify other changes,
+    and refuses to archive or sync — that is an explicit next step;
+  - `allowed-tools` permits `Bash(codev:*), Read, Write, Edit, Glob, Grep,
+    Bash` (the last one for the tasks' build/test commands).
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
 - `skills`
 
-Ce change **crée** la capacité, avec pour Purpose de décrire le contrat des
-skills livrées, et n'y met qu'un `ADDED` pour `apply` — les workflows
-`propose` et `explore` existent déjà en tant que fichiers mais n'ont pas
-encore leur exigence documentée. Un futur change pourra les ajouter par un
-`ADDED` supplémentaire, sans que ce change s'en occupe.
+This change **creates** the capability, with a Purpose describing the
+contract of the shipped skills, and puts only an `ADDED` for `apply` in it
+— the `propose` and `explore` workflows already exist as files but do not
+yet have their requirement documented. A future change may add them with
+an additional `ADDED`, without this change dealing with it.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** : nouveau `Workflow { id: "apply", … }` dans le `CATALOG` de
-  `codev-agents::workflows`, plus une entrée dans les tests d'invariant du
-  catalogue (frontmatter YAML valide, description assez longue, `Bash(codev:*)`
-  présent).
-- **Config par défaut** : le commentaire de `codev init` mentionnait déjà
-  `apply` dans son bloc d'exemples ; le catalogue par défaut
-  (`DEFAULT_WORKFLOWS`) reste `[propose, explore]` — ajouter `apply` par
-  défaut n'est pas obligatoire pour que la skill existe, elle apparaît dès
-  qu'un projet la déclare dans `_codev/config.yaml`.
-- **Hors périmètre** :
-  - **`update`, `sync`, `archive`** en tant que skills — ces workflows
-    existent déjà comme commandes CLI (`codev sync`, `codev archive`)
-    directement invocables via `Bash`. Un change ultérieur (nommé
-    `skill-cycle-completion` ou similaire) livrera leurs skills.
-  - **Auto-ajout de `apply` à `DEFAULT_WORKFLOWS`** — décision à prendre
-    séparément, après retour d'expérience sur l'usage réel de la skill.
-  - **Skills paramétrées** (`/codev-apply --dry-run`, etc.) — Claude Code
-    ne supporte pas les arguments de skills nativement ; les options
-    passent par le CLI derrière.
+- **Code**: new `Workflow { id: "apply", … }` in the `CATALOG` of
+  `codev-agents::workflows`, plus an entry in the catalog's invariant tests
+  (valid YAML frontmatter, long enough description, `Bash(codev:*)`
+  present).
+- **Default config**: the `codev init` comment already mentioned `apply`
+  in its examples block; the default catalog (`DEFAULT_WORKFLOWS`) stays
+  `[propose, explore]` — adding `apply` by default is not required for the
+  skill to exist; it appears as soon as a project declares it in
+  `_codev/config.yaml`.
+- **Out of scope**:
+  - **`update`, `sync`, `archive`** as skills — these workflows already
+    exist as CLI commands (`codev sync`, `codev archive`) directly
+    invocable via `Bash`. A later change (named `skill-cycle-completion`
+    or similar) will ship their skills.
+  - **Auto-adding `apply` to `DEFAULT_WORKFLOWS`** — a decision to be made
+    separately, after feedback on real usage of the skill.
+  - **Parameterized skills** (`/codev-apply --dry-run`, etc.) — Claude Code
+    does not natively support skill arguments; options go through the CLI
+    behind it.

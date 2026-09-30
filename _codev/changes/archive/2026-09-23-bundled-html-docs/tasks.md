@@ -1,54 +1,54 @@
-# Tâches
+# Tasks
 
-## 1. Dépendances
+## 1. Dependencies
 
-- [x] 1.1 Ajouter `pulldown-cmark = "0.10"` aux dépendances de
-      `crates/codev-cli/Cargo.toml`, avec la feature par défaut
-      suffisante (tables, footnotes intégrés).
-- [x] 1.2 Ajouter `open = "5"` aux dépendances de
+- [x] 1.1 Add `pulldown-cmark = "0.10"` to the dependencies of
+      `crates/codev-cli/Cargo.toml`, with the default feature being
+      sufficient (tables, footnotes built in).
+- [x] 1.2 Add `open = "5"` to the dependencies of
       `crates/codev-cli/Cargo.toml`.
 
-## 2. Source de la documentation
+## 2. Documentation source
 
-- [x] 2.1 Créer `docs/codev.md` — le markdown source de la doc,
-      versionné.
-- [x] 2.2 Rédiger les 10 sections définies dans le design :
-      Introduction, Installation, Le cycle, Les 7 skills, Les
-      concepts, La CLI, Configuration, Décisions d'architecture,
-      Extensions MCP, FAQ. Longueur cible : 2000-3000 mots.
-- [x] 2.3 Ton et style : aligné sur les proposals/designs qu'on
-      écrit depuis 16 changes. Français, phrases claires, pas
-      d'anglicismes gratuits.
+- [x] 2.1 Create `docs/codev.md` — the documentation's markdown
+      source, versioned.
+- [x] 2.2 Write the 10 sections defined in the design:
+      Introduction, Installation, The cycle, The 7 skills, The
+      concepts, The CLI, Configuration, Architecture decisions,
+      MCP extensions, FAQ. Target length: 2000-3000 words.
+- [x] 2.3 Tone and style: aligned with the proposals/designs we
+      have been writing for 16 changes. French, clear sentences, no
+      gratuitous anglicisms.
 
-## 3. Module `codev-cli::docs`
+## 3. `codev-cli::docs` module
 
-- [x] 3.1 Créer `crates/codev-cli/src/docs.rs` avec :
+- [x] 3.1 Create `crates/codev-cli/src/docs.rs` with:
       - `const MARKDOWN_SOURCE: &str = include_str!("../../../docs/codev.md");`
       - `const CSS: &str = include_str!("../assets/docs.css");`
-      - `pub fn render_html(md: &str, version: &str) -> String` :
-        appelle `pulldown_cmark::Parser::new_ext(md, Options::ENABLE_TABLES | Options::ENABLE_FOOTNOTES)`,
-        pousse dans `html::push_html`, entoure du template HTML5.
-      - `pub fn default_output_path(version: &str) -> PathBuf` :
+      - `pub fn render_html(md: &str, version: &str) -> String`:
+        calls `pulldown_cmark::Parser::new_ext(md, Options::ENABLE_TABLES | Options::ENABLE_FOOTNOTES)`,
+        pushes into `html::push_html`, wraps in the HTML5 template.
+      - `pub fn default_output_path(version: &str) -> PathBuf`:
         `std::env::temp_dir().join(format!("codev-docs-{version}.html"))`.
-      - `pub fn write_to(path: &Path, version: &str) -> io::Result<()>` :
-        rend + `std::fs::write` (crée le parent si son parent
-        existe, refuse sinon).
-      - `pub fn open_default(version: &str) -> io::Result<PathBuf>` :
+      - `pub fn write_to(path: &Path, version: &str) -> io::Result<()>`:
+        renders + `std::fs::write` (creates the parent if its parent
+        exists, refuses otherwise).
+      - `pub fn open_default(version: &str) -> io::Result<PathBuf>`:
         `write_to(default_output_path, version)` + `open::that(path)`.
-- [x] 3.2 Créer `crates/codev-cli/assets/docs.css` — ~120 lignes de
-      CSS techdoc autonome (typographie, code monospace, tableaux
-      lisibles, palette monochrome).
-- [x] 3.3 Ajouter `pub mod docs;` à `crates/codev-cli/src/main.rs`.
+- [x] 3.2 Create `crates/codev-cli/assets/docs.css` — ~120 lines of
+      standalone techdoc CSS (typography, monospace code, readable
+      tables, monochrome palette).
+- [x] 3.3 Add `pub mod docs;` to `crates/codev-cli/src/main.rs`.
 
-## 4. Sous-commande CLI
+## 4. CLI subcommand
 
-- [x] 4.1 Ajouter la variante `Command::Docs { print: bool, write:
-      Option<PathBuf> }` à l'enum `Command` dans `main.rs`. Les
-      deux flags sont mutuellement exclusifs (`conflicts_with`).
-- [x] 4.2 Doc-comment du variant : « Ouvre la documentation codev
-      dans le navigateur, ou l'écrit à un chemin donné, ou imprime
-      le markdown source sur stdout. »
-- [x] 4.3 Ajouter le bras du match dans `run(cli)` :
+- [x] 4.1 Add the variant `Command::Docs { print: bool, write:
+      Option<PathBuf> }` to the `Command` enum in `main.rs`. The
+      two flags are mutually exclusive (`conflicts_with`).
+- [x] 4.2 Doc comment of the variant: "Open the codev documentation
+      in the browser, or write it to a given path, or print the
+      markdown source to stdout."
+- [x] 4.3 Add the match arm in `run(cli)`:
       ```rust
       Command::Docs { print, write } => {
           if print {
@@ -59,15 +59,15 @@
           if let Some(path) = write {
               match docs::write_to(&path, VERSION) {
                   Ok(()) => 0,
-                  Err(e) => { eprintln!("écriture impossible : {e}"); 1 }
+                  Err(e) => { eprintln!("error: cannot write: {e}"); 1 }
               }
           } else {
               match docs::open_default(VERSION) {
-                  Ok(p) => { eprintln!("Ouvert : {}", p.display()); 0 }
+                  Ok(p) => { eprintln!("Opened {}", p.display()); 0 }
                   Err(e) => {
                       eprintln!(
-                          "impossible d'ouvrir le navigateur : {e}\n\
-                           essaie `codev docs --print` ou `codev docs --write <PATH>`"
+                          "error: cannot open the browser: {e}\n\
+                           help: try `codev docs --print` or `codev docs --write <PATH>`"
                       );
                       1
                   }
@@ -78,40 +78,40 @@
 
 ## 5. Tests
 
-- [x] 5.1 Test unitaire `docs::render_html_produit_un_html5_complet` :
-      appelle `render_html("# Titre\n\nParagraphe.", "0.1.0")`,
-      vérifie que la sortie commence par `<!doctype html>`,
-      contient le titre `codev`, la version, le paragraphe, et
-      **aucune** URL `http` (autonomie).
-- [x] 5.2 Test `docs::render_html_gere_tables_et_code` : entrée
-      markdown avec un tableau et un bloc de code, vérifie que la
-      sortie contient `<table>` et `<code>`.
-- [x] 5.3 Test `docs::write_to_ecrit_le_fichier` : dans un
-      `tempdir`, appelle `write_to`, vérifie que le fichier existe
-      et contient bien du HTML.
-- [x] 5.4 Test `docs::markdown_source_est_non_vide` : vérifie que
-      `MARKDOWN_SOURCE.len() > 1000` (traceur d'un embed cassé).
+- [x] 5.1 Unit test `docs::render_html_produit_un_html5_complet`:
+      calls `render_html("# Title\n\nParagraph.", "0.1.0")`,
+      checks that the output starts with `<!doctype html>`,
+      contains the `codev` title, the version, the paragraph, and
+      **no** `http` URL (self-containment).
+- [x] 5.2 Test `docs::render_html_gere_tables_et_code`: markdown
+      input with a table and a code block, checks that the output
+      contains `<table>` and `<code>`.
+- [x] 5.3 Test `docs::write_to_ecrit_le_fichier`: in a `tempdir`,
+      calls `write_to`, checks that the file exists and does
+      contain HTML.
+- [x] 5.4 Test `docs::markdown_source_est_non_vide`: checks that
+      `MARKDOWN_SOURCE.len() > 1000` (tracer for a broken embed).
 
-## 6. Doc CLI
+## 6. CLI docs
 
-- [x] 6.1 Le `--help` de `codev docs` mentionne les trois formes,
-      avec un exemple par forme.
-- [x] 6.2 Le README du dépôt mentionne `codev docs` avec une
-      phrase et un lien vers `docs/codev.md`.
+- [x] 6.1 The `--help` of `codev docs` mentions the three forms,
+      with one example per form.
+- [x] 6.2 The repository README mentions `codev docs` with one
+      sentence and a link to `docs/codev.md`.
 
-## 7. Dogfooding et intégration workspace
+## 7. Dogfooding and workspace integration
 
-- [x] 7.1 Après `cargo install --path crates/codev-cli`, lancer
-      `codev docs --print | head -30` — vérifier de visu que la
-      doc est cohérente.
-- [x] 7.2 Lancer `codev docs --write /tmp/manuel.html`, ouvrir le
-      fichier dans un navigateur (macOS `open
-      /tmp/manuel.html`), vérifier le rendu (styles, sommaire si
-      JS, contenu).
-- [x] 7.3 Lancer `codev docs` (sans argument) et vérifier que le
-      navigateur s'ouvre effectivement sur le fichier temporaire.
-- [x] 7.4 `cargo test --workspace` reste vert, gagne au moins 4
-      tests dédiés.
-- [x] 7.5 `cargo clippy --workspace --all-targets` reste sans
-      avertissement.
-- [x] 7.6 `codev validate --strict` sur ce dépôt reste vert.
+- [x] 7.1 After `cargo install --path crates/codev-cli`, run
+      `codev docs --print | head -30` — check visually that the
+      documentation is coherent.
+- [x] 7.2 Run `codev docs --write /tmp/manuel.html`, open the
+      file in a browser (macOS `open
+      /tmp/manuel.html`), check the rendering (styles, table of
+      contents if JS, content).
+- [x] 7.3 Run `codev docs` (without arguments) and check that the
+      browser actually opens on the temporary file.
+- [x] 7.4 `cargo test --workspace` stays green, gains at least 4
+      dedicated tests.
+- [x] 7.5 `cargo clippy --workspace --all-targets` stays free of
+      warnings.
+- [x] 7.6 `codev validate --strict` on this repository stays green.

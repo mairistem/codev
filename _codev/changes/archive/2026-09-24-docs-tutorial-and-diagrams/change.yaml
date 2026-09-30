@@ -1,4 +1,4 @@
 schema: spec-driven
 created: 2026-09-24
-goal: Ajouter un tutoriel end-to-end de 5 minutes dans docs/codev.md + trois diagrammes Mermaid (cycle, crates, delta) pour rendre la documentation autoportante et visuelle.
+goal: Add a 5-minute end-to-end tutorial to docs/codev.md + three Mermaid diagrams (cycle, crates, delta) to make the documentation self-contained and visual.
 skip_specs: true

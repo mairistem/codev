@@ -1,127 +1,127 @@
-# Design : tutoriel + diagrammes Mermaid
+# Design: tutorial + Mermaid diagrams
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Change **contenu de documentation** — un fichier
-modifié (`docs/codev.md`), zéro Rust, `skip_specs: true`.
+See `proposal.md`. A **documentation content** change — one file
+modified (`docs/codev.md`), zero Rust, `skip_specs: true`.
 
-## Décisions
+## Decisions
 
-### Décision : le tutoriel simule un cas Rust concret, pas un exemple abstrait
+### Decision: the tutorial simulates a concrete Rust case, not an abstract example
 
-Le tutoriel propose « ajouter une option `--json` à `codev list` » comme
-change fictif. Deux raisons :
+The tutorial uses "add a `--json` option to `codev list`" as a
+fictional change. Two reasons:
 
-- **Il parle à un dev Rust** — c'est exactement le type de contribution
-  qu'un lecteur peut avoir en tête.
-- **Il est vérifiable** — le lecteur peut littéralement suivre la
-  démarche sur codev lui-même, c'est du dogfooding pédagogique. Il
-  aboutit à un delta réaliste (une exigence `MODIFIED` sur la
-  capacité `cli-status` ou `cli-list`, plus un scénario `--json`).
+- **It speaks to a Rust dev** — it is exactly the kind of contribution
+  a reader may have in mind.
+- **It is verifiable** — the reader can literally follow the
+  process on codev itself; it is pedagogical dogfooding. It
+  leads to a realistic delta (a `MODIFIED` requirement on the
+  `cli-status` or `cli-list` capability, plus a `--json` scenario).
 
-**Alternative écartée** : un exemple hors-Rust (« ajouter une route
-`/health` à une API »). Rejeté — casse la cohérence, oblige à
-inventer un projet fictif complet. Le lecteur qui code en Rust
-comprend, celui qui code ailleurs traduit sans effort.
+**Rejected alternative**: a non-Rust example ("add a `/health`
+route to an API"). Rejected — breaks consistency, forces us to
+invent a complete fictional project. A reader who codes in Rust
+understands; one who codes in something else translates effortlessly.
 
-### Décision : le tutoriel intègre les deux voies (Claude Code / CLI pur) en parallèle
+### Decision: the tutorial covers both paths (Claude Code / pure CLI) side by side
 
-Chaque étape du tutoriel liste **les deux** commandes possibles :
+Each tutorial step lists **both** possible commands:
 
 ```markdown
-Dans Claude Code :
+In Claude Code:
 
     /codev-propose add-list-json
 
-Ou en CLI pur :
+Or with the pure CLI:
 
     codev new change add-list-json --goal "…"
     $EDITOR _codev/changes/add-list-json/proposal.md
 ```
 
-Ça évite de dupliquer le tutoriel en deux versions, et ça montre que
-codev fonctionne **sans** Claude Code (l'agent n'est pas obligatoire).
+This avoids duplicating the tutorial in two versions, and it shows that
+codev works **without** Claude Code (the agent is not mandatory).
 
-**Alternative écartée** : deux tutoriels séparés (un « Claude Code »
-et un « CLI pur »). Coûteux à maintenir, double du travail à jour
-pour tout changement.
+**Rejected alternative**: two separate tutorials (a "Claude Code" one
+and a "pure CLI" one). Costly to maintain, twice the work to keep up to date
+for every change.
 
-### Décision : Mermaid, malgré la dégradation en HTML embarqué
+### Decision: Mermaid, despite the degradation in the embedded HTML
 
-`pulldown-cmark` rend les blocs ` ```mermaid` comme du texte préformaté,
-pas comme un diagramme. Dans le HTML de `codev docs`, l'utilisateur
-voit donc le **source Mermaid** comme un bloc de code — lisible mais
-pas graphique.
+`pulldown-cmark` renders ` ```mermaid` blocks as preformatted text,
+not as a diagram. In the `codev docs` HTML, the user therefore
+sees the **Mermaid source** as a code block — readable but
+not graphical.
 
-C'est acceptable parce que :
+This is acceptable because:
 
-- Sur **GitHub** (la surface principale de lecture), Mermaid rend
-  nativement depuis 2022 — public visé principal.
-- Le **source Mermaid est lisible** en texte brut pour qui connaît la
-  syntaxe (`stateDiagram-v2`, `graph LR`, `sequenceDiagram`).
-- Le manuel HTML embarqué reste **utilisable hors-ligne**, le
-  diagramme y sert de description textuelle plutôt que graphique.
+- On **GitHub** (the main reading surface), Mermaid has rendered
+  natively since 2022 — the main target audience.
+- The **Mermaid source is readable** as plain text for anyone who knows the
+  syntax (`stateDiagram-v2`, `graph LR`, `sequenceDiagram`).
+- The embedded HTML manual remains **usable offline**; the
+  diagram serves there as a textual rather than graphical description.
 
-**Alternative écartée A** : ajouter un rendu JS Mermaid (via CDN) au
-HTML embarqué. Rejeté — casse l'exigence « HTML autonome, aucune
-requête externe, hors-ligne » (`docs` spec, `Requirement: Le HTML est
-autonome`, `Scenario: Le HTML est autonome`).
+**Rejected alternative A**: adding a Mermaid JS renderer (via CDN) to the
+embedded HTML. Rejected — breaks the "standalone HTML, no external
+request, offline" requirement (`docs` spec, `Requirement: The HTML is
+standalone`, `Scenario: The HTML is standalone`).
 
-**Alternative écartée B** : générer des SVG statiques via
-`mermaid-cli` et les embarquer en `data:` URI dans le HTML. Rejeté —
-nécessite un pipeline de build, casse le principe « la doc est
-un `.md` unique édité à la main ».
+**Rejected alternative B**: generating static SVGs via
+`mermaid-cli` and embedding them as `data:` URIs in the HTML. Rejected —
+requires a build pipeline, breaks the principle "the docs are
+a single hand-edited `.md`".
 
-### Décision : trois diagrammes, pas cinq
+### Decision: three diagrams, not five
 
-- Machine à états d'un change — dans §3 (Le cycle).
-- Graphe de crates — dans §5 (Concepts), sous-section « Architecture ».
-- Cycle de vie d'un delta — dans §5 (Concepts), sous-section
-  « Deltas ».
+- State machine of a change — in §3 (The cycle).
+- Crate graph — in §5 (Concepts), "Architecture" subsection.
+- Lifecycle of a delta — in §5 (Concepts), "Deltas"
+  subsection.
 
-Écartés à ce stade — ne bougent pas suffisamment l'aiguille :
+Set aside at this stage — they do not move the needle enough:
 
-- Diagramme des dépendances entre artefacts d'un change
-  (`proposal → design → tasks`) — trop simple, déjà clair dans le
-  texte.
-- Diagramme du chemin de résolution des sources héritées (K5) —
-  intéressant mais niche.
-- Diagramme du flux `codev validate --strict` — intéressant pour un
-  contributeur, mais hors du sujet « ce que fait codev pour son
-  utilisateur ».
+- Diagram of the dependencies between a change's artifacts
+  (`proposal → design → tasks`) — too simple, already clear in the
+  text.
+- Diagram of the inherited sources resolution path (K5) —
+  interesting but niche.
+- Diagram of the `codev validate --strict` flow — interesting for a
+  contributor, but off the topic "what codev does for its
+  user".
 
-### Décision : le tutoriel s'insère en §3.5, pas en tête de document
+### Decision: the tutorial goes in §3.5, not at the top of the document
 
-Le lecteur qui veut « comprendre en 30 secondes » lit la section 1
-(Pourquoi codev) et 2 (Installation). Celui qui veut « apprendre en 5
-minutes » entre par §3 (Le cycle) puis §3.5 (le tutoriel).
+A reader who wants to "understand in 30 seconds" reads section 1
+(Why codev) and 2 (Installation). One who wants to "learn in 5
+minutes" enters through §3 (The cycle) then §3.5 (the tutorial).
 
-Placer le tutoriel en tête (avant §1) le rendrait plus visible mais
-mélangerait deux publics : « je découvre » et « je vais commencer ».
-La progression actuelle du document (pourquoi → installer → comprendre
-→ pratiquer → référence) est la bonne.
+Placing the tutorial at the top (before §1) would make it more visible but
+would mix two audiences: "I'm discovering" and "I'm about to start".
+The document's current progression (why → install → understand
+→ practice → reference) is the right one.
 
-**Alternative écartée** : sortir le tutoriel dans un fichier
-`docs/tutorial.md` séparé. Rejeté — casse le principe « une seule
-source markdown, embarquée » (§4 de la spec `docs`).
+**Rejected alternative**: moving the tutorial into a separate
+`docs/tutorial.md` file. Rejected — breaks the principle "a single
+embedded markdown source" (§4 of the `docs` spec).
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Le tutoriel peut vieillir** — un changement de la sortie de
-  `codev status` invalide la « sortie attendue » du bloc. →
-  **Atténuation** : garder les sorties courtes (une ou deux lignes),
-  et ajouter en fin de section une phrase « la sortie exacte peut
-  différer d'une version à l'autre — l'important est … ».
-- **Mermaid rend mal dans le HTML embarqué** — vécu comme une
-  régression par qui lit `codev docs` plutôt que GitHub. →
-  **Atténuation** : chaque diagramme est précédé d'une **légende en
-  prose** qui contient l'information essentielle. Le diagramme
-  enrichit, il ne remplace pas.
-- **Le tutoriel prend de la place** — probablement 150-200 lignes
-  ajoutées à un fichier déjà à 693 lignes. → **Compromis assumé** :
-  la longueur totale de la doc reste raisonnable (~900 lignes), et
-  le tutoriel est un point d'entrée, pas une lecture séquentielle.
+- **The tutorial can age** — a change in the output of
+  `codev status` invalidates the block's "expected output". →
+  **Mitigation**: keep outputs short (one or two lines),
+  and add at the end of the section a sentence "the exact output may
+  differ from one version to another — what matters is …".
+- **Mermaid renders poorly in the embedded HTML** — perceived as a
+  regression by those who read `codev docs` rather than GitHub. →
+  **Mitigation**: each diagram is preceded by a **prose
+  caption** containing the essential information. The diagram
+  enriches, it does not replace.
+- **The tutorial takes up space** — probably 150-200 lines
+  added to a file already at 693 lines. → **Accepted trade-off**:
+  the total length of the docs remains reasonable (~900 lines), and
+  the tutorial is an entry point, not a sequential read.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Évolution additive du contenu de `docs/codev.md`.
+None. Additive evolution of the content of `docs/codev.md`.

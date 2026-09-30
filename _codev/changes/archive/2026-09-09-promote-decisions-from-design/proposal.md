@@ -1,97 +1,99 @@
-# Proposal : promouvoir une décision de `design.md` en ADR
+# Proposal: promote a decision from `design.md` to an ADR
 
-## Pourquoi
+## Why
 
-Chaque `design.md` de change contient une section `## Décisions` avec des
-blocs `### Décision : <titre>` qui décrivent les arbitrages techniques
-retenus pour l'implémentation. Aujourd'hui, ces décisions **restent
-locales** au change : elles vivent dans le design pendant que le change
-est actif, et migrent vers `_codev/changes/archive/<date>-<nom>/` au
-moment de l'archive. **L'index de décisions ne les voit jamais** —
-`codev decision list` ne les liste pas, `codev instructions design` ne
-les injecte pas aux changes suivants, et l'ADR équivalent n'existe pas
-dans `_codev/decisions/`.
+Every change's `design.md` contains a `## Decisions` section with
+`### Decision: <title>` blocks describing the technical trade-offs
+chosen for the implementation. Today, these decisions **stay local** to
+the change: they live in the design while the change is active, and
+migrate to `_codev/changes/archive/<date>-<name>/` at archive time.
+**The decision index never sees them** — `codev decision list` does not
+list them, `codev instructions design` does not inject them into
+subsequent changes, and the equivalent ADR does not exist in
+`_codev/decisions/`.
 
-Résultat aujourd'hui : soit l'auteur du change crée à la main un ADR
-avec `codev decision new`, en dupliquant à la main la prose du design
-(risque de divergence) ; soit la décision reste enterrée dans le
-design archivé et n'est plus consultable comme les autres.
+Result today: either the change author creates an ADR by hand with
+`codev decision new`, duplicating the design's prose by hand (risk of
+divergence); or the decision stays buried in the archived design and
+can no longer be consulted like the others.
 
-K7 ferme ce trou avec un geste explicite : `codev decision promote
-<change> <titre>` extrait un bloc `### Décision : <titre>` du design,
-en fait un vrai ADR dans `_codev/decisions/`, scellé par K3, et
-remplace le bloc d'origine par une référence traçable.
+K7 closes that gap with an explicit gesture: `codev decision promote
+<change> <title>` extracts a `### Decision: <title>` block from the
+design, turns it into a real ADR in `_codev/decisions/`, sealed by K3,
+and replaces the original block with a traceable reference.
 
-Complète le trio K3 (immutabilité) / K6 (dérives héritées) / K7
-(promotion) — après ça, le cycle de vie d'une décision est complet dans
+Completes the trio K3 (immutability) / K6 (inherited deviations) / K7
+(promotion) — after this, the lifecycle of a decision is complete in
 codev.
 
-## Ce qui change
+## What Changes
 
-- **Nouvelle commande `codev decision promote <change> <titre>`** —
-  extrait un bloc `### Décision : <titre>` du `design.md` du change,
-  crée un ADR local scellé (`plan_new_decision` de K3), et met à jour
-  le design.
-- **Le corps du nouvel ADR** reproduit le contenu du bloc verbatim, sous
-  une seule section `## Décision`. Les sections `## Contexte`,
-  `## Conséquences`, `## Alternatives écartées` de l'ADR-standard sont
-  générées avec un `<!-- placeholder -->` invitant l'auteur à ventiler.
-- **Le bloc du design est remplacé** par une note textuelle courte :
-  `> Promue en ADR **NNNN** — voir `_codev/decisions/NNNN-<slug>.md`.`.
-  Volontairement du texte, pas un lien markdown : préserve la traçabilité
-  même quand le change part en archive (où un `../../decisions/` casse).
-- **Le titre du bloc `### Décision : <titre>` reste** — permet un
-  `promote` ultérieur si l'auteur écrit plusieurs révisions ; permet
-  aussi de retrouver rapidement d'où venait la décision.
-- **Refus explicites** :
-  - Change absent ou archivé (introuvable dans `codev list`) → code
-    stable `unknown_change` ou `cannot_promote_from_archived`.
+- **New command `codev decision promote <change> <title>`** —
+  extracts a `### Decision: <title>` block from the change's
+  `design.md`, creates a sealed local ADR (`plan_new_decision` from
+  K3), and updates the design.
+- **The body of the new ADR** reproduces the block's content verbatim,
+  under a single `## Decision` section. The `## Context`,
+  `## Consequences`, `## Rejected Alternatives` sections of the
+  standard ADR are generated with a `<!-- placeholder -->` inviting the
+  author to split the content.
+- **The design block is replaced** by a short textual note:
+  `> Promoted to ADR **NNNN** — see `_codev/decisions/NNNN-<slug>.md`.`.
+  Deliberately text, not a markdown link: preserves traceability even
+  when the change goes to the archive (where a `../../decisions/`
+  breaks).
+- **The block's `### Decision: <title>` heading stays** — allows a
+  later `promote` if the author writes several revisions; also allows
+  quickly finding where the decision came from.
+- **Explicit refusals**:
+  - Change absent or archived (not found in `codev list`) → stable
+    code `unknown_change` or `cannot_promote_from_archived`.
   - Design absent → code `design_missing`.
-  - Titre introuvable dans `## Décisions` → `decision_heading_not_found`.
-  - Titre ambigu (deux blocs même titre) → `ambiguous_decision_heading`.
-- **Contrat JSON** — nouveau `DecisionPromotedV1` (proche de
-  `DecisionCreatedV1`), avec le champ additif `sourceChange:
-  Option<String>` pour tracer d'où vient la promotion.
+  - Title not found in `## Decisions` → `decision_heading_not_found`.
+  - Ambiguous title (two blocks with the same title) →
+    `ambiguous_decision_heading`.
+- **JSON contract** — new `DecisionPromotedV1` (close to
+  `DecisionCreatedV1`), with the additive field `sourceChange:
+  Option<String>` to trace where the promotion comes from.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `decisions` — deux nouvelles exigences ADDED : la commande
-  `decision promote` et le traitement du design après promotion.
+- `decisions` — two new ADDED requirements: the `decision promote`
+  command and the handling of the design after promotion.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** :
-  - Nouveau parseur léger de blocs `### Décision : ...` dans un
-    `design.md` — vit dans `codev-engine::design` (nouveau module —
-    reste côté engine puisque parser du markdown à ce niveau n'a pas de
-    sens sans I/O).
-  - Nouveau `plan_promote(change_id, heading, …) -> DeviatePlan-like`
-    dans `codev-engine::decisions_actions` : réutilise
-    `plan_new_decision` pour l'ADR + un `write` sur `design.md` pour la
-    substitution du bloc.
-  - Nouvelle sous-commande `codev decision promote` dans le CLI.
-- **Contrat JSON** — `DecisionPromotedV1` ajouté, aucun champ retiré ni
-  renommé.
-- **Fichiers écrits** : nouvel ADR sous `_codev/decisions/`, entrée dans
-  `seal.yaml`, design.md du change en question réécrit.
-- **Migration** — aucune. La commande est opt-in ; les designs
-  existants ne changent pas.
-- **Hors périmètre** :
-  - **Promouvoir plusieurs décisions en une seule commande** — un
-    appel par décision, comme `decision new` ou `deviate`. Reportable.
-  - **Splitter automatiquement en Contexte/Décision/Conséquences** — la
-    prose libre d'un design n'a pas de structure exploitable ; on livre
-    le corps verbatim et l'auteur ventile à la main.
-  - **Ré-importer une décision promue en cas d'annulation** — un
-    `codev decision supersede` ou une édition manuelle suffit ; pas de
-    « unpromote » dédié.
+- **Code**:
+  - New lightweight parser for `### Decision: ...` blocks in a
+    `design.md` — lives in `codev-engine::design` (new module — stays
+    on the engine side since parsing markdown at this level makes no
+    sense without I/O).
+  - New `plan_promote(change_id, heading, …) -> DeviatePlan-like` in
+    `codev-engine::decisions_actions`: reuses `plan_new_decision` for
+    the ADR + a `write` on `design.md` for the block substitution.
+  - New subcommand `codev decision promote` in the CLI.
+- **JSON contract** — `DecisionPromotedV1` added, no field removed or
+  renamed.
+- **Files written**: new ADR under `_codev/decisions/`, entry in
+  `seal.yaml`, design.md of the change in question rewritten.
+- **Migration** — none. The command is opt-in; existing designs do not
+  change.
+- **Out of scope**:
+  - **Promoting several decisions in a single command** — one call per
+    decision, like `decision new` or `deviate`. Can be deferred.
+  - **Automatically splitting into Context/Decision/Consequences** —
+    the free prose of a design has no exploitable structure; we deliver
+    the body verbatim and the author splits it by hand.
+  - **Re-importing a promoted decision in case of cancellation** — a
+    `codev decision supersede` or a manual edit is enough; no dedicated
+    "unpromote".

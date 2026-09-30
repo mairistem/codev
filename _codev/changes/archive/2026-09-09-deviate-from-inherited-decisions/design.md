@@ -1,131 +1,133 @@
-# Design : dérives locales d'une décision héritée
+# Design: local deviations from an inherited decision
 
-## Contexte
+## Context
 
-Voir `proposal.md`. K3 vient de fixer l'immutabilité des ADR locaux ; ce
-change (K6) complète le cadre côté sources héritées : le consommateur ne
-peut pas modifier ce qu'il hérite, mais doit pouvoir **enregistrer sa
-divergence** de manière lisible pour l'outil.
+See `proposal.md`. K3 has just established the immutability of local
+ADRs; this change (K6) completes the framework on the inherited sources
+side: the consumer cannot modify what it inherits, but must be able to
+**record its divergence** in a way the tool can read.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre le nouveau champ, la commande CLI, l'effet sur l'index,
-l'injection dans `design`, et les deux nouveaux findings de validate. Il
-ne cadre ni la promotion depuis `design.md` (K7), ni les dérives
-transitives (dériver d'une dérive), ni un mode « annuler ma dérive »
-(retirer l'ADR local suffit — pas de geste dédié).
+This design frames the new field, the CLI command, the effect on the
+index, the injection into `design`, and the two new validate findings.
+It does not frame promotion from `design.md` (K7), transitive
+deviations (deviating from a deviation), or an "undo my deviation" mode
+(removing the local ADR is enough — no dedicated gesture).
 
-## Décisions
+## Decisions
 
-### Décision : nouveau champ `deviates_from`, distinct de `supersedes`
+### Decision: new `deviates_from` field, distinct from `supersedes`
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Réutiliser `supersedes`** avec des identifiants qualifiés | Un seul mécanisme à connaître | Sémantique déjà chargée — « supersede » veut dire « remplace ». Chez le projet source, la décision n'a rien été remplacée du tout : c'est faux de le dire |
-| **B. Nouveau champ `deviates_from`** | Sémantique propre à ce cas — « on la comprend, on choisit autrement » | Un champ frontmatter de plus |
+| **A. Reuse `supersedes`** with qualified identifiers | A single mechanism to know | Semantics already loaded — "supersede" means "replaces". In the source project, the decision has not been replaced at all: saying so is false |
+| **B. New `deviates_from` field** | Semantics specific to this case — "we understand it, we choose otherwise" | One more frontmatter field |
 
-**Choisi : B.** Un ADR est un document historique ; y écrire « supersedes
-path:~/partage/0100 » ferait croire au lecteur que la source elle-même a
-retiré cette décision. La dérive est un geste **local** ; le champ doit
-en refléter la portée. Alignement avec la décision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md) : les
-sources héritées sont **lecture seule**, même la sémantique de leur
-statut ne se pilote pas depuis le consommateur.
+**Chosen: B.** An ADR is a historical document; writing "supersedes
+path:~/shared/0100" in it would make the reader believe that the
+source itself withdrew that decision. Deviation is a **local** gesture;
+the field must reflect its scope. Aligned with decision
+[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md):
+inherited sources are **read-only**, even the semantics of their status
+is not driven from the consumer.
 
-### Décision : la dérive ne s'applique qu'à des cibles héritées
+### Decision: deviation only applies to inherited targets
 
-`codev decision deviate projet/0003 …` est refusé (code
-`cannot_deviate_from_local`), avec un renvoi vers `codev decision
-supersede`. Deux gestes distincts, chacun avec sa sémantique :
+`codev decision deviate project/0003 …` is refused (code
+`cannot_deviate_from_local`), with a pointer to `codev decision
+supersede`. Two distinct gestures, each with its own semantics:
 
-- `supersede` — « on remplace notre propre décision par une nouvelle » ;
-  le fichier de l'ancienne bascule à `status: superseded`.
-- `deviate` — « on comprend la décision héritée, on l'écarte
-  localement » ; **rien** n'est écrit du côté de la source, l'ADR local
-  porte la trace.
+- `supersede` — "we replace our own decision with a new one"; the file
+  of the old one switches to `status: superseded`.
+- `deviate` — "we understand the inherited decision, we set it aside
+  locally"; **nothing** is written on the source side, the local ADR
+  carries the trace.
 
-Confondre les deux ferait perdre la nuance qui les distingue.
+Conflating the two would lose the nuance that distinguishes them.
 
-### Décision : occultation dans les instructions `design`, mais visibilité dans `decision list`
+### Decision: hidden in `design` instructions, but visible in `decision list`
 
-L'index calcule un attribut `deviated_by: <qualified-local>` sur chaque
-entrée héritée référencée par un ADR local `accepted`. Deux effets :
+The index computes a `deviated_by: <qualified-local>` attribute on each
+inherited entry referenced by a local `accepted` ADR. Two effects:
 
-- **Instructions de `design`** — l'entrée déviée n'apparaît **plus** dans
-  le tableau `decisions[]` ni dans la section humaine « Décisions en
-  vigueur ». L'agent qui rédige un `design.md` voit la dérive, pas la
-  décision remplacée — sinon il proposerait de la respecter, faussement.
-- **`codev decision list`** — l'entrée déviée reste listée, avec son
-  `deviatedBy` visible. La transparence prime : l'utilisateur doit
-  pouvoir voir tout ce qui existe dans l'index, y compris les héritées
-  écartées.
+- **`design` instructions** — the deviated entry **no longer** appears
+  in the `decisions[]` array nor in the human "Decisions in effect"
+  section. The agent drafting a `design.md` sees the deviation, not the
+  replaced decision — otherwise it would propose to respect it,
+  wrongly.
+- **`codev decision list`** — the deviated entry stays listed, with its
+  `deviatedBy` visible. Transparency prevails: the user must be able to
+  see everything that exists in the index, including inherited
+  decisions set aside.
 
-**Alternative écartée** : masquer la déviée partout. Rend le suivi
-impossible — l'utilisateur ne saurait plus qu'une décision existe côté
-source tant que quelqu'un ne lui dit pas.
+**Rejected alternative**: hide the deviated entry everywhere. Makes
+tracking impossible — the user would no longer know a decision exists
+on the source side unless someone told them.
 
-### Décision : une cible, une dérive — enforcée par validate
+### Decision: one target, one deviation — enforced by validate
 
-Deux ADR locaux qui dévient de la même cible → conflit non résoluble :
-lequel des deux prime ? On refuse de trancher silencieusement et on
-émet `decision_conflicting_deviations` en **erreur**. L'utilisateur
-choisit — soit il retire un des deux ADR, soit il en supersede un par
-l'autre.
+Two local ADRs deviating from the same target → an unresolvable
+conflict: which of the two prevails? We refuse to decide silently and
+emit `decision_conflicting_deviations` as an **error**. The user
+chooses — either they remove one of the two ADRs, or they supersede one
+with the other.
 
-**Alternative écartée** : garder la plus récente. Un `date:` de
-frontmatter est un champ libre, un utilisateur pourrait le mentir. On
-refuse de résoudre par heuristique.
+**Rejected alternative**: keep the most recent one. A frontmatter
+`date:` is a free field, a user could lie in it. We refuse to resolve
+by heuristic.
 
-### Décision : une cible qui disparaît → warning, pas erreur
+### Decision: a target that disappears → warning, not error
 
-Une source déplacée (`git:` retirée du config, SHA changé qui masque le
-fichier, `path:` renommé) casse la cible d'un `deviates_from`. Deux
-scénarios raisonnables :
+A moved source (`git:` removed from the config, a changed SHA hiding
+the file, a renamed `path:`) breaks the target of a `deviates_from`.
+Two reasonable scenarios:
 
-1. Le projet a évolué et la source aussi ; la dérive n'a plus de sens →
-   le retirer.
-2. La source est temporairement inaccessible ; la dérive est toujours
-   pertinente → attendre.
+1. The project has evolved and so has the source; the deviation no
+   longer makes sense → remove it.
+2. The source is temporarily inaccessible; the deviation is still
+   relevant → wait.
 
-`decision_dangling_deviation` en **warning** couvre les deux sans
-bloquer les flows (`sync`, `archive`). L'utilisateur voit et décide.
+`decision_dangling_deviation` as a **warning** covers both without
+blocking the flows (`sync`, `archive`). The user sees and decides.
 
-**Alignement** avec la décision de K3 : `decision_unsealed` est aussi
-warning (migration ne bloque pas) ; `decision_seal_mismatch` est erreur
-(l'index n'est plus fiable). Ici, une dérive orpheline ne compromet pas
-l'index — la cible est juste absente.
+**Aligned** with the K3 decision: `decision_unsealed` is also a warning
+(migration does not block); `decision_seal_mismatch` is an error (the
+index is no longer reliable). Here, an orphan deviation does not
+compromise the index — the target is simply absent.
 
-### Décision : l'ADR local de dérive est un ADR normal, scellé par K3
+### Decision: the local deviation ADR is a normal ADR, sealed by K3
 
-Rien de spécial côté seal : `plan_deviate` produit un plan qui écrit
-l'ADR **et** l'entrée de sceau, exactement comme `plan_new`. La règle
-« accepted → scellé » reste vraie.
+Nothing special on the seal side: `plan_deviate` produces a plan that
+writes the ADR **and** the seal entry, exactly like `plan_new`. The
+rule "accepted → sealed" still holds.
 
-**Corollaire** : `codev decision deviate <cible> <titre>` refuse si la
-cible est ambiguë (deux sources exposent le même `<qualified-id>`) ; le
-code stable est `ambiguous_decision_id` (déjà existant).
+**Corollary**: `codev decision deviate <target> <title>` refuses if the
+target is ambiguous (two sources expose the same `<qualified-id>`); the
+stable code is `ambiguous_decision_id` (an existing code).
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Une source qui, à son tour, dévie de la même cible** que le projet
-  consommateur — l'index côté source ne connaît pas la notion de
-  dérive du consommateur, donc pas de conflit détecté chez la source.
-  → **Compromis assumé** : ce lot ne fait pas de résolution en cascade
-  (hors périmètre du proposal). L'utilisateur verra les deux dérives
-  côte à côte dans `codev decision list`, il tranchera.
-- **Un utilisateur pourrait dévier « pour tester »** puis oublier de
-  retirer l'ADR local, laissant une entrée `deviatesFrom` qui n'a plus
-  de sens. → **Atténuation** : le workflow de propose/apply/archive
-  laisse une trace propre — un ADR de dérive est un ADR complet, avec
-  contexte et décision, pas un tag jetable.
-- **`deviatedBy` calculé, pas persisté** — l'index le recalcule à
-  chaque appel. Coût négligeable (une passe de plus sur les entrées
-  déjà chargées), et évite le problème du « comment garder à jour un
-  attribut dérivé quand le fichier change ».
+- **A source that, in turn, deviates from the same target** as the
+  consumer project — the index on the source side does not know the
+  consumer's notion of deviation, so no conflict is detected at the
+  source.
+  → **Accepted trade-off**: this batch does no cascading resolution
+  (out of the proposal's scope). The user will see both deviations side
+  by side in `codev decision list`, and will decide.
+- **A user might deviate "to test"** and then forget to remove the
+  local ADR, leaving a `deviatesFrom` entry that no longer makes sense.
+  → **Mitigation**: the propose/apply/archive workflow leaves a clean
+  trace — a deviation ADR is a complete ADR, with context and decision,
+  not a throwaway tag.
+- **`deviatedBy` computed, not persisted** — the index recomputes it on
+  every call. Negligible cost (one more pass over entries already
+  loaded), and it avoids the problem of "how to keep a derived
+  attribute up to date when the file changes".
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Le champ `deviates_from` est optionnel ; les ADR existants n'en
-ont pas ; l'index calcule `deviatedBy` à vide pour toutes les entrées.
+None. The `deviates_from` field is optional; existing ADRs do not have
+it; the index computes an empty `deviatedBy` for all entries.

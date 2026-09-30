@@ -1,38 +1,38 @@
-# Design : affiner la sortie de `/codev-onboard`
+# Design: refine the output of `/codev-onboard`
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Change trivial de rédaction du body markdown de la
-skill ; aucune structure de code n'est touchée.
+See `proposal.md`. A trivial wording change to the skill's markdown
+body; no code structure is touched.
 
-## Décisions
+## Decisions
 
-### Décision : la ligne « changes archivés » est **conditionnelle**
+### Decision: the "archived changes" line is **conditional**
 
-Sur un projet fraîchement initialisé, `_codev/changes/archive/` peut
-être vide (ou contenir seulement `.gitkeep`). Afficher « 0 change
-archivé » serait du bruit — on n'affiche la ligne **que si le compte
-est strictement positif**. Cohérent avec le principe de sortie
-compacte de la skill.
+On a freshly initialized project, `_codev/changes/archive/` may be
+empty (or contain only `.gitkeep`). Displaying "0 archived changes"
+would be noise — the line is displayed **only if the count is
+strictly positive**. Consistent with the skill's principle of compact
+output.
 
-### Décision : la lecture est faite via un `ls` filtré, pas un CLI codev
+### Decision: the reading is done via a filtered `ls`, not a codev CLI
 
-`codev list --archived` n'existe pas (E6 dans la roadmap, non livré).
-La skill compte donc les dossiers directement via une commande shell
-équivalente à `ls _codev/changes/archive/ | grep -v '^\.'`. C'est
-robuste : filtre les fichiers cachés (`.gitkeep`), les autres dossiers
-de la forme `<date>-<nom>/`. Reportable à la livraison de E6 —
-substitution alors triviale.
+`codev list --archived` does not exist (E6 in the roadmap, not
+delivered). The skill therefore counts the folders directly via a
+shell command equivalent to `ls _codev/changes/archive/ | grep -v '^\.'`.
+It is robust: it filters out hidden files (`.gitkeep`), and the other
+folders have the form `<date>-<name>/`. Deferrable until E6 ships —
+the substitution will then be trivial.
 
-### Décision : la recommandation cite `README.md` inconditionnellement
+### Decision: the recommendation cites `README.md` unconditionally
 
-Le coût d'une suggestion « lis `README.md` » sur un projet sans README
-est négligeable — l'utilisateur essaie, ne trouve pas, passe à autre
-chose. Détecter la présence du fichier avant de suggérer ajouterait un
-`Glob` supplémentaire pour une valeur nulle. **Alternative écartée** :
-détection conditionnelle. Rejeté au titre de la simplicité.
+The cost of a "read `README.md`" suggestion on a project without a
+README is negligible — the user tries, finds nothing, moves on.
+Detecting the file's presence before suggesting it would add an extra
+`Glob` for zero value. **Rejected alternative**: conditional
+detection. Rejected for simplicity.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Le nouveau comportement s'applique dès le prochain `codev
-update` + redémarrage de la session Claude Code.
+None. The new behavior applies from the next `codev update` + restart
+of the Claude Code session.

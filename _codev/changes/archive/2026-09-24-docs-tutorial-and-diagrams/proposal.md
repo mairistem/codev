@@ -1,116 +1,116 @@
-# Proposal : tutoriel end-to-end + diagrammes Mermaid
+# Proposal: end-to-end tutorial + Mermaid diagrams
 
-## Pourquoi
+## Why
 
-`docs/codev.md` fait 693 lignes en 10 sections — c'est déjà solide, mais
-un visiteur qui découvre codev y trouve un **manuel de référence**, pas
-un **chemin guidé** de sa première évolution. Il lit *ce que* fait chaque
-commande, sans jamais suivre *un cas concret* du début à la fin.
+`docs/codev.md` is 693 lines across 10 sections — it is already solid, but
+a visitor discovering codev finds a **reference manual** there, not
+a **guided path** through their first change. They read *what* each
+command does, without ever following *a concrete case* from start to finish.
 
-Par ailleurs, plusieurs relations structurantes de codev sont
-aujourd'hui décrites en prose alors qu'un schéma les rendrait
-immédiatement lisibles :
+In addition, several structuring relationships in codev are
+currently described in prose where a diagram would make them
+immediately readable:
 
-- la **machine à états d'un change** (propose → apply → sync/archive)
-  est décrite par un ASCII art en section 3, mais on ne voit pas les
-  transitions conditionnelles (skip_specs, sync sans archive) ;
-- le **graphe de crates** — l'application concrète de l'ADR 0002 (règle
-  de dépendance) — n'a aucun schéma alors qu'il matérialise la
-  frontière cœur pur / coquille impérative ;
-- le **cycle de vie d'un delta** (proposal → apply → sync → merge dans
-  la spec principale) traverse plusieurs sections sans jamais être
-  visualisé.
+- the **state machine of a change** (propose → apply → sync/archive)
+  is described by ASCII art in section 3, but the conditional
+  transitions (skip_specs, sync without archive) are not visible;
+- the **crate graph** — the concrete application of ADR 0002 (dependency
+  rule) — has no diagram even though it materializes the
+  pure core / imperative shell boundary;
+- the **lifecycle of a delta** (proposal → apply → sync → merge into
+  the main spec) spans several sections without ever being
+  visualized.
 
-GitHub rend Mermaid nativement dans les fichiers `.md`. `pulldown-cmark`
-(la lib qu'utilise `codev docs`) ne rend pas Mermaid — mais un bloc
-Mermaid dégrade proprement en bloc de code, ce qui reste lisible dans
-le HTML embarqué.
+GitHub renders Mermaid natively in `.md` files. `pulldown-cmark`
+(the library used by `codev docs`) does not render Mermaid — but a
+Mermaid block degrades cleanly to a code block, which remains readable in
+the embedded HTML.
 
-Ce change ne touche **aucun code Rust** ni comportement observable de
-la CLI : `skip_specs: true`.
+This change touches **no Rust code** and no observable behavior of
+the CLI: `skip_specs: true`.
 
-## Ce qui change
+## What Changes
 
-**Fichier modifié** : `docs/codev.md`.
+**Modified file**: `docs/codev.md`.
 
-**Nouvelle section 3.5 — « Ta première évolution, en cinq minutes »** —
-tutoriel pas à pas, inséré entre la section 3 (Le cycle) et la
-section 4 (Les 7 skills). Il simule un cas concret : « ajouter une
-option `--json` à `codev list` ». Chaque étape porte :
+**New section 3.5 — "Your first change, in five minutes"** —
+a step-by-step tutorial, inserted between section 3 (The cycle) and
+section 4 (The 7 skills). It simulates a concrete case: "add a
+`--json` option to `codev list`". Each step carries:
 
-- la commande exacte (copiable) ;
-- la sortie attendue (bloc `text`) ;
-- une phrase d'explication.
+- the exact command (copyable);
+- the expected output (`text` block);
+- one sentence of explanation.
 
-Étapes du tutoriel :
+Tutorial steps:
 
-1. `codev init` sur un projet vierge (facultatif si déjà fait).
-2. `/codev-propose add-list-json` dans Claude Code — ou l'équivalent
+1. `codev init` on a blank project (optional if already done).
+2. `/codev-propose add-list-json` in Claude Code — or the equivalent
    `codev new change add-list-json`.
-3. Édition manuelle des artefacts si sans Claude Code, ou pilotée par
-   la skill.
-4. `codev status --change add-list-json` pour confirmer que la
-   planification est complète.
-5. `/codev-apply add-list-json` — implémentation guidée.
-6. `codev validate add-list-json` — dernière vérification.
-7. `/codev-archive add-list-json` — clôture, avec la sortie
-   `ArchiveReportV1`.
+3. Manual editing of the artifacts without Claude Code, or driven by
+   the skill.
+4. `codev status --change add-list-json` to confirm that planning
+   is complete.
+5. `/codev-apply add-list-json` — guided implementation.
+6. `codev validate add-list-json` — final check.
+7. `/codev-archive add-list-json` — closing, with the
+   `ArchiveReportV1` output.
 
-Le tutoriel MUST pointer explicitement vers les sections de
-référence pour les détails (« pour le format complet des artefacts,
-voir §3.1 »), pour éviter la duplication.
+The tutorial MUST explicitly point to the reference sections
+for details ("for the full artifact format,
+see §3.1"), to avoid duplication.
 
-**Trois diagrammes Mermaid** — insérés dans les sections existantes,
-sans nouvelle section :
+**Three Mermaid diagrams** — inserted into existing sections,
+with no new section:
 
-- Dans **§3 (Le cycle)**, juste avant l'ASCII art : un `stateDiagram-v2`
-  qui montre la machine à états d'un change (états : *proposed*,
-  *applied*, *synced*, *archived*), les transitions nommées, et les
-  gardes (`skip_specs`, `validate --strict`).
-- Dans **§5 (Concepts)**, sous-section « Architecture » (à créer si
-  absente) : un `graph LR` du graphe de crates (`codev-core` →
-  `codev-engine` → `codev-cli`, avec `codev-agents` en aparté),
-  légendé « la règle de dépendance ADR 0002 rendue visible ».
-- Dans **§5 (Concepts)**, sous la sous-section « Deltas » : un
-  `sequenceDiagram` du cycle de vie d'un delta de la naissance
-  (édition de `specs/<capa>/spec.md` dans le change) à la fusion
-  (`codev archive` → contenu écrit dans `_codev/specs/<capa>/spec.md`).
+- In **§3 (The cycle)**, just before the ASCII art: a `stateDiagram-v2`
+  showing the state machine of a change (states: *proposed*,
+  *applied*, *synced*, *archived*), the named transitions, and the
+  guards (`skip_specs`, `validate --strict`).
+- In **§5 (Concepts)**, "Architecture" subsection (to be created if
+  missing): a `graph LR` of the crate graph (`codev-core` →
+  `codev-engine` → `codev-cli`, with `codev-agents` on the side),
+  captioned "the ADR 0002 dependency rule made visible".
+- In **§5 (Concepts)**, under the "Deltas" subsection: a
+  `sequenceDiagram` of the lifecycle of a delta from its birth
+  (editing `specs/<capa>/spec.md` in the change) to the merge
+  (`codev archive` → content written to `_codev/specs/<capa>/spec.md`).
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune.
+None.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
-*(Change marqué `skip_specs: true` — pure évolution du contenu de
-`docs/codev.md`, aucun comportement observable du binaire ne change.
-La spec `docs` porte sur ce que fait la commande `codev docs`, pas sur
-ce que contient le markdown ; les deux sont indépendants.)*
+*(Change marked `skip_specs: true` — a pure evolution of the content of
+`docs/codev.md`; no observable behavior of the binary changes.
+The `docs` spec covers what the `codev docs` command does, not
+what the markdown contains; the two are independent.)*
 
 ## Impact
 
-- **Code** : rien dans les crates Rust ni dans les scripts. Uniquement
-  du markdown dans `docs/codev.md`.
-- **Rendu `codev docs`** : le HTML embarqué grandit d'environ
-  200-300 lignes ; les blocs Mermaid apparaîtront comme des blocs de
-  code (dégradation propre), sans erreur de rendu.
-- **README** : inchangé — l'ASCII du cycle du README reste, il joue le
-  rôle de « teaser » et le tutoriel complet vit dans la doc.
-- **Tests** : pas de test automatique — la doc n'a pas de suite. Une
-  vérification manuelle du rendu Mermaid sur GitHub + une lecture du
-  tutoriel suffisent.
-- **Hors périmètre** :
-  - **Recettes/cookbook** (« comment scinder une capacité », etc.) —
-    reporté au cycle suivant (`docs-cookbook`).
-  - **Référence du contrat JSON v1** — reporté à un cycle dédié.
-  - **Traduction EN** — reportée.
-  - **Diagrammes SVG statiques** — Mermaid suffit tant que GitHub le
-    rend.
+- **Code**: nothing in the Rust crates or in the scripts. Only
+  markdown in `docs/codev.md`.
+- **`codev docs` rendering**: the embedded HTML grows by roughly
+  200-300 lines; the Mermaid blocks will appear as code
+  blocks (clean degradation), with no rendering error.
+- **README**: unchanged — the README's ASCII cycle stays; it plays the
+  role of a "teaser" and the full tutorial lives in the docs.
+- **Tests**: no automated test — the docs have no suite. A
+  manual check of the Mermaid rendering on GitHub + a read-through of the
+  tutorial are enough.
+- **Out of scope**:
+  - **Recipes/cookbook** ("how to split a capability", etc.) —
+    deferred to the next cycle (`docs-cookbook`).
+  - **v1 JSON contract reference** — deferred to a dedicated cycle.
+  - **EN translation** — deferred.
+  - **Static SVG diagrams** — Mermaid is enough as long as GitHub
+    renders it.

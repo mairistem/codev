@@ -1,94 +1,98 @@
-# Tâches
+# Tasks
 
-## 1. Contenu de la skill
+## 1. Skill content
 
-- [x] 1.1 Rédiger `assets/workflows/update.md` — le corps de la skill.
-      Contenu attendu, en français, cadré par les scénarios de la spec :
-      - entrée : `<artefact-id>` optionnel + description libre de la
-        révision ; si aucun artefact n'est nommé, la skill demande lequel
-        (elle ne devine pas) ;
-      - résolution du change : par argument, ou implicite s'il n'y a
-        qu'un seul actif ; refus si le nom pointe vers un archivé ;
-      - garde-fous d'ouverture : la skill ne modifie **jamais** de code,
-        ne crée **jamais** un artefact manquant, ne touche **jamais** à
-        un change archivé — chaque cas renvoie explicitement vers la
-        skill idoine ;
-      - lecture préalable : `codev status --change <nom> --json` pour
-        vérifier que l'artefact demandé existe, puis lecture depuis le
-        disque (jamais depuis la conversation) ;
-      - étude de l'existant : lire les autres artefacts du change avant
-        d'écrire, pour repérer un éventuel ripple avant qu'il ne
-        surgisse à l'écriture ;
-      - application de la révision : `Edit` pour une modification
-        ciblée, `Write` pour une réécriture complète, jugement de la
-        skill selon l'ampleur ;
-      - détection et signalement du ripple : si la révision d'un
-        artefact rend un autre incohérent (capacité retirée du proposal
-        alors qu'un `specs/<capa>/` existe, décision citée par le design
-        qui n'existe plus, tâche qui référence un scénario disparu…),
-        la skill **nomme** l'incohérence et **propose** l'action
-        (supprimer, ajuster, autre appel `/codev-update`), sans
-        l'appliquer sans confirmation ;
-      - garde-fou final : `codev validate <change>` et relais du rapport ;
-      - fin : résumé — fichier(s) touché(s), verdict de `validate`,
-        prochaine action recommandée (souvent `/codev-apply` ou
+- [x] 1.1 Write `assets/workflows/update.md` — the skill's body.
+      Expected content, in French, framed by the spec's scenarios:
+      - input: optional `<artifact-id>` + free-form description of the
+        revision; if no artifact is named, the skill asks which one
+        (it does not guess);
+      - change resolution: by argument, or implicit if there is only
+        one active change; refusal if the name points to an archived
+        one;
+      - opening safeguards: the skill **never** modifies code,
+        **never** creates a missing artifact, **never** touches an
+        archived change — each case explicitly redirects to the
+        appropriate skill;
+      - prior reading: `codev status --change <name> --json` to check
+        that the requested artifact exists, then reading from disk
+        (never from the conversation);
+      - study of what exists: read the change's other artifacts
+        before writing, to spot a possible ripple before it surfaces
+        at write time;
+      - applying the revision: `Edit` for a targeted modification,
+        `Write` for a full rewrite, at the skill's judgment depending
+        on the scope;
+      - detecting and reporting the ripple: if revising one artifact
+        makes another inconsistent (capability removed from the
+        proposal while a `specs/<capa>/` exists, a decision cited by
+        the design that no longer exists, a task referencing a
+        vanished scenario…), the skill **names** the inconsistency
+        and **proposes** the action (delete, adjust, another
+        `/codev-update` call), without applying it without
+        confirmation;
+      - final safeguard: `codev validate <change>` and relay of the
+        report;
+      - end: summary — file(s) touched, `validate` verdict,
+        recommended next action (often `/codev-apply` or
         `/codev-archive`).
-      Vérifié par la présence du fichier et par l'invariant du CATALOG.
+      Verified by the presence of the file and by the CATALOG
+      invariant.
 
-## 2. Entrée dans le CATALOG
+## 2. CATALOG entry
 
-- [x] 2.1 Ajouter `Workflow { id: "update", description: "…",
+- [x] 2.1 Add `Workflow { id: "update", description: "…",
       allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep",
-      body: include_str!("../../../assets/workflows/update.md") }` au
-      `CATALOG`. Description : « Réviser un artefact de planification
-      déjà écrit d'un change codev actif — proposal, specs, design ou
-      tasks — en préservant la cohérence avec les autres artefacts. Ne
-      modifie aucun code du projet, ne crée aucun artefact manquant, ne
-      touche à aucun change archivé. »
-- [x] 2.2 Test dédié
-      `workflows::update_est_dans_le_catalogue_et_a_les_bons_outils` :
-      `find("update")` rend `Some` ; `allowed_tools` égale exactement
-      `"Bash(codev:*), Read, Write, Edit, Glob, Grep"` ; ne contient PAS
-      le `Bash` général — vérifie que « seule `apply` a le Bash général »
-      reste vrai.
-- [x] 2.3 Test complémentaire
-      `workflows::update_cite_ses_frontieres` : le `body` du workflow
-      contient les chaînes « ne modifie » et « archivé » — traceur d'un
-      renommage ou d'une suppression accidentelle des garde-fous.
-- [x] 2.4 Les invariants existants (`chaque_workflow_a_un_corps_…`,
-      `le_frontmatter_de_chaque_skill_est_du_yaml_valide`) couvrent
-      automatiquement `update` via la boucle sur `CATALOG`. Vérifié par
-      `cargo test -p codev-agents`.
+      body: include_str!("../../../assets/workflows/update.md") }` to
+      the `CATALOG`. Description: "Revise an already-written planning
+      artifact of an active codev change — proposal, specs, design or
+      tasks — while preserving consistency with the other artifacts.
+      Modifies no project code, creates no missing artifact, touches
+      no archived change."
+- [x] 2.2 Dedicated test
+      `workflows::update_est_dans_le_catalogue_et_a_les_bons_outils`:
+      `find("update")` returns `Some`; `allowed_tools` equals exactly
+      `"Bash(codev:*), Read, Write, Edit, Glob, Grep"`; does NOT
+      contain general `Bash` — checks that "only `apply` has general
+      Bash" stays true.
+- [x] 2.3 Complementary test
+      `workflows::update_cite_ses_frontieres`: the workflow's `body`
+      contains the strings "does not modify" and "archived" — a
+      tracer for an accidental renaming or removal of the safeguards.
+- [x] 2.4 The existing invariants (`chaque_workflow_a_un_corps_…`,
+      `le_frontmatter_de_chaque_skill_est_du_yaml_valide`)
+      automatically cover `update` via the loop over `CATALOG`.
+      Verified by `cargo test -p codev-agents`.
 
-## 3. Config du dépôt et catalogue par défaut
+## 3. Repository config and default catalog
 
-- [x] 3.1 Ne PAS ajouter `update` à `DEFAULT_WORKFLOWS`. Le test
-      `sans_demande_installe_le_catalogue_par_defaut` gagne un check
-      supplémentaire — un tableau `for opt_in in ["apply", "sync",
+- [x] 3.1 Do NOT add `update` to `DEFAULT_WORKFLOWS`. The test
+      `sans_demande_installe_le_catalogue_par_defaut` gains an extra
+      check — an array `for opt_in in ["apply", "sync",
       "archive", "update"]`.
-- [x] 3.2 Mettre à jour le commentaire d'exemple dans
-      `crates/codev-engine/src/scaffold.rs::DEFAULT_CONFIG` pour lister
-      aussi `update` dans le bloc commenté `# workflows:`.
-- [x] 3.3 Ajouter `- update` à la liste `workflows` de
-      `_codev/config.yaml` de ce projet.
+- [x] 3.2 Update the example comment in
+      `crates/codev-engine/src/scaffold.rs::DEFAULT_CONFIG` to also
+      list `update` in the commented-out `# workflows:` block.
+- [x] 3.3 Add `- update` to the `workflows` list of this project's
+      `_codev/config.yaml`.
 
 ## 4. Dogfooding
 
-- [x] 4.1 Après `cargo install --path crates/codev-cli` puis `codev
-      update`, vérifier que `.claude/skills/codev-update/SKILL.md`
-      apparaît avec le bon frontmatter.
-- [x] 4.2 Vérifier que la liste des skills annoncée par `codev update`
-      contient bien les six workflows : `codev-propose, codev-explore,
+- [x] 4.1 After `cargo install --path crates/codev-cli` then `codev
+      update`, check that `.claude/skills/codev-update/SKILL.md`
+      appears with the right frontmatter.
+- [x] 4.2 Check that the list of skills announced by `codev update`
+      does contain the six workflows: `codev-propose, codev-explore,
       codev-apply, codev-sync, codev-archive, codev-update`.
-- [x] 4.3 Après le change appliqué et archivé, tenter un vrai
-      `/codev-update` sur un change futur dès la prochaine session
-      Claude Code — la skill sera visible au chargement.
+- [x] 4.3 Once the change is applied and archived, try a real
+      `/codev-update` on a future change in the next Claude Code
+      session — the skill will be visible at load time.
 
-## 5. Intégration workspace
+## 5. Workspace integration
 
-- [x] 5.1 `cargo test --workspace` reste vert et compte au moins 2 tests
-      supplémentaires (`update_est_dans_le_catalogue…` et
+- [x] 5.1 `cargo test --workspace` stays green and counts at least 2
+      additional tests (`update_est_dans_le_catalogue…` and
       `update_cite_ses_frontieres`).
-- [x] 5.2 `cargo clippy --workspace --all-targets` reste sans
-      avertissement.
-- [x] 5.3 `codev validate --all` reste vert.
+- [x] 5.2 `cargo clippy --workspace --all-targets` stays free of
+      warnings.
+- [x] 5.3 `codev validate --all` stays green.

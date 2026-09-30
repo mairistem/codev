@@ -1,49 +1,49 @@
-# Proposal : parseur de specs et de deltas
+# Proposal: spec and delta parser
 
-## Pourquoi
+## Why
 
-Aujourd'hui codev peut créer et lister des changes, mais rien ne sait lire une
-spec ou un delta écrit à la main. Les trois commandes du lot 1 encore
-manquantes — `validate`, `sync`, `archive` — en dépendent toutes.
+Today codev can create and list changes, but nothing can read a
+hand-written spec or delta. The three batch-1 commands still missing —
+`validate`, `sync`, `archive` — all depend on it.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau parseur de spec principale** : `## Purpose`, `## Requirements`,
-  `### Requirement: <nom>`, `#### Scenario: <nom>` avec ses lignes
-  **WHEN** / **THEN** / **AND**.
-- **Nouveau parseur de delta** : `## ADDED Requirements`,
-  `## MODIFIED Requirements`, `## REMOVED Requirements` (avec `**Raison**` /
+- **New main spec parser**: `## Purpose`, `## Requirements`,
+  `### Requirement: <name>`, `#### Scenario: <name>` with its
+  **WHEN** / **THEN** / **AND** lines.
+- **New delta parser**: `## ADDED Requirements`,
+  `## MODIFIED Requirements`, `## REMOVED Requirements` (with `**Reason**` /
   `**Migration**`), `## RENAMED Requirements` (`FROM:` / `TO:`).
-- **Masquage des code fences et des commentaires HTML** partagé par les deux :
-  un ` ``` `-block contenant `### Requirement:` ne doit pas produire une fausse
-  exigence — le piège classique et silencieux.
-- **AST à spans** : chaque bloc conserve son intervalle `[début, fin)` dans le
-  texte source. C'est la brique qui rendra la fusion `MODIFIED` non
-  destructive : réécrire un bloc sans reformater le reste du fichier.
-- API pure dans `codev-core` : la fonction prend une `&str`, rend un AST
-  typé, ne touche pas au disque.
+- **Masking of code fences and HTML comments** shared by both:
+  a ` ``` ` block containing `### Requirement:` must not produce a phantom
+  requirement — the classic, silent trap.
+- **Span-carrying AST**: each block keeps its `[start, end)` interval in the
+  source text. This is the building block that will make the `MODIFIED`
+  merge non-destructive: rewrite one block without reformatting the rest of
+  the file.
+- Pure API in `codev-core`: the function takes a `&str`, returns a typed
+  AST, and never touches the disk.
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
 - `spec-parsing`
 
-### Capacités modifiées
+### Modified Capabilities
 
-Aucune — le projet n'a encore aucune spec principale.
+None — the project has no main spec yet.
 
 ## Impact
 
-- **Code** : nouveau module `codev-core::parser` (`spec.rs`, `delta.rs`,
-  `fence.rs`, `ast.rs`). Aucune modification de `codev-engine`, `codev-agents`
-  ou `codev-cli` dans ce change — les consommateurs (`validate`, `sync`,
-  `archive`) feront l'objet de changes séparés.
-- **Dépendances** : le design tranchera entre un parseur maison ligne à ligne
-  (l'approche d'OpenSpec, ~1 200 lignes pour l'ensemble) et une dépendance
-  markdown existante. Rien n'est engagé ici.
-- **Hors périmètre** : parseur de `tasks.md` (activé quand `validate --archived`
-  sera implémenté) et parseur de `proposal.md` (activé quand la validation de
-  proposal en aura besoin). Ces deux artefacts servent aujourd'hui à l'humain
-  et à l'agent, pas à codev, et leur parsing n'est demandé par aucune commande
-  du lot 1.
+- **Code**: new module `codev-core::parser` (`spec.rs`, `delta.rs`,
+  `fence.rs`, `ast.rs`). No changes to `codev-engine`, `codev-agents`
+  or `codev-cli` in this change — the consumers (`validate`, `sync`,
+  `archive`) will each get their own change.
+- **Dependencies**: the design will decide between a hand-written
+  line-by-line parser (OpenSpec's approach, ~1,200 lines in total) and an
+  existing markdown dependency. Nothing is committed here.
+- **Out of scope**: the `tasks.md` parser (enabled once `validate --archived`
+  is implemented) and the `proposal.md` parser (enabled once proposal
+  validation needs it). Today these two artifacts serve the human and the
+  agent, not codev, and no batch-1 command requires parsing them.

@@ -1,117 +1,115 @@
-# Design : commandes CLI pour les décisions
+# Design: CLI commands for decisions
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Le module
-`codev-engine::decisions` livré par le change précédent fournit déjà
-l'index avec `in_effect` et la résolution qualifiée. Ce change en fait
-la brique de résolution centrale : chaque commande (`new`, `list`,
-`show`, `supersede`) part d'un index à jour et calcule un `Plan` à
-exécuter.
+See `proposal.md` for the motivation. The `codev-engine::decisions`
+module delivered by the previous change already provides the index with
+`in_effect` and qualified resolution. This change makes it the central
+resolution building block: each command (`new`, `list`, `show`,
+`supersede`) starts from an up-to-date index and computes a `Plan` to
+execute.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- où vivent les fonctions de calcul de plan (cœur pur vs coquille) ;
-- la forme des nouveaux types du contrat public ;
-- l'atomicité de `supersede`, qui réécrit deux fichiers.
+- where the plan-computing functions live (pure core vs shell);
+- the shape of the new public contract types;
+- the atomicity of `supersede`, which rewrites two files.
 
-Il ne cadre **pas** l'immuabilité (K3), la déviation (K6), la promotion
-depuis design (K7), ni l'édition interactive dans `$EDITOR`.
+It does **not** cover immutability (K3), deviation (K6), promotion from
+design (K7), or interactive editing in `$EDITOR`.
 
-## Décisions
+## Decisions
 
-### Décision : les fonctions `plan_new` et `plan_supersede` vivent dans `codev-engine`
+### Decision: the `plan_new` and `plan_supersede` functions live in `codev-engine`
 
-Elles n'écrivent pas — elles produisent un `Plan`, comme
-`plan_init` ou `plan_new_change`. Suit directement la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) :
-décider n'est pas exécuter. La coquille CLI applique le plan via
-`apply::execute`, ce qui rentabilise le mécanisme d'idempotence et de
-`--dry-run` (ce dernier arrivera quand un consommateur le demandera).
+They do not write — they produce a `Plan`, like `plan_init` or
+`plan_new_change`. Follows directly from decision
+[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+deciding is not executing. The CLI shell applies the plan via
+`apply::execute`, which puts the idempotence and `--dry-run` mechanism to
+use (the latter will arrive when a consumer asks for it).
 
-**Alternative écartée** : mettre le calcul dans `codev-core::decisions`.
-Bloqué : la génération du prochain `id` exige de connaître les décisions
-déjà présentes, donc le résultat de l'index — qui est côté engine
-(lecture disque). Impossible de rester pur sans traverser le port.
+**Rejected alternative**: put the computation in `codev-core::decisions`.
+Blocked: generating the next `id` requires knowing the decisions already
+present, hence the result of the index — which is on the engine side
+(disk reads). Impossible to stay pure without going through the port.
 
-### Décision : le squelette d'ADR est embarqué, pas configurable
+### Decision: the ADR skeleton is embedded, not configurable
 
-Le fichier `assets/templates/decision.md` est inclus dans le binaire via
-`include_str!` et interpolé avec l'`id`, le titre, le statut et la date au
-moment de la création. C'est aligné avec la façon dont les templates
-d'artefacts fonctionnent déjà — cf. la décision
-[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md)
-qui préfère les données figées à des points d'extension prématurés.
+The file `assets/templates/decision.md` is included in the binary via
+`include_str!` and interpolated with the `id`, title, status and date at
+creation time. This is aligned with how artifact templates already work
+— cf. decision
+[0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md),
+which prefers fixed data over premature extension points.
 
-**Coût accepté** : un projet qui voudrait un squelette de décision
-différent devra l'écrire à la main. Templater le fichier via
-`_codev/templates/decision.md` sera un futur change au premier besoin
-réel.
+**Accepted cost**: a project that wants a different decision skeleton will
+have to write it by hand. Templating the file via
+`_codev/templates/decision.md` will be a future change at the first real
+need.
 
-### Décision : `supersede` réécrit le frontmatter du prédécesseur, jamais son corps
+### Decision: `supersede` rewrites the predecessor's frontmatter, never its body
 
-L'ancien ADR est réécrit avec un nouveau frontmatter — `status:
-superseded` — mais tout ce qui suit le second `---` reste au caractère
-près. Le parseur porte déjà `frontmatter_span` sur `Decision`, donc
-l'opération est un remplacement ponctuel de la plage `[0..frontmatter_span.end)`
-par le nouveau frontmatter. Même mécanique que `merge::apply_edits` —
-même invariant testable par golden.
+The old ADR is rewritten with a new frontmatter — `status:
+superseded` — but everything after the second `---` stays identical down
+to the character. The parser already carries `frontmatter_span` on
+`Decision`, so the operation is a one-off replacement of the range
+`[0..frontmatter_span.end)` with the new frontmatter. Same mechanism as
+`merge::apply_edits` — same invariant, testable by golden test.
 
-**Rationale** : le corps est ce qu'a écrit l'auteur. L'outil réécrit un
-statut, pas une décision.
+**Rationale**: the body is what the author wrote. The tool rewrites a
+status, not a decision.
 
-### Décision : `supersede` refuse de toucher à une décision héritée
+### Decision: `supersede` refuses to touch an inherited decision
 
-Une décision héritée est **en lecture seule** — décision
-[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md). La
-commande refuse avec le code `cannot_supersede_inherited` et suggère la
-déviation (K6, à venir). C'est la première fois qu'on distingue lecture
-et écriture selon l'origine ; les futures commandes `deviate` et
-`promote` s'appuieront sur la même règle.
+An inherited decision is **read-only** — decision
+[0005](../../decisions/0005-sources-heritees-en-lecture-seule.md). The
+command refuses with code `cannot_supersede_inherited` and suggests
+deviation (K6, upcoming). This is the first time reads and writes are
+distinguished by origin; the future `deviate` and `promote` commands will
+rely on the same rule.
 
-### Décision : le squelette d'ADR ne contient que les sections utiles
+### Decision: the ADR skeleton contains only the useful sections
 
-Quatre sections : **Contexte**, **Décision**, **Conséquences**,
-**Alternatives écartées**. Ce sont celles qu'utilisent les six ADR
-existants du dépôt. Un ADR est court par nature — imposer plus est du
-bruit.
+Four sections: **Context**, **Decision**, **Consequences**,
+**Rejected alternatives**. These are the ones used by the repository's
+six existing ADRs. An ADR is short by nature — imposing more is noise.
 
-### Décision : les types du contrat sont trois structs distincts
+### Decision: the contract types are three distinct structs
 
-- `DecisionV1` — la forme complète, utilisée par `list` (chaque entrée du
-  tableau) et par `show` (au niveau racine).
-- `DecisionCreatedV1` — rendu par `new`, contient `decision:
+- `DecisionV1` — the full shape, used by `list` (each entry of the array)
+  and by `show` (at the root level).
+- `DecisionCreatedV1` — returned by `new`, contains `decision:
   DecisionV1` plus `path: String`.
-- `DecisionSupersededV1` — rendu par `supersede`, contient `newDecision`
-  et `oldId` avec `oldPath`.
+- `DecisionSupersededV1` — returned by `supersede`, contains `newDecision`
+  and `oldId` with `oldPath`.
 
-Trois structs plutôt qu'une seule flexible : un consommateur qui appelle
-`new` n'a rien à faire du champ `oldId`, et l'inverse. Le compilateur
-attrape la mauvaise commande côté agent avant que la mauvaise clé
-n'entre en circulation.
+Three structs rather than a single flexible one: a consumer calling `new`
+has no use for the `oldId` field, and vice versa. The compiler catches the
+wrong command on the agent side before the wrong key gets into
+circulation.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Génération d'id concurrentielle**. Deux `codev decision new` lancés
-  en même temps calculeraient le même `id` et l'un écraserait l'autre. →
-  **Atténuation** : `plan_new` produit un `WriteMode::CreateOnly` sur le
-  fichier de sortie. Le second exec échoue avec `already_exists`. Rare en
-  pratique (usage humain, non batch) et signalé plutôt que masqué.
-- **Titre à caractères Unicode inhabituels** (émoji, ponctuation étrangère).
-  Le slug perd ces caractères, le nom de fichier peut devenir court ou
-  vide. → **Compromis assumé** : si le slug est vide après nettoyage,
-  utiliser `decision` comme fallback (`0007-decision.md`). Documenté dans
-  le rendu.
-- **Corps du prédécesseur avec `\r\n`**. La lecture puis réécriture peut
-  normaliser en `\n` par inadvertance. → **Atténuation** : le contenu
-  après `frontmatter_span.end` est repris tel quel, byte à byte — même
-  logique que `merge::apply_edits`.
+- **Concurrent id generation**. Two `codev decision new` runs launched at
+  the same time would compute the same `id` and one would overwrite the
+  other. → **Mitigation**: `plan_new` produces a `WriteMode::CreateOnly`
+  on the output file. The second exec fails with `already_exists`. Rare
+  in practice (human use, not batch) and reported rather than masked.
+- **Title with unusual Unicode characters** (emoji, foreign punctuation).
+  The slug drops these characters, and the file name may become short or
+  empty. → **Accepted trade-off**: if the slug is empty after cleanup,
+  use `decision` as a fallback (`0007-decision.md`). Documented in the
+  rendering.
+- **Predecessor body with `\r\n`**. Reading then rewriting may normalize
+  to `\n` inadvertently. → **Mitigation**: the content after
+  `frontmatter_span.end` is carried over as is, byte for byte — same
+  logic as `merge::apply_edits`.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet — nouvelles commandes. Les six ADR existants du dépôt
-serviront de premier vrai test au moment de créer une septième décision
-par la commande neuve — vérification directe que la numérotation « + 1 »
-tombe bien sur `0007`.
+Not applicable — new commands. The repository's six existing ADRs will
+serve as the first real test when a seventh decision is created with the
+new command — a direct check that the "+ 1" numbering lands on `0007`.

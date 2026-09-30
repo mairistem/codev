@@ -1,67 +1,66 @@
-# Proposal : affiner la sortie de `/codev-onboard`
+# Proposal: refine the output of `/codev-onboard`
 
-## Pourquoi
+## Why
 
-Le smoke-test de `/codev-onboard` sur ce dépôt (2026-09-09) a fait
-remonter deux frictions à l'usage :
+The smoke test of `/codev-onboard` on this repository (2026-09-09)
+surfaced two points of friction in use:
 
-1. Le bloc « ici, tu as » compte les changes **actifs** (0 pour ce
-   dépôt) mais ignore les **archivés** — 11 aujourd'hui. Un nouvel
-   arrivant sur un projet mûr voit « 0 change actif » et pense que le
-   projet n'a rien produit ; l'historique reste invisible.
-2. La recommandation par défaut sans change actif est
-   `/codev-propose <une-idée>` — abstrait. Un nouvel arrivant qui
-   n'a pas d'idée précise a besoin de prendre le pouls du projet
-   d'abord ; le premier réflexe naturel est d'ouvrir `README.md` avant
-   d'inventer un change.
+1. The "here you have" block counts **active** changes (0 for this
+   repository) but ignores **archived** ones — 11 today. A newcomer to
+   a mature project sees "0 active changes" and thinks the project has
+   produced nothing; the history stays invisible.
+2. The default recommendation with no active change is
+   `/codev-propose <an-idea>` — abstract. A newcomer without a precise
+   idea needs to get a feel for the project first; the natural first
+   reflex is to open `README.md` before inventing a change.
 
-## Ce qui change
+## What Changes
 
-- **Le bloc « ici, tu as » compte aussi les changes archivés** — une
-  ligne supplémentaire « `X change(s) archivé(s)` » quand ce nombre est
-  non nul. Silencieux si zéro (pas de bruit sur un projet neuf).
-- **La recommandation par défaut cite explicitement `README.md`** —
-  « prends le pouls du projet en lisant `README.md`, puis
-  `/codev-propose <une-idée>` ». La suggestion `/codev-explore
-  <sujet>` reste mentionnée comme alternative si l'utilisateur a une
-  question mais pas encore d'idée d'action.
-- **Aucun changement de frontière** — reste strictement en lecture, les
-  `allowed-tools` restent inchangés (`Bash(codev:*), Read, Glob`).
+- **The "here you have" block also counts archived changes** — an
+  extra line "`X archived change(s)`" when that number is non-zero.
+  Silent if zero (no noise on a new project).
+- **The default recommendation explicitly cites `README.md`** —
+  "get a feel for the project by reading `README.md`, then
+  `/codev-propose <an-idea>`". The `/codev-explore <topic>` suggestion
+  is still mentioned as an alternative if the user has a question but
+  no idea for an action yet.
+- **No boundary change** — still strictly read-only; the
+  `allowed-tools` stay unchanged (`Bash(codev:*), Read, Glob`).
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — l'exigence `Skill onboard présente codev et recommande
-  la prochaine action` est modifiée pour couvrir ces deux ajouts. Le
-  reste (frontière lecture, `allowed-tools`, présence catalogue par
-  défaut) est inchangé.
+- `skills` — the requirement `Skill onboard presents codev and
+  recommends the next action` is modified to cover these two
+  additions. The rest (read-only boundary, `allowed-tools`, presence
+  in the default catalog) is unchanged.
 
-### Capacités retirées
+### Removed Capabilities
 
-Aucune.
+None.
 
 ## Impact
 
-- **Code** : édition du body `assets/workflows/onboard.md` (bloc 2 et
-  bloc 3). L'entrée `CATALOG` reste identique — même id, même
-  description, mêmes `allowed-tools`.
-- **Tests** : l'invariant `onboard_cite_ses_trois_blocs` continue de
-  passer (les mots-clés `codev, c'est` / `ici, tu as` / `la suite`
-  restent présents). Aucun test à ajouter — les nouveaux détails
-  vivent dans le body, la spec cadre les grandes lignes.
-- **Contrat JSON** : rien. La skill ne parse aucun JSON, ne produit
-  aucune sortie structurée.
-- **Migration** : aucune. Le comportement change à la prochaine session
-  Claude Code après `codev update`.
-- **Hors périmètre** :
-  - **Distinguer les archivés par date/ancienneté** — un simple
-    compte suffit ; une hiérarchie temporelle pourrait venir plus tard
-    si un besoin apparaît.
-  - **Détecter la présence d'un `README.md`** — la skill le suggère
-    inconditionnellement ; si le dépôt n'en a pas, l'utilisateur
-    l'apprend en essayant. Coût nul, robustesse suffisante.
+- **Code**: edit of the `assets/workflows/onboard.md` body (block 2
+  and block 3). The `CATALOG` entry stays identical — same id, same
+  description, same `allowed-tools`.
+- **Tests**: the invariant `onboard_cite_ses_trois_blocs` keeps
+  passing (the keywords `codev is` / `here you have` / `what's next`
+  remain present). No test to add — the new details live in the body;
+  the spec frames the broad outline.
+- **JSON contract**: nothing. The skill parses no JSON and produces no
+  structured output.
+- **Migration**: none. The behavior changes at the next Claude Code
+  session after `codev update`.
+- **Out of scope**:
+  - **Distinguishing archived changes by date/age** — a simple count
+    is enough; a temporal hierarchy could come later if a need
+    arises.
+  - **Detecting the presence of a `README.md`** — the skill suggests
+    it unconditionally; if the repository has none, the user finds
+    out by trying. Zero cost, sufficient robustness.

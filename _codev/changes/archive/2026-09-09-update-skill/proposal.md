@@ -1,68 +1,71 @@
-# Proposal : livrer `/codev-update`
+# Proposal: deliver `/codev-update`
 
-## Pourquoi
+## Why
 
-Sur ce dépôt même, dans les changes récents, j'ai édité un artefact de
-planification à la main **au moins quatre fois** : une révision de proposal
-après discussion, un ajustement de design, une correction de tasks une fois
-`validate` réel. Chaque fois : ouvrir le fichier, éditer, relancer
-`codev validate` de mémoire, croiser les doigts pour ne pas avoir cassé la
-cohérence entre proposal, design et tasks. C'est le pattern qui revient le
-plus après les cinq skills livrées, et le seul qui manque au cycle *fluide*
-qu'annonçait le README.
+On this very repository, in recent changes, I edited a planning
+artifact by hand **at least four times**: a proposal revision after
+discussion, a design adjustment, a tasks correction once `validate`
+was real. Each time: open the file, edit, rerun `codev validate` from
+memory, and cross my fingers that I had not broken consistency
+between proposal, design and tasks. It is the pattern that recurs
+most after the five delivered skills, and the only one missing from
+the *fluid* cycle the README announced.
 
-## Ce qui change
+## What Changes
 
-- **Nouveau workflow `update`** dans le catalogue, invocable
-  `/codev-update` une fois installé. Il révise un artefact de planification
-  déjà écrit (proposal, specs, design, tasks) — un à la fois, guidé par la
-  description de l'utilisateur, en préservant la cohérence avec les autres.
-- **Nouveau fichier `assets/workflows/update.md`** — le corps de la skill,
-  chargé à la compilation via `include_str!` comme les cinq autres.
-- **Frontière stricte** : la skill modifie **uniquement** les fichiers sous
-  `_codev/changes/<nom>/` et **jamais** de code du projet. Elle ne crée pas
-  non plus d'artefact manquant — c'est le rôle de `/codev-propose`.
-- **Ripple annoncé, pas caché** : quand la révision d'un artefact rend un
-  autre incohérent (par exemple, retirer une capacité du proposal alors
-  qu'un fichier `specs/<capa>/` a déjà été écrit), la skill le signale à
-  l'utilisateur et propose la correction avant d'agir.
-- **`codev validate` en garde-fou final** : après application des révisions,
-  la skill relance `codev validate <change>` et affiche le résultat.
-- **Sortie humaine** — la skill lit la sortie texte des commandes qu'elle
-  invoque, sans parser de JSON. Choix cohérent avec `apply`, qui a la même
-  nature (guide l'agent, ne consomme pas de contrat structuré).
+- **New `update` workflow** in the catalog, invocable as
+  `/codev-update` once installed. It revises an already-written
+  planning artifact (proposal, specs, design, tasks) — one at a time,
+  guided by the user's description, while preserving consistency with
+  the others.
+- **New file `assets/workflows/update.md`** — the skill's body,
+  loaded at compile time via `include_str!` like the five others.
+- **Strict boundary**: the skill modifies **only** the files under
+  `_codev/changes/<name>/` and **never** project code. Nor does it
+  create a missing artifact — that is the role of `/codev-propose`.
+- **Ripple announced, not hidden**: when revising one artifact makes
+  another inconsistent (for example, removing a capability from the
+  proposal while a `specs/<capa>/` file has already been written), the
+  skill reports it to the user and proposes the fix before acting.
+- **`codev validate` as the final safeguard**: after applying the
+  revisions, the skill reruns `codev validate <change>` and displays
+  the result.
+- **Human output** — the skill reads the text output of the commands
+  it invokes, without parsing JSON. A choice consistent with `apply`,
+  which is of the same nature (it guides the agent, does not consume
+  a structured contract).
 
-## Capacités
+## Capabilities
 
-### Nouvelles capacités
+### New Capabilities
 
-Aucune.
+None.
 
-### Capacités modifiées
+### Modified Capabilities
 
-- `skills` — trois nouvelles exigences ADDED décrivant le contrat de
-  `/codev-update` : révision d'un artefact, ripple annoncé, frontière
-  planning-seulement.
+- `skills` — three new ADDED requirements describing the contract of
+  `/codev-update`: revising an artifact, announced ripple,
+  planning-only boundary.
 
 ## Impact
 
-- **Code** : nouvelle entrée `Workflow { id: "update", … }` dans le
-  `CATALOG` de `codev-agents::workflows`, un test dédié qui vérifie sa
-  présence et son `allowed-tools`.
-- **Config** : ajouter `- update` à la liste `workflows` de
-  `_codev/config.yaml` de ce projet.
-- **Catalogue par défaut** : NE PAS ajouter `update` à `DEFAULT_WORKFLOWS`
-  — cohérent avec la ligne actuelle qui limite le catalogue par défaut à
-  ce qui prépare le travail (`propose`, `explore`).
-- **Hors périmètre** :
-  - **Édition en batch** de plusieurs artefacts en un seul appel — chaque
-    appel `/codev-update` cible un artefact et son ripple ; une révision
-    plus large se fait en plusieurs invocations séquentielles.
-  - **Modification du code** — la frontière est stricte. Un ajustement du
-    code se fait par `/codev-apply` après révision.
-  - **Création d'artefacts manquants** — c'est `/codev-propose` (ou
-    `/codev-continue` du profil étendu) qui les crée.
-  - **Édition d'un change déjà archivé** — techniquement possible en
-    modifiant les fichiers sous `changes/archive/`, mais la skill refuse.
-    Un change archivé est de l'histoire ; le corriger demande de le
-    dé-archiver à la main.
+- **Code**: new `Workflow { id: "update", … }` entry in the `CATALOG`
+  of `codev-agents::workflows`, and a dedicated test that checks its
+  presence and its `allowed-tools`.
+- **Config**: add `- update` to the `workflows` list of this project's
+  `_codev/config.yaml`.
+- **Default catalog**: do NOT add `update` to `DEFAULT_WORKFLOWS` —
+  consistent with the current line that limits the default catalog to
+  what prepares the work (`propose`, `explore`).
+- **Out of scope**:
+  - **Batch editing** of several artifacts in a single call — each
+    `/codev-update` call targets one artifact and its ripple; a
+    broader revision is done in several sequential invocations.
+  - **Code modification** — the boundary is strict. A code adjustment
+    is done via `/codev-apply` after revision.
+  - **Creating missing artifacts** — it is `/codev-propose` (or
+    `/codev-continue` from the extended profile) that creates them.
+  - **Editing an already-archived change** — technically possible by
+    modifying the files under `changes/archive/`, but the skill
+    refuses. An archived change is history; correcting it requires
+    un-archiving it by hand.

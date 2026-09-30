@@ -1,119 +1,120 @@
-# Design : `/codev-sync` et `/codev-archive`
+# Design: `/codev-sync` and `/codev-archive`
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Le pattern est celui déjà éprouvé par
-`propose`, `explore` et `apply` : deux couples {entrée dans `CATALOG`,
-fichier markdown sous `assets/workflows/`}. La différence de nature avec
-`apply` est que ces skills n'écrivent rien elles-mêmes — elles délèguent
-l'intégralité de l'effet au binaire codev, dont le pattern « plan puis
-exécution » cadré par la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md)
-garantit l'atomicité côté disque.
+See `proposal.md` for the motivation. The pattern is the one already proven
+by `propose`, `explore` and `apply`: two pairs {entry in `CATALOG`,
+markdown file under `assets/workflows/`}. The difference in nature from
+`apply` is that these skills write nothing themselves — they delegate the
+entire effect to the codev binary, whose "plan then execute" pattern,
+framed by decision
+[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md),
+guarantees atomicity on the disk side.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- le contenu des deux skills (structure, garde-fous, gestion des erreurs
-  remontées par le CLI) ;
-- le contrat `allowed-tools` restreint et pourquoi il l'est ;
-- le test d'invariant qui verrouille la restriction.
+- the content of the two skills (structure, guardrails, handling of errors
+  reported by the CLI);
+- the restricted `allowed-tools` contract and why it is restricted;
+- the invariant test that locks in the restriction.
 
-Il ne cadre **pas** l'ajout à `DEFAULT_WORKFLOWS`, ni la skill `update`, ni
-un parsing du JSON de sortie des commandes.
+It does **not** cover adding to `DEFAULT_WORKFLOWS`, nor the `update`
+skill, nor parsing the JSON output of commands.
 
-## Décisions
+## Decisions
 
-### Décision : `allowed-tools` = `Bash(codev:*), Read`
+### Decision: `allowed-tools` = `Bash(codev:*), Read`
 
-Le seul effet de ces skills est un appel `codev sync` ou `codev archive` —
-le reste n'est que texte affiché à l'utilisateur. Aucun `Write`, aucun
-`Edit`, aucun `Bash` général. Le `Read` reste utile pour répondre à une
-question de contexte de l'utilisateur (« que dit `tasks.md` ? »), sans jamais
-écrire.
+The only effect of these skills is a `codev sync` or `codev archive` call —
+the rest is just text displayed to the user. No `Write`, no `Edit`, no
+general `Bash`. `Read` remains useful for answering a context question
+from the user ("what does `tasks.md` say?"), without ever writing.
 
-**Rationale** : chaque outil supplémentaire dans `allowed-tools` élargit ce
-que la skill peut faire par erreur. Restreindre est plus sûr que d'ouvrir
-« au cas où ». L'invariant testable — que le `Bash` général n'apparaît que
-dans `apply` — devient la garantie structurelle.
+**Rationale**: each extra tool in `allowed-tools` widens what the skill can
+do by mistake. Restricting is safer than opening "just in case". The
+testable invariant — that general `Bash` only appears in `apply` — becomes
+the structural guarantee.
 
-**Alternative écartée** : ajouter `Bash(git:*)` pour que la skill puisse
-suggérer un `git status` après archive. Reportable — l'utilisateur sait
-lancer `git status` seul. Si le besoin monte, on ouvrira à ce moment-là,
-pas avant.
+**Rejected alternative**: add `Bash(git:*)` so that the skill can suggest
+a `git status` after archive. Can be deferred — the user knows how to run
+`git status` on their own. If the need grows, we will open it then, not
+before.
 
-### Décision : la skill lit le JSON, pas la sortie humaine
+### Decision: the skill reads the JSON, not the human output
 
-`codev sync` et `codev archive` produisent tous deux un `--json` structuré,
-contrat versionné et testé par snapshot (`SyncReportV1`, `ArchiveReportV1`).
-La skill l'invoque et lit cette forme plutôt que le texte humain.
+`codev sync` and `codev archive` both produce a structured `--json`, a
+versioned, snapshot-tested contract (`SyncReportV1`, `ArchiveReportV1`).
+The skill invokes it and reads that shape rather than the human text.
 
-**Rationale** :
+**Rationale**:
 
-1. Le contrat JSON est **précisément fait pour être consommé** — c'est son
-   raison d'être. Le tester par snapshot dans `contract::tests` sans avoir
-   de consommateur premier serait un gâchis d'invariant.
-2. Le rendu structuré permet à la skill de composer proprement — « ✓ 2 specs
-   créées, 1 mise à jour, 0 inchangée, déplacé vers … » plutôt que de
-   relayer un bloc de texte à trous.
-3. Le code stable dans `status[0].code` est directement testable côté agent —
-   `validation_failed` déclenche exactement la branche « renvoie vers
-   `codev validate` », sans à devoir grepper le message humain.
+1. The JSON contract is **precisely made to be consumed** — that is its
+   reason for being. Snapshot-testing it in `contract::tests` without a
+   first consumer would be a waste of an invariant.
+2. Structured rendering lets the skill compose cleanly — "✓ 2 specs
+   created, 1 updated, 0 unchanged, moved to …" rather than relaying a
+   patchy block of text.
+3. The stable code in `status[0].code` is directly testable on the agent
+   side — `validation_failed` triggers exactly the "point to
+   `codev validate`" branch, without having to grep the human message.
 
-**Alternative écartée** : lire le texte humain. Séduisant pour son couplage
-faible, mais fragile en pratique : n'importe quelle reformulation par
-gentillesse ferait dériver l'interprétation. Le JSON est stable *par
-contrat*, et c'est cette stabilité qui vaut d'être exploitée.
+**Rejected alternative**: read the human text. Appealing for its loose
+coupling, but fragile in practice: any well-meant rewording would make the
+interpretation drift. The JSON is stable *by contract*, and that stability
+is what is worth exploiting.
 
-**Coût accepté** : la skill devient dépendante de la forme du JSON. Le
-contrat étant versionné (v1), un changement de forme demandera une nouvelle
-version — c'est justement ce que le versioning garantit.
+**Accepted cost**: the skill becomes dependent on the JSON's shape. Since
+the contract is versioned (v1), a change of shape will require a new
+version — which is exactly what versioning guarantees.
 
-### Décision : `archive` renvoie explicitement vers `validate` en cas de refus
+### Decision: `archive` explicitly points to `validate` on refusal
 
-Quand `codev archive` refuse pour cause de pré-flight validate, la skill ne
-retente pas, ne devine pas, ne « corrige » pas. Elle dit exactement :
-« Le change a des erreurs de validation ; lance `codev validate <nom>` pour
-voir le détail. »
+When `codev archive` refuses because of the validate pre-flight, the skill
+does not retry, does not guess, does not "fix". It says exactly:
+"The change has validation errors; run `codev validate <name>` to see the
+details."
 
-C'est cohérent avec le design de `codev archive` lui-même, qui refuse déjà
-de dupliquer les messages de règles. La skill perpétue cette division du
-travail : `codev archive` traite le geste, `codev validate` explique.
+This is consistent with the design of `codev archive` itself, which
+already refuses to duplicate rule messages. The skill carries on this
+division of labor: `codev archive` handles the action, `codev validate`
+explains.
 
-### Décision : `sync` termine par une invitation non-injonctive à archiver
+### Decision: `sync` ends with a non-directive invitation to archive
 
-Quand la fusion a produit du changement (au moins un `created` ou
-`updated`), la skill ajoute en fin de rendu **une seule ligne** :
+When the merge produced a change (at least one `created` or `updated`),
+the skill adds **a single line** at the end of the rendering:
 
-> Le change est prêt à être archivé si tu veux clore le cycle.
+> The change is ready to be archived if you want to close the cycle.
 
-Elle **ne suggère rien** quand la fusion est un no-op (tout `unchanged`) —
-il n'y a alors rien de nouveau à archiver que ce qui l'était déjà.
+It **suggests nothing** when the merge is a no-op (all `unchanged`) —
+there is then nothing new to archive beyond what already was.
 
-**Rationale** : l'archive est le pas naturel après un sync qui a modifié
-les specs principales, et rappeler l'existence de `/codev-archive` évite à
-l'utilisateur d'avoir à se souvenir seul du prochain verbe. La formulation
-« si tu veux » retire le paternalisme — c'est un rappel, pas une injonction.
+**Rationale**: archiving is the natural step after a sync that modified
+the main specs, and recalling that `/codev-archive` exists saves the user
+from having to remember the next verb on their own. The phrasing
+"if you want" removes the paternalism — it is a reminder, not an order.
 
-**Coût accepté** : la skill devient sensible au champ `updated`/`created`
-du rapport JSON. C'est aligné avec la décision précédente : puisqu'on lit
-le JSON, autant s'en servir pour prendre cette décision de rendu.
+**Accepted cost**: the skill becomes sensitive to the `updated`/`created`
+field of the JSON report. This is aligned with the previous decision:
+since we read the JSON, we may as well use it to make this rendering
+decision.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Un utilisateur pourrait invoquer `/codev-archive` sans avoir lu le
-  résultat de son `/codev-apply`**. → **Compromis assumé** : le pré-flight
-  `validate` intégré à `codev archive` remonte les erreurs, et le refus
-  d'archiver interrompt le processus. Un archivage à l'aveugle qui échoue
-  est plus sûr qu'un archivage qui passerait en silence.
-- **Deux changes actifs déclarant `skills` comme « nouvelle capacité »** —
-  cf. proposal. À l'archivage, le premier crée la spec, le second l'enrichit
-  par ADDED. Rien à faire côté design. Un test unitaire du merger couvre
-  déjà le cas « ADDED sur main spec existante ».
+- **A user could invoke `/codev-archive` without having read the result of
+  their `/codev-apply`**. → **Accepted trade-off**: the `validate`
+  pre-flight built into `codev archive` reports the errors, and the refusal
+  to archive interrupts the process. A blind archiving that fails is safer
+  than an archiving that would go through silently.
+- **Two active changes declaring `skills` as a "new capability"** —
+  cf. proposal. On archiving, the first creates the spec, the second
+  enriches it via ADDED. Nothing to do on the design side. A unit test of
+  the merger already covers the "ADDED on existing main spec" case.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet — deux nouvelles skills. Un projet existant qui a déjà
-`workflows: [propose, explore, apply]` doit ajouter `- sync` et `- archive`,
-puis relancer `codev update`.
+Not applicable — two new skills. An existing project that already has
+`workflows: [propose, explore, apply]` must add `- sync` and `- archive`,
+then rerun `codev update`.

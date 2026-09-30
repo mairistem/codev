@@ -1,117 +1,117 @@
-# Design : retirer une capacité entière
+# Design: remove an entire capability
 
-## Contexte
+## Context
 
-Voir `proposal.md`. La plomberie existe déjà à moitié : le champ
-`retire_capabilities` est réservé dans `ChangeMetadata`, l'erreur de
-merge documente son arrivée future. F5 le rend fonctionnel.
+See `proposal.md`. The plumbing already half exists: the
+`retire_capabilities` field is reserved in `ChangeMetadata`, and the
+merge error documents its future arrival. F5 makes it functional.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre : le champ `deletions` du plan, la nouvelle méthode
-`FileSystem::remove_file`, la signature étendue de `merge_into_existing`,
-la propagation dans `sync/archive`, le contrat JSON, la nouvelle section
-du template. Il ne cadre pas : le flag CLI `--retire-capabilities`, ni
-la suppression automatique des décisions liées.
+This design covers: the plan's `deletions` field, the new
+`FileSystem::remove_file` method, the extended signature of
+`merge_into_existing`, propagation into `sync/archive`, the JSON
+contract, the new template section. It does not cover: the CLI flag
+`--retire-capabilities`, nor automatic deletion of linked decisions.
 
-## Décisions
+## Decisions
 
-### Décision : `deletions` comme opération de premier ordre du `Plan`
+### Decision: `deletions` as a first-class operation of the `Plan`
 
-Trois options :
+Three options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. Signal par un `FileWrite` avec `contents = ""`** | Zéro changement de structure | Ambigu : un fichier légitimement vide devient indistinguable d'une suppression ; masque le geste destructeur |
-| **B. Champ `deletions: Vec<PathBuf>` sur `Plan`** | Clarté sémantique — le plan dit ce qu'il fait ; l'exécuteur voit le geste destructeur explicite | Un peu de code en plus, un peu plus dans le contrat |
-| **C. Retour spécial `MergeOutcome::DeleteFile` du merger** | Signal typé fort côté cœur | La coquille (sync) doit re-router — plus de plomberie que B pour le même bénéfice |
+| **A. Signal via a `FileWrite` with `contents = ""`** | Zero structural change | Ambiguous: a legitimately empty file becomes indistinguishable from a deletion; hides the destructive step |
+| **B. `deletions: Vec<PathBuf>` field on `Plan`** | Semantic clarity — the plan says what it does; the executor sees the destructive step explicitly | A bit more code, a bit more in the contract |
+| **C. Special `MergeOutcome::DeleteFile` return from the merger** | Strong typed signal on the core side | The shell (sync) has to re-route — more plumbing than B for the same benefit |
 
-**Choisi : B.** Un `Plan` qui expose ses trois catégories (writes,
-deletions, moves) rend l'exécution transactionnelle explicite : la
-coquille peut, un jour, refuser une deletion sans confirmation (mode
-`--dry-run`, prompt interactif), sans avoir à reparser des `contents=""`.
-Alignement avec la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) :
-le cœur décrit tous les effets ; la coquille les applique.
+**Chosen: B.** A `Plan` that exposes its three categories (writes,
+deletions, moves) makes the transactional execution explicit: the
+shell can, one day, refuse a deletion without confirmation
+(`--dry-run` mode, interactive prompt), without having to re-parse
+`contents=""`. Aligned with decision
+[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+the core describes all effects; the shell applies them.
 
-### Décision : ordre d'exécution — dirs → writes → **deletions** → moves
+### Decision: execution order — dirs → writes → **deletions** → moves
 
-Justification :
+Rationale:
 
-- **dirs avant writes** : les writes exigent leur dossier parent.
-- **writes avant deletions** : une modification d'une spec `A` et la
-  suppression de `B` sont indépendantes, mais mettre les deletions
-  après réduit la fenêtre d'incohérence si une write plantait après une
-  deletion.
-- **deletions avant moves** : `archive` déplace le dossier du change à
-  la fin — un fichier supprimé pendant le sync ne doit pas ressusciter
-  parce qu'il vivait dans le dossier du change (il n'y vit pas — les
-  deletions ciblent `_codev/specs/`, `move` cible `_codev/changes/`).
+- **dirs before writes**: writes require their parent directory.
+- **writes before deletions**: modifying a spec `A` and deleting `B`
+  are independent, but putting deletions after shrinks the
+  inconsistency window if a write were to crash after a deletion.
+- **deletions before moves**: `archive` moves the change folder at
+  the end — a file deleted during sync must not come back to life
+  because it lived in the change folder (it does not — deletions
+  target `_codev/specs/`, `move` targets `_codev/changes/`).
 
-**Alternative écartée** : deletions avant writes. Aucune spec deletion
-ne dépend d'une write, mais on préfère « on écrit ce qui est neuf, on
-retire ce qui n'a plus lieu d'être » comme lecture humaine du plan.
+**Rejected alternative**: deletions before writes. No spec deletion
+depends on a write, but we prefer "write what is new, remove what no
+longer belongs" as the human reading of the plan.
 
-### Décision : `merge_into_existing` prend `retire_capabilities: bool`
+### Decision: `merge_into_existing` takes `retire_capabilities: bool`
 
-Signature étendue plutôt qu'une nouvelle fonction. Le merger sait déjà
-détecter le vidage total (`removed_count >= spec.requirements.len()`) —
-il en fait déjà une erreur. Le flag transforme cette erreur en signal
-`should_delete_spec: true`.
+An extended signature rather than a new function. The merger already
+knows how to detect total emptying
+(`removed_count >= spec.requirements.len()`) — it already turns it
+into an error. The flag turns that error into a
+`should_delete_spec: true` signal.
 
-**Alternative écartée** : une fonction séparée `merge_and_maybe_delete`.
-Duplique la logique — deux endroits à maintenir en cohérence.
+**Rejected alternative**: a separate function `merge_and_maybe_delete`.
+It duplicates the logic — two places to keep consistent.
 
-### Décision : `MergePlan` expose `should_delete_spec`, la coquille route
+### Decision: `MergePlan` exposes `should_delete_spec`, the shell routes
 
-Le cœur reste ignorant du chemin de la spec principale (il ne connaît
-que le texte du delta). C'est la coquille (`sync::plan_sync`) qui, voyant
-`should_delete_spec: true`, ajoute la deletion au `Plan` avec le chemin
-absolu qu'elle a déjà calculé pour la lecture initiale.
+The core stays unaware of the main spec's path (it only knows the
+delta's text). It is the shell (`sync::plan_sync`) that, seeing
+`should_delete_spec: true`, adds the deletion to the `Plan` with the
+absolute path it already computed for the initial read.
 
-Cohérence avec l'existant : la fonction pure ne construit pas de
-`PathBuf` absolus ; c'est le `Layout` (coquille) qui le fait.
+Consistent with the existing code: the pure function does not build
+absolute `PathBuf`s; the `Layout` (shell) does.
 
-### Décision : la section `### Capacités retirées` du template est documentaire
+### Decision: the template's `### Removed Capabilities` section is documentary
 
-Le parseur ne l'utilise pas — la source de vérité reste `retire_capabilities`
-dans `change.yaml`. Deux raisons :
+The parser does not use it — the source of truth remains
+`retire_capabilities` in `change.yaml`. Two reasons:
 
-1. **Parseur de proposal.md n'existe pas côté champ « capacités »** — le
-   proposal est du texte libre côté outil, sa structure sert au relecteur
-   humain et à l'agent.
-2. **Découplage geste/déclaration** — un delta `REMOVED` sur une capacité
-   dit ce qui change ; le flag `retire_capabilities` dit « et je suis
-   prêt à en accepter la conséquence irréversible ». La liste dans le
-   proposal aide à documenter, pas à imposer.
+1. **There is no proposal.md parser for a "capabilities" field** — the
+   proposal is free text as far as the tool is concerned; its
+   structure serves the human reviewer and the agent.
+2. **Decoupling action from declaration** — a `REMOVED` delta on a
+   capability says what changes; the `retire_capabilities` flag says
+   "and I am ready to accept the irreversible consequence". The list
+   in the proposal helps document, not enforce.
 
-### Décision : `FileSystem::remove_file` obligatoire sur le port
+### Decision: `FileSystem::remove_file` mandatory on the port
 
-Ajout au trait, avec implémentation par défaut refusée (chaque
-implémentation doit s'y engager explicitement). `RealFileSystem` appelle
-`std::fs::remove_file`. `MemoryFileSystem` retire l'entrée de sa
-`HashMap`. Sans cette méthode, `Plan.deletions` serait un champ qu'aucun
-port ne saurait honorer.
+Added to the trait, with no default implementation (each
+implementation must commit to it explicitly). `RealFileSystem` calls
+`std::fs::remove_file`. `MemoryFileSystem` removes the entry from its
+`HashMap`. Without this method, `Plan.deletions` would be a field no
+port could honor.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Un utilisateur passe `retire_capabilities: true` par erreur, sur un
-  change qui ne retire rien.** → **Compromis assumé** : sans REMOVED
-  qui vide une spec, le flag est un no-op silencieux. Pas de warning
-  dédié — le flag documente l'intention, pas plus.
-- **Un `apply::execute` qui échoue à mi-plan laisse un état
-  intermédiaire.** → **Compromis assumé** : atomicité stricte demanderait
-  un système de journal (rollback). Trop cher pour l'usage actuel ; le
-  `codev validate` + `git status` restent le filet.
-- **Une capacité supprimée puis re-ajoutée dans le même change** — cas
-  bizarre, mais possible : un REMOVED total suivi d'un ADDED sur la
-  même capa dans un autre delta. → **Compromis assumé** : l'ordre des
-  fichiers de delta est stable (`walk_files` trié), le premier delta
-  détermine le sort de la spec. On documente ce cas au premier report,
-  pas maintenant.
+- **A user sets `retire_capabilities: true` by mistake, on a change
+  that removes nothing.** → **Accepted trade-off**: without a REMOVED
+  that empties a spec, the flag is a silent no-op. No dedicated
+  warning — the flag documents intent, nothing more.
+- **An `apply::execute` that fails mid-plan leaves an intermediate
+  state.** → **Accepted trade-off**: strict atomicity would require a
+  journaling system (rollback). Too expensive for current usage;
+  `codev validate` + `git status` remain the safety net.
+- **A capability deleted then re-added in the same change** — an odd
+  case, but possible: a total REMOVED followed by an ADDED on the same
+  capability in another delta. → **Accepted trade-off**: the order of
+  delta files is stable (sorted `walk_files`), so the first delta
+  decides the spec's fate. We will document this case at the first
+  report, not now.
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Le champ `deletions` de `Plan` est initialement vide pour tous
-les plans existants ; le comportement historique est bit-identique tant
-que `retire_capabilities` n'est pas passé à `true`.
+None. The `Plan`'s `deletions` field is initially empty for all
+existing plans; the historical behavior is bit-identical as long as
+`retire_capabilities` is not set to `true`.

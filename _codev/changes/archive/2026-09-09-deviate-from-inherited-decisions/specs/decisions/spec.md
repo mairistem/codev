@@ -1,141 +1,140 @@
 ## ADDED Requirements
 
-### Requirement: Champ `deviates_from` reconnu dans le frontmatter d'un ADR
+### Requirement: `deviates_from` field recognized in an ADR's frontmatter
 
-Le parseur d'ADR SHALL reconnaître un champ optionnel `deviates_from`
-dans le frontmatter YAML — une liste d'identifiants qualifiés
-(`<origin>/<id>`) qui pointe vers les décisions dont ce nouvel ADR se
-détache localement. Le champ est additif : son absence conserve la
-sémantique actuelle des ADR. Une valeur qui n'est pas une liste, ou dont
-les entrées ne sont pas des chaînes, est signalée.
+The ADR parser SHALL recognize an optional `deviates_from` field in the
+YAML frontmatter — a list of qualified identifiers (`<origin>/<id>`)
+pointing to the decisions this new ADR locally departs from. The field
+is additive: its absence keeps the current ADR semantics. A value that
+is not a list, or whose entries are not strings, is reported.
 
-#### Scenario: ADR avec `deviates_from`
+#### Scenario: ADR with `deviates_from`
 
-- **GIVEN** un ADR local dont le frontmatter porte
-  `deviates_from: ["path:~/partage/0100"]`
-- **WHEN** le parseur lit le fichier
-- **THEN** le résultat expose la liste `["path:~/partage/0100"]` sur le
-  champ `deviates_from`
-- **AND** aucun finding n'est émis pour ce champ
+- **GIVEN** a local ADR whose frontmatter carries
+  `deviates_from: ["path:~/shared/0100"]`
+- **WHEN** the parser reads the file
+- **THEN** the result exposes the list `["path:~/shared/0100"]` on the
+  `deviates_from` field
+- **AND** no finding is emitted for this field
 
-#### Scenario: `deviates_from` mal formé
+#### Scenario: Malformed `deviates_from`
 
-- **GIVEN** un ADR dont le frontmatter porte `deviates_from: "pas-une-liste"`
-- **WHEN** le parseur lit le fichier
-- **THEN** un finding de code `decision_field_type_mismatch` signale le
-  champ `deviates_from`
+- **GIVEN** an ADR whose frontmatter carries `deviates_from: "not-a-list"`
+- **WHEN** the parser reads the file
+- **THEN** a finding with code `decision_field_type_mismatch` reports
+  the `deviates_from` field
 
-### Requirement: Commande `codev decision deviate` crée un ADR de dérive
+### Requirement: `codev decision deviate` command creates a deviation ADR
 
-`codev decision deviate <qualified-id> <titre>` MUST créer un ADR local
-`accepted` avec `deviates_from: ["<qualified-id>"]` et un frontmatter
-valide (`id`, `title`, `status: accepted`, `date`), scellé par le même
-plan d'effets — cohérence avec K3.
+`codev decision deviate <qualified-id> <title>` MUST create a local
+`accepted` ADR with `deviates_from: ["<qualified-id>"]` and a valid
+frontmatter (`id`, `title`, `status: accepted`, `date`), sealed by the
+same effect plan — consistent with K3.
 
-La commande MUST refuser :
+The command MUST refuse:
 
-- si `<qualified-id>` désigne une décision locale (`projet/…`) : code
-  stable `cannot_deviate_from_local`, avec un message qui renvoie vers
+- if `<qualified-id>` designates a local decision (`project/…`): stable
+  code `cannot_deviate_from_local`, with a message pointing to
   `codev decision supersede`.
-- si `<qualified-id>` ne correspond à aucune décision indexée : code
-  stable `unknown_decision_id` (déjà existant).
-- si `<titre>` est vide : code stable `empty_title` (déjà existant).
+- if `<qualified-id>` matches no indexed decision: stable code
+  `unknown_decision_id` (an existing code).
+- if `<title>` is empty: stable code `empty_title` (an existing code).
 
-#### Scenario: Dérive d'une décision héritée `path:`
+#### Scenario: Deviation from an inherited `path:` decision
 
-- **GIVEN** un projet héritant d'une source `path: ~/partage` contenant
-  un ADR `path:~/partage/0100`
-- **WHEN** l'utilisateur lance
-  `codev decision deviate path:~/partage/0100 "Notre alternative locale"`
-- **THEN** un nouvel ADR local est créé sous
-  `_codev/decisions/NNNN-notre-alternative-locale.md` avec
-  `deviates_from: ["path:~/partage/0100"]` et `status: accepted`
-- **AND** une entrée est ajoutée à `_codev/decisions/seal.yaml` pour ce
-  nouvel ADR
+- **GIVEN** a project inheriting from a source `path: ~/shared`
+  containing an ADR `path:~/shared/0100`
+- **WHEN** the user runs
+  `codev decision deviate path:~/shared/0100 "Our local alternative"`
+- **THEN** a new local ADR is created under
+  `_codev/decisions/NNNN-our-local-alternative.md` with
+  `deviates_from: ["path:~/shared/0100"]` and `status: accepted`
+- **AND** an entry is added to `_codev/decisions/seal.yaml` for this
+  new ADR
 
-#### Scenario: Refus de dériver d'une décision locale
+#### Scenario: Refusal to deviate from a local decision
 
-- **GIVEN** un projet contenant un ADR local `0003 accepted`
-- **WHEN** l'utilisateur lance `codev decision deviate projet/0003 "…"`
-- **THEN** aucun fichier n'est écrit
-- **AND** le message d'erreur nomme le code stable
-  `cannot_deviate_from_local` et suggère `codev decision supersede`
+- **GIVEN** a project containing a local ADR `0003 accepted`
+- **WHEN** the user runs `codev decision deviate project/0003 "…"`
+- **THEN** no file is written
+- **AND** the error message names the stable code
+  `cannot_deviate_from_local` and suggests `codev decision supersede`
 
-#### Scenario: Refus d'une cible inconnue
+#### Scenario: Refusal of an unknown target
 
-- **GIVEN** un projet sans source héritée
-- **WHEN** l'utilisateur lance
-  `codev decision deviate path:~/inconnue/0100 "…"`
-- **THEN** aucun fichier n'est écrit
-- **AND** le message d'erreur nomme le code stable `unknown_decision_id`
+- **GIVEN** a project without an inherited source
+- **WHEN** the user runs
+  `codev decision deviate path:~/unknown/0100 "…"`
+- **THEN** no file is written
+- **AND** the error message names the stable code `unknown_decision_id`
 
-### Requirement: L'index cache les décisions héritées déviées et expose `deviated_by`
+### Requirement: The index hides deviated inherited decisions and exposes `deviated_by`
 
-Quand l'index des décisions calcule les entrées en vigueur, chaque
-décision héritée référencée par un `deviates_from` d'un ADR local
-`accepted` MUST être marquée `deviated_by: <qualified-id-local>` dans
-l'index, retirée du tableau `in_effect`, et n'apparaître ni dans le
-tableau `decisions[]` des instructions de `design`, ni dans la section
-humaine « Décisions en vigueur » de son rendu.
+When the decision index computes the entries in effect, each inherited
+decision referenced by a `deviates_from` of a local `accepted` ADR MUST
+be marked `deviated_by: <local-qualified-id>` in the index, removed
+from the `in_effect` array, and appear neither in the `decisions[]`
+array of the `design` instructions, nor in the human "Decisions in
+effect" section of their rendering.
 
-L'entrée héritée reste visible dans `codev decision list` — la
-transparence prime sur l'invisibilisation.
+The inherited entry stays visible in `codev decision list` —
+transparency prevails over hiding.
 
-#### Scenario: Instructions design ne portent pas la décision déviée
+#### Scenario: Design instructions do not carry the deviated decision
 
-- **GIVEN** un projet qui hérite d'une source contenant
-  `path:~/partage/0100 accepted`, et un ADR local `0007 accepted` dont
-  le frontmatter porte `deviates_from: ["path:~/partage/0100"]`
-- **WHEN** l'utilisateur lance
-  `codev instructions design --change <nom> --json`
-- **THEN** le tableau `decisions` de la réponse contient `projet/0007`
-- **AND** le tableau `decisions` ne contient PAS `path:~/partage/0100`
+- **GIVEN** a project inheriting from a source containing
+  `path:~/shared/0100 accepted`, and a local ADR `0007 accepted` whose
+  frontmatter carries `deviates_from: ["path:~/shared/0100"]`
+- **WHEN** the user runs
+  `codev instructions design --change <name> --json`
+- **THEN** the `decisions` array of the response contains `project/0007`
+- **AND** the `decisions` array does NOT contain `path:~/shared/0100`
 
-#### Scenario: `decision list` expose la dérive
+#### Scenario: `decision list` exposes the deviation
 
-- **GIVEN** le même contexte
-- **WHEN** l'utilisateur lance `codev decision list --json`
-- **THEN** l'entrée `path:~/partage/0100` porte `deviatedBy:
-  "projet/0007"` et `inEffect: false`
-- **AND** l'entrée `projet/0007` porte `deviatesFrom:
-  ["path:~/partage/0100"]` et `inEffect: true`
+- **GIVEN** the same context
+- **WHEN** the user runs `codev decision list --json`
+- **THEN** the `path:~/shared/0100` entry carries `deviatedBy:
+  "project/0007"` and `inEffect: false`
+- **AND** the `project/0007` entry carries `deviatesFrom:
+  ["path:~/shared/0100"]` and `inEffect: true`
 
-#### Scenario: Un ADR local `proposed` ne fait pas dévier
+#### Scenario: A `proposed` local ADR does not cause a deviation
 
-- **GIVEN** un ADR local `0007 proposed` avec `deviates_from:
-  ["path:~/partage/0100"]`
-- **WHEN** l'index est calculé
-- **THEN** `path:~/partage/0100` reste en vigueur (le proposed n'est pas
-  encore engagé, il ne peut pas dévier)
-- **AND** l'entrée `path:~/partage/0100` ne porte pas de `deviatedBy`
+- **GIVEN** a local ADR `0007 proposed` with `deviates_from:
+  ["path:~/shared/0100"]`
+- **WHEN** the index is computed
+- **THEN** `path:~/shared/0100` stays in effect (the proposed ADR is
+  not yet committed, it cannot deviate)
+- **AND** the `path:~/shared/0100` entry carries no `deviatedBy`
 
-### Requirement: `validate` détecte les dérives dégénérées
+### Requirement: `validate` detects degenerate deviations
 
-`codev validate` MUST émettre deux nouveaux findings de code stable :
+`codev validate` MUST emit two new findings with stable codes:
 
-- `decision_dangling_deviation` — **warning** — quand un ADR local a un
-  `deviates_from: ["<qualified-id>"]` dont la cible n'existe pas ou
-  n'existe plus dans l'index (source retirée, SHA déplacé, id changé).
-- `decision_conflicting_deviations` — **erreur** — quand deux ADR
-  locaux `accepted` référencent la même cible dans leur
-  `deviates_from`. La règle est : « une cible, une dérive ».
+- `decision_dangling_deviation` — **warning** — when a local ADR has a
+  `deviates_from: ["<qualified-id>"]` whose target does not exist or no
+  longer exists in the index (source removed, SHA moved, id changed).
+- `decision_conflicting_deviations` — **error** — when two local
+  `accepted` ADRs reference the same target in their `deviates_from`.
+  The rule is: "one target, one deviation".
 
-#### Scenario: Dérive orpheline
+#### Scenario: Orphan deviation
 
-- **GIVEN** un projet dont un ADR local `0007 accepted` porte
-  `deviates_from: ["path:~/inconnue/9999"]`, sans qu'aucune source
-  n'expose ce `qualified-id`
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** la sortie contient un finding de code
-  `decision_dangling_deviation` nommant `0007` et sa cible manquante
-- **AND** le code d'erreur de la commande est nul (warning)
+- **GIVEN** a project where a local ADR `0007 accepted` carries
+  `deviates_from: ["path:~/unknown/9999"]`, with no source exposing
+  this `qualified-id`
+- **WHEN** the user runs `codev validate`
+- **THEN** the output contains a finding with code
+  `decision_dangling_deviation` naming `0007` and its missing target
+- **AND** the command's exit code is zero (warning)
 
-#### Scenario: Deux dérives sur la même cible
+#### Scenario: Two deviations on the same target
 
-- **GIVEN** un projet avec deux ADR locaux `accepted`, `0007` et
-  `0008`, tous deux avec `deviates_from: ["path:~/partage/0100"]`
-- **WHEN** l'utilisateur lance `codev validate`
-- **THEN** la sortie contient un finding
-  `decision_conflicting_deviations` qui nomme les deux ADR et la cible
-  en conflit
-- **AND** le code d'erreur de la commande est non nul (erreur)
+- **GIVEN** a project with two local `accepted` ADRs, `0007` and
+  `0008`, both with `deviates_from: ["path:~/shared/0100"]`
+- **WHEN** the user runs `codev validate`
+- **THEN** the output contains a
+  `decision_conflicting_deviations` finding naming both ADRs and the
+  conflicting target
+- **AND** the command's exit code is non-zero (error)

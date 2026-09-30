@@ -1,3 +1,3 @@
 schema: spec-driven
 created: 2026-09-28
-goal: 'Corriger is_config_thin : baser la détection UNIQUEMENT sur rules.is_empty(), pas sur la longueur du contexte (auto-détecté trompeur). Un projet TS avec beaucoup de dépendances doit toujours déclencher la nudge tant qu''aucune règle n''est écrite.'
+goal: 'Fix is_config_thin: base detection ONLY on rules.is_empty(), not on the length of the context (auto-detected, misleading). A TS project with many dependencies must still trigger the hint as long as no rule has been written.'

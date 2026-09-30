@@ -1,49 +1,52 @@
-# Design : validation des changes et des specs
+# Design: validation of changes and specs
 
-## Contexte
+## Context
 
-Voir `proposal.md` pour la motivation. Le parseur émet déjà des `Finding` par
-fichier — la validation les complète, coordonne la lecture disque, et produit
-un rapport que le CLI rend en deux formes (humain et JSON à contrat stable).
+See `proposal.md` for the motivation. The parser already emits `Finding`s
+per file — validation complements them, coordinates disk reading, and
+produces a report that the CLI renders in two forms (human and JSON with a
+stable contract).
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre :
+This design covers:
 
-- où vit chaque règle (cœur pur vs coquille), et pourquoi ;
-- la forme du `Finding` étendu par un `path`, sans perdre le contrat déjà
-  utilisé par le parseur ;
-- l'orchestration côté engine et la forme JSON côté CLI.
+- where each rule lives (pure core vs shell), and why;
+- the shape of the `Finding` extended with a `path`, without losing the
+  contract already used by the parser;
+- the orchestration on the engine side and the JSON shape on the CLI side.
 
-Il ne cadre **pas** `--strict` ni `--archived` ni `--concurrency` (reportés,
-cf. proposal), ni la fusion sémantique qu'exécutera `sync` (change à venir).
+It does **not** cover `--strict` nor `--archived` nor `--concurrency`
+(deferred, cf. proposal), nor the semantic merge that `sync` will perform
+(upcoming change).
 
-## Décisions
+## Decisions
 
-### Décision : règles pures dans `codev-core`, coordination dans `codev-engine`
+### Decision: pure rules in `codev-core`, coordination in `codev-engine`
 
-Les règles supplémentaires (SHALL/MUST manquant, exigence sans scénario,
-cohérences cross-sections) sont des fonctions pures sur l'AST — mêmes entrées,
-mêmes sorties, sans horloge ni disque. Elles vivent donc dans
-`codev-core::validate`. La coordination — trouver les fichiers, les lire, les
-grouper, calculer un exit code — vit dans `codev-engine::validate` derrière
-les ports `FileSystem` et `Env`.
+The additional rules (missing SHALL/MUST, requirement without a scenario,
+cross-section consistency) are pure functions on the AST — same inputs,
+same outputs, with no clock or disk. They therefore live in
+`codev-core::validate`. Coordination — finding the files, reading them,
+grouping them, computing an exit code — lives in `codev-engine::validate`
+behind the `FileSystem` and `Env` ports.
 
-Cela suit directement la décision
-[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md) : décider
-n'est pas exécuter. Les règles décrivent, l'engine exécute la lecture, le CLI
-formate.
+This follows directly from decision
+[0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md):
+deciding is not executing. The rules describe, the engine performs the
+reading, the CLI formats.
 
-**Alternatives considérées** :
+**Alternatives considered**:
 
-- **Tout dans `codev-engine`.** Rend les règles opaques aux tests unitaires
-  purs — il faut construire un `FileSystem` en mémoire pour tester
-  « exigence sans scénario », alors qu'on ne fait qu'inspecter un `Requirement`.
-- **Tout dans `codev-core`.** Impose à `codev-core` de savoir marcher un
-  dossier, ce qui contredit le contrat « aucune I/O » de
+- **Everything in `codev-engine`.** Makes the rules opaque to pure unit
+  tests — one has to build an in-memory `FileSystem` to test
+  "requirement without a scenario", when all we do is inspect a
+  `Requirement`.
+- **Everything in `codev-core`.** Forces `codev-core` to know how to walk
+  a folder, which contradicts the "no I/O" contract of
   [0001](../../decisions/0001-coeur-fonctionnel-coquille-imperative.md).
 
-### Décision : `trait Rule` avec un registre statique
+### Decision: `trait Rule` with a static registry
 
 ```rust
 pub trait Rule {
@@ -55,85 +58,88 @@ pub trait Rule {
 }
 ```
 
-Chaque règle est une implémentation, enregistrée dans un `pub static
-RULES: &[&dyn Rule]`. Le validateur les applique toutes et concatène les
-findings. Ajouter une règle E4 (warnings du lot 2) sera une struct de plus dans
-le registre, sans toucher au reste.
+Each rule is an implementation, registered in a `pub static
+RULES: &[&dyn Rule]`. The validator applies them all and concatenates the
+findings. Adding an E4 rule (batch 2 warnings) will be one more struct in
+the registry, without touching the rest.
 
-**Alternatives considérées** :
+**Alternatives considered**:
 
-- **Un `enum RuleId` + un `match` géant.** Plus concis au début, ingérable
-  à quinze règles. Perd aussi le point d'extension annoncé dans
-  [0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
-- **Des fonctions libres, sans trait.** Perd le point unique d'enregistrement,
-  et donc la garantie qu'une règle nouvelle est bien intégrée à la commande.
+- **An `enum RuleId` + a giant `match`.** More concise at first,
+  unmanageable at fifteen rules. Also loses the extension point announced
+  in [0002](../../decisions/0002-graphe-de-crates-comme-regle-de-dependance.md).
+- **Free functions, without a trait.** Loses the single registration
+  point, and thus the guarantee that a new rule is actually wired into the
+  command.
 
-### Décision : `Finding` conservé, `LocatedFinding` ajouté
+### Decision: `Finding` kept, `LocatedFinding` added
 
-Le `Finding` du parseur reste tel qu'il est (code stable côté API publique du
-parseur, `code + line + severity + message`). L'engine l'enrichit d'un `path`
-relatif au projet et d'un `item_kind`, produisant un `LocatedFinding` — c'est
-ce type qui traverse le contrat JSON.
+The parser's `Finding` stays as it is (stable code on the parser's public
+API side, `code + line + severity + message`). The engine enriches it with
+a project-relative `path` and an `item_kind`, producing a `LocatedFinding`
+— this is the type that goes through the JSON contract.
 
-**Rationale** : casser le `Finding` existant pour y ajouter un `path` casserait
-sa présence dans le contrat des tests golden du parseur, et forcerait chaque
-call site du parseur à porter un chemin qui n'a de sens qu'à l'échelle d'un
-projet. La séparation coûte une conversion triviale et évite ce couplage.
+**Rationale**: breaking the existing `Finding` to add a `path` to it would
+break its presence in the contract of the parser's golden tests, and would
+force every parser call site to carry a path that only makes sense at the
+scale of a project. The separation costs a trivial conversion and avoids
+this coupling.
 
-### Décision : un seul appel de parsing par fichier
+### Decision: a single parsing call per file
 
-L'engine ouvre chaque fichier une seule fois, produit un `Parsed<Spec>` ou
-`Parsed<Delta>`, en tire à la fois les findings du parseur et les findings des
-règles pures. C'est ce qui rend la validation en lot linéaire en nombre de
-fichiers, et non quadratique.
+The engine opens each file only once, produces a `Parsed<Spec>` or
+`Parsed<Delta>`, and derives from it both the parser's findings and the
+pure rules' findings. This is what makes batch validation linear in the
+number of files, and not quadratic.
 
-### Décision : rapport `ValidateReport` sans imbrication profonde
+### Decision: `ValidateReport` report without deep nesting
 
 ```
 ValidateReport
 ├── root: PathBuf
-├── items: Vec<ItemReport>       // un par fichier ou change
+├── items: Vec<ItemReport>       // one per file or change
 │    ├── kind: "change" | "spec"
-│    ├── name: String            // "add-auth" ou "user-auth"
-│    ├── path: String            // relatif au projet
+│    ├── name: String            // "add-auth" or "user-auth"
+│    ├── path: String            // project-relative
 │    └── findings: Vec<LocatedFinding>
-└── status: Vec<StatusEntry>     // erreurs d'exécution seulement
+└── status: Vec<StatusEntry>     // execution errors only
 ```
 
-La CLI itère `items` pour le rendu humain, et sérialise tel quel pour le
-JSON — même règle « exactement un document sur stdout » que le contrat
-existant.
+The CLI iterates over `items` for the human rendering, and serializes as
+is for the JSON — same "exactly one document on stdout" rule as the
+existing contract.
 
-**Rationale** : hiérarchiser par change → fichier → finding paraît propre,
-mais un `_codev/specs/x/spec.md` n'a pas de « change » parent. Un modèle plat,
-avec un `kind` explicite, sert les deux cas sans branche conditionnelle dans
-le consommateur.
+**Rationale**: a change → file → finding hierarchy looks clean, but a
+`_codev/specs/x/spec.md` has no parent "change". A flat model, with an
+explicit `kind`, serves both cases without a conditional branch in the
+consumer.
 
-### Décision : exit code binaire, jamais confondu avec un `sh` mal configuré
+### Decision: binary exit code, never confused with a misconfigured `sh`
 
-`0` sans erreur, `1` avec au moins un `Finding` de sévérité `Error` **ou**
-avec une erreur d'exécution. Un code plus riche (2 pour warnings, 3 pour usage,
-…) est tentant, mais le lot 2 introduira `--strict` qui promeut les warnings
-en erreurs ; réserver plusieurs codes maintenant serait un choix qu'il faudrait
-défaire.
+`0` without error, `1` with at least one `Finding` of severity `Error`
+**or** with an execution error. A richer code (2 for warnings, 3 for
+usage, …) is tempting, but batch 2 will introduce `--strict`, which
+promotes warnings to errors; reserving several codes now would be a choice
+that would have to be undone.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Divergence code/message entre le parseur et les règles.** Deux endroits
-  produisent des findings — un contributeur pourrait dupliquer un code, ou en
-  choisir un incompatible. → **Atténuation** : un test qui itère `RULES` et le
-  parseur, vérifie que chaque `code` est unique, et refuse une intersection.
-- **Détection de doublon inter-section coûteuse en cas d'énorme delta.**
-  Théoriquement O(n²) sur le nombre d'exigences. → **Compromis assumé** : le
-  seuil pratique est très bas (<50 exigences par delta) ; on repassera dessus
-  quand un cas réel montrera le contraire.
-- **Sortie humaine sensible aux terminaux étroits.** Un chemin long + un
-  message long tient mal en 80 colonnes. → **Atténuation** : le message va sur
-  sa propre ligne, préfixé de sa localisation ; pas de tableau ASCII fragile.
+- **Code/message divergence between the parser and the rules.** Two
+  places produce findings — a contributor could duplicate a code, or pick
+  an incompatible one. → **Mitigation**: a test that iterates over `RULES`
+  and the parser, checks that each `code` is unique, and rejects an
+  intersection.
+- **Cross-section duplicate detection costly for a huge delta.**
+  Theoretically O(n²) in the number of requirements. → **Accepted
+  trade-off**: the practical threshold is very low (<50 requirements per
+  delta); we will revisit it when a real case shows otherwise.
+- **Human output sensitive to narrow terminals.** A long path + a long
+  message fits poorly in 80 columns. → **Mitigation**: the message goes on
+  its own line, prefixed with its location; no fragile ASCII table.
 
-## Plan de migration
+## Migration Plan
 
-Sans objet : nouvelle capacité, aucun consommateur existant à migrer. Le champ
-`status` du contrat JSON réutilise la forme déjà tenue par `codev status` et
-`codev instructions`, donc rien de nouveau pour un agent qui connaissait déjà
-le contrat.
+Not applicable: new capability, no existing consumer to migrate. The
+`status` field of the JSON contract reuses the shape already held by
+`codev status` and `codev instructions`, so nothing new for an agent that
+already knew the contract.

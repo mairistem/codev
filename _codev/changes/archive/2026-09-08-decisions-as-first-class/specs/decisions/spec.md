@@ -1,153 +1,154 @@
 ## Purpose
 
-Rendre les décisions d'architecture exploitables par codev : les lire, les
-indexer, résoudre la chaîne des supersessions, et les injecter dans les
-instructions de l'artefact `design` pour qu'un agent qui rédige voie
-d'emblée les choix déjà tranchés.
+Make architecture decisions usable by codev: read them, index them, resolve
+the supersession chain, and inject them into the instructions for the
+`design` artifact so that a drafting agent sees the already settled
+choices right away.
 
 ## ADDED Requirements
 
-### Requirement: Format ADR reconnu
+### Requirement: Recognized ADR format
 
-Le parseur SHALL reconnaître un ADR écrit en frontmatter YAML suivi de
-sections markdown libres. Le frontmatter porte au moins les champs `id`,
-`title`, `status`, `date`, et éventuellement `tags` (liste), `supersedes`
-(identifiant ou tableau d'identifiants). Un fichier sans frontmatter ou dont
-le frontmatter manque un champ obligatoire est signalé, pas parsé
-silencieusement.
+The parser SHALL recognize an ADR written as YAML frontmatter followed by
+free-form markdown sections. The frontmatter carries at least the fields
+`id`, `title`, `status`, `date`, and optionally `tags` (list), `supersedes`
+(identifier or array of identifiers). A file without frontmatter, or whose
+frontmatter lacks a mandatory field, is reported, not silently parsed.
 
-#### Scenario: ADR bien formé
+#### Scenario: Well-formed ADR
 
-- **GIVEN** un fichier commençant par `---`, contenant un frontmatter YAML
-  avec `id: 0007`, `title: "…"`, `status: accepted`, `date: 2026-09-08`,
-  `tags: [architecture]`, puis un séparateur `---` puis du markdown libre
-- **WHEN** le parseur lit le fichier
-- **THEN** le résultat expose l'identifiant `0007`, le titre, le statut
-  `accepted`, la date et le tag `architecture`
+- **GIVEN** a file starting with `---`, containing YAML frontmatter
+  with `id: 0007`, `title: "…"`, `status: accepted`, `date: 2026-09-08`,
+  `tags: [architecture]`, then a `---` separator, then free-form markdown
+- **WHEN** the parser reads the file
+- **THEN** the result exposes the identifier `0007`, the title, the status
+  `accepted`, the date and the tag `architecture`
 
-#### Scenario: ADR sans frontmatter
+#### Scenario: ADR without frontmatter
 
-- **GIVEN** un fichier markdown sans en-tête `---`
-- **WHEN** le parseur lit le fichier
-- **THEN** un finding de code stable `decision_missing_frontmatter` signale
-  que le fichier n'a pas le format attendu
+- **GIVEN** a markdown file without a `---` header
+- **WHEN** the parser reads the file
+- **THEN** a finding with the stable code `decision_missing_frontmatter`
+  reports that the file does not have the expected format
 
-#### Scenario: Champ obligatoire manquant
+#### Scenario: Missing mandatory field
 
-- **GIVEN** un fichier dont le frontmatter n'a pas de `title`
-- **WHEN** le parseur lit le fichier
-- **THEN** un finding de code `decision_missing_field` nomme le champ
-  manquant
+- **GIVEN** a file whose frontmatter has no `title`
+- **WHEN** the parser reads the file
+- **THEN** a finding with code `decision_missing_field` names the missing
+  field
 
-### Requirement: Statuts reconnus et effet
+### Requirement: Recognized statuses and effect
 
-Le validateur MUST reconnaître les statuts `accepted`, `superseded`,
-`proposed`, `deprecated`, `rejected` ; seuls `accepted` et `superseded`
-sont pris en compte pour le calcul de l'effet — les trois autres sont
-exposés tels quels dans l'index et jamais considérés comme « en vigueur ».
+The validator MUST recognize the statuses `accepted`, `superseded`,
+`proposed`, `deprecated`, `rejected`; only `accepted` and `superseded`
+are taken into account when computing the effect — the other three are
+exposed as is in the index and never considered "in effect".
 
-#### Scenario: Statut inconnu signalé
+#### Scenario: Unknown status reported
 
-- **GIVEN** un ADR dont le `status` vaut `pending`
-- **WHEN** le parseur lit le fichier
-- **THEN** un finding de code `decision_unknown_status` signale la valeur
-  et rappelle la liste des statuts reconnus
+- **GIVEN** an ADR whose `status` is `pending`
+- **WHEN** the parser reads the file
+- **THEN** a finding with code `decision_unknown_status` reports the value
+  and recalls the list of recognized statuses
 
-#### Scenario: Statut proposed n'entre pas en vigueur
+#### Scenario: Proposed status does not take effect
 
-- **GIVEN** un ADR de statut `proposed`, sans lien de supersession
-- **WHEN** l'index est calculé
-- **THEN** cette décision n'apparaît pas dans les « décisions en vigueur »
+- **GIVEN** an ADR with status `proposed`, with no supersession link
+- **WHEN** the index is computed
+- **THEN** this decision does not appear among the "decisions in effect"
 
-### Requirement: Supersession résolue en chaîne
+### Requirement: Supersession resolved as a chain
 
-L'index MUST résoudre le champ `supersedes` : chaque décision qu'un ADR
-supersede est marquée `superseded_by(<id>)` dans l'index, et n'est pas en
-vigueur. Une chaîne `A ← B ← C` laisse `A` et `B` supersedées, seule `C`
-reste en vigueur.
+The index MUST resolve the `supersedes` field: each decision that an ADR
+supersedes is marked `superseded_by(<id>)` in the index, and is not in
+effect. A chain `A ← B ← C` leaves `A` and `B` superseded; only `C`
+remains in effect.
 
-#### Scenario: Supersession directe
+#### Scenario: Direct supersession
 
-- **GIVEN** un ADR `0003 accepted` et un ADR `0007 accepted supersedes: [0003]`
-- **WHEN** l'index est calculé
-- **THEN** `0003` est marqué `superseded_by(0007)` et n'apparaît pas dans
-  les décisions en vigueur
-- **AND** `0007` apparaît dans les décisions en vigueur
+- **GIVEN** an ADR `0003 accepted` and an ADR `0007 accepted supersedes: [0003]`
+- **WHEN** the index is computed
+- **THEN** `0003` is marked `superseded_by(0007)` and does not appear among
+  the decisions in effect
+- **AND** `0007` appears among the decisions in effect
 
-#### Scenario: Chaîne à trois maillons
+#### Scenario: Three-link chain
 
-- **GIVEN** trois ADR `accepted` où `B` supersede `A` et `C` supersede `B`
-- **WHEN** l'index est calculé
-- **THEN** seul `C` est en vigueur
+- **GIVEN** three `accepted` ADRs where `B` supersedes `A` and `C`
+  supersedes `B`
+- **WHEN** the index is computed
+- **THEN** only `C` is in effect
 
-#### Scenario: Cible de supersession absente
+#### Scenario: Missing supersession target
 
-- **GIVEN** un ADR `0007 supersedes: [9999]` alors que `9999` n'existe pas
-- **WHEN** l'index est calculé
-- **THEN** un finding de code `decision_supersedes_unknown` signale
-  l'identifiant fantôme
-- **AND** `0007` reste en vigueur (le lien perdu ne le disqualifie pas)
+- **GIVEN** an ADR `0007 supersedes: [9999]` while `9999` does not exist
+- **WHEN** the index is computed
+- **THEN** a finding with code `decision_supersedes_unknown` reports the
+  phantom identifier
+- **AND** `0007` remains in effect (the lost link does not disqualify it)
 
-### Requirement: Décisions héritées prises en compte
+### Requirement: Inherited decisions taken into account
 
-Quand un projet déclare `inherits: path: <chemin>` dans son
-`_codev/config.yaml`, le validateur MUST parser aussi les ADR de
-`<chemin>/_codev/decisions/` et les fusionner dans l'index avec leur
+When a project declares `inherits: path: <path>` in its
+`_codev/config.yaml`, the validator MUST also parse the ADRs in
+`<path>/_codev/decisions/` and merge them into the index with their
 `origin` visible.
 
-#### Scenario: ADR d'une source héritée apparaît dans l'index
+#### Scenario: ADR from an inherited source appears in the index
 
-- **GIVEN** un projet qui hérite d'une source `path: ~/partage` contenant
-  un ADR `0100 accepted`
-- **WHEN** l'index est calculé
-- **THEN** l'entrée porte l'`origin` `path:~/partage`
-- **AND** son identifiant qualifié pour éviter les collisions est
-  `path:~/partage/0100`
+- **GIVEN** a project inheriting from a source `path: ~/shared` containing
+  an ADR `0100 accepted`
+- **WHEN** the index is computed
+- **THEN** the entry carries the `origin` `path:~/shared`
+- **AND** its qualified identifier, to avoid collisions, is
+  `path:~/shared/0100`
 
-#### Scenario: Collision d'id entre projet et source
+#### Scenario: Id collision between project and source
 
-- **GIVEN** un ADR `0007 accepted` local **et** un ADR `0007 accepted` dans
-  une source héritée
-- **WHEN** l'index est calculé
-- **THEN** un finding de code `decision_id_collision` signale le doublon
-- **AND** la version du projet gagne (elle est plus proche de l'auteur)
+- **GIVEN** a local ADR `0007 accepted` **and** an ADR `0007 accepted` in
+  an inherited source
+- **WHEN** the index is computed
+- **THEN** a finding with code `decision_id_collision` reports the
+  duplicate
+- **AND** the project's version wins (it is closer to the author)
 
-### Requirement: Injection dans les instructions de design
+### Requirement: Injection into the design instructions
 
-L'appel `codev instructions design --change <nom>` MUST enrichir sa réponse
-d'un champ `decisions[]` porteur des décisions en vigueur. Chaque entrée
-expose `id`, `title`, `status`, `tags`, `path` (relatif au projet) et
-`origin`. Le contenu complet reste dans le fichier — pas de duplication
-dans la réponse.
+The call `codev instructions design --change <name>` MUST enrich its
+response with a `decisions[]` field carrying the decisions in effect. Each
+entry exposes `id`, `title`, `status`, `tags`, `path` (relative to the
+project) and `origin`. The full content stays in the file — no duplication
+in the response.
 
-#### Scenario: Instructions design portent les décisions en vigueur
+#### Scenario: Design instructions carry the decisions in effect
 
-- **GIVEN** un projet avec 6 ADR `accepted` et aucun supersession
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>
+- **GIVEN** a project with 6 `accepted` ADRs and no supersession
+- **WHEN** the user runs `codev instructions design --change <name>
   --json`
-- **THEN** la réponse JSON contient un tableau `decisions` avec exactement
-  6 entrées, chacune portant `id`, `title`, `status`, `path` relatif au
-  projet et `origin: "projet"`
+- **THEN** the JSON response contains a `decisions` array with exactly
+  6 entries, each carrying `id`, `title`, `status`, a `path` relative to
+  the project and `origin: "project"`
 
-#### Scenario: Décisions supersedées absentes des instructions
+#### Scenario: Superseded decisions absent from the instructions
 
-- **GIVEN** un projet où `0003` est supersedée par `0007`
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>
+- **GIVEN** a project where `0003` is superseded by `0007`
+- **WHEN** the user runs `codev instructions design --change <name>
   --json`
-- **THEN** `0003` n'apparaît pas dans le tableau `decisions`
-- **AND** `0007` y apparaît
+- **THEN** `0003` does not appear in the `decisions` array
+- **AND** `0007` does appear in it
 
-#### Scenario: Rendu humain liste les décisions
+#### Scenario: Human rendering lists the decisions
 
-- **GIVEN** le même contexte
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>`
-  (sans `--json`)
-- **THEN** le rendu contient une section « Décisions en vigueur » listant
-  chaque décision sur sa propre ligne avec son `id` et son `title`
+- **GIVEN** the same context
+- **WHEN** the user runs `codev instructions design --change <name>`
+  (without `--json`)
+- **THEN** the rendering contains a "Decisions in effect" section listing
+  each decision on its own line with its `id` and its `title`
 
-#### Scenario: Aucune décision, aucune section
+#### Scenario: No decision, no section
 
-- **GIVEN** un projet neuf sans aucun ADR
-- **WHEN** l'utilisateur lance `codev instructions design --change <nom>`
-- **THEN** aucune section « Décisions en vigueur » n'est ajoutée au rendu
-- **AND** le champ `decisions[]` dans la réponse JSON est présent et vide
+- **GIVEN** a new project without any ADR
+- **WHEN** the user runs `codev instructions design --change <name>`
+- **THEN** no "Decisions in effect" section is added to the rendering
+- **AND** the `decisions[]` field in the JSON response is present and empty

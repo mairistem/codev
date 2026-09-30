@@ -1,283 +1,283 @@
-# Tâches
+# Tasks
 
-## 1. Crédit OpenSpec
+## 1. OpenSpec credit
 
-- [x] 1.1 Éditer `README.md` — ajouter une ligne de crédit après la
-      description courte, avant les deux tableaux (« Les deux
-      moitiés ») :
+- [x] 1.1 Edit `README.md` — add a credit line after the short
+      description, before the two tables ("The two
+      halves"):
       ```
-      > Inspiré par [OpenSpec](https://github.com/tobyhs/openspec) —
-      > reconstruit en Rust avec ses propres choix. Voir la section
-      > « Origines » de la documentation pour le détail.
+      > Inspired by [OpenSpec](https://github.com/tobyhs/openspec) —
+      > rebuilt in Rust with its own choices. See the
+      > "Origins" section of the documentation for details.
       ```
-- [x] 1.2 Éditer `docs/codev.md`, section 1 (« Pourquoi codev »),
-      ajouter une nouvelle sous-section **« ### Origines »** en fin
-      de section 1 :
-      - Une phrase sur l'inspiration OpenSpec.
-      - Ce qui a été **repris à l'idée** : cycle propose/apply/archive,
-        deltas de spec (ADDED/MODIFIED/REMOVED/RENAMED), capacités,
-        ADR de premier ordre.
-      - Ce qui a été **écarté ou fait différemment** : Rust plutôt
-        que TypeScript, `_codev/` visible plutôt que caché, cœur
-        pur + coquille impérative plutôt qu'un binaire monolithique.
-      - Ce qui est **propre à codev** : sceau K3, dérives K6,
-        promotion K7, MCP configurable côté projet, `codev docs`,
-        distribution précompilée multi-OS.
+- [x] 1.2 Edit `docs/codev.md`, section 1 ("Why codev"),
+      add a new **"### Origins"** subsection at the end
+      of section 1:
+      - One sentence on the OpenSpec inspiration.
+      - What was **taken from the idea**: propose/apply/archive cycle,
+        spec deltas (ADDED/MODIFIED/REMOVED/RENAMED), capabilities,
+        first-class ADRs.
+      - What was **set aside or done differently**: Rust rather
+        than TypeScript, visible `_codev/` rather than hidden, pure
+        core + imperative shell rather than a monolithic binary.
+      - What is **specific to codev**: K3 seal, K6 drifts,
+        K7 promotion, project-side configurable MCP, `codev docs`,
+        multi-OS prebuilt distribution.
 
-## 2. README enrichi
+## 2. Richer README
 
-- [x] 2.1 Ajouter les 4 badges en tête de README, juste sous le
-      titre `# codev` :
+- [x] 2.1 Add the 4 badges at the top of the README, just under the
+      `# codev` title:
       ```markdown
       [![Release](https://github.com/mairistem/codev/actions/workflows/release.yml/badge.svg)](https://github.com/mairistem/codev/actions/workflows/release.yml)
       [![Latest release](https://img.shields.io/github/v/release/mairistem/codev)](https://github.com/mairistem/codev/releases/latest)
       [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
       [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](docs/codev.md)
       ```
-- [x] 2.2 Ajouter une **table des matières** sous la description :
-      Démarrage, Le modèle, Le cycle, Concepts, Documentation,
-      Contribuer, Licence.
-- [x] 2.3 Ajouter un exemple visuel **ASCII art du cycle** en
-      section « Le cycle » (si absente, la créer) :
+- [x] 2.2 Add a **table of contents** under the description:
+      Getting Started, The model, The cycle, Concepts, Documentation,
+      Contributing, License.
+- [x] 2.3 Add a visual **ASCII art example of the cycle** in the
+      "The cycle" section (create it if absent):
       ```
       ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
       │ propose  │→→ │  apply   │→→ │   sync   │→→ │ archive  │
-      │ planifie │   │ code     │   │ merge    │   │ classe   │
+      │ plans    │   │ code     │   │ merge    │   │ files    │
       └──────────┘   └──────────┘   └──────────┘   └──────────┘
       ```
-- [x] 2.4 Ajouter en fin de README un lien clair vers
-      `docs/codev.md` (« Manuel complet ») et le one-liner
+- [x] 2.4 Add at the end of the README a clear link to
+      `docs/codev.md` ("Full manual") and the one-liner
       `codev docs`.
-- [x] 2.5 Ajouter les sections **Contribuer** (« voir
-      [CONTRIBUTING.md]») et **Licence** (« MIT — voir
-      [LICENSE] ») en pied.
+- [x] 2.5 Add the **Contributing** ("see
+      [CONTRIBUTING.md]") and **License** ("MIT — see
+      [LICENSE]") sections in the footer.
 
 ## 3. CONTRIBUTING.md
 
-- [x] 3.1 Créer `CONTRIBUTING.md` à la racine, en français, avec
-      les sections :
-      - **Merci** — une phrase.
-      - **Prérequis** — Rust stable + cargo, git, `gh` optionnel.
-      - **Le cycle** — expliquer que **contribuer à codev, c'est
-        utiliser codev**. Étapes :
+- [x] 3.1 Create `CONTRIBUTING.md` at the root, in French, with
+      the sections:
+      - **Thanks** — one sentence.
+      - **Prerequisites** — stable Rust + cargo, git, optional `gh`.
+      - **The cycle** — explain that **contributing to codev means
+        using codev**. Steps:
         1. Fork + clone.
-        2. `cargo install --path crates/codev-cli` pour construire.
-        3. `codev init` sur le fork si pas déjà fait.
-        4. `/codev-propose <mon-idée>` (ou `codev new change`).
-        5. Implémenter, `cargo test --workspace`,
+        2. `cargo install --path crates/codev-cli` to build.
+        3. `codev init` on the fork if not already done.
+        4. `/codev-propose <my-idea>` (or `codev new change`).
+        5. Implement, `cargo test --workspace`,
            `cargo clippy --workspace --all-targets`,
            `codev validate --strict`.
-        6. `codev archive <mon-change>`.
+        6. `codev archive <my-change>`.
         7. Push, PR.
-      - **Style** — commits en français ou anglais, ton neutre,
-        Co-Authored-By pour les IA si applicable.
-      - **Release** — rappel : bump `Cargo.toml`, tag `vX.Y.Z`,
-        `git push --tags`, éditer `CHANGELOG.md` avec l'entrée V.
-      - **Signalement de faille** — renvoi vers `SECURITY.md`.
-      - **Code de conduite** — renvoi vers `CODE_OF_CONDUCT.md`.
+      - **Style** — commits in French or English, neutral tone,
+        Co-Authored-By for AIs if applicable.
+      - **Release** — reminder: bump `Cargo.toml`, tag `vX.Y.Z`,
+        `git push --tags`, edit `CHANGELOG.md` with the V entry.
+      - **Reporting a vulnerability** — pointer to `SECURITY.md`.
+      - **Code of conduct** — pointer to `CODE_OF_CONDUCT.md`.
 
 ## 4. CHANGELOG.md
 
-- [x] 4.1 Créer `CHANGELOG.md` à la racine, format
-      **Keep-a-Changelog** :
+- [x] 4.1 Create `CHANGELOG.md` at the root, in
+      **Keep-a-Changelog** format:
       ```markdown
       # Changelog
 
-      Toutes les évolutions notables de codev sont listées ici.
-      Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
-      versionnage SemVer.
+      All notable changes to codev are listed here.
+      Format: [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
+      SemVer versioning.
 
       ## [0.2.0] — 2026-09-24
 
       ### Added
-      - Cible Windows x86_64-pc-windows-msvc dans les binaires
-        précompilés + script `install.ps1`.
-      - Documentation embarquée : `codev docs` ouvre un manuel HTML
-        autonome dans le navigateur.
-      - Complétions shell : `codev completions <shell>` (bash, zsh,
+      - Windows x86_64-pc-windows-msvc target in the prebuilt
+        binaries + `install.ps1` script.
+      - Embedded documentation: `codev docs` opens a standalone HTML
+        manual in the browser.
+      - Shell completions: `codev completions <shell>` (bash, zsh,
         fish, powershell, elvish).
-      - `codev docs --write PATH` pour diffusion ciblée.
+      - `codev docs --write PATH` for targeted distribution.
 
-      Notes complètes :
+      Full notes:
       https://github.com/mairistem/codev/releases/tag/v0.2.0
 
       ## [0.1.1] — 2026-09-23
 
       ### Fixed
-      - CI Release : cross-compile `x86_64-apple-darwin` depuis
-        `macos-14` (les runners `macos-13` gratuits ne sont plus
-        fiables).
+      - Release CI: cross-compile `x86_64-apple-darwin` from
+        `macos-14` (the free `macos-13` runners are no longer
+        reliable).
 
-      Notes complètes :
+      Full notes:
       https://github.com/mairistem/codev/releases/tag/v0.1.1
 
       ## [0.1.0] — 2026-09-23
 
       ### Added
-      - Import initial : cycle propose → apply → sync → archive,
-        7 skills Claude Code, gouvernance décisions (K3/K6/K7),
-        `codev validate --strict`, intégration MCP configurable.
+      - Initial import: propose → apply → sync → archive cycle,
+        7 Claude Code skills, decision governance (K3/K6/K7),
+        `codev validate --strict`, configurable MCP integration.
 
-      Notes complètes :
+      Full notes:
       https://github.com/mairistem/codev/releases/tag/v0.1.0
       ```
 
 ## 5. CODE_OF_CONDUCT.md
 
-- [x] 5.1 Créer `CODE_OF_CONDUCT.md` à la racine — reprendre
-      **Contributor Covenant 2.1** texte officiel, en **français**
-      (traduction officielle disponible sur le site :
+- [x] 5.1 Create `CODE_OF_CONDUCT.md` at the root — reuse the
+      **Contributor Covenant 2.1** official text, in **French**
+      (official translation available on the site:
       contributor-covenant.org/version/2/1/code_of_conduct/).
-- [x] 5.2 Ajouter le contact — soit un email si Ludovic en a un
-      dédié, soit une note « ouvrir un GitHub Security Advisory
-      privé sur le repo ». À trancher au moment de l'apply.
+- [x] 5.2 Add the contact — either an email if Ludovic has a
+      dedicated one, or a note "open a private GitHub Security
+      Advisory on the repo". To be decided at apply time.
 
 ## 6. SECURITY.md
 
-- [x] 6.1 Créer `SECURITY.md` à la racine :
+- [x] 6.1 Create `SECURITY.md` at the root:
       ```markdown
-      # Politique de sécurité
+      # Security policy
 
-      ## Versions supportées
+      ## Supported versions
 
       | Version | Support |
       |---------|---------|
-      | 0.x     | Toutes les versions récentes tant que codev est en 0.x |
+      | 0.x     | All recent versions while codev is in 0.x |
 
-      ## Signaler une faille
+      ## Reporting a vulnerability
 
-      Merci de **ne pas ouvrir d'issue publique** pour signaler une
-      faille de sécurité.
+      Please **do not open a public issue** to report a
+      security vulnerability.
 
-      Utilise le mécanisme privé de GitHub :
+      Use GitHub's private mechanism:
 
-      1. Va sur https://github.com/mairistem/codev/security/advisories
-      2. Clique « Report a vulnerability ».
-      3. Décris la faille, un scénario reproductible, et l'impact
-         attendu.
+      1. Go to https://github.com/mairistem/codev/security/advisories
+      2. Click "Report a vulnerability".
+      3. Describe the vulnerability, a reproducible scenario, and the
+         expected impact.
 
-      Délai de première réponse cible : **72 heures**. Si tu ne
-      reçois pas de réponse, relance via une issue publique
-      demandant « Re: vulnerability report » sans donner le
-      détail.
+      Target time for a first response: **72 hours**. If you do not
+      receive a response, follow up via a public issue
+      asking "Re: vulnerability report" without giving the
+      details.
       ```
 
-## 7. Templates GitHub
+## 7. GitHub templates
 
-- [x] 7.1 Créer `.github/ISSUE_TEMPLATE/bug_report.md` :
+- [x] 7.1 Create `.github/ISSUE_TEMPLATE/bug_report.md`:
       ```markdown
       ---
-      name: Rapport de bug
-      about: Signaler un comportement incorrect de codev
+      name: Bug report
+      about: Report incorrect behavior in codev
       title: 'bug: '
       labels: bug
       ---
 
       **Description**
-      <!-- Une phrase claire du problème observé. -->
+      <!-- One clear sentence describing the observed problem. -->
 
       **Reproduction**
       1. …
       2. …
       3. …
 
-      **Comportement attendu**
-      <!-- Ce à quoi tu t'attendais. -->
+      **Expected behavior**
+      <!-- What you expected. -->
 
-      **Comportement observé**
-      <!-- Ce qui se passe. Colle les messages d'erreur exacts. -->
+      **Observed behavior**
+      <!-- What happens. Paste the exact error messages. -->
 
-      **Environnement**
-      - `codev --version` :
-      - OS + version :
-      - Shell :
+      **Environment**
+      - `codev --version`:
+      - OS + version:
+      - Shell:
       ```
-- [x] 7.2 Créer `.github/ISSUE_TEMPLATE/feature_request.md` :
+- [x] 7.2 Create `.github/ISSUE_TEMPLATE/feature_request.md`:
       ```markdown
       ---
-      name: Demande de fonctionnalité
-      about: Proposer une évolution
+      name: Feature request
+      about: Propose an improvement
       title: 'feat: '
       labels: enhancement
       ---
 
-      **Problème que ça résout**
-      <!-- Décris le manque actuel, avec un cas concret. -->
+      **Problem it solves**
+      <!-- Describe what is currently missing, with a concrete case. -->
 
-      **Solution envisagée**
-      <!-- Ta piste, sans engagement d'implémentation. -->
+      **Proposed solution**
+      <!-- Your idea, with no commitment to implement it. -->
 
-      **Alternatives considérées**
-      <!-- Ce qui a été écarté et pourquoi. -->
+      **Alternatives considered**
+      <!-- What was set aside and why. -->
 
-      **Périmètre**
-      <!-- Ce qui EST dans la demande, ce qui N'EST PAS. -->
+      **Scope**
+      <!-- What IS in the request, what IS NOT. -->
       ```
-- [x] 7.3 Créer `.github/ISSUE_TEMPLATE/config.yml` :
+- [x] 7.3 Create `.github/ISSUE_TEMPLATE/config.yml`:
       ```yaml
       blank_issues_enabled: false
       contact_links:
-        - name: Questions et discussions
+        - name: Questions and discussions
           url: https://github.com/mairistem/codev/discussions
-          about: Pour tout ce qui n'est pas un bug ou une demande de fonctionnalité.
-        - name: Guide de contribution
+          about: For anything that is not a bug or a feature request.
+        - name: Contribution guide
           url: https://github.com/mairistem/codev/blob/main/CONTRIBUTING.md
-          about: Comment proposer un change codev.
+          about: How to propose a codev change.
       ```
-- [x] 7.4 Créer `.github/PULL_REQUEST_TEMPLATE.md` :
+- [x] 7.4 Create `.github/PULL_REQUEST_TEMPLATE.md`:
       ```markdown
-      ## Change codev associé
+      ## Associated codev change
 
-      <!-- Nom du dossier sous `_codev/changes/` ou lien vers son
-           archive. Une PR sans change codev est acceptable pour un
-           fix trivial (typo, correction de doc). -->
+      <!-- Name of the folder under `_codev/changes/` or link to its
+           archive. A PR without a codev change is acceptable for a
+           trivial fix (typo, doc correction). -->
 
-      ## Résumé
+      ## Summary
 
-      <!-- Ce que la PR apporte, en une ou deux phrases. -->
+      <!-- What the PR brings, in one or two sentences. -->
 
-      ## Vérifications
+      ## Checks
 
-      - [ ] `cargo test --workspace` vert.
-      - [ ] `cargo clippy --workspace --all-targets` sans avertissement.
-      - [ ] `codev validate --strict` vert.
-      - [ ] Documentation à jour (`docs/codev.md`, README si besoin).
+      - [ ] `cargo test --workspace` green.
+      - [ ] `cargo clippy --workspace --all-targets` with no warnings.
+      - [ ] `codev validate --strict` green.
+      - [ ] Documentation up to date (`docs/codev.md`, README if needed).
 
-      ## Points d'attention pour le reviewer
+      ## Points of attention for the reviewer
 
-      <!-- Zones sensibles, choix discutables, tests manquants
-           connus. Vaut mieux les nommer ici que les laisser en
-           surprise. -->
+      <!-- Sensitive areas, debatable choices, known missing
+           tests. Better to name them here than to leave them as
+           surprises. -->
       ```
 
-## 8. Vérifications finales
+## 8. Final checks
 
-- [x] 8.0 Réparer la dette pré-existante `distribution` : créer le
-      delta `MODIFIED` sur l'exigence « La documentation cite les
-      trois voies d'installation » (héritée du change Windows) —
-      recopier le bloc entier depuis la spec principale, terminer
-      la phrase tronquée, ajouter deux scénarios `#### Scenario:`
-      qui vérifient l'ordre des voies dans `docs/codev.md` et la
-      présence des deux one-liners dans `README.md`. Le delta vit à
-      `_codev/changes/public-launch-polish/specs/distribution/spec.md`.
-- [x] 8.1 `codev validate --strict` — vert sur le change
-      (`codev validate public-launch-polish --strict`) ; l'exigence
-      principale devient également strict-verte après `codev archive`,
-      quand le delta est fusionné.
-- [x] 8.2 `cargo test --workspace` reste vert (rien de Rust n'a
-      changé, mais on vérifie).
-- [x] 8.3 `codev docs` s'ouvre et rend correctement la nouvelle
-      sous-section « Origines ».
-- [ ] 8.4 Ouvrir `README.md` sur GitHub et vérifier :
-      - Les 4 badges apparaissent et pointent correctement.
-      - La TOC est cliquable.
-      - Le lien vers `docs/codev.md` marche.
-      - L'ASCII art rend correctement (bloc de code).
+- [x] 8.0 Fix the pre-existing `distribution` debt: create the
+      `MODIFIED` delta on the requirement "The documentation lists
+      the three installation paths" (inherited from the Windows
+      change) — copy the whole block from the main spec, finish
+      the truncated sentence, add two `#### Scenario:` scenarios
+      that check the order of the paths in `docs/codev.md` and the
+      presence of the two one-liners in `README.md`. The delta lives
+      at `_codev/changes/public-launch-polish/specs/distribution/spec.md`.
+- [x] 8.1 `codev validate --strict` — green on the change
+      (`codev validate public-launch-polish --strict`); the main
+      requirement also becomes strict-green after `codev archive`,
+      once the delta is merged.
+- [x] 8.2 `cargo test --workspace` stays green (nothing in Rust has
+      changed, but we check).
+- [x] 8.3 `codev docs` opens and correctly renders the new
+      "Origins" subsection.
+- [ ] 8.4 Open `README.md` on GitHub and check:
+      - The 4 badges appear and link correctly.
+      - The TOC is clickable.
+      - The link to `docs/codev.md` works.
+      - The ASCII art renders correctly (code block).
 
-## 9. Livraison
+## 9. Delivery
 
-- [ ] 9.1 Après merge, bump `Cargo.toml` à `0.2.1` (patch — pas
-      d'API changée), `git tag v0.2.1`, `git push origin main
-      v0.2.1`. Le workflow tourne, la release apparaît.
-- [ ] 9.2 Ajouter l'entrée `[0.2.1]` dans `CHANGELOG.md` (dans un
-      commit après le tag ou en tête juste avant).
+- [ ] 9.1 After merge, bump `Cargo.toml` to `0.2.1` (patch — no
+      API changed), `git tag v0.2.1`, `git push origin main
+      v0.2.1`. The workflow runs, the release appears.
+- [ ] 9.2 Add the `[0.2.1]` entry in `CHANGELOG.md` (in a
+      commit after the tag or at the top just before).

@@ -1,141 +1,139 @@
-# Design : configurer les noms de MCP côté projet
+# Design: configure MCP names at the project level
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Le premier vrai usage a montré que les noms de
-MCP sont **spécifiques à l'environnement Claude Code**. Ce change
-retire les noms du code source et les déplace vers
-`_codev/config.yaml`.
+See `proposal.md`. The first real use showed that MCP names are
+**specific to the Claude Code environment**. This change removes the
+names from the source code and moves them to `_codev/config.yaml`.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre la structure de configuration, la mécanique de
-substitution de placeholders, la propagation dans les crates, et le
-fallback quand aucun MCP n'est configuré. Il ne cadre pas d'autres
-MCP (Design, Confluence…), ni l'héritage inter-projets du bloc `mcp:`,
-ni un mode debug de rendering.
+This design covers the configuration structure, the placeholder
+substitution mechanics, the propagation across the crates, and the
+fallback when no MCP is configured. It does not cover other MCPs
+(Design, Confluence…), cross-project inheritance of the `mcp:`
+block, or a rendering debug mode.
 
-## Décisions
+## Decisions
 
-### Décision : `mcp:` est une struct typée, pas un `HashMap<String, String>`
+### Decision: `mcp:` is a typed struct, not a `HashMap<String, String>`
 
-Deux options :
+Two options:
 
-| Option | Pro | Contre |
+| Option | Pro | Con |
 |---|---|---|
-| **A. `HashMap<String, String>` libre** | Extension à zéro coût, chaque skill lit sa clef | Invite à mettre n'importe quoi ; erreurs de nommage silencieuses ; `deny_unknown_fields` inutile |
-| **B. `struct McpConfig { jira_tool: Option<String>, … }`** | Champs connus, validation par serde, autocomplétion IDE, warnings en cas de faute de frappe | Chaque nouveau MCP demande une PR côté codev |
+| **A. Free-form `HashMap<String, String>`** | Zero-cost extension, each skill reads its key | Invites putting anything in; silent naming errors; `deny_unknown_fields` useless |
+| **B. `struct McpConfig { jira_tool: Option<String>, … }`** | Known fields, serde validation, IDE autocompletion, warnings on typos | Each new MCP requires a PR on the codev side |
 
-**Choisi : B.** Cohérent avec la philosophie du reste de
-`ProjectConfig` (`inherits`, `rules`) — champs typés,
-`deny_unknown_fields`. Ajouter un champ par futur MCP est un coût
-négligeable, et le typage rend les erreurs de config immédiatement
-visibles.
+**Chosen: B.** Consistent with the philosophy of the rest of
+`ProjectConfig` (`inherits`, `rules`) — typed fields,
+`deny_unknown_fields`. Adding a field per future MCP is a negligible
+cost, and typing makes config errors immediately visible.
 
-### Décision : substitution de placeholders par `str::replace`, pas de moteur de template
+### Decision: placeholder substitution via `str::replace`, no template engine
 
-Le rendering d'un `SKILL.md` est simple : quelques substitutions
-statiques (`{{FRONTMATTER}}` existe déjà pour les décisions).
-Introduire un moteur de template (handlebars, tera) serait
-disproportionné.
+Rendering a `SKILL.md` is simple: a few static substitutions
+(`{{FRONTMATTER}}` already exists for decisions). Introducing a
+template engine (handlebars, tera) would be disproportionate.
 
-**Alternative écartée** : `handlebars-rust`. Utile un jour si les
-substitutions deviennent conditionnelles/complexes ; aujourd'hui,
-`s.replace("{{JIRA_MCP_TOOL}}", tool)` suffit. Reportable.
+**Rejected alternative**: `handlebars-rust`. Useful one day if the
+substitutions become conditional/complex; today,
+`s.replace("{{JIRA_MCP_TOOL}}", tool)` is enough. Can be deferred.
 
-### Décision : le placeholder est retiré **avec la virgule qui le précède** dans `allowed_tools`
+### Decision: the placeholder is removed **along with the comma that precedes it** in `allowed_tools`
 
-Sans cette précaution, `allowed_tools` finirait par `", "` à la fin
-quand la config est absente — Claude Code refuserait probablement le
-frontmatter. La substitution est faite en deux temps :
+Without this precaution, `allowed_tools` would end with `", "` when
+the config is absent — Claude Code would probably reject the
+frontmatter. The substitution is done in two steps:
 
 ```rust
 fn substitute_jira_mcp(source: &str, jira_tool: Option<&str>) -> String {
     match jira_tool {
         Some(tool) => source.replace("{{JIRA_MCP_TOOL}}", tool),
         None => source
-            .replace(", {{JIRA_MCP_TOOL}}", "")   // dans allowed_tools
-            .replace("{{JIRA_MCP_TOOL}}", "(MCP Jira non configuré)"), // ailleurs
+            .replace(", {{JIRA_MCP_TOOL}}", "")   // in allowed_tools
+            .replace("{{JIRA_MCP_TOOL}}", "(Jira MCP not configured)"), // elsewhere
     }
 }
 ```
 
-L'ordre importe : on retire d'abord `, {{JIRA_MCP_TOOL}}` (avec la
-virgule) avant le fallback sur `{{JIRA_MCP_TOOL}}` seul. Sinon le
-premier `replace` sans virgule laisserait `", "` orphelin.
+Order matters: first remove `, {{JIRA_MCP_TOOL}}` (with the comma)
+before the fallback on `{{JIRA_MCP_TOOL}}` alone. Otherwise the first
+`replace` without the comma would leave an orphan `", "`.
 
-### Décision : `RenderCtx` porte l'unique champ, pas une struct extensible
+### Decision: `RenderCtx` carries the single field, not an extensible struct
 
-Pour la V1 : `RenderCtx { jira_mcp_tool: Option<String> }`. Si un
-autre MCP arrive plus tard, on ajoute un champ. Un `HashMap<String,
-Option<String>>` serait trop générique pour un besoin restreint.
+For V1: `RenderCtx { jira_mcp_tool: Option<String> }`. If another
+MCP comes along later, a field is added. A `HashMap<String,
+Option<String>>` would be too generic for a narrow need.
 
-### Décision : la configuration MCP est projet-spécifique, pas héritée
+### Decision: the MCP configuration is project-specific, not inherited
 
-Un projet qui déclare `inherits: [{path: ~/partage}]` **ne** hérite
-**pas** du bloc `mcp:` de la source. Chaque projet configure son
-propre MCP — parce que le nom du MCP dépend de la config Claude Code
-de l'utilisateur, pas du projet source.
+A project that declares `inherits: [{path: ~/shared}]` does **not**
+inherit the source's `mcp:` block. Each project configures its own
+MCP — because the MCP name depends on the user's Claude Code
+configuration, not on the source project.
 
-**Alternative écartée** : propager `mcp:` par héritage. Une source
-partagée entre plusieurs équipes forcerait toutes ces équipes à
-utiliser le même MCP, ce qui n'est pas ce qu'on veut.
+**Rejected alternative**: propagate `mcp:` through inheritance. A
+source shared between several teams would force all those teams to
+use the same MCP, which is not what we want.
 
-### Décision : le fallback affiche `(MCP Jira non configuré)` dans le body
+### Decision: the fallback shows `(Jira MCP not configured)` in the body
 
-Quand `mcp.jira_tool` est absent, l'agent qui lit le body voit
-`(MCP Jira non configuré)` là où le nom du tool aurait été. Ça
-lui dit clairement :
+When `mcp.jira_tool` is absent, the agent reading the body sees
+`(Jira MCP not configured)` where the tool name would have been.
+This tells it clearly:
 
-1. Qu'il n'a **pas** à essayer d'appeler un MCP (qui n'existe pas).
-2. Que si l'utilisateur mentionne un ticket, il doit afficher le
-   message informatif documenté et rédiger sans le contenu.
+1. That it does **not** have to try to call an MCP (which does not
+   exist).
+2. That if the user mentions a ticket, it must show the documented
+   informational message and write without the content.
 
-**Alternative écartée** : laisser le body avec le placeholder brut
-`{{JIRA_MCP_TOOL}}`. Rejeté — l'agent n'aurait aucun repère et
-pourrait halluciner un nom de tool.
+**Rejected alternative**: leave the body with the raw placeholder
+`{{JIRA_MCP_TOOL}}`. Rejected — the agent would have no reference
+point and could hallucinate a tool name.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **Substitution naïve casse si un utilisateur écrit accidentellement
-  `{{JIRA_MCP_TOOL}}` dans son body de skill.** → **Compromis
-  assumé** : le CATALOG est du code Rust maintenu par nous ; personne
-  n'écrit de body de skill à la main. Si un jour le catalogue devient
-  éditable projet par projet, la substitution deviendra une source
-  d'ambiguïté — on la remplacera par un vrai template engine.
-- **Le nom du MCP dépend d'une convention Claude Code sur laquelle
-  on n'a pas la main.** Si Claude Code renomme encore ses tools, la
-  config projet cassera. → **Atténuation** : le message informatif
-  documente ce qui se passe ; l'utilisateur met à jour son
-  `config.yaml` en une ligne. Pas de changement de code.
-- **Deux configs qui déclarent le même MCP diffèrent d'un caractère
-  près.** → **Compromis assumé** : validation stricte (serde
-  `deny_unknown_fields` sur `McpConfig` + type `String`) attrape le
-  parsing YAML mais pas les fautes de frappe dans le nom lui-même.
-  Un test de sanité pourrait vérifier que le nom matche
-  `^mcp__[a-zA-Z0-9_]+$` — reportable.
+- **Naive substitution breaks if a user accidentally writes
+  `{{JIRA_MCP_TOOL}}` in their skill body.** → **Accepted
+  trade-off**: the CATALOG is Rust code maintained by us; nobody
+  writes a skill body by hand. If one day the catalog becomes
+  editable project by project, the substitution will become a source
+  of ambiguity — we will replace it with a real template engine.
+- **The MCP name depends on a Claude Code convention we have no
+  control over.** If Claude Code renames its tools again, the project
+  config will break. → **Mitigation**: the informational message
+  documents what happens; the user updates their `config.yaml` in
+  one line. No code change.
+- **Two configs declaring the same MCP differ by one character.** →
+  **Accepted trade-off**: strict validation (serde
+  `deny_unknown_fields` on `McpConfig` + `String` type) catches YAML
+  parsing but not typos in the name itself. A sanity test could
+  check that the name matches `^mcp__[a-zA-Z0-9_]+$` — can be
+  deferred.
 
-## Plan de migration
+## Migration Plan
 
-Pour ce dépôt :
+For this repository:
 
-1. Éditer `_codev/config.yaml` — ajouter :
+1. Edit `_codev/config.yaml` — add:
    ```yaml
    mcp:
      jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
    ```
 2. `cargo install --path crates/codev-cli`
-3. `codev update --force` — le SKILL.md installé porte maintenant le
-   nom Rovo.
-4. Vérification : `head -5 .claude/skills/codev-propose/SKILL.md`
-   montre `allowed-tools: "..., mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`.
+3. `codev update --force` — the installed SKILL.md now carries the
+   Rovo name.
+4. Check: `head -5 .claude/skills/codev-propose/SKILL.md` shows
+   `allowed-tools: "..., mcp__claude_ai_Atlassian_Rovo__getJiraIssue"`.
 
-Pour un projet qui découvre codev :
+For a project discovering codev:
 
-- Sans MCP branché ni configuré : le skill s'installe avec
-  `allowed-tools` sans MCP et un body qui dit « (MCP Jira non
-  configuré) ». Comportement bit-identique à celui d'avant
+- With no MCP connected or configured: the skill installs with
+  `allowed-tools` without an MCP and a body that says "(Jira MCP not
+  configured)". Behavior bit-identical to the one before
   `propose-detects-jira-tickets`.
-- Avec MCP branché : ajouter le bloc `mcp:` dans `config.yaml` (le
-  `DEFAULT_CONFIG` du scaffold contient un exemple commenté),
-  relancer `codev update --force`.
+- With an MCP connected: add the `mcp:` block in `config.yaml` (the
+  scaffold's `DEFAULT_CONFIG` contains a commented example), rerun
+  `codev update --force`.

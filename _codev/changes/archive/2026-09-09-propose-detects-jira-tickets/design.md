@@ -1,145 +1,138 @@
-# Design : `codev-propose` détecte et enrichit un ticket Jira
+# Design: `codev-propose` detects and enriches a Jira ticket
 
-## Contexte
+## Context
 
-Voir `proposal.md`. Premier vrai wire d'un MCP dans une skill codev.
-Le design cristallise les six choix pris pendant l'exploration.
+See `proposal.md`. First real wiring of an MCP into a codev skill.
+The design crystallizes the six choices made during exploration.
 
-## Objectifs / Hors objectifs
+## Goals / Non-Goals
 
-Ce design cadre : la place de la détection dans le flow, le format de
-la citation en tête du proposal, la stratégie de fallback sans MCP, et
-le test d'invariant qui verrouille l'`allowed-tools`. Il ne cadre pas
-d'autres MCP (Design, GitHub…), ni un mode multi-tickets, ni la
-configuration projet du pattern.
+This design covers: where detection sits in the flow, the format of
+the citation at the top of the proposal, the fallback strategy
+without an MCP, and the invariant test that locks in `allowed-tools`.
+It does not cover other MCPs (Design, GitHub…), a multi-ticket mode,
+or project configuration of the pattern.
 
-## Décisions
+## Decisions
 
-### Décision : la détection vit dans le body markdown, pas dans le CLI
+### Decision: detection lives in the markdown body, not in the CLI
 
-Alignement direct avec la stratégie MCP notée en mémoire : le CLI
-`codev` reste **agnostique aux MCP**. Il ne connaît ni Jira ni
-Atlassian ; il gère `_codev/`, le graphe d'artefacts, le sceau, la
-fusion, l'archive. Les intégrations externes vivent au niveau skill
-Claude Code — c'est l'agent qui lit le body, repère le pattern, appelle
-le MCP, et rédige le proposal.
+Direct alignment with the MCP strategy recorded in memory: the `codev`
+CLI stays **MCP-agnostic**. It knows neither Jira nor Atlassian; it
+manages `_codev/`, the artifact graph, the seal, the merge, the
+archive. External integrations live at the Claude Code skill level —
+it is the agent that reads the body, spots the pattern, calls the
+MCP, and writes the proposal.
 
-**Conséquence** : rien à changer dans les crates Rust côté runtime.
-Seuls le body markdown de la skill et l'`allowed-tools` du CATALOG
-bougent. Une intégration future d'un autre MCP suivra le même
-gabarit.
+**Consequence**: nothing to change in the Rust crates on the runtime
+side. Only the skill's markdown body and the CATALOG's
+`allowed-tools` move. A future integration of another MCP will follow
+the same template.
 
-**Alternative écartée** : un flag `codev new change --from-ticket
-JVS-1234` qui, côté CLI, appellerait le MCP via un port dédié. Rejeté
-parce qu'il obligerait le core à connaître les MCP et casserait
-l'agnosticisme.
+**Rejected alternative**: a `codev new change --from-ticket
+PROJ-123` flag that, on the CLI side, would call the MCP through a
+dedicated port. Rejected because it would force the core to know
+about MCPs and would break agnosticism.
 
-### Décision : nom exact du MCP hardcodé — `mcp__claude_ai_Atlassian__getJiraIssue`
+### Decision: exact MCP name hardcoded — `mcp__claude_ai_Atlassian__getJiraIssue`
 
-Le MCP officiel Claude Atlassian expose une trentaine d'outils ; on ne
-déclare que celui strictement nécessaire à la lecture d'un ticket. La
-skill n'écrit jamais dans Jira, ne fait pas de recherche JQL, ne
-manipule ni Confluence ni Compass. La restriction est un garde-fou :
-si un jour un mauvais prompt tente d'utiliser la skill pour écrire, le
-tool call échouera au niveau harness plutôt que de silencieusement
-transiger.
+The official Claude Atlassian MCP exposes some thirty tools; we only
+declare the one strictly needed to read a ticket. The skill never
+writes to Jira, does no JQL search, and touches neither Confluence
+nor Compass. The restriction is a safeguard: if a bad prompt ever
+tries to use the skill to write, the tool call will fail at the
+harness level rather than silently comply.
 
-**Alternative écartée** : `mcp__claude_ai_Atlassian__*` (glob). Plus
-permissif mais laisse la porte ouverte à des appels non prévus.
-Refusé au titre du principe « minimum viable » de la sécurité.
+**Rejected alternative**: `mcp__claude_ai_Atlassian__*` (glob). More
+permissive, but leaves the door open to unplanned calls. Refused on
+the security principle of "minimum viable".
 
-### Décision : citation en tête du proposal, pas dans le fichier `change.yaml`
+### Decision: citation at the top of the proposal, not in `change.yaml`
 
-Le ticket est **information humaine** — l'endroit naturel est le
-proposal, que le relecteur lit en premier. Le mettre dans
-`change.yaml` (par exemple `source_ticket: JVS-1234`) aurait obligé à
-étendre `ChangeMetadata` (nouveau champ), à le parser, à le rendre au
-statut… du code pour un cas qui vit très bien en markdown.
+The ticket is **human information** — its natural place is the
+proposal, which the reviewer reads first. Putting it in
+`change.yaml` (e.g. `source_ticket: PROJ-123`) would have required
+extending `ChangeMetadata` (new field), parsing it, rendering it in
+status… code for a case that lives perfectly well in markdown.
 
-**Format retenu** — première ligne du proposal sous le titre :
+**Chosen format** — first line of the proposal under the title:
 
 ```
-# Proposal : <titre>
+# Proposal: <title>
 
-> Source : ticket **JVS-1234** — « Authentifier les utilisateurs par JWT » (In Progress)
+> Source: ticket **PROJ-123** — "Authenticate users with JWT" (In Progress)
 
-## Pourquoi
+## Why
 […]
 ```
 
-Si le MCP a échoué : `> Source : ticket **JVS-1234** — contenu non
-récupéré`. La forme reste stable, seul le suffixe change.
+If the MCP failed: `> Source: ticket **PROJ-123** — content not
+fetched`. The shape stays stable; only the suffix changes.
 
-### Décision : le pattern est générique `[A-Z]{2,}-\d+`, pas configurable
+### Decision: the pattern is the generic `[A-Z]{2,}-\d+`, not configurable
 
-Toute organisation Atlassian utilise un préfixe majuscules de 2+
-lettres suivi d'un tiret et d'un numéro. Un `A-1` seul serait
-ambigu (référence à une cellule Excel ?) — la contrainte 2+ lettres
-évite ce faux positif. Ajouter la configuration projet
-(`ticket_pattern: "JVS-\\d+"`) coûterait un nouveau champ
-`ChangeMetadata` ou `ProjectConfig` pour un bénéfice marginal — les
-faux positifs sur `[A-Z]{2,}-\d+` en pratique sont rares.
+Every Atlassian organization uses an uppercase prefix of 2+ letters
+followed by a hyphen and a number. A lone `A-1` would be ambiguous
+(a reference to an Excel cell?) — the 2+ letter constraint avoids that
+false positive. Adding project configuration
+(`ticket_pattern: "PROJ-\\d+"`) would cost a new `ChangeMetadata` or
+`ProjectConfig` field for marginal benefit — false positives on
+`[A-Z]{2,}-\d+` are rare in practice.
 
-**Reportable** : si un projet remonte régulièrement des faux positifs,
-on ajoutera `_codev/config.yaml.ticket_pattern`.
+**Deferrable**: if a project regularly reports false positives, we
+will add `_codev/config.yaml.ticket_pattern`.
 
-### Décision : sans MCP, message informatif — pas silencieux
+### Decision: without an MCP, an informational message — not silence
 
-Un utilisateur qui mentionne `JVS-1234` s'attend à ce que ça compte
-pour quelque chose. Rester silencieux le laisserait dans le flou.
-Le message coûte une phrase, éclaire le comportement de la skill, et
-n'empêche pas l'exécution.
+A user who mentions `PROJ-123` expects it to count for something.
+Staying silent would leave them in the dark. The message costs one
+sentence, clarifies the skill's behavior, and does not prevent
+execution.
 
-**Alignement** avec la philosophie codev : « signaler, jamais bloquer
-silencieusement » — pattern déjà appliqué dans `sync` (invite à
-archiver), `validate` (émet des warnings), `deviate` (annonce la
-ripple).
+**Alignment** with the codev philosophy: "report, never block
+silently" — a pattern already applied in `sync` (invites to archive),
+`validate` (emits warnings), `deviate` (announces the ripple).
 
-### Décision : un ticket récupéré, les autres juste nommés
+### Decision: one ticket fetched, the others just named
 
-Traiter chaque ticket mentionné multiplierait les appels MCP et
-alourdirait le proposal. La règle « premier détecté = source
-principale » est simple et prévisible. Les autres tickets restent
-mentionnés en tête (`autre(s) ticket(s) mentionné(s) : JVS-5678`) pour
-la traçabilité — un lecteur du proposal peut aller les consulter à
-la main.
+Handling every mentioned ticket would multiply MCP calls and weigh
+down the proposal. The rule "first detected = main source" is simple
+and predictable. The other tickets remain mentioned at the top
+(`other mentioned ticket(s): PROJ-456`) for traceability — a reader of
+the proposal can look them up by hand.
 
-**Reportable** : un mode `--all-tickets` ou un multi-appel MCP si le
-pattern devient récurrent.
+**Deferrable**: an `--all-tickets` mode or multiple MCP calls if the
+pattern becomes recurrent.
 
-## Risques et compromis
+## Risks / Trade-offs
 
-- **L'utilisateur ne s'attend pas à ce que la skill appelle un MCP.**
-  Sur un environnement où plusieurs MCP sont branchés, un appel
-  inattendu peut être surprenant. → **Atténuation** : le message
-  informatif quand le MCP réussit (« Ticket JVS-1234 récupéré via
-  MCP Atlassian, injecté dans le contexte du proposal ») rend l'appel
-  visible.
-- **Faux positif de pattern** — un identifiant qui ressemble à un
-  ticket sans en être un (par exemple `TODO-42` dans un commentaire du
-  prompt). → **Compromis assumé** : le MCP renverra probablement
-  `not_found`, la skill se rabat sur « ticket mentionné, contenu non
-  récupéré ». Le pire cas est un warning inutile.
-- **Le contenu du ticket est trop volumineux** — une description Jira
-  peut être longue. → **Compromis assumé** : le MCP retourne un JSON
-  structuré ; la skill résume ce qu'elle en injecte dans le prompt
-  (titre, status, description tronquée si besoin). C'est de la
-  responsabilité rédactionnelle de la skill, pas d'une logique de
-  code.
-- **Le MCP retourne une erreur d'authentification** (token expiré,
-  espace privé). → **Comportement** : traité comme « MCP
-  indisponible », message informatif spécifique
-  (« authentification requise »).
+- **The user does not expect the skill to call an MCP.** In an
+  environment where several MCPs are connected, an unexpected call
+  can be surprising. → **Mitigation**: the informational message when
+  the MCP succeeds ("Ticket PROJ-123 fetched via the Atlassian MCP,
+  injected into the proposal context") makes the call visible.
+- **Pattern false positive** — an identifier that looks like a ticket
+  without being one (e.g. `TODO-42` in a comment in the prompt). →
+  **Accepted trade-off**: the MCP will probably return `not_found`,
+  and the skill falls back to "ticket mentioned, content not fetched".
+  The worst case is a useless warning.
+- **The ticket content is too large** — a Jira description can be
+  long. → **Accepted trade-off**: the MCP returns structured JSON; the
+  skill summarizes what it injects into the prompt (title, status,
+  description truncated if needed). This is the skill's editorial
+  responsibility, not code logic.
+- **The MCP returns an authentication error** (expired token, private
+  space). → **Behavior**: treated as "MCP unavailable", with a
+  specific informational message ("authentication required").
 
-## Plan de migration
+## Migration Plan
 
-Aucune. Les utilisateurs sans MCP branché ne voient rien changer
-tant qu'ils ne mentionnent pas de ticket. À la première mention de
-ticket sans MCP, un message informatif apparaît — mais le proposal
-sort quand même.
+None. Users without a connected MCP see nothing change as long as
+they do not mention a ticket. On the first ticket mention without an
+MCP, an informational message appears — but the proposal still comes
+out.
 
-Pour activer la nouvelle capacité, il suffit de brancher le MCP
-Atlassian dans la config Claude Code de l'utilisateur (indépendant
-de codev) — puis de relancer `codev update --force` pour que la
-nouvelle version de la skill soit installée avec son `allowed-tools`
-étendu.
+To enable the new capability, it is enough to connect the Atlassian
+MCP in the user's Claude Code config (independent of codev) — then
+rerun `codev update --force` so that the new version of the skill is
+installed with its extended `allowed-tools`.
