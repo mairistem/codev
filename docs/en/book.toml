@@ -9,3 +9,11 @@ src = "src"
 git-repository-url = "https://github.com/mairistem/codev"
 edit-url-template = "https://github.com/mairistem/codev/edit/main/docs/en/{path}"
 site-url = "/codev/en/"
+
+# Mairistem theme, shared by both books: `theme/` is a symlink to
+# ../theme. Light is Mairistem light; `navy` is restyled as Mairistem dark.
+default-theme = "light"
+preferred-dark-theme = "navy"
+additional-css = ["theme/mairistem.css"]
+additional-js = ["theme/mairistem.js"]
+no-section-label = true

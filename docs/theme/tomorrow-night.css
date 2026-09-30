@@ -1,0 +1,75 @@
+/*
+ * Syntax highlighting, Mairistem dark theme.
+ * Replaces mdBook's tomorrow-night.css, which book.js enables for the dark
+ * theme (mdBook's `navy` class) instead of highlight.css. Every color is a
+ * Mairistem design-system value and passes WCAG AA (4.5:1) on the dark code
+ * block background #003950:
+ *   base #DCE5E8 9.7:1 · keyword #FFAB03 6.5:1 · string #00C39B 5.5:1
+ *   name #FFFFFF 12.4:1 · comment #9CBAC4 6.0:1
+ */
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  color: #dce5e8;
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: #9cbac4;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-literal,
+.hljs-type,
+.hljs-doctag,
+.hljs-bullet,
+.hljs-link,
+.hljs-number,
+.hljs-symbol,
+.hljs-deletion {
+  color: #ffab03;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-code,
+.hljs-template-tag,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #00c39b;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-name,
+.hljs-section,
+.hljs-title,
+.hljs-property,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params,
+.hljs-subst,
+.hljs-tag {
+  color: #ffffff;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}

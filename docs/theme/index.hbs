@@ -1,0 +1,403 @@
+<!DOCTYPE HTML>
+{{!--
+    Mairistem theme for the codev documentation.
+
+    Derived from the index.hbs template of mdBook 0.5.4 (the version pinned in
+    .github/workflows/docs.yml). Changes from the stock template:
+    - Mairistem brand block (logo + book title) at the top of the sidebar, and
+      in the menu bar while the sidebar is hidden;
+    - the theme picker offers only Auto, Light and Dark (the Mairistem dark
+      variant, rendered under mdBook's `navy` class); a stored stock theme is
+      ignored;
+    - language switch (EN / FR) and GitHub link in the menu bar;
+    - previous / next chapter links at the end of the page, with titles;
+    - "Suggest an edit" and the print link moved under the content;
+    - Mairistem footer on every page;
+    - interface strings in the book's language (en or fr).
+    Keep the element ids and classes book.js and searcher.js rely on
+    (`mdbook-*`, `.menu-title`, `.nav-chapters.previous/.next`) when editing.
+--}}
+<html lang="{{ language }}" class="{{ default_theme }} sidebar-visible" dir="{{ text_direction }}">
+    <head>
+        <!-- Book generated using mdBook, Mairistem theme -->
+        <meta charset="UTF-8">
+        <title>{{ title }}</title>
+        {{#if is_print }}
+        <meta name="robots" content="noindex">
+        {{/if}}
+        {{#if base_url}}
+        <base href="{{ base_url }}">
+        {{/if}}
+
+        <meta name="description" content="{{ description }}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        {{#if favicon_svg}}
+        <link rel="icon" href="{{ resource "favicon.svg" }}">
+        {{/if}}
+        {{#if favicon_png}}
+        <link rel="shortcut icon" href="{{ resource "favicon.png" }}">
+        {{/if}}
+        <link rel="stylesheet" href="{{ resource "css/variables.css" }}">
+        <link rel="stylesheet" href="{{ resource "css/general.css" }}">
+        <link rel="stylesheet" href="{{ resource "css/chrome.css" }}">
+        {{#if print_enable}}
+        <link rel="stylesheet" href="{{ resource "css/print.css" }}" media="print">
+        {{/if}}
+
+        <!-- Fonts: IBM Plex Sans, self-hosted -->
+        <link rel="stylesheet" href="{{ resource "fonts/fonts.css" }}">
+
+        <!-- Highlight.js stylesheets: highlight.css (light) and tomorrow-night.css (dark) carry the Mairistem palettes -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="{{ resource "highlight.css" }}">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="{{ resource "tomorrow-night.css" }}">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="{{ resource "ayu-highlight.css" }}" disabled>
+
+        <!-- Custom theme stylesheets -->
+        {{#each additional_css}}
+        <link rel="stylesheet" href="{{ resource this }}">
+        {{/each}}
+
+        {{#if mathjax_support}}
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        {{/if}}
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "{{ path_to_root }}";
+            const default_light_theme = "{{ default_theme }}";
+            const default_dark_theme = "{{ preferred_dark_theme }}";
+        {{#if search_js}}
+            window.path_to_searchindex_js = "{{ resource "searchindex.js" }}";
+        {{/if}}
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="{{ resource "toc.js" }}"></script>
+
+        {{> head}}
+    </head>
+    <body>
+    {{> header}}
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            {{#if (eq language "fr")}}
+            <h2 class="mdbook-help-title">Raccourcis clavier</h2>
+            <div>
+                <p>Appuyez sur <kbd>←</kbd> ou <kbd>→</kbd> pour passer d’un chapitre à l’autre</p>
+                {{#if search_enabled}}
+                <p>Appuyez sur <kbd>S</kbd> ou <kbd>/</kbd> pour rechercher dans la documentation</p>
+                {{/if}}
+                <p>Appuyez sur <kbd>?</kbd> pour afficher cette aide</p>
+                <p>Appuyez sur <kbd>Échap</kbd> pour la masquer</p>
+            </div>
+            {{else}}
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                {{#if search_enabled}}
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                {{/if}}
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash.
+             Only the two Mairistem themes are accepted: a stock theme stored
+             by another mdBook site on the same origin is ignored. -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme !== default_light_theme && theme !== default_dark_theme) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('{{ default_theme }}')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="{{#if (eq language "fr")}}Table des matières{{else}}Table of contents{{/if}}">
+            <div class="mx-sidebar-brand">
+                <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site codev{{else}}codev home{{/if}}">
+                    <svg class="mx-logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"></use></svg>
+                </a>
+                <a class="mx-brand-title" href="{{ path_to_root }}index.html">{{ book_title }}</a>
+            </div>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="{{ path_to_root }}toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="{{#if (eq language "fr")}}Afficher ou masquer la table des matières{{else}}Toggle table of contents{{/if}}" aria-label="{{#if (eq language "fr")}}Afficher ou masquer la table des matières{{else}}Toggle table of contents{{/if}}" aria-controls="mdbook-sidebar">
+                            {{fa "solid" "bars"}}
+                        </label>
+                        <div class="mx-bar-brand">
+                            <a class="mx-brand-logo" href="{{ path_to_root }}../index.html" title="{{#if (eq language "fr")}}Accueil du site codev{{else}}codev home{{/if}}">
+                                <svg class="mx-logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"></use></svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <h1 class="menu-title"><span class="mx-menu-book">{{ book_title }}</span></h1>
+
+                    <div class="right-buttons">
+                        {{#if search_enabled}}
+                        <button id="mdbook-search-toggle" class="icon-button mx-search-button" type="button" title="{{#if (eq language "fr")}}Rechercher (/){{else}}Search (/){{/if}}" aria-label="{{#if (eq language "fr")}}Afficher la recherche{{else}}Toggle search bar{{/if}}" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            {{fa "solid" "magnifying-glass"}}
+                            <span class="mx-search-label">{{#if (eq language "fr")}}Rechercher{{else}}Search{{/if}}</span>
+                            <kbd class="mx-search-key">/</kbd>
+                        </button>
+                        {{/if}}
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="{{#if (eq language "fr")}}Changer de thème{{else}}Change theme{{/if}}" aria-label="{{#if (eq language "fr")}}Changer de thème{{else}}Change theme{{/if}}" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            {{fa "solid" "circle-half-stroke"}}
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="{{#if (eq language "fr")}}Thèmes{{else}}Themes{{/if}}" role="menu">
+                            {{#if (eq language "fr")}}
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Automatique</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-{{ default_theme }}">Clair</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-{{ preferred_dark_theme }}">Sombre</button></li>
+                            {{else}}
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-{{ default_theme }}">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-{{ preferred_dark_theme }}">Dark</button></li>
+                            {{/if}}
+                        </ul>
+                        <nav class="mx-lang" aria-label="{{#if (eq language "fr")}}Langue{{else}}Language{{/if}}" data-path="{{ path }}">
+                            {{#if (eq language "fr")}}
+                            <a href="{{ path_to_root }}../en/" hreflang="en" lang="en" title="English documentation" data-lang="en">EN</a>
+                            <span class="mx-lang-current" aria-current="true" title="Français">FR</span>
+                            {{else}}
+                            <span class="mx-lang-current" aria-current="true" title="English">EN</span>
+                            <a href="{{ path_to_root }}../fr/" hreflang="fr" lang="fr" title="Documentation en français" data-lang="fr">FR</a>
+                            {{/if}}
+                        </nav>
+                        {{#if git_repository_url}}
+                        <a class="mx-github" href="{{git_repository_url}}" title="{{#if (eq language "fr")}}Dépôt GitHub{{else}}GitHub repository{{/if}}" aria-label="{{#if (eq language "fr")}}Dépôt GitHub{{else}}GitHub repository{{/if}}">
+                            {{fa git_repository_icon_class git_repository_icon}}
+                            <span class="mx-github-label">GitHub</span>
+                        </a>
+                        {{/if}}
+                    </div>
+                </div>
+
+                {{#if search_enabled}}
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer" role="search">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="{{#if (eq language "fr")}}Rechercher dans la documentation…{{else}}Search the documentation…{{/if}}" aria-label="{{#if (eq language "fr")}}Rechercher dans la documentation{{else}}Search the documentation{{/if}}" aria-controls="mdbook-searchresults-outer" aria-describedby="mdbook-searchresults-header">
+                            <div class="spinner-wrapper">
+                                {{fa "solid" "spinner" "fa-spin"}}
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+                {{/if}}
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        {{{ content }}}
+                    </main>
+
+                    {{#unless is_print}}
+                    {{#if git_repository_edit_url}}
+                    <div class="mx-page-meta">
+                        <a href="{{git_repository_edit_url}}" rel="edit">{{#if (eq language "fr")}}Proposer une modification de cette page{{else}}Suggest an edit to this page{{/if}}</a>
+                        {{#if print_enable}}
+                        <a href="{{ path_to_root }}print.html">{{#if (eq language "fr")}}Version imprimable{{else}}Printable version{{/if}}</a>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+
+                    <nav class="mx-pager" aria-label="{{#if (eq language "fr")}}Navigation entre les chapitres{{else}}Chapter navigation{{/if}}">
+                        {{#if previous}}
+                        <a rel="prev" href="{{ path_to_root }}{{previous.link}}" class="nav-chapters previous" aria-keyshortcuts="Left">
+                            <span class="mx-pager-label">{{#if (eq ../language "fr")}}Précédent{{else}}Previous{{/if}}</span>
+                            <span class="mx-pager-title">{{previous.title}}</span>
+                        </a>
+                        {{/if}}
+                        {{#if next}}
+                        <a rel="next prefetch" href="{{ path_to_root }}{{next.link}}" class="nav-chapters next" aria-keyshortcuts="Right">
+                            <span class="mx-pager-label">{{#if (eq ../language "fr")}}Suivant{{else}}Next{{/if}}</span>
+                            <span class="mx-pager-title">{{next.title}}</span>
+                        </a>
+                        {{/if}}
+                    </nav>
+                    {{/unless}}
+                </div>
+
+                <footer class="mx-footer">
+                    <div class="mx-footer-inner">
+                        <a class="mx-footer-logo" href="https://www.jvs-mairistem.fr/" title="Mairistem">
+                            <svg class="mx-logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"></use></svg>
+                        </a>
+                        {{#if (eq language "fr")}}
+                        <p>codev — un projet open source de <a href="https://www.jvs-mairistem.fr/">Mairistem</a> · <a href="https://github.com/mairistem/codev/blob/main/LICENSE">Licence MIT</a></p>
+                        {{else}}
+                        <p>codev — an open-source project by <a href="https://www.jvs-mairistem.fr/">Mairistem</a> · <a href="https://github.com/mairistem/codev/blob/main/LICENSE">MIT License</a></p>
+                        {{/if}}
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+        <template id=fa-eye>{{fa "solid" "eye"}}</template>
+        <template id=fa-eye-slash>{{fa "solid" "eye-slash"}}</template>
+        <template id=fa-copy>{{fa "regular" "copy"}}</template>
+        <template id=fa-play>{{fa "solid" "play"}}</template>
+        <template id=fa-clock-rotate-left>{{fa "solid" "clock-rotate-left"}}</template>
+
+        {{#if live_reload_endpoint}}
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "{{{live_reload_endpoint}}}";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        {{/if}}
+
+        {{#if playground_line_numbers}}
+        <script>
+            window.playground_line_numbers = true;
+        </script>
+        {{/if}}
+
+        {{#if playground_copyable}}
+        <script>
+            window.playground_copyable = true;
+        </script>
+        {{/if}}
+
+        {{#if playground_js}}
+        <script src="{{ resource "ace.js" }}"></script>
+        <script src="{{ resource "mode-rust.js" }}"></script>
+        <script src="{{ resource "editor.js" }}"></script>
+        <script src="{{ resource "theme-dawn.js" }}"></script>
+        <script src="{{ resource "theme-tomorrow_night.js" }}"></script>
+        {{/if}}
+
+        {{#if search_js}}
+        <script src="{{ resource "elasticlunr.min.js" }}"></script>
+        <script src="{{ resource "mark.min.js" }}"></script>
+        <script src="{{ resource "searcher.js" }}"></script>
+        {{/if}}
+
+        <script src="{{ resource "clipboard.min.js" }}"></script>
+        <script src="{{ resource "highlight.js" }}"></script>
+        <script src="{{ resource "book.js" }}"></script>
+
+        <!-- Custom JS scripts -->
+        {{#each additional_js}}
+        <script src="{{ resource this}}"></script>
+        {{/each}}
+
+        {{#if is_print}}
+        {{#if mathjax_support}}
+        <script>
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+        {{else}}
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        {{/if}}
+        {{/if}}
+
+        {{#if fragment_map}}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fragmentMap =
+                    {{{fragment_map}}}
+                ;
+                const target = fragmentMap[window.location.hash];
+                if (target) {
+                    let url = new URL(target, window.location.href);
+                    window.location.replace(url.href);
+                }
+            });
+        </script>
+        {{/if}}
+
+    </div>
+    </body>
+</html>
