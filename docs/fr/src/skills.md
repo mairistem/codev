@@ -55,6 +55,32 @@ La demande n'autorise que la planification, même si elle dit « construis » 
 « corrige » : la skill s'arrête une fois les artefacts rédigés et attend votre
 retour.
 
+Chaque artefact a un rôle explicite, tiré des instructions du schéma —
+product owner pour la proposal, analyste QA pour les specs, architecte pour
+le design, tech lead pour les tâches — avec des critères « Done when » que
+l'agent vérifie avant de passer à la suite. Un
+[schéma personnalisé](guides/custom-schemas.md) définit les siens.
+
+Avant de présenter le plan, la skill le relit en deux étapes :
+
+1. **Traçabilité** — chaque capacité a son fichier de spec, chaque exigence
+   un scénario nominal et un scénario d'erreur ou de cas limite, chaque
+   scénario une tâche dont la vérification le couvre. Les manques sont
+   corrigés dans les artefacts.
+2. **Relecture contradictoire** — la skill relit le plan en relecteur
+   sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches.
+   Sécurité et confidentialité, compatibilité et migration, exploitabilité,
+   performance, accessibilité et UX ne s'ajoutent que lorsque la section
+   Impact de la proposal les touche, de même que les
+   [`rules`](reference/configuration.md#rules) de votre projet. Elle corrige
+   ce qui ne fait pas de doute, consigne ce qui demande votre décision dans
+   les Open Questions du design, et n'élargit jamais le périmètre.
+
+Le résumé se termine par les **points à challenger** : au plus cinq points
+d'une ligne, classés par impact — quoi, pourquoi c'est important, quel
+artefact — ou la mention qu'aucun point n'a été relevé. Commencez votre
+relecture par là.
+
 Si la demande mentionne un identifiant de ticket correspondant à
 `[A-Z]{2,}-\d+` et qu'un outil MCP Jira est configuré, la skill récupère le
 premier ticket — en lecture seule, en un seul appel — et le cite en tête de la

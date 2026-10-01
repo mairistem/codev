@@ -52,7 +52,11 @@ Dans Claude Code, `/codev-propose` fait tout en une seule passe :
 3. Pour chaque artefact prêt, elle lance
    `codev instructions <artifact> --change <name> --json`, étudie le code
    concerné et rédige le fichier en suivant le template.
-4. Elle s'arrête lorsque la planification est complète et présente le plan.
+4. Elle vérifie la traçabilité entre proposal, specs et tâches, puis relit le
+   plan en relecteur sceptique : elle corrige ce qui ne fait pas de doute et
+   liste jusqu'à cinq points à challenger. Voir
+   [Propose](skills.md#propose-codev-propose).
+5. Elle s'arrête lorsque la planification est complète et présente le plan.
    Elle ne commence jamais l'implémentation dans le même tour.
 
 Lorsqu'elle rédige `design.md`, la skill reçoit les décisions d'architecture

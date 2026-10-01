@@ -239,3 +239,8 @@ A schema defines which artifacts a change has, what each one requires, and the
 instructions and templates the agent follows to write them. codev embeds one
 schema, `spec-driven`. A project can define its own in `_codev/schemas/`. See
 [Custom schemas](guides/custom-schemas.md).
+
+In `spec-driven`, each instruction opens with the role that owns the
+artifact and its "Done when" criteria: product owner for the proposal (why
+and what), QA analyst for the specs (observable behavior), architect for the
+design (how), tech lead for the tasks (sequencing and verification).

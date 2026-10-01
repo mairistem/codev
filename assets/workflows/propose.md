@@ -204,7 +204,45 @@ one of these). Tell the user, and do not come back to it.
 
 If an artifact needs a decision from the user, ask for it, then resume.
 
-### 6. Show the final status
+### 6. Check traceability
+
+Re-read every artifact from disk and check that:
+
+- every capability in the proposal has its spec file, and every spec file
+  is listed in the proposal;
+- every requirement has a nominal scenario and an error or edge-case
+  scenario, or states why none applies;
+- every scenario is covered by a task whose verification refers to it;
+- every task's verification is concrete: a test, a command, an observable
+  behavior.
+
+Fix the gaps directly in the artifacts.
+
+### 7. Challenge the plan
+
+Re-read the artifacts as a skeptical reviewer who did not write them:
+
+1. **Need** — does the change solve the Why? Is there a simpler solution,
+   or one without code?
+2. **Scope** — anything added that nobody asked for? An obvious case
+   missing?
+3. **Specs** — error and edge cases, not only the happy path? Is each
+   requirement verifiable?
+4. **Decisions** — does the design silently contradict a decision in
+   effect?
+5. **Assumptions** — which one, if wrong, would bring the plan down?
+6. **Tasks** — can each one be verified?
+
+Apply these lenses only when the proposal's Impact touches them: security
+& privacy, compatibility & migration, operability (logs, rollback),
+performance, accessibility & UX. Also apply the `rules` you received
+through `codev instructions`.
+
+Fix what is unambiguous directly. Record what needs a human decision in the
+Open Questions of `design.md`, or in the proposal if there is no design.
+Ask the user only if a finding changes the scope materially.
+
+### 8. Show the final status
 
 ```bash
 codev status --change "<name>"
@@ -219,6 +257,10 @@ Summarize:
   and why;
 - "The artifacts needed for implementation are ready.";
 - "Review them. When you are ready, ask me to apply this change."
+- **Points to challenge** — from step 7, at most five items ranked by
+  impact, one line each: what, why it matters, which artifact. If nothing
+  is worth raising, write "No point to challenge found"; never invent
+  points.
 
 ## Guardrails
 
@@ -232,6 +274,8 @@ Summarize:
 - If a change with this name already exists, ask the user whether they want
   to continue it or create another one.
 - Check that each written file exists before moving on to the next.
+- The contrarian pass corrects or records; it never adds scope.
+- Points to challenge are capped at five.
 - **Jira MCP — strictly read-only.** Never call any Jira MCP
   tool other than
   `{{JIRA_MCP_TOOL}}`, never twice in the

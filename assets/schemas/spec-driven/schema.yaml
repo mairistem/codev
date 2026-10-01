@@ -9,6 +9,14 @@ artifacts:
     template: proposal.md
     requires: []
     instruction: |
+      Role: product owner — owns WHY and WHAT.
+      Done when:
+      - Why states the problem and why now in one or two sentences;
+      - What Changes are concrete bullets;
+      - every breaking change is marked **BREAKING**;
+      - every capability listed has a spec file (or `skip_specs: true`);
+      - no implementation detail.
+
       Write the document that establishes WHY this change is needed.
 
       Sections:
@@ -42,6 +50,13 @@ artifacts:
     template: spec.md
     requires: [proposal]
     instruction: |
+      Role: QA analyst — owns observable behavior.
+      Done when:
+      - each requirement uses SHALL or MUST on observable behavior;
+      - each requirement has at least one nominal scenario and one error or
+        edge-case scenario, or says why none applies;
+      - no internal names, libraries or implementation steps.
+
       Write the spec files that define WHAT the system must do.
 
       A spec is a behavioral contract, not an implementation plan.
@@ -92,6 +107,15 @@ artifacts:
     template: design.md
     requires: [proposal]
     instruction: |
+      Role: architect — owns HOW.
+      Done when:
+      - each decision names the alternative it rejects and why;
+      - each risk has a mitigation;
+      - the accepted decisions in `_codev/decisions/` that constrain the
+        approach are cited and followed, or a supersession is explicitly
+        proposed;
+      - Open Questions only holds what can genuinely wait.
+
       Write the document that explains HOW to implement the change.
 
       Only create it if one of the following applies: a change spanning
@@ -123,6 +147,13 @@ artifacts:
     template: tasks.md
     requires: [specs, design]
     instruction: |
+      Role: tech lead — owns sequencing and verification.
+      Done when:
+      - each task fits one work session and is ordered by dependency;
+      - each task names its verification (test, command, observable
+        behavior);
+      - every spec scenario is covered by at least one task's verification.
+
       Break down the implementation work.
 
       Before writing, reread the Open Questions in design.md. If one of them

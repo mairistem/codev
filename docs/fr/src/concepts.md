@@ -255,3 +255,9 @@ chacun, ainsi que les instructions et les templates que suit l'agent pour les
 rédiger. codev embarque un schéma, `spec-driven`. Un projet peut définir les
 siens dans `_codev/schemas/`. Voir
 [Schémas personnalisés](guides/custom-schemas.md).
+
+Dans `spec-driven`, chaque instruction s'ouvre sur le rôle qui porte
+l'artefact et ses critères « Done when » : product owner pour la proposal
+(pourquoi et quoi), analyste QA pour les specs (comportement observable),
+architecte pour le design (comment), tech lead pour les tâches (ordonnancement
+et vérification).

@@ -309,6 +309,50 @@ mod tests {
     }
 
     #[test]
+    fn spec_driven_instructions_start_with_a_role_block() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        for (artifact, role, criterion) in [
+            ("proposal", "Role: product owner", "**BREAKING**"),
+            ("specs", "Role: QA analyst", "edge-case scenario"),
+            ("design", "Role: architect", "alternative it rejects"),
+            ("tasks", "Role: tech lead", "every spec scenario is covered"),
+        ] {
+            let instruction = instructions(&fs, Some(artifact))
+                .unwrap()
+                .instruction
+                .unwrap_or_default();
+            assert!(
+                instruction.starts_with(role),
+                "`{artifact}` must start with `{role}`"
+            );
+            let (_, criteria) = instruction
+                .split_once("Done when:")
+                .unwrap_or_else(|| panic!("`{artifact}` must carry a `Done when:` list"));
+            assert!(
+                criteria.contains(criterion),
+                "`{artifact}` criteria must mention `{criterion}`"
+            );
+        }
+    }
+
+    #[test]
+    fn a_project_schema_instruction_is_returned_as_written() {
+        // Roles belong to the schema: codev adds none to a custom one.
+        let fs = project(&[
+            (
+                "/p/_codev/schemas/lite/schema.yaml",
+                "name: lite\nartifacts:\n  - id: brief\n    generates: brief.md\n    instruction: Write the brief.\napply:\n  requires: [brief]\n  tracks: brief.md\n",
+            ),
+            ("/p/_codev/changes/add-auth/change.yaml", "schema: lite"),
+        ]);
+        let instr = instructions(&fs, Some("brief")).unwrap();
+        assert_eq!(instr.instruction.as_deref(), Some("Write the brief."));
+    }
+
+    #[test]
     fn injects_only_the_requested_artifacts_rules() {
         let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",

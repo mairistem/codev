@@ -30,6 +30,17 @@ Detailed notes for each version are on the corresponding GitHub Release.
   lists them in a new `superseded` field of its JSON output. It refuses a
   predecessor that is no longer `accepted` — for example, one another decision
   superseded in the meantime — with `predecessor_not_accepted`.
+- Each artifact instruction of the `spec-driven` schema opens with an explicit
+  role and its "Done when" criteria: product owner (proposal), QA analyst
+  (specs), architect (design), tech lead (tasks).
+- `/codev-propose` checks traceability between capabilities, spec files,
+  scenarios and task verifications before presenting the plan, and fixes the
+  gaps in the artifacts.
+- `/codev-propose` then challenges the plan as a skeptical reviewer — need,
+  scope, specs, decisions, assumptions, tasks, plus security, compatibility,
+  operability, performance or accessibility lenses when the proposal's Impact
+  touches them, and the project's `rules:` — and ends its summary with at most
+  five "Points to challenge", or says none was found.
 
 ## [0.4.0] - 2026-09-30
 
