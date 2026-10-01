@@ -91,6 +91,16 @@ Dans un scalaire simple, YAML interprète `key: value` comme une table :
 mettez donc entre guillemets toute règle contenant un deux-points suivi d'une
 espace, comme la règle `tasks` ci-dessus.
 
+`/codev-propose` applique les règles une seconde fois lorsqu'elle relit le plan
+terminé : `rules` est donc aussi le moyen d'ajouter un angle de relecture
+propre à votre projet :
+
+```yaml
+rules:
+  design:
+    - "Évaluer l'impact sur l'accessibilité (RGAA) de toute modification de l'interface utilisateur."
+```
+
 Tant que `rules` est vide, `codev init` et `codev status` suggèrent de lancer
 `/codev-configure`.
 

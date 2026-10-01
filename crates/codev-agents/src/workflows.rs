@@ -479,4 +479,26 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn propose_body_carries_the_review_steps() {
+        // The review steps and the output contract of the plan are what the
+        // agent follows; a rework of the body must not drop them silently.
+        let propose = find("propose").unwrap();
+        for keyword in [
+            "### 6. Check traceability",
+            "### 7. Challenge the plan",
+            "edge-case",
+            "Impact touches them",
+            "Points to challenge",
+            "No point to challenge found",
+            "it never adds scope",
+            "capped at five",
+        ] {
+            assert!(
+                propose.body.contains(keyword),
+                "the `propose` body must cite `{keyword}`"
+            );
+        }
+    }
 }

@@ -51,6 +51,28 @@ them alone. It writes the prose in the project's
 The request authorizes planning only, even if it says "build" or "fix": the
 skill stops once the artifacts are written and waits for you.
 
+Each artifact has an explicit role, taken from the schema instructions —
+product owner for the proposal, QA analyst for the specs, architect for the
+design, tech lead for the tasks — with "Done when" criteria the agent checks
+before moving on. A [custom schema](guides/custom-schemas.md) defines its own.
+
+Before presenting the plan, the skill reviews it in two steps:
+
+1. **Traceability** — every capability has its spec file, every requirement
+   a nominal and an error or edge-case scenario, every scenario a task whose
+   verification covers it. Gaps are fixed in the artifacts.
+2. **Contrarian pass** — the skill re-reads the plan as a skeptical reviewer:
+   need, scope, specs, decisions, assumptions, tasks. Security & privacy,
+   compatibility & migration, operability, performance and accessibility &
+   UX are added only when the proposal's Impact touches them, as are your
+   project's [`rules`](reference/configuration.md#rules). It fixes what is
+   unambiguous, records what needs your decision in the design's Open
+   Questions, and never adds scope.
+
+The summary ends with **Points to challenge**: at most five one-line items
+ranked by impact — what, why it matters, which artifact — or "No point to
+challenge found". Start your review there.
+
 If the request mentions a ticket identifier matching `[A-Z]{2,}-\d+` and a
 Jira MCP tool is configured, it fetches the first ticket — read-only, a
 single call — and cites it at the top of the proposal. See

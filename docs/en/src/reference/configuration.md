@@ -86,6 +86,16 @@ the `spec-driven` schema, the ids are `proposal`, `specs`, `design` and
 YAML reads `key: value` inside a plain scalar as a map, so quote a rule that
 contains a colon followed by a space, as in the `tasks` rule above.
 
+`/codev-propose` applies the rules a second time when it challenges the
+finished plan, so `rules` is also the way to add a review lens specific to
+your project:
+
+```yaml
+rules:
+  design:
+    - "Assess the accessibility (RGAA) impact of any user-interface change."
+```
+
 While `rules` is empty, `codev init` and `codev status` suggest running
 `/codev-configure`.
 

@@ -50,7 +50,11 @@ In Claude Code, `/codev-propose` does everything in one pass:
 3. For each artifact that is ready, it runs
    `codev instructions <artifact> --change <name> --json`, studies the
    relevant code, and writes the file following the template.
-4. It stops when planning is complete and presents the plan. It never starts
+4. It checks traceability between proposal, specs and tasks, then challenges
+   the plan as a skeptical reviewer, fixing what is unambiguous and listing
+   up to five points to challenge. See
+   [Propose](skills.md#propose-codev-propose).
+5. It stops when planning is complete and presents the plan. It never starts
    implementing in the same turn.
 
 When writing `design.md`, the skill receives the architecture decisions
