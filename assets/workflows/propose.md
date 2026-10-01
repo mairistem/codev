@@ -256,11 +256,11 @@ Summarize:
 - the artifacts created, one line each, plus any conditional artifact skipped
   and why;
 - "The artifacts needed for implementation are ready.";
-- "Review them. When you are ready, ask me to apply this change."
 - **Points to challenge** — from step 7, at most five items ranked by
   impact, one line each: what, why it matters, which artifact. If nothing
   is worth raising, write "No point to challenge found"; never invent
-  points.
+  points;
+- "Review them. When you are ready, ask me to apply this change."
 
 ## Guardrails
 
