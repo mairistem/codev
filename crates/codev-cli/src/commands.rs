@@ -2682,7 +2682,12 @@ The rationale for the choice.
         )
         .unwrap();
 
-        let config = h.fs.read("/p/_codev/config.yaml").unwrap();
+        // Paths resolved by init use the platform separator: compare them
+        // with forward slashes so the test holds on Windows too.
+        let config =
+            h.fs.read("/p/_codev/config.yaml")
+                .unwrap()
+                .replace('\\', "/");
         assert!(
             config.contains(
                 "# set with codev init --inherit\ninherits:\n  - git: git@github.com:acme/conventions.git\n    ref: v2\n  - path: ~/shared\n  - path: /home/shared\n"
@@ -2729,7 +2734,7 @@ The rationale for the choice.
             .iter()
             .find(|w| w.code == "inherit_not_written")
             .expect("inherit_not_written");
-        assert!(warning.message.contains("/home/shared"));
+        assert!(warning.message.replace('\\', "/").contains("/home/shared"));
     }
 
     #[test]
