@@ -248,6 +248,11 @@ superseded or deviated from are in effect, and `supersedes` and
 `deviates_from` only take effect on an `accepted` decision: a `proposed`
 supersession or deviation changes nothing until `codev decision accept`.
 
+Files saved with Windows line endings (CRLF) are read like any other. When
+codev rewrites a decision's status — `codev decision accept`, or a
+predecessor marked `superseded` — it keeps the file's line endings and leaves
+the body byte for byte as it was, so the seal stays valid.
+
 ## seal.yaml
 
 Path: `_codev/decisions/seal.yaml`. Maintained by codev; do not edit it by

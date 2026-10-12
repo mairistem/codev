@@ -58,7 +58,9 @@ inherits:
 
 A value starting with `git@`, `https://`, `http://`, `ssh://` or `file://`, or
 ending in `.git`, is a git source; `@<ref>` picks the branch or tag, and `main`
-is used without it. Anything else is a local folder, which must exist. A
+is used without it. Anything else is a local folder, which must exist; a
+relative folder is written as an absolute path, with forward slashes on every
+platform, so the file reads the same whatever machine ran `codev init`. A
 value that is obviously wrong — empty, a missing folder, a git URL ending in
 `@` — is refused with `invalid_inherit` before anything is written.
 

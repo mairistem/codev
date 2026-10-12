@@ -60,7 +60,9 @@ inherits:
 Une valeur qui commence par `git@`, `https://`, `http://`, `ssh://` ou
 `file://`, ou qui se termine par `.git`, est une source git ; `@<ref>` choisit
 la branche ou le tag, et `main` s'applique en son absence. Toute autre valeur
-est un dossier local, qui doit exister. Une valeur manifestement fausse — vide,
+est un dossier local, qui doit exister ; un dossier relatif est écrit en chemin
+absolu, avec des barres obliques `/` sur toutes les plateformes, pour que le
+fichier soit identique quelle que soit la machine qui a lancé `codev init`. Une valeur manifestement fausse — vide,
 un dossier absent, une URL git terminée par `@` — est refusée avec
 `invalid_inherit` avant toute écriture.
 
