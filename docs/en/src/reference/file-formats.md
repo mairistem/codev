@@ -137,12 +137,44 @@ The `spec-driven` template:
 ### Removed Capabilities
 
 ## Impact
+
+## Release note
 ```
 
 Each capability listed under *New* or *Modified Capabilities* gets its own
 delta file at `specs/<capability>/spec.md`. Breaking changes are marked
 **BREAKING** in *What Changes*. A capability listed under *Removed
 Capabilities* requires `retire_capabilities: true`.
+
+### Release note
+
+What end users read in the changelog, built by
+[`codev changelog`](cli.md#codev-changelog). Either one or more items:
+
+```markdown
+## Release note
+
+- Added: `--format json` on `codev export`.
+- Changed: **BREAKING** `codev export` writes to stdout by default; pass
+  `--output <PATH>` to write a file.
+```
+
+or, for a change users will not notice, the single line:
+
+```markdown
+## Release note
+
+None
+```
+
+Each item is `- <Category>: <text>`, the category being one of `Added`,
+`Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` — the categories of
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). An item may wrap
+over several lines. A breaking item starts its text with `**BREAKING**`. The
+text follows the project's artifact language.
+`codev validate` reports a missing section as a warning and an unknown
+category, an item without text or an empty section as errors, on active
+changes only.
 
 ## design.md
 
@@ -337,6 +369,8 @@ may be reworded between versions; codes are not.
 | `decision_field_type_mismatch` | error | A frontmatter field has the wrong shape |
 | `decision_seal_mismatch` | error | A sealed decision's body was edited |
 | `decision_conflicting_deviations` | error | Two accepted local decisions deviate from the same inherited one |
+| `release_note_invalid` | error | The proposal's `## Release note` has an unknown category, an item without text, or is empty |
+| `release_note_missing` | warning | An active change's proposal has no `## Release note` section |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `decision_orphan_seal` | warning | A seal has no matching decision |

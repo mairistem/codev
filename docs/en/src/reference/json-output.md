@@ -144,7 +144,7 @@ is left untouched). An invalid `--inherit` value fails with
     "…"
   ],
   "summary": {
-    "total": 10,
+    "total": 11,
     "missing": 2,
     "warnings": 1
   },
@@ -170,6 +170,51 @@ repositories. `summary.missing` drives the exit status of `--strict`.
 | `claude_md` | `repository` | `claude_md_section_missing` |
 | `ci` | `repository` | `ci_validate_missing` |
 | `pr_template` | `repository` | `pr_template_section_missing` |
+| `changelog` | `repository` | `changelog_missing` (warning), `changelog_outdated` (warning) |
+
+### changelog
+
+`codev changelog --format json` (the `--json` of this command):
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "since": "v1.3.0",
+  "until": null,
+  "release": null,
+  "entries": [
+    {
+      "category": "Added",
+      "text": "`--format json` on `codev export`.",
+      "breaking": false,
+      "change": "2026-10-02-export-json",
+      "archivePath": "_codev/changes/archive/2026-10-02-export-json",
+      "source": "release_note"
+    }
+  ],
+  "markdown": "## [Unreleased]\n\n### Added\n\n- `--format json` on `codev export`.\n",
+  "written": null,
+  "status": []
+}
+```
+
+- `since` — the ref the range starts after, explicit or the default tag;
+  `null` when every archived change is in range. `until` — `null` for the
+  working tree.
+- `release` — `{ "version", "date" }` with `--release`, else `null`.
+- `entries` — in display order. `text` is the item as written, `**BREAKING**`
+  marker included. `source` is `release_note`, or `what_changes` for a change
+  archived without a release note.
+- `markdown` — the entries rendered as Keep a Changelog.
+- `written` — with `--write`, `{ "path", "action" }`, `action` being
+  `created`, `updated` or `unchanged`; else `null`.
+
+Warnings in `status`: `release_note_missing`, `release_note_invalid`,
+`release_note_inconsistent`, `not_a_git_repository`,
+`archived_change_unreadable`. Error codes: `unknown_ref`,
+`not_a_git_repository` (with `--since` or `--until` outside git),
+`invalid_release_version`, `invalid_date`, `invalid_argument`,
+`changelog_malformed`.
 
 ### new change
 

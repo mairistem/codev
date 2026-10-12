@@ -152,7 +152,9 @@ them writes the files; `codev update` never does.
 ## codev doctor
 
 `codev doctor` checks the whole setup and gives, for each gap, the command or
-skill that closes it. It is read-only and works offline:
+skill that closes it. It is read-only and works offline; for the `changelog`
+check, it asks the local git repository which changes were archived since the
+latest tag:
 
 ```bash
 codev doctor
@@ -179,13 +181,17 @@ Repository
   ✓ claude_md        CLAUDE.md has the codev section
   ✓ ci               .github/workflows/codev.yml runs codev validate
   ✓ pr_template      the pull request template has the codev section
+  ✓ changelog        CHANGELOG.md matches the archived changes
 
-10 check(s), 2 to fix, 1 warning(s)
+11 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` marks a missing item, `!` a warning — a project may legitimately have no
 accepted decision. The `pr_template` check only appears for GitHub
-repositories. The full list of checks is in the
+repositories. The `changelog` check, a warning only, compares the
+`[Unreleased]` section of `CHANGELOG.md` with what `codev changelog` generates;
+the fix is `codev changelog --write` — see
+[Release notes and CHANGELOG](release-notes.md). The full list of checks is in the
 [CLI reference](../reference/cli.md#codev-doctor).
 
 `codev init` and `codev status` end with a one-line hint when something is

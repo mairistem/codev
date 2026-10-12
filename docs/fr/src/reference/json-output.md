@@ -150,7 +150,7 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
     "…"
   ],
   "summary": {
-    "total": 10,
+    "total": 11,
     "missing": 2,
     "warnings": 1
   },
@@ -177,6 +177,51 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `claude_md` | `repository` | `claude_md_section_missing` |
 | `ci` | `repository` | `ci_validate_missing` |
 | `pr_template` | `repository` | `pr_template_section_missing` |
+| `changelog` | `repository` | `changelog_missing` (avertissement), `changelog_outdated` (avertissement) |
+
+### changelog
+
+`codev changelog --format json` (le `--json` de cette commande) :
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "since": "v1.3.0",
+  "until": null,
+  "release": null,
+  "entries": [
+    {
+      "category": "Added",
+      "text": "`--format json` pour `codev export`.",
+      "breaking": false,
+      "change": "2026-10-02-export-json",
+      "archivePath": "_codev/changes/archive/2026-10-02-export-json",
+      "source": "release_note"
+    }
+  ],
+  "markdown": "## [Unreleased]\n\n### Added\n\n- `--format json` pour `codev export`.\n",
+  "written": null,
+  "status": []
+}
+```
+
+- `since` — la référence après laquelle commence l'intervalle, explicite ou
+  le tag par défaut ; `null` lorsque tous les changes archivés en font
+  partie. `until` — `null` pour l'arbre de travail.
+- `release` — `{ "version", "date" }` avec `--release`, sinon `null`.
+- `entries` — dans l'ordre d'affichage. `text` est l'élément tel qu'écrit,
+  marqueur `**BREAKING**` compris. `source` vaut `release_note`, ou
+  `what_changes` pour un change archivé sans note de version.
+- `markdown` — les éléments mis en forme au format Keep a Changelog.
+- `written` — avec `--write`, `{ "path", "action" }`, `action` valant
+  `created`, `updated` ou `unchanged` ; sinon `null`.
+
+Avertissements dans `status` : `release_note_missing`,
+`release_note_invalid`, `release_note_inconsistent`, `not_a_git_repository`,
+`archived_change_unreadable`. Codes d'erreur : `unknown_ref`,
+`not_a_git_repository` (avec `--since` ou `--until` hors de git),
+`invalid_release_version`, `invalid_date`, `invalid_argument`,
+`changelog_malformed`.
 
 ### new change
 

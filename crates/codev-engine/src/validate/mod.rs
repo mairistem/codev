@@ -51,6 +51,7 @@ pub fn validate_change(
     let change_dir = layout.change_dir(change_id);
 
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
+    findings.extend(check_release_note(fs, layout, &change_dir)?);
 
     // Each delta is read once and parsed once: the parser's findings and
     // the rules' findings come out of the same pass.
@@ -308,6 +309,46 @@ pub fn validate_decisions(
     })
 }
 
+/// The release note of an active change's proposal: a warning when the
+/// section is missing, the parser's errors otherwise. A change whose
+/// proposal is not written yet has nothing to check. Archived changes never
+/// get here — history is not rewritten.
+fn check_release_note(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    change_dir: &std::path::Path,
+) -> Result<Vec<LocatedFinding>> {
+    use codev_core::changelog::{ReleaseNote, codes, release_note};
+    let path = change_dir.join("proposal.md");
+    if !fs.exists(&path) {
+        return Ok(Vec::new());
+    }
+    let source = fs
+        .read_to_string(&path)
+        .map_err(|e| EngineError::Unreadable {
+            path: path.clone(),
+            reason: e.to_string(),
+        })?;
+    let relative = path
+        .strip_prefix(layout.project_root())
+        .unwrap_or(&path)
+        .to_path_buf();
+    let parsed = release_note::parse(&source);
+    let mut findings = parsed.findings;
+    if parsed.value == ReleaseNote::Absent {
+        findings.push(Finding::warning(
+            codes::RELEASE_NOTE_MISSING,
+            1,
+            "the proposal has no `## Release note` section; add one after `## Impact` \
+             (`- <Category>: <text>` items, or `None` for an internal change)",
+        ));
+    }
+    Ok(findings
+        .into_iter()
+        .map(|f| LocatedFinding::from_finding(f, relative.clone()))
+        .collect())
+}
+
 /// The parsed main spec a delta targets, or `None` for a new capability.
 fn read_main_spec(
     fs: &dyn FileSystem,
@@ -382,7 +423,7 @@ mod tests {
             )
             .with_file(
                 "/p/_codev/changes/add-auth/proposal.md",
-                "# Proposal\n\n## Why\n\nTest\n",
+                "# Proposal\n\n## Why\n\nTest\n\n## Release note\n\n- Added: login.\n",
             )
             .with_file(
                 "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
@@ -507,6 +548,82 @@ mod tests {
                 .any(|i| i.kind == ItemKind::Spec && i.name == "user-auth")
         );
         assert!(!report.has_errors());
+    }
+
+    fn release_note_codes(note: Option<&str>) -> Vec<(&'static str, Severity)> {
+        let mut proposal = String::from("# Proposal\n\n## Why\n\nTest\n");
+        if let Some(note) = note {
+            proposal.push_str(&format!("\n## Release note\n\n{note}\n"));
+        }
+        let fs = project_with_well_formed_change()
+            .with_file("/p/_codev/changes/add-auth/proposal.md", proposal);
+        let cfg = config(&fs);
+        let report = validate_change(
+            &fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        report
+            .findings
+            .iter()
+            .filter(|f| f.finding.code.starts_with("release_note"))
+            .map(|f| (f.finding.code, f.finding.severity))
+            .collect()
+    }
+
+    #[test]
+    fn validate_reports_a_missing_release_note_as_a_warning() {
+        assert_eq!(
+            release_note_codes(None),
+            vec![("release_note_missing", Severity::Warning)]
+        );
+    }
+
+    #[test]
+    fn validate_accepts_a_valid_or_internal_release_note() {
+        assert!(
+            release_note_codes(Some("- Added: a flag.\n- Changed: **BREAKING** a default."))
+                .is_empty()
+        );
+        assert!(release_note_codes(Some("None")).is_empty());
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_category_and_an_empty_bullet() {
+        for note in ["- Improved: speed.", "- Fixed:", ""] {
+            assert_eq!(
+                release_note_codes(Some(note)),
+                vec![("release_note_invalid", Severity::Error)],
+                "{note:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn validate_ignores_archived_changes_without_release_note() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/proposal.md",
+                "# Proposal\n\n## Why\n\nOld.\n",
+            )
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/change.yaml",
+                "schema: spec-driven",
+            );
+        let cfg = config(&fs);
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|i| &i.findings)
+                .all(|f| !f.finding.code.starts_with("release_note")),
+            "{:?}",
+            report.items
+        );
     }
 
     // ─────────────── validate_decisions ───────────────

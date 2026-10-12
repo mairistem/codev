@@ -80,6 +80,27 @@ impl DocsLang {
     }
 }
 
+/// Output format of `codev changelog --format`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+enum ChangelogFormatArg {
+    /// `## [Unreleased]` (or the release) and `### <Category>` sections
+    KeepAChangelog,
+    /// The same without the version heading, for a release body
+    Markdown,
+    /// The JSON contract v1
+    Json,
+}
+
+impl ChangelogFormatArg {
+    fn to_format(self) -> commands::ChangelogFormat {
+        match self {
+            Self::KeepAChangelog => commands::ChangelogFormat::KeepAChangelog,
+            Self::Markdown => commands::ChangelogFormat::Markdown,
+            Self::Json => commands::ChangelogFormat::Json,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum Command {
     /// Initialize codev in a project and install the Claude Code skills
@@ -140,9 +161,10 @@ enum Command {
     /// Check what the project's codev setup still lacks, and how to fix it
     ///
     /// Read-only and offline: configuration, skills, specs, decisions,
-    /// inherited sources, `CLAUDE.md`, CI and pull request template, and
-    /// `codev validate`. Each check is ok, missing or a warning, with the
-    /// command or skill that fixes it.
+    /// inherited sources, `CLAUDE.md`, CI and pull request template,
+    /// `codev validate`, and whether `CHANGELOG.md` matches the archived
+    /// changes. Each check is ok, missing or a warning, with the command or
+    /// skill that fixes it.
     Doctor {
         /// Exit with code 1 when a check is missing (warnings never fail)
         #[arg(long)]
@@ -218,6 +240,39 @@ enum Command {
         change: Option<String>,
         #[arg(long)]
         json: bool,
+    },
+
+    /// Generate release notes from the archived changes
+    ///
+    /// Lists the release-note items of the changes archived after `--since`
+    /// (default: the highest `v*` tag) and up to `--until` (default: the
+    /// working tree), by category, breaking items first. A change archived
+    /// without a release note falls back on its What Changes bullets, with a
+    /// warning. `--write` keeps the `[Unreleased]` section of `CHANGELOG.md`
+    /// up to date, in a managed section; with `--release`, it becomes a
+    /// dated version block.
+    Changelog {
+        /// Git ref the range starts after (default: the highest `v*` tag
+        /// below `--until`)
+        #[arg(long, value_name = "REF")]
+        since: Option<String>,
+        /// Git ref the range ends at (default: the working tree)
+        #[arg(long, value_name = "REF")]
+        until: Option<String>,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = ChangelogFormatArg::KeepAChangelog)]
+        format: ChangelogFormatArg,
+        /// Title the block `## [<VERSION>] - <DATE>` instead of
+        /// `## [Unreleased]`
+        #[arg(long, value_name = "VERSION")]
+        release: Option<String>,
+        /// Release date, `YYYY-MM-DD` (default: today)
+        #[arg(long, value_name = "DATE", requires = "release")]
+        date: Option<String>,
+        /// Update `CHANGELOG.md` (created if missing); text outside codev's
+        /// managed section is kept
+        #[arg(long)]
+        write: bool,
     },
 
     /// Open the codev documentation in the browser
@@ -695,6 +750,36 @@ fn run(cli: Cli) -> i32 {
             }
             Err(err) => fail(json, archive_shape(), &err),
         },
+
+        Command::Changelog {
+            since,
+            until,
+            format,
+            release,
+            date,
+            write,
+        } => {
+            let json = format == ChangelogFormatArg::Json;
+            let args = commands::ChangelogArgs {
+                since,
+                until,
+                release,
+                date,
+                write,
+            };
+            match commands::changelog(&ctx, format.to_format(), &args) {
+                Ok(outcome) => {
+                    emit(json, contract::ChangelogV1::from(&outcome), || {
+                        render::changelog_written(&outcome)
+                    });
+                    if !json {
+                        render::warnings(&outcome.warnings);
+                    }
+                    0
+                }
+                Err(err) => fail(json, contract::changelog_shape(), &err),
+            }
+        }
 
         Command::Doctor { strict, json } => match commands::doctor(&ctx) {
             Ok(outcome) => {
@@ -1288,6 +1373,47 @@ mod doctor_tests {
         assert_eq!(json["summary"]["missing"], 0);
         assert_eq!(json["status"][0]["code"], "no_codev_root");
         assert_eq!(json["status"][0]["level"], "error");
+    }
+}
+
+#[cfg(test)]
+mod changelog_tests {
+    use clap::Parser;
+
+    use super::{ChangelogFormatArg, Cli, Command};
+
+    #[test]
+    fn changelog_json_failure_keeps_the_shape() {
+        let json = crate::contract::failure(
+            crate::contract::changelog_shape(),
+            "unknown_ref",
+            "git does not know `v9`",
+        );
+        assert_eq!(json["entries"], serde_json::json!([]));
+        assert!(json["root"].is_null() && json["written"].is_null());
+        assert_eq!(json["markdown"], "");
+        assert_eq!(json["status"][0]["code"], "unknown_ref");
+    }
+
+    #[test]
+    fn changelog_flags_parse_and_date_requires_release() {
+        let cli = Cli::try_parse_from([
+            "codev",
+            "changelog",
+            "--since",
+            "v1.0.0",
+            "--until",
+            "v1.1.0",
+            "--format",
+            "markdown",
+        ])
+        .unwrap();
+        let Command::Changelog { since, format, .. } = cli.command else {
+            panic!("expected the changelog command");
+        };
+        assert_eq!(since.as_deref(), Some("v1.0.0"));
+        assert_eq!(format, ChangelogFormatArg::Markdown);
+        assert!(Cli::try_parse_from(["codev", "changelog", "--date", "2026-10-20"]).is_err());
     }
 }
 

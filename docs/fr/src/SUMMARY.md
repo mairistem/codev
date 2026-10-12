@@ -17,6 +17,7 @@
 
 - [Sources héritées](guides/inherited-sources.md)
 - [Intégration au dépôt et codev doctor](guides/repository-integration.md)
+- [Notes de version et CHANGELOG](guides/release-notes.md)
 - [Jira et autres serveurs MCP](guides/mcp.md)
 - [Langue des artefacts](guides/artifact-language.md)
 - [Schémas personnalisés](guides/custom-schemas.md)

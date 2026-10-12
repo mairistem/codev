@@ -13,6 +13,7 @@
 pub mod apply;
 pub mod archive;
 pub mod change;
+pub mod changelog;
 pub mod config;
 pub mod decisions;
 pub mod decisions_actions;

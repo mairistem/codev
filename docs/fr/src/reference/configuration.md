@@ -47,6 +47,10 @@ inherits:
 
 mcp:
   jira_tool: mcp__atlassian__getJiraIssue
+
+changelog:
+  exclude:
+    - 2026-03-02-legacy-import
 ```
 
 ## schema
@@ -169,6 +173,20 @@ chaque installation de Claude Code et ne sont donc jamais hérités.
 | `jira_tool` | Outil qui récupère un ticket Jira, utilisé par `/codev-propose` lorsqu'un identifiant de ticket est mentionné |
 
 Voir [Jira et autres serveurs MCP](../guides/mcp.md).
+
+## changelog
+
+Les réglages de [`codev changelog`](cli.md#codev-changelog). Propres au
+projet, jamais hérités.
+
+| Clé | Signification |
+|---|---|
+| `exclude` | Noms de dossiers d'archive (`<date>-<nom>`) des changes déjà décrits à la main dans `CHANGELOG.md`. `codev changelog` les laisse de côté, sans avertissement |
+
+Utilisez-la pour adopter `codev changelog` dans un projet dont le
+`CHANGELOG.md` décrit déjà des changes archivés sans note de version, afin
+qu'ils ne soient pas listés deux fois. Voir
+[Notes de version et CHANGELOG](../guides/release-notes.md).
 
 ## Variables d'environnement
 

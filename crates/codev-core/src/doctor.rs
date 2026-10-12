@@ -80,6 +80,17 @@ pub struct GitSourceFact {
     pub cached: bool,
 }
 
+/// How `CHANGELOG.md` compares with what `codev changelog` generates.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ChangelogState {
+    /// No `CHANGELOG.md`.
+    #[default]
+    Missing,
+    /// No managed section, or one that differs from a fresh generation.
+    Outdated,
+    Current,
+}
+
 /// Everything [`evaluate`] needs, read by the shell.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DoctorFacts {
@@ -105,6 +116,7 @@ pub struct DoctorFacts {
     pub pr_template_section: bool,
     pub validate_errors: usize,
     pub validate_warnings: usize,
+    pub changelog: ChangelogState,
 }
 
 /// Stable check ids, in report order.
@@ -119,6 +131,7 @@ pub const CHECK_IDS: &[&str] = &[
     "claude_md",
     "ci",
     "pr_template",
+    "changelog",
 ];
 
 fn ok(id: &'static str, group: CheckGroup, message: impl Into<String>) -> Check {
@@ -375,6 +388,32 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
         });
     }
 
+    // Warning only: a project may keep its changelog elsewhere, and the
+    // fix is one command.
+    checks.push(match facts.changelog {
+        ChangelogState::Current => ok(
+            "changelog",
+            Repository,
+            "CHANGELOG.md matches the archived changes",
+        ),
+        ChangelogState::Missing => not_ok(
+            "changelog",
+            Repository,
+            Warning,
+            "changelog_missing",
+            "no CHANGELOG.md",
+            "codev changelog --write",
+        ),
+        ChangelogState::Outdated => not_ok(
+            "changelog",
+            Repository,
+            Warning,
+            "changelog_outdated",
+            "the [Unreleased] section of CHANGELOG.md differs from what codev changelog generates",
+            "codev changelog --write",
+        ),
+    });
+
     // Report order follows CHECK_IDS, whatever the evaluation order above.
     checks.sort_by_key(|c| CHECK_IDS.iter().position(|id| *id == c.id));
     checks
@@ -417,6 +456,7 @@ mod tests {
             pr_template_section: true,
             validate_errors: 0,
             validate_warnings: 0,
+            changelog: ChangelogState::Current,
         }
     }
 
@@ -470,6 +510,7 @@ mod tests {
             assert_eq!(check(&checks, id).status, CheckStatus::Ok, "{id}");
         }
         assert!(checks.iter().all(|c| c.id != "pr_template"));
+        assert_eq!(check(&checks, "changelog").code, "changelog_missing");
     }
 
     #[test]
@@ -586,6 +627,25 @@ mod tests {
     }
 
     #[test]
+    fn changelog_check_is_a_warning_when_missing_or_outdated() {
+        for (state, code) in [
+            (ChangelogState::Missing, "changelog_missing"),
+            (ChangelogState::Outdated, "changelog_outdated"),
+        ] {
+            let facts = DoctorFacts {
+                changelog: state,
+                ..complete()
+            };
+            let checks = evaluate(&facts);
+            let changelog = check(&checks, "changelog");
+            assert_eq!(changelog.status, CheckStatus::Warning);
+            assert_eq!(changelog.code, code);
+            assert_eq!(changelog.fix.as_deref(), Some("codev changelog --write"));
+            assert_eq!(summary(&checks).1, 0, "never counted as missing");
+        }
+    }
+
+    #[test]
     fn summary_counts_missing_and_warnings() {
         let facts = DoctorFacts {
             rules_present: false,
@@ -593,6 +653,6 @@ mod tests {
             accepted_decisions: 0,
             ..complete()
         };
-        assert_eq!(summary(&evaluate(&facts)), (10, 2, 1));
+        assert_eq!(summary(&evaluate(&facts)), (11, 2, 1));
     }
 }

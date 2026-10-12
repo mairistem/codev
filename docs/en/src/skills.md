@@ -54,7 +54,8 @@ skill stops once the artifacts are written and waits for you.
 Each artifact has an explicit role, taken from the schema instructions —
 product owner for the proposal, QA analyst for the specs, architect for the
 design, tech lead for the tasks — with "Done when" criteria the agent checks
-before moving on. The tech lead's criteria require the affected documentation
+before moving on. The product owner writes the proposal's release note for
+end users, categorized, or `None` for an internal change. The tech lead's criteria require the affected documentation
 to be updated in a task, and every scenario to be covered by an automated
 test that follows your project's test conventions. A
 [custom schema](guides/custom-schemas.md) defines its own.
@@ -63,9 +64,12 @@ Before presenting the plan, the skill reviews it in two steps:
 
 1. **Traceability** — every capability has its spec file, every requirement
    a nominal and an error or edge-case scenario, every scenario a task whose
-   verification covers it with an automated test, and a task updates the
-   documentation when the Impact touches documented behavior. Gaps are fixed
-   in the artifacts.
+   verification covers it with an automated test, a task updates the
+   documentation when the Impact touches documented behavior, and the
+   proposal's [release note](reference/file-formats.md#release-note) agrees
+   with the plan — every breaking item of What Changes, and every removed or
+   breaking modified requirement, has a **BREAKING** item. Gaps are fixed in
+   the artifacts.
 2. **Contrarian pass** — the skill re-reads the plan as a skeptical reviewer:
    need, scope, specs, decisions, assumptions, tasks. Security & privacy,
    compatibility & migration, operability, performance and accessibility &
