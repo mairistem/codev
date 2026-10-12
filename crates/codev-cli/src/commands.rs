@@ -4,13 +4,17 @@ use std::path::{Path, PathBuf};
 use codev_agents::claude::ClaudeCode;
 use codev_agents::target::AgentTarget;
 use codev_agents::workflows;
+use codev_core::changelog;
 use codev_core::config::InheritArg;
-use codev_core::doctor::{self as core_doctor, Check, CheckStatus, DoctorFacts, GitSourceFact};
+use codev_core::doctor::{
+    self as core_doctor, ChangelogState, Check, CheckStatus, DoctorFacts, GitSourceFact,
+};
 use codev_core::managed::{self, SpliceMode};
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
 use codev_engine::archive as engine_archive;
 use codev_engine::archive::ArchiveOutcome;
+use codev_engine::changelog as engine_changelog;
 use codev_engine::config;
 use codev_engine::decisions as engine_decisions;
 use codev_engine::decisions_actions as engine_actions;
@@ -76,7 +80,9 @@ pub struct Ctx<'a> {
     pub fs: &'a dyn FileSystem,
     pub env: &'a dyn Env,
     pub clock: &'a dyn Clock,
-    /// Only `codev sources update` and `codev init --inherit <git>` use it.
+    /// `codev sources update` and `codev init --inherit <git>` use it, and
+    /// `codev changelog` and the doctor `changelog` check for local,
+    /// read-only git queries.
     pub runner: &'a dyn ProcessRunner,
     pub version: &'a str,
 }
@@ -1287,6 +1293,216 @@ pub fn sources_show(ctx: &Ctx, target: &str) -> Result<SourcesShowOutcome> {
     })
 }
 
+// ─────────────────────────────── changelog ───────────────────────────────
+
+/// The text format of `codev changelog`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChangelogFormat {
+    KeepAChangelog,
+    Markdown,
+    Json,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ChangelogArgs {
+    pub since: Option<String>,
+    pub until: Option<String>,
+    pub release: Option<String>,
+    pub date: Option<String>,
+    pub write: bool,
+}
+
+/// What `--write` did to `CHANGELOG.md`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChangelogWrite {
+    Created,
+    Updated,
+    Unchanged,
+}
+
+impl ChangelogWrite {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Created => "created",
+            Self::Updated => "updated",
+            Self::Unchanged => "unchanged",
+        }
+    }
+}
+
+pub struct ChangelogOutcome {
+    pub root: PathBuf,
+    pub since: Option<String>,
+    pub until: Option<String>,
+    /// `(version, date)` with `--release`.
+    pub release: Option<(String, String)>,
+    pub entries: Vec<changelog::Entry>,
+    /// The entries rendered in the requested text format (Keep a Changelog
+    /// for `json`).
+    pub rendered: String,
+    pub written: Option<(PathBuf, ChangelogWrite)>,
+    pub warnings: Vec<Warning>,
+}
+
+/// `codev changelog`: the release notes of the changes archived in range.
+pub fn changelog(
+    ctx: &Ctx,
+    format: ChangelogFormat,
+    args: &ChangelogArgs,
+) -> Result<ChangelogOutcome> {
+    if args.write && format == ChangelogFormat::Markdown {
+        return Err(Failure::new(
+            "invalid_argument",
+            "--write writes the Keep a Changelog format; drop `--format markdown`",
+        ));
+    }
+    let release = match &args.release {
+        Some(raw) => {
+            let version = changelog::version::normalize_release(raw)
+                .map_err(|m| Failure::new("invalid_release_version", m))?;
+            let date = match &args.date {
+                Some(date) if !changelog::version::is_valid_date(date) => {
+                    return Err(Failure::new(
+                        "invalid_date",
+                        format!("`{date}` is not a date; use YYYY-MM-DD"),
+                    ));
+                }
+                Some(date) => date.clone(),
+                None => ctx.clock.today(),
+            };
+            Some((version, date))
+        }
+        None => None,
+    };
+
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let generated = generate_changelog(ctx, &layout, args.since.as_deref(), args.until.as_deref())?;
+    let heading = match (&release, format) {
+        (_, ChangelogFormat::Markdown) => changelog::Heading::None,
+        (Some((version, date)), _) => changelog::Heading::Release {
+            version: version.clone(),
+            date: date.clone(),
+        },
+        (None, _) => changelog::Heading::Unreleased,
+    };
+    let rendered = changelog::render(&generated.entries, &heading);
+
+    let written = if args.write {
+        let path = layout.project_root().join(changelog::file::FILE_NAME);
+        let existing = if ctx.fs.exists(&path) {
+            Some(ctx.fs.read_to_string(&path).map_err(|e| {
+                Failure::new(
+                    "unreadable",
+                    format!("{} is unreadable: {e}", path.display()),
+                )
+            })?)
+        } else {
+            None
+        };
+        let unreleased = changelog::render(&generated.entries, &changelog::Heading::Unreleased);
+        let release_block = release.is_some().then(|| rendered.clone());
+        let contents = changelog::file::write(
+            existing.as_deref(),
+            if release.is_some() { "" } else { &unreleased },
+            release_block.as_deref(),
+        )
+        .map_err(|reason| {
+            Failure::new(
+                "changelog_malformed",
+                format!(
+                    "{}: {reason}; fix the codev markers, nothing was written",
+                    path.display()
+                ),
+            )
+        })?;
+        let action = match &existing {
+            None => ChangelogWrite::Created,
+            Some(text) if *text == contents => ChangelogWrite::Unchanged,
+            Some(_) => ChangelogWrite::Updated,
+        };
+        if action != ChangelogWrite::Unchanged {
+            let mut plan = Plan::new();
+            plan.write(&path, contents, WriteMode::Overwrite);
+            apply::execute(&plan, ctx.fs)?;
+        }
+        Some((path, action))
+    } else {
+        None
+    };
+
+    Ok(ChangelogOutcome {
+        root: layout.project_root().to_path_buf(),
+        since: generated.since,
+        until: generated.until,
+        release,
+        entries: generated.entries,
+        rendered,
+        written,
+        warnings: generated.warnings,
+    })
+}
+
+/// The entries in range, with every warning — the shared core of
+/// `codev changelog` and the doctor `changelog` check.
+struct GeneratedChangelog {
+    since: Option<String>,
+    until: Option<String>,
+    entries: Vec<changelog::Entry>,
+    warnings: Vec<Warning>,
+}
+
+fn generate_changelog(
+    ctx: &Ctx,
+    layout: &Layout,
+    since: Option<&str>,
+    until: Option<&str>,
+) -> Result<GeneratedChangelog> {
+    let project = config::load(ctx.fs, &layout.config_file())?.unwrap_or_default();
+    let gathered = engine_changelog::gather(ctx.fs, ctx.runner, layout, since, until)?;
+    let collected = changelog::collect(&gathered.changes, &project.changelog.exclude);
+    let mut warnings = gathered.warnings;
+    warnings.extend(
+        collected
+            .notices
+            .into_iter()
+            .map(|n| Warning::new(n.code, n.message)),
+    );
+    Ok(GeneratedChangelog {
+        since: gathered.since,
+        until: gathered.until,
+        entries: collected.entries,
+        warnings,
+    })
+}
+
+/// How `CHANGELOG.md` compares with a fresh `codev changelog --write`.
+/// Anything that prevents the comparison counts as outdated: doctor
+/// reports, it never fails on a fact it could not gather.
+fn changelog_state(ctx: &Ctx, layout: &Layout) -> ChangelogState {
+    let path = layout.project_root().join(changelog::file::FILE_NAME);
+    let Ok(text) = ctx.fs.read_to_string(&path) else {
+        return if ctx.fs.exists(&path) {
+            ChangelogState::Outdated
+        } else {
+            ChangelogState::Missing
+        };
+    };
+    let Some(current) = changelog::file::managed_block(&text) else {
+        return ChangelogState::Outdated;
+    };
+    match generate_changelog(ctx, layout, None, None) {
+        Ok(generated) => {
+            let expected = changelog::render(&generated.entries, &changelog::Heading::Unreleased);
+            if expected.trim() == current {
+                ChangelogState::Current
+            } else {
+                ChangelogState::Outdated
+            }
+        }
+        Err(_) => ChangelogState::Outdated,
+    }
+}
+
 // ─────────────────────────────── doctor ───────────────────────────────
 
 pub struct DoctorOutcome {
@@ -1382,6 +1598,7 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
             .is_some_and(|(_, text)| managed::has_section(text)),
         validate_errors,
         validate_warnings,
+        changelog: changelog_state(ctx, layout),
     };
     Ok(DoctorOutcome {
         root: root.to_path_buf(),
@@ -2594,7 +2811,7 @@ The rationale for the choice.
         use codev_engine::FileSystem;
         h.fs.write(
             std::path::Path::new("/p/_codev/changes/add-auth/proposal.md"),
-            "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n",
+            "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n\n## Release note\n\nNone\n",
         )
         .unwrap();
         h.fs
@@ -2998,5 +3215,337 @@ The rationale for the choice.
         let h = Harness::new();
         let err = doctor(&h.ctx()).err().expect("doctor must fail");
         assert_eq!(err.code, "no_codev_root");
+    }
+
+    // ─────────────── changelog ───────────────
+
+    fn archived(name: &str, note: Option<&str>) -> (String, String) {
+        let mut proposal =
+            format!("# Proposal: {name}\n\n## Why\n\nx\n\n## What Changes\n\n- what {name}\n");
+        if let Some(note) = note {
+            proposal.push_str(&format!("\n## Release note\n\n{note}\n"));
+        }
+        (
+            format!("/p/_codev/changes/archive/{name}/proposal.md"),
+            proposal,
+        )
+    }
+
+    fn listing(names: &[&str]) -> String {
+        names
+            .iter()
+            .map(|n| format!("_codev/changes/archive/{n}\n"))
+            .collect()
+    }
+
+    /// `2026-01-01-a` is tagged `v1.0.0`; `2026-02-01-b` and `2026-03-01-c`
+    /// came after.
+    fn changelog_project() -> Harness {
+        let mut h = Harness::new().with("/p/_codev/config.yaml", "language: en\n");
+        for (name, note) in [
+            ("2026-01-01-a", Some("- Added: a.")),
+            (
+                "2026-02-01-b",
+                Some("- Fixed: b.\n- Added: **BREAKING** b."),
+            ),
+            ("2026-03-01-c", Some("None")),
+        ] {
+            let (path, proposal) = archived(name, note);
+            h = h.with(&path, &proposal);
+        }
+        h.with_runner(
+            MockProcessRunner::new()
+                .with_response("git", &["rev-parse"], git_ok("true\n"))
+                .with_response("git", &["tag"], git_ok("v1.0.0\n"))
+                .with_response(
+                    "git",
+                    &["ls-tree", "-d", "--name-only", "v1.0.0"],
+                    git_ok(&listing(&["2026-01-01-a"])),
+                ),
+        )
+    }
+
+    fn changelog_args() -> ChangelogArgs {
+        ChangelogArgs::default()
+    }
+
+    #[test]
+    fn changelog_lists_the_changes_since_the_latest_tag() {
+        let h = changelog_project();
+        let outcome =
+            changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &changelog_args()).unwrap();
+        assert_eq!(outcome.since.as_deref(), Some("v1.0.0"));
+        assert_eq!(
+            outcome.rendered,
+            "## [Unreleased]\n\n### Added\n\n- **BREAKING** b.\n\n### Fixed\n\n- b.\n"
+        );
+        assert!(outcome.warnings.is_empty(), "{:?}", outcome.warnings);
+        assert!(outcome.written.is_none());
+        let markdown = changelog(&h.ctx(), ChangelogFormat::Markdown, &changelog_args()).unwrap();
+        assert!(markdown.rendered.starts_with("### Added"));
+    }
+
+    #[test]
+    fn changelog_excludes_the_configured_changes() {
+        let h = changelog_project().with(
+            "/p/_codev/config.yaml",
+            "language: en\nchangelog:\n  exclude:\n    - 2026-02-01-b\n",
+        );
+        let outcome =
+            changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &changelog_args()).unwrap();
+        assert!(outcome.entries.is_empty());
+        assert!(outcome.warnings.is_empty());
+    }
+
+    #[test]
+    fn changelog_reports_fallback_and_inconsistency_warnings() {
+        let (path, proposal) = archived("2026-04-01-old", None);
+        let (path2, proposal2) = archived("2026-05-01-drop", Some("- Added: x."));
+        let h = changelog_project()
+            .with(&path, &proposal)
+            .with(&path2, &proposal2)
+            .with(
+                "/p/_codev/changes/archive/2026-05-01-drop/specs/s/spec.md",
+                "## REMOVED Requirements\n\n### Requirement: Old\n**Reason**: gone\n**Migration**: none\n",
+            );
+        let outcome =
+            changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &changelog_args()).unwrap();
+        let codes: Vec<&str> = outcome.warnings.iter().map(|w| w.code).collect();
+        assert_eq!(codes, ["release_note_missing", "release_note_inconsistent"]);
+        assert!(
+            outcome
+                .rendered
+                .contains("### Changed\n\n- what 2026-04-01-old\n")
+        );
+    }
+
+    #[test]
+    fn changelog_release_heading() {
+        let h = changelog_project();
+        let args = ChangelogArgs {
+            release: Some("v1.2.0".into()),
+            date: Some("2026-10-20".into()),
+            ..changelog_args()
+        };
+        let outcome = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args).unwrap();
+        assert!(outcome.rendered.starts_with("## [1.2.0] - 2026-10-20\n"));
+        // The date defaults to today's.
+        let args = ChangelogArgs {
+            release: Some("1.2.0".into()),
+            ..changelog_args()
+        };
+        let outcome = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args).unwrap();
+        assert!(outcome.rendered.starts_with("## [1.2.0] - 2026-09-08\n"));
+    }
+
+    #[test]
+    fn changelog_rejects_an_invalid_version_or_date() {
+        let h = changelog_project();
+        let args = ChangelogArgs {
+            release: Some("next".into()),
+            ..changelog_args()
+        };
+        let err = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args)
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "invalid_release_version");
+        let args = ChangelogArgs {
+            release: Some("1.0.0".into()),
+            date: Some("20/10/2026".into()),
+            ..changelog_args()
+        };
+        let err = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args)
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "invalid_date");
+    }
+
+    fn write_args() -> ChangelogArgs {
+        ChangelogArgs {
+            write: true,
+            ..changelog_args()
+        }
+    }
+
+    #[test]
+    fn changelog_write_creates_then_is_idempotent() {
+        let h = changelog_project();
+        let outcome = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        assert_eq!(
+            outcome.written,
+            Some((PathBuf::from("/p/CHANGELOG.md"), ChangelogWrite::Created))
+        );
+        let text = read(&h, "/p/CHANGELOG.md");
+        assert!(text.starts_with("# Changelog\n"));
+        assert!(text.contains("## [Unreleased]\n\n### Added\n\n- **BREAKING** b."));
+        let again = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        assert_eq!(again.written.unwrap().1, ChangelogWrite::Unchanged);
+        assert_eq!(read(&h, "/p/CHANGELOG.md"), text);
+    }
+
+    #[test]
+    fn changelog_write_keeps_hand_written_content() {
+        let hand = "# Changelog\n\n## [Unreleased]\n\n- curated.\n\n## [1.0.0] - 2026-01-01\n\n- first.\n\n[1.0.0]: https://example.com/v1.0.0\n";
+        let h = changelog_project().with("/p/CHANGELOG.md", hand);
+        let outcome = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        assert_eq!(outcome.written.unwrap().1, ChangelogWrite::Updated);
+        let text = read(&h, "/p/CHANGELOG.md");
+        assert_eq!(text.matches("## [Unreleased]").count(), 1);
+        assert!(text.contains("<!-- codev:end -->\n\n- curated.\n\n## [1.0.0]"));
+        assert!(text.ends_with("[1.0.0]: https://example.com/v1.0.0\n"));
+    }
+
+    #[test]
+    fn changelog_write_release_rotates() {
+        let h = changelog_project();
+        changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        let args = ChangelogArgs {
+            release: Some("1.1.0".into()),
+            date: Some("2026-10-20".into()),
+            ..write_args()
+        };
+        changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args).unwrap();
+        let text = read(&h, "/p/CHANGELOG.md");
+        assert_eq!(
+            codev_core::changelog::file::managed_block(&text).as_deref(),
+            Some("## [Unreleased]")
+        );
+        assert!(text.contains("<!-- codev:end -->\n\n## [1.1.0] - 2026-10-20\n\n### Added"));
+    }
+
+    #[test]
+    fn changelog_write_refuses_markdown() {
+        let h = changelog_project();
+        let err = changelog(&h.ctx(), ChangelogFormat::Markdown, &write_args())
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "invalid_argument");
+        assert!(!h.fs.paths().contains(&PathBuf::from("/p/CHANGELOG.md")));
+    }
+
+    #[test]
+    fn changelog_write_refuses_malformed_markers_without_writing() {
+        let broken =
+            "# Changelog\n\n<!-- codev:begin -->\na\n<!-- codev:begin -->\n<!-- codev:end -->\n";
+        let h = changelog_project().with("/p/CHANGELOG.md", broken);
+        let err = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args())
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "changelog_malformed");
+        assert_eq!(read(&h, "/p/CHANGELOG.md"), broken);
+    }
+
+    #[test]
+    fn changelog_unknown_ref_fails() {
+        let h = changelog_project();
+        let args = ChangelogArgs {
+            since: Some("v9.9.9".into()),
+            ..changelog_args()
+        };
+        // No mock response for that ref: git refuses it.
+        let err = changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &args)
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "unknown_ref");
+    }
+
+    #[test]
+    fn changelog_json_carries_entries_and_status() {
+        let (path, proposal) = archived("2026-04-01-old", None);
+        let h = changelog_project().with(&path, &proposal);
+        let outcome = changelog(&h.ctx(), ChangelogFormat::Json, &changelog_args()).unwrap();
+        let json = serde_json::to_value(crate::contract::ChangelogV1::from(&outcome)).unwrap();
+        assert_eq!(json["since"], "v1.0.0");
+        assert_eq!(json["until"], serde_json::Value::Null);
+        let first = &json["entries"][0];
+        assert_eq!(first["category"], "Added");
+        assert_eq!(first["text"], "**BREAKING** b.");
+        assert_eq!(first["breaking"], true);
+        assert_eq!(first["change"], "2026-02-01-b");
+        assert_eq!(first["archivePath"], "_codev/changes/archive/2026-02-01-b");
+        assert_eq!(first["source"], "release_note");
+        assert_eq!(json["entries"][1]["source"], "what_changes");
+        assert_eq!(json["status"][0]["code"], "release_note_missing");
+        assert!(
+            json["markdown"]
+                .as_str()
+                .unwrap()
+                .starts_with("## [Unreleased]")
+        );
+    }
+
+    #[test]
+    fn validate_strict_flags_a_missing_release_note() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, None).unwrap();
+        write_helper(
+            &h,
+            "/p/_codev/changes/add-auth/proposal.md",
+            "# Proposal\n\n## Why\n\nT\n",
+        );
+        write_helper(
+            &h,
+            "/p/_codev/changes/add-auth/specs/x/spec.md",
+            "## Purpose\n\nx.\n\n## ADDED Requirements\n\n### Requirement: X\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        // A warning: the exit code only flips under --strict.
+        assert!(!report.has_errors());
+        assert!(report.has_warnings());
+    }
+
+    #[test]
+    fn doctor_reports_a_missing_changelog() {
+        let h = changelog_project();
+        let outcome = doctor(&h.ctx()).unwrap();
+        let changelog = check(&outcome, "changelog");
+        assert_eq!(changelog.status, CheckStatus::Warning);
+        assert_eq!(changelog.code, "changelog_missing");
+    }
+
+    #[test]
+    fn doctor_changelog_is_ok_after_write() {
+        let h = changelog_project();
+        changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        assert_eq!(check(&outcome, "changelog").status, CheckStatus::Ok);
+        // Only local, read-only git queries.
+        for (program, args) in h.runner.calls() {
+            assert_eq!(program, "git");
+            assert!(
+                ["rev-parse", "tag", "ls-tree"].contains(&args[0].as_str()),
+                "{args:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn doctor_changelog_is_outdated_after_a_new_archive() {
+        let h = changelog_project();
+        changelog(&h.ctx(), ChangelogFormat::KeepAChangelog, &write_args()).unwrap();
+        let (path, proposal) = archived("2026-04-01-new", Some("- Fixed: new."));
+        write_helper(&h, &path, &proposal);
+        let outcome = doctor(&h.ctx()).unwrap();
+        let changelog = check(&outcome, "changelog");
+        assert_eq!(changelog.code, "changelog_outdated");
+        assert_eq!(changelog.fix.as_deref(), Some("codev changelog --write"));
+    }
+
+    #[test]
+    fn release_workflow_generates_the_body_with_codev_changelog() {
+        // Publishing cannot run without a tag: the workflow is checked
+        // statically instead.
+        let workflow = include_str!("../../../.github/workflows/release.yml");
+        let flat: String = workflow.split_whitespace().collect::<Vec<_>>().join(" ");
+        for needle in [
+            "fetch-depth: 0",
+            "stage=\"codev-${version}-x86_64-unknown-linux-musl\"",
+            "changelog --until \"$GITHUB_REF_NAME\" --format markdown",
+            "body_path: release-notes.md",
+            "generate_release_notes: true",
+        ] {
+            assert!(flat.contains(needle), "release.yml must contain `{needle}`");
+        }
     }
 }

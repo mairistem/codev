@@ -127,6 +127,9 @@ mod tests {
         for code in CROSS_FILE_CODES {
             assert!(seen.insert(code), "cross-file code duplicates: {code}");
         }
+        for code in crate::changelog::codes::ALL {
+            assert!(seen.insert(code), "release note code duplicates: {code}");
+        }
     }
 
     fn spec(source: &str) -> Spec {

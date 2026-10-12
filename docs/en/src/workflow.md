@@ -119,7 +119,9 @@ requirement missing from the main spec — is reported before anything on disk
 changes.
 
 After archiving, the main specs describe the behavior you shipped, and the
-archived folder records why and how it changed. Commit both.
+archived folder records why and how it changed. Commit both — and, if the
+change has a release note, run `codev changelog --write` to add it to
+`CHANGELOG.md` (see [Release notes and CHANGELOG](guides/release-notes.md)).
 
 ## Choosing the change
 

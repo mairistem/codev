@@ -316,6 +316,7 @@ mod tests {
         )]);
         for (artifact, role, criterion) in [
             ("proposal", "Role: product owner", "**BREAKING**"),
+            ("proposal", "Role: product owner", "release note"),
             ("specs", "Role: QA analyst", "edge-case scenario"),
             ("design", "Role: architect", "alternative it rejects"),
             ("tasks", "Role: tech lead", "every spec scenario is covered"),
@@ -384,6 +385,35 @@ mod tests {
             impact.contains("documentation to update"),
             "Impact must name the affected documentation"
         );
+    }
+
+    #[test]
+    fn proposal_template_and_instruction_carry_the_release_note() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instr = instructions(&fs, Some("proposal")).unwrap();
+        let instruction = instr.instruction.unwrap_or_default();
+        let (criteria, rest) = instruction
+            .split_once("Write the document")
+            .expect("the role block precedes the existing text");
+        assert!(
+            criteria.contains("release note is written for end users"),
+            "the product owner criteria must require the release note"
+        );
+        for word in ["**Release note**", "`Added`", "`Security`", "`None`"] {
+            assert!(
+                rest.contains(word),
+                "the instruction must describe `{word}`"
+            );
+        }
+        let template = instr.template.unwrap_or_default();
+        let impact = template.find("## Impact").expect("Impact section");
+        let note = template
+            .find("## Release note")
+            .expect("the template carries a Release note section");
+        assert!(note > impact, "Release note comes after Impact");
     }
 
     #[test]

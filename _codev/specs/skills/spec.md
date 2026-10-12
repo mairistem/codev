@@ -567,7 +567,14 @@ that every spec scenario is covered by an automated test written in a task,
 a manual check being acceptable only when automation is impossible and with
 the reason stated; and that tests follow the project's existing test suite,
 the testing conventions of its language, and its `rules`. The `proposal`
-instruction MUST ask the Impact section to name the affected documentation.
+instruction MUST ask the Impact section to name the affected documentation,
+and MUST describe a `## Release note` section, after `## Impact`: bullets
+`- <Category>: <text>` with Category among `Added`, `Changed`,
+`Deprecated`, `Removed`, `Fixed` and `Security`, breaking items starting
+with `**BREAKING**`, or the single line `None` for an internal change. The
+product owner's criteria MUST require that the release note is written for
+end users, categorized, with breaking items marked, or `None`. The
+embedded proposal template MUST carry the `## Release note` section.
 
 The rest of each instruction MUST stay as before. A custom schema's
 instructions MUST be returned as written, without any role block added by
@@ -581,6 +588,9 @@ codev.
 - **AND** it contains a `Done when:` list that includes marking every
   breaking change with **BREAKING**
 - **AND** it asks the Impact section to name the affected documentation
+- **AND** its `Done when:` list requires a release note written for end
+  users, categorized, with breaking items marked, or `None`
+- **AND** `template` has a `## Release note` section after `## Impact`
 
 #### Scenario: The tasks criteria cover every spec scenario
 
@@ -623,6 +633,9 @@ that:
   names an automated test, or says why automation is impossible;
 - a task updates the documentation when the proposal's Impact touches
   documented behavior, or the plan states that none is affected;
+- the release note agrees with the plan: every **BREAKING** item of What
+  Changes, and every REMOVED requirement or MODIFIED requirement that
+  breaks users, has a breaking item, and an internal change says `None`;
 - every task names a concrete verification.
 
 The skill MUST fix the gaps it finds directly in the artifacts. The check
@@ -660,10 +673,18 @@ MUST NOT modify any code file.
 - **THEN** the covering task names an automated test, or states why
   automation is impossible
 
+#### Scenario: A breaking change missing from the release note is added
+
+- **GIVEN** a plan whose What Changes marks an item **BREAKING** and whose
+  release note has no breaking item
+- **WHEN** `/codev-propose` reaches the traceability check
+- **THEN** the release note gains the breaking item
+
 #### Scenario: A complete plan is left unchanged
 
 - **GIVEN** a plan where capabilities, spec files, scenarios, automated
-  tests, documentation tasks and task verifications all cover each other
+  tests, documentation tasks, task verifications and the release note all
+  cover each other
 - **WHEN** `/codev-propose` reaches the traceability check
 - **THEN** no artifact is modified by the check
 

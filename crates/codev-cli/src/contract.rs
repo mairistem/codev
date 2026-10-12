@@ -568,7 +568,8 @@ pub struct DoctorReportV1 {
 #[serde(rename_all = "camelCase")]
 pub struct CheckV1 {
     /// Stable: `config.rules`, `config.language`, `skills`, `sources`,
-    /// `specs`, `decisions`, `validate`, `claude_md`, `ci`, `pr_template`.
+    /// `specs`, `decisions`, `validate`, `claude_md`, `ci`, `pr_template`,
+    /// `changelog`.
     pub id: &'static str,
     /// `configuration`, `planning` or `repository`.
     pub group: &'static str,
@@ -776,6 +777,111 @@ pub struct NewChangeV1 {
     pub change_root: String,
     pub created: Vec<String>,
     pub status: Vec<StatusEntry>,
+}
+
+/// `codev changelog --format json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangelogV1 {
+    pub root: Option<String>,
+    /// The `--since` used, explicit or the default tag; `null` when every
+    /// archived change is in range.
+    pub since: Option<String>,
+    /// The `--until` used; `null` for the working tree.
+    pub until: Option<String>,
+    pub release: Option<ChangelogReleaseV1>,
+    pub entries: Vec<ChangelogEntryV1>,
+    /// The entries rendered as Keep a Changelog markdown.
+    pub markdown: String,
+    /// What `--write` did; `null` without it.
+    pub written: Option<ChangelogWrittenV1>,
+    pub status: Vec<StatusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangelogReleaseV1 {
+    pub version: String,
+    pub date: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangelogEntryV1 {
+    /// `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` or `Security`.
+    pub category: &'static str,
+    /// As written, `**BREAKING**` marker included.
+    pub text: String,
+    pub breaking: bool,
+    /// The archive folder name, `<date>-<name>`.
+    pub change: String,
+    /// Relative to the project root, `/`-separated.
+    pub archive_path: String,
+    /// `release_note`, or `what_changes` for a change archived without one.
+    pub source: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangelogWrittenV1 {
+    pub path: String,
+    /// `created`, `updated` or `unchanged`.
+    pub action: &'static str,
+}
+
+impl From<&crate::commands::ChangelogOutcome> for ChangelogV1 {
+    fn from(outcome: &crate::commands::ChangelogOutcome) -> Self {
+        use codev_core::changelog::EntrySource;
+        Self {
+            root: Some(outcome.root.display().to_string()),
+            since: outcome.since.clone(),
+            until: outcome.until.clone(),
+            release: outcome
+                .release
+                .as_ref()
+                .map(|(version, date)| ChangelogReleaseV1 {
+                    version: version.clone(),
+                    date: date.clone(),
+                }),
+            entries: outcome
+                .entries
+                .iter()
+                .map(|e| ChangelogEntryV1 {
+                    category: e.category.as_str(),
+                    text: e.text.clone(),
+                    breaking: e.breaking,
+                    change: e.change.clone(),
+                    archive_path: e.archive_path.clone(),
+                    source: match e.source {
+                        EntrySource::ReleaseNote => "release_note",
+                        EntrySource::WhatChanges => "what_changes",
+                    },
+                })
+                .collect(),
+            markdown: outcome.rendered.clone(),
+            written: outcome
+                .written
+                .as_ref()
+                .map(|(path, action)| ChangelogWrittenV1 {
+                    path: path.display().to_string(),
+                    action: action.as_str(),
+                }),
+            status: statuses(&outcome.warnings),
+        }
+    }
+}
+
+/// The empty shape of `ChangelogV1`, for failures.
+pub fn changelog_shape() -> serde_json::Value {
+    json!({
+        "root": null,
+        "since": null,
+        "until": null,
+        "release": null,
+        "entries": [],
+        "markdown": "",
+        "written": null,
+    })
 }
 
 /// The null shape of a command, completed with the error that caused it.

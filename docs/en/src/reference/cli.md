@@ -28,6 +28,7 @@ Commands:
   sources       Manage inherited sources (local paths and remote git repositories)
   sync          Merge a change's deltas into the main specs without archiving
   archive       Merge, then move a change to the dated archive
+  changelog     Generate release notes from the archived changes
   docs          Open the codev documentation in the browser
   completions   Generate a shell completion script for local installation
   validate      Check changes and specs for structural errors and consistency
@@ -190,7 +191,7 @@ so a project initialized with `--no-integration` stays as it is.
 ```text
 Check what the project's codev setup still lacks, and how to fix it
 
-Read-only and offline: configuration, skills, specs, decisions, inherited sources, `CLAUDE.md`, CI and pull request template, and `codev validate`. Each check is ok, missing or a warning, with the command or skill that fixes it.
+Read-only and offline: configuration, skills, specs, decisions, inherited sources, `CLAUDE.md`, CI and pull request template, `codev validate`, and whether `CHANGELOG.md` matches the archived changes. Each check is ok, missing or a warning, with the command or skill that fixes it.
 
 Usage: codev doctor [OPTIONS]
 
@@ -207,7 +208,8 @@ Options:
 
 Lists what the project's codev setup still lacks, grouped under
 Configuration, Planning and Repository, with the command or skill that fixes
-each item. It writes nothing, runs no `git` and needs no network.
+each item. It writes nothing and needs no network; the `changelog` check runs
+local, read-only `git` queries.
 
 | Check | Passes when | Fix |
 |---|---|---|
@@ -221,6 +223,7 @@ each item. It writes nothing, runs no `git` and needs no network.
 | `claude_md` | `CLAUDE.md` has the codev section | `codev init` |
 | `ci` | a GitHub workflow or `.gitlab-ci.yml` runs `codev validate` | `codev init` on GitHub |
 | `pr_template` | the pull request template has the codev section — GitHub only | `codev init` |
+| `changelog` | `CHANGELOG.md` matches what `codev changelog` generates — a warning only | `codev changelog --write` |
 
 Each line shows `✓` (ok), `✗` (missing) or `!` (warning); the last line
 counts the checks and those left to fix. The exit status is `0`, unless
@@ -425,6 +428,82 @@ Validates the change, refuses if validation reports an error, merges its
 deltas into the main specs, then moves it to
 `_codev/changes/archive/<YYYY-MM-DD>-<name>/`. See
 [Archive](../workflow.md#archive).
+
+### codev changelog
+
+```text
+Generate release notes from the archived changes
+
+Lists the release-note items of the changes archived after `--since` (default: the highest `v*` tag) and up to `--until` (default: the working tree), by category, breaking items first. A change archived without a release note falls back on its What Changes bullets, with a warning. `--write` keeps the `[Unreleased]` section of `CHANGELOG.md` up to date, in a managed section; with `--release`, it becomes a dated version block.
+
+Usage: codev changelog [OPTIONS]
+
+Options:
+      --since <REF>
+          Git ref the range starts after (default: the highest `v*` tag below `--until`)
+
+      --until <REF>
+          Git ref the range ends at (default: the working tree)
+
+      --format <FORMAT>
+          Output format
+
+          Possible values:
+          - keep-a-changelog: `## [Unreleased]` (or the release) and `### <Category>` sections
+          - markdown:         The same without the version heading, for a release body
+          - json:             The JSON contract v1
+
+          [default: keep-a-changelog]
+
+      --release <VERSION>
+          Title the block `## [<VERSION>] - <DATE>` instead of `## [Unreleased]`
+
+      --date <DATE>
+          Release date, `YYYY-MM-DD` (default: today)
+
+      --write
+          Update `CHANGELOG.md` (created if missing); text outside codev's managed section is kept
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Lists the release-note items of the changes archived in a git range. A change
+is in range when its folder is in `_codev/changes/archive/` at `--until` and
+was not at `--since`: git decides, not dates. The default `--since` is the
+highest `v*` tag by version order — below `--until` when `--until` is a
+version tag — and, without any tag, every archived change is listed.
+Outside a git repository, every archived change is listed with a warning.
+
+Items are grouped by category in Keep a Changelog order, breaking items
+first, then in archive order. A change whose note is `None` adds nothing. A
+change archived without a release note contributes its What Changes bullets
+under `Changed`, with a `release_note_missing` warning; a change whose deltas
+remove requirements without a `Removed` or breaking item gets a
+`release_note_inconsistent` warning. Warnings go to stderr and never change
+the exit status. Changes listed under
+[`changelog.exclude`](configuration.md#changelog) are left out.
+
+```bash
+codev changelog --since v1.3.0 --format markdown
+```
+
+```text
+### Added
+
+- `--format json` on `codev export`.
+
+### Fixed
+
+- `codev export` no longer drops the last line.
+```
+
+`--write` updates `CHANGELOG.md` instead of printing the text: the
+`[Unreleased]` block lives in a managed section right after the file header,
+and the rest of the file is never rewritten. With `--release X.Y.Z`, the block
+becomes `## [X.Y.Z] - <date>` below a new empty `[Unreleased]`. `--write` is
+refused with `--format markdown`. See
+[Release notes and CHANGELOG](../guides/release-notes.md).
 
 ### codev validate
 

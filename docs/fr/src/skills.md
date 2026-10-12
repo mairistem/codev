@@ -61,17 +61,22 @@ le design, tech lead pour les tâches — avec des critères « Done when » q
 l'agent vérifie avant de passer à la suite. Les critères du tech lead exigent
 que la documentation concernée soit mise à jour dans une tâche, et que chaque
 scénario soit couvert par un test automatisé qui suit les conventions de test
-de votre projet. Un [schéma personnalisé](guides/custom-schemas.md) définit
-les siens.
+de votre projet. Le product owner rédige la note de version de la proposal
+pour les utilisateurs, classée par catégorie, ou `None` pour un change
+interne. Un [schéma personnalisé](guides/custom-schemas.md) définit les
+siens.
 
 Avant de présenter le plan, la skill le relit en deux étapes :
 
 1. **Traçabilité** — chaque capacité a son fichier de spec, chaque exigence
    un scénario nominal et un scénario d'erreur ou de cas limite, chaque
    scénario une tâche dont la vérification le couvre par un test
-   automatisé, et une tâche met à jour la documentation lorsque la section
-   Impact touche un comportement documenté. Les manques sont corrigés dans
-   les artefacts.
+   automatisé, une tâche met à jour la documentation lorsque la section
+   Impact touche un comportement documenté, et la
+   [note de version](reference/file-formats.md#release-note) de la proposal
+   concorde avec le plan — chaque élément incompatible de What Changes, et
+   chaque exigence supprimée ou modifiée de façon incompatible, a son élément
+   **BREAKING**. Les manques sont corrigés dans les artefacts.
 2. **Relecture contradictoire** — la skill relit le plan en relecteur
    sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches.
    Sécurité et confidentialité, compatibilité et migration, exploitabilité,

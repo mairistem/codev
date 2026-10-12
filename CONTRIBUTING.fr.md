@@ -120,22 +120,27 @@ avec un filet vert et les avertissements avec un filet corail.
 Pour prévisualiser le site, installez [mdBook](https://rust-lang.github.io/mdBook/)
 et lancez `mdbook serve docs/fr`.
 
-Les changements visibles par les utilisateurs font l'objet d'une entrée sous
-`## [Unreleased]` dans [CHANGELOG.md](CHANGELOG.md).
+Les changements visibles par les utilisateurs sont décrits dans la section
+`## Release note` de leur proposition. Une fois le changement archivé,
+`codev changelog --write` les ajoute à la section `## [Unreleased]` de
+[CHANGELOG.md](CHANGELOG.md) ; `codev doctor` signale quand elle est en retard.
 
 ## Processus de release
 
 Pour les mainteneurs :
 
-1. Vérifiez que `main` est au vert et que `CHANGELOG.md` est à jour.
+1. Vérifiez que `main` est au vert et que `codev doctor` indique `changelog`
+   ok.
 2. Incrémentez `version` dans la section `[workspace.package]` du
    `Cargo.toml` racine, puis lancez `cargo build` pour mettre à jour
    `Cargo.lock`.
-3. Dans `CHANGELOG.md`, renommez `## [Unreleased]` en
-   `## [X.Y.Z] - YYYY-MM-DD`, ajoutez au-dessus une nouvelle section
-   `## [Unreleased]` vide, et mettez à jour les liens en bas du fichier.
+3. Lancez `codev changelog --release X.Y.Z --write` : les éléments générés de
+   `[Unreleased]` deviennent la section `## [X.Y.Z] - YYYY-MM-DD` de
+   `CHANGELOG.md`, sous une nouvelle section `## [Unreleased]` vide.
+   Relisez-la, et mettez à jour les liens en bas du fichier.
 4. Commitez avec le message `chore(release): vX.Y.Z`.
-5. Créez le tag et poussez :
+5. Créez le tag et poussez aussitôt — tant que le tag n'existe pas,
+   `codev changelog` compte encore les changements publiés comme non publiés :
 
    ```bash
    git tag vX.Y.Z
@@ -144,8 +149,10 @@ Pour les mainteneurs :
 
 Le workflow de release compile les quatre binaires précompilés (macOS arm64 et
 x86_64, Linux x86_64 musl, Windows x86_64), calcule `SHA256SUMS` et publie la
-GitHub Release avec des notes générées. Les installateurs prennent en compte la
-nouvelle version immédiatement.
+GitHub Release. Son texte est `codev changelog --until vX.Y.Z --format markdown`,
+produit par le binaire compilé depuis le tag, suivi des notes générées par
+GitHub. Les installateurs prennent en compte la nouvelle version
+immédiatement.
 
 ## Sécurité
 

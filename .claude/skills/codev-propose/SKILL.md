@@ -226,6 +226,9 @@ Re-read every artifact from disk and check that:
   names an automated test, or says why automation is impossible;
 - a task updates the documentation when the proposal's Impact touches
   documented behavior, or the plan states that none is affected;
+- the release note agrees with the plan: every **BREAKING** item of What
+  Changes, and every REMOVED or user-breaking MODIFIED requirement, has a
+  breaking item; an internal change says `None`;
 - every task's verification is concrete: a test, a command, an observable
   behavior.
 

@@ -32,3 +32,10 @@
 ## Impact
 
 <!-- Affected code, APIs, dependencies and systems. -->
+
+## Release note
+
+<!-- What end users will read in the changelog. One bullet per item:
+     `- <Category>: <one or two sentences>`, Category among Added, Changed,
+     Deprecated, Removed, Fixed, Security; start a breaking item's text with
+     **BREAKING**. A purely internal change writes the single line `None`. -->

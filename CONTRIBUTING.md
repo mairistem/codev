@@ -106,21 +106,25 @@ a coral one.
 To preview the site, install [mdBook](https://rust-lang.github.io/mdBook/) and
 run `mdbook serve docs/en`.
 
-User-visible changes get an entry under `## [Unreleased]` in
-[CHANGELOG.md](CHANGELOG.md).
+User-visible changes are described in the `## Release note` section of their
+proposal. Once the change is archived, `codev changelog --write` adds them to
+the `## [Unreleased]` section of [CHANGELOG.md](CHANGELOG.md); `codev doctor`
+tells when it is behind.
 
 ## Release process
 
 For maintainers:
 
-1. Make sure `main` is green and `CHANGELOG.md` is up to date.
+1. Make sure `main` is green and `codev doctor` reports `changelog` ok.
 2. Bump `version` in the `[workspace.package]` section of the root
    `Cargo.toml`, and run `cargo build` to update `Cargo.lock`.
-3. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`,
-   add a new empty `## [Unreleased]` section above it, and update the links at
-   the bottom of the file.
+3. Run `codev changelog --release X.Y.Z --write`: the generated
+   `[Unreleased]` items become the `## [X.Y.Z] - YYYY-MM-DD` section of
+   `CHANGELOG.md`, under a new empty `## [Unreleased]`. Review it, and update
+   the links at the bottom of the file.
 4. Commit as `chore(release): vX.Y.Z`.
-5. Tag and push:
+5. Tag and push right away — until the tag exists, `codev changelog` still
+   counts the released changes as unreleased:
 
    ```bash
    git tag vX.Y.Z
@@ -129,8 +133,9 @@ For maintainers:
 
 The release workflow builds the four prebuilt binaries (macOS arm64 and x86_64,
 Linux x86_64 musl, Windows x86_64), computes `SHA256SUMS`, and publishes the
-GitHub Release with generated notes. The installers pick up the new version
-immediately.
+GitHub Release. Its body is `codev changelog --until vX.Y.Z --format markdown`,
+run by the binary built from the tag, followed by GitHub's generated notes.
+The installers pick up the new version immediately.
 
 ## Security
 

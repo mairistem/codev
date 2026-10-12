@@ -28,14 +28,18 @@ when not `ok`, a one-line fix naming the exact command or skill:
 | `claude_md` | `CLAUDE.md` holds the codev managed section | missing | `claude_md_section_missing` | `codev init` |
 | `ci` | a file of `.github/workflows/` or `.gitlab-ci.yml` runs `codev validate` | missing | `ci_validate_missing` | `codev init` on GitHub, otherwise add `codev validate --strict` to the pipeline |
 | `pr_template` | the pull request template holds the codev managed section — GitHub repositories only | missing | `pr_template_section_missing` | `codev init` |
+| `changelog` | `CHANGELOG.md` exists and its managed `[Unreleased]` section matches what `codev changelog` would generate now | warning | `changelog_missing` (no file) or `changelog_outdated` | `codev changelog --write` |
 
 The `pr_template` check MUST be absent from the report when the repository
 is not a GitHub repository. A project without any inherited source passes
 `sources`. A CI line is recognized when it names `codev` and then
 `validate`, so `cargo run --bin codev -- validate` counts.
 
-`codev doctor` MUST NOT write any file, spawn `git`, or access the network.
-Outside a codev project, it fails with the code `no_codev_root`.
+`codev doctor` MUST NOT write any file or access the network. The only
+process it MAY spawn is `git`, for the local, read-only queries the
+`changelog` check needs; outside a git repository, that check compares
+with every archived change. Outside a codev project, it fails with the code
+`no_codev_root`.
 
 #### Scenario: A freshly initialized project
 
@@ -46,6 +50,7 @@ Outside a codev project, it fails with the code `no_codev_root`.
   `warning`, `ci` is `missing`
 - **AND** `config.language`, `skills`, `sources`, `claude_md` and
   `validate` are `ok`
+- **AND** `changelog` is a `warning` with the code `changelog_missing`
 - **AND** no `pr_template` check is reported
 
 #### Scenario: Outdated skills
@@ -82,6 +87,21 @@ Outside a codev project, it fails with the code `no_codev_root`.
 - **GIVEN** a folder with no `_codev/` above it
 - **WHEN** the user runs `codev doctor`
 - **THEN** the command fails with the code `no_codev_root`
+
+#### Scenario: CHANGELOG.md up to date
+
+- **GIVEN** a project where `codev changelog --write` was just run
+- **WHEN** the user runs `codev doctor`
+- **THEN** `changelog` is `ok`
+
+#### Scenario: CHANGELOG.md behind the archive
+
+- **GIVEN** a project whose `CHANGELOG.md` managed section predates the
+  latest archived change
+- **WHEN** the user runs `codev doctor`
+- **THEN** `changelog` is a `warning` with the code `changelog_outdated`
+  and the fix `codev changelog --write`
+- **AND** the exit code of `codev doctor --strict` is unaffected by it
 
 ### Requirement: Human output groups the checks and counts what is left to fix
 

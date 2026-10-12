@@ -141,6 +141,8 @@ Le template du schéma `spec-driven` :
 ### Removed Capabilities
 
 ## Impact
+
+## Release note
 ```
 
 Chaque capacité listée sous *New Capabilities* ou *Modified Capabilities*
@@ -148,6 +150,37 @@ reçoit son propre fichier de delta dans `specs/<capability>/spec.md`. Les
 changements incompatibles sont signalés par **BREAKING** dans *What Changes*.
 Une capacité listée sous *Removed Capabilities* exige
 `retire_capabilities: true`.
+
+### Release note
+
+Ce que les utilisateurs liront dans le changelog, construit par
+[`codev changelog`](cli.md#codev-changelog). Soit un ou plusieurs éléments :
+
+```markdown
+## Release note
+
+- Added: `--format json` pour `codev export`.
+- Changed: **BREAKING** `codev export` écrit sur stdout par défaut ; passez
+  `--output <PATH>` pour écrire un fichier.
+```
+
+soit, pour un change que les utilisateurs ne remarqueront pas, la seule
+ligne :
+
+```markdown
+## Release note
+
+None
+```
+
+Chaque élément s'écrit `- <Category>: <texte>`, la catégorie étant l'une de
+`Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` et `Security` — les
+catégories de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Un
+élément peut s'étendre sur plusieurs lignes. Un élément incompatible commence
+son texte par `**BREAKING**`. Le texte suit la langue des artefacts du
+projet. `codev validate` signale une section absente par un avertissement, et
+une catégorie inconnue, un élément sans texte ou une section vide par une
+erreur, sur les changes actifs uniquement.
 
 ## design.md
 
@@ -347,6 +380,8 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `decision_field_type_mismatch` | erreur | Un champ du frontmatter n'a pas la forme attendue |
 | `decision_seal_mismatch` | erreur | Le contenu d'une décision scellée a été modifié |
 | `decision_conflicting_deviations` | erreur | Deux décisions locales acceptées s'écartent de la même décision héritée |
+| `release_note_invalid` | erreur | La section `## Release note` de la proposal a une catégorie inconnue, un élément sans texte, ou est vide |
+| `release_note_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Release note` |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
 | `decision_orphan_seal` | avertissement | Un sceau ne correspond à aucune décision |

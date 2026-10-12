@@ -1,0 +1,394 @@
+//! The `## Release note` section of a proposal, and the `## What Changes`
+//! bullets used when a change was archived without one.
+//!
+//! Pure: a `&str` in, the parsed note and its located defects out. The
+//! parser is tolerant on form — a bullet may wrap, `*` works like `-`, the
+//! template's HTML comment and fenced blocks are ignored — and strict on
+//! content: a category outside the six of Keep a Changelog, or an item
+//! without text, is a finding, never a silent guess.
+
+use crate::parser::ast::{Finding, Parsed};
+use crate::parser::fence::build_fence_mask;
+
+use super::codes;
+
+/// The six categories of Keep a Changelog, in its order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Category {
+    Added,
+    Changed,
+    Deprecated,
+    Removed,
+    Fixed,
+    Security,
+}
+
+impl Category {
+    pub const ALL: [Category; 6] = [
+        Self::Added,
+        Self::Changed,
+        Self::Deprecated,
+        Self::Removed,
+        Self::Fixed,
+        Self::Security,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Added => "Added",
+            Self::Changed => "Changed",
+            Self::Deprecated => "Deprecated",
+            Self::Removed => "Removed",
+            Self::Fixed => "Fixed",
+            Self::Security => "Security",
+        }
+    }
+
+    /// Case-insensitive: `added` is plainly meant as `Added`, and refusing
+    /// it would teach nothing.
+    pub fn parse(raw: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|c| c.as_str().eq_ignore_ascii_case(raw.trim()))
+    }
+}
+
+/// One item of a release note.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NoteItem {
+    pub category: Category,
+    /// The item's text as written, wrapped lines joined, `**BREAKING**`
+    /// marker included.
+    pub text: String,
+    pub breaking: bool,
+    /// 1-based line of the bullet in the proposal.
+    pub line: u32,
+}
+
+/// What a proposal says about its release note.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ReleaseNote {
+    /// No `## Release note` section.
+    Absent,
+    /// `None`: users will not notice the change.
+    Internal,
+    /// The valid items; invalid ones are reported as findings only.
+    Items(Vec<NoteItem>),
+}
+
+/// The heading of the section, matched case-insensitively.
+pub const HEADING: &str = "## Release note";
+
+/// Whether an item's text marks a breaking change. `**BREAKING:**` is
+/// accepted too: it is how breaking items were written by hand so far.
+pub fn is_breaking(text: &str) -> bool {
+    text.starts_with("**BREAKING")
+}
+
+/// Parses the `## Release note` section of `proposal`.
+pub fn parse(proposal: &str) -> Parsed<ReleaseNote> {
+    let Some(lines) = section(proposal, HEADING) else {
+        return Parsed::new(ReleaseNote::Absent);
+    };
+    let (bullets, strays) = bullets(&lines);
+    let mut findings = Vec::new();
+
+    let none_lines: Vec<u32> = strays
+        .iter()
+        .filter(|(_, text)| is_none(text))
+        .map(|(line, _)| *line)
+        .collect();
+    for (line, text) in strays.iter().filter(|(_, text)| !is_none(text)) {
+        findings.push(Finding::error(
+            codes::RELEASE_NOTE_INVALID,
+            *line,
+            format!("line {line}: `{text}` is neither a `- <Category>: <text>` item nor `None`"),
+        ));
+    }
+    if !none_lines.is_empty() && !bullets.is_empty() {
+        findings.push(Finding::error(
+            codes::RELEASE_NOTE_INVALID,
+            none_lines[0],
+            format!(
+                "line {}: `None` cannot be combined with release note items; keep one or the other",
+                none_lines[0]
+            ),
+        ));
+    }
+    if bullets.is_empty() && strays.is_empty() {
+        let line = heading_line(proposal, HEADING).unwrap_or(1);
+        findings.push(Finding::error(
+            codes::RELEASE_NOTE_INVALID,
+            line,
+            format!(
+                "line {line}: the release note is empty; write `- <Category>: <text>` items, \
+                 or `None` for an internal change"
+            ),
+        ));
+    }
+
+    let mut items = Vec::new();
+    for (line, content) in bullets {
+        match item(line, &content) {
+            Ok(item) => items.push(item),
+            Err(message) => findings.push(Finding::error(
+                codes::RELEASE_NOTE_INVALID,
+                line,
+                format!("line {line}: {message}"),
+            )),
+        }
+    }
+
+    let value = if items.is_empty() && !none_lines.is_empty() {
+        ReleaseNote::Internal
+    } else {
+        ReleaseNote::Items(items)
+    };
+    Parsed { value, findings }
+}
+
+/// The bullets of `## What Changes`, wrapped lines and nested bullets
+/// joined into their parent, for a change archived without a release note.
+pub fn what_changes(proposal: &str) -> Vec<String> {
+    section(proposal, "## What Changes")
+        .map(|lines| bullets(&lines).0.into_iter().map(|(_, t)| t).collect())
+        .unwrap_or_default()
+}
+
+fn is_none(text: &str) -> bool {
+    matches!(text.trim().trim_end_matches('.'), "None" | "none" | "NONE")
+}
+
+fn item(line: u32, content: &str) -> Result<NoteItem, String> {
+    let Some((raw_category, text)) = content.split_once(':') else {
+        return Err(format!(
+            "`{content}` has no category; write `- <Category>: <text>` with one of {}",
+            categories()
+        ));
+    };
+    let Some(category) = Category::parse(raw_category) else {
+        return Err(format!(
+            "unknown category `{}`; use one of {}",
+            raw_category.trim(),
+            categories()
+        ));
+    };
+    let text = text.trim();
+    if text.is_empty() {
+        return Err(format!(
+            "the `{}` item has no text; describe the change for end users",
+            category.as_str()
+        ));
+    }
+    Ok(NoteItem {
+        category,
+        text: text.to_string(),
+        breaking: is_breaking(text),
+        line,
+    })
+}
+
+fn categories() -> String {
+    Category::ALL
+        .iter()
+        .map(|c| format!("`{}`", c.as_str()))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// 1-based line of `heading`, outside literal zones.
+fn heading_line(source: &str, heading: &str) -> Option<u32> {
+    let mask = build_fence_mask(source);
+    source
+        .split('\n')
+        .enumerate()
+        .find(|(i, line)| !mask[*i] && is_heading(line, heading))
+        .map(|(i, _)| i as u32 + 1)
+}
+
+fn is_heading(line: &str, heading: &str) -> bool {
+    line.trim_end().eq_ignore_ascii_case(heading)
+}
+
+/// The lines of a level-2 section, literal zones left out, each with its
+/// 1-based number. `None` when the heading is absent.
+fn section<'a>(source: &'a str, heading: &str) -> Option<Vec<(u32, &'a str)>> {
+    let mask = build_fence_mask(source);
+    let mut lines = source.split('\n').enumerate();
+    lines.find(|(i, line)| !mask[*i] && is_heading(line, heading))?;
+    Some(
+        lines
+            .take_while(|(i, line)| {
+                mask[*i] || !(line.starts_with("## ") || line.starts_with("# "))
+            })
+            .filter(|(i, _)| !mask[*i])
+            .map(|(i, line)| (i as u32 + 1, line.trim_end_matches('\r')))
+            .collect(),
+    )
+}
+
+/// A text with the 1-based line it starts on.
+type Numbered = (u32, String);
+
+/// Splits section lines into bullets — text joined across wrapped lines —
+/// and stray non-bullet lines.
+fn bullets(lines: &[(u32, &str)]) -> (Vec<Numbered>, Vec<Numbered>) {
+    let mut bullets: Vec<Numbered> = Vec::new();
+    let mut strays = Vec::new();
+    let mut after_blank = false;
+    for (line, raw) in lines {
+        if raw.trim().is_empty() {
+            after_blank = true;
+            continue;
+        }
+        let indented = raw.starts_with(' ') || raw.starts_with('\t');
+        if !indented && let Some(content) = bullet_content(raw) {
+            bullets.push((*line, content.trim().to_string()));
+        } else if let Some((_, text)) = bullets.last_mut()
+            && (indented || !after_blank)
+        {
+            // A wrapped line, or a nested bullet folded into its parent.
+            let continuation = bullet_content(raw.trim_start()).unwrap_or(raw).trim();
+            if !text.is_empty() {
+                text.push(' ');
+            }
+            text.push_str(continuation);
+        } else {
+            strays.push((*line, raw.trim().to_string()));
+        }
+        after_blank = false;
+    }
+    (bullets, strays)
+}
+
+fn bullet_content(line: &str) -> Option<&str> {
+    if line == "-" || line == "*" {
+        return Some("");
+    }
+    line.strip_prefix("- ")
+        .or_else(|| line.strip_prefix("* "))
+        .or_else(|| line.strip_prefix("-\t"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn proposal(note: &str) -> String {
+        format!(
+            "# Proposal: X\n\n## Why\n\nBecause.\n\n## Impact\n\n- code\n\n## Release note\n\n{note}\n"
+        )
+    }
+
+    fn items(source: &str) -> Vec<NoteItem> {
+        match parse(source).value {
+            ReleaseNote::Items(items) => items,
+            other => panic!("expected items, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_wrapped_and_breaking_items() {
+        let source =
+            proposal("- Removed: **BREAKING** the legacy\n  flag is gone.\n* Fixed: a crash.");
+        let parsed = parse(&source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        let items = items(&source);
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].category, Category::Removed);
+        assert_eq!(items[0].text, "**BREAKING** the legacy flag is gone.");
+        assert!(items[0].breaking);
+        assert_eq!(items[0].line, 13);
+        assert_eq!(items[1].category, Category::Fixed);
+        assert!(!items[1].breaking);
+    }
+
+    #[test]
+    fn none_is_an_internal_change() {
+        for none in ["None", "None.", "none"] {
+            let parsed = parse(&proposal(none));
+            assert_eq!(parsed.value, ReleaseNote::Internal, "{none}");
+            assert!(parsed.findings.is_empty());
+        }
+    }
+
+    #[test]
+    fn absent_section_is_absent() {
+        let parsed = parse("# Proposal: X\n\n## Why\n\nx\n");
+        assert_eq!(parsed.value, ReleaseNote::Absent);
+        assert!(parsed.findings.is_empty());
+    }
+
+    #[test]
+    fn unknown_category_is_invalid_with_its_line() {
+        let parsed = parse(&proposal("- Added: ok.\n- Improved: speed."));
+        assert_eq!(parsed.findings.len(), 1);
+        let finding = &parsed.findings[0];
+        assert_eq!(finding.code, codes::RELEASE_NOTE_INVALID);
+        assert_eq!(finding.line, 14);
+        assert!(finding.message.contains("Improved"));
+        // The valid item is kept.
+        assert_eq!(
+            items(&proposal("- Added: ok.\n- Improved: speed.")).len(),
+            1
+        );
+    }
+
+    #[test]
+    fn empty_bullet_is_invalid() {
+        for bullet in ["- Fixed:", "- Fixed:   ", "-"] {
+            let parsed = parse(&proposal(bullet));
+            assert_eq!(parsed.findings.len(), 1, "{bullet}");
+            assert_eq!(parsed.findings[0].code, codes::RELEASE_NOTE_INVALID);
+        }
+    }
+
+    #[test]
+    fn empty_section_is_invalid() {
+        let parsed = parse("## Release note\n\n## Other\n");
+        assert_eq!(parsed.findings.len(), 1);
+        assert_eq!(parsed.findings[0].line, 1);
+        assert!(parsed.findings[0].message.contains("empty"));
+    }
+
+    #[test]
+    fn stray_text_and_none_mixed_with_items_are_invalid() {
+        let parsed = parse(&proposal("Some prose.\n\n- Added: x."));
+        assert_eq!(parsed.findings.len(), 1);
+        assert!(parsed.findings[0].message.contains("Some prose."));
+        let parsed = parse(&proposal("None\n\n- Added: x."));
+        assert_eq!(parsed.findings.len(), 1);
+        assert!(parsed.findings[0].message.contains("cannot be combined"));
+    }
+
+    #[test]
+    fn template_comment_is_ignored() {
+        let source = "## Release note\n\n<!-- What end users read.\n     - Added: example -->\n\n- Added: real.\n";
+        let parsed = parse(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert_eq!(items(source).len(), 1);
+        // A section holding only the template comment is empty.
+        let parsed = parse("## Release note\n\n<!-- comment -->\n");
+        assert_eq!(parsed.findings.len(), 1);
+    }
+
+    #[test]
+    fn windows_line_endings_are_accepted() {
+        let source = proposal("- Added: a\r\n  b.").replace('\n', "\r\n");
+        let items = items(&source);
+        assert_eq!(items[0].text, "a b.");
+    }
+
+    #[test]
+    fn what_changes_bullets_are_joined() {
+        let source = "## Why\n\nx\n\n## What Changes\n\n- **BREAKING** first\n  wrapped.\n- second, with:\n  - a nested point\n\n## Capabilities\n\n- not this\n";
+        assert_eq!(
+            what_changes(source),
+            vec![
+                "**BREAKING** first wrapped.".to_string(),
+                "second, with: a nested point".to_string()
+            ]
+        );
+        assert!(what_changes("## Why\n").is_empty());
+    }
+}

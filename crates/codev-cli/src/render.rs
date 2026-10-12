@@ -14,10 +14,11 @@ use codev_engine::sync::SyncOutcome;
 use codev_engine::validate::{ItemKind, ValidateReport};
 
 use crate::commands::{
-    ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome, DecisionDeviatedOutcome,
-    DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome, DecisionShowOutcome,
-    DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome, SchemasOutcome, SetupOutcome,
-    SourcesListOutcome, SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
+    ChangelogOutcome, ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome,
+    DecisionDeviatedOutcome, DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome,
+    DecisionShowOutcome, DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome,
+    SchemasOutcome, SetupOutcome, SourcesListOutcome, SourcesShowOutcome, SourcesUpdateOutcome,
+    SpecsOutcome,
 };
 
 /// Warnings go to stderr, never to stdout: a `codev list` redirected to a
@@ -210,6 +211,26 @@ pub fn doctor(outcome: &DoctorOutcome) -> String {
         let _ = writeln!(out, "{total} check(s), {missing} to fix");
     }
     out
+}
+
+/// Human rendering of `codev changelog --write`: what happened to the file.
+/// Without `--write`, the changelog text itself is the output.
+pub fn changelog_written(outcome: &ChangelogOutcome) -> String {
+    let Some((path, action)) = &outcome.written else {
+        return outcome.rendered.clone();
+    };
+    let range = match (&outcome.since, &outcome.until) {
+        (Some(since), Some(until)) => format!("{since}..{until}"),
+        (Some(since), None) => format!("since {since}"),
+        (None, Some(until)) => format!("up to {until}"),
+        (None, None) => "all archived changes".to_string(),
+    };
+    format!(
+        "{} {} — {} item(s), {range}\n",
+        path.display(),
+        action.as_str(),
+        outcome.entries.len()
+    )
 }
 
 pub fn new_change(outcome: &NewChangeOutcome) -> String {
@@ -1128,10 +1149,12 @@ apply:
         assert!(rendered.contains("      fix: /codev-configure"));
         assert!(rendered.contains("  ✓ config.language"));
         assert!(rendered.contains("  ! decisions"));
+        assert!(rendered.contains("  ! changelog"));
+        assert!(rendered.contains("      fix: codev changelog --write"));
         assert!(
             rendered
                 .trim_end()
-                .ends_with("9 check(s), 3 to fix, 1 warning(s)"),
+                .ends_with("10 check(s), 3 to fix, 2 warning(s)"),
             "{rendered}"
         );
     }

@@ -96,7 +96,39 @@ fn find_markers(text: &str) -> Markers {
 
 /// Renders a whole managed section around `body`, line break included.
 pub fn render_section(body: &str) -> String {
-    format!("{BEGIN_LINE}\n{}\n{END_LINE}\n", body.trim_matches('\n'))
+    render_section_with(BEGIN_LINE, body)
+}
+
+/// Renders a managed section whose opening line is `begin_line` — a file
+/// refreshed by another command than `codev update` says so on that line.
+/// `begin_line` must start with [`BEGIN_PREFIX`].
+pub fn render_section_with(begin_line: &str, body: &str) -> String {
+    debug_assert!(begin_line.starts_with(BEGIN_PREFIX));
+    format!("{begin_line}\n{}\n{END_LINE}\n", body.trim_matches('\n'))
+}
+
+/// Where the managed section sits: `Ok(None)` without markers, the byte
+/// range from the begin line to the end line (its line break included)
+/// otherwise, `Err` with the reason when the markers are malformed.
+pub fn section_range(text: &str) -> Result<Option<std::ops::Range<usize>>, String> {
+    match find_markers(text) {
+        Markers::None => Ok(None),
+        Markers::One(range) => Ok(Some(range)),
+        Markers::Malformed(reason) => Err(reason),
+    }
+}
+
+/// The text between the markers of the only well-formed section, without
+/// the marker lines; `None` without exactly one section.
+pub fn section_body(text: &str) -> Option<&str> {
+    let Markers::One(range) = find_markers(text) else {
+        return None;
+    };
+    let section = &text[range];
+    let after_begin = section.find('\n').map_or(section.len(), |i| i + 1);
+    let inner = &section[after_begin..];
+    let before_end = inner.rfind(END_LINE).unwrap_or(inner.len());
+    Some(&inner[..before_end])
 }
 
 /// Whether `text` holds exactly one well-formed managed section.
@@ -267,6 +299,21 @@ mod tests {
         let (contents, action) = written(splice(Some(""), BODY, SpliceMode::Init));
         assert_eq!(action, SpliceAction::Appended);
         assert_eq!(contents, render_section(BODY));
+    }
+
+    #[test]
+    fn section_body_and_range_expose_the_managed_text() {
+        let file = format!(
+            "Intro\n{}Outro\n",
+            render_section_with("<!-- codev:begin custom -->", "a\nb")
+        );
+        assert_eq!(section_body(&file), Some("a\nb\n"));
+        let range = section_range(&file).unwrap().unwrap();
+        assert_eq!(&file[..range.start], "Intro\n");
+        assert_eq!(&file[range.end..], "Outro\n");
+        assert_eq!(section_range("plain\n"), Ok(None));
+        assert!(section_range(&format!("{BEGIN_LINE}\n")).is_err());
+        assert_eq!(section_body("plain\n"), None);
     }
 
     #[test]

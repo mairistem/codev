@@ -47,6 +47,12 @@ pub enum EngineError {
         source: io::Error,
     },
 
+    #[error("git does not know `{git_ref}`: {reason}")]
+    UnknownRef { git_ref: String, reason: String },
+
+    #[error("{root} is not in a git repository, so `--since` and `--until` cannot be resolved")]
+    NotAGitRepository { root: PathBuf },
+
     #[error(transparent)]
     Core(#[from] CoreError),
 }
@@ -68,6 +74,8 @@ impl EngineError {
             Self::Invalid { .. } => "invalid",
             Self::ValidationFailed { .. } => "validation_failed",
             Self::Write { .. } => "write_failed",
+            Self::UnknownRef { .. } => "unknown_ref",
+            Self::NotAGitRepository { .. } => "not_a_git_repository",
             Self::Core(inner) => inner.code(),
         }
     }

@@ -560,6 +560,27 @@ mod tests {
     }
 
     #[test]
+    fn propose_traceability_checks_the_release_note() {
+        let propose = find("propose").unwrap();
+        let step = flat(section(
+            propose.body,
+            "### 6. Check traceability",
+            "### 7. Challenge the plan",
+        ));
+        for keyword in [
+            "release note agrees with the plan",
+            "**BREAKING** item of What Changes",
+            "REMOVED",
+            "says `None`",
+        ] {
+            assert!(
+                step.contains(keyword),
+                "the traceability check must cite `{keyword}`"
+            );
+        }
+    }
+
+    #[test]
     fn apply_body_tests_by_the_project_conventions_and_runs_the_full_suite() {
         let apply = find("apply").unwrap();
         let body = flat(apply.body);

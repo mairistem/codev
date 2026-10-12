@@ -156,7 +156,9 @@ ultérieur sans elles écrit les fichiers ; `codev update`, jamais.
 
 `codev doctor` vérifie l'ensemble de l'installation et donne, pour chaque
 manque, la commande ou la skill qui le comble. La commande est en lecture
-seule et fonctionne hors ligne :
+seule et fonctionne hors ligne ; pour la vérification `changelog`, elle
+demande au dépôt git local quels changes ont été archivés depuis le dernier
+tag :
 
 ```bash
 codev doctor
@@ -183,13 +185,18 @@ Repository
   ✓ claude_md        CLAUDE.md has the codev section
   ✓ ci               .github/workflows/codev.yml runs codev validate
   ✓ pr_template      the pull request template has the codev section
+  ✓ changelog        CHANGELOG.md matches the archived changes
 
-10 check(s), 2 to fix, 1 warning(s)
+11 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` signale un élément manquant, `!` un avertissement — un projet peut très
 bien n'avoir aucune décision acceptée. La vérification `pr_template`
-n'apparaît que pour un dépôt GitHub. La liste complète des vérifications se
+n'apparaît que pour un dépôt GitHub. La vérification `changelog`, simple
+avertissement, compare la section `[Unreleased]` de `CHANGELOG.md` avec ce
+que génère `codev changelog` ; la correction est `codev changelog --write` —
+voir [Notes de version et CHANGELOG](release-notes.md). La liste complète des
+vérifications se
 trouve dans la [référence de la CLI](../reference/cli.md#codev-doctor).
 
 `codev init` et `codev status` se terminent par une ligne d'indication

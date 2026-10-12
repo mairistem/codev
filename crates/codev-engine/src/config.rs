@@ -37,6 +37,21 @@ pub struct ProjectConfig {
     /// render with an informative fallback ("Jira MCP not configured").
     #[serde(default)]
     pub mcp: McpConfig,
+    /// `codev changelog` settings — project only, like `mcp`: they describe
+    /// this repository's `CHANGELOG.md`.
+    #[serde(default)]
+    pub changelog: ChangelogConfig,
+}
+
+/// The `changelog:` block of `_codev/config.yaml`.
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct ChangelogConfig {
+    /// Archive folder names (`<date>-<name>`) of changes already described
+    /// by hand in `CHANGELOG.md`: `codev changelog` leaves them out, so
+    /// that a project adopting it does not list them twice.
+    #[serde(default)]
+    pub exclude: Vec<String>,
 }
 
 /// Names of the MCP tools to inject into the skills at install time.
@@ -387,6 +402,26 @@ mod tests {
         let mut env = FixedEnv::at("/p");
         env.vars.insert("HOME".into(), "/Users/me".into());
         env
+    }
+
+    #[test]
+    fn changelog_exclude_is_read_and_unknown_keys_still_fail() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "changelog:\n  exclude:\n    - 2026-01-01-by-hand\n",
+        );
+        let config = load(&fs, Path::new("/p/_codev/config.yaml"))
+            .unwrap()
+            .unwrap();
+        assert_eq!(config.changelog.exclude, ["2026-01-01-by-hand"]);
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "changelog:\n  since: v1.0.0\n");
+        assert!(load(&fs, Path::new("/p/_codev/config.yaml")).is_err());
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "schema: x\n");
+        let config = load(&fs, Path::new("/p/_codev/config.yaml"))
+            .unwrap()
+            .unwrap();
+        assert!(config.changelog.exclude.is_empty());
     }
 
     #[test]

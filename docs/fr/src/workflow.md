@@ -127,7 +127,9 @@ modification sur le disque.
 
 Après l'archivage, les specs principales décrivent le comportement que vous
 avez livré, et le dossier archivé conserve la trace du pourquoi et du comment.
-Commitez les deux.
+Commitez les deux — et, si le change a une note de version, lancez
+`codev changelog --write` pour l'ajouter à `CHANGELOG.md` (voir
+[Notes de version et CHANGELOG](guides/release-notes.md)).
 
 ## Choisir le change
 

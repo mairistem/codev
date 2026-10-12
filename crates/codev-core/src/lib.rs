@@ -13,6 +13,7 @@
 //! already-installed skills; it has its own types in
 //! `codev-cli::contract`, so that an internal refactor cannot break it.
 
+pub mod changelog;
 pub mod config;
 pub mod decisions;
 pub mod detect;
