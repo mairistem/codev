@@ -169,6 +169,7 @@ Configuration
   ✓ config.language  language: is set
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
+  ✓ codev_version    no newer codev release known
 
 Planning
   ✗ specs            no main spec in _codev/specs/
@@ -183,7 +184,7 @@ Repository
   ✓ pr_template      the pull request template has the codev section
   ✓ changelog        CHANGELOG.md matches the archived changes
 
-11 check(s), 2 to fix, 1 warning(s)
+12 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` marks a missing item, `!` a warning — a project may legitimately have no
@@ -191,7 +192,11 @@ accepted decision. The `pr_template` check only appears for GitHub
 repositories. The `changelog` check, a warning only, compares the
 `[Unreleased]` section of `CHANGELOG.md` with what `codev changelog` generates;
 the fix is `codev changelog --write` — see
-[Release notes and CHANGELOG](release-notes.md). The full list of checks is in the
+[Release notes and CHANGELOG](release-notes.md). The `codev_version` check is missing when
+the running codev does not satisfy the project's
+[`codev_version`](../reference/configuration.md#codev_version), and a
+warning when the update cache knows a newer release; the fix is
+`codev self-update`. The full list of checks is in the
 [CLI reference](../reference/cli.md#codev-doctor).
 
 `codev init` and `codev status` end with a one-line hint when something is

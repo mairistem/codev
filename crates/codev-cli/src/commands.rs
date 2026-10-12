@@ -8,8 +8,10 @@ use codev_core::changelog;
 use codev_core::config::InheritArg;
 use codev_core::doctor::{
     self as core_doctor, ChangelogState, Check, CheckStatus, DoctorFacts, GitSourceFact,
+    VersionFacts,
 };
 use codev_core::managed::{self, SpliceMode};
+use codev_core::update::UpdateNotice;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
 use codev_engine::archive as engine_archive;
@@ -24,9 +26,10 @@ use codev_engine::metadata::ChangeMetadata;
 use codev_engine::sources as engine_sources;
 use codev_engine::sync as engine_sync;
 use codev_engine::sync::SyncOutcome;
+use codev_engine::update as engine_update;
 use codev_engine::validate as engine_validate;
 use codev_engine::validate::ValidateReport;
-use codev_engine::{Clock, EngineError, Env, FileSystem, ProcessRunner, Warning};
+use codev_engine::{Clock, EngineError, Env, Executable, FileSystem, Http, ProcessRunner, Warning};
 use codev_engine::{change, instructions, root, scaffold, schemas, specs};
 
 /// A command failure, reduced to what both outputs need: a stable code for
@@ -66,6 +69,12 @@ impl From<EngineError> for Failure {
     }
 }
 
+impl From<engine_update::UpdateError> for Failure {
+    fn from(error: engine_update::UpdateError) -> Self {
+        Self::new(error.code(), error.to_string())
+    }
+}
+
 impl From<CoreError> for Failure {
     fn from(error: CoreError) -> Self {
         Self::new(error.code(), error.to_string())
@@ -84,7 +93,14 @@ pub struct Ctx<'a> {
     /// `codev changelog` and the doctor `changelog` check for local,
     /// read-only git queries.
     pub runner: &'a dyn ProcessRunner,
+    /// The release API, for the update check of `codev status` and
+    /// `codev self-update` — the only commands that use it.
+    pub http: &'a dyn Http,
+    /// The running binary, for `codev self-update`.
+    pub exe: &'a dyn Executable,
     pub version: &'a str,
+    /// The build target triple, to pick the release asset.
+    pub target: &'a str,
 }
 
 // ─────────────────────────────── init / update ───────────────────────────────
@@ -503,6 +519,11 @@ pub struct StatusOutcome {
     pub planning_home: PathBuf,
     pub change_root: PathBuf,
     pub warnings: Vec<Warning>,
+    /// The update check; `None` when the latest release is unknown or the
+    /// check is disabled.
+    pub update: Option<UpdateNotice>,
+    /// `codev_version`, and whether the running version satisfies it.
+    pub requirement: Option<(String, bool)>,
 }
 
 pub fn status(ctx: &Ctx, requested: Option<&str>) -> Result<StatusOutcome> {
@@ -516,7 +537,54 @@ pub fn status(ctx: &Ctx, requested: Option<&str>) -> Result<StatusOutcome> {
         planning_home: layout.project_root().to_path_buf(),
         change_root: layout.change_dir(&change),
         warnings: config.warnings,
+        update: update_notice(ctx),
+        requirement: version_requirement(ctx, config.codev_version.as_deref()),
     })
+}
+
+/// The update check of `codev status`: at most one request a day, silent
+/// on failure, skipped in CI and on opt-out.
+pub fn update_notice(ctx: &Ctx) -> Option<UpdateNotice> {
+    engine_update::status_notice(ctx.fs, ctx.env, ctx.clock, ctx.http, ctx.version)
+}
+
+fn version_requirement(ctx: &Ctx, requirement: Option<&str>) -> Option<(String, bool)> {
+    let requirement = requirement?;
+    let satisfied = codev_core::update::satisfies(requirement, ctx.version).unwrap_or(false);
+    Some((requirement.to_string(), satisfied))
+}
+
+// ─────────────────────────────── self-update ───────────────────────────────
+
+#[derive(Debug, Clone, Default)]
+pub struct SelfUpdateArgs {
+    pub version: Option<String>,
+    pub check: bool,
+    pub snooze: bool,
+}
+
+/// `codev self-update`. `confirm` is asked once, before the download.
+pub fn self_update(
+    ctx: &Ctx,
+    args: &SelfUpdateArgs,
+    confirm: &mut dyn FnMut(&str, &str) -> bool,
+) -> Result<engine_update::Outcome> {
+    let ports = engine_update::Ports {
+        fs: ctx.fs,
+        env: ctx.env,
+        clock: ctx.clock,
+        http: ctx.http,
+        runner: ctx.runner,
+        exe: ctx.exe,
+    };
+    let request = engine_update::Request {
+        current: ctx.version.to_string(),
+        target: ctx.target.to_string(),
+        version: args.version.clone(),
+        check_only: args.check,
+        snooze: args.snooze,
+    };
+    Ok(engine_update::self_update(&ports, &request, confirm)?)
 }
 
 // ─────────────────────────────── instructions ───────────────────────────────
@@ -1599,6 +1667,14 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
         validate_errors,
         validate_warnings,
         changelog: changelog_state(ctx, layout),
+        // The cache only: doctor stays offline.
+        version: VersionFacts {
+            running: ctx.version.to_string(),
+            requirement: version_requirement(ctx, resolved.codev_version.as_deref()),
+            newer_release: engine_update::cached_notice(ctx.fs, ctx.env, ctx.clock, ctx.version)
+                .filter(|n| n.available)
+                .map(|n| n.latest),
+        },
     };
     Ok(DoctorOutcome {
         root: root.to_path_buf(),
@@ -1696,7 +1772,9 @@ fn clean(path: PathBuf) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codev_engine::ports::{FixedClock, FixedEnv, MemoryFileSystem, MockProcessRunner};
+    use codev_engine::ports::{
+        FixedClock, FixedEnv, MemoryExecutable, MemoryFileSystem, MemoryHttp, MockProcessRunner,
+    };
 
     /// Default `init` options for the tests: non-interactive (--yes), probe
     /// disabled (deterministic results, no real manifest to detect in a
@@ -1716,6 +1794,8 @@ mod tests {
         env: FixedEnv,
         clock: FixedClock,
         runner: MockProcessRunner,
+        http: MemoryHttp,
+        exe: MemoryExecutable,
     }
 
     impl Harness {
@@ -1727,7 +1807,21 @@ mod tests {
                 env,
                 clock: FixedClock("2026-09-08".into()),
                 runner: MockProcessRunner::new(),
+                // Offline by default: every test that does not seed a
+                // response proves the commands survive without network.
+                http: MemoryHttp::new(),
+                exe: MemoryExecutable::at("/home/.local/bin/codev", "codev 0.1.0"),
             }
+        }
+
+        fn with_http(mut self, http: MemoryHttp) -> Self {
+            self.http = http;
+            self
+        }
+
+        fn with_exe(mut self, exe: MemoryExecutable) -> Self {
+            self.exe = exe;
+            self
         }
 
         fn with(mut self, path: &str, contents: &str) -> Self {
@@ -1746,7 +1840,10 @@ mod tests {
                 env: &self.env,
                 clock: &self.clock,
                 runner: &self.runner,
+                http: &self.http,
+                exe: &self.exe,
                 version: "0.1.0",
+                target: "aarch64-apple-darwin",
             }
         }
     }
@@ -3145,6 +3242,7 @@ The rationale for the choice.
             "config.language",
             "skills",
             "sources",
+            "codev_version",
             "claude_md",
             "validate",
         ] {
@@ -3547,5 +3645,314 @@ The rationale for the choice.
         ] {
             assert!(flat.contains(needle), "release.yml must contain `{needle}`");
         }
+    }
+
+    // ─────────────── update notice, codev_version, self-update ───────────────
+
+    const UPDATE_CACHE: &str = "/home/.cache/codev/update-check.json";
+
+    fn release_json(version: &str) -> String {
+        format!(
+            r#"{{"tag_name": "v{version}", "html_url": "https://github.com/mairistem/codev/releases/tag/v{version}"}}"#
+        )
+    }
+
+    fn cache_knowing(h: &Harness, latest: &str) -> String {
+        codev_core::update::UpdateCache {
+            checked_at: h.clock.now_unix(),
+            latest: Some(latest.into()),
+            url: Some(codev_core::update::release_page(latest)),
+            ..Default::default()
+        }
+        .render()
+    }
+
+    /// An initialized project with one change, `add-auth`.
+    fn project_with_change(h: &Harness) {
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, None).unwrap();
+    }
+
+    fn status_json(outcome: &StatusOutcome) -> serde_json::Value {
+        serde_json::to_value(
+            crate::contract::StatusV1::new(
+                &outcome.status,
+                outcome.planning_home.display().to_string(),
+                outcome.change_root.display().to_string(),
+                &outcome.warnings,
+            )
+            .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn status_json_carries_update_and_version_requirement() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "codev_version: \">=0.2\"\n")
+            .with_http(
+                MemoryHttp::new()
+                    .with_response(codev_core::update::RELEASES_API, release_json("0.6.0")),
+            );
+        project_with_change(&h);
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert_eq!(
+            json["update"],
+            serde_json::json!({
+                "current": "0.1.0",
+                "latest": "0.6.0",
+                "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+                "available": true,
+                "snoozed": false,
+            })
+        );
+        assert_eq!(
+            json["versionRequirement"],
+            serde_json::json!({ "requirement": ">=0.2", "satisfied": false })
+        );
+        assert_eq!(h.http.calls().len(), 1);
+    }
+
+    #[test]
+    fn status_json_omits_update_when_unknown() {
+        // Offline and no cache: no `update`, no `versionRequirement`, and
+        // the rest of the document is intact.
+        let h = Harness::new();
+        project_with_change(&h);
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert!(json.get("update").is_none(), "{json}");
+        assert!(json.get("versionRequirement").is_none(), "{json}");
+        assert_eq!(json["changeName"], "add-auth");
+        // In CI, not even a request.
+        let mut ci = Harness::new().with_http(
+            MemoryHttp::new()
+                .with_response(codev_core::update::RELEASES_API, release_json("0.6.0")),
+        );
+        ci.env.vars.insert("CI".into(), "true".into());
+        project_with_change(&ci);
+        let json = status_json(&status(&ci.ctx(), Some("add-auth")).unwrap());
+        assert!(json.get("update").is_none(), "{json}");
+        assert!(ci.http.calls().is_empty());
+    }
+
+    #[test]
+    fn status_human_prints_the_update_line_unless_snoozed() {
+        let h = Harness::new();
+        let cache = cache_knowing(&h, "0.6.0");
+        let h = h.with(UPDATE_CACHE, &cache);
+        project_with_change(&h);
+        let notice = status(&h.ctx(), Some("add-auth")).unwrap().update.unwrap();
+        assert!(notice.should_announce());
+        assert_eq!(
+            notice.line(),
+            "codev 0.6.0 is available (you have 0.1.0) — run `codev self-update`"
+        );
+
+        // "Later": snoozed, the JSON says so and the line is gone.
+        let outcome = self_update(
+            &h.ctx(),
+            &SelfUpdateArgs {
+                snooze: true,
+                ..SelfUpdateArgs::default()
+            },
+            &mut |_, _| true,
+        )
+        .unwrap();
+        assert_eq!(outcome.action.as_str(), "snoozed");
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        let notice = outcome.update.as_ref().unwrap();
+        assert!(notice.snoozed && !notice.should_announce());
+        assert_eq!(status_json(&outcome)["update"]["snoozed"], true);
+        assert!(h.http.calls().is_empty(), "the cache was recent");
+    }
+
+    #[test]
+    fn status_json_never_carries_the_doctor_hint() {
+        let h = Harness::new();
+        project_with_change(&h);
+        assert!(doctor_missing_from_cwd(&h.ctx()).is_some_and(|n| n > 0));
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert!(!json.to_string().contains("codev doctor"), "{json}");
+    }
+
+    #[test]
+    fn other_commands_never_request_the_release_api() {
+        let h = Harness::new().with_http(
+            MemoryHttp::new()
+                .with_response(codev_core::update::RELEASES_API, release_json("0.6.0")),
+        );
+        project_with_change(&h);
+        validate(&h.ctx(), ValidateArgs::All).unwrap();
+        list_changes(&h.ctx()).unwrap();
+        list_specs(&h.ctx()).unwrap();
+        doctor(&h.ctx()).unwrap();
+        artifact_instructions(&h.ctx(), None, Some("add-auth")).unwrap();
+        update(&h.ctx(), false).unwrap();
+        assert!(h.http.calls().is_empty(), "{:?}", h.http.calls());
+    }
+
+    #[test]
+    fn an_invalid_codev_version_fails_status() {
+        let h = Harness::new();
+        project_with_change(&h);
+        h.fs.write(
+            Path::new("/p/_codev/config.yaml"),
+            "codev_version: latest\n",
+        )
+        .unwrap();
+        let err = status(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "invalid_codev_version");
+    }
+
+    #[test]
+    fn doctor_reports_an_unsatisfied_codev_version() {
+        let h = Harness::new().with("/p/_codev/config.yaml", "codev_version: \">=0.7\"\n");
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        let version = check(&outcome, "codev_version");
+        assert_eq!(version.status, CheckStatus::Missing);
+        assert_eq!(version.code, "codev_version_unsatisfied");
+        assert_eq!(version.fix.as_deref(), Some("codev self-update"));
+    }
+
+    #[test]
+    fn doctor_warns_about_a_cached_newer_release_without_a_request() {
+        let h = Harness::new();
+        let cache = cache_knowing(&h, "0.6.0");
+        let h = h.with(UPDATE_CACHE, &cache).with_http(
+            MemoryHttp::new()
+                .with_response(codev_core::update::RELEASES_API, release_json("0.9.0")),
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        let version = check(&outcome, "codev_version");
+        assert_eq!(version.status, CheckStatus::Warning);
+        assert_eq!(version.code, "update_available");
+        assert!(version.message.contains("0.6.0"), "{}", version.message);
+        assert!(h.http.calls().is_empty());
+    }
+
+    #[test]
+    fn self_update_json_reports_the_action() {
+        let asset = codev_core::update::asset_name("0.6.0", "aarch64-apple-darwin").unwrap();
+        let archive = b"archive".to_vec();
+        let h = Harness::new()
+            .with_http(
+                MemoryHttp::new()
+                    .with_response(codev_core::update::RELEASES_API, release_json("0.6.0"))
+                    .with_response(
+                        &codev_core::update::download_url("0.6.0", "SHA256SUMS"),
+                        format!("{}  {asset}\n", codev_core::update::sha256_hex(&archive)),
+                    )
+                    .with_response(
+                        &codev_core::update::download_url("0.6.0", &asset),
+                        archive.clone(),
+                    ),
+            )
+            .with_exe(
+                MemoryExecutable::at("/home/.local/bin/codev", "codev 0.1.0").with_file(
+                    format!(
+                        "{}/codev-0.6.0-aarch64-apple-darwin/codev",
+                        codev_engine::ports::MEMORY_TEMP_DIR
+                    ),
+                    "codev 0.6.0",
+                ),
+            )
+            .with_runner(
+                MockProcessRunner::new()
+                    .with_response("tar", &[], ok_process())
+                    .with_response("/home/.local/bin/codev", &["update"], ok_process()),
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = self_update(&h.ctx(), &SelfUpdateArgs::default(), &mut |_, _| true).unwrap();
+        let json = serde_json::to_value(crate::contract::SelfUpdateV1::from(&outcome)).unwrap();
+        assert_eq!(json["action"], "updated");
+        assert_eq!(json["current"], "0.1.0");
+        assert_eq!(json["latest"], "0.6.0");
+        assert_eq!(json["installMethod"], "standalone");
+        assert_eq!(json["projectUpdated"], true);
+        assert_eq!(json["hint"], serde_json::Value::Null);
+        assert_eq!(json["status"], serde_json::json!([]));
+        assert_eq!(
+            h.exe.read("/home/.local/bin/codev").as_deref(),
+            Some(&b"codev 0.6.0"[..])
+        );
+    }
+
+    fn ok_process() -> codev_engine::ProcessOutput {
+        codev_engine::ProcessOutput {
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+            exit_code: 0,
+        }
+    }
+
+    #[test]
+    fn self_update_json_failure_keeps_the_shape() {
+        let h = Harness::new();
+        let err = self_update(
+            &h.ctx(),
+            &SelfUpdateArgs {
+                check: true,
+                ..SelfUpdateArgs::default()
+            },
+            &mut |_, _| true,
+        )
+        .unwrap_err();
+        assert_eq!(err.code, "update_check_failed");
+        let json = crate::contract::failure(
+            crate::contract::self_update_shape("0.1.0"),
+            &err.code,
+            &err.message,
+        );
+        assert_eq!(json["latest"], serde_json::Value::Null);
+        assert_eq!(json["status"][0]["code"], "update_check_failed");
+    }
+
+    #[test]
+    fn self_update_snooze_records_and_silences_the_notice() {
+        let h = Harness::new();
+        let cache = cache_knowing(&h, "0.6.0");
+        let h = h.with(UPDATE_CACHE, &cache);
+        let outcome = self_update(
+            &h.ctx(),
+            &SelfUpdateArgs {
+                snooze: true,
+                ..SelfUpdateArgs::default()
+            },
+            &mut |_, _| true,
+        )
+        .unwrap();
+        assert_eq!(outcome.action.as_str(), "snoozed");
+        assert!(!update_notice(&h.ctx()).unwrap().should_announce());
+
+        // Up to date: nothing to snooze, still a success.
+        let h = Harness::new();
+        let cache = cache_knowing(&h, "0.1.0");
+        let h = h.with(UPDATE_CACHE, &cache);
+        let outcome = self_update(
+            &h.ctx(),
+            &SelfUpdateArgs {
+                snooze: true,
+                ..SelfUpdateArgs::default()
+            },
+            &mut |_, _| true,
+        )
+        .unwrap();
+        assert_eq!(outcome.action.as_str(), "nothing_to_snooze");
+    }
+
+    #[test]
+    fn windows_cleanup_removes_the_previous_binary() {
+        let exe = MemoryExecutable::at("C:/Users/me/AppData/Local/Programs/codev/codev.exe", "new")
+            .with_file(
+                "C:/Users/me/AppData/Local/Programs/codev/codev.old.exe",
+                "old",
+            );
+        codev_engine::update::cleanup_previous_binary(&exe);
+        assert!(
+            exe.read("C:/Users/me/AppData/Local/Programs/codev/codev.old.exe")
+                .is_none()
+        );
     }
 }

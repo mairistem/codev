@@ -85,7 +85,96 @@ pub struct StatusV1 {
     pub apply_requires: Vec<String>,
     pub is_planning_complete: bool,
     pub artifacts: Vec<ArtifactV1>,
+    /// The update check; absent when the latest release is unknown, in CI,
+    /// or with `CODEV_NO_UPDATE_CHECK=1`. Additive: skills generated before
+    /// it ignore it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update: Option<UpdateV1>,
+    /// The project's `codev_version`; absent when it sets none.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version_requirement: Option<VersionRequirementV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// `update` in `codev status --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateV1 {
+    pub current: String,
+    pub latest: String,
+    pub url: String,
+    pub available: bool,
+    pub snoozed: bool,
+}
+
+impl From<&codev_core::update::UpdateNotice> for UpdateV1 {
+    fn from(notice: &codev_core::update::UpdateNotice) -> Self {
+        Self {
+            current: notice.current.clone(),
+            latest: notice.latest.clone(),
+            url: notice.url.clone(),
+            available: notice.available,
+            snoozed: notice.snoozed,
+        }
+    }
+}
+
+/// `versionRequirement` in `codev status --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VersionRequirementV1 {
+    pub requirement: String,
+    pub satisfied: bool,
+}
+
+/// `codev self-update --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelfUpdateV1 {
+    pub current: String,
+    pub latest: Option<String>,
+    pub url: Option<String>,
+    /// `updated`, `up_to_date`, `available`, `snoozed`,
+    /// `nothing_to_snooze`, `managed_elsewhere` (`cancelled` never appears:
+    /// `--json` implies `--yes`).
+    pub action: &'static str,
+    /// `standalone`, `cargo`, `build` or `package_manager`.
+    pub install_method: &'static str,
+    pub path: String,
+    /// The upgrade command for another installation method.
+    pub hint: Option<String>,
+    pub project_updated: bool,
+    pub status: Vec<StatusEntry>,
+}
+
+impl From<&codev_engine::update::Outcome> for SelfUpdateV1 {
+    fn from(outcome: &codev_engine::update::Outcome) -> Self {
+        Self {
+            current: outcome.current.clone(),
+            latest: outcome.latest.clone(),
+            url: outcome.url.clone(),
+            action: outcome.action.as_str(),
+            install_method: outcome.method.as_str(),
+            path: outcome.path.display().to_string(),
+            hint: outcome.method.upgrade_hint(),
+            project_updated: outcome.project_updated.is_some(),
+            status: statuses(&outcome.warnings),
+        }
+    }
+}
+
+/// The shape of `codev self-update --json` on failure.
+pub fn self_update_shape(current: &str) -> serde_json::Value {
+    json!({
+        "current": current,
+        "latest": null,
+        "url": null,
+        "action": null,
+        "installMethod": null,
+        "path": null,
+        "hint": null,
+        "projectUpdated": false,
+    })
 }
 
 impl StatusV1 {
@@ -113,8 +202,24 @@ impl StatusV1 {
                     missing_deps: a.missing_deps.clone(),
                 })
                 .collect(),
+            update: None,
+            version_requirement: None,
             status: statuses(warnings),
         }
+    }
+
+    pub fn with_update(
+        mut self,
+        update: Option<&codev_core::update::UpdateNotice>,
+        requirement: Option<&(String, bool)>,
+    ) -> Self {
+        self.update = update.map(UpdateV1::from);
+        self.version_requirement =
+            requirement.map(|(requirement, satisfied)| VersionRequirementV1 {
+                requirement: requirement.clone(),
+                satisfied: *satisfied,
+            });
+        self
     }
 }
 
@@ -568,7 +673,7 @@ pub struct DoctorReportV1 {
 #[serde(rename_all = "camelCase")]
 pub struct CheckV1 {
     /// Stable: `config.rules`, `config.language`, `skills`, `sources`,
-    /// `specs`, `decisions`, `validate`, `claude_md`, `ci`, `pr_template`,
+    /// `codev_version`, `specs`, `decisions`, `validate`, `claude_md`, `ci`, `pr_template`,
     /// `changelog`.
     pub id: &'static str,
     /// `configuration`, `planning` or `repository`.

@@ -169,8 +169,33 @@ codev completions powershell | Out-String | Invoke-Expression
 
 ## Upgrading
 
-Run the installer again, or download a newer release. Then, in each project,
-regenerate the skills so they match the new version:
+Run `codev self-update`:
+
+```bash
+codev self-update                  # asks for confirmation on a terminal
+codev self-update --check          # only report the running and latest versions
+codev self-update --version 0.5.0  # a specific version, downgrades included
+```
+
+It downloads the latest release for your platform, verifies its SHA-256
+against the release's `SHA256SUMS` — as the installers do — and replaces the
+binary in place. Then, inside a codev project, it runs `codev update` with
+the new binary. It needs `curl` and `tar`, which macOS, most Linux
+distributions and Windows 10 or later include.
+
+`codev self-update` only replaces a binary installed by `install.sh`,
+`install.ps1` or by hand. When codev was installed with `cargo install`,
+built from a clone, or installed by a package manager, it prints the command
+that upgrades it and changes nothing. It never downgrades unless you pass
+`--version`. On Windows, the previous binary is kept as `codev.old.exe` next
+to the new one until the next codev command removes it.
+
+`codev status` tells you when a newer release exists, at most once a day; see
+[Does codev check for updates?](faq.md#does-codev-check-for-updates) to turn
+that off.
+
+You can still run the installer again, or download a newer release. Then, in
+each project, regenerate the skills so they match the new version:
 
 ```bash
 codev update

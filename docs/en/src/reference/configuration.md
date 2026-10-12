@@ -50,6 +50,8 @@ mcp:
 changelog:
   exclude:
     - 2026-03-02-legacy-import
+
+codev_version: ">=0.5"
 ```
 
 ## schema
@@ -180,11 +182,27 @@ Use it when adopting `codev changelog` in a project whose `CHANGELOG.md`
 already describes changes archived without a release note, so they are not
 listed twice. See [Release notes and CHANGELOG](../guides/release-notes.md).
 
+## codev_version
+
+The codev versions the team accepts, as a semantic version requirement in
+Cargo's syntax: `">=0.5"`, `"^0.6"`, `">=0.5, <0.8"`. Quote it, since YAML
+reads `>` specially. Project only, never inherited.
+
+When the running codev does not satisfy it, `codev doctor` reports the
+`codev_version` check as missing, with the fix `codev self-update`, and the
+skills offer to update before acting. A value that is not a requirement makes
+every command fail with `invalid_codev_version`.
+
+codev 0.5 and earlier do not know this key and reject the file: add it once
+everyone runs a version that does.
+
 ## Environment variables
 
 | Variable | Used by | Effect |
 |---|---|---|
 | `LC_ALL`, `LC_MESSAGES`, `LANG` | `codev init` | Default for `language:` when `--language` is not given |
-| `XDG_CACHE_HOME` | git sources | Cache location: `$XDG_CACHE_HOME/codev/`, else `~/.cache/codev/` |
+| `XDG_CACHE_HOME` | git sources, update check | Cache location: `$XDG_CACHE_HOME/codev/`, else `~/.cache/codev/` |
+| `CI` | `codev status` | Any value disables the update check |
+| `CODEV_NO_UPDATE_CHECK` | `codev status` | `1` disables the update check |
 | `VISUAL`, `EDITOR` | `codev init` | Editor opened when the context question is left empty |
 | `CODEV_VERSION` | `install.sh`, `install.ps1` | Version to install instead of the latest |

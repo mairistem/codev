@@ -150,7 +150,7 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
     "…"
   ],
   "summary": {
-    "total": 11,
+    "total": 12,
     "missing": 2,
     "warnings": 1
   },
@@ -171,6 +171,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `config.language` | `configuration` | `language_missing` |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
+| `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
 | `specs` | `planning` | `no_main_spec` |
 | `decisions` | `planning` | `no_accepted_decision` (avertissement) |
 | `validate` | `planning` | `validate_errors`, `validate_warnings` (avertissement) |
@@ -276,6 +277,17 @@ capacités.
       "missingDeps": ["proposal"]
     }
   ],
+  "update": {
+    "current": "0.5.0",
+    "latest": "0.6.0",
+    "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+    "available": true,
+    "snoozed": false
+  },
+  "versionRequirement": {
+    "requirement": ">=0.5",
+    "satisfied": true
+  },
   "status": []
 }
 ```
@@ -283,6 +295,41 @@ capacités.
 Le `status` d'un artefact vaut `done`, `ready`, `blocked` ou `skipped`.
 `planningHome` est la racine du projet ; les skills s'en servent plutôt que de
 supposer le répertoire courant.
+
+`update` est présent lorsque la dernière release de codev est connue :
+`current` est la version en cours, `latest` la dernière release, `url` sa
+page, `available` indique si `latest` est plus récente, et `snoozed` si
+`codev self-update --snooze` l'a mise en sourdine. Il est absent lorsque la
+vérification est désactivée (`CI`, `CODEV_NO_UPDATE_CHECK=1`) ou n'a encore
+jamais réussi. `versionRequirement` est présent lorsque `_codev/config.yaml`
+définit `codev_version` : `requirement` est sa valeur, `satisfied` indique si
+la version en cours la respecte. Ces deux objets s'ajoutent sans rien
+changer : un consommateur qui les ignore lit le document comme avant.
+
+### self-update
+
+`codev self-update --json`, qui implique `--yes` :
+
+```json
+{
+  "current": "0.5.0",
+  "latest": "0.6.0",
+  "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+  "action": "updated",
+  "installMethod": "standalone",
+  "path": "/home/you/.local/bin/codev",
+  "hint": null,
+  "projectUpdated": true,
+  "status": []
+}
+```
+
+`action` vaut `updated`, `up_to_date`, `available` (avec `--check`),
+`snoozed`, `nothing_to_snooze` ou `managed_elsewhere`. `installMethod` vaut
+`standalone`, `cargo`, `build` ou `package_manager` ; pour les trois
+derniers, `hint` contient la commande qui met codev à jour. `latest` et `url`
+valent `null` lorsqu'ils sont inconnus. Les échecs gardent cette forme et
+portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 
 ### instructions
 

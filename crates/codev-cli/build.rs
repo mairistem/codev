@@ -15,6 +15,13 @@ use std::path::{Path, PathBuf};
 const LANGUAGES: &[&str] = &["en", "fr"];
 
 fn main() {
+    // `codev self-update` downloads the release asset of the target the
+    // running binary was built for.
+    println!(
+        "cargo:rustc-env=CODEV_TARGET={}",
+        env::var("TARGET").expect("set by cargo")
+    );
+
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("set by cargo"));
     let docs_dir = manifest_dir.join("../../docs");
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("set by cargo"));

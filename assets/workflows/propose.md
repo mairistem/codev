@@ -86,6 +86,8 @@ If the user asks which workflows exist: `codev schemas --json`.
 codev status --change "<name>" --json
 ```
 
+{{UPDATE_NOTICE}}
+
 Fields to use:
 
 - `applyRequires` — the artifacts required before implementation

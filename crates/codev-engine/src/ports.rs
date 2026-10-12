@@ -59,6 +59,29 @@ pub trait FileSystem {
 pub trait Clock {
     /// Today's date, in `YYYY-MM-DD` format.
     fn today(&self) -> String;
+
+    /// Unix seconds, for the 24-hour update check and the 7-day snooze.
+    ///
+    /// The default is midnight UTC of [`Clock::today`], so a [`FixedClock`]
+    /// stays a one-liner in tests; [`SystemClock`] reads the real time.
+    fn now_unix(&self) -> u64 {
+        unix_midnight(&self.today()).unwrap_or(0)
+    }
+}
+
+/// Midnight UTC of a `YYYY-MM-DD` date, in Unix seconds.
+fn unix_midnight(date: &str) -> Option<u64> {
+    let mut parts = date.split('-').map(|p| p.parse::<i64>().ok());
+    let (y, m, d) = (parts.next()??, parts.next()??, parts.next()??);
+    // Days from civil, after Howard Hinnant's algorithm.
+    let y = if m <= 2 { y - 1 } else { y };
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let mp = (m + 9) % 12;
+    let doy = (153 * mp + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe - 719_468;
+    u64::try_from(days * 86_400).ok()
 }
 
 /// An external process that was run, with its output captured.
@@ -173,6 +196,293 @@ impl ProcessRunner for MockProcessRunner {
                 format!("no mock response for {program} {args:?}"),
             )),
         }
+    }
+}
+
+/// HTTPS requests, behind a port.
+///
+/// Only the update check and `codev self-update` use it. The real
+/// implementation drives `curl` through [`ProcessRunner`] — no TLS stack
+/// in the binary — and tests answer from memory, never from the network.
+pub trait Http {
+    /// The body of a successful GET; any failure (network, timeout, HTTP
+    /// error status, missing `curl`) is an error whose message says why.
+    fn get(&self, url: &str, timeout_secs: u64) -> io::Result<Vec<u8>>;
+}
+
+/// [`Http`] through the `curl` binary.
+pub struct CurlHttp<'a> {
+    pub runner: &'a dyn ProcessRunner,
+    /// Sent as `User-Agent`; GitHub's API rejects requests without one.
+    pub user_agent: String,
+}
+
+impl Http for CurlHttp<'_> {
+    fn get(&self, url: &str, timeout_secs: u64) -> io::Result<Vec<u8>> {
+        let timeout = timeout_secs.to_string();
+        let agent = format!("User-Agent: {}", self.user_agent);
+        // `--proto =https` also holds for redirects: a release download
+        // that redirects to plain HTTP fails instead of being trusted.
+        let args = [
+            "-fsSL",
+            "--proto",
+            "=https",
+            "--max-time",
+            timeout.as_str(),
+            "-H",
+            agent.as_str(),
+            url,
+        ];
+        let output = self.runner.run("curl", &args, None)?;
+        if output.exit_code == 127 {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "curl is not installed; it is needed to reach GitHub",
+            ));
+        }
+        if !output.is_ok() {
+            let reason = output.stderr_str();
+            return Err(io::Error::other(format!(
+                "GET {url} failed: {}",
+                reason.trim()
+            )));
+        }
+        Ok(output.stdout)
+    }
+}
+
+/// Test [`Http`]: answers per URL, everything else fails as if offline.
+#[derive(Debug, Default)]
+pub struct MemoryHttp {
+    responses: RefCell<BTreeMap<String, Result<Vec<u8>, String>>>,
+    calls: RefCell<Vec<String>>,
+}
+
+impl MemoryHttp {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_response(self, url: &str, body: impl Into<Vec<u8>>) -> Self {
+        self.responses
+            .borrow_mut()
+            .insert(url.to_string(), Ok(body.into()));
+        self
+    }
+
+    pub fn with_failure(self, url: &str, reason: &str) -> Self {
+        self.responses
+            .borrow_mut()
+            .insert(url.to_string(), Err(reason.to_string()));
+        self
+    }
+
+    /// The URLs requested, in order.
+    pub fn calls(&self) -> Vec<String> {
+        self.calls.borrow().clone()
+    }
+}
+
+impl Http for MemoryHttp {
+    fn get(&self, url: &str, _timeout_secs: u64) -> io::Result<Vec<u8>> {
+        self.calls.borrow_mut().push(url.to_string());
+        match self.responses.borrow().get(url) {
+            Some(Ok(body)) => Ok(body.clone()),
+            Some(Err(reason)) => Err(io::Error::other(reason.clone())),
+            None => Err(io::Error::other(format!("offline: no route to {url}"))),
+        }
+    }
+}
+
+/// The running binary and the bytes around it, behind a port.
+///
+/// [`FileSystem`] is deliberately text-only; replacing a binary needs
+/// bytes, a temporary folder, permissions and a platform-specific swap.
+/// Only `codev self-update` uses it.
+pub trait Executable {
+    /// The running binary, symlinks resolved.
+    fn current_exe(&self) -> io::Result<PathBuf>;
+
+    /// A new, empty temporary folder.
+    fn temp_dir(&self) -> io::Result<PathBuf>;
+
+    fn read_bytes(&self, path: &Path) -> io::Result<Vec<u8>>;
+
+    /// Writes the file, creating its parent folders if needed.
+    fn write_bytes(&self, path: &Path, bytes: &[u8]) -> io::Result<()>;
+
+    fn remove_dir_all(&self, path: &Path) -> io::Result<()>;
+
+    fn remove_file(&self, path: &Path) -> io::Result<()>;
+
+    /// Makes `staged` executable and puts it in place of `target`
+    /// atomically. On Windows, a running `.exe` cannot be overwritten but
+    /// can be renamed: `target` first moves to `aside`, and moves back if
+    /// the second rename fails.
+    fn install(&self, staged: &Path, target: &Path, aside: &Path) -> io::Result<()>;
+}
+
+pub struct RealExecutable;
+
+impl Executable for RealExecutable {
+    fn current_exe(&self) -> io::Result<PathBuf> {
+        let exe = std::env::current_exe()?;
+        // `~/.local/bin/codev` may be a symlink to wherever the binary
+        // really lives; that is the file to replace and to classify.
+        Ok(std::fs::canonicalize(&exe).unwrap_or(exe))
+    }
+
+    fn temp_dir(&self) -> io::Result<PathBuf> {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let dir = std::env::temp_dir().join(format!("codev-update-{}-{stamp}", std::process::id()));
+        std::fs::create_dir_all(&dir)?;
+        Ok(dir)
+    }
+
+    fn read_bytes(&self, path: &Path) -> io::Result<Vec<u8>> {
+        std::fs::read(path)
+    }
+
+    fn write_bytes(&self, path: &Path, bytes: &[u8]) -> io::Result<()> {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(path, bytes)
+    }
+
+    fn remove_dir_all(&self, path: &Path) -> io::Result<()> {
+        std::fs::remove_dir_all(path)
+    }
+
+    fn remove_file(&self, path: &Path) -> io::Result<()> {
+        std::fs::remove_file(path)
+    }
+
+    fn install(&self, staged: &Path, target: &Path, aside: &Path) -> io::Result<()> {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt as _;
+            std::fs::set_permissions(staged, std::fs::Permissions::from_mode(0o755))?;
+        }
+        if cfg!(windows) && target.exists() {
+            // A leftover of a previous update would block the rename.
+            let _ = std::fs::remove_file(aside);
+            std::fs::rename(target, aside)?;
+            if let Err(err) = std::fs::rename(staged, target) {
+                let _ = std::fs::rename(aside, target);
+                return Err(err);
+            }
+            return Ok(());
+        }
+        std::fs::rename(staged, target)
+    }
+}
+
+/// Test [`Executable`]: bytes in memory, folders that refuse writes, and a
+/// swap that keeps the previous binary aside the way Windows does.
+#[derive(Debug)]
+pub struct MemoryExecutable {
+    exe: PathBuf,
+    files: RefCell<BTreeMap<PathBuf, Vec<u8>>>,
+    read_only: Vec<PathBuf>,
+}
+
+impl MemoryExecutable {
+    /// A running binary at `exe`, whose content is `contents`.
+    pub fn at(exe: impl Into<PathBuf>, contents: impl Into<Vec<u8>>) -> Self {
+        let exe = exe.into();
+        let mut files = BTreeMap::new();
+        files.insert(exe.clone(), contents.into());
+        Self {
+            exe,
+            files: RefCell::new(files),
+            read_only: Vec::new(),
+        }
+    }
+
+    pub fn with_file(self, path: impl Into<PathBuf>, contents: impl Into<Vec<u8>>) -> Self {
+        self.files.borrow_mut().insert(path.into(), contents.into());
+        self
+    }
+
+    /// Writes under `dir` fail with `PermissionDenied`.
+    pub fn read_only(mut self, dir: impl Into<PathBuf>) -> Self {
+        self.read_only.push(dir.into());
+        self
+    }
+
+    pub fn read(&self, path: impl AsRef<Path>) -> Option<Vec<u8>> {
+        self.files.borrow().get(path.as_ref()).cloned()
+    }
+
+    pub fn paths(&self) -> Vec<PathBuf> {
+        self.files.borrow().keys().cloned().collect()
+    }
+
+    fn missing(path: &Path) -> io::Error {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("{} is missing", path.display()),
+        )
+    }
+}
+
+/// The folder [`MemoryExecutable::temp_dir`] hands out.
+pub const MEMORY_TEMP_DIR: &str = "/tmp/codev-update";
+
+impl Executable for MemoryExecutable {
+    fn current_exe(&self) -> io::Result<PathBuf> {
+        Ok(self.exe.clone())
+    }
+
+    fn temp_dir(&self) -> io::Result<PathBuf> {
+        Ok(PathBuf::from(MEMORY_TEMP_DIR))
+    }
+
+    fn read_bytes(&self, path: &Path) -> io::Result<Vec<u8>> {
+        self.read(path).ok_or_else(|| Self::missing(path))
+    }
+
+    fn write_bytes(&self, path: &Path, bytes: &[u8]) -> io::Result<()> {
+        if self.read_only.iter().any(|dir| path.starts_with(dir)) {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                format!("{}: permission denied", path.display()),
+            ));
+        }
+        self.files
+            .borrow_mut()
+            .insert(path.to_path_buf(), bytes.to_vec());
+        Ok(())
+    }
+
+    fn remove_dir_all(&self, path: &Path) -> io::Result<()> {
+        self.files.borrow_mut().retain(|p, _| !p.starts_with(path));
+        Ok(())
+    }
+
+    fn remove_file(&self, path: &Path) -> io::Result<()> {
+        self.files
+            .borrow_mut()
+            .remove(path)
+            .map(|_| ())
+            .ok_or_else(|| Self::missing(path))
+    }
+
+    fn install(&self, staged: &Path, target: &Path, aside: &Path) -> io::Result<()> {
+        let mut files = self.files.borrow_mut();
+        let new = files.remove(staged).ok_or_else(|| Self::missing(staged))?;
+        let windows = target
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("exe"));
+        if windows && let Some(previous) = files.remove(target) {
+            files.insert(aside.to_path_buf(), previous);
+        }
+        files.insert(target.to_path_buf(), new);
+        Ok(())
     }
 }
 
@@ -325,6 +635,13 @@ impl Clock for SystemClock {
             u8::from(now.month()),
             now.day()
         )
+    }
+
+    fn now_unix(&self) -> u64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0)
     }
 }
 
@@ -633,6 +950,118 @@ mod tests {
             "{}",
             out.stderr_str()
         );
+    }
+
+    #[test]
+    fn fixed_clock_now_is_midnight_utc_of_its_date() {
+        assert_eq!(FixedClock("1970-01-01".into()).now_unix(), 0);
+        assert_eq!(FixedClock("2026-10-12".into()).now_unix(), 1_791_763_200);
+        assert_eq!(
+            FixedClock("2026-10-13".into()).now_unix() - FixedClock("2026-10-12".into()).now_unix(),
+            86_400
+        );
+        assert!(SystemClock.now_unix() > 1_700_000_000);
+    }
+
+    #[test]
+    fn curl_http_passes_the_timeout_and_returns_stdout_bytes() {
+        let runner = MockProcessRunner::new().with_response(
+            "curl",
+            &[],
+            ProcessOutput {
+                stdout: vec![0, 159, 146, 150],
+                stderr: Vec::new(),
+                exit_code: 0,
+            },
+        );
+        let http = CurlHttp {
+            runner: &runner,
+            user_agent: "codev/0.6.0".into(),
+        };
+        let body = http.get("https://example.com/a", 2).unwrap();
+        assert_eq!(body, vec![0, 159, 146, 150]);
+        let (program, args) = &runner.calls()[0];
+        assert_eq!(program, "curl");
+        assert!(
+            args.windows(2).any(|w| w == ["--max-time", "2"]),
+            "{args:?}"
+        );
+        assert!(
+            args.windows(2).any(|w| w == ["--proto", "=https"]),
+            "{args:?}"
+        );
+        assert!(args.contains(&"User-Agent: codev/0.6.0".to_string()));
+        assert_eq!(
+            args.last().map(String::as_str),
+            Some("https://example.com/a")
+        );
+    }
+
+    #[test]
+    fn curl_http_reports_a_failed_request() {
+        let failing = MockProcessRunner::new().with_response(
+            "curl",
+            &[],
+            ProcessOutput {
+                stdout: Vec::new(),
+                stderr: b"curl: (22) The requested URL returned error: 404".to_vec(),
+                exit_code: 22,
+            },
+        );
+        let http = CurlHttp {
+            runner: &failing,
+            user_agent: "codev".into(),
+        };
+        let err = http.get("https://example.com/missing", 2).unwrap_err();
+        assert!(err.to_string().contains("404"), "{err}");
+
+        let missing = MockProcessRunner::new().with_response(
+            "curl",
+            &[],
+            ProcessOutput {
+                stdout: Vec::new(),
+                stderr: b"curl: command not found".to_vec(),
+                exit_code: 127,
+            },
+        );
+        let http = CurlHttp {
+            runner: &missing,
+            user_agent: "codev".into(),
+        };
+        let err = http.get("https://example.com", 2).unwrap_err();
+        assert!(err.to_string().contains("curl is not installed"), "{err}");
+    }
+
+    #[test]
+    fn memory_executable_replaces_and_keeps_the_previous_binary_aside() {
+        let exe =
+            MemoryExecutable::at("/w/codev.exe", "old").with_file("/w/.codev-0.6.0.new.exe", "new");
+        exe.install(
+            Path::new("/w/.codev-0.6.0.new.exe"),
+            Path::new("/w/codev.exe"),
+            Path::new("/w/codev.old.exe"),
+        )
+        .unwrap();
+        assert_eq!(exe.read("/w/codev.exe").as_deref(), Some(&b"new"[..]));
+        assert_eq!(exe.read("/w/codev.old.exe").as_deref(), Some(&b"old"[..]));
+        assert!(exe.read("/w/.codev-0.6.0.new.exe").is_none());
+
+        // Unix: a plain rename over the target, nothing left aside.
+        let exe = MemoryExecutable::at("/u/codev", "old").with_file("/u/.codev-0.6.0.new", "new");
+        exe.install(
+            Path::new("/u/.codev-0.6.0.new"),
+            Path::new("/u/codev"),
+            Path::new("/u/codev.old"),
+        )
+        .unwrap();
+        assert_eq!(exe.read("/u/codev").as_deref(), Some(&b"new"[..]));
+        assert!(exe.read("/u/codev.old").is_none());
+
+        let locked = MemoryExecutable::at("/ro/codev", "old").read_only("/ro");
+        let err = locked
+            .write_bytes(Path::new("/ro/.codev-0.6.0.new"), b"new")
+            .unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::PermissionDenied);
     }
 
     #[test]

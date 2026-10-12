@@ -43,6 +43,8 @@ Then:
 codev status --change "<name>" --json
 ```
 
+{{UPDATE_NOTICE}}
+
 Find the requested artifact in `artifacts[]`:
 
 - status `done` → OK, it can be revised.

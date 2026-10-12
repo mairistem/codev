@@ -35,8 +35,8 @@ The procedure MUST be:
 5. **Write only on confirmation** from the user.
 
 The skill MUST **preserve** the fields it does not touch — `schema`,
-`workflows`, `mcp`, `inherits`, as well as existing provenance
-comments. It does not rewrite the `mcp:` key detected by
+`workflows`, `mcp`, `inherits`, `codev_version`, as well as existing
+provenance comments. It does not rewrite the `mcp:` key detected by
 `codev init`.
 
 The skill MUST **refuse to act** if `_codev/config.yaml` is missing —
@@ -50,7 +50,7 @@ it points the user to `codev init`.
 - **AND** its `body` cites the five steps (read, exploration,
   proposal, diff, confirmation)
 - **AND** its `body` explicitly lists the preserved fields
-  (`schema`, `workflows`, `mcp`, `inherits`)
+  (`schema`, `workflows`, `mcp`, `inherits`, `codev_version`)
 
 #### Scenario: Confirmation required before writing
 

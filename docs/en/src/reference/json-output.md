@@ -144,7 +144,7 @@ is left untouched). An invalid `--inherit` value fails with
     "…"
   ],
   "summary": {
-    "total": 11,
+    "total": 12,
     "missing": 2,
     "warnings": 1
   },
@@ -164,6 +164,7 @@ repositories. `summary.missing` drives the exit status of `--strict`.
 | `config.language` | `configuration` | `language_missing` |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (warning) |
+| `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (warning) |
 | `specs` | `planning` | `no_main_spec` |
 | `decisions` | `planning` | `no_accepted_decision` (warning) |
 | `validate` | `planning` | `validate_errors`, `validate_warnings` (warning) |
@@ -268,6 +269,17 @@ With `--specs`, the array is named `specs` and lists capability paths.
       "missingDeps": ["proposal"]
     }
   ],
+  "update": {
+    "current": "0.5.0",
+    "latest": "0.6.0",
+    "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+    "available": true,
+    "snoozed": false
+  },
+  "versionRequirement": {
+    "requirement": ">=0.5",
+    "satisfied": true
+  },
   "status": []
 }
 ```
@@ -275,6 +287,41 @@ With `--specs`, the array is named `specs` and lists capability paths.
 An artifact's `status` is `done`, `ready`, `blocked` or `skipped`.
 `planningHome` is the project root; skills use it rather than assuming the
 current directory.
+
+`update` is present when the latest codev release is known: `current` is the
+running version, `latest` the latest release, `url` its release page,
+`available` whether `latest` is newer, and `snoozed` whether
+`codev self-update --snooze` silenced it. It is absent when the check is
+disabled (`CI`, `CODEV_NO_UPDATE_CHECK=1`) or has never succeeded.
+`versionRequirement` is present when `_codev/config.yaml` sets
+`codev_version`: `requirement` is its value, `satisfied` whether the running
+version matches it. Both objects are additive: a consumer that ignores them
+reads the document as before.
+
+### self-update
+
+`codev self-update --json`, which implies `--yes`:
+
+```json
+{
+  "current": "0.5.0",
+  "latest": "0.6.0",
+  "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+  "action": "updated",
+  "installMethod": "standalone",
+  "path": "/home/you/.local/bin/codev",
+  "hint": null,
+  "projectUpdated": true,
+  "status": []
+}
+```
+
+`action` is `updated`, `up_to_date`, `available` (with `--check`),
+`snoozed`, `nothing_to_snooze` or `managed_elsewhere`. `installMethod` is
+`standalone`, `cargo`, `build` or `package_manager`; for the last three,
+`hint` holds the command that upgrades codev. `latest` and `url` are `null`
+when unknown. Failures keep this shape and carry their code in `status` —
+see the [codes](cli.md#codev-self-update).
 
 ### instructions
 

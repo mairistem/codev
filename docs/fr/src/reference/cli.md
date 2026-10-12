@@ -18,6 +18,7 @@ Usage: codev <COMMAND>
 Commands:
   init          Initialize codev in a project and install the Claude Code skills
   update        Regenerate the skills, and refresh codev's managed sections, after a codev upgrade
+  self-update   Download and install the latest codev release, verified
   doctor        Check what the project's codev setup still lacks, and how to fix it
   new           Create a new item
   list          List active changes, or specified capabilities with --specs
@@ -197,12 +198,86 @@ lorsque sa première ligne est `# codev:managed` — ce qui aligne sa version
 crée jamais ces fichiers et n'ajoute aucune section, si bien qu'un projet
 initialisé avec `--no-integration` reste tel quel.
 
+### codev self-update
+
+```text
+Download and install the latest codev release, verified
+
+Downloads the release archive for this platform from GitHub, verifies its SHA-256 against the release's `SHA256SUMS`, replaces this binary atomically, then runs the new binary's `codev update` in the current project, if any. Never downgrades unless `--version` asks for it. A binary installed by cargo, a cargo build or a package manager is left alone: the command that upgrades it is printed instead.
+
+Usage: codev self-update [OPTIONS]
+
+Options:
+      --version <X.Y.Z>
+          Install this version (`X.Y.Z`) instead of the latest; allows a downgrade
+
+      --check
+          Only report the running and latest versions (exit code 0 whether or not an update is available)
+
+      --snooze
+          Silence the update notice for the latest known version, for 7 days
+
+  -y, --yes
+          Do not ask for confirmation
+
+      --json
+          JSON output; implies `--yes`
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Installe un codev plus récent à la place de celui qui s'exécute, en une
+commande et jamais dans votre dos :
+
+1. détermine la version cible — `--version`, ou la release la plus récente,
+   demandée à GitHub sur le moment, quels que soient le cache, `CI` ou
+   `CODEV_NO_UPDATE_CHECK` ;
+2. dans un terminal, demande confirmation, sauf avec `--yes` ;
+3. télécharge `codev-<version>-<target>.tar.gz` (`.zip` sous Windows) et
+   `SHA256SUMS` depuis la release GitHub, puis vérifie le SHA-256 de
+   l'archive ;
+4. écrit le nouveau binaire à côté de celui qui s'exécute, puis le renomme à
+   sa place, si bien que le chemin du binaire contient toujours un binaire
+   complet ;
+5. dans un projet codev, lance `codev update` avec le nouveau binaire.
+
+Un binaire installé par `cargo install`, compilé dans un dossier `target/` de
+cargo ou installé par un gestionnaire de paquets (Homebrew, Nix, Scoop,
+`/usr/bin`) n'est pas touché : la commande qui le met à jour est affichée et
+le code de sortie vaut `0`. Une release plus ancienne que le binaire en cours
+est refusée (`update_downgrade_refused`), sauf si vous la demandez avec
+`--version`.
+
+`--check` affiche la version installée et la plus récente, rafraîchit le
+cache de vérification et sort avec `0`, qu'une mise à jour soit disponible ou
+non. `--snooze` fait taire, pendant 7 jours, l'annonce de `codev status` et
+des skills pour la dernière version connue ; une release plus récente est de
+nouveau annoncée.
+
+| Code | Signification |
+|---|---|
+| `update_check_failed` | L'API des releases est injoignable, ou ne renvoie aucune release |
+| `update_unsupported_platform` | Aucun binaire publié pour cette plateforme ; compilez depuis les sources |
+| `update_download_failed` | L'archive ou `SHA256SUMS` ne peut pas être téléchargé |
+| `update_checksum_mismatch` | `SHA256SUMS` n'a pas d'entrée pour l'archive, ou son SHA-256 diffère |
+| `update_extract_failed` | L'archive ne peut pas être extraite, ou ne contient aucun binaire codev |
+| `update_not_writable` | Le dossier du binaire n'est pas accessible en écriture |
+| `update_downgrade_refused` | La cible est plus ancienne que la version en cours, sans `--version` |
+| `invalid_version` | `--version` n'est pas de la forme `X.Y.Z` |
+
+Tout échec laisse le binaire installé intact. Lorsque `codev update` échoue
+dans le projet après une mise à jour réussie, la commande avertit
+`update_project_refresh_failed` et sort tout de même avec `0` : lancez
+`codev update` dans ce projet. Pour `--json`, voir
+[Sortie JSON](json-output.md#self-update).
+
 ### codev doctor
 
 ```text
 Check what the project's codev setup still lacks, and how to fix it
 
-Read-only and offline: configuration, skills, specs, decisions, inherited sources, `CLAUDE.md`, CI and pull request template, `codev validate`, and whether `CHANGELOG.md` matches the archived changes. Each check is ok, missing or a warning, with the command or skill that fixes it.
+Read-only and offline: configuration, skills, inherited sources, the running codev version against `codev_version` and the cached update check, specs, decisions, `CLAUDE.md`, CI and pull request template, `codev validate`, and whether `CHANGELOG.md` matches the archived changes. Each check is ok, missing or a warning, with the command or skill that fixes it.
 
 Usage: codev doctor [OPTIONS]
 
@@ -229,6 +304,7 @@ seule.
 | `config.language` | `language:` est défini | ajouter `language: <code>` |
 | `skills` | chaque skill configurée est installée et générée par cette version de codev | `codev update` |
 | `sources` | chaque source git est épinglée dans `codev.lock` et présente dans le cache | `codev sources update` |
+| `codev_version` | le codev en cours satisfait `codev_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `codev self-update` |
 | `specs` | au moins une spec principale existe | `/codev-propose` |
 | `decisions` | au moins une décision est acceptée — simple avertissement | `codev decision new` |
 | `validate` | `codev validate` ne signale rien | `codev validate` |
@@ -236,6 +312,9 @@ seule.
 | `ci` | un workflow GitHub ou `.gitlab-ci.yml` exécute `codev validate` | `codev init` sur GitHub |
 | `pr_template` | le modèle de pull request contient la section de codev — GitHub uniquement | `codev init` |
 | `changelog` | `CHANGELOG.md` correspond à ce que génère `codev changelog` — simple avertissement | `codev changelog --write` |
+
+La vérification `codev_version` lit le cache que tient `codev status` ;
+elle ne contacte jamais le réseau.
 
 Chaque ligne affiche `✓` (ok), `✗` (manquant) ou `!` (avertissement) ; la
 dernière ligne compte les vérifications et celles qui restent à corriger. Le
@@ -381,6 +460,17 @@ bloqué `[-]` ou ignoré `[~]` — et indique si la planification est complète.
 Échoue avec `no_active_change` lorsque le projet n'a aucun change actif. Dans
 les deux cas, lorsque `codev doctor` signalerait une vérification manquante,
 une dernière ligne `hint:` sur stderr suggère de le lancer.
+
+Lorsqu'une release plus récente de codev est connue et que vous ne l'avez pas
+mise en sourdine, stderr porte aussi
+``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``. Pour
+le savoir, `codev status` demande à GitHub la dernière release au plus une
+fois toutes les 24 heures, avec un délai de 2 secondes, et garde la réponse
+en cache dans `~/.cache/codev/update-check.json`. Il ne vérifie jamais
+lorsque `CI` est défini ou avec `CODEV_NO_UPDATE_CHECK=1`, et une
+vérification qui échoue reste silencieuse. Aucune autre commande ne vérifie.
+Avec `--json`, la même information figure dans l'objet `update` — voir
+[Sortie JSON](json-output.md#status).
 
 ### codev instructions
 

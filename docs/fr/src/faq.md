@@ -4,10 +4,27 @@
 
 ### codev envoie-t-il mon code à un modèle ?
 
-Non. Le binaire `codev` n'appelle jamais de modèle de langage et, hormis
-`codev sources update` qui récupère les sources git héritées, n'accède jamais
-au réseau. C'est votre agent — Claude Code — qui rédige, avec les mêmes accès
+Non. Le binaire `codev` n'appelle jamais de modèle de langage. Il n'accède
+au réseau que pour récupérer les sources git héritées (`codev sources update`)
+et pour chercher une release plus récente de codev (`codev status`,
+`codev self-update`). C'est votre agent — Claude Code — qui rédige, avec les mêmes accès
 que dans n'importe quelle autre session.
+
+### codev vérifie-t-il les mises à jour ?
+
+Oui, et seulement cela. Au plus une fois toutes les 24 heures,
+`codev status` envoie une requête HTTPS anonyme à l'API publique de GitHub
+(`https://api.github.com/repos/mairistem/codev/releases/latest`) pour lire le
+numéro de la dernière release, et le garde en cache dans
+`~/.cache/codev/update-check.json`. La requête ne contient rien sur vous ni
+sur votre projet ; il n'y a aucune télémétrie. Une requête qui échoue reste
+silencieuse et n'est pas retentée avant le lendemain.
+
+La vérification ne s'exécute jamais lorsque `CI` est défini, afin que les
+pipelines restent reproductibles. Pour la désactiver sur votre machine,
+définissez `CODEV_NO_UPDATE_CHECK=1`. Rien n'est jamais installé sans votre
+accord : la mise à jour passe par `codev self-update`, ou par votre réponse
+« Update now » dans une skill.
 
 ### Puis-je utiliser codev sans Claude Code ?
 
@@ -185,6 +202,28 @@ supprimez-les tous pour que `codev init` ajoute une section neuve.
 Lancez `codev sources update`. `unlocked` signifie que la source n'a jamais
 été résolue ; `needs_update` signifie qu'elle est épinglée dans `codev.lock`
 mais absente de votre cache local, typiquement sur une machine neuve.
+
+### `codev self-update` signale `update_checksum_mismatch`
+
+L'archive téléchargée ne correspond pas à sa ligne dans le `SHA256SUMS` de la
+release, ou cette ligne manque. Rien n'a été installé. Réessayez plus tard —
+un proxy a pu altérer le téléchargement — et, si le problème persiste,
+signalez-le : c'est la vérification qui vous protège d'une archive
+falsifiée.
+
+### `codev self-update` signale `update_not_writable`
+
+codev ne peut pas écrire dans le dossier de son binaire, par exemple
+`/usr/local/bin` appartenant à root. Réinstallez codev dans un dossier qui
+vous appartient (`install.sh` utilise `~/.local/bin`), ou lancez la commande
+avec les droits qu'exige ce dossier.
+
+### `codev self-update` indique que codev est géré ailleurs
+
+Votre binaire a été installé par `cargo install`, compilé depuis un clone ou
+installé par un gestionnaire de paquets : codev laisse cet outil s'en charger
+et affiche la commande à lancer, par exemple
+`cargo install --path crates/codev-cli` depuis un clone à jour.
 
 ### `codev: command not found`
 

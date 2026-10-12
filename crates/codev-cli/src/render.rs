@@ -173,6 +173,84 @@ fn integration_line(out: &mut String, step: &codev_engine::integration::Integrat
 
 /// Human rendering of `codev doctor`: the checks grouped, the fix under
 /// each one that is not ok, and the count on the last line.
+/// `codev self-update`, for a human.
+pub fn self_update(outcome: &codev_engine::update::Outcome) -> String {
+    use codev_engine::update::Action;
+    let latest = outcome.latest.as_deref().unwrap_or("unknown");
+    let mut out = String::new();
+    match outcome.action {
+        Action::Updated => {
+            let _ = writeln!(
+                out,
+                "codev {} → {latest}: installed {}",
+                outcome.current,
+                outcome.path.display()
+            );
+            if let Some(project) = &outcome.project_updated {
+                let _ = writeln!(out, "Ran `codev update` in {}", project.display());
+            }
+            if let Some(url) = &outcome.url {
+                let _ = writeln!(out, "Release notes: {url}");
+            }
+        }
+        Action::UpToDate => {
+            let _ = writeln!(out, "codev {} is up to date", outcome.current);
+        }
+        Action::Available => {
+            let _ = writeln!(
+                out,
+                "codev {latest} is available (you have {})",
+                outcome.current
+            );
+            if let Some(url) = &outcome.url {
+                let _ = writeln!(out, "Release notes: {url}");
+            }
+            let _ = writeln!(
+                out,
+                "Installed by {} at {}",
+                outcome.method.label(),
+                outcome.path.display()
+            );
+            match outcome.method.upgrade_hint() {
+                Some(hint) => {
+                    let _ = writeln!(out, "To upgrade: {hint}");
+                }
+                None => {
+                    let _ = writeln!(out, "To upgrade: codev self-update");
+                }
+            }
+        }
+        Action::Snoozed => {
+            let _ = writeln!(
+                out,
+                "codev {latest} snoozed for 7 days — `codev self-update` installs it any time"
+            );
+        }
+        Action::NothingToSnooze => {
+            let _ = writeln!(
+                out,
+                "No update to snooze: codev {} is the latest known release",
+                outcome.current
+            );
+        }
+        Action::ManagedElsewhere => {
+            let _ = writeln!(
+                out,
+                "codev at {} was installed by {}; codev self-update leaves it alone.",
+                outcome.path.display(),
+                outcome.method.label()
+            );
+            if let Some(hint) = outcome.method.upgrade_hint() {
+                let _ = writeln!(out, "To upgrade: {hint}");
+            }
+        }
+        Action::Cancelled => {
+            let _ = writeln!(out, "Update cancelled; nothing changed");
+        }
+    }
+    out
+}
+
 pub fn doctor(outcome: &DoctorOutcome) -> String {
     use codev_core::doctor::{CheckGroup, CheckStatus};
     let mut out = String::new();
@@ -1154,7 +1232,7 @@ apply:
         assert!(
             rendered
                 .trim_end()
-                .ends_with("10 check(s), 3 to fix, 2 warning(s)"),
+                .ends_with("11 check(s), 3 to fix, 2 warning(s)"),
             "{rendered}"
         );
     }
