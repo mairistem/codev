@@ -299,7 +299,9 @@ When `codev init` writes `_codev/config.yaml`, it MUST declare every
 source under `inherits:`, in the order given, as `git:` + `ref:` or as
 `path:`, with the comment `# set with codev init --inherit` above the
 key. A relative local path MUST be written as an absolute path, so that it
-resolves the same from any folder of the project. The written file MUST
+resolves the same from any folder of the project, and with forward slashes
+on every platform (Windows accepts them), so that the file stays readable
+and identical whatever machine ran `codev init`. The written file MUST
 stay readable by every other codev command.
 
 The command MUST refuse, before writing anything, with the stable code
@@ -348,6 +350,14 @@ No source is declared when `--inherit` is absent.
 - **WHEN** the user runs `codev init --yes --inherit /home/you/conventions`
 - **THEN** `_codev/config.yaml` is identical byte for byte
 - **AND** a warning `inherit_not_written` names the source
+
+#### Scenario: A relative local path is written with forward slashes
+
+- **GIVEN** a project folder and an existing folder `../conventions` next to it
+- **WHEN** the user runs `codev init --yes --inherit ../conventions`, on any
+  platform
+- **THEN** the declared `path:` is the absolute path of that folder, written
+  with `/` separators and without quotes
 
 ### Requirement: `codev init` pins inherited git sources without failing on the network
 
