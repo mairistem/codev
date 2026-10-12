@@ -33,8 +33,10 @@ codev roles --at <step> --change "<name>" --json
 ```
 
 Apply every criterion of every role returned (`roles[].doneWhen`), the
-project's included. If `roles` is empty, the role is disabled by
-configuration: skip the step, and say so in the summary.
+project's included, using the role's `knowledge` when it has one — of its
+`By stack` part, only the project's languages. If `roles` is empty, the
+role is disabled by configuration: skip the step, and say so in the
+summary.
 
 ## Steps
 
@@ -139,15 +141,22 @@ A task cannot be carried out in two cases:
 In both cases, stop after the current task. The following tasks are not
 processed until the obstacle is cleared.
 
-### 5. Review as a newcomer — `code.review`
+### 5. Review the change — `code.review`
 
 When every box is checked, re-read only the code this change added or
-modified — its diff — as a developer joining the project who has seen
-neither the plan nor this conversation, along the newcomer's criteria.
+modified — its diff — with every role returned, each along its criteria
+and knowledge: the newcomer, as a developer joining the project who has
+seen neither the plan nor this conversation; and the experts the
+proposal's `## Domains` activates, asking whether the implementation
+respects their domain.
 
 Simplify directly what is unambiguous, then re-run the affected tests.
-Never change behavior, never widen the change's scope, never touch code the
-change did not add or modify. Keep the rest for the readability notes.
+Never widen the change's scope, never touch code the change did not add or
+modify. The newcomer never changes behavior. An expert never changes
+behavior silently: a behavior-changing fix becomes a review note, unless it
+is a clear defect within the change's scope — then fix it, add a test that
+fails without the fix, and name the fix in the summary. Keep the rest for
+the review notes.
 
 ### 6. Finish — suggest archiving as an explicit next step
 
@@ -158,10 +167,14 @@ Otherwise, summarize:
 
 - number of tasks done,
 - main files touched (one line),
-- **Readability notes** — from step 5, at most three items, one line each:
-  what, where, why. If nothing is worth raising, write "No readability
-  concern found"; never invent notes. When the review is disabled, write
-  "The newcomer review is disabled by configuration" instead,
+- the defects the experts fixed in step 5, one line each,
+- **Review notes** — from step 5, at most five items in total across the
+  roles, ranked by severity, one line each, tagged with the role id:
+  `[<role-id>] what — where — why`. A high-severity `security` or
+  `privacy` finding is always listed, even beyond five. If nothing is
+  worth raising, write "No review concern found"; never invent notes. When
+  no role is active at step 5, write "The review is disabled by
+  configuration" instead,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 

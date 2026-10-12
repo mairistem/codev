@@ -173,7 +173,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `config.rules` | `configuration` | `rules_missing` |
 | `config.language` | `configuration` | `language_missing` |
 | `config.keys` | `configuration` | `unknown_config_key` (avertissement) |
-| `config.roles` | `configuration` | `roles_invalid` (avertissement) ; lorsqu'il est `ok`, `message` liste les rôles actifs et désactivés |
+| `config.roles` | `configuration` | `roles_invalid` (avertissement) ; lorsqu'il est `ok`, `message` liste les rôles actifs, les rôles actifs selon le domaine avec leurs domaines, et les rôles désactivés |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
@@ -376,11 +376,15 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
     "name": "Architect",
     "kind": "artifact",
     "at": "plan.write",
+    "steps": ["plan.write"],
     "artifact": "design",
+    "domains": [],
     "question": "How will it be built?",
     "when": "always",
     "whenOrigin": "default",
+    "activatedBy": "always",
     "disableable": false,
+    "knowledge": null,
     "doneWhen": [
       { "origin": "schema:spec-driven", "text": "each decision names the alternative it rejects and why" },
       "…"
@@ -472,15 +476,38 @@ les specs principales supprimées par un change qui retire une capacité.
       "name": "Skeptic",
       "kind": "step",
       "at": "plan.challenge",
+      "steps": ["plan.challenge"],
       "artifact": null,
+      "domains": [],
       "question": "Would the plan survive a reviewer who did not write it?",
       "when": "always",
       "whenOrigin": "project",
+      "activatedBy": "project",
       "disableable": true,
+      "knowledge": "## Signals\n\nPlanning smells — each one is a question to raise, not a verdict.\n…",
       "doneWhen": [
         { "origin": "built-in", "text": "**Need** — does the change solve the Why? Is there a simpler solution, or one without code?" },
         "…",
         { "origin": "project", "text": "The rollback plan is stated" }
+      ]
+    },
+    {
+      "id": "accessibility",
+      "name": "Accessibility",
+      "kind": "step",
+      "at": "plan.challenge",
+      "steps": ["plan.challenge", "code.review"],
+      "artifact": null,
+      "domains": ["user-interface"],
+      "question": "Can everyone use what this change adds, with a keyboard or assistive technology?",
+      "when": "on_domain",
+      "whenOrigin": "default",
+      "activatedBy": "domain:user-interface",
+      "disableable": true,
+      "knowledge": "## Scope\n\nLook at the user interface the change adds or modifies…",
+      "doneWhen": [
+        { "origin": "built-in", "text": "Every interactive element is reachable and operable with the keyboard alone, in a logical focus order, with a visible focus" },
+        "…"
       ]
     }
   ],
@@ -495,13 +522,18 @@ les specs principales supprimées par un change qui retire une capacité.
 | `at` | L'étape donnée avec `--at` ; `null` liste tous les rôles, actifs ou non |
 | `roles[].name` | Le nom affiché dans la `language` configurée, en anglais lorsque le rôle n'en a pas dans cette langue |
 | `roles[].kind` | `step`, ou `artifact` avec l'identifiant de l'artefact dans `artifact` |
-| `roles[].at` | L'étape du workflow ; `plan.write` pour tous les rôles d'artefact |
-| `roles[].when`, `roles[].whenOrigin` | `always` ou `never`, fixé par `default`, `project` ou `change` |
-| `roles[].disableable` | `false` pour les rôles d'artefact et le `developer` |
+| `roles[].at` | L'étape donnée avec `--at`, sinon la première étape du rôle ; `plan.write` pour tous les rôles d'artefact |
+| `roles[].steps` | Toutes les étapes que sert le rôle, dans l'ordre du workflow : un expert sert `plan.challenge` et `code.review` |
+| `roles[].domains` | Les domaines qui activent un expert, comme `["personal-data"]` ; vide pour les autres rôles |
+| `roles[].when`, `roles[].whenOrigin` | `always`, `never` ou `on_domain`, fixé par `default`, `project` ou `change` |
+| `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposal coche le domaine ; `null` lorsqu'il est inactif |
+| `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
+| `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
 
 Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
-aucun : l'étape est alors sautée. Un échec — `unknown_step`, `unknown_role`,
+aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
+lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
 avec `roles` vide et `language` renseigné comme pour `instructions`.
 

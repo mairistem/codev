@@ -33,6 +33,18 @@
 
 <!-- Affected code, APIs, dependencies and systems. -->
 
+## Domains
+
+<!-- Tick every domain the change touches: its expert reviews the plan and
+     the code. Write the single line `None` if it touches none of them. -->
+
+- [ ] security
+- [ ] personal-data
+- [ ] user-interface
+- [ ] performance
+- [ ] operations
+- [ ] migration
+
 ## Release note
 
 <!-- What end users will read in the changelog. One bullet per item:

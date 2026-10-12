@@ -6,7 +6,7 @@
 use std::fmt::Write as _;
 
 use codev_core::parser::ast::Severity;
-use codev_core::roles::{ResolvedRole, RoleKind, WhenOrigin};
+use codev_core::roles::{Activation, ResolvedRole, RoleKind, WhenOrigin};
 use codev_core::{ArtifactState, ChangeStatus};
 use codev_engine::Warning;
 use codev_engine::archive::ArchiveOutcome;
@@ -968,6 +968,15 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
             role.role.name(&outcome.language)
         );
         write_role_body(&mut out, role);
+        if outcome.knowledge
+            && let Some(knowledge) = &role.role.knowledge
+        {
+            let _ = writeln!(out, "  Knowledge:");
+            for line in knowledge.lines() {
+                let indented = format!("    {line}");
+                let _ = writeln!(out, "{}", indented.trim_end());
+            }
+        }
     }
     out
 }
@@ -979,10 +988,13 @@ fn roles_table(out: &mut String, outcome: &crate::commands::RolesOutcome) {
         .map(|resolved| {
             let role = &resolved.role;
             let place = match &role.kind {
-                RoleKind::Step => role.at.clone(),
+                RoleKind::Step => role.steps.join(", "),
                 RoleKind::Artifact(artifact) => artifact.clone(),
             };
             let mut activation = resolved.when.as_str().to_string();
+            if resolved.when == Activation::OnDomain {
+                activation.push_str(&format!(": {}", role.domains.join(", ")));
+            }
             if resolved.when_origin != WhenOrigin::Default {
                 activation.push_str(&format!(" ({})", resolved.when_origin.as_str()));
             }
@@ -1399,7 +1411,7 @@ apply:
     }
 
     fn spec_driven_role(id: &str) -> codev_core::roles::ResolvedRole {
-        use codev_core::roles::{self, Activation, ResolvedRole, WhenOrigin};
+        use codev_core::roles::{self, ActivatedBy, Activation, ResolvedRole, WhenOrigin};
         let yaml = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
         let schema = codev_core::Schema::parse(yaml).unwrap();
         ResolvedRole {
@@ -1409,6 +1421,7 @@ apply:
                 .unwrap(),
             when: Activation::Always,
             when_origin: WhenOrigin::Default,
+            activated_by: Some(ActivatedBy::Always),
         }
     }
 
@@ -1437,22 +1450,33 @@ apply:
     #[test]
     fn roles_lists_every_role_with_its_activation() {
         use codev_core::roles::{Activation, WhenOrigin};
-        let mut newcomer = codev_core::roles::builtin_step_roles()
-            .into_iter()
-            .find(|r| r.id == "newcomer")
-            .map(|role| codev_core::roles::ResolvedRole {
-                role,
-                when: Activation::Never,
-                when_origin: WhenOrigin::Project,
-            })
-            .unwrap();
-        newcomer.role.disableable = true;
+        let builtin = |id: &str, when| {
+            codev_core::roles::builtin_step_roles()
+                .into_iter()
+                .find(|r| r.id == id)
+                .map(|role| codev_core::roles::ResolvedRole {
+                    role,
+                    when,
+                    when_origin: if when == Activation::Never {
+                        WhenOrigin::Project
+                    } else {
+                        WhenOrigin::Default
+                    },
+                    activated_by: None,
+                })
+                .unwrap()
+        };
         let outcome = crate::commands::RolesOutcome {
             change: None,
             schema_name: "spec-driven".into(),
             at: None,
             language: "en".into(),
-            roles: vec![spec_driven_role("product"), newcomer],
+            roles: vec![
+                spec_driven_role("product"),
+                builtin("security", Activation::OnDomain),
+                builtin("newcomer", Activation::Never),
+            ],
+            knowledge: false,
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);
@@ -1466,6 +1490,39 @@ apply:
         let newcomer = rendered.lines().find(|l| l.contains("newcomer")).unwrap();
         assert!(newcomer.contains("code.review"), "{newcomer}");
         assert!(newcomer.ends_with("never (project)"), "{newcomer}");
+        let security = rendered.lines().find(|l| l.contains("security")).unwrap();
+        assert!(
+            security.contains("plan.challenge, code.review"),
+            "{security}"
+        );
+        assert!(security.ends_with("on_domain: security"), "{security}");
+    }
+
+    #[test]
+    fn roles_print_knowledge_only_on_request() {
+        let mut outcome = crate::commands::RolesOutcome {
+            change: None,
+            schema_name: "spec-driven".into(),
+            at: Some("plan.challenge".into()),
+            language: "en".into(),
+            roles: vec![{
+                let mut skeptic = spec_driven_role("architect");
+                skeptic.role = codev_core::roles::builtin_step_roles()
+                    .into_iter()
+                    .find(|r| r.id == "skeptic")
+                    .unwrap();
+                skeptic
+            }],
+            knowledge: false,
+            warnings: Vec::new(),
+        };
+        let without = roles(&outcome);
+        assert!(without.contains("**Need**"), "{without}");
+        assert!(!without.contains("Knowledge:"), "{without}");
+        outcome.knowledge = true;
+        let with = roles(&outcome);
+        assert!(with.contains("  Knowledge:\n    ## Signals"), "{with}");
+        assert!(!with.lines().any(|l| l.ends_with(' ')), "{with}");
     }
 
     #[test]
@@ -1476,6 +1533,7 @@ apply:
             at: Some("plan.write".into()),
             language: "fr".into(),
             roles: vec![spec_driven_role("architect")],
+            knowledge: false,
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);

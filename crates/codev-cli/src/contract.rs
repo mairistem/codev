@@ -563,23 +563,36 @@ pub struct RoleV1 {
     pub name: String,
     /// `step` or `artifact`.
     pub kind: &'static str,
-    /// The workflow step, such as `plan.challenge`.
+    /// The step asked with `--at`, otherwise the role's first step, such as
+    /// `plan.challenge`.
     pub at: String,
+    /// Every step the role serves, in workflow order. Additive in v1.
+    pub steps: Vec<String>,
     /// The artifact an artifact role owns; `null` for a step role.
     pub artifact: Option<String>,
+    /// The domains that activate an `on_domain` role; empty for a role
+    /// bound to none. Additive in v1.
+    pub domains: Vec<String>,
     pub question: String,
-    /// `always` or `never`.
+    /// `always`, `never` or `on_domain`.
     pub when: &'static str,
     /// `default`, `project` or `change`.
     pub when_origin: &'static str,
+    /// Why the role is active: `always`, `project`, `change` or
+    /// `domain:<name>`; `null` when it is not. Additive in v1.
+    pub activated_by: Option<String>,
     pub disableable: bool,
+    /// The role's knowledge, as markdown, for an active role that has one;
+    /// `null` otherwise. Additive in v1.
+    pub knowledge: Option<String>,
     /// The role's criteria, then the project's, each with its origin:
     /// `built-in`, `schema:<name>` or `project`.
     pub done_when: Vec<BlockV1>,
 }
 
 impl RoleV1 {
-    pub fn from(resolved: &ResolvedRole, language: &str) -> Self {
+    /// `at` is the step the role is served at, when one was asked.
+    pub fn from(resolved: &ResolvedRole, language: &str, at: Option<&str>) -> Self {
         let role = &resolved.role;
         let (kind, artifact) = match &role.kind {
             RoleKind::Step => ("step", None),
@@ -589,12 +602,20 @@ impl RoleV1 {
             id: role.id.clone(),
             name: role.name(language).to_string(),
             kind,
-            at: role.at.clone(),
+            at: at.unwrap_or(role.first_step()).to_string(),
+            steps: role.steps.clone(),
             artifact,
+            domains: role.domains.clone(),
             question: role.question.clone(),
             when: resolved.when.as_str(),
             when_origin: resolved.when_origin.as_str(),
+            activated_by: resolved.activated_by.as_ref().map(|by| by.label()),
             disableable: role.disableable,
+            knowledge: if resolved.is_active() {
+                role.knowledge.clone()
+            } else {
+                None
+            },
             done_when: role
                 .criteria
                 .iter()
@@ -631,7 +652,7 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
             roles: outcome
                 .roles
                 .iter()
-                .map(|role| RoleV1::from(role, &outcome.language))
+                .map(|role| RoleV1::from(role, &outcome.language, outcome.at.as_deref()))
                 .collect(),
             status: statuses(&outcome.warnings),
         }
@@ -678,7 +699,7 @@ impl From<&Instructions> for InstructionsV1 {
             role: instructions
                 .role
                 .as_ref()
-                .map(|role| RoleV1::from(role, &instructions.language)),
+                .map(|role| RoleV1::from(role, &instructions.language, None)),
             status: statuses(&instructions.warnings),
         }
     }
@@ -1240,7 +1261,7 @@ apply:
     }
 
     fn skeptic_with_a_project_criterion() -> ResolvedRole {
-        use codev_core::roles::{self, Activation, Criterion, WhenOrigin};
+        use codev_core::roles::{self, ActivatedBy, Activation, Criterion, WhenOrigin};
         let mut role = roles::builtin_step_roles()
             .into_iter()
             .find(|r| r.id == "skeptic")
@@ -1253,6 +1274,7 @@ apply:
             role,
             when: Activation::Always,
             when_origin: WhenOrigin::Project,
+            activated_by: Some(ActivatedBy::Project),
         }
     }
 
@@ -1264,6 +1286,7 @@ apply:
             at: Some("plan.challenge".into()),
             language: "fr".into(),
             roles: vec![skeptic_with_a_project_criterion()],
+            knowledge: false,
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
@@ -1283,17 +1306,27 @@ apply:
             "name",
             "kind",
             "at",
+            "steps",
             "artifact",
+            "domains",
             "question",
             "when",
             "whenOrigin",
+            "activatedBy",
             "disableable",
+            "knowledge",
             "doneWhen",
         ] {
             assert!(role.get(field).is_some(), "missing `roles[].{field}`");
         }
         assert_eq!(role["name"], "Contradicteur");
         assert_eq!(role["whenOrigin"], "project");
+        assert_eq!(role["activatedBy"], "project");
+        assert_eq!(role["steps"], serde_json::json!(["plan.challenge"]));
+        assert!(
+            role["knowledge"].as_str().unwrap().contains("## Signals"),
+            "an active skeptic is served its knowledge"
+        );
         let last = role["doneWhen"].as_array().unwrap().last().unwrap().clone();
         assert_eq!(
             last,
@@ -1303,7 +1336,7 @@ apply:
 
     #[test]
     fn instructions_expose_the_role_field() {
-        use codev_core::roles::{self, Activation, WhenOrigin};
+        use codev_core::roles::{self, ActivatedBy, Activation, WhenOrigin};
         let yaml = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
         let schema = codev_core::Schema::parse(yaml).unwrap();
         let qa = roles::catalog(&schema, "spec-driven")
@@ -1317,6 +1350,7 @@ apply:
             role: qa,
             when: Activation::Always,
             when_origin: WhenOrigin::Default,
+            activated_by: Some(ActivatedBy::Always),
         });
         let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
         assert_eq!(json["role"]["id"], "qa");

@@ -99,13 +99,17 @@ Before presenting the plan, the skill reviews it in two steps:
    need, scope, specs, decisions, assumptions, tasks. Security & privacy,
    compatibility & migration, operability, performance and accessibility &
    UX are added only when the proposal's Impact touches them, as are your
-   project's [`rules`](reference/configuration.md#rules). It fixes what is
-   unambiguous, records what needs your decision in the design's Open
-   Questions, and never adds scope.
+   project's [`rules`](reference/configuration.md#rules). The
+   [experts](roles.md#experts-and-domains) whose domain the proposal ticks
+   in `## Domains` — security, privacy, accessibility, performance,
+   operations, migration — join this pass with their own knowledge. It
+   fixes what is unambiguous, records what needs your decision in the
+   design's Open Questions, and never adds scope.
 
 The summary ends with **Points to challenge**: at most five one-line items
-ranked by impact — what, why it matters, which artifact — or "No point to
-challenge found". Start your review there.
+across all roles, ranked by impact and tagged with the role that raised
+them — what, why it matters, which artifact — or "No point to challenge
+found". Start your review there.
 
 If the request mentions a ticket identifier matching `[A-Z]{2,}-\d+` and a
 Jira MCP tool is configured, it fetches the first ticket — read-only, a
@@ -159,15 +163,18 @@ it off only once the verification passes. It writes tests like your existing
 test suite, then by your language's conventions and your `rules`. It takes
 the test command from your configuration, manifest or CI, and asks you when
 it finds none. Once every task is checked, it reviews the code the change
-touched as a newcomer would: it simplifies what is unambiguous, without
-changing behavior or scope, and reports up to three readability notes.
-It takes the criteria of both steps from `codev roles`; when your
-configuration disables the newcomer, the review is skipped and the summary
-says so. Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
+touched as a newcomer would, joined by the experts the proposal's domains
+activate: it simplifies what is unambiguous, without widening the scope,
+and reports up to five review notes, each tagged with its role — a
+high-severity security or privacy finding is always reported. An expert
+fixes a clear defect within the change's scope, with a test, and reports
+any other behavior change instead of making it. It takes the criteria and
+knowledge of both steps from `codev roles`; when no role is active at the
+review, it is skipped and the summary says so. Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
 another change, never syncs and never archives.
 
 Roles: [developer](roles.md#developer-codev-apply),
-[newcomer](roles.md#newcomer-codev-apply).
+[newcomer and experts](roles.md#newcomer-and-experts-codev-apply).
 
 ### Update (`/codev-update`)
 

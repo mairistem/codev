@@ -19,6 +19,7 @@ artifacts:
         - "every capability listed has a spec file (or `skip_specs: true`)"
         - the release note is written for end users, categorized, with
           breaking items marked, or `None` for an internal change
+        - Domains ticks every domain the change touches, or says `None`
         - no implementation detail
     instruction: |
       Write the document that establishes WHY this change is needed.
@@ -37,6 +38,13 @@ artifacts:
           existing path under `_codev/specs/`.
       - **Impact**: affected code, APIs, dependencies and systems, and the
         documentation to update (user docs, README, reference, help).
+      - **Domains**: tick each domain the change touches — `security`
+        (input, authorization, secrets, dependencies), `personal-data`,
+        `user-interface`, `performance`, `operations` (logs, metrics,
+        timeouts, rollback), `migration` (breaking changes, existing data,
+        configuration or consumers) — or write the single line `None`.
+        Each ticked domain brings its expert to challenge the plan and
+        review the code.
       - **Release note**: what end users read in the changelog. Bullets
         `- <Category>: <one or two sentences>`, Category among `Added`,
         `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`; a breaking

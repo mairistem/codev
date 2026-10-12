@@ -18,6 +18,7 @@ pub mod config;
 pub mod decisions;
 pub mod detect;
 pub mod doctor;
+pub mod domains;
 pub mod error;
 pub mod graph;
 pub mod id;

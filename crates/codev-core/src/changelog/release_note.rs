@@ -8,7 +8,7 @@
 //! without text, is a finding, never a silent guess.
 
 use crate::parser::ast::{Finding, Parsed};
-use crate::parser::fence::build_fence_mask;
+use crate::parser::section::{heading_line, section};
 
 use super::codes;
 
@@ -194,37 +194,6 @@ fn categories() -> String {
         .map(|c| format!("`{}`", c.as_str()))
         .collect::<Vec<_>>()
         .join(", ")
-}
-
-/// 1-based line of `heading`, outside literal zones.
-fn heading_line(source: &str, heading: &str) -> Option<u32> {
-    let mask = build_fence_mask(source);
-    source
-        .split('\n')
-        .enumerate()
-        .find(|(i, line)| !mask[*i] && is_heading(line, heading))
-        .map(|(i, _)| i as u32 + 1)
-}
-
-fn is_heading(line: &str, heading: &str) -> bool {
-    line.trim_end().eq_ignore_ascii_case(heading)
-}
-
-/// The lines of a level-2 section, literal zones left out, each with its
-/// 1-based number. `None` when the heading is absent.
-fn section<'a>(source: &'a str, heading: &str) -> Option<Vec<(u32, &'a str)>> {
-    let mask = build_fence_mask(source);
-    let mut lines = source.split('\n').enumerate();
-    lines.find(|(i, line)| !mask[*i] && is_heading(line, heading))?;
-    Some(
-        lines
-            .take_while(|(i, line)| {
-                mask[*i] || !(line.starts_with("## ") || line.starts_with("# "))
-            })
-            .filter(|(i, _)| !mask[*i])
-            .map(|(i, line)| (i as u32 + 1, line.trim_end_matches('\r')))
-            .collect(),
-    )
 }
 
 /// A text with the 1-based line it starts on.

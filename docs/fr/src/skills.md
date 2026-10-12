@@ -108,14 +108,18 @@ Avant de présenter le plan, la skill le relit en deux étapes :
    Sécurité et confidentialité, compatibilité et migration, exploitabilité,
    performance, accessibilité et UX ne s'ajoutent que lorsque la section
    Impact de la proposal les touche, de même que les
-   [`rules`](reference/configuration.md#rules) de votre projet. Elle corrige
-   ce qui ne fait pas de doute, consigne ce qui demande votre décision dans
-   les Open Questions du design, et n'élargit jamais le périmètre.
+   [`rules`](reference/configuration.md#rules) de votre projet. Les
+   [experts](roles.md#experts-et-domaines) dont la proposal coche le
+   domaine dans `## Domains` — sécurité, données personnelles,
+   accessibilité, performance, exploitation, migration — rejoignent cette
+   relecture avec leurs propres connaissances. Elle corrige ce qui ne fait
+   pas de doute, consigne ce qui demande votre décision dans les Open
+   Questions du design, et n'élargit jamais le périmètre.
 
 Le résumé se termine par les **points à challenger** : au plus cinq points
-d'une ligne, classés par impact — quoi, pourquoi c'est important, quel
-artefact — ou la mention qu'aucun point n'a été relevé. Commencez votre
-relecture par là.
+d'une ligne, tous rôles confondus, classés par impact et marqués du rôle
+qui les a relevés — quoi, pourquoi c'est important, quel artefact — ou la
+mention qu'aucun point n'a été relevé. Commencez votre relecture par là.
 
 Si la demande mentionne un identifiant de ticket correspondant à
 `[A-Z]{2,}-\d+` et qu'un outil MCP Jira est configuré, la skill récupère le
@@ -174,16 +178,21 @@ tests à la manière de votre suite de tests existante, puis selon les
 conventions de votre langage et vos `rules`. Elle prend la commande de test
 dans votre configuration, votre manifeste ou votre CI, et vous la demande si
 elle n'en trouve aucune. Une fois toutes les tâches cochées, elle relit le
-code touché par le change comme le ferait un nouvel arrivant : elle simplifie
-ce qui ne fait pas de doute, sans changer le comportement ni le périmètre, et
-signale au plus trois notes de lisibilité. Elle tire les critères de ces deux étapes de `codev roles` ; lorsque votre
-configuration désactive le nouvel arrivant, la relecture est sautée et le
-résumé le signale. Elle lance ensuite une fois la suite de tests complète. Elle s'arrête au premier blocage ou à la première
+code touché par le change comme le ferait un nouvel arrivant, rejointe par
+les experts qu'activent les domaines de la proposal : elle simplifie ce qui
+ne fait pas de doute, sans élargir le périmètre, et signale au plus cinq
+notes de relecture, chacune marquée de son rôle — un constat de sécurité ou
+de données personnelles de gravité haute est toujours signalé. Un expert
+corrige un défaut manifeste dans le périmètre du change, avec un test, et
+signale tout autre changement de comportement au lieu de le faire. Elle
+tire les critères et les connaissances de ces deux étapes de
+`codev roles` ; lorsqu'aucun rôle n'est actif à la relecture, celle-ci est
+sautée et le résumé le signale. Elle lance ensuite une fois la suite de tests complète. Elle s'arrête au premier blocage ou à la première
 ambiguïté. Elle ne modifie jamais un autre change, ne synchronise jamais et
 n'archive jamais.
 
 Rôles : [développeur](roles.md#développeur-codev-apply),
-[nouvel arrivant](roles.md#nouvel-arrivant-codev-apply).
+[nouvel arrivant et experts](roles.md#nouvel-arrivant-et-experts-codev-apply).
 
 ### Update (`/codev-update`)
 

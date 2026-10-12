@@ -249,17 +249,22 @@ enum Command {
     /// criteria, each with its origin (`built-in`, `schema:<name>`,
     /// `project`). Without it, every role with its activation. The roles
     /// come from codev's built-in catalog and the schema in use, with the
-    /// project's `roles:` applied, and the change's `change.yaml` with
-    /// `--change`.
+    /// project's `roles:` applied, and, with `--change`, the change's
+    /// `change.yaml` and the domains its proposal ticks, which activate the
+    /// experts.
     Roles {
         /// The workflow step: plan.understand, plan.investigate,
         /// plan.write, plan.trace, plan.challenge, code.implement or
         /// code.review
         #[arg(long, value_name = "STEP")]
         at: Option<String>,
-        /// Apply this change's schema and `change.yaml`
+        /// Apply this change's schema, `change.yaml` and domains
         #[arg(long)]
         change: Option<String>,
+        /// Also print each role's knowledge (always in the JSON, for active
+        /// roles)
+        #[arg(long)]
+        knowledge: bool,
         #[arg(long)]
         json: bool,
     },
@@ -802,22 +807,25 @@ fn run(cli: Cli) -> i32 {
             ),
         },
 
-        Command::Roles { at, change, json } => {
-            match commands::roles(&ctx, at.as_deref(), change.as_deref()) {
-                Ok(outcome) => {
-                    emit(json, RolesV1::from(&outcome), || render::roles(&outcome));
-                    if !json {
-                        render::warnings(&outcome.warnings);
-                    }
-                    0
+        Command::Roles {
+            at,
+            change,
+            knowledge,
+            json,
+        } => match commands::roles(&ctx, at.as_deref(), change.as_deref(), knowledge) {
+            Ok(outcome) => {
+                emit(json, RolesV1::from(&outcome), || render::roles(&outcome));
+                if !json {
+                    render::warnings(&outcome.warnings);
                 }
-                Err(err) => fail(
-                    json,
-                    roles_shape(&commands::configured_language(&ctx)),
-                    &err,
-                ),
+                0
             }
-        }
+            Err(err) => fail(
+                json,
+                roles_shape(&commands::configured_language(&ctx)),
+                &err,
+            ),
+        },
 
         Command::Sync { change, json } => match commands::sync(&ctx, change.as_deref()) {
             Ok(outcome) => {

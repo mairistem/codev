@@ -77,9 +77,10 @@ names (a test, a command, an observable behavior), and checks the box only
 once it passes. Tests follow your existing test suite first, then your
 language's conventions and your [`rules`](reference/configuration.md#rules).
 Once every task is checked, it re-reads the code the change touched as a
-newcomer to the project would, simplifies what is unambiguous without
-changing behavior or scope, and lists up to three readability notes in its
-summary. Then it runs the full test suite once.
+newcomer to the project would, joined by the
+[experts](roles.md#experts-and-domains) the proposal's domains activate,
+simplifies what is unambiguous without widening the scope, and lists up to
+five review notes in its summary. Then it runs the full test suite once.
 
 It stops at the first blocker or ambiguity and asks you rather than
 guessing. It modifies only the named change, never archives and never syncs:

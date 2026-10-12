@@ -307,7 +307,7 @@ seule.
 | `config.rules` | `rules:` a au moins une entrée, héritées comprises | `/codev-configure` |
 | `config.language` | `language:` est défini | ajouter `language: <code>` |
 | `config.keys` | `_codev/config.yaml` ne contient aucune clé que ce codev ignore — simple avertissement | corriger ou retirer la clé, ou `codev self-update` |
-| `config.roles` | chaque entrée de `roles:` est valide — informatif, il liste les rôles actifs et désactivés ; sinon un avertissement `roles_invalid` | `codev validate` |
+| `config.roles` | chaque entrée de `roles:` est valide — informatif, il liste les rôles actifs, les rôles actifs selon le domaine avec leurs domaines, et les rôles désactivés ; sinon un avertissement `roles_invalid` | `codev validate` |
 | `skills` | chaque skill configurée est installée et générée par cette version de codev | `codev update` |
 | `sources` | chaque source git est épinglée dans `codev.lock` et présente dans le cache | `codev sources update` |
 | `codev_version` | le codev en cours satisfait `codev_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `codev self-update`, ou `codev self-update --version <X.Y.Z>` lorsque le codev en cours dépasse l'exigence |
@@ -692,7 +692,7 @@ Chaque constat porte un code stable. Voir
 ```text
 List the roles active at a workflow step, with their criteria
 
-With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and the change's `change.yaml` with `--change`.
+With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts.
 
 Usage: codev roles [OPTIONS]
 
@@ -701,7 +701,10 @@ Options:
           The workflow step: plan.understand, plan.investigate, plan.write, plan.trace, plan.challenge, code.implement or code.review
 
       --change <CHANGE>
-          Apply this change's schema and `change.yaml`
+          Apply this change's schema, `change.yaml` and domains
+
+      --knowledge
+          Also print each role's knowledge (always in the JSON, for active roles)
 
       --json
 
@@ -713,16 +716,20 @@ Options:
 Liste les [rôles](../roles.md) qu'une skill applique à une étape du
 workflow : avec `--at`, les rôles actifs à cette étape, chacun avec sa
 question et ses critères « Done when » précédés de leur origine ; sans
-`--at`, une ligne par rôle avec son étape ou son artefact et son activation
-— `never (project)` lorsque votre configuration le désactive,
-`cannot be disabled` pour les rôles d'artefact et le `developer`. Une étape
-dont tous les rôles sont désactivés affiche
-`No role is active at <step>: skip this step.` Elle n'écrit aucun fichier.
+`--at`, une ligne par rôle avec ses étapes ou son artefact et son
+activation — `never (project)` lorsque votre configuration le désactive,
+`on_domain: <domaine>` pour un expert, `cannot be disabled` pour les rôles
+d'artefact, l'`analyst` et le `developer`. `--knowledge` affiche aussi les
+connaissances de chaque rôle après ses critères. Une étape dont tous les
+rôles sont inactifs affiche `No role is active at <step>: skip this step.`
+Elle n'écrit aucun fichier.
 
 Sans `--change`, elle applique le schéma configuré du projet et son
 `roles:` ; contrairement aux autres commandes, elle ne déduit pas de change.
-Avec `--change`, elle applique le schéma du change et son `change.yaml`. Elle
-échoue avec `unknown_step` lorsque `--at` n'est pas une des étapes, et avec
+Avec `--change`, elle applique le schéma du change, son `change.yaml` et les
+domaines que coche sa proposal, qui activent les
+[experts](../roles.md#experts-et-domaines) ; sans lui, les experts restent
+inactifs. Elle échoue avec `unknown_step` lorsque `--at` n'est pas une des étapes, et avec
 `unknown_role`, `invalid_role_activation` ou `role_not_disableable`
 lorsqu'un réglage de rôle est invalide — voir
 [Configurer les rôles](../roles.md#configurer-les-rôles). Les skills
