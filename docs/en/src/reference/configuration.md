@@ -216,12 +216,13 @@ activation, or a mapping:
 
 | Key | Meaning |
 |---|---|
-| `when` | `always` (the default) or `never`. A step whose role is `never` is skipped, and the skill says so |
+| `when` | `always`, `never` or `on_domain`; the default is `on_domain` for the experts, `always` for every other role. `on_domain` activates a role only for a change whose proposal ticks one of its domains. A step whose roles are all inactive is skipped, and the skill says so |
 | `done_when` | Criteria added after the role's own, with the origin `project`; blank entries are ignored |
 
 ```yaml
 roles:
   newcomer: never            # short form
+  security: always           # the security expert reviews every change
   skeptic:
     when: always
     done_when:
@@ -229,15 +230,18 @@ roles:
 ```
 
 The ids are the built-in step roles (`analyst`, `investigator`, `tracer`,
-`skeptic`, `developer`, `newcomer`) and the artifact roles of the schema in
-use (`product`, `qa`, `architect`, `lead` with `spec-driven`). The artifact
-roles and the `developer` cannot be disabled; their criteria can be
-extended. A change's `change.yaml` can override the activation for that
+`skeptic`, `developer`, `newcomer`), the experts (`security`, `privacy`,
+`accessibility`, `performance`, `ops`, `migration` — see
+[Experts and domains](../roles.md#experts-and-domains)) and the artifact
+roles of the schema in use (`product`, `qa`, `architect`, `lead` with
+`spec-driven`). The artifact roles, the `analyst` and the `developer`
+cannot be disabled; their criteria can be extended. A change's `change.yaml` can override the activation for that
 change only — see [change.yaml](file-formats.md#changeyaml).
 
 `codev validate` reports an unknown id as `unknown_role`, an activation
-other than `always` or `never` as `invalid_role_activation`, and `never` on
-a role that cannot be disabled as `role_not_disableable` — errors of the
+other than `always`, `never` or `on_domain` — or `on_domain` on a role
+bound to no domain — as `invalid_role_activation`, and `never` on a role
+that cannot be disabled as `role_not_disableable` — errors of the
 `config` item, at the line of the role. `codev status`,
 `codev instructions` and `codev roles` fail with the same code. Any other
 key inside a role's mapping, such as a misspelled `done-when`, fails every

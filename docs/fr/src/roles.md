@@ -9,7 +9,10 @@ décide jamais à votre place.
 Les rôles sont des critères, pas un jeu de rôle. L'agent ne se fait pas
 passer pour un product owner : il vérifie la proposal à l'aide de la liste
 du product owner. Un rôle dont les critères sont remplis est terminé, quel
-que soit le ton de la prose.
+que soit le ton de la prose. Certains rôles portent aussi des
+**connaissances** — les signaux concrets, les pièges par langage et les
+références dont ils ont besoin pour bien vérifier leurs critères — voir
+[Experts et domaines](#experts-et-domaines).
 
 Les rôles sont des données, pas de la prose enfouie dans les skills. codev
 les sert : à chaque étape, les skills demandent `codev roles --at <step>` et
@@ -30,12 +33,19 @@ ses propres critères et changer l'activation pour un seul change — voir
 | `lead` | Tech lead | artefact (`tasks`) | `plan.write` | Dans quel ordre, et comment vérifier chaque étape ? |
 | `tracer` | Contrôleur de traçabilité | étape | `plan.trace` | Les artefacts concordent-ils entre eux ? |
 | `skeptic` | Contradicteur | étape | `plan.challenge` | Le plan résisterait-il à un relecteur qui ne l'a pas écrit ? |
+| `security` | Sécurité | expert (domaine `security`) | `plan.challenge`, `code.review` | Un attaquant peut-il détourner ce que le change ajoute ? |
+| `privacy` | Données personnelles | expert (domaine `personal-data`) | `plan.challenge`, `code.review` | Le change ne collecte-t-il, ne conserve-t-il et ne partage-t-il des données personnelles que dans la mesure nécessaire ? |
+| `accessibility` | Accessibilité | expert (domaine `user-interface`) | `plan.challenge`, `code.review` | Tout le monde peut-il utiliser ce que le change ajoute, au clavier ou avec une technologie d'assistance ? |
+| `performance` | Performance | expert (domaine `performance`) | `plan.challenge`, `code.review` | Le change reste-t-il rapide quand les données et la charge augmentent ? |
+| `ops` | Exploitation | expert (domaine `operations`) | `plan.challenge`, `code.review` | L'équipe peut-elle exploiter, observer et annuler ce que le change ajoute ? |
+| `migration` | Migration | expert (domaine `migration`) | `plan.challenge`, `code.review` | Les données, la configuration et les consommateurs existants peuvent-ils passer à ce change sans risque ? |
 | `developer` | Développeur | étape | `code.implement` | Chaque tâche fonctionne-t-elle, vérification à l'appui ? |
 | `newcomer` | Nouvel arrivant | étape | `code.review` | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? |
 
-Les rôles d'étape sont intégrés à codev. Les rôles d'artefact viennent du
-schéma par défaut `spec-driven`, qui déclare un rôle par artefact ; un
-[schéma personnalisé](guides/custom-schemas.md) déclare les siens, ou aucun.
+Les rôles d'étape et les experts sont intégrés à codev. Les rôles
+d'artefact viennent du schéma par défaut `spec-driven`, qui déclare un rôle
+par artefact ; un [schéma personnalisé](guides/custom-schemas.md) déclare
+les siens, ou aucun.
 
 Pour lire les critères « Done when » d'un rôle, interrogez codev — c'est la
 liste que reçoit l'agent :
@@ -44,7 +54,8 @@ liste que reçoit l'agent :
 codev roles --at plan.challenge
 ```
 
-Sans `--at`, `codev roles` liste tous les rôles avec leur activation. Voir
+Sans `--at`, `codev roles` liste tous les rôles avec leur activation ;
+ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
 [`codev roles`](reference/cli.md#codev-roles).
 
 ## Étapes
@@ -55,12 +66,77 @@ Sans `--at`, `codev roles` liste tous les rôles avec leur activation. Voir
 | `plan.investigate` | `/codev-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
 | `plan.write` | `/codev-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `codev instructions` renvoie dans `role` |
 | `plan.trace` | `/codev-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/codev-propose` | Le plan est relu par un relecteur qui ne l'a pas écrit ; ce qui ne fait pas de doute est corrigé, ce qui demande votre décision va dans les Open Questions du design, et au plus cinq **points à challenger** terminent le résumé |
+| `plan.challenge` | `/codev-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; ce qui ne fait pas de doute est corrigé, ce qui demande votre décision va dans les Open Questions du design, et au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, terminent le résumé |
 | `code.implement` | `/codev-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
-| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu comme le ferait un nouvel arrivant ; ce qui ne fait pas de doute est simplifié, et au plus trois **notes de lisibilité** terminent le résumé |
+| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
 La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
-garde-fous — reste dans la skill. Les critères viennent du rôle.
+garde-fous — reste dans la skill. Les critères et les connaissances
+viennent du rôle.
+
+## Experts et domaines
+
+Six experts rejoignent les étapes de relecture lorsqu'un change touche leur
+domaine. Chacun est actif à `plan.challenge` — le design traite-t-il le
+domaine ? — et à `code.review` — l'implémentation le respecte-t-elle ?
+
+| Domaine | Expert | Ce qu'il examine |
+|---|---|---|
+| `security` | `security` | Validation des entrées aux frontières de confiance, autorisation côté serveur, secrets, injections, désérialisation non sûre, nouvelles dépendances |
+| `personal-data` | `privacy` | Finalité et minimisation, conservation et suppression, droits des personnes, données personnelles dans les journaux, sous-traitants et transferts |
+| `user-interface` | `accessibility` | Accès au clavier, focus, alternatives textuelles, étiquettes et erreurs de formulaire, contraste, sémantique et ARIA |
+| `performance` | `performance` | Requêtes dans des boucles, résultats non bornés, E/S bloquantes sur les chemins critiques, allocations dans les boucles, coût des nouvelles dépendances |
+| `operations` | `ops` | Journaux structurés sans secret, santé et métriques, délais d'expiration et nouvelles tentatives, chemin de retour arrière, erreurs exploitables |
+| `migration` | `migration` | Changements incompatibles annoncés, chemins de migration, ordre de déploiement, migrations de schéma réversibles, dépréciation |
+
+**Domaines.** La proposal liste les domaines que touche le change dans sa
+section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
+`None` :
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data
+- [ ] user-interface
+- [ ] performance
+- [x] operations — nouveau worker en arrière-plan
+- [ ] migration
+```
+
+Le product owner vérifie que chaque domaine touché par le change est coché.
+`codev validate` signale un domaine inconnu (`unknown_domain`) ou une
+section mal formée (`domains_invalid`) comme une erreur, et une section
+absente sur un change actif (`domains_missing`) comme un avertissement —
+voir [Formats de fichiers](reference/file-formats.md#proposalmd).
+
+**Activation `on_domain`.** Un expert n'est actif à ses étapes que lorsque
+la proposal du change coche son domaine. Sans change — `codev roles` sans
+`--change` — ou tant que la proposal n'a pas de section `## Domains`, il
+est inactif. `codev roles --json` indique pourquoi chaque rôle actif l'est
+dans `activatedBy` : `always`, `project`, `change` ou `domain:<nom>`. Vous
+pouvez toujours forcer un expert, pour le projet ou pour un change — voir
+[Configurer les rôles](#configurer-les-rôles).
+
+**Connaissances.** Les connaissances d'un expert se répartissent en cinq
+sections, toujours dans cet ordre :
+
+- **Scope** — ce qu'il examine, et ce qu'il laisse de côté pour éviter le
+  bruit ;
+- **Signals** — des motifs concrets à repérer, chacun avec un exemple
+  d'une ligne ;
+- **By stack** — les pièges en Rust, TypeScript/JavaScript, Python, Go et
+  Java ; l'agent applique la partie qui concerne les langages de votre
+  projet ;
+- **References** — les référentiels qui font autorité, comme l'OWASP
+  Top 10, les WCAG 2.2, le RGAA 4 ou le RGPD ;
+- **Reporting** — comment signaler un constat, avec sa gravité.
+
+Le `newcomer` porte des signaux de complexité par langage, et le `skeptic`
+des signaux de planification fragile ; les autres rôles d'étape n'en
+portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
+expert inactif ne coûte rien à l'agent. Lisez-les avec
+`codev roles --at code.review --change <nom> --knowledge`.
 
 ## Configurer les rôles
 
@@ -76,9 +152,12 @@ roles:
       - Le plan de retour arrière est indiqué
 ```
 
-- **Activation.** `always` ou `never`. Une étape dont le rôle vaut `never`
-  est sautée, et le résumé de la skill indique qu'elle est désactivée par
-  la configuration.
+- **Activation.** `always`, `never` ou `on_domain`. Une étape dont tous les
+  rôles sont inactifs est sautée, et le résumé de la skill indique qu'elle
+  est désactivée par la configuration. `on_domain` est la valeur par défaut
+  des experts ; elle est refusée sur un rôle lié à aucun domaine. Indiquez
+  `security: always` pour que l'expert sécurité relise chaque change, ou
+  `accessibility: never` dans un projet sans interface utilisateur.
 - **Critères supplémentaires.** Les entrées de `done_when` s'ajoutent après
   les critères propres du rôle, sans jamais les remplacer. Elles portent
   l'origine `project`, comme votre
@@ -92,18 +171,20 @@ roles:
   ```
 
 - **Ce qui ne peut pas être désactivé.** Les rôles d'artefact (`product`,
-  `qa`, `architect`, `lead`) et le `developer` : leur artefact est toujours
-  rédigé, leurs tâches toujours implémentées. Leurs critères peuvent être
-  complétés.
+  `qa`, `architect`, `lead`), l'`analyst` — le garde-fou contre un plan
+  bâti sur un malentendu — et le `developer` : leur artefact est toujours
+  rédigé, la demande toujours comprise, leurs tâches toujours
+  implémentées. Leurs critères peuvent être complétés.
 - **Les sources héritées** n'apportent aucun rôle : seul le `roles:` de
   votre projet est lu.
 
 `codev validate` signale un identifiant de rôle inconnu (`unknown_role`),
-une activation autre que `always` ou `never` (`invalid_role_activation`), et
-`never` sur un rôle qui ne peut pas être désactivé
-(`role_not_disableable`) ; `codev status`, `codev instructions` et
-`codev roles` échouent avec le même code. `codev doctor` liste les rôles
-actifs et désactivés.
+une activation autre que `always`, `never` ou `on_domain`, ou `on_domain`
+sur un rôle sans domaine (`invalid_role_activation`), et `never` sur un
+rôle qui ne peut pas être désactivé (`role_not_disableable`) ;
+`codev status`, `codev instructions` et `codev roles` échouent avec le même
+code. `codev doctor` liste les rôles actifs, les rôles actifs selon le
+domaine avec leurs domaines, et les rôles désactivés.
 
 ## Implémenter un change (`/codev-apply`)
 
@@ -124,23 +205,30 @@ when, pour chaque tâche :
 
 Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
 cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
-et après la [relecture du nouvel arrivant](#nouvel-arrivant-codev-apply),
+et après la [relecture](#nouvel-arrivant-et-experts-codev-apply),
 elle lance une fois la suite de tests complète du projet ; un échec est
 signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
 touche jamais un autre change, ne synchronise jamais et n'archive jamais.
 
-### Nouvel arrivant (`/codev-apply`)
+### Nouvel arrivant et experts (`/codev-apply`)
 
 Une fois toutes les tâches cochées, et avant la suite de tests complète,
-relit uniquement le code que le change a ajouté ou modifié, comme un
-développeur qui rejoint le projet sans avoir vu ni le plan ni la
-conversation, à l'aide des critères du nouvel arrivant. Ce qui ne fait pas
+relit uniquement le code que le change a ajouté ou modifié : le nouvel
+arrivant, comme un développeur qui rejoint le projet sans avoir vu ni le
+plan ni la conversation, et les experts qu'activent les domaines du change,
+chacun à l'aide de ses critères et de ses connaissances. Ce qui ne fait pas
 de doute est simplifié et les tests concernés sont relancés ; le reste
-devient au plus trois **notes de lisibilité** dans le résumé final — quoi,
-où, pourquoi — ou la mention qu'aucune n'a été relevée.
+devient au plus cinq **notes de relecture** dans le résumé final — chacune
+marquée de son rôle : quoi, où, pourquoi — ou la mention qu'aucune n'a été
+relevée. Un constat de sécurité ou de données personnelles de gravité haute
+est toujours listé, même au-delà de cinq.
 
-Il ne change jamais le comportement, n'élargit jamais le périmètre du change
-et ne touche jamais au code que le change n'a ni ajouté ni modifié.
+La relecture n'élargit jamais le périmètre du change et ne touche jamais au
+code que le change n'a ni ajouté ni modifié. Le nouvel arrivant ne change
+jamais le comportement. Un expert ne le change jamais en silence : une
+correction qui change le comportement devient une note de relecture, sauf
+s'il s'agit d'un défaut manifeste dans le périmètre du change, alors
+corrigé avec un test et mentionné dans le résumé.
 
 ## Les autres skills
 
@@ -272,4 +360,4 @@ L'agent s'arrête et vous passe la main à ces moments :
   critères qu'ils ajoutent, relèvent du choix de votre projet dans
   `roles:` — voir [Configurer les rôles](#configurer-les-rôles).
 - **Archiver.** `/codev-apply` n'archive jamais : une fois l'implémentation
-  relue, en commençant par ses notes de lisibilité, lancez `/codev-archive` ou `codev archive`.
+  relue, en commençant par ses notes de relecture, lancez `/codev-archive` ou `codev archive`.

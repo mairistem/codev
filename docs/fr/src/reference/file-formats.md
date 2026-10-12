@@ -145,6 +145,8 @@ Le template du schéma `spec-driven` :
 
 ## Impact
 
+## Domains
+
 ## Release note
 ```
 
@@ -184,6 +186,34 @@ son texte par `**BREAKING**`. Le texte suit la langue des artefacts du
 projet. `codev validate` signale une section absente par un avertissement, et
 une catégorie inconnue, un élément sans texte ou une section vide par une
 erreur, sur les changes actifs uniquement.
+
+### Domains
+
+Les domaines que touche le change, qui activent leurs
+[experts](../roles.md#experts-et-domaines). Le modèle liste les six
+domaines non cochés ; cochez ceux que touche le change :
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data
+- [ ] user-interface
+- [ ] performance
+- [x] operations — un nouveau worker en arrière-plan
+- [ ] migration
+```
+
+ou, lorsqu'il n'en touche aucun, écrivez la seule ligne `None`.
+
+`- [x] <domaine>` ou `- <domaine>` coche un domaine, `- [ ] <domaine>` le
+laisse non coché, et le texte qui suit le nom du domaine est un commentaire
+libre. Les domaines sont `security`, `personal-data`, `user-interface`,
+`performance`, `operations` et `migration`. `codev validate` signale, sur
+les changes actifs uniquement, un domaine inconnu (`unknown_domain`) et une
+ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché
+(`domains_invalid`), par une erreur, et une section absente
+(`domains_missing`) par un avertissement.
 
 ## design.md
 
@@ -393,6 +423,9 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `decision_conflicting_deviations` | erreur | Deux décisions locales acceptées s'écartent de la même décision héritée |
 | `release_note_invalid` | erreur | La section `## Release note` de la proposal a une catégorie inconnue, un élément sans texte, ou est vide |
 | `release_note_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Release note` |
+| `unknown_domain` | erreur | La section `## Domains` de la proposal nomme un domaine hors des six |
+| `domains_invalid` | erreur | La section `## Domains` de la proposal a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
+| `domains_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Domains` |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
 | `unknown_config_key` | avertissement | `_codev/config.yaml` contient une clé de premier niveau ou de `mcp` que ce codev ne connaît pas — voir [Clés inconnues](configuration.md#clés-inconnues) |

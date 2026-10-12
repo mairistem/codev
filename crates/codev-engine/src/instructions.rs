@@ -485,6 +485,38 @@ mod tests {
     }
 
     #[test]
+    fn proposal_template_and_instruction_carry_the_domains() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instr = instructions(&fs, Some("proposal")).unwrap();
+        assert!(
+            role_criteria(&fs, "proposal").contains("Domains ticks every domain"),
+            "the product owner criteria must require the domains"
+        );
+        let rest = instr.instruction.unwrap_or_default();
+        assert!(rest.contains("**Domains**") && rest.contains("`None`"));
+        let template = instr.template.unwrap_or_default();
+        let impact = template.find("## Impact").unwrap();
+        let domains = template.find("## Domains").expect("a Domains section");
+        let note = template.find("## Release note").unwrap();
+        assert!(impact < domains && domains < note, "{template}");
+        let parsed = codev_core::domains::parse(&template);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert!(
+            parsed.value.ticked().is_empty(),
+            "nothing ticked by default"
+        );
+        for domain in codev_core::domains::DOMAINS {
+            assert!(
+                template.contains(&format!("- [ ] {domain}\n")),
+                "the template lists `{domain}` unticked"
+            );
+        }
+    }
+
+    #[test]
     fn a_project_schema_instruction_is_returned_as_written() {
         // Roles belong to the schema: codev adds none to a custom one.
         let fs = project(&[

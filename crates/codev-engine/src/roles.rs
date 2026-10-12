@@ -4,6 +4,7 @@
 use std::collections::BTreeMap;
 
 use codev_core::Layout;
+use codev_core::domains::{self, Domains};
 use codev_core::roles::{self as core_roles, ResolvedRole, RoleFinding, RoleSetting, Settings};
 
 use crate::change::ChangeContext;
@@ -69,6 +70,10 @@ pub fn resolve(
     let catalog = core_roles::catalog(schema.graph.schema(), schema.name());
     let change_settings = change.map(change_settings).unwrap_or_default();
     let change_file = change.map(change_file).unwrap_or_default();
+    let domains = match change {
+        Some(ctx) => change_domains(fs, layout, ctx)?,
+        None => None,
+    };
     let roles = core_roles::resolve(
         catalog,
         Settings {
@@ -76,6 +81,7 @@ pub fn resolve(
             project_file: PROJECT_FILE,
             change: &change_settings,
             change_file: &change_file,
+            domains: domains.as_deref(),
         },
     )
     .map_err(|finding| EngineError::RoleSetting {
@@ -111,6 +117,30 @@ pub fn project_findings(
 pub fn change_findings(ctx: &ChangeContext) -> Vec<RoleFinding> {
     let catalog = core_roles::catalog(ctx.schema.graph.schema(), ctx.schema.name());
     core_roles::check_settings(&catalog, &change_settings(ctx), &change_file(ctx))
+}
+
+/// The domains the change's proposal ticks; `None` while the proposal does
+/// not exist or has no `## Domains` section. Its defects are left to
+/// `codev validate`: a misspelled domain activates nothing.
+fn change_domains(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    ctx: &ChangeContext,
+) -> Result<Option<Vec<String>>> {
+    let path = layout.change_dir(&ctx.change).join("proposal.md");
+    if !fs.exists(&path) {
+        return Ok(None);
+    }
+    let source = fs
+        .read_to_string(&path)
+        .map_err(|e| EngineError::Unreadable {
+            path: path.clone(),
+            reason: e.to_string(),
+        })?;
+    Ok(match domains::parse(&source).value {
+        Domains::Absent => None,
+        Domains::Listed(ticked) => Some(ticked),
+    })
 }
 
 fn change_settings(ctx: &ChangeContext) -> BTreeMap<String, RoleSetting> {
@@ -228,5 +258,58 @@ mod tests {
         assert_eq!(writers[0].role.id, "editor");
         assert_eq!(writers[0].role.criteria[0].origin, "schema:quick");
         assert!(resolved.for_artifact("brief").is_some());
+    }
+
+    fn active_ids(resolved: &ResolvedRoles, step: &str) -> Vec<String> {
+        resolved
+            .active_at(step)
+            .unwrap()
+            .iter()
+            .map(|r| r.role.id.clone())
+            .collect()
+    }
+
+    #[test]
+    fn a_ticked_domain_activates_its_expert_for_the_change() {
+        let fs = fs("", "schema: spec-driven\n").with_file(
+            "/p/_codev/changes/add-auth/proposal.md",
+            "# Proposal: Auth\n\n## Domains\n\n- [x] security\n- [ ] performance\n",
+        );
+        let resolved = roles(&fs, true).unwrap();
+        assert_eq!(
+            active_ids(&resolved, "plan.challenge"),
+            ["skeptic", "security"]
+        );
+        let security = resolved
+            .roles
+            .iter()
+            .find(|r| r.role.id == "security")
+            .unwrap();
+        assert_eq!(
+            security.activated_by,
+            Some(codev_core::roles::ActivatedBy::Domain("security".into()))
+        );
+        // Without the change, the proposal is not read.
+        assert_eq!(
+            active_ids(&roles(&fs, false).unwrap(), "plan.challenge"),
+            ["skeptic"]
+        );
+    }
+
+    #[test]
+    fn experts_stay_inactive_without_a_change_or_a_proposal() {
+        let fs = fs("", "schema: spec-driven\n");
+        for with_change in [true, false] {
+            let resolved = roles(&fs, with_change).unwrap();
+            assert_eq!(active_ids(&resolved, "code.review"), ["newcomer"]);
+        }
+        let without_section = fs.with_file(
+            "/p/_codev/changes/add-auth/proposal.md",
+            "# Proposal: Auth\n\n## Why\n\nBecause.\n",
+        );
+        assert_eq!(
+            active_ids(&roles(&without_section, true).unwrap(), "code.review"),
+            ["newcomer"]
+        );
     }
 }

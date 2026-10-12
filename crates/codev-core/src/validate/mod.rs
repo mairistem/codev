@@ -130,6 +130,9 @@ mod tests {
         for code in crate::changelog::codes::ALL {
             assert!(seen.insert(code), "release note code duplicates: {code}");
         }
+        for code in crate::domains::codes::ALL {
+            assert!(seen.insert(code), "domain code duplicates: {code}");
+        }
     }
 
     fn spec(source: &str) -> Spec {

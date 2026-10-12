@@ -52,7 +52,7 @@ pub fn validate_change(
 
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
     findings.extend(check_change_roles(fs, layout, &ctx));
-    findings.extend(check_release_note(fs, layout, &change_dir)?);
+    findings.extend(check_proposal(fs, layout, &change_dir)?);
 
     // Each delta is read once and parsed once: the parser's findings and
     // the rules' findings come out of the same pass.
@@ -382,16 +382,17 @@ pub fn validate_decisions(
     })
 }
 
-/// The release note of an active change's proposal: a warning when the
-/// section is missing, the parser's errors otherwise. A change whose
-/// proposal is not written yet has nothing to check. Archived changes never
-/// get here — history is not rewritten.
-fn check_release_note(
+/// The release note and the domains of an active change's proposal: a
+/// warning when a section is missing, the parsers' errors otherwise. A
+/// change whose proposal is not written yet has nothing to check. Archived
+/// changes never get here — history is not rewritten.
+fn check_proposal(
     fs: &dyn FileSystem,
     layout: &Layout,
     change_dir: &std::path::Path,
 ) -> Result<Vec<LocatedFinding>> {
     use codev_core::changelog::{ReleaseNote, codes, release_note};
+    use codev_core::domains::{self, Domains};
     let path = change_dir.join("proposal.md");
     if !fs.exists(&path) {
         return Ok(Vec::new());
@@ -414,6 +415,17 @@ fn check_release_note(
             1,
             "the proposal has no `## Release note` section; add one after `## Impact` \
              (`- <Category>: <text>` items, or `None` for an internal change)",
+        ));
+    }
+    let domains = domains::parse(&source);
+    findings.extend(domains.findings);
+    if domains.value == Domains::Absent {
+        findings.push(Finding::warning(
+            domains::codes::DOMAINS_MISSING,
+            1,
+            "the proposal has no `## Domains` section; add one after `## Impact` \
+             (tick the domains the change touches among `security`, `personal-data`, \
+             `user-interface`, `performance`, `operations`, `migration`, or write `None`)",
         ));
     }
     Ok(findings
@@ -579,7 +591,7 @@ mod tests {
             )
             .with_file(
                 "/p/_codev/changes/add-auth/proposal.md",
-                "# Proposal\n\n## Why\n\nTest\n\n## Release note\n\n- Added: login.\n",
+                "# Proposal\n\n## Why\n\nTest\n\n## Domains\n\nNone\n\n## Release note\n\n- Added: login.\n",
             )
             .with_file(
                 "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
@@ -777,6 +789,90 @@ mod tests {
                 .iter()
                 .flat_map(|i| &i.findings)
                 .all(|f| !f.finding.code.starts_with("release_note")),
+            "{:?}",
+            report.items
+        );
+    }
+
+    fn domain_codes(domains: Option<&str>) -> Vec<(&'static str, Severity)> {
+        let mut proposal = String::from("# Proposal\n\n## Why\n\nTest\n");
+        if let Some(domains) = domains {
+            proposal.push_str(&format!("\n## Domains\n\n{domains}\n"));
+        }
+        proposal.push_str("\n## Release note\n\nNone\n");
+        let fs = project_with_well_formed_change()
+            .with_file("/p/_codev/changes/add-auth/proposal.md", proposal);
+        let cfg = config(&fs);
+        let report = validate_change(
+            &fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        report
+            .findings
+            .iter()
+            .filter(|f| f.finding.code.contains("domain"))
+            .map(|f| (f.finding.code, f.finding.severity))
+            .collect()
+    }
+
+    #[test]
+    fn validate_accepts_ticked_domains_and_none() {
+        assert!(
+            domain_codes(Some(
+                "- [x] security\n- [ ] performance\n- personal-data — new e-mail field"
+            ))
+            .is_empty()
+        );
+        assert!(domain_codes(Some("None")).is_empty());
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_domain_as_an_error() {
+        assert_eq!(
+            domain_codes(Some("- [x] securty")),
+            vec![("unknown_domain", Severity::Error)]
+        );
+    }
+
+    #[test]
+    fn validate_reports_none_with_a_ticked_domain() {
+        assert_eq!(
+            domain_codes(Some("None\n- [x] security")),
+            vec![("domains_invalid", Severity::Error)]
+        );
+    }
+
+    #[test]
+    fn validate_reports_a_missing_domains_section_as_a_warning() {
+        assert_eq!(
+            domain_codes(None),
+            vec![("domains_missing", Severity::Warning)]
+        );
+    }
+
+    #[test]
+    fn validate_ignores_archived_changes_without_domains() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/proposal.md",
+                "# Proposal\n\n## Why\n\nOld.\n",
+            )
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/change.yaml",
+                "schema: spec-driven",
+            );
+        let cfg = config(&fs);
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|i| &i.findings)
+                .all(|f| !f.finding.code.contains("domain")),
             "{:?}",
             report.items
         );

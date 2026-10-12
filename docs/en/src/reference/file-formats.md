@@ -140,6 +140,8 @@ The `spec-driven` template:
 
 ## Impact
 
+## Domains
+
 ## Release note
 ```
 
@@ -177,6 +179,33 @@ text follows the project's artifact language.
 `codev validate` reports a missing section as a warning and an unknown
 category, an item without text or an empty section as errors, on active
 changes only.
+
+### Domains
+
+The domains the change touches, which activate their
+[experts](../roles.md#experts-and-domains). The template lists the six
+domains unticked; tick the ones the change touches:
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data
+- [ ] user-interface
+- [ ] performance
+- [x] operations — a new background worker
+- [ ] migration
+```
+
+or, when it touches none of them, write the single line `None`.
+
+`- [x] <domain>` or `- <domain>` ticks a domain, `- [ ] <domain>` leaves it
+unticked, and the text after the domain name is a free comment. The
+domains are `security`, `personal-data`, `user-interface`, `performance`,
+`operations` and `migration`. `codev validate` reports, on active changes
+only, an unknown domain (`unknown_domain`) and a line that is neither an
+item nor `None`, or `None` next to a ticked domain (`domains_invalid`), as
+errors, and a missing section (`domains_missing`) as a warning.
 
 ## design.md
 
@@ -381,6 +410,9 @@ may be reworded between versions; codes are not.
 | `decision_conflicting_deviations` | error | Two accepted local decisions deviate from the same inherited one |
 | `release_note_invalid` | error | The proposal's `## Release note` has an unknown category, an item without text, or is empty |
 | `release_note_missing` | warning | An active change's proposal has no `## Release note` section |
+| `unknown_domain` | error | The proposal's `## Domains` names a domain outside the six |
+| `domains_invalid` | error | The proposal's `## Domains` has a line that is neither an item nor `None`, or `None` next to a ticked domain |
+| `domains_missing` | warning | An active change's proposal has no `## Domains` section |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `unknown_config_key` | warning | `_codev/config.yaml` holds a top-level or `mcp` key this codev does not know — see [Unknown keys](configuration.md#unknown-keys) |

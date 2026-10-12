@@ -1,12 +1,14 @@
-//! Roles: who owns which question at which step of the workflow, and the
-//! "done when" criteria it checks there.
+//! Roles: who owns which question at which step of the workflow, the
+//! "done when" criteria it checks there, and the knowledge it needs to
+//! check them well.
 //!
-//! Roles are data. The step roles come from `assets/roles.yaml`, embedded
-//! here; the artifact roles come from the schema in use. This module
-//! merges them into one catalog, checks the project's and the change's
-//! settings against it, and decides which roles are active — all without
-//! touching a file (decision 0001): the engine reads the files and hands
-//! their content over.
+//! Roles are data. The built-in roles come from `assets/roles/<id>.md`,
+//! embedded here: a YAML frontmatter with the catalog data, then the
+//! role's knowledge as markdown. The artifact roles come from the schema in
+//! use. This module merges them into one catalog, checks the project's and
+//! the change's settings against it, and decides which roles are active —
+//! all without touching a file (decision 0001): the engine reads the files
+//! and hands their content over.
 
 use std::collections::BTreeMap;
 
@@ -41,7 +43,26 @@ pub const UNKNOWN_ROLE: &str = "unknown_role";
 pub const INVALID_ROLE_ACTIVATION: &str = "invalid_role_activation";
 pub const ROLE_NOT_DISABLEABLE: &str = "role_not_disableable";
 
-const BUILTIN_CATALOG_YAML: &str = include_str!("../../../assets/roles.yaml");
+/// The sections a role's knowledge may use, in this order.
+pub const KNOWLEDGE_SECTIONS: &[&str] =
+    &["Scope", "Signals", "By stack", "References", "Reporting"];
+
+/// The built-in roles, one file each, in catalog order: the order of this
+/// list is the order of the roles within a step.
+const BUILTIN_ROLE_FILES: &[&str] = &[
+    include_str!("../../../assets/roles/analyst.md"),
+    include_str!("../../../assets/roles/investigator.md"),
+    include_str!("../../../assets/roles/tracer.md"),
+    include_str!("../../../assets/roles/skeptic.md"),
+    include_str!("../../../assets/roles/security.md"),
+    include_str!("../../../assets/roles/privacy.md"),
+    include_str!("../../../assets/roles/accessibility.md"),
+    include_str!("../../../assets/roles/performance.md"),
+    include_str!("../../../assets/roles/ops.md"),
+    include_str!("../../../assets/roles/migration.md"),
+    include_str!("../../../assets/roles/developer.md"),
+    include_str!("../../../assets/roles/newcomer.md"),
+];
 
 /// Display names by language code (`en`, `fr`…). `en` is always present.
 pub type Names = BTreeMap<String, String>;
@@ -57,24 +78,68 @@ pub struct ArtifactRole {
     pub done_when: Vec<String>,
 }
 
-/// A step role, as written in `assets/roles.yaml`.
+/// The frontmatter of a built-in role file.
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct StepRole {
+struct RoleFrontmatter {
     id: String,
     name: Names,
-    at: String,
+    at: OneOrMany,
     question: String,
     #[serde(default)]
     required: bool,
     #[serde(default)]
+    domains: Vec<String>,
+    #[serde(default)]
     done_when: Vec<String>,
 }
 
+/// `at: plan.trace` or `at: [plan.challenge, code.review]`.
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct CatalogFile {
-    roles: Vec<StepRole>,
+#[serde(untagged)]
+enum OneOrMany {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl OneOrMany {
+    fn into_vec(self) -> Vec<String> {
+        match self {
+            Self::One(step) => vec![step],
+            Self::Many(steps) => steps,
+        }
+    }
+}
+
+/// Parses a built-in role file: the YAML frontmatter between two `---`
+/// lines, then the knowledge, trimmed. A role with no knowledge has an
+/// empty body.
+pub fn parse_role_file(source: &str) -> Result<Role, String> {
+    let source = source.replace("\r\n", "\n");
+    let rest = source
+        .strip_prefix("---\n")
+        .ok_or("a role file starts with a `---` line")?;
+    let (frontmatter, body) = match rest.split_once("\n---\n") {
+        Some(parts) => parts,
+        None => rest
+            .strip_suffix("\n---")
+            .map(|frontmatter| (frontmatter, ""))
+            .ok_or("the frontmatter of a role file ends with a `---` line")?,
+    };
+    let data: RoleFrontmatter =
+        serde_norway::from_str(frontmatter).map_err(|err| err.to_string())?;
+    let body = body.trim();
+    Ok(Role {
+        criteria: criteria(&data.done_when, BUILTIN_ORIGIN),
+        id: data.id,
+        names: data.name,
+        kind: RoleKind::Step,
+        steps: data.at.into_vec(),
+        question: data.question,
+        disableable: !data.required,
+        domains: data.domains,
+        knowledge: (!body.is_empty()).then(|| body.to_string()),
+    })
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -98,12 +163,18 @@ pub struct Role {
     pub id: String,
     pub names: Names,
     pub kind: RoleKind,
-    /// One of [`STEPS`].
-    pub at: String,
+    /// The steps the role serves, each one of [`STEPS`], in workflow order.
+    pub steps: Vec<String>,
     pub question: String,
     pub criteria: Vec<Criterion>,
-    /// False for artifact roles and for the step roles marked `required`.
+    /// False for artifact roles and for the built-in roles marked
+    /// `required`.
     pub disableable: bool,
+    /// The domains that activate an `on_domain` role; empty for a role
+    /// bound to none. See [`crate::domains::DOMAINS`].
+    pub domains: Vec<String>,
+    /// The role's knowledge, as markdown; `None` when it has none.
+    pub knowledge: Option<String>,
 }
 
 impl Role {
@@ -115,37 +186,44 @@ impl Role {
             .or_else(|| self.names.get("en"))
             .map_or(self.id.as_str(), String::as_str)
     }
+
+    /// The first step the role serves: where it appears in the catalog.
+    pub fn first_step(&self) -> &str {
+        self.steps.first().map_or("", String::as_str)
+    }
+
+    pub fn serves(&self, step: &str) -> bool {
+        self.steps.iter().any(|s| s == step)
+    }
+
+    /// `on_domain` for a role bound to domains, `always` otherwise.
+    pub fn default_activation(&self) -> Activation {
+        if self.domains.is_empty() {
+            Activation::Always
+        } else {
+            Activation::OnDomain
+        }
+    }
 }
 
-/// The built-in step roles, in catalog order.
+/// The built-in roles, in catalog order.
 pub fn builtin_step_roles() -> Vec<Role> {
-    // The file is embedded: a parse failure is a build bug, which the
-    // test `the_builtin_catalog_has_the_six_step_roles_at_their_steps`
+    // The files are embedded: a parse failure is a build bug, which the
+    // test `the_builtin_catalog_has_the_step_roles_and_the_experts_at_their_steps`
     // catches before any release.
-    let file: CatalogFile =
-        serde_norway::from_str(BUILTIN_CATALOG_YAML).expect("assets/roles.yaml is valid");
-    file.roles
-        .into_iter()
-        .map(|role| Role {
-            criteria: criteria(&role.done_when, BUILTIN_ORIGIN),
-            id: role.id,
-            names: role.name,
-            kind: RoleKind::Step,
-            at: role.at,
-            question: role.question,
-            disableable: !role.required,
-        })
+    BUILTIN_ROLE_FILES
+        .iter()
+        .map(|source| parse_role_file(source).expect("assets/roles/*.md are valid"))
         .collect()
 }
 
-/// True when `id` is the id of a built-in step role.
+/// True when `id` is the id of a built-in role.
 pub fn is_builtin_step_role(id: &str) -> bool {
     builtin_step_roles().iter().any(|role| role.id == id)
 }
 
-/// The full catalog for a schema: the built-in step roles and the
-/// schema's artifact roles, ordered by step, then by catalog or schema
-/// order.
+/// The full catalog for a schema: the built-in roles and the schema's
+/// artifact roles, ordered by first step, then by catalog or schema order.
 pub fn catalog(schema: &Schema, schema_name: &str) -> Vec<Role> {
     let origin = format!("schema:{schema_name}");
     let mut roles = builtin_step_roles();
@@ -155,15 +233,17 @@ pub fn catalog(schema: &Schema, schema_name: &str) -> Vec<Role> {
                 id: role.id.clone(),
                 names: role.name.clone(),
                 kind: RoleKind::Artifact(artifact.id.clone()),
-                at: ARTIFACT_STEP.to_string(),
+                steps: vec![ARTIFACT_STEP.to_string()],
                 question: role.question.clone(),
                 criteria: criteria(&role.done_when, &origin),
                 disableable: false,
+                domains: Vec::new(),
+                knowledge: None,
             });
         }
     }
     // A stable sort keeps the catalog order within a step.
-    roles.sort_by_key(|role| step_rank(&role.at));
+    roles.sort_by_key(|role| step_rank(role.first_step()));
     roles
 }
 
@@ -188,6 +268,8 @@ fn criteria(texts: &[String], origin: &str) -> Vec<Criterion> {
 pub enum Activation {
     Always,
     Never,
+    /// Active when the change's proposal ticks one of the role's domains.
+    OnDomain,
 }
 
 impl Activation {
@@ -195,6 +277,7 @@ impl Activation {
         match text {
             "always" => Some(Self::Always),
             "never" => Some(Self::Never),
+            "on_domain" => Some(Self::OnDomain),
             _ => None,
         }
     }
@@ -203,6 +286,7 @@ impl Activation {
         match self {
             Self::Always => "always",
             Self::Never => "never",
+            Self::OnDomain => "on_domain",
         }
     }
 }
@@ -221,6 +305,31 @@ impl WhenOrigin {
             Self::Default => "default",
             Self::Project => "project",
             Self::Change => "change",
+        }
+    }
+}
+
+/// Why an active role is active.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ActivatedBy {
+    /// The role's default activation, `always`.
+    Always,
+    /// `always`, set in `_codev/config.yaml`.
+    Project,
+    /// `always`, set in the change's `change.yaml`.
+    Change,
+    /// `on_domain`, and the proposal ticks this domain.
+    Domain(String),
+}
+
+impl ActivatedBy {
+    /// `always`, `project`, `change` or `domain:<name>`.
+    pub fn label(&self) -> String {
+        match self {
+            Self::Always => "always".to_string(),
+            Self::Project => "project".to_string(),
+            Self::Change => "change".to_string(),
+            Self::Domain(domain) => format!("domain:{domain}"),
         }
     }
 }
@@ -343,7 +452,13 @@ pub fn check_settings(
             None => findings.push(finding(
                 INVALID_ROLE_ACTIVATION,
                 format!(
-                    "{file}: role `{id}` has the activation `{when}`; use `always` or `never`"
+                    "{file}: role `{id}` has the activation `{when}`; use `always`, `never` or `on_domain`"
+                ),
+            )),
+            Some(Activation::OnDomain) if role.domains.is_empty() => findings.push(finding(
+                INVALID_ROLE_ACTIVATION,
+                format!(
+                    "{file}: role `{id}` is bound to no domain, so `on_domain` would never activate it; use `always` or `never`"
                 ),
             )),
             Some(Activation::Never) if !role.disableable => findings.push(finding(
@@ -364,11 +479,13 @@ pub struct ResolvedRole {
     pub role: Role,
     pub when: Activation,
     pub when_origin: WhenOrigin,
+    /// Why the role is active; `None` when it is not.
+    pub activated_by: Option<ActivatedBy>,
 }
 
 impl ResolvedRole {
     pub fn is_active(&self) -> bool {
-        self.when == Activation::Always
+        self.activated_by.is_some()
     }
 }
 
@@ -380,9 +497,13 @@ pub struct Settings<'a> {
     pub project_file: &'a str,
     pub change: &'a BTreeMap<String, RoleSetting>,
     pub change_file: &'a str,
+    /// The domains the change's proposal ticks; `None` without a change,
+    /// or when its proposal lists none: `on_domain` roles stay inactive.
+    pub domains: Option<&'a [String]>,
 }
 
-/// Applies the project's settings, then the change's, to the catalog.
+/// Applies the role's default, then the project's settings, then the
+/// change's, to the catalog.
 ///
 /// Fails with the first invalid setting, the project's before the
 /// change's: a command cannot serve roles it cannot trust.
@@ -403,7 +524,7 @@ pub fn resolve(
     Ok(catalog
         .into_iter()
         .map(|mut role| {
-            let mut when = Activation::Always;
+            let mut when = role.default_activation();
             let mut when_origin = WhenOrigin::Default;
             if let Some(project) = settings.project.get(&role.id) {
                 role.criteria
@@ -422,20 +543,46 @@ pub fn resolve(
                 when = activation;
                 when_origin = WhenOrigin::Change;
             }
+            let activated_by = activated_by(&role, when, when_origin, settings.domains);
             ResolvedRole {
                 role,
                 when,
                 when_origin,
+                activated_by,
             }
         })
         .collect())
+}
+
+/// Why a role with this activation is active, if it is.
+fn activated_by(
+    role: &Role,
+    when: Activation,
+    origin: WhenOrigin,
+    domains: Option<&[String]>,
+) -> Option<ActivatedBy> {
+    match when {
+        Activation::Never => None,
+        Activation::Always => Some(match origin {
+            WhenOrigin::Default => ActivatedBy::Always,
+            WhenOrigin::Project => ActivatedBy::Project,
+            WhenOrigin::Change => ActivatedBy::Change,
+        }),
+        Activation::OnDomain => {
+            let ticked = domains.unwrap_or_default();
+            role.domains
+                .iter()
+                .find(|domain| ticked.contains(domain))
+                .map(|domain| ActivatedBy::Domain(domain.clone()))
+        }
+    }
 }
 
 /// The roles active at `step`, in catalog order.
 pub fn active_at<'a>(roles: &'a [ResolvedRole], step: &str) -> Vec<&'a ResolvedRole> {
     roles
         .iter()
-        .filter(|resolved| resolved.role.at == step && resolved.is_active())
+        .filter(|resolved| resolved.role.serves(step) && resolved.is_active())
         .collect()
 }
 
@@ -492,6 +639,14 @@ apply:
         project: &BTreeMap<String, RoleSetting>,
         change: &BTreeMap<String, RoleSetting>,
     ) -> Result<Vec<ResolvedRole>, RoleFinding> {
+        resolve_for_domains(project, change, None)
+    }
+
+    fn resolve_for_domains(
+        project: &BTreeMap<String, RoleSetting>,
+        change: &BTreeMap<String, RoleSetting>,
+        domains: Option<&[String]>,
+    ) -> Result<Vec<ResolvedRole>, RoleFinding> {
         resolve(
             demo_catalog(),
             Settings {
@@ -499,34 +654,72 @@ apply:
                 project_file: "_codev/config.yaml",
                 change,
                 change_file: "change.yaml",
+                domains,
             },
         )
     }
+
+    fn active_ids(roles: &[ResolvedRole], step: &str) -> Vec<String> {
+        active_at(roles, step)
+            .iter()
+            .map(|r| r.role.id.clone())
+            .collect()
+    }
+
+    fn ticked(domains: &[&str]) -> Vec<String> {
+        domains.iter().map(|d| d.to_string()).collect()
+    }
+
+    const EXPERTS: [(&str, &str); 6] = [
+        ("security", "security"),
+        ("privacy", "personal-data"),
+        ("accessibility", "user-interface"),
+        ("performance", "performance"),
+        ("ops", "operations"),
+        ("migration", "migration"),
+    ];
 
     fn role<'a>(roles: &'a [ResolvedRole], id: &str) -> &'a ResolvedRole {
         roles.iter().find(|r| r.role.id == id).unwrap()
     }
 
     #[test]
-    fn the_builtin_catalog_has_the_six_step_roles_at_their_steps() {
+    fn the_builtin_catalog_has_the_step_roles_and_the_experts_at_their_steps() {
         let roles = builtin_step_roles();
-        let pairs: Vec<(&str, &str)> = roles
+        let pairs: Vec<(&str, String)> = roles
             .iter()
-            .map(|role| (role.id.as_str(), role.at.as_str()))
+            .map(|role| (role.id.as_str(), role.steps.join(" ")))
             .collect();
+        let expert = "plan.challenge code.review".to_string();
         assert_eq!(
             pairs,
             [
-                ("analyst", "plan.understand"),
-                ("investigator", "plan.investigate"),
-                ("tracer", "plan.trace"),
-                ("skeptic", "plan.challenge"),
-                ("developer", "code.implement"),
-                ("newcomer", "code.review"),
+                ("analyst", "plan.understand".to_string()),
+                ("investigator", "plan.investigate".to_string()),
+                ("tracer", "plan.trace".to_string()),
+                ("skeptic", "plan.challenge".to_string()),
+                ("security", expert.clone()),
+                ("privacy", expert.clone()),
+                ("accessibility", expert.clone()),
+                ("performance", expert.clone()),
+                ("ops", expert.clone()),
+                ("migration", expert),
+                ("developer", "code.implement".to_string()),
+                ("newcomer", "code.review".to_string()),
             ]
         );
+        for (id, domain) in EXPERTS {
+            let role = roles.iter().find(|role| role.id == id).unwrap();
+            assert_eq!(role.domains, [domain], "{id}");
+            assert!(crate::domains::DOMAINS.contains(&domain));
+        }
         for role in &roles {
-            assert!(STEPS.contains(&role.at.as_str()), "{}", role.id);
+            assert!(
+                !role.steps.is_empty()
+                    && role.steps.iter().all(|step| STEPS.contains(&step.as_str())),
+                "{}",
+                role.id
+            );
             assert!(role.names.contains_key("en") && role.names.contains_key("fr"));
             assert!(!role.question.is_empty() && !role.criteria.is_empty());
             assert!(role.criteria.iter().all(|c| c.origin == "built-in"));
@@ -536,11 +729,11 @@ apply:
             .filter(|role| !role.disableable)
             .map(|role| role.id.as_str())
             .collect();
-        assert_eq!(required, ["developer"]);
+        assert_eq!(required, ["analyst", "developer"]);
     }
 
     #[test]
-    fn default_catalog_lists_ten_roles_in_workflow_order() {
+    fn default_catalog_lists_sixteen_roles_in_workflow_order() {
         let yaml = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
         let roles = catalog(&Schema::parse(yaml).unwrap(), "spec-driven");
         assert_eq!(
@@ -554,6 +747,12 @@ apply:
                 "lead",
                 "tracer",
                 "skeptic",
+                "security",
+                "privacy",
+                "accessibility",
+                "performance",
+                "ops",
+                "migration",
                 "developer",
                 "newcomer",
             ]
@@ -567,7 +766,7 @@ apply:
                 .collect::<Vec<_>>()
         );
         assert!(roles[2..6].iter().all(|role| {
-            role.at == "plan.write"
+            role.steps == ["plan.write"]
                 && !role.disableable
                 && role
                     .criteria
@@ -577,19 +776,122 @@ apply:
     }
 
     #[test]
-    fn a_schema_without_roles_adds_only_step_roles() {
+    fn a_schema_without_roles_adds_only_built_in_roles() {
         let roles = catalog(&Schema::parse(SCHEMA_WITHOUT_ROLES).unwrap(), "bare");
-        assert_eq!(roles.len(), 6);
+        assert_eq!(roles.len(), 12);
         assert!(roles.iter().all(|role| role.kind == RoleKind::Step));
     }
 
     #[test]
-    fn every_role_is_active_by_default() {
+    fn every_role_but_the_experts_is_active_by_default() {
         let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
+        for r in &roles {
+            assert_eq!(r.when_origin, WhenOrigin::Default);
+            if r.role.domains.is_empty() {
+                assert_eq!(r.when, Activation::Always, "{}", r.role.id);
+                assert_eq!(r.activated_by, Some(ActivatedBy::Always));
+            } else {
+                assert_eq!(r.when, Activation::OnDomain, "{}", r.role.id);
+                assert_eq!(r.activated_by, None, "{}", r.role.id);
+            }
+        }
+    }
+
+    #[test]
+    fn experts_are_active_only_for_their_ticked_domain() {
+        let domains = ticked(&["security", "personal-data"]);
+        let roles =
+            resolve_for_domains(&BTreeMap::new(), &BTreeMap::new(), Some(&domains)).unwrap();
+        assert_eq!(
+            active_ids(&roles, "plan.challenge"),
+            ["skeptic", "security", "privacy"]
+        );
+        assert_eq!(
+            active_ids(&roles, "code.review"),
+            ["security", "privacy", "newcomer"]
+        );
+        assert_eq!(
+            role(&roles, "privacy").activated_by,
+            Some(ActivatedBy::Domain("personal-data".into()))
+        );
+        assert_eq!(
+            role(&roles, "privacy")
+                .activated_by
+                .as_ref()
+                .unwrap()
+                .label(),
+            "domain:personal-data"
+        );
+    }
+
+    #[test]
+    fn on_domain_roles_are_inactive_without_domains() {
+        for domains in [None, Some(Vec::new())] {
+            let roles = resolve_for_domains(&BTreeMap::new(), &BTreeMap::new(), domains.as_deref())
+                .unwrap();
+            assert_eq!(active_ids(&roles, "plan.challenge"), ["skeptic"]);
+            assert_eq!(active_ids(&roles, "code.review"), ["newcomer"]);
+        }
+    }
+
+    #[test]
+    fn a_change_forces_an_expert() {
+        let roles = resolve_for_domains(
+            &BTreeMap::new(),
+            &settings("performance: always\n"),
+            Some(&[]),
+        )
+        .unwrap();
+        let performance = role(&roles, "performance");
+        assert!(performance.is_active());
+        assert_eq!(performance.activated_by, Some(ActivatedBy::Change));
+    }
+
+    #[test]
+    fn a_project_turns_an_expert_off() {
+        let domains = ticked(&["user-interface"]);
+        let roles = resolve_for_domains(
+            &settings("accessibility: never\n"),
+            &BTreeMap::new(),
+            Some(&domains),
+        )
+        .unwrap();
+        assert!(!active_ids(&roles, "code.review").contains(&"accessibility".to_string()));
+    }
+
+    #[test]
+    fn activated_by_names_the_origin_of_an_always() {
+        let roles =
+            resolve_with(&settings("security: always\n"), &settings("ops: always\n")).unwrap();
+        assert_eq!(
+            role(&roles, "security").activated_by,
+            Some(ActivatedBy::Project)
+        );
+        assert_eq!(role(&roles, "ops").activated_by, Some(ActivatedBy::Change));
+        assert_eq!(
+            role(&roles, "skeptic")
+                .activated_by
+                .as_ref()
+                .unwrap()
+                .label(),
+            "always"
+        );
+    }
+
+    #[test]
+    fn on_domain_on_a_role_without_domains_is_reported() {
+        let found = check_settings(
+            &demo_catalog(),
+            &settings("skeptic: on_domain\nsecurity: on_domain\n"),
+            "_codev/config.yaml",
+        );
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert_eq!(found[0].code, "invalid_role_activation");
+        assert_eq!(found[0].role, "skeptic");
         assert!(
-            roles
-                .iter()
-                .all(|r| r.when == Activation::Always && r.when_origin == WhenOrigin::Default)
+            found[0].message.contains("no domain"),
+            "{}",
+            found[0].message
         );
     }
 
@@ -644,7 +946,7 @@ apply:
     }
 
     #[test]
-    fn an_activation_other_than_always_or_never_is_reported() {
+    fn an_activation_other_than_always_never_or_on_domain_is_reported() {
         for yaml in [
             "skeptic: sometimes\n",
             "skeptic: false\n",
@@ -654,7 +956,9 @@ apply:
             assert_eq!(found.len(), 1, "{yaml}");
             assert_eq!(found[0].code, "invalid_role_activation");
             assert!(
-                found[0].message.contains("`always` or `never`"),
+                found[0]
+                    .message
+                    .contains("`always`, `never` or `on_domain`"),
                 "{}",
                 found[0].message
             );
@@ -662,8 +966,8 @@ apply:
     }
 
     #[test]
-    fn artifact_roles_and_the_developer_cannot_be_disabled() {
-        for id in ["product", "lead", "developer"] {
+    fn artifact_roles_the_analyst_and_the_developer_cannot_be_disabled() {
+        for id in ["product", "lead", "analyst", "developer"] {
             let found = check_settings(
                 &demo_catalog(),
                 &settings(&format!("{id}: never\n")),
@@ -813,6 +1117,129 @@ apply:
             let text = criteria_text(id);
             for needle in needles {
                 assert!(text.contains(needle), "`{id}` must carry `{needle}`");
+            }
+        }
+    }
+
+    #[test]
+    fn a_role_file_splits_frontmatter_and_knowledge() {
+        let role = parse_role_file(
+            "---\r\nid: demo\r\nname: { en: Demo }\r\nat: plan.trace\r\nquestion: Q?\r\ndone_when: [A]\r\n---\r\n\r\n## Signals\r\n\r\n- one\r\n",
+        )
+        .unwrap();
+        assert_eq!(role.id, "demo");
+        assert_eq!(role.steps, ["plan.trace"]);
+        assert_eq!(role.criteria[0].text, "A");
+        assert_eq!(role.knowledge.as_deref(), Some("## Signals\n\n- one"));
+        assert!(role.disableable && role.domains.is_empty());
+
+        let bare = parse_role_file(
+            "---\nid: bare\nname: { en: Bare }\nat: plan.trace\nquestion: Q?\n---\n",
+        )
+        .unwrap();
+        assert_eq!(bare.knowledge, None);
+    }
+
+    #[test]
+    fn a_role_file_without_frontmatter_is_refused() {
+        assert!(parse_role_file("id: demo\n").is_err());
+        assert!(parse_role_file("---\nid: demo\n").is_err());
+        let unknown = parse_role_file(
+            "---\nid: demo\nname: { en: Demo }\nat: plan.trace\nquestion: Q?\nwhen: always\n---\n",
+        )
+        .unwrap_err();
+        assert!(unknown.contains("when"), "{unknown}");
+    }
+
+    #[test]
+    fn at_accepts_one_step_or_a_list() {
+        let role = parse_role_file(
+            "---\nid: demo\nname: { en: Demo }\nat: [plan.challenge, code.review]\nquestion: Q?\ndomains: [security]\n---\n",
+        )
+        .unwrap();
+        assert_eq!(role.steps, ["plan.challenge", "code.review"]);
+        assert_eq!(role.first_step(), "plan.challenge");
+        assert!(role.serves("code.review") && !role.serves("plan.trace"));
+        assert_eq!(role.default_activation(), Activation::OnDomain);
+    }
+
+    /// The `## ` headings of a knowledge text, in order.
+    fn sections(knowledge: &str) -> Vec<&str> {
+        knowledge
+            .lines()
+            .filter_map(|line| line.strip_prefix("## "))
+            .collect()
+    }
+
+    #[test]
+    fn knowledge_uses_only_the_five_sections_in_order() {
+        for role in builtin_step_roles() {
+            let Some(knowledge) = &role.knowledge else {
+                continue;
+            };
+            let found = sections(knowledge);
+            assert!(
+                !found.is_empty(),
+                "`{}`: knowledge without a section",
+                role.id
+            );
+            let ranks: Vec<usize> = found
+                .iter()
+                .map(|title| {
+                    KNOWLEDGE_SECTIONS
+                        .iter()
+                        .position(|known| known == title)
+                        .unwrap_or_else(|| panic!("`{}`: unknown section `{title}`", role.id))
+                })
+                .collect();
+            assert!(
+                ranks.windows(2).all(|pair| pair[0] < pair[1]),
+                "`{}`: sections out of order: {found:?}",
+                role.id
+            );
+        }
+        for id in ["skeptic", "newcomer"] {
+            let role = builtin_step_roles()
+                .into_iter()
+                .find(|r| r.id == id)
+                .unwrap();
+            assert!(role.knowledge.is_some(), "`{id}` carries knowledge");
+        }
+        let newcomer = builtin_step_roles()
+            .into_iter()
+            .find(|r| r.id == "newcomer")
+            .unwrap();
+        assert!(sections(newcomer.knowledge.as_deref().unwrap()).contains(&"By stack"));
+    }
+
+    #[test]
+    fn every_expert_has_the_five_sections_and_its_references() {
+        let references: [(&str, &[&str]); 6] = [
+            ("security", &["OWASP Top 10", "ASVS", "CWE"]),
+            ("privacy", &["GDPR", "Art. 5", "Art. 25"]),
+            ("accessibility", &["WCAG 2.2", "RGAA 4"]),
+            ("performance", &["profiler", "EXPLAIN"]),
+            ("ops", &["Site Reliability Engineering", "Twelve-Factor"]),
+            ("migration", &["Semantic Versioning", "expand and contract"]),
+        ];
+        for (id, needles) in references {
+            let role = builtin_step_roles()
+                .into_iter()
+                .find(|r| r.id == id)
+                .unwrap();
+            let knowledge = role.knowledge.as_deref().unwrap_or_default();
+            assert_eq!(sections(knowledge), KNOWLEDGE_SECTIONS, "`{id}`");
+            let by_stack = knowledge
+                .split("## By stack")
+                .nth(1)
+                .and_then(|rest| rest.split("\n## ").next())
+                .unwrap();
+            for stack in ["Rust", "TypeScript/JavaScript", "Python", "Go", "Java"] {
+                assert!(by_stack.contains(stack), "`{id}`: By stack names {stack}");
+            }
+            let refs = knowledge.split("## References").nth(1).unwrap();
+            for needle in needles {
+                assert!(refs.contains(needle), "`{id}` references `{needle}`");
             }
         }
     }

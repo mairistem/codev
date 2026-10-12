@@ -12,7 +12,7 @@ use codev_core::doctor::{
 };
 use codev_core::layout::slashed;
 use codev_core::managed::{self, SpliceMode};
-use codev_core::roles::ResolvedRole;
+use codev_core::roles::{Activation, ResolvedRole};
 use codev_core::update::UpdateNotice;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
@@ -639,12 +639,19 @@ pub struct RolesOutcome {
     pub language: String,
     /// The roles active at `at`, or every role without it.
     pub roles: Vec<ResolvedRole>,
+    /// `--knowledge`: the human output prints each role's knowledge.
+    pub knowledge: bool,
     pub warnings: Vec<Warning>,
 }
 
 /// `codev roles`: the roles of a step, or every role with its activation.
 /// With `--change`, the change's schema and `change.yaml` apply.
-pub fn roles(ctx: &Ctx, at: Option<&str>, requested_change: Option<&str>) -> Result<RolesOutcome> {
+pub fn roles(
+    ctx: &Ctx,
+    at: Option<&str>,
+    requested_change: Option<&str>,
+    knowledge: bool,
+) -> Result<RolesOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
     let change_ctx = match requested_change {
@@ -667,6 +674,7 @@ pub fn roles(ctx: &Ctx, at: Option<&str>, requested_change: Option<&str>) -> Res
         at: at.map(str::to_string),
         language: config.language,
         roles,
+        knowledge,
         warnings: config.warnings,
     })
 }
@@ -1789,14 +1797,20 @@ fn roles_facts(ctx: &Ctx, layout: &Layout, config: &config::ResolvedConfig) -> R
     let Ok(resolved) = engine_roles::resolve(ctx.fs, layout, config, None) else {
         return RolesFacts::default();
     };
-    let (active, disabled): (Vec<_>, Vec<_>) =
-        resolved.roles.iter().partition(|role| role.is_active());
-    let ids = |roles: Vec<&ResolvedRole>| roles.iter().map(|r| r.role.id.clone()).collect();
-    RolesFacts {
-        active: ids(active),
-        disabled: ids(disabled),
-        invalid: Vec::new(),
+    // Without a change, an `on_domain` role is inactive: it is listed on
+    // its own, with the domains that would activate it.
+    let mut facts = RolesFacts::default();
+    for resolved in &resolved.roles {
+        let id = resolved.role.id.clone();
+        match resolved.when {
+            Activation::Always => facts.active.push(id),
+            Activation::Never => facts.disabled.push(id),
+            Activation::OnDomain => facts
+                .on_domain
+                .push(format!("{id} ({})", resolved.role.domains.join(", "))),
+        }
     }
+    facts
 }
 
 /// Number of missing doctor checks in the current project, for the one-line
@@ -2207,7 +2221,7 @@ edition = "2024"
     }
 
     fn roles_json(h: &Harness, at: Option<&str>, change: Option<&str>) -> serde_json::Value {
-        let outcome = roles(&h.ctx(), at, change).unwrap();
+        let outcome = roles(&h.ctx(), at, change, false).unwrap();
         serde_json::to_value(crate::contract::RolesV1::from(&outcome)).unwrap()
     }
 
@@ -2223,9 +2237,13 @@ edition = "2024"
         assert_eq!(tracer["id"], "tracer");
         assert_eq!(tracer["kind"], "step");
         assert_eq!(tracer["at"], "plan.trace");
+        assert_eq!(tracer["steps"], serde_json::json!(["plan.trace"]));
         assert!(tracer["artifact"].is_null());
+        assert_eq!(tracer["domains"], serde_json::json!([]));
         assert_eq!(tracer["when"], "always");
         assert_eq!(tracer["whenOrigin"], "default");
+        assert_eq!(tracer["activatedBy"], "always");
+        assert!(tracer["knowledge"].is_null(), "the tracer has no knowledge");
         let criteria = tracer["doneWhen"].as_array().unwrap();
         assert!(!criteria.is_empty());
         assert!(criteria.iter().all(|c| c["origin"] == "built-in"));
@@ -2278,19 +2296,114 @@ edition = "2024"
                 "lead",
                 "tracer",
                 "skeptic",
+                "security",
+                "privacy",
+                "accessibility",
+                "performance",
+                "ops",
+                "migration",
                 "developer",
                 "newcomer"
             ]
         );
-        let newcomer = &roles[9];
+        let newcomer = &roles[15];
         assert_eq!(newcomer["when"], "never");
         assert_eq!(newcomer["whenOrigin"], "project");
+        // An inactive role is served neither its knowledge nor a reason.
+        assert!(newcomer["knowledge"].is_null() && newcomer["activatedBy"].is_null());
+        for expert in &roles[8..14] {
+            assert_eq!(expert["when"], "on_domain", "{}", expert["id"]);
+            assert_eq!(expert["at"], "plan.challenge");
+            assert_eq!(
+                expert["steps"],
+                serde_json::json!(["plan.challenge", "code.review"])
+            );
+            assert!(expert["activatedBy"].is_null());
+        }
         let locked: Vec<&str> = roles
             .iter()
             .filter(|r| r["disableable"] == false)
             .map(|r| r["id"].as_str().unwrap())
             .collect();
-        assert_eq!(locked, ["product", "qa", "architect", "lead", "developer"]);
+        assert_eq!(
+            locked,
+            ["analyst", "product", "qa", "architect", "lead", "developer"]
+        );
+    }
+
+    /// `roles_project` with a proposal for `add-auth` holding `domains`.
+    fn roles_project_with_domains(config: &str, change_yaml: &str, domains: &str) -> Harness {
+        roles_project(config, change_yaml).with(
+            "/p/_codev/changes/add-auth/proposal.md",
+            &format!("# Proposal: Auth\n\n## Domains\n\n{domains}\n"),
+        )
+    }
+
+    fn ids_of(json: &serde_json::Value) -> Vec<String> {
+        json["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["id"].as_str().unwrap().to_string())
+            .collect()
+    }
+
+    #[test]
+    fn roles_serve_the_experts_of_the_ticked_domains() {
+        let h = roles_project_with_domains(
+            "",
+            "schema: spec-driven\n",
+            "- [x] security\n- [x] personal-data\n- [ ] performance",
+        );
+        let json = roles_json(&h, Some("plan.challenge"), Some("add-auth"));
+        assert_eq!(ids_of(&json), ["skeptic", "security", "privacy"]);
+        let security = &json["roles"][1];
+        assert_eq!(security["activatedBy"], "domain:security");
+        assert_eq!(json["roles"][2]["activatedBy"], "domain:personal-data");
+        let knowledge = security["knowledge"].as_str().unwrap();
+        let sections: Vec<&str> = knowledge
+            .lines()
+            .filter_map(|l| l.strip_prefix("## "))
+            .collect();
+        assert_eq!(
+            sections,
+            ["Scope", "Signals", "By stack", "References", "Reporting"]
+        );
+        for reference in ["OWASP Top 10", "ASVS", "CWE"] {
+            assert!(knowledge.contains(reference), "{reference}");
+        }
+        let review = roles_json(&h, Some("code.review"), Some("add-auth"));
+        assert_eq!(review["roles"][0]["at"], "code.review");
+    }
+
+    #[test]
+    fn roles_without_a_change_serve_no_expert() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [x] security");
+        assert_eq!(
+            ids_of(&roles_json(&h, Some("code.review"), None)),
+            ["newcomer"]
+        );
+        let none = roles_project_with_domains("", "schema: spec-driven\n", "None");
+        assert_eq!(
+            ids_of(&roles_json(&none, Some("plan.challenge"), Some("add-auth"))),
+            ["skeptic"]
+        );
+        let forced = roles_project_with_domains(
+            "roles:\n  accessibility: never\n",
+            "schema: spec-driven\nroles:\n  performance: always\n",
+            "- [x] user-interface",
+        );
+        let json = roles_json(&forced, Some("code.review"), Some("add-auth"));
+        assert_eq!(ids_of(&json), ["performance", "newcomer"]);
+        assert_eq!(json["roles"][0]["activatedBy"], "change");
+    }
+
+    #[test]
+    fn roles_refuse_to_disable_the_analyst() {
+        let h = roles_project("roles:\n  analyst: never\n", "schema: spec-driven\n");
+        let err = roles(&h.ctx(), Some("plan.understand"), None, false).unwrap_err();
+        assert_eq!(err.code, "role_not_disableable");
+        assert!(err.message.contains("analyst"), "{}", err.message);
     }
 
     #[test]
@@ -2309,7 +2422,7 @@ edition = "2024"
     #[test]
     fn roles_rejects_an_unknown_step() {
         let h = roles_project("", "schema: spec-driven\n");
-        let err = roles(&h.ctx(), Some("plan.review"), None).unwrap_err();
+        let err = roles(&h.ctx(), Some("plan.review"), None, false).unwrap_err();
         assert_eq!(err.code, "unknown_step");
         assert!(err.message.contains("code.review"), "{}", err.message);
     }
@@ -3264,7 +3377,7 @@ The rationale for the choice.
         use codev_engine::FileSystem;
         h.fs.write(
             std::path::Path::new("/p/_codev/changes/add-auth/proposal.md"),
-            "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n\n## Release note\n\nNone\n",
+            "# Proposal\n\n## Why\n\nT\n\n## What Changes\n\n- x\n\n## Domains\n\nNone\n\n## Release note\n\nNone\n",
         )
         .unwrap();
         h.fs
@@ -3609,6 +3722,27 @@ The rationale for the choice.
     }
 
     #[test]
+    fn doctor_lists_an_expert_forced_by_the_project() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let config = h.fs.read("/p/_codev/config.yaml").unwrap();
+        let h = h.with(
+            "/p/_codev/config.yaml",
+            &format!("{config}\nroles:\n  security: always\n  ops: never\n"),
+        );
+        let outcome = doctor(&h.ctx()).unwrap();
+        let message = &check(&outcome, "config.roles").message;
+        let (active, rest) = message.split_once("; on domain: ").unwrap();
+        let (on_domain, disabled) = rest.split_once("; disabled: ").unwrap();
+        assert!(active.contains("security"), "{message}");
+        assert!(
+            !on_domain.contains("security") && !on_domain.contains("ops"),
+            "{message}"
+        );
+        assert_eq!(disabled, "ops", "{message}");
+    }
+
+    #[test]
     fn doctor_lists_the_roles_in_effect() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
@@ -3629,6 +3763,13 @@ The rationale for the choice.
         );
         assert!(
             roles.message.ends_with("disabled: newcomer"),
+            "{}",
+            roles.message
+        );
+        assert!(
+            roles
+                .message
+                .contains("on domain: security (security), privacy (personal-data)"),
             "{}",
             roles.message
         );

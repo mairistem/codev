@@ -7,7 +7,10 @@ defined points — the agent never decides those for you.
 
 Roles are criteria, not role-play. The agent does not pretend to be a
 product owner; it checks the proposal against the product owner's list. A
-role whose criteria are met is done, whatever the prose sounds like.
+role whose criteria are met is done, whatever the prose sounds like. Some
+roles also carry **knowledge** — the concrete signals, pitfalls per
+language and references they need to check their criteria well — see
+[Experts and domains](#experts-and-domains).
 
 Roles are data, not prose buried in the skills. codev serves them: the
 skills ask `codev roles --at <step>` at each step and apply what comes
@@ -27,12 +30,19 @@ activation for one change — see [Configuring roles](#configuring-roles).
 | `lead` | Tech lead | artifact (`tasks`) | `plan.write` | In what order, and how is each step verified? |
 | `tracer` | Tracer | step | `plan.trace` | Do the artifacts agree with each other? |
 | `skeptic` | Skeptic | step | `plan.challenge` | Would the plan survive a reviewer who did not write it? |
+| `security` | Security | expert (domain `security`) | `plan.challenge`, `code.review` | Can an attacker abuse what this change adds? |
+| `privacy` | Privacy | expert (domain `personal-data`) | `plan.challenge`, `code.review` | Does this change collect, keep or share personal data only as it must? |
+| `accessibility` | Accessibility | expert (domain `user-interface`) | `plan.challenge`, `code.review` | Can everyone use what this change adds, with a keyboard or assistive technology? |
+| `performance` | Performance | expert (domain `performance`) | `plan.challenge`, `code.review` | Does this change stay fast as data and load grow? |
+| `ops` | Operations | expert (domain `operations`) | `plan.challenge`, `code.review` | Can the team run, observe and roll back what this change adds? |
+| `migration` | Migration | expert (domain `migration`) | `plan.challenge`, `code.review` | Can existing data, configuration and consumers move to this change safely? |
 | `developer` | Developer | step | `code.implement` | Does each task work, verified? |
 | `newcomer` | Newcomer | step | `code.review` | Can a developer who has not seen the plan follow this code? |
 
-The step roles are built into codev. The artifact roles come from the
-default `spec-driven` schema, which declares one role per artifact; a
-[custom schema](guides/custom-schemas.md) declares its own, or none.
+The step roles and the experts are built into codev. The artifact roles
+come from the default `spec-driven` schema, which declares one role per
+artifact; a [custom schema](guides/custom-schemas.md) declares its own, or
+none.
 
 To read a role's "done when" criteria, ask codev — they are the list the
 agent receives:
@@ -41,7 +51,8 @@ agent receives:
 codev roles --at plan.challenge
 ```
 
-`codev roles` without `--at` lists every role with its activation. See
+`codev roles` without `--at` lists every role with its activation; add
+`--knowledge` to read a role's knowledge too. See
 [`codev roles`](reference/cli.md#codev-roles).
 
 ## Steps
@@ -52,12 +63,72 @@ codev roles --at plan.challenge
 | `plan.investigate` | `/codev-propose` | The code, tests, configuration and documentation are studied before each artifact is written |
 | `plan.write` | `/codev-propose` | Each artifact is written, then checked against its role, which `codev instructions` returns in `role` |
 | `plan.trace` | `/codev-propose` | The artifacts are checked against each other; gaps are fixed in the artifacts |
-| `plan.challenge` | `/codev-propose` | The plan is re-read by a reviewer who did not write it; what is unambiguous is fixed, what needs you goes to the design's Open Questions, and at most five **Points to challenge** end the summary |
+| `plan.challenge` | `/codev-propose` | The plan is re-read by the skeptic and the experts the change's domains activate; what is unambiguous is fixed, what needs you goes to the design's Open Questions, and at most five **Points to challenge**, across all roles and each tagged with its role, end the summary |
 | `code.implement` | `/codev-apply` | Each task is implemented, verified, then checked off |
-| `code.review` | `/codev-apply` | Once every task is checked, the change's code is re-read as a newcomer; what is unambiguous is simplified, and at most three **Readability notes** end the summary |
+| `code.review` | `/codev-apply` | Once every task is checked, the change's code is re-read by the newcomer and the active experts; what is unambiguous is simplified, and at most five **Review notes**, each tagged with its role, end the summary — a high-severity security or privacy finding is never dropped |
 
 The procedure of each step — what to write, the caps, the guardrails —
-stays in the skill. The criteria come from the role.
+stays in the skill. The criteria and the knowledge come from the role.
+
+## Experts and domains
+
+Six experts join the review steps when a change touches their domain. Each
+one is active at `plan.challenge` — does the design address the domain? —
+and at `code.review` — does the implementation respect it?
+
+| Domain | Expert | Looks at |
+|---|---|---|
+| `security` | `security` | Input validation at trust boundaries, server-side authorization, secrets, injection, unsafe deserialization, new dependencies |
+| `personal-data` | `privacy` | Purpose and minimisation, retention and deletion, data subject rights, personal data in logs, processors and transfers |
+| `user-interface` | `accessibility` | Keyboard access, focus, text alternatives, form labels and errors, contrast, semantics and ARIA |
+| `performance` | `performance` | Queries in loops, unbounded results, blocking I/O on hot paths, allocations in loops, cost of new dependencies |
+| `operations` | `ops` | Structured logs without secrets, health and metrics, timeouts and retries, a rollback path, actionable errors |
+| `migration` | `migration` | Breaking changes announced, migration paths, rollout order, reversible schema migrations, deprecation |
+
+**Domains.** The proposal lists the domains the change touches in its
+`## Domains` section — the six above as a list to tick, or the single line
+`None`:
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data
+- [ ] user-interface
+- [ ] performance
+- [x] operations — new background worker
+- [ ] migration
+```
+
+The product owner checks that every domain the change touches is ticked.
+`codev validate` reports an unknown domain (`unknown_domain`) or a
+malformed section (`domains_invalid`) as an error, and a missing section
+on an active change (`domains_missing`) as a warning — see
+[File formats](reference/file-formats.md#proposalmd).
+
+**Activation `on_domain`.** An expert is active at its steps only when the
+change's proposal ticks its domain. Without a change — `codev roles`
+without `--change` — or while the proposal has no `## Domains` section, it
+is inactive. `codev roles --json` says why each active role is active in
+`activatedBy`: `always`, `project`, `change`, or `domain:<name>`. You can
+still force an expert on or off, for the project or for one change — see
+[Configuring roles](#configuring-roles).
+
+**Knowledge.** An expert's knowledge comes in five sections, always in
+this order:
+
+- **Scope** — what it looks at, and what it leaves aside to avoid noise;
+- **Signals** — concrete patterns to spot, each with a one-line example;
+- **By stack** — pitfalls in Rust, TypeScript/JavaScript, Python, Go and
+  Java; the agent applies the part for your project's languages;
+- **References** — the authoritative standards, such as the OWASP Top 10,
+  WCAG 2.2, RGAA 4 or the GDPR;
+- **Reporting** — how to report a finding, with its severity.
+
+The `newcomer` carries complexity signals per language and the `skeptic`
+planning smells; the other step roles carry none. Knowledge is served only
+to active roles: an expert that is not active costs the agent nothing.
+Read it with `codev roles --at code.review --change <name> --knowledge`.
 
 ## Configuring roles
 
@@ -73,8 +144,12 @@ roles:
       - The rollback plan is stated
 ```
 
-- **Activation.** `always` or `never`. A step whose role is `never` is
-  skipped, and the skill's summary says it is disabled by configuration.
+- **Activation.** `always`, `never` or `on_domain`. A step whose roles are
+  all inactive is skipped, and the skill's summary says it is disabled by
+  configuration. `on_domain` is the experts' default; it is refused on a
+  role bound to no domain. Set `security: always` to have the security
+  expert review every change, or `accessibility: never` in a project
+  without a user interface.
 - **Extra criteria.** `done_when` entries are added after the role's own
   criteria, never replacing them. They carry the origin `project`, like your
   [`context` and `rules`](reference/configuration.md#context).
@@ -87,16 +162,20 @@ roles:
   ```
 
 - **What cannot be disabled.** The artifact roles (`product`, `qa`,
-  `architect`, `lead`) and the `developer`: their artifact is still
-  written, their tasks still implemented. Their criteria can be extended.
+  `architect`, `lead`), the `analyst` — the guard against a plan built on
+  a misunderstanding — and the `developer`: their artifact is still
+  written, the request still understood, their tasks still implemented.
+  Their criteria can be extended.
 - **Inherited sources** do not contribute roles: only your project's
   `roles:` is read.
 
 `codev validate` reports an unknown role id (`unknown_role`), an activation
-other than `always` or `never` (`invalid_role_activation`), and `never` on a
-role that cannot be disabled (`role_not_disableable`); `codev status`,
+other than `always`, `never` or `on_domain`, or `on_domain` on a role
+without domains (`invalid_role_activation`), and `never` on a role that
+cannot be disabled (`role_not_disableable`); `codev status`,
 `codev instructions` and `codev roles` fail with the same code.
-`codev doctor` lists the active and disabled roles.
+`codev doctor` lists the active roles, the roles active on domain with
+their domains, and the disabled ones.
 
 ## Implementing a change (`/codev-apply`)
 
@@ -117,23 +196,28 @@ it applies the developer's criteria:
 
 It stops at a material ambiguity or a technical blocker without checking
 the task off, and describes the options. When every box is checked, and
-after the [newcomer review](#newcomer-codev-apply), it runs the
+after the [review](#newcomer-and-experts-codev-apply), it runs the
 project's full test suite once; a failure is reported instead of the
 summary. It never works around a failing test, never touches another
 change, never syncs and never archives.
 
-### Newcomer (`/codev-apply`)
+### Newcomer and experts (`/codev-apply`)
 
 Once every task is checked, and before the full test suite runs, re-reads
-only the code the change added or modified, as a developer joining the
-project who has seen neither the plan nor the conversation, along the
-newcomer's criteria. What is unambiguous is simplified and the affected
-tests are run again; the rest becomes at most three **Readability notes**
-in the final summary — what, where, why — or "No readability concern
-found".
+only the code the change added or modified: the newcomer, as a developer
+joining the project who has seen neither the plan nor the conversation,
+and the experts the change's domains activate, each along its criteria and
+knowledge. What is unambiguous is simplified and the affected tests are
+run again; the rest becomes at most five **Review notes** in the final
+summary — each tagged with its role: what, where, why — or "No review
+concern found". A high-severity security or privacy finding is always
+listed, even beyond five.
 
-It never changes behavior, never widens the change's scope, and never
-touches code the change did not add or modify.
+The review never widens the change's scope and never touches code the
+change did not add or modify. The newcomer never changes behavior. An
+expert never changes it silently: a behavior-changing fix becomes a review
+note, unless it is a clear defect within the change's scope, which is then
+fixed with a test and named in the summary.
 
 ## The other skills
 
@@ -258,4 +342,4 @@ The agent stops and hands over at these points:
   they add, is your project's choice in `roles:` — see
   [Configuring roles](#configuring-roles).
 - **Archiving.** `/codev-apply` never archives: once you have reviewed the
-  implementation, starting with its Readability notes, run `/codev-archive` or `codev archive`.
+  implementation, starting with its Review notes, run `/codev-archive` or `codev archive`.

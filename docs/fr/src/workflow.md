@@ -82,9 +82,10 @@ et ne coche la case qu'une fois la vérification réussie. Les tests suivent
 d'abord votre suite de tests existante, puis les conventions de votre langage
 et vos [`rules`](reference/configuration.md#rules). Une fois toutes les
 tâches cochées, la skill relit le code touché par le change comme le ferait
-un nouvel arrivant sur le projet, simplifie ce qui ne fait pas de doute sans
-changer le comportement ni le périmètre, et liste au plus trois notes de
-lisibilité dans son résumé. Elle lance ensuite une fois la suite de tests
+un nouvel arrivant sur le projet, rejointe par les
+[experts](roles.md#experts-et-domaines) qu'activent les domaines de la
+proposal, simplifie ce qui ne fait pas de doute sans élargir le périmètre,
+et liste au plus cinq notes de relecture dans son résumé. Elle lance ensuite une fois la suite de tests
 complète.
 
 Elle s'arrête au premier blocage ou à la première ambiguïté pour vous

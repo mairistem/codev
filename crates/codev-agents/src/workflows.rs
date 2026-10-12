@@ -601,7 +601,57 @@ mod tests {
         );
         assert!(propose.contains("\"The skeptic is disabled by configuration\""));
         let apply = flat(find("apply").unwrap().body);
-        assert!(apply.contains("\"The newcomer review is disabled by configuration\""));
+        assert!(apply.contains("\"The review is disabled by configuration\""));
+    }
+
+    #[test]
+    fn propose_challenge_applies_every_active_role_with_its_knowledge() {
+        let propose = find("propose").unwrap().body;
+        let roles = flat(section(propose, "## Roles", "## Steps"));
+        assert!(roles.contains("using the role's `knowledge` when it has one"));
+        assert!(roles.contains("only the project's languages"));
+        let challenge = flat(section(propose, "### 7. Challenge the plan", "### 8."));
+        for keyword in [
+            "every role returned",
+            "the experts the proposal's `## Domains` activates",
+            "along its criteria and knowledge",
+            "whether the design addresses its domain",
+        ] {
+            assert!(challenge.contains(keyword), "step 7 must cite `{keyword}`");
+        }
+        let output = flat(section(propose, "## Output", "## Guardrails"));
+        for keyword in [
+            "at most five items in total across the roles",
+            "ranked by impact",
+            "tagged with the role id",
+            "`[<role-id>] what",
+        ] {
+            assert!(output.contains(keyword), "the output must cite `{keyword}`");
+        }
+    }
+
+    #[test]
+    fn apply_review_applies_the_newcomer_and_the_experts() {
+        let apply = find("apply").unwrap().body;
+        let roles = flat(section(apply, "## Roles", "## Steps"));
+        assert!(roles.contains("using the role's `knowledge` when it has one"));
+        let review = apply_newcomer_review(apply);
+        for keyword in [
+            "with every role returned",
+            "the experts the proposal's `## Domains` activates",
+            "whether the implementation respects their domain",
+            "An expert never changes behavior silently",
+            "a behavior-changing fix becomes a review note",
+            "unless it is a clear defect within the change's scope",
+            "add a test that fails without the fix",
+        ] {
+            assert!(review.contains(keyword), "step 5 must cite `{keyword}`");
+        }
+        let finish = flat(section(apply, "### 6. Finish", "## Output"));
+        assert!(finish.contains(
+            "A high-severity `security` or `privacy` finding is always listed, even beyond five."
+        ));
+        assert!(finish.contains("the defects the experts fixed in step 5"));
     }
 
     #[test]
@@ -647,11 +697,7 @@ mod tests {
     }
 
     fn apply_newcomer_review(body: &str) -> String {
-        flat(section(
-            body,
-            "### 5. Review as a newcomer",
-            "### 6. Finish",
-        ))
+        flat(section(body, "### 5. Review the change", "### 6. Finish"))
     }
 
     #[test]
@@ -662,7 +708,7 @@ mod tests {
             "`code.review`",
             "only the code this change added or modified",
             "seen neither the plan nor this conversation",
-            "along the newcomer's criteria",
+            "each along its criteria and knowledge: the newcomer",
             "Simplify directly what is unambiguous",
             "re-run the affected tests",
         ] {
@@ -673,7 +719,7 @@ mod tests {
         }
         // The full suite covers the simplifications, so it runs after them.
         assert!(
-            apply.find("### 5. Review as a newcomer").unwrap()
+            apply.find("### 5. Review the change").unwrap()
                 < apply.find("full test suite once").unwrap()
         );
     }
@@ -682,8 +728,8 @@ mod tests {
     fn apply_newcomer_review_keeps_behavior_scope_and_outside_code() {
         let review = apply_newcomer_review(find("apply").unwrap().body);
         for guardrail in [
-            "Never change behavior",
-            "never widen the change's scope",
+            "The newcomer never changes behavior",
+            "Never widen the change's scope",
             "never touch code the change did not add or modify",
         ] {
             assert!(
@@ -694,17 +740,18 @@ mod tests {
     }
 
     #[test]
-    fn apply_summary_caps_readability_notes_and_never_invents_them() {
+    fn apply_summary_caps_review_notes_and_never_invents_them() {
         let finish = flat(section(
             find("apply").unwrap().body,
             "### 6. Finish",
             "## Output",
         ));
         for keyword in [
-            "**Readability notes**",
-            "at most three items",
-            "what, where, why",
-            "No readability concern found",
+            "**Review notes**",
+            "at most five items in total across the roles",
+            "tagged with the role id",
+            "what — where — why",
+            "No review concern found",
             "never invent notes",
         ] {
             assert!(
@@ -713,7 +760,7 @@ mod tests {
             );
         }
         // The notes precede the archiving invitation, inside the summary.
-        let notes = finish.find("**Readability notes**").unwrap();
+        let notes = finish.find("**Review notes**").unwrap();
         let archive = finish.find("ready to be archived").unwrap();
         assert!(notes < archive);
     }

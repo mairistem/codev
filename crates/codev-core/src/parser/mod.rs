@@ -12,6 +12,7 @@ pub mod ast;
 pub mod codes;
 pub mod delta;
 pub mod fence;
+pub mod section;
 mod shared;
 pub mod spec;
 

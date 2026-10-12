@@ -228,12 +228,13 @@ de rôle ; sa valeur est soit une activation, soit une table :
 
 | Clé | Signification |
 |---|---|
-| `when` | `always` (par défaut) ou `never`. Une étape dont le rôle vaut `never` est sautée, et la skill le signale |
+| `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour un change dont la proposal coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la skill le signale |
 | `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
 
 ```yaml
 roles:
   newcomer: never            # forme courte
+  security: always           # l'expert sécurité relit chaque change
   skeptic:
     when: always
     done_when:
@@ -241,17 +242,20 @@ roles:
 ```
 
 Les identifiants sont ceux des rôles d'étape intégrés (`analyst`,
-`investigator`, `tracer`, `skeptic`, `developer`, `newcomer`) et ceux des
-rôles d'artefact du schéma utilisé (`product`, `qa`, `architect`, `lead`
-avec `spec-driven`). Les rôles d'artefact et le `developer` ne peuvent pas
-être désactivés ; leurs critères peuvent être complétés. Le `change.yaml`
+`investigator`, `tracer`, `skeptic`, `developer`, `newcomer`), ceux des
+experts (`security`, `privacy`, `accessibility`, `performance`, `ops`,
+`migration` — voir [Experts et domaines](../roles.md#experts-et-domaines))
+et ceux des rôles d'artefact du schéma utilisé (`product`, `qa`,
+`architect`, `lead` avec `spec-driven`). Les rôles d'artefact, l'`analyst`
+et le `developer` ne peuvent pas être désactivés ; leurs critères peuvent
+être complétés. Le `change.yaml`
 d'un change peut changer l'activation pour ce change seulement — voir
 [change.yaml](file-formats.md#changeyaml).
 
 `codev validate` signale un identifiant inconnu par `unknown_role`, une
-activation autre que `always` ou `never` par `invalid_role_activation`, et
-`never` sur un rôle qui ne peut pas être désactivé par
-`role_not_disableable` — des erreurs de l'élément `config`, à la ligne du
+activation autre que `always`, `never` ou `on_domain` — ou `on_domain` sur
+un rôle lié à aucun domaine — par `invalid_role_activation`, et `never` sur
+un rôle qui ne peut pas être désactivé par `role_not_disableable` — des erreurs de l'élément `config`, à la ligne du
 rôle. `codev status`, `codev instructions` et `codev roles` échouent avec
 le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
 mal orthographié, fait échouer chaque commande avec `invalid` : l'ignorer

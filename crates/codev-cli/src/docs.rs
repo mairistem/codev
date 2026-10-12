@@ -400,6 +400,14 @@ mod tests {
                     lang.tag(),
                     role.id
                 );
+                for domain in &role.domains {
+                    assert!(
+                        row.contains(&format!("`{domain}`")),
+                        "{}: expert `{}` must name its domain `{domain}`: {row}",
+                        lang.tag(),
+                        role.id
+                    );
+                }
             }
             for (id, _) in &rows {
                 assert!(

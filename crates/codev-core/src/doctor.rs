@@ -110,6 +110,9 @@ pub struct VersionFacts {
 pub struct RolesFacts {
     /// Active role ids, in workflow order.
     pub active: Vec<String>,
+    /// Roles whose activation is `on_domain`, each as `id (domain, …)`:
+    /// active only for a change whose proposal ticks one of the domains.
+    pub on_domain: Vec<String>,
     /// Role ids disabled by the project.
     pub disabled: Vec<String>,
     /// Role ids whose setting is invalid; the two lists above are empty
@@ -565,8 +568,9 @@ fn roles_check(roles: &RolesFacts) -> Check {
         "config.roles",
         CheckGroup::Configuration,
         format!(
-            "active roles: {}; disabled: {}",
+            "active roles: {}; on domain: {}; disabled: {}",
             list(&roles.active),
+            list(&roles.on_domain),
             list(&roles.disabled)
         ),
     )
@@ -619,6 +623,7 @@ mod tests {
             unknown_config_keys: Vec::new(),
             roles: RolesFacts {
                 active: vec!["analyst".into(), "developer".into()],
+                on_domain: Vec::new(),
                 disabled: Vec::new(),
                 invalid: Vec::new(),
             },
@@ -910,6 +915,7 @@ mod tests {
         let facts = DoctorFacts {
             roles: RolesFacts {
                 active: vec!["analyst".into(), "skeptic".into()],
+                on_domain: Vec::new(),
                 disabled: vec!["newcomer".into()],
                 invalid: Vec::new(),
             },
@@ -922,7 +928,28 @@ mod tests {
         assert_eq!(roles.status, CheckStatus::Ok);
         assert_eq!(
             roles.message,
-            "active roles: analyst, skeptic; disabled: newcomer"
+            "active roles: analyst, skeptic; on domain: none; disabled: newcomer"
+        );
+    }
+
+    #[test]
+    fn roles_check_names_the_roles_active_by_domain() {
+        let facts = DoctorFacts {
+            roles: RolesFacts {
+                active: vec!["skeptic".into()],
+                on_domain: vec![
+                    "security (security)".into(),
+                    "privacy (personal-data)".into(),
+                ],
+                ..RolesFacts::default()
+            },
+            ..complete()
+        };
+        let roles = check(&evaluate(&facts), "config.roles").clone();
+        assert_eq!(roles.status, CheckStatus::Ok);
+        assert_eq!(
+            roles.message,
+            "active roles: skeptic; on domain: security (security), privacy (personal-data); disabled: none"
         );
     }
 

@@ -23,8 +23,10 @@ codev roles --at <step> --change "<name>" --json
 
 Without `--change` for `plan.understand`: the change does not exist yet.
 Apply every criterion of every role returned (`roles[].doneWhen`), the
-project's included. If `roles` is empty, the role is disabled by
-configuration: skip the step, and say so in the summary.
+project's included, using the role's `knowledge` when it has one — of its
+`By stack` part, only the project's languages. If `roles` is empty, the
+role is disabled by configuration: skip the step, and say so in the
+summary.
 
 ## Steps
 
@@ -212,8 +214,10 @@ criteria. Fix the gaps directly in the artifacts.
 
 ### 7. Challenge the plan — `plan.challenge`
 
-Re-read the artifacts as a skeptical reviewer who did not write them,
-along the skeptic's criteria.
+Re-read the artifacts as reviewers who did not write them: every role
+returned — the skeptic, and the experts the proposal's `## Domains`
+activates — each along its criteria and knowledge. An expert asks whether
+the design addresses its domain.
 
 Fix what is unambiguous directly. Record what needs a human decision in the
 Open Questions of `design.md`, or in the proposal if there is no design.
@@ -234,10 +238,11 @@ Summarize:
   and why;
 - each step skipped because its role is disabled by configuration;
 - "The artifacts needed for implementation are ready.";
-- **Points to challenge** — from step 7, at most five items ranked by
-  impact, one line each: what, why it matters, which artifact. If nothing
-  is worth raising, write "No point to challenge found"; never invent
-  points. When the skeptic is disabled, write "The skeptic is disabled by
+- **Points to challenge** — from step 7, at most five items in total
+  across the roles, ranked by impact, one line each, tagged with the role
+  id: `[<role-id>] what — why it matters — which artifact`. If nothing is
+  worth raising, write "No point to challenge found"; never invent points.
+  When no role is active at step 7, write "The skeptic is disabled by
   configuration" instead;
 - "Review them. When you are ready, ask me to apply this change."
 
@@ -254,7 +259,7 @@ Summarize:
   to continue it or create another one.
 - Check that each written file exists before moving on to the next.
 - The contrarian pass corrects or records; it never adds scope.
-- Points to challenge are capped at five.
+- Points to challenge are capped at five, across all roles.
 - **Jira MCP — strictly read-only.** Never call any Jira MCP
   tool other than
   `{{JIRA_MCP_TOOL}}`, never twice in the

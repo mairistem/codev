@@ -11,6 +11,9 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 ### Added
 
+- Six built-in experts — security, privacy, accessibility, performance, operations and migration — challenge the plan and review the code when the change's proposal ticks their domain, each with concrete knowledge (signals, pitfalls per language, references) served by `codev roles`.
+- The proposal has a `## Domains` section listing the domains the change touches, or `None`; `codev validate` reports an unknown domain or a malformed section as an error and a missing section as a warning, which fails `codev validate --strict`: add the section, or `None`, to your active changes.
+- A role's activation can be `on_domain`; `codev roles --json` returns each role's `steps`, `domains`, `activatedBy` and, for active roles, its `knowledge`, which `codev roles --knowledge` prints.
 - Roles are configurable: `roles:` in `_codev/config.yaml` turns a review role on or off (`always` / `never`) and adds your own "done when" criteria; `roles:` in a change's `change.yaml` overrides the activation for that change.
 - `codev roles` lists the roles active at a workflow step with their criteria, or every role with its activation; `codev instructions --json` returns the artifact's role in a `role` field.
 - A schema artifact may declare its role as data (`role:` with id, name, question and "done when" criteria).
@@ -19,6 +22,9 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 ### Changed
 
+- **BREAKING** The `analyst` role can no longer be disabled: remove `analyst: never` from `roles:` in `_codev/config.yaml` or a change's `change.yaml`.
+- `/codev-propose` caps its Points to challenge at five across the skeptic and the experts, and `/codev-apply` ends with up to five Review notes (formerly Readability notes), each tagged with its role; a high-severity security or privacy finding is never dropped.
+- `codev doctor` names the roles activated by domain.
 - The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `codev instructions`, and `/codev-propose` and `/codev-apply` take their review criteria from `codev roles`.
 - The architect's criteria of the default schema require the simplest approach that satisfies the specs, and a design a newcomer can follow without knowing its history.
 <!-- codev:end -->
