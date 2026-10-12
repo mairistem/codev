@@ -37,6 +37,9 @@ pub enum ItemKind {
     /// findings point to the ADR or to `seal.yaml`, depending on the
     /// case.
     Decisions,
+    /// `_codev/config.yaml`, reported only when it holds keys this codev
+    /// ignores.
+    Config,
 }
 
 impl ItemKind {
@@ -45,6 +48,7 @@ impl ItemKind {
             Self::Change => "change",
             Self::Spec => "spec",
             Self::Decisions => "decisions",
+            Self::Config => "config",
         }
     }
 }

@@ -11,9 +11,49 @@ use crate::ports::{Env, FileSystem};
 
 pub const DEFAULT_SCHEMA: &str = "spec-driven";
 
+/// The top-level keys of `_codev/config.yaml` this codev knows. Any other
+/// key is ignored with an `unknown_config_key` warning: it may come from a
+/// newer codev, and failing on it would leave an older one unable to say
+/// so. Keep it in sync with [`ProjectConfig`] —
+/// `every_known_key_is_recognized` fails otherwise.
+pub const PROJECT_KEYS: &[&str] = &[
+    "schema",
+    "language",
+    "workflows",
+    "context",
+    "rules",
+    "inherits",
+    "mcp",
+    "changelog",
+    "codev_version",
+];
+
+/// The keys of the `mcp:` section this codev knows. The section grows one
+/// tool per integration, and ignoring an unknown tool only leaves that
+/// integration unconfigured: tolerant, like the top level.
+pub const MCP_KEYS: &[&str] = &["jira_tool"];
+
+/// The code of the warning (and of the validate finding, and of the doctor
+/// check) for a key this codev ignores.
+pub const UNKNOWN_CONFIG_KEY: &str = "unknown_config_key";
+
+/// A key of `_codev/config.yaml` this codev does not know.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownKey {
+    /// As written, `mcp.<key>` inside `mcp`.
+    pub key: String,
+    /// 1-based line of the key, 1 when it cannot be located (a flow
+    /// mapping, for instance).
+    pub line: usize,
+}
+
 /// The `_codev/config.yaml` as written on disk.
+///
+/// No `deny_unknown_fields` here nor on [`McpConfig`]: unknown keys are
+/// collected into `unknown_keys` instead. `inherits` entries and
+/// `changelog` stay strict — ignoring a key there would silently read
+/// another source or write another `CHANGELOG.md`.
 #[derive(Debug, Clone, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct ProjectConfig {
     #[serde(default)]
     pub schema: Option<String>,
@@ -46,6 +86,9 @@ pub struct ProjectConfig {
     /// it, an inherited source does not.
     #[serde(default)]
     pub codev_version: Option<String>,
+    /// Top-level and `mcp` keys this codev ignored, in file order.
+    #[serde(skip)]
+    pub unknown_keys: Vec<UnknownKey>,
 }
 
 /// The `changelog:` block of `_codev/config.yaml`.
@@ -66,7 +109,6 @@ pub struct ChangelogConfig {
 /// environment — which is why it is configured project by project rather
 /// than hardcoded in the CATALOG.
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
 pub struct McpConfig {
     /// The MCP tool to call to fetch a Jira ticket mentioned in the prompt
     /// of a `/codev-propose`. Examples:
@@ -124,6 +166,9 @@ pub struct ResolvedConfig {
     pub mcp: McpConfig,
     /// `codev_version`, already validated.
     pub codev_version: Option<String>,
+    /// The project's unknown keys — inherited sources' are not reported:
+    /// only their context and rules are read.
+    pub unknown_keys: Vec<UnknownKey>,
     pub warnings: Vec<Warning>,
 }
 
@@ -148,10 +193,12 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
             path: path.to_path_buf(),
             reason: e.to_string(),
         })?;
-    let config: ProjectConfig = serde_norway::from_str(&raw).map_err(|e| EngineError::Invalid {
-        path: path.to_path_buf(),
-        reason: e.to_string(),
-    })?;
+    let mut config: ProjectConfig =
+        serde_norway::from_str(&raw).map_err(|e| EngineError::Invalid {
+            path: path.to_path_buf(),
+            reason: with_requirement_hint(e.to_string(), &raw),
+        })?;
+    config.unknown_keys = unknown_keys(&raw);
     if let Some(code) = &config.language
         && !is_valid_language_code(code)
     {
@@ -173,6 +220,103 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
     Ok(Some(config))
 }
 
+/// The top-level and `mcp` keys of `raw` that this codev does not know, in
+/// file order. Read from a generic YAML mapping: the typed parse has
+/// already ignored them.
+fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
+    let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(raw) else {
+        return Vec::new();
+    };
+    let mut unknown = Vec::new();
+    for (key, value) in &map {
+        let Some(key) = key.as_str() else { continue };
+        if !PROJECT_KEYS.contains(&key) {
+            unknown.push(UnknownKey {
+                key: key.to_string(),
+                line: key_line(raw, None, key),
+            });
+        } else if key == "mcp"
+            && let Some(mcp) = value.as_mapping()
+        {
+            for sub in mcp.keys().filter_map(serde_norway::Value::as_str) {
+                if !MCP_KEYS.contains(&sub) {
+                    unknown.push(UnknownKey {
+                        key: format!("mcp.{sub}"),
+                        line: key_line(raw, Some("mcp"), sub),
+                    });
+                }
+            }
+        }
+    }
+    unknown
+}
+
+/// The 1-based line where `key` is written — at the top level, or in the
+/// block of `parent`. A text scan, only used to point at the key: 1 when
+/// not found.
+fn key_line(raw: &str, parent: Option<&str>, key: &str) -> usize {
+    let names = |line: &str, name: &str| {
+        line.strip_prefix(name)
+            .is_some_and(|rest| rest.trim_start().starts_with(':'))
+    };
+    let lines: Vec<&str> = raw.lines().collect();
+    let Some(parent) = parent else {
+        return lines
+            .iter()
+            .position(|l| names(l, key))
+            .map_or(1, |i| i + 1);
+    };
+    let Some(start) = lines.iter().position(|l| names(l, parent)) else {
+        return 1;
+    };
+    for (i, line) in lines.iter().enumerate().skip(start + 1) {
+        let trimmed = line.trim_start();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        if trimmed.len() == line.len() {
+            break;
+        }
+        if names(trimmed, key) {
+            return i + 1;
+        }
+    }
+    start + 1
+}
+
+/// `codev_version`, read leniently: whatever else the file holds, as long
+/// as it is a YAML mapping with a string under that key.
+fn lenient_codev_version(raw: &str) -> Option<String> {
+    let serde_norway::Value::Mapping(map) = serde_norway::from_str(raw).ok()? else {
+        return None;
+    };
+    map.get("codev_version")?.as_str().map(str::to_string)
+}
+
+/// A parse error, completed with the project's requirement when it has
+/// one: the key that broke the parse may come from a newer codev.
+fn with_requirement_hint(reason: String, raw: &str) -> String {
+    match lenient_codev_version(raw) {
+        Some(requirement) => format!(
+            "{reason} — this project requires codev_version: \"{requirement}\"; \
+             run `codev self-update` if your codev is older"
+        ),
+        None => reason,
+    }
+}
+
+/// The message of an `unknown_config_key` warning or finding.
+pub fn unknown_key_message(key: &str, codev_version: Option<&str>) -> String {
+    let requirement = codev_version
+        .map(|r| format!(" (it requires codev_version: \"{r}\")"))
+        .unwrap_or_default();
+    format!(
+        "_codev/config.yaml: `{key}` is not a key this codev knows and is ignored; \
+         the project may need a newer codev{requirement} — run `codev self-update`, \
+         or correct the key if it is a typo"
+    )
+}
+
 /// Resolves the project's effective configuration, inherited sources included.
 pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<ResolvedConfig> {
     let config_path = layout.config_file();
@@ -180,7 +324,16 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
 
     let mut context = Vec::new();
     let mut rules: BTreeMap<String, Vec<Block>> = BTreeMap::new();
-    let mut warnings = Vec::new();
+    let mut warnings: Vec<Warning> = project
+        .unknown_keys
+        .iter()
+        .map(|u| {
+            Warning::new(
+                UNKNOWN_CONFIG_KEY,
+                unknown_key_message(&u.key, project.codev_version.as_deref()),
+            )
+        })
+        .collect();
 
     // Sources first, in declared order: they are more general than the
     // project, which must be able to refine them last.
@@ -286,6 +439,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         // shared repository.
         mcp: project.mcp.clone(),
         codev_version: project.codev_version.clone(),
+        unknown_keys: project.unknown_keys.clone(),
         warnings,
     })
 }
@@ -420,8 +574,164 @@ mod tests {
         env
     }
 
+    fn load_str(yaml: &str) -> Result<Option<ProjectConfig>> {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", yaml);
+        load(&fs, Path::new("/p/_codev/config.yaml"))
+    }
+
     #[test]
-    fn changelog_exclude_is_read_and_unknown_keys_still_fail() {
+    fn unknown_top_level_keys_are_collected_with_their_line() {
+        let config =
+            load_str("schema: spec-driven\n# a comment\nreview_policy: strict\nshema: x\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(config.schema.as_deref(), Some("spec-driven"));
+        assert_eq!(
+            config.unknown_keys,
+            [
+                UnknownKey {
+                    key: "review_policy".into(),
+                    line: 3
+                },
+                UnknownKey {
+                    key: "shema".into(),
+                    line: 4
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn unknown_mcp_keys_are_collected_with_a_dotted_name() {
+        let config = load_str(
+            "mcp:\n  jira_tool: mcp__a__get\n  # note\n  design_tool: mcp__b__get\nlanguage: en\n",
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(config.mcp.jira_tool.as_deref(), Some("mcp__a__get"));
+        assert_eq!(
+            config.unknown_keys,
+            [UnknownKey {
+                key: "mcp.design_tool".into(),
+                line: 4
+            }]
+        );
+        // A flow mapping cannot be located line by line: the `mcp` line.
+        let config = load_str("schema: x\nmcp: {jira_tool: a, design_tool: b}\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(config.unknown_keys[0].key, "mcp.design_tool");
+        assert_eq!(config.unknown_keys[0].line, 2);
+    }
+
+    #[test]
+    fn every_known_key_is_recognized() {
+        let config = load_str(
+            "schema: spec-driven\nlanguage: en\nworkflows: [propose]\ncontext: x\n\
+             rules:\n  specs: [r]\ninherits:\n  - path: /a\n\
+             mcp:\n  jira_tool: t\nchangelog:\n  exclude: []\ncodev_version: \">=0.5\"\n",
+        )
+        .unwrap()
+        .unwrap();
+        assert!(config.unknown_keys.is_empty(), "{:?}", config.unknown_keys);
+        assert_eq!(PROJECT_KEYS.len(), 9, "a new key belongs in this test too");
+    }
+
+    #[test]
+    fn an_unknown_changelog_key_still_fails() {
+        let err = load_str("changelog:\n  since: v1.0.0\n").unwrap_err();
+        assert_eq!(err.code(), "invalid");
+        assert!(err.to_string().contains("since"), "{err}");
+    }
+
+    #[test]
+    fn an_unknown_inherits_key_still_fails() {
+        let err = load_str("inherits:\n  - path: ~/shared\n    pin: abc\n").unwrap_err();
+        assert_eq!(err.code(), "invalid");
+        assert!(err.to_string().contains("pin"), "{err}");
+    }
+
+    #[test]
+    fn a_strict_section_error_quotes_codev_version() {
+        let err = load_str("codev_version: \">=0.9\"\nchangelog:\n  since: v1.0.0\n").unwrap_err();
+        assert_eq!(err.code(), "invalid");
+        let message = err.to_string();
+        assert!(message.contains("since"), "{message}");
+        assert!(message.contains("\">=0.9\""), "{message}");
+        assert!(message.contains("codev self-update"), "{message}");
+    }
+
+    #[test]
+    fn a_strict_section_error_without_codev_version_names_the_key() {
+        let err = load_str("inherits:\n  - path: ~/shared\n    pin: abc\n").unwrap_err();
+        let message = err.to_string();
+        assert!(message.contains("pin"), "{message}");
+        assert!(!message.contains("codev_version"), "{message}");
+    }
+
+    #[test]
+    fn an_unknown_top_level_key_warns_and_quotes_codev_version() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "codev_version: \">=0.9\"\nreview_policy: strict\n",
+        );
+        let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(resolved.warnings.len(), 1, "{:?}", resolved.warnings);
+        let warning = &resolved.warnings[0];
+        assert_eq!(warning.code, "unknown_config_key");
+        assert!(
+            warning.message.contains("`review_policy`"),
+            "{}",
+            warning.message
+        );
+        assert!(warning.message.contains("\">=0.9\""), "{}", warning.message);
+        assert!(
+            warning.message.contains("codev self-update"),
+            "{}",
+            warning.message
+        );
+        assert_eq!(resolved.unknown_keys[0].key, "review_policy");
+    }
+
+    #[test]
+    fn an_unknown_top_level_key_without_requirement_warns() {
+        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "shema: spec-driven\n");
+        let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(
+            resolved.schema, DEFAULT_SCHEMA,
+            "the misspelled key is ignored"
+        );
+        let warning = &resolved.warnings[0];
+        assert_eq!(warning.code, "unknown_config_key");
+        assert!(warning.message.contains("`shema`"), "{}", warning.message);
+        assert!(
+            warning.message.contains("newer codev"),
+            "{}",
+            warning.message
+        );
+        assert!(
+            !warning.message.contains("codev_version"),
+            "{}",
+            warning.message
+        );
+    }
+
+    #[test]
+    fn an_inherited_source_unknown_key_is_ignored_silently() {
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/Users/me/shared/_codev/config.yaml",
+                "review_policy: strict\ncontext: |\n  Shared context\n",
+            )
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n");
+        let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(resolved.warnings.is_empty(), "{:?}", resolved.warnings);
+        assert!(resolved.unknown_keys.is_empty());
+        assert_eq!(resolved.context[0].text, "Shared context");
+    }
+
+    #[test]
+    fn changelog_exclude_is_read() {
         let fs = MemoryFileSystem::new().with_file(
             "/p/_codev/config.yaml",
             "changelog:\n  exclude:\n    - 2026-01-01-by-hand\n",
@@ -430,9 +740,6 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(config.changelog.exclude, ["2026-01-01-by-hand"]);
-        let fs = MemoryFileSystem::new()
-            .with_file("/p/_codev/config.yaml", "changelog:\n  since: v1.0.0\n");
-        assert!(load(&fs, Path::new("/p/_codev/config.yaml")).is_err());
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "schema: x\n");
         let config = load(&fs, Path::new("/p/_codev/config.yaml"))
             .unwrap()
@@ -615,14 +922,6 @@ mod tests {
     }
 
     #[test]
-    fn reports_an_unknown_key_in_the_config() {
-        let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "shema: spec-driven\n");
-        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
-        assert_eq!(err.code(), "invalid");
-        assert!(err.to_string().contains("shema"), "{err}");
-    }
-
-    #[test]
     fn expands_the_tilde() {
         let env = env_with_home();
         assert_eq!(expand_tilde("~/x", &env), PathBuf::from("/Users/me/x"));
@@ -652,12 +951,14 @@ mod tests {
     }
 
     #[test]
-    fn mcp_config_unknown_field_is_rejected() {
-        // deny_unknown_fields locks down McpConfig — a typo does not slip
-        // through silently.
-        let yaml = "schema: spec-driven\nmcp:\n  jiraTool: mcp__foo\n";
-        let err = serde_norway::from_str::<ProjectConfig>(yaml).unwrap_err();
-        assert!(err.to_string().contains("jiraTool"), "{err}");
+    fn mcp_config_unknown_field_is_tolerated() {
+        // Tolerated, not silent: the key is collected and reported as an
+        // `unknown_config_key` warning.
+        let config = load_str("schema: spec-driven\nmcp:\n  jiraTool: mcp__foo\n")
+            .unwrap()
+            .unwrap();
+        assert!(config.mcp.jira_tool.is_none());
+        assert_eq!(config.unknown_keys[0].key, "mcp.jiraTool");
     }
 
     #[test]

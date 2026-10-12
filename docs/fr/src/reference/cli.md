@@ -302,9 +302,10 @@ seule.
 |---|---|---|
 | `config.rules` | `rules:` a au moins une entrée, héritées comprises | `/codev-configure` |
 | `config.language` | `language:` est défini | ajouter `language: <code>` |
+| `config.keys` | `_codev/config.yaml` ne contient aucune clé que ce codev ignore — simple avertissement | corriger ou retirer la clé, ou `codev self-update` |
 | `skills` | chaque skill configurée est installée et générée par cette version de codev | `codev update` |
 | `sources` | chaque source git est épinglée dans `codev.lock` et présente dans le cache | `codev sources update` |
-| `codev_version` | le codev en cours satisfait `codev_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `codev self-update` |
+| `codev_version` | le codev en cours satisfait `codev_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `codev self-update`, ou `codev self-update --version <X.Y.Z>` lorsque le codev en cours dépasse l'exigence |
 | `specs` | au moins une spec principale existe | `/codev-propose` |
 | `decisions` | au moins une décision est acceptée — simple avertissement | `codev decision new` |
 | `validate` | `codev validate` ne signale rien | `codev validate` |

@@ -771,6 +771,7 @@ impl ValidateReportV1 {
                         ItemKind::Change => "change",
                         ItemKind::Spec => "spec",
                         ItemKind::Decisions => "decisions",
+                        ItemKind::Config => "config",
                     },
                     name: item.name.clone(),
                     path: to_slash(&item.path),
@@ -1100,6 +1101,33 @@ apply:
         assert_eq!(status.len(), 1);
         assert_eq!(status[0]["level"], "warning");
         assert_eq!(status[0]["code"], "inherit_unresolved");
+    }
+
+    #[test]
+    fn validate_report_v1_carries_the_config_kind() {
+        let item = ItemReport {
+            kind: ItemKind::Config,
+            name: "config".into(),
+            path: PathBuf::from("_codev").join("config.yaml"),
+            findings: vec![LocatedFinding {
+                path: PathBuf::from("_codev").join("config.yaml"),
+                finding: Finding {
+                    severity: Severity::Warning,
+                    code: "unknown_config_key",
+                    line: 3,
+                    message: "unknown".into(),
+                },
+            }],
+        };
+        let report = ValidateReport {
+            root: PathBuf::from("/p"),
+            items: vec![item],
+        };
+        let json = serde_json::to_value(ValidateReportV1::from(&report)).unwrap();
+        assert_eq!(json["items"][0]["kind"], "config");
+        assert_eq!(json["items"][0]["path"], "_codev/config.yaml");
+        assert_eq!(json["items"][0]["findings"][0]["severity"], "warning");
+        assert_eq!(json["hasWarnings"], true);
     }
 
     #[test]

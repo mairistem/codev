@@ -498,6 +498,7 @@ pub fn validate(report: &ValidateReport) -> String {
             ItemKind::Change => "change",
             ItemKind::Spec => "spec",
             ItemKind::Decisions => "decisions",
+            ItemKind::Config => "config",
         };
         let _ = writeln!(out, "\n{} {} — {}", label, item.name, item.path.display(),);
         if item.findings.is_empty() {
@@ -1226,13 +1227,14 @@ apply:
         assert!(rendered.contains("  ✗ config.rules"));
         assert!(rendered.contains("      fix: /codev-configure"));
         assert!(rendered.contains("  ✓ config.language"));
+        assert!(rendered.contains("  ✓ config.keys"));
         assert!(rendered.contains("  ! decisions"));
         assert!(rendered.contains("  ! changelog"));
         assert!(rendered.contains("      fix: codev changelog --write"));
         assert!(
             rendered
                 .trim_end()
-                .ends_with("11 check(s), 3 to fix, 2 warning(s)"),
+                .ends_with("12 check(s), 3 to fix, 2 warning(s)"),
             "{rendered}"
         );
     }

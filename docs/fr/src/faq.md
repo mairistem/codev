@@ -203,6 +203,37 @@ Lancez `codev sources update`. `unlocked` signifie que la source n'a jamais
 été résolue ; `needs_update` signifie qu'elle est épinglée dans `codev.lock`
 mais absente de votre cache local, typiquement sur une machine neuve.
 
+### Le codev d'un collègue échoue sur la configuration
+
+Son codev est plus ancien que votre `_codev/config.yaml` : le fichier contient
+une clé que sa version ne connaît pas.
+
+- **codev 0.5 et les versions antérieures** rejettent toute clé inconnue :
+  chaque commande échoue avec `invalid` en nommant la clé. Il doit mettre à
+  jour : `codev self-update` depuis une version récente, sinon l'installateur
+  décrit dans [Installation](installation.md).
+- **Les versions plus récentes** émettent à la place l'avertissement
+  `unknown_config_key` et continuent de fonctionner ; l'avertissement cite
+  votre `codev_version` et renvoie à `codev self-update`. Une clé inconnue
+  dans une entrée de `inherits` ou dans `changelog` échoue toujours avec
+  `invalid`, en citant `codev_version`.
+
+Pour que le message soit explicite pour tous, relevez `codev_version` chaque
+fois que vous ajoutez une clé que seules les versions récentes connaissent.
+Voir [Clés inconnues](reference/configuration.md#clés-inconnues).
+
+### `unknown_config_key`
+
+`_codev/config.yaml` contient une clé que ce codev ne connaît pas : elle est
+ignorée et le reste de la configuration s'applique. Soit la clé vient d'une
+version plus récente de codev (lancez `codev self-update`, ou la version que
+`codev doctor` indique dans sa vérification `codev_version`), soit c'est une
+faute de frappe, comme `shema` pour `schema` : corrigez-la.
+`codev validate --strict` échoue d'ici là. Lorsque `codev doctor` propose
+`codev self-update --version <X.Y.Z>`, votre codev est plus récent que ce
+qu'autorise le `codev_version` du projet, et cette commande installe une
+version qui le satisfait.
+
 ### `codev self-update` signale `update_checksum_mismatch`
 
 L'archive téléchargée ne correspond pas à sa ligne dans le `SHA256SUMS` de la

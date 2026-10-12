@@ -144,7 +144,7 @@ is left untouched). An invalid `--inherit` value fails with
     "…"
   ],
   "summary": {
-    "total": 12,
+    "total": 13,
     "missing": 2,
     "warnings": 1
   },
@@ -162,6 +162,7 @@ repositories. `summary.missing` drives the exit status of `--strict`.
 |---|---|---|
 | `config.rules` | `configuration` | `rules_missing` |
 | `config.language` | `configuration` | `language_missing` |
+| `config.keys` | `configuration` | `unknown_config_key` (warning) |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (warning) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (warning) |
@@ -399,7 +400,9 @@ see the [codes](cli.md#codev-self-update).
 }
 ```
 
-`kind` is `change`, `spec` or `decisions`. Findings are reported in `items`,
+`kind` is `change`, `spec`, `decisions` or `config` — the last one only when
+`_codev/config.yaml` holds keys this codev does not know (see
+[Unknown keys](configuration.md#unknown-keys)). Findings are reported in `items`,
 not in `status`: `status` only carries a failure of the command itself. See
 [Validation codes](file-formats.md#validation-codes).
 

@@ -1,8 +1,9 @@
 # Configuration
 
 A codev project is configured by `_codev/config.yaml`. Every key is optional:
-a project can even run without the file. Unknown keys are rejected with an
-error that lists the valid ones, so a typo never goes unnoticed.
+a project can even run without the file. A key codev does not know is
+reported — as a warning at the top level and in `mcp`, as an error elsewhere —
+so a typo never goes unnoticed; see [Unknown keys](#unknown-keys).
 
 `codev init` generates the file with the values it detected, each preceded by
 a comment giving its source. You can edit it by hand at any time. After
@@ -189,12 +190,49 @@ Cargo's syntax: `">=0.5"`, `"^0.6"`, `">=0.5, <0.8"`. Quote it, since YAML
 reads `>` specially. Project only, never inherited.
 
 When the running codev does not satisfy it, `codev doctor` reports the
-`codev_version` check as missing, with the fix `codev self-update`, and the
-skills offer to update before acting. A value that is not a requirement makes
-every command fail with `invalid_codev_version`.
+`codev_version` check as missing and the skills offer to update before
+acting. The fix is `codev self-update` when the running codev is too old. When
+it is too new — above an upper bound such as `<0.7` — a plain
+`codev self-update` would refuse to downgrade, so the fix names a version:
+`codev self-update --version 0.6.4`, taken from the latest release the update
+cache knows when it satisfies the requirement, otherwise from the requirement
+itself (`<=0.6.2` gives `0.6.2`, `^0.5` gives `0.5.0`). A value that is not a
+requirement makes every command fail with `invalid_codev_version`.
 
 codev 0.5 and earlier do not know this key and reject the file: add it once
 everyone runs a version that does.
+
+## Unknown keys
+
+A newer codev may add keys an older one does not know. So that an older codev
+keeps working on a newer configuration and tells you what it needs, unknown
+keys are treated according to what ignoring them would do:
+
+| Where | Unknown key | Why |
+|---|---|---|
+| top level | warning `unknown_config_key`, key ignored | each key is an independent feature: the rest of the configuration still applies |
+| `mcp` | warning `unknown_config_key` (`mcp.<key>`), key ignored | an unknown tool only leaves that integration unconfigured |
+| an `inherits` entry | error `invalid` | ignoring it would read another source than the one you described |
+| `changelog` | error `invalid` | ignoring it would make `codev changelog --write` write another file |
+
+The warning names the key, says the project may need a newer codev, quotes
+`codev_version` when the file sets it, and points to `codev self-update`; the
+error does the same when `codev_version` is set. The warning appears:
+
+- in the output of `codev status`, `codev new change`, `codev init` and
+  `codev update`, and in the `status` array of their `--json` output;
+- in `codev validate`, as a `warning` finding of a `config` item at the line of
+  the key, so `codev validate --strict` — the CI case — fails on it while plain
+  `codev validate` passes;
+- in `codev doctor`, as the `config.keys` check.
+
+The keys of an inherited source's configuration are not reported: only its
+`context` and `rules` are read.
+
+This tolerance starts with the codev release that introduced it: **codev 0.5
+and earlier reject any unknown key**, at any level. When you add a key that
+only recent versions know, raise `codev_version` too, so that teammates on an
+older codev learn from `codev doctor` and the skills which version to install.
 
 ## Environment variables
 

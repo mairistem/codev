@@ -123,8 +123,10 @@ Configuration
   ✗ config.rules     no rules: in _codev/config.yaml
       fix: /codev-configure
   ✓ config.language  language: is set
+  ✓ config.keys      no unknown key in _codev/config.yaml
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
+  ✓ codev_version    no newer codev release known
 
 Planning
   ✗ specs            no main spec in _codev/specs/
@@ -137,8 +139,10 @@ Repository
   ✓ claude_md        CLAUDE.md has the codev section
   ✓ ci               .github/workflows/codev.yml runs codev validate
   ✓ pr_template      the pull request template has the codev section
+  ! changelog        no CHANGELOG.md
+      fix: codev changelog --write
 
-10 check(s), 2 to fix, 1 warning(s)
+13 check(s), 2 to fix, 2 warning(s)
 ```
 
 > **Note**

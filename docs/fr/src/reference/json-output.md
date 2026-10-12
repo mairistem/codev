@@ -150,7 +150,7 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
     "…"
   ],
   "summary": {
-    "total": 12,
+    "total": 13,
     "missing": 2,
     "warnings": 1
   },
@@ -169,6 +169,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 |---|---|---|
 | `config.rules` | `configuration` | `rules_missing` |
 | `config.language` | `configuration` | `language_missing` |
+| `config.keys` | `configuration` | `unknown_config_key` (avertissement) |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
@@ -407,7 +408,9 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 }
 ```
 
-`kind` vaut `change`, `spec` ou `decisions`. Les constats sont rapportés dans
+`kind` vaut `change`, `spec`, `decisions` ou `config` — ce dernier seulement
+lorsque `_codev/config.yaml` contient des clés que ce codev ne connaît pas
+(voir [Clés inconnues](configuration.md#clés-inconnues)). Les constats sont rapportés dans
 `items`, et non dans `status` : `status` ne signale qu'un échec de la commande
 elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
 

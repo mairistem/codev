@@ -167,6 +167,7 @@ Configuration
   ✗ config.rules     no rules: in _codev/config.yaml
       fix: /codev-configure
   ✓ config.language  language: is set
+  ✓ config.keys      no unknown key in _codev/config.yaml
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
   ✓ codev_version    no newer codev release known
@@ -184,7 +185,7 @@ Repository
   ✓ pr_template      the pull request template has the codev section
   ✓ changelog        CHANGELOG.md matches the archived changes
 
-12 check(s), 2 to fix, 1 warning(s)
+13 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` marks a missing item, `!` a warning — a project may legitimately have no
@@ -196,7 +197,10 @@ the fix is `codev changelog --write` — see
 the running codev does not satisfy the project's
 [`codev_version`](../reference/configuration.md#codev_version), and a
 warning when the update cache knows a newer release; the fix is
-`codev self-update`. The full list of checks is in the
+`codev self-update`, or `codev self-update --version <X.Y.Z>` when the running
+codev is newer than the requirement allows. The `config.keys` check warns
+about keys of `_codev/config.yaml` this codev does not know — see
+[Unknown keys](../reference/configuration.md#unknown-keys). The full list of checks is in the
 [CLI reference](../reference/cli.md#codev-doctor).
 
 `codev init` and `codev status` end with a one-line hint when something is

@@ -194,6 +194,34 @@ Run `codev sources update`. `unlocked` means the source has never been
 resolved; `needs_update` means it is pinned in `codev.lock` but missing from
 your local cache, typically on a fresh machine.
 
+### A teammate's codev fails on the configuration
+
+Their codev is older than your `_codev/config.yaml`: the file holds a key
+their version does not know.
+
+- **codev 0.5 and earlier** reject any unknown key: every command fails with
+  `invalid`, naming the key. They need to update — `codev self-update` from
+  a recent version, otherwise the installer of
+  [Installation](installation.md).
+- **More recent versions** warn with `unknown_config_key` instead and keep
+  working; the warning quotes your `codev_version` and points to
+  `codev self-update`. An unknown key inside an `inherits` entry or
+  `changelog` still fails with `invalid`, quoting `codev_version`.
+
+To make the message explicit for everyone, raise `codev_version` whenever you
+add a key that only recent versions know. See
+[Unknown keys](reference/configuration.md#unknown-keys).
+
+### `unknown_config_key`
+
+`_codev/config.yaml` holds a key this codev does not know: it is ignored and
+the rest of the configuration applies. Either the key comes from a newer codev
+(run `codev self-update`, or the version `codev doctor` names in its
+`codev_version` check), or it is a typo, such as `shema` for `schema`: correct
+it. `codev validate --strict` fails until then. When `codev doctor` suggests
+`codev self-update --version <X.Y.Z>`, your codev is newer than the project's
+`codev_version` allows, and that command installs a version that satisfies it.
+
 ### `codev self-update` reports `update_checksum_mismatch`
 
 The downloaded archive does not match its line in the release's
