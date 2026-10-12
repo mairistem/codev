@@ -1,7 +1,8 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use codev_core::ArtifactGraph;
+use codev_core::roles::RoleActivation;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{EngineError, Result};
@@ -41,6 +42,12 @@ pub struct ChangeMetadata {
     /// would empty the spec is rejected with `would_leave_spec_without_requirement`.
     #[serde(default, skip_serializing_if = "is_false")]
     pub retire_capabilities: bool,
+
+    /// Role activations for this change only (`newcomer: always`), over
+    /// the project's `roles:`. Activations only: criteria belong to the
+    /// project.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub roles: BTreeMap<String, RoleActivation>,
 }
 
 fn is_false(value: &bool) -> bool {
@@ -55,6 +62,7 @@ impl ChangeMetadata {
             goal: None,
             skip_specs: false,
             retire_capabilities: false,
+            roles: BTreeMap::new(),
         }
     }
 
@@ -184,6 +192,19 @@ apply:
         assert_eq!(reread.schema, "spec-driven");
         assert_eq!(reread.goal.as_deref(), Some("Add authentication"));
         assert!(!reread.skip_specs);
+    }
+
+    #[test]
+    fn change_roles_are_read() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nroles:\n  newcomer: always\n",
+        );
+        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        assert_eq!(metadata.roles["newcomer"], RoleActivation("always".into()));
+        assert!(!metadata.to_yaml().is_empty());
+        let fresh = ChangeMetadata::new("spec-driven", "2026-09-08").to_yaml();
+        assert!(!fresh.contains("roles"), "{fresh}");
     }
 
     #[test]

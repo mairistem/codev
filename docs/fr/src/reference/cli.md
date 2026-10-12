@@ -24,6 +24,7 @@ Commands:
   list          List active changes, or specified capabilities with --specs
   status        Show the state of a change's artifacts
   instructions  Print everything needed to write an artifact
+  roles         List the roles active at a workflow step, with their criteria
   schemas       List the available workflow schemas
   decision      Create, accept, inspect and supersede architecture decisions
   sources       Manage inherited sources (local paths and remote git repositories)
@@ -306,6 +307,7 @@ seule.
 | `config.rules` | `rules:` a au moins une entrée, héritées comprises | `/codev-configure` |
 | `config.language` | `language:` est défini | ajouter `language: <code>` |
 | `config.keys` | `_codev/config.yaml` ne contient aucune clé que ce codev ignore — simple avertissement | corriger ou retirer la clé, ou `codev self-update` |
+| `config.roles` | chaque entrée de `roles:` est valide — informatif, il liste les rôles actifs et désactivés ; sinon un avertissement `roles_invalid` | `codev validate` |
 | `skills` | chaque skill configurée est installée et générée par cette version de codev | `codev update` |
 | `sources` | chaque source git est épinglée dans `codev.lock` et présente dans le cache | `codev sources update` |
 | `codev_version` | le codev en cours satisfait `codev_version`, et le cache de vérification ne connaît aucune release plus récente — simple avertissement dans ce second cas | `codev self-update`, ou `codev self-update --version <X.Y.Z>` lorsque le codev en cours dépasse l'exigence |
@@ -509,7 +511,8 @@ Affiche tout ce dont un agent a besoin pour rédiger un artefact : où l'écrir
 l'instruction du schéma, le template, la langue des artefacts, le contexte et
 les règles du projet avec leur provenance, les dépendances à lire au
 préalable, et ce que l'artefact débloque. Pour l'artefact `design`, la
-commande liste aussi les décisions d'architecture en vigueur. Sans
+commande liste aussi les décisions d'architecture en vigueur, et le
+[rôle](../roles.md) de l'artefact avec ses critères. Sans
 `ARTIFACT`, elle choisit le premier artefact prêt à être rédigé. Elle n'écrit
 aucun fichier.
 
@@ -518,7 +521,9 @@ Pour un artefact désactivé par `skip_specs`, elle indique qu'il ne doit pas
 `unknown_artifact` lorsque `ARTIFACT` n'est pas un artefact du schéma du
 change, avec `no_artifact_ready` lorsque `ARTIFACT` est omis et qu'aucun
 artefact n'est prêt, et avec `template_not_found` lorsqu'un schéma du projet
-déclare un fichier de template qu'il ne contient pas.
+déclare un fichier de template qu'il ne contient pas, et avec `unknown_role`,
+`invalid_role_activation` ou `role_not_disableable` lorsqu'un réglage de
+rôle est invalide — comme `codev status`.
 
 Les skills l'appellent avec `--json` ; voir
 [`codev instructions`](json-output.md#instructions).
@@ -681,6 +686,47 @@ decisions decisions — _codev/decisions
 
 Chaque constat porte un code stable. Voir
 [Codes de validation](file-formats.md#codes-de-validation).
+
+### codev roles
+
+```text
+List the roles active at a workflow step, with their criteria
+
+With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and the change's `change.yaml` with `--change`.
+
+Usage: codev roles [OPTIONS]
+
+Options:
+      --at <STEP>
+          The workflow step: plan.understand, plan.investigate, plan.write, plan.trace, plan.challenge, code.implement or code.review
+
+      --change <CHANGE>
+          Apply this change's schema and `change.yaml`
+
+      --json
+
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Liste les [rôles](../roles.md) qu'une skill applique à une étape du
+workflow : avec `--at`, les rôles actifs à cette étape, chacun avec sa
+question et ses critères « Done when » précédés de leur origine ; sans
+`--at`, une ligne par rôle avec son étape ou son artefact et son activation
+— `never (project)` lorsque votre configuration le désactive,
+`cannot be disabled` pour les rôles d'artefact et le `developer`. Une étape
+dont tous les rôles sont désactivés affiche
+`No role is active at <step>: skip this step.` Elle n'écrit aucun fichier.
+
+Sans `--change`, elle applique le schéma configuré du projet et son
+`roles:` ; contrairement aux autres commandes, elle ne déduit pas de change.
+Avec `--change`, elle applique le schéma du change et son `change.yaml`. Elle
+échoue avec `unknown_step` lorsque `--at` n'est pas une des étapes, et avec
+`unknown_role`, `invalid_role_activation` ou `role_not_disableable`
+lorsqu'un réglage de rôle est invalide — voir
+[Configurer les rôles](../roles.md#configurer-les-rôles). Les skills
+l'appellent avec `--json` ; voir [`codev roles`](json-output.md#roles).
 
 ### codev schemas
 

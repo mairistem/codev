@@ -153,7 +153,7 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
     "…"
   ],
   "summary": {
-    "total": 13,
+    "total": 14,
     "missing": 2,
     "warnings": 1
   },
@@ -173,6 +173,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `config.rules` | `configuration` | `rules_missing` |
 | `config.language` | `configuration` | `language_missing` |
 | `config.keys` | `configuration` | `unknown_config_key` (avertissement) |
+| `config.roles` | `configuration` | `roles_invalid` (avertissement) ; lorsqu'il est `ok`, `message` liste les rôles actifs et désactivés |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
@@ -344,7 +345,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
   "artifact": "design",
   "description": "Technical approach and decisions",
   "resolvedOutputPath": "/home/you/acme-app/_codev/changes/add-dark-mode/design.md",
-  "instruction": "Role: architect — owns HOW.\n…",
+  "instruction": "Write the document that explains HOW to implement the change.\n…",
   "template": "# Design: <change title>\n…",
   "language": "en",
   "context": [
@@ -370,6 +371,21 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
     }
   ],
   "skipped": false,
+  "role": {
+    "id": "architect",
+    "name": "Architect",
+    "kind": "artifact",
+    "at": "plan.write",
+    "artifact": "design",
+    "question": "How will it be built?",
+    "when": "always",
+    "whenOrigin": "default",
+    "disableable": false,
+    "doneWhen": [
+      { "origin": "schema:spec-driven", "text": "each decision names the alternative it rejects and why" },
+      "…"
+    ]
+  },
   "status": []
 }
 ```
@@ -384,6 +400,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 | `unlocks` | Les artefacts qui deviennent rédigeables dès que celui-ci existe |
 | `decisions` | Les décisions en vigueur — renseigné pour `design`, vide pour les autres artefacts |
 | `skipped` | `true` lorsque `skip_specs` désactive cet artefact : il ne doit pas être rédigé |
+| `role` | Le rôle qui a la charge de l'artefact, sous la forme de [`codev roles`](#roles) ; `null` lorsque le schéma n'en déclare pas |
 
 Un échec conserve cette forme, avec `language` toujours renseigné — la langue
 configurée, ou `en` lorsque la configuration ne peut pas être lue — et les
@@ -438,6 +455,55 @@ elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
 
 `codev sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
 les specs principales supprimées par un change qui retire une capacité.
+
+### roles
+
+`codev roles --at plan.challenge --change add-dark-mode --json` :
+
+```json
+{
+  "changeName": "add-dark-mode",
+  "schemaName": "spec-driven",
+  "at": "plan.challenge",
+  "language": "en",
+  "roles": [
+    {
+      "id": "skeptic",
+      "name": "Skeptic",
+      "kind": "step",
+      "at": "plan.challenge",
+      "artifact": null,
+      "question": "Would the plan survive a reviewer who did not write it?",
+      "when": "always",
+      "whenOrigin": "project",
+      "disableable": true,
+      "doneWhen": [
+        { "origin": "built-in", "text": "**Need** — does the change solve the Why? Is there a simpler solution, or one without code?" },
+        "…",
+        { "origin": "project", "text": "The rollback plan is stated" }
+      ]
+    }
+  ],
+  "status": []
+}
+```
+
+| Champ | Signification |
+|---|---|
+| `changeName` | Le change donné avec `--change` ; `null` sans lui |
+| `schemaName` | Le schéma d'où viennent les rôles d'artefact |
+| `at` | L'étape donnée avec `--at` ; `null` liste tous les rôles, actifs ou non |
+| `roles[].name` | Le nom affiché dans la `language` configurée, en anglais lorsque le rôle n'en a pas dans cette langue |
+| `roles[].kind` | `step`, ou `artifact` avec l'identifiant de l'artefact dans `artifact` |
+| `roles[].at` | L'étape du workflow ; `plan.write` pour tous les rôles d'artefact |
+| `roles[].when`, `roles[].whenOrigin` | `always` ou `never`, fixé par `default`, `project` ou `change` |
+| `roles[].disableable` | `false` pour les rôles d'artefact et le `developer` |
+| `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
+
+Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
+aucun : l'étape est alors sautée. Un échec — `unknown_step`, `unknown_role`,
+`invalid_role_activation`, `role_not_disableable` — conserve cette forme,
+avec `roles` vide et `language` renseigné comme pour `instructions`.
 
 ### schemas
 

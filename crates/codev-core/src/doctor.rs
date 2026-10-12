@@ -105,6 +105,18 @@ pub struct VersionFacts {
     pub latest_known: Option<String>,
 }
 
+/// The project's roles, as the shell resolved them for `config.roles`.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct RolesFacts {
+    /// Active role ids, in workflow order.
+    pub active: Vec<String>,
+    /// Role ids disabled by the project.
+    pub disabled: Vec<String>,
+    /// Role ids whose setting is invalid; the two lists above are empty
+    /// then.
+    pub invalid: Vec<String>,
+}
+
 /// Everything [`evaluate`] needs, read by the shell.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DoctorFacts {
@@ -115,6 +127,7 @@ pub struct DoctorFacts {
     /// Keys of the project's `config.yaml` the running codev ignores
     /// (`mcp.<key>` inside `mcp`).
     pub unknown_config_keys: Vec<String>,
+    pub roles: RolesFacts,
     /// `(skill name, state)` for every configured workflow.
     pub skills: Vec<(String, SkillState)>,
     pub main_specs: usize,
@@ -142,6 +155,7 @@ pub const CHECK_IDS: &[&str] = &[
     "config.rules",
     "config.language",
     "config.keys",
+    "config.roles",
     "skills",
     "sources",
     "codev_version",
@@ -263,6 +277,8 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
             },
         )
     });
+
+    checks.push(roles_check(&facts.roles));
 
     let missing: Vec<&str> = facts
         .skills
@@ -522,6 +538,40 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
     checks
 }
 
+/// `config.roles`: informational — it lists the roles in effect, and only
+/// warns when a setting is invalid, which `validate` already counts.
+fn roles_check(roles: &RolesFacts) -> Check {
+    if !roles.invalid.is_empty() {
+        return not_ok(
+            "config.roles",
+            CheckGroup::Configuration,
+            CheckStatus::Warning,
+            "roles_invalid",
+            format!(
+                "invalid role setting(s) in _codev/config.yaml: {}",
+                roles.invalid.join(", ")
+            ),
+            "codev validate",
+        );
+    }
+    let list = |ids: &[String]| {
+        if ids.is_empty() {
+            "none".to_string()
+        } else {
+            ids.join(", ")
+        }
+    };
+    ok(
+        "config.roles",
+        CheckGroup::Configuration,
+        format!(
+            "active roles: {}; disabled: {}",
+            list(&roles.active),
+            list(&roles.disabled)
+        ),
+    )
+}
+
 /// `(total, missing, warnings)`.
 pub fn summary(checks: &[Check]) -> (usize, usize, usize) {
     let missing = checks
@@ -567,6 +617,11 @@ mod tests {
                 latest_known: Some("0.6.0".into()),
             },
             unknown_config_keys: Vec::new(),
+            roles: RolesFacts {
+                active: vec!["analyst".into(), "developer".into()],
+                disabled: Vec::new(),
+                invalid: Vec::new(),
+            },
         }
     }
 
@@ -612,6 +667,7 @@ mod tests {
         assert_eq!(check(&checks, "ci").code, "ci_validate_missing");
         for id in [
             "config.keys",
+            "config.roles",
             "config.language",
             "skills",
             "sources",
@@ -765,7 +821,7 @@ mod tests {
             accepted_decisions: 0,
             ..complete()
         };
-        assert_eq!(summary(&evaluate(&facts)), (13, 2, 1));
+        assert_eq!(summary(&evaluate(&facts)), (14, 2, 1));
     }
 
     #[test]
@@ -847,6 +903,46 @@ mod tests {
             "{fix}"
         );
         assert!(fix.contains("\"<0.6\""), "{fix}");
+    }
+
+    #[test]
+    fn roles_check_lists_active_and_disabled_roles() {
+        let facts = DoctorFacts {
+            roles: RolesFacts {
+                active: vec!["analyst".into(), "skeptic".into()],
+                disabled: vec!["newcomer".into()],
+                invalid: Vec::new(),
+            },
+            ..complete()
+        };
+        let roles = evaluate(&facts)
+            .into_iter()
+            .find(|c| c.id == "config.roles")
+            .unwrap();
+        assert_eq!(roles.status, CheckStatus::Ok);
+        assert_eq!(
+            roles.message,
+            "active roles: analyst, skeptic; disabled: newcomer"
+        );
+    }
+
+    #[test]
+    fn invalid_role_settings_are_a_warning() {
+        let facts = DoctorFacts {
+            roles: RolesFacts {
+                invalid: vec!["reviewer".into()],
+                ..RolesFacts::default()
+            },
+            validate_errors: 1,
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        let roles = check(&checks, "config.roles");
+        assert_eq!(roles.status, CheckStatus::Warning);
+        assert_eq!(roles.code, "roles_invalid");
+        assert!(roles.message.contains("reviewer"));
+        assert_eq!(roles.fix.as_deref(), Some("codev validate"));
+        assert_eq!(check(&checks, "validate").status, CheckStatus::Missing);
     }
 
     #[test]

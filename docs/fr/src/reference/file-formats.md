@@ -245,9 +245,16 @@ goal: Let users switch the UI to a dark theme
 | `goal` | chaîne | L'objectif fourni avec `--goal` |
 | `skip_specs` | booléen | Le change n'a volontairement aucun delta de spec : les artefacts qui écrivent sous `specs/` sont ignorés, et la validation accepte l'absence de deltas |
 | `retire_capabilities` | booléen | Autorise la synchronisation et l'archivage à supprimer une spec principale dont le change retire la dernière exigence |
+| `roles` | table | Activations de rôles pour ce change seulement, par-dessus le [`roles:`](configuration.md#roles) du projet : `newcomer: always`. Activations uniquement — les critères relèvent du projet |
 
 Les clés inconnues sont rejetées. Un dossier de change dépourvu de
-`change.yaml` utilise le schéma du projet.
+`change.yaml` utilise le schéma du projet. Une entrée invalide de `roles` est
+signalée par `codev validate` comme une erreur du change (`unknown_role`,
+`invalid_role_activation`, `role_not_disableable`).
+
+Les artefacts d'un `schema.yaml` peuvent déclarer leur [rôle](../roles.md)
+comme une donnée, sous `role:` — voir
+[Schémas personnalisés](../guides/custom-schemas.md#déclarer-les-rôles-des-artefacts).
 
 ## Décision (ADR)
 

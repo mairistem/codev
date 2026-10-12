@@ -54,6 +54,12 @@ changelog:
     - 2026-03-02-legacy-import
 
 codev_version: ">=0.5"
+
+roles:
+  newcomer: never
+  skeptic:
+    done_when:
+      - Le plan de retour arrière est indiqué
 ```
 
 ## schema
@@ -214,6 +220,43 @@ codev 0.5 et les versions antérieures ne connaissent pas cette clé et
 rejettent le fichier : ajoutez-la une fois que tout le monde utilise une
 version qui la connaît.
 
+## roles
+
+Les [rôles](../roles.md) qui s'exécutent, et les critères que votre projet
+leur ajoute. Propre au projet, jamais hérité. Chaque clé est un identifiant
+de rôle ; sa valeur est soit une activation, soit une table :
+
+| Clé | Signification |
+|---|---|
+| `when` | `always` (par défaut) ou `never`. Une étape dont le rôle vaut `never` est sautée, et la skill le signale |
+| `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
+
+```yaml
+roles:
+  newcomer: never            # forme courte
+  skeptic:
+    when: always
+    done_when:
+      - Le plan de retour arrière est indiqué
+```
+
+Les identifiants sont ceux des rôles d'étape intégrés (`analyst`,
+`investigator`, `tracer`, `skeptic`, `developer`, `newcomer`) et ceux des
+rôles d'artefact du schéma utilisé (`product`, `qa`, `architect`, `lead`
+avec `spec-driven`). Les rôles d'artefact et le `developer` ne peuvent pas
+être désactivés ; leurs critères peuvent être complétés. Le `change.yaml`
+d'un change peut changer l'activation pour ce change seulement — voir
+[change.yaml](file-formats.md#changeyaml).
+
+`codev validate` signale un identifiant inconnu par `unknown_role`, une
+activation autre que `always` ou `never` par `invalid_role_activation`, et
+`never` sur un rôle qui ne peut pas être désactivé par
+`role_not_disableable` — des erreurs de l'élément `config`, à la ligne du
+rôle. `codev status`, `codev instructions` et `codev roles` échouent avec
+le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
+mal orthographié, fait échouer chaque commande avec `invalid` : l'ignorer
+ferait disparaître des critères sans bruit.
+
 ## Clés inconnues
 
 Une version plus récente de codev peut ajouter des clés qu'une version plus
@@ -227,6 +270,7 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 | `mcp` | avertissement `unknown_config_key` (`mcp.<clé>`), clé ignorée | un outil inconnu laisse seulement cette intégration non configurée |
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
 | `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
+| une entrée de `roles` | erreur `invalid` | l'ignorer ferait disparaître des critères ou une activation |
 
 L'avertissement nomme la clé, indique que le projet demande peut-être une
 version plus récente de codev, cite `codev_version` quand le fichier la

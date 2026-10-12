@@ -11,40 +11,146 @@ passer pour un product owner : il vérifie la proposal à l'aide de la liste
 du product owner. Un rôle dont les critères sont remplis est terminé, quel
 que soit le ton de la prose.
 
-Les quatre rôles d'artefact — product owner, analyste QA, architecte, tech
-lead — sont écrits dans le schéma : l'instruction de chaque artefact commence
-par une ligne `Role:` et une liste `Done when:`, que `codev instructions`
-transmet à l'agent. Un [schéma personnalisé](guides/custom-schemas.md)
-définit les siens. Les autres rôles ci-dessous nomment les étapes du workflow
-de chaque skill, telles que les [skills](skills.md) les exécutent.
+Les rôles sont des données, pas de la prose enfouie dans les skills. codev
+les sert : à chaque étape, les skills demandent `codev roles --at <step>` et
+appliquent ce qui leur revient, et `codev instructions` transmet à l'agent
+le rôle de chaque artefact. Votre projet peut désactiver un rôle, ajouter
+ses propres critères et changer l'activation pour un seul change — voir
+[Configurer les rôles](#configurer-les-rôles).
 
-## Planifier un change (`/codev-propose`)
+## Rôles intégrés
 
-`/codev-propose` tient tous les rôles ci-dessous, dans cet ordre, en une
-seule passe. Elle ne rédige que des artefacts de planification, puis
-s'arrête pour votre relecture.
+| Id | Nom | Nature | Étape | Sa question |
+|---|---|---|---|---|
+| `analyst` | Analyste | étape | `plan.understand` | Que faut-il construire ? |
+| `investigator` | Enquêteur | étape | `plan.investigate` | Que fait déjà le projet ? |
+| `product` | Product owner | artefact (`proposal`) | `plan.write` | Pourquoi ce change, et qu'est-ce qui change ? |
+| `qa` | Analyste QA | artefact (`specs`) | `plan.write` | Quel comportement observable doit tenir ? |
+| `architect` | Architecte | artefact (`design`) | `plan.write` | Comment le construire ? |
+| `lead` | Tech lead | artefact (`tasks`) | `plan.write` | Dans quel ordre, et comment vérifier chaque étape ? |
+| `tracer` | Contrôleur de traçabilité | étape | `plan.trace` | Les artefacts concordent-ils entre eux ? |
+| `skeptic` | Contradicteur | étape | `plan.challenge` | Le plan résisterait-il à un relecteur qui ne l'a pas écrit ? |
+| `developer` | Développeur | étape | `code.implement` | Chaque tâche fonctionne-t-elle, vérification à l'appui ? |
+| `newcomer` | Nouvel arrivant | étape | `code.review` | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? |
 
-| Rôle | Sa question | Done when | Où |
-|---|---|---|---|
-| Analyste métier | Que faut-il construire ? | La demande est comprise — si elle n'est pas claire, une question ouverte est posée ; une ambiguïté qui changerait sensiblement le périmètre, le comportement observable, la compatibilité ou les critères d'acceptation est levée avant de créer le change ; un détail mineur devient une hypothèse raisonnable consignée dans les artefacts ; un identifiant de ticket comme `PROJ-123` est lu par un seul appel en lecture seule au MCP Jira lorsqu'il est configuré, et cité en tête de la proposal | Étapes 0–1 : ticket, compréhension de la demande |
-| Enquêteur de code | Que fait déjà le projet ? | `context` et `rules` sont lus ; l'implémentation concernée, les tests voisins, la configuration et la documentation sont examinés, en lecture seule et à la mesure du change ; périmètre, approche et tâches s'appuient sur ce qui a été trouvé ; comportement observé, hypothèses et propositions restent distincts ; les contradictions avec les specs existantes sont signalées, pas tranchées seul ; aucune tâche « explorer le code » n'est laissée à l'implémentation | Étape 4c, avant de rédiger chaque artefact |
-| Product owner | Pourquoi ce change, et qu'est-ce qui change ? | Why énonce le problème et pourquoi maintenant en une ou deux phrases ; What Changes est une liste de points concrets ; chaque changement incompatible est marqué **BREAKING** ; chaque capacité listée a son fichier de spec (ou `skip_specs: true`) ; la note de version est écrite pour les utilisateurs, classée par catégorie, avec les éléments incompatibles marqués, ou `None` pour un change interne ; aucun détail d'implémentation | [`proposal.md`](reference/file-formats.md#proposalmd) |
-| Analyste QA | Quel comportement observable doit tenir ? | Chaque exigence emploie SHALL ou MUST sur un comportement observable ; chaque exigence a au moins un scénario nominal et un scénario d'erreur ou de cas limite, ou explique pourquoi aucun ne s'applique ; ni noms internes, ni bibliothèques, ni étapes d'implémentation | [Deltas de spec](reference/file-formats.md#delta-de-spec) |
-| Architecte | Comment le construire ? | Chaque décision nomme l'alternative qu'elle écarte et pourquoi ; chaque risque a sa mitigation ; les décisions acceptées qui contraignent l'approche sont citées et suivies, ou un remplacement est explicitement proposé ; l'approche est la plus simple qui satisfasse les specs, et un nouvel arrivant peut suivre le design sans en connaître l'historique ; les Open Questions ne contiennent que ce qui peut réellement attendre | [`design.md`](reference/file-formats.md#designmd) — rédigé seulement si le change le demande |
-| Tech lead | Dans quel ordre, et comment vérifier chaque étape ? | Chaque tâche tient en une séance de travail et suit l'ordre des dépendances ; chaque tâche nomme sa vérification (test, commande, comportement observable) ; chaque scénario de spec est couvert par la vérification d'une tâche, avec un test automatisé — une vérification manuelle seulement si l'automatisation est impossible, avec la raison ; la documentation concernée est mise à jour dans une tâche, ou le plan indique qu'aucune ne l'est ; les tests suivent la suite existante du projet, puis les conventions de son langage et les `rules` du projet | [`tasks.md`](reference/file-formats.md#tasksmd) |
-| Contrôleur de traçabilité | Les artefacts concordent-ils entre eux ? | Chaque capacité de la proposal a son fichier de spec, et chaque fichier de spec est listé dans la proposal ; chaque exigence a un scénario nominal et un scénario d'erreur ou de cas limite ; chaque scénario est couvert par une tâche dont la vérification nomme un test automatisé, ou explique pourquoi l'automatisation est impossible ; une tâche met à jour la documentation lorsque la section Impact touche un comportement documenté ; la note de version concorde avec le plan ; chaque vérification est concrète. Les manques sont corrigés dans les artefacts | Étape 6 |
-| Relecteur sceptique (contradicteur) | Le plan résisterait-il à un relecteur qui ne l'a pas écrit ? | Le plan est relu sous l'angle du besoin, du périmètre, des specs, des décisions, des hypothèses et des tâches — plus sécurité et confidentialité, compatibilité et migration, exploitabilité, performance, accessibilité et UX lorsque la section Impact les touche, et les `rules` du projet ; ce qui ne fait pas de doute est corrigé ; ce qui demande une décision humaine est consigné dans les Open Questions du design (ou de la proposal, sans design) ; le périmètre n'est jamais élargi ; au plus cinq **points à challenger**, classés par impact, ou la mention qu'aucun n'a été relevé | Étape 7 |
+Les rôles d'étape sont intégrés à codev. Les rôles d'artefact viennent du
+schéma par défaut `spec-driven`, qui déclare un rôle par artefact ; un
+[schéma personnalisé](guides/custom-schemas.md) déclare les siens, ou aucun.
 
-Le dernier rôle est le vôtre : la skill présente le plan avec ses points à
-challenger et attend. Voir [Là où vous décidez](#là-où-vous-décidez).
+Pour lire les critères « Done when » d'un rôle, interrogez codev — c'est la
+liste que reçoit l'agent :
+
+```bash
+codev roles --at plan.challenge
+```
+
+Sans `--at`, `codev roles` liste tous les rôles avec leur activation. Voir
+[`codev roles`](reference/cli.md#codev-roles).
+
+## Étapes
+
+| Étape | Skill | Ce qui s'y passe |
+|---|---|---|
+| `plan.understand` | `/codev-propose` | La demande est comprise avant que le change soit créé ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
+| `plan.investigate` | `/codev-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
+| `plan.write` | `/codev-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `codev instructions` renvoie dans `role` |
+| `plan.trace` | `/codev-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
+| `plan.challenge` | `/codev-propose` | Le plan est relu par un relecteur qui ne l'a pas écrit ; ce qui ne fait pas de doute est corrigé, ce qui demande votre décision va dans les Open Questions du design, et au plus cinq **points à challenger** terminent le résumé |
+| `code.implement` | `/codev-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
+| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu comme le ferait un nouvel arrivant ; ce qui ne fait pas de doute est simplifié, et au plus trois **notes de lisibilité** terminent le résumé |
+
+La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
+garde-fous — reste dans la skill. Les critères viennent du rôle.
+
+## Configurer les rôles
+
+Tous les rôles sont actifs par défaut. Dans `_codev/config.yaml`, `roles:`
+associe un identifiant de rôle à son réglage :
+
+```yaml
+roles:
+  newcomer: never            # forme courte : always | never
+  skeptic:
+    when: always             # facultatif, always par défaut
+    done_when:               # ajoutés après les critères propres du rôle
+      - Le plan de retour arrière est indiqué
+```
+
+- **Activation.** `always` ou `never`. Une étape dont le rôle vaut `never`
+  est sautée, et le résumé de la skill indique qu'elle est désactivée par
+  la configuration.
+- **Critères supplémentaires.** Les entrées de `done_when` s'ajoutent après
+  les critères propres du rôle, sans jamais les remplacer. Elles portent
+  l'origine `project`, comme votre
+  [`context` et vos `rules`](reference/configuration.md#context).
+- **Par change.** Le `change.yaml` d'un change peut changer l'activation
+  pour ce change seulement :
+
+  ```yaml
+  roles:
+    newcomer: always
+  ```
+
+- **Ce qui ne peut pas être désactivé.** Les rôles d'artefact (`product`,
+  `qa`, `architect`, `lead`) et le `developer` : leur artefact est toujours
+  rédigé, leurs tâches toujours implémentées. Leurs critères peuvent être
+  complétés.
+- **Les sources héritées** n'apportent aucun rôle : seul le `roles:` de
+  votre projet est lu.
+
+`codev validate` signale un identifiant de rôle inconnu (`unknown_role`),
+une activation autre que `always` ou `never` (`invalid_role_activation`), et
+`never` sur un rôle qui ne peut pas être désactivé
+(`role_not_disableable`) ; `codev status`, `codev instructions` et
+`codev roles` échouent avec le même code. `codev doctor` liste les rôles
+actifs et désactivés.
+
+## Implémenter un change (`/codev-apply`)
+
+### Développeur (`/codev-apply`)
+
+Implémente les tâches d'un change planifié, dans l'ordre du fichier. Done
+when, pour chaque tâche :
+
+- les fichiers concernés sont lus avant d'écrire ;
+- le code, les tests, la configuration et la documentation que la tâche
+  demande sont écrits — rien de plus ;
+- les tests sont écrits à la manière de la suite existante du projet, puis
+  selon les conventions de son langage et les `rules` du projet ;
+- la vérification citée par la tâche est lancée et réussit — la commande de
+  test vient de `context`, des `rules`, du manifeste ou de la configuration
+  de CI, et la skill vous la demande si elle n'en trouve aucune ;
+- alors seulement, la case est cochée.
+
+Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
+cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
+et après la [relecture du nouvel arrivant](#nouvel-arrivant-codev-apply),
+elle lance une fois la suite de tests complète du projet ; un échec est
+signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
+touche jamais un autre change, ne synchronise jamais et n'archive jamais.
+
+### Nouvel arrivant (`/codev-apply`)
+
+Une fois toutes les tâches cochées, et avant la suite de tests complète,
+relit uniquement le code que le change a ajouté ou modifié, comme un
+développeur qui rejoint le projet sans avoir vu ni le plan ni la
+conversation, à l'aide des critères du nouvel arrivant. Ce qui ne fait pas
+de doute est simplifié et les tests concernés sont relancés ; le reste
+devient au plus trois **notes de lisibilité** dans le résumé final — quoi,
+où, pourquoi — ou la mention qu'aucune n'a été relevée.
+
+Il ne change jamais le comportement, n'élargit jamais le périmètre du change
+et ne touche jamais au code que le change n'a ni ajouté ni modifié.
 
 ## Les autres skills
 
-| Skill | Rôle | Sa question | Ce qu'elle écrit |
+Les autres skills gardent une posture fixe, écrite dans la skill elle-même.
+Ces postures ne sont pas des rôles : elles ne figurent pas au catalogue et
+ne se configurent pas.
+
+| Skill | Posture | Sa question | Ce qu'elle écrit |
 |---|---|---|---|
 | `/codev-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-codev-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
-| `/codev-apply` | [Développeur](#développeur-codev-apply) | Chaque tâche fonctionne-t-elle, vérification à l'appui ? | Code du projet, cases de `tasks.md` |
-| `/codev-apply` | [Relecteur nouvel arrivant](#relecteur-nouvel-arrivant-codev-apply) | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? | Simplifications dans le périmètre du change |
 | `/codev-sync`, `/codev-archive` | [Mainteneur des specs vivantes](#mainteneur-des-specs-vivantes-codev-sync-codev-archive) | Les specs principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
 | `/codev-update` | [Éditeur](#éditeur-codev-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_codev/changes/<name>/` uniquement |
 | `/codev-onboard` | [Guide](#guide-codev-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
@@ -71,54 +177,6 @@ Done when :
 
 Elle n'écrit aucun fichier, ne crée aucun change et n'implémente pas, même
 si on le lui demande.
-
-### Développeur (`/codev-apply`)
-
-Implémente les tâches d'un change planifié, dans l'ordre du fichier. Done
-when, pour chaque tâche :
-
-- les fichiers concernés sont lus avant d'écrire ;
-- le code, les tests, la configuration et la documentation que la tâche
-  demande sont écrits — rien de plus ;
-- les tests sont écrits à la manière de la suite existante du projet, puis
-  selon les conventions de son langage et les `rules` du projet ;
-- la vérification citée par la tâche est lancée et réussit — la commande de
-  test vient de `context`, des `rules`, du manifeste ou de la configuration
-  de CI, et la skill vous la demande si elle n'en trouve aucune ;
-- alors seulement, la case est cochée.
-
-Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
-cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
-et après la [relecture du nouvel arrivant](#relecteur-nouvel-arrivant-codev-apply),
-elle lance une fois la suite de tests complète du projet ; un échec est
-signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
-touche jamais un autre change, ne synchronise jamais et n'archive jamais.
-
-### Relecteur nouvel arrivant (`/codev-apply`)
-
-Une fois toutes les tâches cochées, et avant la suite de tests complète,
-relit uniquement le code que le change a ajouté ou modifié, comme un
-développeur qui rejoint le projet sans avoir vu ni le plan ni la
-conversation. Done when :
-
-- chaque fonction modifiée se comprend sans le plan ni la conversation ;
-- les noms disent ce que font les choses, sans abréviation obscure ;
-- une fonction trop longue ou trop imbriquée est découpée, quand elle se
-  découpe simplement ;
-- les lignes trop denses, la généricité prématurée et les abstractions à
-  usage unique cèdent la place à la version simple, sauf si la version
-  astucieuse se justifie ;
-- les commentaires expliquent le pourquoi lorsqu'il n'est pas évident, et
-  ne paraphrasent jamais le code ;
-- les tests se lisent comme une description du comportement ;
-- les `rules` du projet, par exemple des seuils de taille, sont respectées ;
-- ce qui ne fait pas de doute est simplifié et les tests concernés sont
-  relancés ; le reste devient au plus trois **notes de lisibilité** dans le
-  résumé final — quoi, où, pourquoi — ou la mention qu'aucune n'a été
-  relevée.
-
-Il ne change jamais le comportement, n'élargit jamais le périmètre du change
-et ne touche jamais au code que le change n'a ni ajouté ni modifié.
 
 ### Mainteneur des specs vivantes (`/codev-sync`, `/codev-archive`)
 
@@ -210,5 +268,8 @@ L'agent s'arrête et vous passe la main à ces moments :
   le projet exige une autre version, la skill demande **Update now** ou
   **Later** avant d'agir (voir
   [Annonce des mises à jour](skills.md#annonce-des-mises-à-jour)).
+- **Configurer les rôles.** Les rôles de relecture qui s'exécutent, et les
+  critères qu'ils ajoutent, relèvent du choix de votre projet dans
+  `roles:` — voir [Configurer les rôles](#configurer-les-rôles).
 - **Archiver.** `/codev-apply` n'archive jamais : une fois l'implémentation
   relue, en commençant par ses notes de lisibilité, lancez `/codev-archive` ou `codev archive`.

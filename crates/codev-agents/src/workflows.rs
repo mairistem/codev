@@ -518,8 +518,6 @@ mod tests {
         for keyword in [
             "### 6. Check traceability",
             "### 7. Challenge the plan",
-            "edge-case",
-            "Impact touches them",
             "Points to challenge",
             "No point to challenge found",
             "it never adds scope",
@@ -549,45 +547,80 @@ mod tests {
         text.split_whitespace().collect::<Vec<_>>().join(" ")
     }
 
+    /// The step ids of each skill, as `codev roles --at` knows them.
+    const PROPOSE_STEPS: &[&str] = &[
+        "plan.understand",
+        "plan.investigate",
+        "plan.write",
+        "plan.trace",
+        "plan.challenge",
+    ];
+    const APPLY_STEPS: &[&str] = &["code.implement", "code.review"];
+
     #[test]
-    fn propose_traceability_requires_automated_tests_and_documentation() {
-        let propose = find("propose").unwrap();
-        let step = flat(section(
-            propose.body,
-            "### 6. Check traceability",
-            "### 7. Challenge the plan",
-        ));
-        for keyword in [
-            "names an automated test",
-            "why automation is impossible",
-            "updates the documentation",
-            "none is affected",
-        ] {
+    fn skills_ask_codev_roles_at_each_step() {
+        for (id, steps) in [("propose", PROPOSE_STEPS), ("apply", APPLY_STEPS)] {
+            let body = find(id).unwrap().body;
             assert!(
-                step.contains(keyword),
-                "the traceability check must cite `{keyword}`"
+                body.contains("codev roles --at <step>"),
+                "`{id}` must ask `codev roles --at <step>`"
             );
+            assert!(body.contains("roles[].doneWhen"), "{id}");
+            for step in steps {
+                assert!(
+                    body.contains(&format!("`{step}`")),
+                    "`{id}` must name the step `{step}`"
+                );
+            }
         }
+        // The change does not exist yet when the request is understood.
+        assert!(
+            find("propose")
+                .unwrap()
+                .body
+                .contains("Without `--change` for `plan.understand`")
+        );
+        // The artifact role comes with the instructions.
+        assert!(find("propose").unwrap().body.contains("| `role` |"));
     }
 
     #[test]
-    fn propose_traceability_checks_the_release_note() {
-        let propose = find("propose").unwrap();
-        let step = flat(section(
-            propose.body,
-            "### 6. Check traceability",
-            "### 7. Challenge the plan",
-        ));
-        for keyword in [
-            "release note agrees with the plan",
-            "**BREAKING** item of What Changes",
-            "REMOVED",
-            "says `None`",
-        ] {
+    fn skills_skip_a_disabled_step_and_say_so() {
+        for id in ["propose", "apply"] {
+            let body = flat(find(id).unwrap().body);
             assert!(
-                step.contains(keyword),
-                "the traceability check must cite `{keyword}`"
+                body.contains(
+                    "If `roles` is empty, the role is disabled by configuration: skip the step, and say so in the summary."
+                ),
+                "{id}"
             );
+        }
+        let propose = flat(find("propose").unwrap().body);
+        assert!(
+            propose.contains("each step skipped because its role is disabled by configuration")
+        );
+        assert!(propose.contains("\"The skeptic is disabled by configuration\""));
+        let apply = flat(find("apply").unwrap().body);
+        assert!(apply.contains("\"The newcomer review is disabled by configuration\""));
+    }
+
+    #[test]
+    fn skills_do_not_restate_catalog_criteria() {
+        // The criteria are served by `codev roles`: a skill restating them
+        // would drift from the catalog.
+        let catalog: Vec<String> = codev_core::roles::builtin_step_roles()
+            .into_iter()
+            .flat_map(|role| role.criteria)
+            .map(|criterion| flat(&criterion.text))
+            .collect();
+        for id in ["propose", "apply"] {
+            let body = flat(find(id).unwrap().body);
+            for criterion in &catalog {
+                assert!(
+                    !body.contains(criterion.as_str()),
+                    "`{id}` restates the criterion `{criterion}`"
+                );
+            }
         }
     }
 
@@ -596,11 +629,9 @@ mod tests {
         let apply = find("apply").unwrap();
         let body = flat(apply.body);
         for keyword in [
-            "existing test suite",
-            "conventions of its language",
-            "the manifest or the CI configuration",
-            "never guess one",
-            "ask the user",
+            "`code.implement`",
+            "the developer's criteria apply to every task",
+            "codev instructions tasks --change",
             "full test suite once",
             "Verify before checking off",
         ] {
@@ -628,15 +659,10 @@ mod tests {
         let apply = find("apply").unwrap().body;
         let review = apply_newcomer_review(apply);
         for keyword in [
+            "`code.review`",
             "only the code this change added or modified",
             "seen neither the plan nor this conversation",
-            "**Without context**",
-            "**Names**",
-            "**Size and nesting**",
-            "**Cleverness**",
-            "**Comments**",
-            "**Tests** read as a description of the behavior",
-            "The project's `rules`",
+            "along the newcomer's criteria",
             "Simplify directly what is unambiguous",
             "re-run the affected tests",
         ] {

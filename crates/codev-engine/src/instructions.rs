@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use codev_core::decisions::DecisionStatus;
+use codev_core::roles::ResolvedRole;
 use codev_core::{ArtifactState, ChangeId, CoreError, Layout};
 
 use crate::change::{self, ChangeContext};
@@ -77,6 +78,9 @@ pub struct Instructions {
     /// True when the change has disabled this artifact: it must **not** be
     /// created.
     pub skipped: bool,
+    /// The role that owns the artifact, settings applied; `None` when the
+    /// schema declares none.
+    pub role: Option<ResolvedRole>,
     pub warnings: Vec<Warning>,
 }
 
@@ -93,6 +97,9 @@ pub fn for_artifact(
     artifact_id: Option<&str>,
 ) -> Result<Instructions> {
     let status = change::status(fs, layout, ctx)?;
+    // Resolved first: an invalid role setting fails the command before
+    // anything is assembled.
+    let roles = crate::roles::resolve(fs, layout, config, Some(ctx))?;
 
     let artifact_id = match artifact_id {
         Some(id) => {
@@ -198,6 +205,7 @@ pub fn for_artifact(
             .collect(),
         decisions,
         skipped: state == ArtifactState::Skipped,
+        role: roles.for_artifact(&artifact.id).cloned(),
         warnings,
     })
 }
@@ -308,50 +316,68 @@ mod tests {
         );
     }
 
-    #[test]
-    fn spec_driven_instructions_start_with_a_role_block() {
-        let fs = project(&[(
+    fn spec_driven() -> MemoryFileSystem {
+        project(&[(
             "/p/_codev/changes/add-auth/change.yaml",
             "schema: spec-driven",
-        )]);
-        for (artifact, role, criterion) in [
-            ("proposal", "Role: product owner", "**BREAKING**"),
-            ("proposal", "Role: product owner", "release note"),
-            ("specs", "Role: QA analyst", "edge-case scenario"),
-            ("design", "Role: architect", "alternative it rejects"),
-            ("tasks", "Role: tech lead", "every spec scenario is covered"),
+        )])
+    }
+
+    /// The artifact's role criteria, joined on one line so that an
+    /// assertion survives rewrapping.
+    fn role_criteria(fs: &MemoryFileSystem, artifact: &str) -> String {
+        let role = instructions(fs, Some(artifact))
+            .unwrap()
+            .role
+            .unwrap_or_else(|| panic!("`{artifact}` must carry a role"));
+        role.role
+            .criteria
+            .iter()
+            .map(|c| c.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    #[test]
+    fn spec_driven_artifacts_carry_their_role_as_data() {
+        let fs = spec_driven();
+        for (artifact, id, name, criterion) in [
+            ("proposal", "product", "Product owner", "**BREAKING**"),
+            ("proposal", "product", "Product owner", "release note"),
+            ("specs", "qa", "QA analyst", "edge-case scenario"),
+            ("design", "architect", "Architect", "alternative it rejects"),
+            (
+                "tasks",
+                "lead",
+                "Tech lead",
+                "every spec scenario is covered",
+            ),
         ] {
-            let instruction = instructions(&fs, Some(artifact))
-                .unwrap()
-                .instruction
-                .unwrap_or_default();
+            let instr = instructions(&fs, Some(artifact)).unwrap();
+            let role = instr.role.expect("a spec-driven artifact has a role");
+            assert_eq!(role.role.id, id);
+            assert_eq!(role.role.name("en"), name);
+            assert!(!role.role.question.is_empty());
             assert!(
-                instruction.starts_with(role),
-                "`{artifact}` must start with `{role}`"
+                role.role
+                    .criteria
+                    .iter()
+                    .all(|c| c.origin == "schema:spec-driven")
             );
-            let (_, criteria) = instruction
-                .split_once("Done when:")
-                .unwrap_or_else(|| panic!("`{artifact}` must carry a `Done when:` list"));
             assert!(
-                criteria.contains(criterion),
+                role_criteria(&fs, artifact).contains(criterion),
                 "`{artifact}` criteria must mention `{criterion}`"
             );
+            // The role is data now: the instruction no longer restates it.
+            let instruction = instr.instruction.unwrap_or_default();
+            assert!(!instruction.starts_with("Role:"), "{artifact}");
+            assert!(!instruction.contains("Done when:"), "{artifact}");
         }
     }
 
     #[test]
     fn tasks_criteria_require_documentation_and_automated_tests() {
-        let fs = project(&[(
-            "/p/_codev/changes/add-auth/change.yaml",
-            "schema: spec-driven",
-        )]);
-        let instruction = instructions(&fs, Some("tasks"))
-            .unwrap()
-            .instruction
-            .unwrap_or_default();
-        let (criteria, _) = instruction
-            .split_once("Break down the implementation work.")
-            .expect("the role block precedes the existing text");
+        let criteria = role_criteria(&spec_driven(), "tasks");
         for criterion in [
             "documentation the change affects",
             "states that none is affected",
@@ -370,18 +396,7 @@ mod tests {
 
     #[test]
     fn design_criteria_require_the_simplest_approach_a_newcomer_can_follow() {
-        let fs = project(&[(
-            "/p/_codev/changes/add-auth/change.yaml",
-            "schema: spec-driven",
-        )]);
-        let instruction = instructions(&fs, Some("design"))
-            .unwrap()
-            .instruction
-            .unwrap_or_default();
-        let (criteria, _) = instruction
-            .split_once("Write the document")
-            .expect("the role block precedes the existing text");
-        let criteria = criteria.split_whitespace().collect::<Vec<_>>().join(" ");
+        let criteria = role_criteria(&spec_driven(), "design");
         for criterion in [
             "the simplest that satisfies the specs",
             "a newcomer can follow the design without knowing its history",
@@ -391,6 +406,37 @@ mod tests {
                 "the architect criteria must mention `{criterion}`"
             );
         }
+    }
+
+    #[test]
+    fn instructions_carry_the_artifact_role_with_project_criteria() {
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/_codev/config.yaml",
+                "roles:\n  qa:\n    done_when: [Every error code is named]\n",
+            )
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let role = instructions(&fs, Some("specs")).unwrap().role.unwrap();
+        assert_eq!(role.role.id, "qa");
+        let last = role.role.criteria.last().unwrap();
+        assert_eq!(last.text, "Every error code is named");
+        assert_eq!(last.origin, "project");
+        assert_eq!(role.role.criteria[0].origin, "schema:spec-driven");
+    }
+
+    #[test]
+    fn an_invalid_role_setting_fails_the_instructions() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "roles:\n  qa: never\n")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let err = instructions(&fs, Some("specs")).unwrap_err();
+        assert_eq!(err.code(), "role_not_disableable");
     }
 
     #[test]
@@ -419,12 +465,9 @@ mod tests {
             "schema: spec-driven",
         )]);
         let instr = instructions(&fs, Some("proposal")).unwrap();
-        let instruction = instr.instruction.unwrap_or_default();
-        let (criteria, rest) = instruction
-            .split_once("Write the document")
-            .expect("the role block precedes the existing text");
+        let rest = instr.instruction.unwrap_or_default();
         assert!(
-            criteria.contains("release note is written for end users"),
+            role_criteria(&fs, "proposal").contains("release note is written for end users"),
             "the product owner criteria must require the release note"
         );
         for word in ["**Release note**", "`Added`", "`Security`", "`None`"] {
@@ -453,6 +496,7 @@ mod tests {
         ]);
         let instr = instructions(&fs, Some("brief")).unwrap();
         assert_eq!(instr.instruction.as_deref(), Some("Write the brief."));
+        assert!(instr.role.is_none(), "an artifact without role has none");
     }
 
     #[test]

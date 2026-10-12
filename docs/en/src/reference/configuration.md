@@ -53,6 +53,12 @@ changelog:
     - 2026-03-02-legacy-import
 
 codev_version: ">=0.5"
+
+roles:
+  newcomer: never
+  skeptic:
+    done_when:
+      - The rollback plan is stated
 ```
 
 ## schema
@@ -202,6 +208,41 @@ requirement makes every command fail with `invalid_codev_version`.
 codev 0.5 and earlier do not know this key and reject the file: add it once
 everyone runs a version that does.
 
+## roles
+
+Which [roles](../roles.md) run, and the criteria your project adds to them.
+Project only, never inherited. Each key is a role id; its value is either an
+activation, or a mapping:
+
+| Key | Meaning |
+|---|---|
+| `when` | `always` (the default) or `never`. A step whose role is `never` is skipped, and the skill says so |
+| `done_when` | Criteria added after the role's own, with the origin `project`; blank entries are ignored |
+
+```yaml
+roles:
+  newcomer: never            # short form
+  skeptic:
+    when: always
+    done_when:
+      - The rollback plan is stated
+```
+
+The ids are the built-in step roles (`analyst`, `investigator`, `tracer`,
+`skeptic`, `developer`, `newcomer`) and the artifact roles of the schema in
+use (`product`, `qa`, `architect`, `lead` with `spec-driven`). The artifact
+roles and the `developer` cannot be disabled; their criteria can be
+extended. A change's `change.yaml` can override the activation for that
+change only — see [change.yaml](file-formats.md#changeyaml).
+
+`codev validate` reports an unknown id as `unknown_role`, an activation
+other than `always` or `never` as `invalid_role_activation`, and `never` on
+a role that cannot be disabled as `role_not_disableable` — errors of the
+`config` item, at the line of the role. `codev status`,
+`codev instructions` and `codev roles` fail with the same code. Any other
+key inside a role's mapping, such as a misspelled `done-when`, fails every
+command with `invalid`: ignoring it would drop criteria silently.
+
 ## Unknown keys
 
 A newer codev may add keys an older one does not know. So that an older codev
@@ -214,6 +255,7 @@ keys are treated according to what ignoring them would do:
 | `mcp` | warning `unknown_config_key` (`mcp.<key>`), key ignored | an unknown tool only leaves that integration unconfigured |
 | an `inherits` entry | error `invalid` | ignoring it would read another source than the one you described |
 | `changelog` | error `invalid` | ignoring it would make `codev changelog --write` write another file |
+| a `roles` entry | error `invalid` | ignoring it would drop criteria or an activation |
 
 The warning names the key, says the project may need a newer codev, quotes
 `codev_version` when the file sets it, and points to `codev self-update`; the

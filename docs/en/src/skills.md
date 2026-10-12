@@ -71,14 +71,19 @@ them alone. It writes the prose in the project's
 The request authorizes planning only, even if it says "build" or "fix": the
 skill stops once the artifacts are written and waits for you.
 
-Each artifact has an explicit role, taken from the schema instructions —
-product owner for the proposal, QA analyst for the specs, architect for the
-design, tech lead for the tasks — with "Done when" criteria the agent checks
-before moving on. The product owner writes the proposal's release note for
+Each artifact has an explicit role, declared by the schema and returned by
+`codev instructions` — product owner for the proposal, QA analyst for the
+specs, architect for the design, tech lead for the tasks — with "Done when"
+criteria the agent checks before moving on. The product owner writes the proposal's release note for
 end users, categorized, or `None` for an internal change. The tech lead's criteria require the affected documentation
 to be updated in a task, and every scenario to be covered by an automated
 test that follows your project's test conventions. A
 [custom schema](guides/custom-schemas.md) defines its own.
+
+At each step it asks `codev roles --at <step>` for the roles of the step and
+applies their criteria, your project's extra criteria included; a step whose
+role your configuration disables is skipped, and the summary says so (see
+[Configuring roles](roles.md#configuring-roles)).
 
 Before presenting the plan, the skill reviews it in two steps:
 
@@ -107,9 +112,8 @@ Jira MCP tool is configured, it fetches the first ticket — read-only, a
 single call — and cites it at the top of the proposal. See
 [Jira and other MCP servers](guides/mcp.md).
 
-Roles: business analyst, code investigator, product owner, QA analyst,
-architect, tech lead, traceability checker and skeptical reviewer — see
-[Planning a change](roles.md#planning-a-change-codev-propose).
+Roles: analyst, investigator, product owner, QA analyst, architect, tech
+lead, tracer and skeptic — see [Built-in roles](roles.md#built-in-roles).
 
 ### Explore (`/codev-explore`)
 
@@ -117,7 +121,7 @@ A thinking partner for vague requests, investigations and comparisons of
 approaches. It reads code and specs but creates no change, no artifact and no
 file. When the idea is clear, it suggests `/codev-propose`.
 
-Role: [thinking partner](roles.md#thinking-partner-codev-explore).
+Stance: [thinking partner](roles.md#thinking-partner-codev-explore).
 
 ### Onboard (`/codev-onboard`)
 
@@ -127,7 +131,7 @@ action to take next — for example `/codev-configure` on a freshly initialized
 project. It also runs `codev doctor --json` and lists up to five missing
 setup items with their fix, without running any of them.
 
-Role: [guide](roles.md#guide-codev-onboard).
+Stance: [guide](roles.md#guide-codev-onboard).
 
 ### Configure (`/codev-configure`)
 
@@ -145,7 +149,7 @@ Rust, TypeScript/JavaScript, Python, Go or Java.
 While the configuration has no `rules:`, `codev init` and `codev status`
 recommend running it.
 
-Role: [project setup analyst](roles.md#project-setup-analyst-codev-configure).
+Stance: [project setup analyst](roles.md#project-setup-analyst-codev-configure).
 
 ### Apply (`/codev-apply`)
 
@@ -157,11 +161,13 @@ the test command from your configuration, manifest or CI, and asks you when
 it finds none. Once every task is checked, it reviews the code the change
 touched as a newcomer would: it simplifies what is unambiguous, without
 changing behavior or scope, and reports up to three readability notes.
-Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
+It takes the criteria of both steps from `codev roles`; when your
+configuration disables the newcomer, the review is skipped and the summary
+says so. Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
 another change, never syncs and never archives.
 
 Roles: [developer](roles.md#developer-codev-apply),
-[newcomer reviewer](roles.md#newcomer-reviewer-codev-apply).
+[newcomer](roles.md#newcomer-codev-apply).
 
 ### Update (`/codev-update`)
 
@@ -171,21 +177,21 @@ reports them. It does not create missing artifacts (that is
 `/codev-propose`), does not modify code (that is `/codev-apply`), and does not
 touch archived changes. It ends with `codev validate`.
 
-Role: [editor](roles.md#editor-codev-update).
+Stance: [editor](roles.md#editor-codev-update).
 
 ### Sync (`/codev-sync`)
 
 Runs `codev sync` for a change and reports which main specs were created,
 updated or left unchanged.
 
-Role: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-codev-sync-codev-archive).
+Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-codev-sync-codev-archive).
 
 ### Archive (`/codev-archive`)
 
 Runs `codev archive` for a change. If validation reports errors, it stops and
 points you to `codev validate` rather than trying to work around them.
 
-Role: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-codev-sync-codev-archive).
+Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-codev-sync-codev-archive).
 
 ## Choosing which skills to install
 

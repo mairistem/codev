@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use codev_core::Layout;
 use codev_core::config::DEFAULT_LANGUAGE;
 use codev_core::detect::locale::is_valid_language_code;
+use codev_core::roles::RoleSetting;
 use serde::Deserialize;
 
 use crate::error::{EngineError, Result, Warning};
@@ -26,6 +27,7 @@ pub const PROJECT_KEYS: &[&str] = &[
     "mcp",
     "changelog",
     "codev_version",
+    "roles",
 ];
 
 /// The keys of the `mcp:` section this codev knows. The section grows one
@@ -86,9 +88,18 @@ pub struct ProjectConfig {
     /// it, an inherited source does not.
     #[serde(default)]
     pub codev_version: Option<String>,
+    /// Role settings by role id — project only: an inherited source's
+    /// `roles:` is not read. Each entry is strict, unlike the top level: a
+    /// misspelled `done-when` would silently drop criteria.
+    #[serde(default)]
+    pub roles: BTreeMap<String, RoleSetting>,
     /// Top-level and `mcp` keys this codev ignored, in file order.
     #[serde(skip)]
     pub unknown_keys: Vec<UnknownKey>,
+    /// The 1-based line of each key of `roles:`, for the findings of
+    /// `codev validate`.
+    #[serde(skip)]
+    pub role_lines: BTreeMap<String, usize>,
 }
 
 /// The `changelog:` block of `_codev/config.yaml`.
@@ -166,6 +177,11 @@ pub struct ResolvedConfig {
     pub mcp: McpConfig,
     /// `codev_version`, already validated.
     pub codev_version: Option<String>,
+    /// The project's `roles:`, not yet checked against a catalog: which
+    /// roles exist depends on the schema in use.
+    pub roles: BTreeMap<String, RoleSetting>,
+    /// The line of each key of `roles:`.
+    pub role_lines: BTreeMap<String, usize>,
     /// The project's unknown keys — inherited sources' are not reported:
     /// only their context and rules are read.
     pub unknown_keys: Vec<UnknownKey>,
@@ -199,6 +215,11 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
             reason: with_requirement_hint(e.to_string(), &raw),
         })?;
     config.unknown_keys = unknown_keys(&raw);
+    config.role_lines = config
+        .roles
+        .keys()
+        .map(|id| (id.clone(), key_line(&raw, Some("roles"), id)))
+        .collect();
     if let Some(code) = &config.language
         && !is_valid_language_code(code)
     {
@@ -254,7 +275,7 @@ fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
 /// The 1-based line where `key` is written — at the top level, or in the
 /// block of `parent`. A text scan, only used to point at the key: 1 when
 /// not found.
-fn key_line(raw: &str, parent: Option<&str>, key: &str) -> usize {
+pub(crate) fn key_line(raw: &str, parent: Option<&str>, key: &str) -> usize {
     let names = |line: &str, name: &str| {
         line.strip_prefix(name)
             .is_some_and(|rest| rest.trim_start().starts_with(':'))
@@ -439,6 +460,8 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         // shared repository.
         mcp: project.mcp.clone(),
         codev_version: project.codev_version.clone(),
+        roles: project.roles.clone(),
+        role_lines: project.role_lines.clone(),
         unknown_keys: project.unknown_keys.clone(),
         warnings,
     })
@@ -629,12 +652,13 @@ mod tests {
         let config = load_str(
             "schema: spec-driven\nlanguage: en\nworkflows: [propose]\ncontext: x\n\
              rules:\n  specs: [r]\ninherits:\n  - path: /a\n\
-             mcp:\n  jira_tool: t\nchangelog:\n  exclude: []\ncodev_version: \">=0.5\"\n",
+             mcp:\n  jira_tool: t\nchangelog:\n  exclude: []\ncodev_version: \">=0.5\"\n\
+             roles:\n  newcomer: never\n",
         )
         .unwrap()
         .unwrap();
         assert!(config.unknown_keys.is_empty(), "{:?}", config.unknown_keys);
-        assert_eq!(PROJECT_KEYS.len(), 9, "a new key belongs in this test too");
+        assert_eq!(PROJECT_KEYS.len(), 10, "a new key belongs in this test too");
     }
 
     #[test]
@@ -728,6 +752,53 @@ mod tests {
         assert!(resolved.warnings.is_empty(), "{:?}", resolved.warnings);
         assert!(resolved.unknown_keys.is_empty());
         assert_eq!(resolved.context[0].text, "Shared context");
+    }
+
+    #[test]
+    fn roles_is_a_known_key() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "roles:\n  newcomer: never\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.warnings.is_empty(), "{:?}", config.warnings);
+        assert_eq!(config.roles["newcomer"].when.as_deref(), Some("never"));
+    }
+
+    #[test]
+    fn role_settings_accept_the_short_and_the_long_form() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "language: en\nroles:\n  newcomer: never\n  skeptic:\n    when: always\n    done_when:\n      - The rollback plan is stated\n",
+        );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        let skeptic = &config.roles["skeptic"];
+        assert_eq!(skeptic.when.as_deref(), Some("always"));
+        assert_eq!(skeptic.done_when, ["The rollback plan is stated"]);
+        assert_eq!(config.role_lines["newcomer"], 3);
+        assert_eq!(config.role_lines["skeptic"], 4);
+    }
+
+    #[test]
+    fn an_unknown_key_inside_a_role_fails_the_configuration() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "roles:\n  skeptic:\n    done-when: [x]\n",
+        );
+        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
+        assert_eq!(err.code(), "invalid");
+        assert!(err.to_string().contains("done-when"), "{err}");
+    }
+
+    #[test]
+    fn inherited_roles_are_ignored() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with_file(
+                "/shared/_codev/config.yaml",
+                "context: shared\nroles:\n  skeptic: never\n",
+            );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.roles.is_empty());
+        assert_eq!(config.context.len(), 1);
     }
 
     #[test]

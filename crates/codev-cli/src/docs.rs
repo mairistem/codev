@@ -343,6 +343,74 @@ mod tests {
         assert_eq!(en, fr, "docs/en and docs/fr must list the same chapters");
     }
 
+    /// `(id, row)` for each row of the built-in roles table of a Roles
+    /// chapter: the first table whose header starts with `| Id |`.
+    fn built_in_role_rows(chapter: &str) -> Vec<(String, String)> {
+        chapter
+            .lines()
+            .skip_while(|line| !line.starts_with("| Id |"))
+            .skip(2) // the header and its separator
+            .take_while(|line| line.starts_with('|'))
+            .map(|row| {
+                let id = row
+                    .split('|')
+                    .nth(1)
+                    .unwrap_or_default()
+                    .trim()
+                    .trim_matches('`')
+                    .to_string();
+                (id, row.to_string())
+            })
+            .collect()
+    }
+
+    fn roles_chapter(lang: Lang) -> &'static str {
+        lang.chapters()
+            .iter()
+            .find(|(path, _)| *path == "roles.md")
+            .map(|(_, source)| *source)
+            .expect("a roles.md chapter")
+    }
+
+    #[test]
+    fn roles_chapters_list_exactly_the_catalog() {
+        use codev_engine::ports::MemoryFileSystem;
+        let fs = MemoryFileSystem::new();
+        let layout = codev_core::Layout::new("/p");
+        let schema = codev_engine::schemas::resolve(&fs, &layout, "spec-driven").unwrap();
+        let catalog = codev_core::roles::catalog(schema.graph.schema(), "spec-driven");
+
+        for lang in [Lang::En, Lang::Fr] {
+            let rows = built_in_role_rows(roles_chapter(lang));
+            for role in &catalog {
+                let (_, row) = rows
+                    .iter()
+                    .find(|(id, _)| id == &role.id)
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "{}: role `{}` is missing from roles.md",
+                            lang.tag(),
+                            role.id
+                        )
+                    });
+                let name = role.name(lang.tag());
+                assert!(
+                    row.contains(&format!("| {name} |")),
+                    "{}: role `{}` must show its name `{name}`: {row}",
+                    lang.tag(),
+                    role.id
+                );
+            }
+            for (id, _) in &rows {
+                assert!(
+                    catalog.iter().any(|role| &role.id == id),
+                    "{}: roles.md lists `{id}`, which is not a role of the catalog",
+                    lang.tag()
+                );
+            }
+        }
+    }
+
     #[test]
     fn every_chapter_has_exactly_one_top_level_title() {
         for (lang, chapters) in [("en", CHAPTERS_EN), ("fr", CHAPTERS_FR)] {

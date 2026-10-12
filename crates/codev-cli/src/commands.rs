@@ -8,10 +8,11 @@ use codev_core::changelog;
 use codev_core::config::InheritArg;
 use codev_core::doctor::{
     self as core_doctor, ChangelogState, Check, CheckStatus, DoctorFacts, GitSourceFact,
-    VersionFacts,
+    RolesFacts, VersionFacts,
 };
 use codev_core::layout::slashed;
 use codev_core::managed::{self, SpliceMode};
+use codev_core::roles::ResolvedRole;
 use codev_core::update::UpdateNotice;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
@@ -24,6 +25,7 @@ use codev_engine::decisions_actions as engine_actions;
 use codev_engine::instructions::Instructions;
 use codev_engine::integration::{self, IntegrationPlan, IntegrationStep};
 use codev_engine::metadata::ChangeMetadata;
+use codev_engine::roles as engine_roles;
 use codev_engine::sources as engine_sources;
 use codev_engine::sync as engine_sync;
 use codev_engine::sync::SyncOutcome;
@@ -535,6 +537,9 @@ pub fn status(ctx: &Ctx, requested: Option<&str>) -> Result<StatusOutcome> {
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
     let ctxt = change::load(ctx.fs, &layout, &config, change.clone())?;
+    // An invalid role setting fails the status too: the skills read it
+    // first, and must not go on with roles they cannot trust.
+    engine_roles::resolve(ctx.fs, &layout, &config, Some(&ctxt))?;
 
     Ok(StatusOutcome {
         status: change::status(ctx.fs, &layout, &ctxt)?,
@@ -619,6 +624,51 @@ pub fn artifact_instructions(
     Ok(instructions::for_artifact(
         ctx.fs, ctx.env, &layout, &ctxt, &config, artifact,
     )?)
+}
+
+// ─────────────────────────────── roles ───────────────────────────────
+
+#[derive(Debug)]
+pub struct RolesOutcome {
+    /// `None` without `--change`: the project's roles.
+    pub change: Option<ChangeId>,
+    pub schema_name: String,
+    /// The step asked with `--at`; `None` lists every role.
+    pub at: Option<String>,
+    /// For the display names.
+    pub language: String,
+    /// The roles active at `at`, or every role without it.
+    pub roles: Vec<ResolvedRole>,
+    pub warnings: Vec<Warning>,
+}
+
+/// `codev roles`: the roles of a step, or every role with its activation.
+/// With `--change`, the change's schema and `change.yaml` apply.
+pub fn roles(ctx: &Ctx, at: Option<&str>, requested_change: Option<&str>) -> Result<RolesOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    let change_ctx = match requested_change {
+        Some(name) => Some(change::load(
+            ctx.fs,
+            &layout,
+            &config,
+            ChangeId::parse(name)?,
+        )?),
+        None => None,
+    };
+    let resolved = engine_roles::resolve(ctx.fs, &layout, &config, change_ctx.as_ref())?;
+    let roles = match at {
+        Some(step) => resolved.active_at(step)?.into_iter().cloned().collect(),
+        None => resolved.roles.clone(),
+    };
+    Ok(RolesOutcome {
+        change: change_ctx.map(|c| c.change),
+        schema_name: resolved.schema_name,
+        at: at.map(str::to_string),
+        language: config.language,
+        roles,
+        warnings: config.warnings,
+    })
 }
 
 // ─────────────────────────────── list / schemas ───────────────────────────────
@@ -1688,6 +1738,7 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
             .iter()
             .map(|u| u.key.clone())
             .collect(),
+        roles: roles_facts(ctx, layout, &resolved),
         skills: ClaudeCode::skill_states(ctx.fs, root, &selected, ctx.version),
         main_specs: specs::list(ctx.fs, layout).len(),
         accepted_decisions,
@@ -1719,6 +1770,33 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
         root: root.to_path_buf(),
         checks: core_doctor::evaluate(&facts),
     })
+}
+
+/// The roles in effect for `config.roles`: the invalid settings when there
+/// are some, otherwise the active and disabled roles. Empty when the
+/// configured schema cannot be resolved — other checks report that.
+fn roles_facts(ctx: &Ctx, layout: &Layout, config: &config::ResolvedConfig) -> RolesFacts {
+    let invalid: Vec<String> = engine_roles::project_findings(ctx.fs, layout, config)
+        .into_iter()
+        .map(|finding| finding.role)
+        .collect();
+    if !invalid.is_empty() {
+        return RolesFacts {
+            invalid,
+            ..RolesFacts::default()
+        };
+    }
+    let Ok(resolved) = engine_roles::resolve(ctx.fs, layout, config, None) else {
+        return RolesFacts::default();
+    };
+    let (active, disabled): (Vec<_>, Vec<_>) =
+        resolved.roles.iter().partition(|role| role.is_active());
+    let ids = |roles: Vec<&ResolvedRole>| roles.iter().map(|r| r.role.id.clone()).collect();
+    RolesFacts {
+        active: ids(active),
+        disabled: ids(disabled),
+        invalid: Vec::new(),
+    }
 }
 
 /// Number of missing doctor checks in the current project, for the one-line
@@ -2118,6 +2196,144 @@ edition = "2024"
         assert_eq!(err.code, "invalid_change_id");
         assert!(err.message.contains("reserved"), "{}", err.message);
         assert_eq!(h.fs.paths(), before, "a refused name writes nothing");
+    }
+
+    /// A project with a `spec-driven` change `add-auth` and `config` as
+    /// its `_codev/config.yaml`.
+    fn roles_project(config: &str, change_yaml: &str) -> Harness {
+        Harness::new()
+            .with("/p/_codev/config.yaml", config)
+            .with("/p/_codev/changes/add-auth/change.yaml", change_yaml)
+    }
+
+    fn roles_json(h: &Harness, at: Option<&str>, change: Option<&str>) -> serde_json::Value {
+        let outcome = roles(&h.ctx(), at, change).unwrap();
+        serde_json::to_value(crate::contract::RolesV1::from(&outcome)).unwrap()
+    }
+
+    #[test]
+    fn roles_at_a_step_as_json() {
+        let h = roles_project("", "schema: spec-driven\n");
+        let json = roles_json(&h, Some("plan.trace"), Some("add-auth"));
+        assert_eq!(json["changeName"], "add-auth");
+        assert_eq!(json["at"], "plan.trace");
+        let roles = json["roles"].as_array().unwrap();
+        assert_eq!(roles.len(), 1);
+        let tracer = &roles[0];
+        assert_eq!(tracer["id"], "tracer");
+        assert_eq!(tracer["kind"], "step");
+        assert_eq!(tracer["at"], "plan.trace");
+        assert!(tracer["artifact"].is_null());
+        assert_eq!(tracer["when"], "always");
+        assert_eq!(tracer["whenOrigin"], "default");
+        let criteria = tracer["doneWhen"].as_array().unwrap();
+        assert!(!criteria.is_empty());
+        assert!(criteria.iter().all(|c| c["origin"] == "built-in"));
+    }
+
+    #[test]
+    fn roles_at_plan_write_are_the_artifact_roles() {
+        let h = roles_project("", "schema: spec-driven\n");
+        let json = roles_json(&h, Some("plan.write"), None);
+        assert!(json["changeName"].is_null());
+        let pairs: Vec<(String, String)> = json["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| {
+                (
+                    r["id"].as_str().unwrap().to_string(),
+                    r["artifact"].as_str().unwrap().to_string(),
+                )
+            })
+            .collect();
+        let expected = [
+            ("product", "proposal"),
+            ("qa", "specs"),
+            ("architect", "design"),
+            ("lead", "tasks"),
+        ]
+        .map(|(id, artifact)| (id.to_string(), artifact.to_string()));
+        assert_eq!(pairs, expected);
+        assert_eq!(
+            json["roles"][0]["doneWhen"][0]["origin"],
+            "schema:spec-driven"
+        );
+    }
+
+    #[test]
+    fn roles_without_at_lists_every_role() {
+        let h = roles_project("roles:\n  newcomer: never\n", "schema: spec-driven\n");
+        let json = roles_json(&h, None, None);
+        let roles = json["roles"].as_array().unwrap();
+        let ids: Vec<&str> = roles.iter().map(|r| r["id"].as_str().unwrap()).collect();
+        assert_eq!(
+            ids,
+            [
+                "analyst",
+                "investigator",
+                "product",
+                "qa",
+                "architect",
+                "lead",
+                "tracer",
+                "skeptic",
+                "developer",
+                "newcomer"
+            ]
+        );
+        let newcomer = &roles[9];
+        assert_eq!(newcomer["when"], "never");
+        assert_eq!(newcomer["whenOrigin"], "project");
+        let locked: Vec<&str> = roles
+            .iter()
+            .filter(|r| r["disableable"] == false)
+            .map(|r| r["id"].as_str().unwrap())
+            .collect();
+        assert_eq!(locked, ["product", "qa", "architect", "lead", "developer"]);
+    }
+
+    #[test]
+    fn roles_follow_the_change_override_and_the_language() {
+        let h = roles_project(
+            "language: fr\nroles:\n  newcomer: never\n",
+            "schema: spec-driven\nroles:\n  newcomer: always\n",
+        );
+        let with_change = roles_json(&h, Some("code.review"), Some("add-auth"));
+        assert_eq!(with_change["roles"][0]["whenOrigin"], "change");
+        assert_eq!(with_change["roles"][0]["name"], "Nouvel arrivant");
+        let project = roles_json(&h, Some("code.review"), None);
+        assert!(project["roles"].as_array().unwrap().is_empty());
+    }
+
+    #[test]
+    fn roles_rejects_an_unknown_step() {
+        let h = roles_project("", "schema: spec-driven\n");
+        let err = roles(&h.ctx(), Some("plan.review"), None).unwrap_err();
+        assert_eq!(err.code, "unknown_step");
+        assert!(err.message.contains("code.review"), "{}", err.message);
+    }
+
+    #[test]
+    fn status_fails_with_unknown_role() {
+        let h = roles_project("roles:\n  reviewer: never\n", "schema: spec-driven\n");
+        let err = status(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "unknown_role");
+        assert!(err.message.contains("reviewer"), "{}", err.message);
+    }
+
+    #[test]
+    fn instructions_fail_when_an_artifact_role_is_disabled() {
+        let h = roles_project("roles:\n  qa: never\n", "schema: spec-driven\n");
+        let err = artifact_instructions(&h.ctx(), Some("specs"), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "role_not_disableable");
+        assert!(err.message.contains("qa"), "{}", err.message);
+        // Extending its criteria is fine.
+        let h = roles_project(
+            "roles:\n  qa:\n    done_when: [Every error code is named]\n",
+            "schema: spec-driven\n",
+        );
+        assert!(artifact_instructions(&h.ctx(), Some("specs"), Some("add-auth")).is_ok());
     }
 
     #[test]
@@ -3380,6 +3596,7 @@ The rationale for the choice.
         assert_eq!(check(&outcome, "ci").status, CheckStatus::Missing);
         for id in [
             "config.language",
+            "config.roles",
             "skills",
             "sources",
             "codev_version",
@@ -3389,6 +3606,40 @@ The rationale for the choice.
             assert_eq!(check(&outcome, id).status, CheckStatus::Ok, "{id}");
         }
         assert!(outcome.checks.iter().all(|c| c.id != "pr_template"));
+    }
+
+    #[test]
+    fn doctor_lists_the_roles_in_effect() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let config = h.fs.read("/p/_codev/config.yaml").unwrap();
+        let h = h.with(
+            "/p/_codev/config.yaml",
+            &format!("{config}\nroles:\n  newcomer: never\n"),
+        );
+        let outcome = doctor(&h.ctx()).unwrap();
+        let roles = check(&outcome, "config.roles");
+        assert_eq!(roles.status, CheckStatus::Ok);
+        assert!(
+            roles
+                .message
+                .contains("active roles: analyst, investigator, product"),
+            "{}",
+            roles.message
+        );
+        assert!(
+            roles.message.ends_with("disabled: newcomer"),
+            "{}",
+            roles.message
+        );
+
+        let h = h.with(
+            "/p/_codev/config.yaml",
+            "language: en\nroles:\n  reviewer: never\n",
+        );
+        let outcome = doctor(&h.ctx()).unwrap();
+        assert_eq!(check(&outcome, "config.roles").code, "roles_invalid");
+        assert_eq!(check(&outcome, "validate").status, CheckStatus::Missing);
     }
 
     #[test]

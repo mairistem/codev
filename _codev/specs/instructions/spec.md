@@ -31,6 +31,10 @@ document SHALL carry:
 - `decisions` — always present; its content is specified by the
   `decisions` capability;
 - `skipped` — `true` when the change's `skip_specs` disables the artifact;
+- `role` — the artifact's role as the `roles` capability resolves it
+  (`id`, `name`, `kind`, `at`, `artifact`, `question`, `when`,
+  `whenOrigin`, `disableable`, `doneWhen`), or `null` when the schema
+  declares no role for the artifact;
 - `status` — the configuration warnings.
 
 The command reads files and writes none. It exits with code 0.
@@ -72,6 +76,23 @@ The command reads files and writes none. It exits with code 0.
   neither `instruction` nor `template`
 - **WHEN** the user runs `codev instructions brief --change quick --json`
 - **THEN** `instruction` and `template` are `null`
+
+#### Scenario: The artifact's role
+
+- **GIVEN** a `spec-driven` change and a configuration where `qa` has the
+  extra criterion `Every error code is named`
+- **WHEN** the user runs `codev instructions specs --change add-auth --json`
+- **THEN** `role.id` is `qa` and `role.question` is the QA analyst's
+  question
+- **AND** `role.doneWhen` ends with `Every error code is named` with the
+  origin `project`, after the schema's criteria
+
+#### Scenario: An artifact without a role
+
+- **GIVEN** a change using a project schema whose artifact `brief` declares
+  no role
+- **WHEN** the user runs `codev instructions brief --change quick --json`
+- **THEN** `role` is `null`
 
 ### Requirement: Context and rules come as blocks with their origin, from general to specific
 
@@ -126,8 +147,9 @@ resolved output path, `Language:` with the language; then, each only when
 not empty, `Read before writing:` with one line per dependency marked `[x]`
 when done and `[ ]` otherwise, `Project context:` and
 `Rules for this artifact:` with one line per block prefixed by its origin in
-parentheses, `Decisions in effect:`, `Instruction:`, `Template:`, and
-`Unlocks:`.
+parentheses, `Role:` with the role's name and id, its question and its
+criteria each prefixed by its origin in parentheses, `Decisions in effect:`,
+`Instruction:`, `Template:`, and `Unlocks:`.
 
 #### Scenario: Human instructions for the specs artifact
 
@@ -137,8 +159,8 @@ parentheses, `Decisions in effect:`, `Instruction:`, `Template:`, and
 - **THEN** the output starts with `Artifact: specs (change `add-auth`,
   schema spec-driven)`
 - **AND** it shows `[x] proposal`, the context and the rule each prefixed
-  with `(project)`, the instruction, the template and `Unlocks: tasks`,
-  in that order
+  with `(project)`, the `Role:` section naming `QA analyst (qa)`, the
+  instruction, the template and `Unlocks: tasks`, in that order
 
 #### Scenario: No empty section
 

@@ -14,6 +14,18 @@ steps, for the user to request.
 A change name as argument, or nothing (in which case the change is resolved
 implicitly if there is only one active change).
 
+## Roles
+
+Steps 3 and 5 belong to a role. At each one, run:
+
+```bash
+codev roles --at <step> --change "<name>" --json
+```
+
+Apply every criterion of every role returned (`roles[].doneWhen`), the
+project's included. If `roles` is empty, the role is disabled by
+configuration: skip the step, and say so in the summary.
+
 ## Steps
 
 ### 1. Resolve the change and check that planning is complete
@@ -57,29 +69,21 @@ If you find a different format (`-[ ]` without a space, uppercase `- [X]`,
 another marker such as `- [-]`), point it out to the user and offer to fix
 it before continuing.
 
-### 3. Work through each unchecked task, in file order
+### 3. Work through each unchecked task, in file order — `code.implement`
+
+Ask for the roles of this step once, before the first task: the
+developer's criteria apply to every task. The project's `rules` and
+`context` come from `codev instructions tasks --change "<name>" --json`.
 
 For each `- [ ]` encountered, in the order it appears:
 
 **a. Announce.** "Task X.Y: <description summarized in a fragment>."
 
-**b. Study.** Read the files the task concerns. Stay read-only while you
-build understanding, then write. Each task in `tasks.md` states how to
-verify it is done — that verification is the acceptance criterion, not a
-suggestion.
+**b. Study.** Read the files the task concerns.
 
-**c. Implement.** Write the code, the tests, the configuration, the
-documentation. Target what the task asks for, nothing more. Write tests
-like the project's existing test suite (framework, location, naming, unit
-or integration level), then by the conventions of its language and the
-project's `rules` — `codev instructions tasks --change "<name>" --json`
-returns them with the `context`.
+**c. Implement.** Write what the task asks for.
 
 **d. Verify.** Run the command, the test, the observation the task cites.
-Take the test command from that `context` or `rules`, the manifest or the CI
-configuration — never guess one; if none is found, ask the user.
-A failing build, a test turning red, a missing behavior: the task is not
-done. Fix, run again.
 
 **e. Check off.** Edit `tasks.md` with `Edit`: the line `- [ ] X.Y …`
 becomes `- [x] X.Y …`. Be precise — a `replace_all` would also replace
@@ -109,23 +113,11 @@ A task cannot be carried out in two cases:
 In both cases, stop after the current task. The following tasks are not
 processed until the obstacle is cleared.
 
-### 5. Review as a newcomer
+### 5. Review as a newcomer — `code.review`
 
 When every box is checked, re-read only the code this change added or
 modified — its diff — as a developer joining the project who has seen
-neither the plan nor this conversation. Check:
-
-- **Without context**: each changed function makes sense without the plan
-  or the conversation.
-- **Names** say what things do; no obscure abbreviation.
-- **Size and nesting**: a function too long or too nested is split, when it
-  splits simply.
-- **Cleverness**: dense one-liners, premature genericity, single-use
-  abstractions — the simple version wins unless the clever one is justified.
-- **Comments** explain the why where it is not obvious, never paraphrase
-  the code.
-- **Tests** read as a description of the behavior.
-- The project's `rules` from step 3c, such as size thresholds.
+neither the plan nor this conversation, along the newcomer's criteria.
 
 Simplify directly what is unambiguous, then re-run the affected tests.
 Never change behavior, never widen the change's scope, never touch code the
@@ -142,7 +134,8 @@ Otherwise, summarize:
 - main files touched (one line),
 - **Readability notes** — from step 5, at most three items, one line each:
   what, where, why. If nothing is worth raising, write "No readability
-  concern found"; never invent notes,
+  concern found"; never invent notes. When the review is disabled, write
+  "The newcomer review is disabled by configuration" instead,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 
