@@ -9,5 +9,5 @@ This repository follows spec-driven development with codev.
 - Trivial fixes (typos, documentation wording) are exempt.
 - Run `codev validate` before committing.
 
-Installed skills: `/codev-propose`, `/codev-explore`, `/codev-apply`, `/codev-sync`, `/codev-archive`, `/codev-update`, `/codev-onboard`.
+Installed skills: `/codev-propose`, `/codev-explore`, `/codev-apply`, `/codev-sync`, `/codev-archive`, `/codev-update`, `/codev-onboard`, `/codev-configure`.
 <!-- codev:end -->
