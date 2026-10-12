@@ -116,12 +116,18 @@ Si la demande mentionne un identifiant de ticket correspondant à
 premier ticket — en lecture seule, en un seul appel — et le cite en tête de la
 proposal. Voir [Jira et autres serveurs MCP](guides/mcp.md).
 
+Rôles : analyste métier, enquêteur de code, product owner, analyste QA,
+architecte, tech lead, contrôleur de traçabilité et relecteur sceptique — voir
+[Planifier un change](roles.md#planifier-un-change-codev-propose).
+
 ### Explore (`/codev-explore`)
 
 Un partenaire de réflexion pour les demandes floues, les investigations et les
 comparaisons d'approches. La skill lit le code et les specs, mais ne crée ni
 change, ni artefact, ni fichier. Une fois l'idée claire, elle suggère
 `/codev-propose`.
+
+Rôle : [partenaire de réflexion](roles.md#partenaire-de-réflexion-codev-explore).
 
 ### Onboard (`/codev-onboard`)
 
@@ -131,6 +137,8 @@ et l'action à mener ensuite — par exemple `/codev-configure` sur un projet
 fraîchement initialisé. Elle lance aussi `codev doctor --json` et liste
 jusqu'à cinq éléments manquants de l'installation avec leur correction, sans
 en exécuter aucune.
+
+Rôle : [guide](roles.md#guide-codev-onboard).
 
 ### Configure (`/codev-configure`)
 
@@ -149,6 +157,8 @@ Python, Go ou Java.
 Tant que la configuration ne comporte aucune `rules:`, `codev init` et
 `codev status` recommandent de la lancer.
 
+Rôle : [analyste de configuration](roles.md#analyste-de-configuration-codev-configure).
+
 ### Apply (`/codev-apply`)
 
 Implémente un change planifié. La skill vérifie que la planification est
@@ -162,6 +172,8 @@ fois la suite de tests complète. Elle s'arrête au premier blocage ou à la pre
 ambiguïté. Elle ne modifie jamais un autre change, ne synchronise jamais et
 n'archive jamais.
 
+Rôle : [développeur](roles.md#développeur-codev-apply).
+
 ### Update (`/codev-update`)
 
 Révise un artefact existant — par exemple une exigence d'un delta de spec
@@ -171,16 +183,22 @@ après relecture — puis recherche dans les autres artefacts les répercussions
 `/codev-apply`) et ne touche pas aux changes archivés. Elle se termine par
 `codev validate`.
 
+Rôle : [éditeur](roles.md#éditeur-codev-update).
+
 ### Sync (`/codev-sync`)
 
 Lance `codev sync` pour un change et indique quelles specs principales ont été
 créées, mises à jour ou laissées inchangées.
+
+Rôle : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
 
 ### Archive (`/codev-archive`)
 
 Lance `codev archive` pour un change. Si la validation signale des erreurs, la
 skill s'arrête et vous renvoie vers `codev validate` au lieu de chercher à les
 contourner.
+
+Rôle : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
 
 ## Choisir les skills à installer
 
