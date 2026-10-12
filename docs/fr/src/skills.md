@@ -58,15 +58,20 @@ retour.
 Chaque artefact a un rôle explicite, tiré des instructions du schéma —
 product owner pour la proposal, analyste QA pour les specs, architecte pour
 le design, tech lead pour les tâches — avec des critères « Done when » que
-l'agent vérifie avant de passer à la suite. Un
-[schéma personnalisé](guides/custom-schemas.md) définit les siens.
+l'agent vérifie avant de passer à la suite. Les critères du tech lead exigent
+que la documentation concernée soit mise à jour dans une tâche, et que chaque
+scénario soit couvert par un test automatisé qui suit les conventions de test
+de votre projet. Un [schéma personnalisé](guides/custom-schemas.md) définit
+les siens.
 
 Avant de présenter le plan, la skill le relit en deux étapes :
 
 1. **Traçabilité** — chaque capacité a son fichier de spec, chaque exigence
    un scénario nominal et un scénario d'erreur ou de cas limite, chaque
-   scénario une tâche dont la vérification le couvre. Les manques sont
-   corrigés dans les artefacts.
+   scénario une tâche dont la vérification le couvre par un test
+   automatisé, et une tâche met à jour la documentation lorsque la section
+   Impact touche un comportement documenté. Les manques sont corrigés dans
+   les artefacts.
 2. **Relecture contradictoire** — la skill relit le plan en relecteur
    sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches.
    Sécurité et confidentialité, compatibilité et migration, exploitabilité,
@@ -110,6 +115,12 @@ code source, puis rédige un bloc `context:` et des `rules:` par artefact pour
 confirmation. Elle ne touche jamais à `schema`, `language`, `workflows`, `mcp`
 ni `inherits`, et préserve les commentaires existants.
 
+Ses règles `tasks` comprennent des règles de test pour votre langage :
+framework, emplacement des tests, nommage, commandes — tirées de vos tests
+existants. C'est seulement lorsque le projet n'a encore aucun test qu'elle
+se rabat sur les conventions courantes de Rust, TypeScript/JavaScript,
+Python, Go ou Java.
+
 Tant que la configuration ne comporte aucune `rules:`, `codev init` et
 `codev status` recommandent de la lancer.
 
@@ -117,7 +128,12 @@ Tant que la configuration ne comporte aucune `rules:`, `codev init` et
 
 Implémente un change planifié. La skill vérifie que la planification est
 complète, puis traite dans l'ordre chaque tâche non cochée de `tasks.md`, la
-vérifie et la coche. Elle s'arrête au premier blocage ou à la première
+vérifie et ne la coche qu'une fois la vérification réussie. Elle écrit les
+tests à la manière de votre suite de tests existante, puis selon les
+conventions de votre langage et vos `rules`. Elle prend la commande de test
+dans votre configuration, votre manifeste ou votre CI, et vous la demande si
+elle n'en trouve aucune. Avant d'annoncer le change terminé, elle lance une
+fois la suite de tests complète. Elle s'arrête au premier blocage ou à la première
 ambiguïté. Elle ne modifie jamais un autre change, ne synchronise jamais et
 n'archive jamais.
 

@@ -62,6 +62,19 @@ Detailed notes for each version are on the corresponding GitHub Release.
   pull request template, validation — with the command or skill that fixes
   each item. `codev init` and `codev status` point to it when something is
   missing, and `/codev-onboard` relays its findings.
+- The tech lead's "Done when" criteria of the `spec-driven` schema require
+  the affected documentation to be updated in a task (or the plan to say none
+  is), every spec scenario to be covered by an automated test, and tests to
+  follow the project's existing suite, its language's conventions and its
+  `rules`. The proposal's Impact names the documentation to update.
+- `/codev-propose`'s traceability check also requires an automated test per
+  scenario and a documentation task when Impact touches documented behavior.
+- `/codev-apply` writes tests like the project's existing suite, takes the
+  test command from the configuration, manifest or CI instead of guessing it,
+  and runs the full test suite once before reporting the change as done.
+- `/codev-configure` proposes testing rules grounded in the project's
+  existing tests, falling back on mainstream Rust, TypeScript/JavaScript,
+  Python, Go and Java conventions when there are none yet.
 
 ## [0.4.0] - 2026-09-30
 

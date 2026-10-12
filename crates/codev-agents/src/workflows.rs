@@ -520,4 +520,86 @@ mod tests {
             );
         }
     }
+
+    /// The section of a workflow body between two headings, so that an
+    /// assertion targets the step that must carry the instruction.
+    fn section<'a>(body: &'a str, from: &str, to: &str) -> &'a str {
+        let start = body
+            .find(from)
+            .unwrap_or_else(|| panic!("missing `{from}`"));
+        let rest = &body[start..];
+        let end = rest.find(to).unwrap_or_else(|| panic!("missing `{to}`"));
+        &rest[..end]
+    }
+
+    /// A workflow body with its whitespace collapsed, so that an assertion
+    /// survives rewrapping and line-ending changes.
+    fn flat(text: &str) -> String {
+        text.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
+
+    #[test]
+    fn propose_traceability_requires_automated_tests_and_documentation() {
+        let propose = find("propose").unwrap();
+        let step = flat(section(
+            propose.body,
+            "### 6. Check traceability",
+            "### 7. Challenge the plan",
+        ));
+        for keyword in [
+            "names an automated test",
+            "why automation is impossible",
+            "updates the documentation",
+            "none is affected",
+        ] {
+            assert!(
+                step.contains(keyword),
+                "the traceability check must cite `{keyword}`"
+            );
+        }
+    }
+
+    #[test]
+    fn apply_body_tests_by_the_project_conventions_and_runs_the_full_suite() {
+        let apply = find("apply").unwrap();
+        let body = flat(apply.body);
+        for keyword in [
+            "existing test suite",
+            "conventions of its language",
+            "the manifest or the CI configuration",
+            "never guess one",
+            "ask the user",
+            "full test suite once",
+            "Verify before checking off",
+        ] {
+            assert!(
+                body.contains(keyword),
+                "the `apply` body must cite `{keyword}`"
+            );
+        }
+        // The full suite runs before the completion summary, not after it.
+        let suite = body.find("full test suite once").unwrap();
+        let summary = body.find("ready to be archived").unwrap();
+        assert!(suite < summary);
+    }
+
+    #[test]
+    fn configure_body_carries_testing_rules_and_the_conventions_reference() {
+        let configure = find("configure").unwrap();
+        let reference = flat(section(
+            configure.body,
+            "existing practice wins",
+            "### 4. Show the diff",
+        ));
+        for language in ["Rust", "TypeScript / JavaScript", "Python", "Go", "Java"] {
+            assert!(
+                reference.contains(&format!("**{language}**")),
+                "the conventions reference must cover {language}"
+            );
+        }
+        assert!(
+            flat(configure.body).contains("testing rules"),
+            "the drafted `tasks` rules must include testing rules"
+        );
+    }
 }

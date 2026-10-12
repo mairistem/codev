@@ -96,6 +96,26 @@ rules:
     - "Assess the accessibility (RGAA) impact of any user-interface change."
 ```
 
+Testing rules go under `tasks`: `/codev-propose` writes the plan with them,
+and `/codev-apply` follows them when it writes the tests. Describe what your
+existing tests do — `/codev-configure` drafts the rule from them:
+
+```yaml
+rules:
+  tasks:
+    # One rule for your stack, for example:
+    # Rust
+    - "Unit tests in #[cfg(test)] mod tests next to the code, integration tests in tests/; cargo test, cargo clippy -- -D warnings, cargo fmt --check."
+    # TypeScript
+    - "Vitest, *.test.ts next to the code, Testing Library for components; tsc --noEmit and the linter in CI."
+    # Python
+    - "pytest, tests/ mirroring the package, fixtures and parametrize; ruff check."
+    # Go
+    - "Table-driven tests in _test.go files of the same package; go test ./..., go vet."
+    # Java
+    - "JUnit 5 under src/test/java mirroring the main package, Mockito only at boundaries; mvn verify."
+```
+
 While `rules` is empty, `codev init` and `codev status` suggest running
 `/codev-configure`.
 

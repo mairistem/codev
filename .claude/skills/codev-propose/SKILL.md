@@ -222,7 +222,10 @@ Re-read every artifact from disk and check that:
   is listed in the proposal;
 - every requirement has a nominal scenario and an error or edge-case
   scenario, or states why none applies;
-- every scenario is covered by a task whose verification refers to it;
+- every scenario is covered by a task whose verification refers to it and
+  names an automated test, or says why automation is impossible;
+- a task updates the documentation when the proposal's Impact touches
+  documented behavior, or the plan states that none is affected;
 - every task's verification is concrete: a test, a command, an observable
   behavior.
 
