@@ -109,17 +109,17 @@ règle à partir d'eux :
 ```yaml
 rules:
   tasks:
-    # Une règle pour votre pile, par exemple :
+    # Une règle pour votre pile, par exemple :
     # Rust
-    - "Tests unitaires dans un #[cfg(test)] mod tests à côté du code, tests d'intégration dans tests/ ; cargo test, cargo clippy -- -D warnings, cargo fmt --check."
+    - "Tests unitaires dans un #[cfg(test)] mod tests à côté du code, tests d'intégration dans tests/ ; cargo test, cargo clippy -- -D warnings, cargo fmt --check."
     # TypeScript
-    - "Vitest, *.test.ts à côté du code, Testing Library pour les composants ; tsc --noEmit et le linter en CI."
+    - "Vitest, *.test.ts à côté du code, Testing Library pour les composants ; tsc --noEmit et le linter en CI."
     # Python
-    - "pytest, tests/ reproduisant l'arborescence du paquet, fixtures et parametrize ; ruff check."
+    - "pytest, tests/ reproduisant l'arborescence du paquet, fixtures et parametrize ; ruff check."
     # Go
-    - "Tests pilotés par table dans des fichiers _test.go du même paquet ; go test ./..., go vet."
+    - "Tests pilotés par table dans des fichiers _test.go du même paquet ; go test ./..., go vet."
     # Java
-    - "JUnit 5 sous src/test/java, à l'image du paquet principal, Mockito seulement aux frontières ; mvn verify."
+    - "JUnit 5 sous src/test/java, à l'image du paquet principal, Mockito seulement aux frontières ; mvn verify."
 ```
 
 Tant que `rules` est vide, `codev init` et `codev status` suggèrent de lancer
