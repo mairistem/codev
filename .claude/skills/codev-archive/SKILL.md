@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read"
 license: MIT
 metadata:
   generator: codev
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 Close a codev change: merge its deltas into the main specs and move the
