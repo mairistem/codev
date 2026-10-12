@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read, Glob"
 license: MIT
 metadata:
   generator: codev
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 Introduce codev to a user discovering it: what the tool does, the current
