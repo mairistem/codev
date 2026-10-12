@@ -79,6 +79,7 @@ apply:
 | `artifacts[].template` | non | Nom du fichier de template, recherché dans le dossier `templates/` du schéma |
 | `artifacts[].instruction` | non | Consignes pour l'agent qui rédige cet artefact |
 | `artifacts[].requires` | non | Identifiants des artefacts qui doivent exister au préalable |
+| `artifacts[].role` | non | Le rôle qui a la charge de l'artefact — voir [Déclarer les rôles des artefacts](#déclarer-les-rôles-des-artefacts) |
 | `apply.requires` | oui | Artefacts qui doivent exister avant le début de l'implémentation |
 | `apply.tracks` | oui | Fichier dont les cases à cocher suivent l'avancement de l'implémentation |
 | `apply.instruction` | non | Consignes pour la phase d'implémentation |
@@ -94,6 +95,37 @@ raison.
 Un artefact est **terminé** lorsque son fichier existe — ou, pour un motif
 glob, lorsqu'au moins un fichier correspond. Il est **prêt** lorsque tous les
 artefacts dont il dépend sont terminés.
+
+## Déclarer les rôles des artefacts
+
+Un artefact peut déclarer le [rôle](../roles.md) qui en a la charge. L'agent
+le reçoit dans le champ `role` de `codev instructions` et vérifie ses
+critères avant de passer à la suite ; `codev roles --at plan.write` le
+liste.
+
+```yaml
+  - id: brief
+    generates: brief.md
+    role:
+      id: editor
+      name: { en: Editor, fr: Rédacteur }
+      question: Is the brief clear?
+      done_when:
+        - One page at most
+        - The why comes first
+```
+
+| Clé | Obligatoire | Signification |
+|---|---|---|
+| `role.id` | oui | Identifiant du rôle, en kebab-case, unique dans le schéma, et distinct des rôles d'étape intégrés comme `skeptic` |
+| `role.name` | oui | Noms affichés par code de langue ; `en` est obligatoire et sert pour les langues sans nom |
+| `role.question` | oui | La question dont le rôle a la charge |
+| `role.done_when` | non | Les critères que l'agent vérifie, avec l'origine `schema:<name>` |
+
+Un projet complète les critères sous [`roles:`](../reference/configuration.md#roles)
+avec l'identifiant du rôle ; un rôle d'artefact ne peut pas être désactivé.
+Un artefact sans `role:` n'en a pas, et son `instruction` est utilisée telle
+quelle.
 
 ## Utiliser un schéma
 

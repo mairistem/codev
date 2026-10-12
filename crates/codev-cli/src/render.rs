@@ -6,6 +6,7 @@
 use std::fmt::Write as _;
 
 use codev_core::parser::ast::Severity;
+use codev_core::roles::{ResolvedRole, RoleKind, WhenOrigin};
 use codev_core::{ArtifactState, ChangeStatus};
 use codev_engine::Warning;
 use codev_engine::archive::ArchiveOutcome;
@@ -440,6 +441,17 @@ pub fn instructions(instructions: &Instructions) -> String {
         for block in blocks {
             let _ = writeln!(out, "  ({}) {}", block.origin, block.text);
         }
+    }
+
+    if let Some(role) = &instructions.role {
+        let _ = writeln!(out);
+        let _ = writeln!(
+            out,
+            "Role: {} ({})",
+            role.role.name(&instructions.language),
+            role.role.id
+        );
+        write_role_body(&mut out, role);
     }
 
     // Decisions in effect — one line per entry. The section is absent when
@@ -909,6 +921,97 @@ pub fn schemas(outcome: &SchemasOutcome) -> String {
     out
 }
 
+/// A role's question and criteria, each criterion prefixed with its
+/// origin — shared by `codev instructions` and `codev roles`.
+fn write_role_body(out: &mut String, role: &ResolvedRole) {
+    let _ = writeln!(out, "  {}", role.role.question);
+    if role.role.criteria.is_empty() {
+        return;
+    }
+    let _ = writeln!(out, "  Done when:");
+    for criterion in &role.role.criteria {
+        let _ = writeln!(out, "  - ({}) {}", criterion.origin, criterion.text);
+    }
+}
+
+/// `codev roles`: the active roles of a step with their criteria, or one
+/// line per role with its activation.
+pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
+    let mut out = String::new();
+    let change = outcome
+        .change
+        .as_ref()
+        .map(|change| format!(", change `{change}`"))
+        .unwrap_or_default();
+    let Some(step) = &outcome.at else {
+        let _ = writeln!(out, "Roles (schema {}{change})", outcome.schema_name);
+        let _ = writeln!(out);
+        roles_table(&mut out, outcome);
+        return out;
+    };
+    let _ = writeln!(
+        out,
+        "Roles at {step} (schema {}{change})",
+        outcome.schema_name
+    );
+    if outcome.roles.is_empty() {
+        let _ = writeln!(out);
+        let _ = writeln!(out, "No role is active at {step}: skip this step.");
+        return out;
+    }
+    for role in &outcome.roles {
+        let _ = writeln!(out);
+        let _ = writeln!(
+            out,
+            "{} — {}",
+            role.role.id,
+            role.role.name(&outcome.language)
+        );
+        write_role_body(&mut out, role);
+    }
+    out
+}
+
+fn roles_table(out: &mut String, outcome: &crate::commands::RolesOutcome) {
+    let rows: Vec<[String; 4]> = outcome
+        .roles
+        .iter()
+        .map(|resolved| {
+            let role = &resolved.role;
+            let place = match &role.kind {
+                RoleKind::Step => role.at.clone(),
+                RoleKind::Artifact(artifact) => artifact.clone(),
+            };
+            let mut activation = resolved.when.as_str().to_string();
+            if resolved.when_origin != WhenOrigin::Default {
+                activation.push_str(&format!(" ({})", resolved.when_origin.as_str()));
+            }
+            if !role.disableable {
+                activation.push_str(", cannot be disabled");
+            }
+            [
+                role.id.clone(),
+                role.name(&outcome.language).to_string(),
+                place,
+                activation,
+            ]
+        })
+        .collect();
+    let width = |column: usize| {
+        rows.iter()
+            .map(|row| row[column].chars().count())
+            .max()
+            .unwrap_or(0)
+    };
+    let (id_width, name_width, place_width) = (width(0), width(1), width(2));
+    for [id, name, place, activation] in &rows {
+        let _ = writeln!(
+            out,
+            "  {id:<id_width$}  {name:<name_width$}  {place:<place_width$}  {activation}"
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -966,6 +1069,7 @@ apply:
                 origin: "project".into(),
             }],
             skipped: false,
+            role: None,
             warnings: Vec::new(),
         };
         let rendered = super::instructions(&instr);
@@ -992,6 +1096,7 @@ apply:
             unlocks: Vec::new(),
             decisions: Vec::new(),
             skipped: false,
+            role: None,
             warnings: Vec::new(),
         };
         let rendered = super::instructions(&instr);
@@ -1247,7 +1352,7 @@ apply:
         assert!(
             rendered
                 .trim_end()
-                .ends_with("12 check(s), 3 to fix, 2 warning(s)"),
+                .ends_with("13 check(s), 3 to fix, 2 warning(s)"),
             "{rendered}"
         );
     }
@@ -1270,6 +1375,7 @@ apply:
             unlocks: vec!["specs".into()],
             decisions: Vec::new(),
             skipped: false,
+            role: None,
             warnings: Vec::new(),
         }
     }
@@ -1290,6 +1396,105 @@ apply:
         for absent in ["Instruction:", "Template:", "Unlocks:"] {
             assert!(!rendered.contains(absent), "`{absent}` in:\n{rendered}");
         }
+    }
+
+    fn spec_driven_role(id: &str) -> codev_core::roles::ResolvedRole {
+        use codev_core::roles::{self, Activation, ResolvedRole, WhenOrigin};
+        let yaml = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
+        let schema = codev_core::Schema::parse(yaml).unwrap();
+        ResolvedRole {
+            role: roles::catalog(&schema, "spec-driven")
+                .into_iter()
+                .find(|r| r.id == id)
+                .unwrap(),
+            when: Activation::Always,
+            when_origin: WhenOrigin::Default,
+        }
+    }
+
+    #[test]
+    fn instructions_human_output_shows_the_role_after_the_rules() {
+        let mut instr = bare_instructions();
+        instr.artifact_id = "specs".into();
+        instr.rules = vec![codev_engine::config::Block {
+            origin: "project".into(),
+            text: "Only observable behavior".into(),
+        }];
+        instr.role = Some(spec_driven_role("qa"));
+        let rendered = super::instructions(&instr);
+        let rules = rendered.find("Rules for this artifact:").unwrap();
+        let role = rendered
+            .find("Role: QA analyst (qa)")
+            .unwrap_or_else(|| panic!("{rendered}"));
+        let instruction = rendered.find("Instruction:").unwrap();
+        assert!(rules < role && role < instruction, "{rendered}");
+        assert!(
+            rendered.contains("  - (schema:spec-driven) each requirement uses SHALL"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn roles_lists_every_role_with_its_activation() {
+        use codev_core::roles::{Activation, WhenOrigin};
+        let mut newcomer = codev_core::roles::builtin_step_roles()
+            .into_iter()
+            .find(|r| r.id == "newcomer")
+            .map(|role| codev_core::roles::ResolvedRole {
+                role,
+                when: Activation::Never,
+                when_origin: WhenOrigin::Project,
+            })
+            .unwrap();
+        newcomer.role.disableable = true;
+        let outcome = crate::commands::RolesOutcome {
+            change: None,
+            schema_name: "spec-driven".into(),
+            at: None,
+            language: "en".into(),
+            roles: vec![spec_driven_role("product"), newcomer],
+            warnings: Vec::new(),
+        };
+        let rendered = roles(&outcome);
+        assert!(
+            rendered.starts_with("Roles (schema spec-driven)"),
+            "{rendered}"
+        );
+        let product = rendered.lines().find(|l| l.contains("product")).unwrap();
+        assert!(product.contains("Product owner") && product.contains("proposal"));
+        assert!(product.ends_with("always, cannot be disabled"), "{product}");
+        let newcomer = rendered.lines().find(|l| l.contains("newcomer")).unwrap();
+        assert!(newcomer.contains("code.review"), "{newcomer}");
+        assert!(newcomer.ends_with("never (project)"), "{newcomer}");
+    }
+
+    #[test]
+    fn roles_at_a_step_show_criteria_or_say_the_step_is_skipped() {
+        let mut outcome = crate::commands::RolesOutcome {
+            change: Some(ChangeId::parse("add-auth").unwrap()),
+            schema_name: "spec-driven".into(),
+            at: Some("plan.write".into()),
+            language: "fr".into(),
+            roles: vec![spec_driven_role("architect")],
+            warnings: Vec::new(),
+        };
+        let rendered = roles(&outcome);
+        assert!(
+            rendered.starts_with("Roles at plan.write (schema spec-driven, change `add-auth`)"),
+            "{rendered}"
+        );
+        assert!(rendered.contains("architect — Architecte"), "{rendered}");
+        assert!(rendered.contains("  How will it be built?"), "{rendered}");
+        assert!(
+            rendered.contains("  - (schema:spec-driven) each decision"),
+            "{rendered}"
+        );
+        outcome.roles.clear();
+        assert!(
+            roles(&outcome).contains("No role is active at plan.write: skip this step."),
+            "{}",
+            roles(&outcome)
+        );
     }
 
     #[test]

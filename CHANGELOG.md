@@ -11,10 +11,15 @@ Detailed notes for each version are on the corresponding GitHub Release.
 
 ### Added
 
+- Roles are configurable: `roles:` in `_codev/config.yaml` turns a review role on or off (`always` / `never`) and adds your own "done when" criteria; `roles:` in a change's `change.yaml` overrides the activation for that change.
+- `codev roles` lists the roles active at a workflow step with their criteria, or every role with its activation; `codev instructions --json` returns the artifact's role in a `role` field.
+- A schema artifact may declare its role as data (`role:` with id, name, question and "done when" criteria).
+- `codev doctor` lists the active and disabled roles.
 - `/codev-apply` reviews the code a change touched as a newcomer would, simplifies what is unambiguous without changing behavior, and reports up to three readability notes in its summary.
 
 ### Changed
 
+- The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `codev instructions`, and `/codev-propose` and `/codev-apply` take their review criteria from `codev roles`.
 - The architect's criteria of the default schema require the simplest approach that satisfies the specs, and a design a newcomer can follow without knowing its history.
 <!-- codev:end -->
 

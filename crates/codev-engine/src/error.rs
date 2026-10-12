@@ -52,6 +52,15 @@ pub enum EngineError {
         source: io::Error,
     },
 
+    /// An invalid entry of `roles:`, in the configuration or a change's
+    /// `change.yaml`. The code is the finding's: `unknown_role`,
+    /// `invalid_role_activation` or `role_not_disableable`.
+    #[error("{message}")]
+    RoleSetting { code: &'static str, message: String },
+
+    #[error("unknown step `{step}`; the steps are {}", codev_core::roles::STEPS.join(", "))]
+    UnknownStep { step: String },
+
     #[error("git does not know `{git_ref}`: {reason}")]
     UnknownRef { git_ref: String, reason: String },
 
@@ -80,6 +89,8 @@ impl EngineError {
             Self::InvalidCodevVersion { .. } => "invalid_codev_version",
             Self::ValidationFailed { .. } => "validation_failed",
             Self::Write { .. } => "write_failed",
+            Self::RoleSetting { code, .. } => code,
+            Self::UnknownStep { .. } => "unknown_step",
             Self::UnknownRef { .. } => "unknown_ref",
             Self::NotAGitRepository { .. } => "not_a_git_repository",
             Self::Core(inner) => inner.code(),

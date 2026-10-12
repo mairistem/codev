@@ -77,6 +77,7 @@ apply:
 | `artifacts[].template` | no | Template file name, looked up in the schema's `templates/` folder |
 | `artifacts[].instruction` | no | Guidance for the agent writing this artifact |
 | `artifacts[].requires` | no | Ids of the artifacts that must exist first |
+| `artifacts[].role` | no | The role that owns the artifact — see [Declaring artifact roles](#declaring-artifact-roles) |
 | `apply.requires` | yes | Artifacts that must exist before implementation starts |
 | `apply.tracks` | yes | The file whose checkboxes track implementation progress |
 | `apply.instruction` | no | Guidance for the implementation phase |
@@ -89,6 +90,35 @@ reports the refused one as a warning `schema_unusable` with the reason.
 
 An artifact is **done** when its file exists — or, for a glob, when at least
 one file matches. It is **ready** when all the artifacts it requires are done.
+
+## Declaring artifact roles
+
+An artifact may declare the [role](../roles.md) that owns it. The agent
+receives it in the `role` field of `codev instructions` and checks its
+criteria before moving on; `codev roles --at plan.write` lists it.
+
+```yaml
+  - id: brief
+    generates: brief.md
+    role:
+      id: editor
+      name: { en: Editor, fr: Rédacteur }
+      question: Is the brief clear?
+      done_when:
+        - One page at most
+        - The why comes first
+```
+
+| Key | Required | Meaning |
+|---|---|---|
+| `role.id` | yes | Role id, in kebab-case, unique in the schema, and not a built-in step role such as `skeptic` |
+| `role.name` | yes | Display names by language code; `en` is required and serves the languages without a name |
+| `role.question` | yes | The question the role owns |
+| `role.done_when` | no | The criteria the agent checks, with the origin `schema:<name>` |
+
+A project extends the criteria under [`roles:`](../reference/configuration.md#roles)
+with the role's id; an artifact role cannot be disabled. An artifact without
+`role:` has none, and its `instruction` is used as written.
 
 ## Using a schema
 

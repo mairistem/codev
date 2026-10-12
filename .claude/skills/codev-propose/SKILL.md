@@ -23,6 +23,19 @@ response: wait for a new request from the user.
 The request must contain either a change name in kebab-case, or a description
 of what the user wants to build.
 
+## Roles
+
+Some steps belong to a role. At each one, run:
+
+```bash
+codev roles --at <step> --change "<name>" --json
+```
+
+Without `--change` for `plan.understand`: the change does not exist yet.
+Apply every criterion of every role returned (`roles[].doneWhen`), the
+project's included. If `roles` is empty, the role is disabled by
+configuration: skip the step, and say so in the summary.
+
 ## Steps
 
 ### 0. Detect an external ticket (optional)
@@ -63,21 +76,15 @@ The others are listed at the top of the proposal under the line
 "other ticket(s) mentioned: `<list>`", for traceability — a reader will
 look them up by hand.
 
-### 1. Understand the request
+### 1. Understand the request — `plan.understand`
 
 If nothing clear is provided, ask an open question, without offering a list
 of choices:
 
 > What change do you want to make? Describe what you want to build or fix.
 
-Derive a kebab-case name from the description ("add user authentication"
-→ `add-user-auth`).
-
-Do not proceed until you understand what must be built. If the request
-contains an ambiguity that would materially change the scope, the observable
-behavior, compatibility or the acceptance criteria, ask before creating the
-change. For a minor detail, make a reasonable assumption and record it in the
-artifacts.
+Apply the analyst's criteria. Derive a kebab-case name from the description
+("add user authentication" → `add-user-auth`).
 
 ### 2. Create the change
 
@@ -145,6 +152,7 @@ The response contains:
 | `rules` | Rules specific to this artifact — also a constraint, never content |
 | `dependencies` | The artifacts already done, to read for orientation |
 | `unlocks` | What creating this one will make possible |
+| `role` | The role that owns this artifact (`plan.write`): check every `doneWhen` criterion before moving on. `null` when the schema declares none |
 
 `context` and `rules` are arrays of blocks, each carrying its `origin`,
 ordered from most general to most specific. When two blocks contradict each
@@ -157,18 +165,9 @@ the next one.
 **b. Read the dependencies from disk**, even if you already saw them in the
 conversation — the user may have edited the files in the meantime.
 
-**c. Study the project before writing.** Read `context` and `rules`, then
-inspect the relevant implementation, nearby tests, configuration and
-documentation outside `_codev/`. Stay read-only, and keep it proportionate to
-the change.
-
-- Ground the scope, the approach and the tasks in what you find.
-- Distinguish observed behavior, your assumptions, and what you propose to
-  add.
-- Report contradictions with existing specs instead of deciding alone which
-  one is right.
-- Do this discovery now. Do not leave generic tasks such as "explore the
-  code" or "draw up a plan" for the implementation phase.
+**c. Study the project before writing — `plan.investigate`.** Ask for the
+roles of this step once, before the first artifact, and apply the
+investigator's criteria before writing each one.
 
 **d. Write the file**, using `template` as its structure. Then check that it
 exists at the expected location.
@@ -232,45 +231,15 @@ one of these). Tell the user, and do not come back to it.
 
 If an artifact needs a decision from the user, ask for it, then resume.
 
-### 6. Check traceability
+### 6. Check traceability — `plan.trace`
 
-Re-read every artifact from disk and check that:
+Re-read every artifact from disk and check it against the tracer's
+criteria. Fix the gaps directly in the artifacts.
 
-- every capability in the proposal has its spec file, and every spec file
-  is listed in the proposal;
-- every requirement has a nominal scenario and an error or edge-case
-  scenario, or states why none applies;
-- every scenario is covered by a task whose verification refers to it and
-  names an automated test, or says why automation is impossible;
-- a task updates the documentation when the proposal's Impact touches
-  documented behavior, or the plan states that none is affected;
-- the release note agrees with the plan: every **BREAKING** item of What
-  Changes, and every REMOVED or user-breaking MODIFIED requirement, has a
-  breaking item; an internal change says `None`;
-- every task's verification is concrete: a test, a command, an observable
-  behavior.
+### 7. Challenge the plan — `plan.challenge`
 
-Fix the gaps directly in the artifacts.
-
-### 7. Challenge the plan
-
-Re-read the artifacts as a skeptical reviewer who did not write them:
-
-1. **Need** — does the change solve the Why? Is there a simpler solution,
-   or one without code?
-2. **Scope** — anything added that nobody asked for? An obvious case
-   missing?
-3. **Specs** — error and edge cases, not only the happy path? Is each
-   requirement verifiable?
-4. **Decisions** — does the design silently contradict a decision in
-   effect?
-5. **Assumptions** — which one, if wrong, would bring the plan down?
-6. **Tasks** — can each one be verified?
-
-Apply these lenses only when the proposal's Impact touches them: security
-& privacy, compatibility & migration, operability (logs, rollback),
-performance, accessibility & UX. Also apply the `rules` you received
-through `codev instructions`.
+Re-read the artifacts as a skeptical reviewer who did not write them,
+along the skeptic's criteria.
 
 Fix what is unambiguous directly. Record what needs a human decision in the
 Open Questions of `design.md`, or in the proposal if there is no design.
@@ -289,11 +258,13 @@ Summarize:
 - the change name and its location;
 - the artifacts created, one line each, plus any conditional artifact skipped
   and why;
+- each step skipped because its role is disabled by configuration;
 - "The artifacts needed for implementation are ready.";
 - **Points to challenge** — from step 7, at most five items ranked by
   impact, one line each: what, why it matters, which artifact. If nothing
   is worth raising, write "No point to challenge found"; never invent
-  points;
+  points. When the skeptic is disabled, write "The skeptic is disabled by
+  configuration" instead;
 - "Review them. When you are ready, ask me to apply this change."
 
 ## Guardrails

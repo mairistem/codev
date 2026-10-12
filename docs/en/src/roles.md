@@ -9,39 +9,141 @@ Roles are criteria, not role-play. The agent does not pretend to be a
 product owner; it checks the proposal against the product owner's list. A
 role whose criteria are met is done, whatever the prose sounds like.
 
-The four artifact roles — product owner, QA analyst, architect, tech lead —
-are written in the schema: each artifact's instruction starts with a
-`Role:` line and a `Done when:` list, which `codev instructions` hands to
-the agent. A [custom schema](guides/custom-schemas.md) defines its own. The
-other roles below name the steps of each skill's workflow, as the
-[skills](skills.md) carry them out.
+Roles are data, not prose buried in the skills. codev serves them: the
+skills ask `codev roles --at <step>` at each step and apply what comes
+back, and `codev instructions` hands each artifact's role to the agent.
+Your project can turn a role off, add its own criteria, and override the
+activation for one change — see [Configuring roles](#configuring-roles).
 
-## Planning a change (`/codev-propose`)
+## Built-in roles
 
-`/codev-propose` plays every role below, in this order, in one pass. It
-writes planning artifacts only, and stops for your review.
+| Id | Name | Kind | Step | Question it owns |
+|---|---|---|---|---|
+| `analyst` | Analyst | step | `plan.understand` | What must be built? |
+| `investigator` | Investigator | step | `plan.investigate` | What does the project already do? |
+| `product` | Product owner | artifact (`proposal`) | `plan.write` | Why this change, and what changes? |
+| `qa` | QA analyst | artifact (`specs`) | `plan.write` | What observable behavior must hold? |
+| `architect` | Architect | artifact (`design`) | `plan.write` | How will it be built? |
+| `lead` | Tech lead | artifact (`tasks`) | `plan.write` | In what order, and how is each step verified? |
+| `tracer` | Tracer | step | `plan.trace` | Do the artifacts agree with each other? |
+| `skeptic` | Skeptic | step | `plan.challenge` | Would the plan survive a reviewer who did not write it? |
+| `developer` | Developer | step | `code.implement` | Does each task work, verified? |
+| `newcomer` | Newcomer | step | `code.review` | Can a developer who has not seen the plan follow this code? |
 
-| Role | Question it owns | Done when | Where |
-|---|---|---|---|
-| Business analyst | What must be built? | The request is understood — if it is not clear, an open question is asked; an ambiguity that would materially change the scope, the observable behavior, compatibility or the acceptance criteria is asked before the change is created; a minor detail becomes a reasonable assumption recorded in the artifacts; a ticket identifier such as `PROJ-123` is read with a single read-only call to the Jira MCP when one is configured, and cited at the top of the proposal | Steps 0–1: ticket, understanding the request |
-| Code investigator | What does the project already do? | `context` and `rules` are read; the relevant implementation, nearby tests, configuration and documentation are inspected, read-only and in proportion to the change; scope, approach and tasks are grounded in what was found; observed behavior, assumptions and proposals are kept apart; contradictions with existing specs are reported, not settled alone; no "explore the code" task is left for implementation | Step 4c, before writing each artifact |
-| Product owner | Why this change, and what changes? | Why states the problem and why now in one or two sentences; What Changes are concrete bullets; every breaking change is marked **BREAKING**; every capability listed has a spec file (or `skip_specs: true`); the release note is written for end users, categorized, with breaking items marked, or `None` for an internal change; no implementation detail | [`proposal.md`](reference/file-formats.md#proposalmd) |
-| QA analyst | What observable behavior must hold? | Each requirement uses SHALL or MUST on observable behavior; each requirement has at least one nominal scenario and one error or edge-case scenario, or says why none applies; no internal names, libraries or implementation steps | [Spec deltas](reference/file-formats.md#spec-delta) |
-| Architect | How will it be built? | Each decision names the alternative it rejects and why; each risk has a mitigation; the accepted decisions that constrain the approach are cited and followed, or a supersession is explicitly proposed; the approach is the simplest that satisfies the specs, and a newcomer can follow the design without knowing its history; Open Questions only holds what can genuinely wait | [`design.md`](reference/file-formats.md#designmd) — written only when the change calls for it |
-| Tech lead | In what order, and how is each step verified? | Each task fits one work session and is ordered by dependency; each task names its verification (test, command, observable behavior); every spec scenario is covered by a task's verification, with an automated test — a manual check only when automation is impossible, with the reason; the affected documentation is updated in a task, or the plan states that none is affected; tests follow the project's existing suite, then its language's conventions and the project's `rules` | [`tasks.md`](reference/file-formats.md#tasksmd) |
-| Traceability checker | Do the artifacts agree with each other? | Every capability in the proposal has its spec file, and every spec file is listed in the proposal; every requirement has a nominal and an error or edge-case scenario; every scenario is covered by a task whose verification names an automated test, or says why automation is impossible; a task updates the documentation when the Impact touches documented behavior; the release note agrees with the plan; every verification is concrete. Gaps are fixed in the artifacts | Step 6 |
-| Skeptical reviewer (contrarian) | Would the plan survive a reviewer who did not write it? | The plan is re-read for need, scope, specs, decisions, assumptions and tasks — plus security & privacy, compatibility & migration, operability, performance and accessibility & UX when the Impact touches them, and the project's `rules`; what is unambiguous is fixed; what needs a human decision is recorded in the design's Open Questions (or the proposal's, without a design); no scope is added; at most five **Points to challenge**, ranked by impact, or "No point to challenge found" | Step 7 |
+The step roles are built into codev. The artifact roles come from the
+default `spec-driven` schema, which declares one role per artifact; a
+[custom schema](guides/custom-schemas.md) declares its own, or none.
 
-The last role is yours: the skill presents the plan with its Points to
-challenge and waits. See [Where you decide](#where-you-decide).
+To read a role's "done when" criteria, ask codev — they are the list the
+agent receives:
+
+```bash
+codev roles --at plan.challenge
+```
+
+`codev roles` without `--at` lists every role with its activation. See
+[`codev roles`](reference/cli.md#codev-roles).
+
+## Steps
+
+| Step | Skill | What happens |
+|---|---|---|
+| `plan.understand` | `/codev-propose` | The request is understood before the change is created; a ticket such as `PROJ-123` is read through the Jira MCP when one is configured |
+| `plan.investigate` | `/codev-propose` | The code, tests, configuration and documentation are studied before each artifact is written |
+| `plan.write` | `/codev-propose` | Each artifact is written, then checked against its role, which `codev instructions` returns in `role` |
+| `plan.trace` | `/codev-propose` | The artifacts are checked against each other; gaps are fixed in the artifacts |
+| `plan.challenge` | `/codev-propose` | The plan is re-read by a reviewer who did not write it; what is unambiguous is fixed, what needs you goes to the design's Open Questions, and at most five **Points to challenge** end the summary |
+| `code.implement` | `/codev-apply` | Each task is implemented, verified, then checked off |
+| `code.review` | `/codev-apply` | Once every task is checked, the change's code is re-read as a newcomer; what is unambiguous is simplified, and at most three **Readability notes** end the summary |
+
+The procedure of each step — what to write, the caps, the guardrails —
+stays in the skill. The criteria come from the role.
+
+## Configuring roles
+
+Every role is active by default. In `_codev/config.yaml`, `roles:` maps a
+role id to its setting:
+
+```yaml
+roles:
+  newcomer: never            # short form: always | never
+  skeptic:
+    when: always             # optional, always when absent
+    done_when:               # added after the role's own criteria
+      - The rollback plan is stated
+```
+
+- **Activation.** `always` or `never`. A step whose role is `never` is
+  skipped, and the skill's summary says it is disabled by configuration.
+- **Extra criteria.** `done_when` entries are added after the role's own
+  criteria, never replacing them. They carry the origin `project`, like your
+  [`context` and `rules`](reference/configuration.md#context).
+- **Per change.** A change's `change.yaml` can override the activation for
+  that change only:
+
+  ```yaml
+  roles:
+    newcomer: always
+  ```
+
+- **What cannot be disabled.** The artifact roles (`product`, `qa`,
+  `architect`, `lead`) and the `developer`: their artifact is still
+  written, their tasks still implemented. Their criteria can be extended.
+- **Inherited sources** do not contribute roles: only your project's
+  `roles:` is read.
+
+`codev validate` reports an unknown role id (`unknown_role`), an activation
+other than `always` or `never` (`invalid_role_activation`), and `never` on a
+role that cannot be disabled (`role_not_disableable`); `codev status`,
+`codev instructions` and `codev roles` fail with the same code.
+`codev doctor` lists the active and disabled roles.
+
+## Implementing a change (`/codev-apply`)
+
+### Developer (`/codev-apply`)
+
+Implements the tasks of a planned change, in file order. For each task,
+it applies the developer's criteria:
+
+- the files concerned are read before writing;
+- the code, tests, configuration and documentation the task asks for are
+  written — nothing more;
+- tests are written like the project's existing suite, then by the
+  conventions of its language and the project's `rules`;
+- the verification the task cites is run and passes — the test command
+  comes from `context`, `rules`, the manifest or the CI configuration, and
+  the skill asks you when it finds none;
+- only then is the box checked off.
+
+It stops at a material ambiguity or a technical blocker without checking
+the task off, and describes the options. When every box is checked, and
+after the [newcomer review](#newcomer-codev-apply), it runs the
+project's full test suite once; a failure is reported instead of the
+summary. It never works around a failing test, never touches another
+change, never syncs and never archives.
+
+### Newcomer (`/codev-apply`)
+
+Once every task is checked, and before the full test suite runs, re-reads
+only the code the change added or modified, as a developer joining the
+project who has seen neither the plan nor the conversation, along the
+newcomer's criteria. What is unambiguous is simplified and the affected
+tests are run again; the rest becomes at most three **Readability notes**
+in the final summary — what, where, why — or "No readability concern
+found".
+
+It never changes behavior, never widens the change's scope, and never
+touches code the change did not add or modify.
 
 ## The other skills
 
-| Skill | Role | Question it owns | Writes |
+The other skills keep a fixed stance, written in the skill itself. These
+stances are not roles: they are not in the catalog and cannot be
+configured.
+
+| Skill | Stance | Question it owns | Writes |
 |---|---|---|---|
 | `/codev-explore` | [Thinking partner](#thinking-partner-codev-explore) | Is this worth building, and how? | Nothing |
-| `/codev-apply` | [Developer](#developer-codev-apply) | Does each task work, verified? | Project code, `tasks.md` checkboxes |
-| `/codev-apply` | [Newcomer reviewer](#newcomer-reviewer-codev-apply) | Can a developer who has not seen the plan follow this code? | Simplifications within the change |
 | `/codev-sync`, `/codev-archive` | [Maintainer of the living specs](#maintainer-of-the-living-specs-codev-sync-codev-archive) | Do the main specs describe what was planned and shipped? | Through the CLI only |
 | `/codev-update` | [Editor](#editor-codev-update) | Is the revised artifact still consistent with the others? | `_codev/changes/<name>/` only |
 | `/codev-onboard` | [Guide](#guide-codev-onboard) | Where does this project stand, and what comes next? | Nothing |
@@ -67,50 +169,6 @@ when:
 
 It writes no file, creates no change, and does not implement even when
 asked.
-
-### Developer (`/codev-apply`)
-
-Implements the tasks of a planned change, in file order. Done when, for
-each task:
-
-- the files concerned are read before writing;
-- the code, tests, configuration and documentation the task asks for are
-  written — nothing more;
-- tests are written like the project's existing suite, then by the
-  conventions of its language and the project's `rules`;
-- the verification the task cites is run and passes — the test command
-  comes from `context`, `rules`, the manifest or the CI configuration, and
-  the skill asks you when it finds none;
-- only then is the box checked off.
-
-It stops at a material ambiguity or a technical blocker without checking
-the task off, and describes the options. When every box is checked, and
-after the [newcomer review](#newcomer-reviewer-codev-apply), it runs the
-project's full test suite once; a failure is reported instead of the
-summary. It never works around a failing test, never touches another
-change, never syncs and never archives.
-
-### Newcomer reviewer (`/codev-apply`)
-
-Once every task is checked, and before the full test suite runs, re-reads
-only the code the change added or modified, as a developer joining the
-project who has seen neither the plan nor the conversation. Done when:
-
-- each changed function makes sense without the plan or the conversation;
-- names say what things do, with no obscure abbreviation;
-- a function too long or too nested is split, when it splits simply;
-- dense one-liners, premature genericity and single-use abstractions give
-  way to the simple version, unless the clever one is justified;
-- comments explain the why where it is not obvious, and never paraphrase
-  the code;
-- tests read as a description of the behavior;
-- the project's `rules`, such as size thresholds, are met;
-- what is unambiguous is simplified and the affected tests are run again;
-  the rest becomes at most three **Readability notes** in the final summary
-  — what, where, why — or "No readability concern found".
-
-It never changes behavior, never widens the change's scope, and never
-touches code the change did not add or modify.
 
 ### Maintainer of the living specs (`/codev-sync`, `/codev-archive`)
 
@@ -196,5 +254,8 @@ The agent stops and hands over at these points:
 - **Updating codev.** When a newer codev is available or the project
   requires another version, the skill asks **Update now** or **Later**
   before acting (see [Update notice](skills.md#update-notice)).
+- **Configuring the roles.** Which review roles run, and which criteria
+  they add, is your project's choice in `roles:` — see
+  [Configuring roles](#configuring-roles).
 - **Archiving.** `/codev-apply` never archives: once you have reviewed the
   implementation, starting with its Readability notes, run `/codev-archive` or `codev archive`.

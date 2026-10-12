@@ -172,6 +172,7 @@ Configuration
       fix: /codev-configure
   ✓ config.language  language: is set
   ✓ config.keys      no unknown key in _codev/config.yaml
+  ✓ config.roles     active roles: analyst, investigator, product, qa, architect, lead, tracer, skeptic, developer, newcomer; disabled: none
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
   ✓ codev_version    no newer codev release known
@@ -189,7 +190,7 @@ Repository
   ✓ pr_template      the pull request template has the codev section
   ✓ changelog        CHANGELOG.md matches the archived changes
 
-13 check(s), 2 to fix, 1 warning(s)
+14 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` signale un élément manquant, `!` un avertissement — un projet peut très

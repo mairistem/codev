@@ -75,7 +75,8 @@ La demande n'autorise que la planification, même si elle dit « construis » 
 « corrige » : la skill s'arrête une fois les artefacts rédigés et attend votre
 retour.
 
-Chaque artefact a un rôle explicite, tiré des instructions du schéma —
+Chaque artefact a un rôle explicite, déclaré par le schéma et renvoyé par
+`codev instructions` —
 product owner pour la proposal, analyste QA pour les specs, architecte pour
 le design, tech lead pour les tâches — avec des critères « Done when » que
 l'agent vérifie avant de passer à la suite. Les critères du tech lead exigent
@@ -85,6 +86,11 @@ de votre projet. Le product owner rédige la note de version de la proposal
 pour les utilisateurs, classée par catégorie, ou `None` pour un change
 interne. Un [schéma personnalisé](guides/custom-schemas.md) définit les
 siens.
+
+À chaque étape, elle demande `codev roles --at <step>` les rôles de l'étape
+et applique leurs critères, y compris les critères ajoutés par votre projet ;
+une étape dont votre configuration désactive le rôle est sautée, et le
+résumé le signale (voir [Configurer les rôles](roles.md#configurer-les-rôles)).
 
 Avant de présenter le plan, la skill le relit en deux étapes :
 
@@ -116,9 +122,9 @@ Si la demande mentionne un identifiant de ticket correspondant à
 premier ticket — en lecture seule, en un seul appel — et le cite en tête de la
 proposal. Voir [Jira et autres serveurs MCP](guides/mcp.md).
 
-Rôles : analyste métier, enquêteur de code, product owner, analyste QA,
-architecte, tech lead, contrôleur de traçabilité et relecteur sceptique — voir
-[Planifier un change](roles.md#planifier-un-change-codev-propose).
+Rôles : analyste, enquêteur, product owner, analyste QA, architecte, tech
+lead, contrôleur de traçabilité et contradicteur — voir
+[Rôles intégrés](roles.md#rôles-intégrés).
 
 ### Explore (`/codev-explore`)
 
@@ -127,7 +133,7 @@ comparaisons d'approches. La skill lit le code et les specs, mais ne crée ni
 change, ni artefact, ni fichier. Une fois l'idée claire, elle suggère
 `/codev-propose`.
 
-Rôle : [partenaire de réflexion](roles.md#partenaire-de-réflexion-codev-explore).
+Posture : [partenaire de réflexion](roles.md#partenaire-de-réflexion-codev-explore).
 
 ### Onboard (`/codev-onboard`)
 
@@ -138,7 +144,7 @@ fraîchement initialisé. Elle lance aussi `codev doctor --json` et liste
 jusqu'à cinq éléments manquants de l'installation avec leur correction, sans
 en exécuter aucune.
 
-Rôle : [guide](roles.md#guide-codev-onboard).
+Posture : [guide](roles.md#guide-codev-onboard).
 
 ### Configure (`/codev-configure`)
 
@@ -157,7 +163,7 @@ Python, Go ou Java.
 Tant que la configuration ne comporte aucune `rules:`, `codev init` et
 `codev status` recommandent de la lancer.
 
-Rôle : [analyste de configuration](roles.md#analyste-de-configuration-codev-configure).
+Posture : [analyste de configuration](roles.md#analyste-de-configuration-codev-configure).
 
 ### Apply (`/codev-apply`)
 
@@ -170,13 +176,14 @@ dans votre configuration, votre manifeste ou votre CI, et vous la demande si
 elle n'en trouve aucune. Une fois toutes les tâches cochées, elle relit le
 code touché par le change comme le ferait un nouvel arrivant : elle simplifie
 ce qui ne fait pas de doute, sans changer le comportement ni le périmètre, et
-signale au plus trois notes de lisibilité. Elle lance ensuite une fois la
-suite de tests complète. Elle s'arrête au premier blocage ou à la première
+signale au plus trois notes de lisibilité. Elle tire les critères de ces deux étapes de `codev roles` ; lorsque votre
+configuration désactive le nouvel arrivant, la relecture est sautée et le
+résumé le signale. Elle lance ensuite une fois la suite de tests complète. Elle s'arrête au premier blocage ou à la première
 ambiguïté. Elle ne modifie jamais un autre change, ne synchronise jamais et
 n'archive jamais.
 
 Rôles : [développeur](roles.md#développeur-codev-apply),
-[relecteur nouvel arrivant](roles.md#relecteur-nouvel-arrivant-codev-apply).
+[nouvel arrivant](roles.md#nouvel-arrivant-codev-apply).
 
 ### Update (`/codev-update`)
 
@@ -187,14 +194,14 @@ après relecture — puis recherche dans les autres artefacts les répercussions
 `/codev-apply`) et ne touche pas aux changes archivés. Elle se termine par
 `codev validate`.
 
-Rôle : [éditeur](roles.md#éditeur-codev-update).
+Posture : [éditeur](roles.md#éditeur-codev-update).
 
 ### Sync (`/codev-sync`)
 
 Lance `codev sync` pour un change et indique quelles specs principales ont été
 créées, mises à jour ou laissées inchangées.
 
-Rôle : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
+Posture : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
 
 ### Archive (`/codev-archive`)
 
@@ -202,7 +209,7 @@ Lance `codev archive` pour un change. Si la validation signale des erreurs, la
 skill s'arrête et vous renvoie vers `codev validate` au lieu de chercher à les
 contourner.
 
-Rôle : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
+Posture : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
 
 ## Choisir les skills à installer
 

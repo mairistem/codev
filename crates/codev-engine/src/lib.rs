@@ -24,6 +24,7 @@ pub mod instructions;
 pub mod integration;
 pub mod metadata;
 pub mod ports;
+pub mod roles;
 pub mod root;
 pub mod scaffold;
 pub mod schemas;

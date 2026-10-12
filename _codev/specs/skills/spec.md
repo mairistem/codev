@@ -551,15 +551,16 @@ or `### Requirement:`, delta section headings, `**WHEN**` / `**THEN**`,
 
 ### Requirement: The default schema gives each artifact a role with "Done when" criteria
 
-The instruction of each artifact of the embedded `spec-driven` schema, as
-returned by `codev instructions <artifact> --json`, SHALL start with a role
-block: a `Role:` line naming the role and what it owns, followed by a
-`Done when:` list of checkable criteria. The roles are:
+Each artifact of the embedded `spec-driven` schema SHALL declare its role as
+data — an id, a display name, the question it owns and a list of "done
+when" criteria — which `codev instructions <artifact> --json` returns in
+its `role` field, with the origin `schema:spec-driven` on each criterion.
+The roles are:
 
-- `proposal` — product owner, owns why and what;
-- `specs` — QA analyst, owns observable behavior;
-- `design` — architect, owns how;
-- `tasks` — tech lead, owns sequencing and verification.
+- `proposal` — `product` (product owner), owns why and what;
+- `specs` — `qa` (QA analyst), owns observable behavior;
+- `design` — `architect`, owns how;
+- `tasks` — `lead` (tech lead), owns sequencing and verification.
 
 The tech lead's criteria MUST require that the documentation affected by
 the change is updated in a task, or that the plan states none is affected;
@@ -579,35 +580,37 @@ architect's criteria MUST require that the approach is the simplest that
 satisfies the specs, and that a newcomer can follow the design without
 knowing its history.
 
-The rest of each instruction MUST stay as before. A custom schema's
-instructions MUST be returned as written, without any role block added by
-codev.
+The instructions of the default schema MUST NOT restate the role: they no
+longer start with a `Role:` line or a `Done when:` list. A custom
+schema's instructions MUST be returned as written; its artifacts carry a
+role only when the schema declares one.
 
-#### Scenario: The proposal instruction starts with the product owner role
+#### Scenario: The proposal carries the product owner role
 
 - **GIVEN** a change using the `spec-driven` schema
 - **WHEN** the user runs `codev instructions proposal --change <name> --json`
-- **THEN** `instruction` starts with `Role: product owner`
-- **AND** it contains a `Done when:` list that includes marking every
-  breaking change with **BREAKING**
-- **AND** it asks the Impact section to name the affected documentation
-- **AND** its `Done when:` list requires a release note written for end
-  users, categorized, with breaking items marked, or `None`
+- **THEN** `role.id` is `product` and `role.name` is `Product owner`
+- **AND** `role.doneWhen` includes marking every breaking change with
+  **BREAKING**
+- **AND** `instruction` asks the Impact section to name the affected
+  documentation, and does not start with `Role:`
+- **AND** `role.doneWhen` requires a release note written for end users,
+  categorized, with breaking items marked, or `None`
 - **AND** `template` has a `## Release note` section after `## Impact`
 
 #### Scenario: The tasks criteria cover every spec scenario
 
 - **GIVEN** a change using the `spec-driven` schema
 - **WHEN** the user runs `codev instructions tasks --change <name> --json`
-- **THEN** `instruction` starts with `Role: tech lead`
-- **AND** its `Done when:` list requires every spec scenario to be covered
-  by at least one task's verification
+- **THEN** `role.id` is `lead`
+- **AND** `role.doneWhen` requires every spec scenario to be covered by at
+  least one task's verification
 
 #### Scenario: The tasks criteria require documentation and automated tests
 
 - **GIVEN** a change using the `spec-driven` schema
 - **WHEN** the user runs `codev instructions tasks --change <name> --json`
-- **THEN** its `Done when:` list requires the affected documentation to be
+- **THEN** `role.doneWhen` requires the affected documentation to be
   updated in a task, or the plan to state that none is affected
 - **AND** it requires every spec scenario to be covered by an automated
   test, a manual check only when automation is impossible, with the reason
@@ -618,18 +621,18 @@ codev.
 
 - **GIVEN** a change using the `spec-driven` schema
 - **WHEN** the user runs `codev instructions design --change <name> --json`
-- **THEN** `instruction` starts with `Role: architect`
-- **AND** its `Done when:` list requires the approach to be the simplest
-  that satisfies the specs, and the design to be followable by a newcomer
+- **THEN** `role.id` is `architect`
+- **AND** `role.doneWhen` requires the approach to be the simplest that
+  satisfies the specs, and the design to be followable by a newcomer
   without knowing its history
 
-#### Scenario: A custom schema gets no role block
+#### Scenario: A custom schema gets no role added
 
-- **GIVEN** a change using a project schema whose artifact instruction has
-  no role block
+- **GIVEN** a change using a project schema whose artifact declares no role
 - **WHEN** the user runs `codev instructions <artifact> --change <name>
   --json`
 - **THEN** `instruction` is the schema's text, with no `Role:` line added
+- **AND** `role` is `null`
 
 ### Requirement: The `propose` skill checks traceability before presenting the plan
 
@@ -652,6 +655,12 @@ that:
 
 The skill MUST fix the gaps it finds directly in the artifacts. The check
 MUST NOT modify any code file.
+
+The skill SHALL take this check's criteria from
+`codev roles --at plan.trace --change <name> --json` — the `tracer`'s,
+followed by the project's extra criteria — and apply them all. When no
+role is active at `plan.trace`, the skill MUST skip the check and its
+summary MUST say that the traceability check is disabled by configuration.
 
 #### Scenario: A requirement without an error scenario gets one
 
@@ -700,6 +709,14 @@ MUST NOT modify any code file.
 - **WHEN** `/codev-propose` reaches the traceability check
 - **THEN** no artifact is modified by the check
 
+#### Scenario: The traceability check disabled by configuration
+
+- **GIVEN** a configuration with `roles: { tracer: never }`
+- **WHEN** `/codev-propose` has written the artifacts
+- **THEN** no traceability check runs
+- **AND** the summary says the traceability check is disabled by
+  configuration
+
 ### Requirement: The `propose` skill challenges the plan and reports points to challenge
 
 After the traceability check, the `propose` skill SHALL re-read the
@@ -723,6 +740,12 @@ at most five items, ranked by impact, each on one line giving what, why it
 matters and the artifact concerned. When the pass finds nothing worth
 raising, the block MUST say "No point to challenge found" instead of
 inventing points.
+
+The grid is the criteria `codev roles --at plan.challenge --change <name>
+--json` returns — the `skeptic`'s, followed by the project's extra
+criteria. When no role is active at `plan.challenge`, the skill MUST skip
+the pass, and the "Points to challenge" block MUST say that the skeptic is
+disabled by configuration instead of listing points.
 
 #### Scenario: Points to challenge are reported
 
@@ -758,6 +781,22 @@ inventing points.
   feature
 - **WHEN** the contrarian pass runs
 - **THEN** the feature is not added to the artifacts
+
+#### Scenario: The skeptic disabled by configuration
+
+- **GIVEN** a configuration with `roles: { skeptic: never }`
+- **WHEN** `/codev-propose` presents the plan
+- **THEN** no contrarian pass has run
+- **AND** the "Points to challenge" block says the skeptic is disabled by
+  configuration
+
+#### Scenario: A project criterion joins the grid
+
+- **GIVEN** a configuration where `skeptic` has the extra criterion
+  `The rollback plan is stated`
+- **WHEN** the contrarian pass runs on a plan with no rollback plan
+- **THEN** the missing rollback plan is fixed or raised as a point to
+  challenge
 
 ### Requirement: The `onboard` skill relays what `codev doctor` reports missing
 
@@ -1018,6 +1057,12 @@ review did not simplify alone: at most three items, each giving what, where
 and why. When the review finds nothing worth raising, the block MUST say "No
 readability concern found" instead of inventing notes.
 
+The grid is the criteria `codev roles --at code.review --change <name>
+--json` returns — the `newcomer`'s, followed by the project's extra
+criteria. When no role is active at `code.review`, the skill MUST skip the
+review, and the "Readability notes" block MUST say that the newcomer review
+is disabled by configuration.
+
 #### Scenario: A needlessly clever construction is simplified
 
 - **GIVEN** a change whose tasks are all checked, and whose code contains a
@@ -1054,3 +1099,42 @@ readability concern found" instead of inventing notes.
 - **WHEN** `/codev-apply` reviews the change as a newcomer
 - **THEN** that function is left unchanged
 - **AND** it appears, at most, as a readability note
+
+#### Scenario: The newcomer review disabled by configuration
+
+- **GIVEN** a change whose `change.yaml` holds `roles: { newcomer: never }`
+- **WHEN** `/codev-apply` has checked every task
+- **THEN** no newcomer review runs and the full test suite runs next
+- **AND** the "Readability notes" block says the newcomer review is
+  disabled by configuration
+
+### Requirement: The `propose` and `apply` skills take their roles from `codev roles`
+
+At each role step, the `propose` skill SHALL run
+`codev roles --at <step> [--change <name>] --json` — `plan.understand`
+before creating the change, then `plan.investigate`, `plan.trace` and
+`plan.challenge` with `--change` — and the `apply` skill SHALL do the
+same at `code.implement` and `code.review`. The skill MUST apply the
+criteria of every role returned, the project's extra criteria included,
+and MUST skip the step when no role is returned. Writing an artifact, the
+`propose` skill MUST check the criteria of the `role` field of
+`codev instructions` before moving on. The skill texts MUST NOT restate
+the criteria served as data. The `allowed-tools` of both skills are
+unchanged.
+
+#### Scenario: The skill bodies ask for the roles of each step
+
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `propose` and `apply` workflows are resolved
+- **THEN** the `propose` body names `codev roles --at` with
+  `plan.understand`, `plan.investigate`, `plan.trace` and
+  `plan.challenge`, and the `apply` body with `code.implement` and
+  `code.review`
+- **AND** neither body restates the criteria of the built-in catalog
+
+#### Scenario: A disabled investigator
+
+- **GIVEN** a configuration with `roles: { investigator: never }`
+- **WHEN** `/codev-propose` writes the artifacts
+- **THEN** it does not run the code study before each artifact
+- **AND** its summary says the investigation is disabled by configuration

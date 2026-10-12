@@ -130,6 +130,7 @@ Configuration
       fix: /codev-configure
   ✓ config.language  language: is set
   ✓ config.keys      no unknown key in _codev/config.yaml
+  ✓ config.roles     active roles: analyst, investigator, product, qa, architect, lead, tracer, skeptic, developer, newcomer; disabled: none
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
   ✓ codev_version    no newer codev release known
@@ -148,7 +149,7 @@ Repository
   ! changelog        no CHANGELOG.md
       fix: codev changelog --write
 
-13 check(s), 2 to fix, 2 warning(s)
+14 check(s), 2 to fix, 2 warning(s)
 ```
 
 > **Remarque**

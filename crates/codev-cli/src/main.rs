@@ -22,8 +22,9 @@ use contract::{
     ArchiveReportV1, ChangesV1, DecisionAcceptedV1, DecisionCreatedV1, DecisionDeviatedV1,
     DecisionListReportV1, DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1,
     DecisionSupersededV1, DecisionV1, DoctorReportV1, InstructionsV1, NewChangeV1, PinChangeV1,
-    SchemaV1, SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1,
-    SourcesUpdateReportV1, SpecsV1, StatusV1, SupersededDecisionV1, SyncReportV1, ValidateReportV1,
+    RolesV1, SchemaV1, SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1,
+    SourcesListReportV1, SourcesUpdateReportV1, SpecsV1, StatusV1, SupersededDecisionV1,
+    SyncReportV1, ValidateReportV1,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -236,6 +237,27 @@ enum Command {
     Instructions {
         /// Artifact identifier (default: the next one to write)
         artifact: Option<String>,
+        #[arg(long)]
+        change: Option<String>,
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// List the roles active at a workflow step, with their criteria
+    ///
+    /// With `--at`, the roles active at that step and their "done when"
+    /// criteria, each with its origin (`built-in`, `schema:<name>`,
+    /// `project`). Without it, every role with its activation. The roles
+    /// come from codev's built-in catalog and the schema in use, with the
+    /// project's `roles:` applied, and the change's `change.yaml` with
+    /// `--change`.
+    Roles {
+        /// The workflow step: plan.understand, plan.investigate,
+        /// plan.write, plan.trace, plan.challenge, code.implement or
+        /// code.review
+        #[arg(long, value_name = "STEP")]
+        at: Option<String>,
+        /// Apply this change's schema and `change.yaml`
         #[arg(long)]
         change: Option<String>,
         #[arg(long)]
@@ -779,6 +801,23 @@ fn run(cli: Cli) -> i32 {
                 &err,
             ),
         },
+
+        Command::Roles { at, change, json } => {
+            match commands::roles(&ctx, at.as_deref(), change.as_deref()) {
+                Ok(outcome) => {
+                    emit(json, RolesV1::from(&outcome), || render::roles(&outcome));
+                    if !json {
+                        render::warnings(&outcome.warnings);
+                    }
+                    0
+                }
+                Err(err) => fail(
+                    json,
+                    roles_shape(&commands::configured_language(&ctx)),
+                    &err,
+                ),
+            }
+        }
 
         Command::Sync { change, json } => match commands::sync(&ctx, change.as_deref()) {
             Ok(outcome) => {
@@ -1361,6 +1400,18 @@ fn instructions_shape(language: &str) -> serde_json::Value {
         "unlocks": [],
         "decisions": [],
         "skipped": false,
+        "role": null,
+    })
+}
+
+/// The empty shape of `RolesV1`, for failures.
+fn roles_shape(language: &str) -> serde_json::Value {
+    json!({
+        "changeName": null,
+        "schemaName": null,
+        "at": null,
+        "language": language,
+        "roles": [],
     })
 }
 

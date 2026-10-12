@@ -4,6 +4,7 @@ use serde::Deserialize;
 
 use crate::error::{CoreError, Result};
 use crate::id::is_kebab_case;
+use crate::roles::{self, ArtifactRole};
 
 /// Definition of a workflow: which artifacts exist, and which depend
 /// on which.
@@ -44,6 +45,10 @@ pub struct Artifact {
     pub instruction: Option<String>,
     #[serde(default)]
     pub requires: Vec<String>,
+    /// The role that owns this artifact, as data: `codev instructions`
+    /// serves it in its `role` field and `codev roles` lists it.
+    #[serde(default)]
+    pub role: Option<ArtifactRole>,
 }
 
 impl Artifact {
@@ -147,7 +152,36 @@ impl Schema {
             return Err(self.invalid("`apply.tracks` is empty"));
         }
 
+        self.validate_roles()?;
         self.assert_acyclic()
+    }
+
+    /// Checks the artifact roles: each one must be addressable by its id in
+    /// `roles:` — unique, kebab-case, distinct from the built-in step roles —
+    /// and have an English name, the fallback of every language.
+    fn validate_roles(&self) -> Result<()> {
+        let mut seen = BTreeSet::new();
+        for role in self.artifacts.iter().filter_map(|a| a.role.as_ref()) {
+            if !is_kebab_case(&role.id) {
+                return Err(self.invalid(format!("role id `{}` is not kebab-case", role.id)));
+            }
+            if !seen.insert(role.id.as_str()) {
+                return Err(self.invalid(format!("role `{}` is declared twice", role.id)));
+            }
+            if roles::is_builtin_step_role(&role.id) {
+                return Err(self.invalid(format!(
+                    "role `{}` is a built-in step role; choose another id",
+                    role.id
+                )));
+            }
+            if !role.name.contains_key("en") {
+                return Err(self.invalid(format!(
+                    "role `{}` has no English name; add `en` to its `name`",
+                    role.id
+                )));
+            }
+        }
+        Ok(())
     }
 
     /// Detects a dependency cycle.
@@ -267,6 +301,74 @@ apply:
 "#;
         let err = Schema::parse(yaml).unwrap_err();
         assert!(err.to_string().contains("twice"), "{err}");
+    }
+
+    const WITH_ROLE: &str = r#"
+name: roles
+artifacts:
+  - id: brief
+    generates: brief.md
+    role:
+      id: editor
+      name: { en: Editor, fr: Rédacteur }
+      question: Is the brief clear?
+      done_when: [One page at most]
+apply:
+  requires: [brief]
+  tracks: brief.md
+"#;
+
+    #[test]
+    fn parses_an_artifact_role() {
+        let schema = Schema::parse(WITH_ROLE).unwrap();
+        let role = schema.artifact("brief").unwrap().role.as_ref().unwrap();
+        assert_eq!(role.id, "editor");
+        assert_eq!(role.name["fr"], "Rédacteur");
+        assert_eq!(role.done_when, ["One page at most"]);
+        assert!(Schema::parse(MINIMAL).unwrap().artifacts[0].role.is_none());
+    }
+
+    #[test]
+    fn rejects_a_role_id_taken_by_a_step_role() {
+        let err = Schema::parse(&WITH_ROLE.replace("id: editor", "id: skeptic")).unwrap_err();
+        assert_eq!(err.code(), "schema_invalid");
+        assert!(err.to_string().contains("skeptic"), "{err}");
+    }
+
+    #[test]
+    fn rejects_a_role_without_an_english_name() {
+        let yaml = WITH_ROLE.replace("{ en: Editor, fr: Rédacteur }", "{ fr: Rédacteur }");
+        let err = Schema::parse(&yaml).unwrap_err();
+        assert_eq!(err.code(), "schema_invalid");
+        assert!(err.to_string().contains("editor"), "{err}");
+    }
+
+    #[test]
+    fn rejects_a_duplicate_role_id() {
+        let yaml = r#"
+name: twice
+artifacts:
+  - id: a
+    generates: a.md
+    role: { id: owner, name: { en: Owner }, question: "?" }
+  - id: b
+    generates: b.md
+    role: { id: owner, name: { en: Owner }, question: "?" }
+apply:
+  requires: [a]
+  tracks: a.md
+"#;
+        let err = Schema::parse(yaml).unwrap_err();
+        assert!(err.to_string().contains("twice"), "{err}");
+        let err = Schema::parse(&WITH_ROLE.replace("id: editor", "id: Editor")).unwrap_err();
+        assert!(err.to_string().contains("kebab-case"), "{err}");
+    }
+
+    #[test]
+    fn rejects_an_unknown_role_key() {
+        let yaml = WITH_ROLE.replace("question: Is", "owns: why\n      question: Is");
+        let err = Schema::parse(&yaml).unwrap_err();
+        assert_eq!(err.code(), "schema_unreadable");
     }
 
     #[test]

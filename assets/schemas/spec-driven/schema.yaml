@@ -8,17 +8,19 @@ artifacts:
     description: What is being proposed, and why
     template: proposal.md
     requires: []
+    role:
+      id: product
+      name: { en: Product owner, fr: Product owner }
+      question: Why this change, and what changes?
+      done_when:
+        - Why states the problem and why now in one or two sentences
+        - What Changes are concrete bullets
+        - every breaking change is marked **BREAKING**
+        - "every capability listed has a spec file (or `skip_specs: true`)"
+        - the release note is written for end users, categorized, with
+          breaking items marked, or `None` for an internal change
+        - no implementation detail
     instruction: |
-      Role: product owner — owns WHY and WHAT.
-      Done when:
-      - Why states the problem and why now in one or two sentences;
-      - What Changes are concrete bullets;
-      - every breaking change is marked **BREAKING**;
-      - every capability listed has a spec file (or `skip_specs: true`);
-      - the release note is written for end users, categorized, with
-        breaking items marked, or `None` for an internal change;
-      - no implementation detail.
-
       Write the document that establishes WHY this change is needed.
 
       Sections:
@@ -58,14 +60,16 @@ artifacts:
     description: Spec deltas — what the system must do
     template: spec.md
     requires: [proposal]
+    role:
+      id: qa
+      name: { en: QA analyst, fr: Analyste QA }
+      question: What observable behavior must hold?
+      done_when:
+        - each requirement uses SHALL or MUST on observable behavior
+        - each requirement has at least one nominal scenario and one error or
+          edge-case scenario, or says why none applies
+        - no internal names, libraries or implementation steps
     instruction: |
-      Role: QA analyst — owns observable behavior.
-      Done when:
-      - each requirement uses SHALL or MUST on observable behavior;
-      - each requirement has at least one nominal scenario and one error or
-        edge-case scenario, or says why none applies;
-      - no internal names, libraries or implementation steps.
-
       Write the spec files that define WHAT the system must do.
 
       A spec is a behavioral contract, not an implementation plan.
@@ -115,18 +119,20 @@ artifacts:
     description: Technical approach and decisions
     template: design.md
     requires: [proposal]
+    role:
+      id: architect
+      name: { en: Architect, fr: Architecte }
+      question: How will it be built?
+      done_when:
+        - each decision names the alternative it rejects and why
+        - each risk has a mitigation
+        - the accepted decisions in `_codev/decisions/` that constrain the
+          approach are cited and followed, or a supersession is explicitly
+          proposed
+        - the approach is the simplest that satisfies the specs, and a
+          newcomer can follow the design without knowing its history
+        - Open Questions only holds what can genuinely wait
     instruction: |
-      Role: architect — owns HOW.
-      Done when:
-      - each decision names the alternative it rejects and why;
-      - each risk has a mitigation;
-      - the accepted decisions in `_codev/decisions/` that constrain the
-        approach are cited and followed, or a supersession is explicitly
-        proposed;
-      - the approach is the simplest that satisfies the specs, and a
-        newcomer can follow the design without knowing its history;
-      - Open Questions only holds what can genuinely wait.
-
       Write the document that explains HOW to implement the change.
 
       Only create it if one of the following applies: a change spanning
@@ -157,22 +163,24 @@ artifacts:
     description: Checkbox-tracked task list
     template: tasks.md
     requires: [specs, design]
+    role:
+      id: lead
+      name: { en: Tech lead, fr: Tech lead }
+      question: In what order, and how is each step verified?
+      done_when:
+        - each task fits one work session and is ordered by dependency
+        - each task names its verification (test, command, observable
+          behavior)
+        - every spec scenario is covered by at least one task's verification
+        - the documentation the change affects (user docs, README, reference,
+          help) is updated in a task, or the plan states that none is affected
+        - every spec scenario is covered by an automated test written in a
+          task — a manual check only when automation is impossible, with the
+          reason
+        - tests follow the project's existing test suite, then the testing
+          conventions of its language (framework, location, naming, unit or
+          integration level), and the project's `rules`
     instruction: |
-      Role: tech lead — owns sequencing and verification.
-      Done when:
-      - each task fits one work session and is ordered by dependency;
-      - each task names its verification (test, command, observable
-        behavior);
-      - every spec scenario is covered by at least one task's verification;
-      - the documentation the change affects (user docs, README, reference,
-        help) is updated in a task, or the plan states that none is affected;
-      - every spec scenario is covered by an automated test written in a
-        task — a manual check only when automation is impossible, with the
-        reason;
-      - tests follow the project's existing test suite, then the testing
-        conventions of its language (framework, location, naming, unit or
-        integration level), and the project's `rules`.
-
       Break down the implementation work.
 
       Before writing, reread the Open Questions in design.md. If one of them

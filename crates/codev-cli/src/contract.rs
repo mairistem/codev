@@ -11,6 +11,7 @@
 //! - stdout carries **exactly one** JSON document, including on failure;
 //! - every document carries a `status` array, possibly empty.
 
+use codev_core::roles::{ResolvedRole, RoleKind};
 use codev_core::{ArtifactState, ChangeStatus};
 use codev_engine::Warning;
 use codev_engine::config::Block;
@@ -546,7 +547,95 @@ pub struct InstructionsV1 {
     /// `decisions.length` without a conditional branch.
     pub decisions: Vec<DecisionRefV1>,
     pub skipped: bool,
+    /// The role that owns the artifact; `null` when the schema declares
+    /// none. Additive in v1.
+    pub role: Option<RoleV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// A role, as `codev roles` and the `role` field of `codev instructions`
+/// serve it.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RoleV1 {
+    pub id: String,
+    /// The display name in the configured language, English otherwise.
+    pub name: String,
+    /// `step` or `artifact`.
+    pub kind: &'static str,
+    /// The workflow step, such as `plan.challenge`.
+    pub at: String,
+    /// The artifact an artifact role owns; `null` for a step role.
+    pub artifact: Option<String>,
+    pub question: String,
+    /// `always` or `never`.
+    pub when: &'static str,
+    /// `default`, `project` or `change`.
+    pub when_origin: &'static str,
+    pub disableable: bool,
+    /// The role's criteria, then the project's, each with its origin:
+    /// `built-in`, `schema:<name>` or `project`.
+    pub done_when: Vec<BlockV1>,
+}
+
+impl RoleV1 {
+    pub fn from(resolved: &ResolvedRole, language: &str) -> Self {
+        let role = &resolved.role;
+        let (kind, artifact) = match &role.kind {
+            RoleKind::Step => ("step", None),
+            RoleKind::Artifact(id) => ("artifact", Some(id.clone())),
+        };
+        Self {
+            id: role.id.clone(),
+            name: role.name(language).to_string(),
+            kind,
+            at: role.at.clone(),
+            artifact,
+            question: role.question.clone(),
+            when: resolved.when.as_str(),
+            when_origin: resolved.when_origin.as_str(),
+            disableable: role.disableable,
+            done_when: role
+                .criteria
+                .iter()
+                .map(|c| BlockV1 {
+                    origin: c.origin.clone(),
+                    text: c.text.clone(),
+                })
+                .collect(),
+        }
+    }
+}
+
+/// `codev roles --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RolesV1 {
+    /// `null` without `--change`.
+    pub change_name: Option<String>,
+    pub schema_name: Option<String>,
+    /// The step asked with `--at`; `null` lists every role.
+    pub at: Option<String>,
+    pub language: String,
+    pub roles: Vec<RoleV1>,
+    pub status: Vec<StatusEntry>,
+}
+
+impl From<&crate::commands::RolesOutcome> for RolesV1 {
+    fn from(outcome: &crate::commands::RolesOutcome) -> Self {
+        Self {
+            change_name: outcome.change.as_ref().map(ToString::to_string),
+            schema_name: Some(outcome.schema_name.clone()),
+            at: outcome.at.clone(),
+            language: outcome.language.clone(),
+            roles: outcome
+                .roles
+                .iter()
+                .map(|role| RoleV1::from(role, &outcome.language))
+                .collect(),
+            status: statuses(&outcome.warnings),
+        }
+    }
 }
 
 impl From<&Instructions> for InstructionsV1 {
@@ -586,6 +675,10 @@ impl From<&Instructions> for InstructionsV1 {
                 })
                 .collect(),
             skipped: instructions.skipped,
+            role: instructions
+                .role
+                .as_ref()
+                .map(|role| RoleV1::from(role, &instructions.language)),
             status: statuses(&instructions.warnings),
         }
     }
@@ -1128,6 +1221,7 @@ apply:
                 origin: "project".into(),
             }],
             skipped: false,
+            role: None,
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
@@ -1143,6 +1237,115 @@ apply:
             json["decisions"][0]["path"],
             "_codev/decisions/0001-foundation.md"
         );
+    }
+
+    fn skeptic_with_a_project_criterion() -> ResolvedRole {
+        use codev_core::roles::{self, Activation, Criterion, WhenOrigin};
+        let mut role = roles::builtin_step_roles()
+            .into_iter()
+            .find(|r| r.id == "skeptic")
+            .unwrap();
+        role.criteria.push(Criterion {
+            origin: "project".into(),
+            text: "The rollback plan is stated".into(),
+        });
+        ResolvedRole {
+            role,
+            when: Activation::Always,
+            when_origin: WhenOrigin::Project,
+        }
+    }
+
+    #[test]
+    fn roles_document_exposes_the_contract_fields() {
+        let outcome = crate::commands::RolesOutcome {
+            change: Some(ChangeId::parse("add-auth").unwrap()),
+            schema_name: "spec-driven".into(),
+            at: Some("plan.challenge".into()),
+            language: "fr".into(),
+            roles: vec![skeptic_with_a_project_criterion()],
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
+        for field in [
+            "changeName",
+            "schemaName",
+            "at",
+            "language",
+            "roles",
+            "status",
+        ] {
+            assert!(json.get(field).is_some(), "missing `{field}`");
+        }
+        let role = &json["roles"][0];
+        for field in [
+            "id",
+            "name",
+            "kind",
+            "at",
+            "artifact",
+            "question",
+            "when",
+            "whenOrigin",
+            "disableable",
+            "doneWhen",
+        ] {
+            assert!(role.get(field).is_some(), "missing `roles[].{field}`");
+        }
+        assert_eq!(role["name"], "Contradicteur");
+        assert_eq!(role["whenOrigin"], "project");
+        let last = role["doneWhen"].as_array().unwrap().last().unwrap().clone();
+        assert_eq!(
+            last,
+            serde_json::json!({"origin": "project", "text": "The rollback plan is stated"})
+        );
+    }
+
+    #[test]
+    fn instructions_expose_the_role_field() {
+        use codev_core::roles::{self, Activation, WhenOrigin};
+        let yaml = include_str!("../../../assets/schemas/spec-driven/schema.yaml");
+        let schema = codev_core::Schema::parse(yaml).unwrap();
+        let qa = roles::catalog(&schema, "spec-driven")
+            .into_iter()
+            .find(|r| r.id == "qa")
+            .unwrap();
+        let mut instructions = bare_instructions();
+        let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
+        assert!(json["role"].is_null(), "no role: `role` is null");
+        instructions.role = Some(ResolvedRole {
+            role: qa,
+            when: Activation::Always,
+            when_origin: WhenOrigin::Default,
+        });
+        let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
+        assert_eq!(json["role"]["id"], "qa");
+        assert_eq!(json["role"]["kind"], "artifact");
+        assert_eq!(json["role"]["artifact"], "specs");
+        assert_eq!(json["role"]["at"], "plan.write");
+        assert_eq!(json["role"]["disableable"], false);
+        assert_eq!(json["role"]["doneWhen"][0]["origin"], "schema:spec-driven");
+    }
+
+    fn bare_instructions() -> Instructions {
+        Instructions {
+            change: ChangeId::parse("add-auth").unwrap(),
+            schema_name: "spec-driven".into(),
+            artifact_id: "specs".into(),
+            description: None,
+            resolved_output_path: PathBuf::from("/p/_codev/changes/add-auth/specs/**/*.md"),
+            instruction: None,
+            template: None,
+            language: "en".into(),
+            context: Vec::new(),
+            rules: Vec::new(),
+            dependencies: Vec::new(),
+            unlocks: Vec::new(),
+            decisions: Vec::new(),
+            skipped: false,
+            role: None,
+            warnings: Vec::new(),
+        }
     }
 
     #[test]

@@ -51,6 +51,7 @@ pub fn validate_change(
     let change_dir = layout.change_dir(change_id);
 
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
+    findings.extend(check_change_roles(fs, layout, &ctx));
     findings.extend(check_release_note(fs, layout, &change_dir)?);
 
     // Each delta is read once and parsed once: the parser's findings and
@@ -137,7 +138,7 @@ pub fn validate_all(
         items.push(validate_spec(fs, layout, &capability)?);
     }
     items.push(validate_decisions(fs, env, layout, config)?);
-    if let Some(item) = validate_config(layout, config) {
+    if let Some(item) = validate_config(fs, layout, config) {
         items.push(item);
     }
     Ok(ValidateReport {
@@ -146,42 +147,73 @@ pub fn validate_all(
     })
 }
 
-/// The keys of `_codev/config.yaml` this codev ignores, one warning each
-/// at its line; `None` when there is none, so a clean project's report
-/// does not change.
-pub fn validate_config(layout: &Layout, config: &ResolvedConfig) -> Option<ItemReport> {
-    if config.unknown_keys.is_empty() {
-        return None;
-    }
+/// The findings of `_codev/config.yaml`: one warning per key this codev
+/// ignores, one error per invalid entry of `roles:`, each at its line;
+/// `None` when there is none, so a clean project's report does not change.
+pub fn validate_config(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+) -> Option<ItemReport> {
     let path = layout.config_file();
     let relative = path
         .strip_prefix(layout.project_root())
         .unwrap_or(&path)
         .to_path_buf();
-    let findings = config
-        .unknown_keys
-        .iter()
-        .map(|unknown| {
-            LocatedFinding::from_finding(
-                Finding {
-                    severity: Severity::Warning,
-                    code: crate::config::UNKNOWN_CONFIG_KEY,
-                    line: u32::try_from(unknown.line).unwrap_or(u32::MAX),
-                    message: crate::config::unknown_key_message(
-                        &unknown.key,
-                        config.codev_version.as_deref(),
-                    ),
-                },
-                relative.clone(),
-            )
-        })
+    let unknown_keys = config.unknown_keys.iter().map(|unknown| Finding {
+        severity: Severity::Warning,
+        code: crate::config::UNKNOWN_CONFIG_KEY,
+        line: line_number(unknown.line),
+        message: crate::config::unknown_key_message(&unknown.key, config.codev_version.as_deref()),
+    });
+    let roles = crate::roles::project_findings(fs, layout, config)
+        .into_iter()
+        .map(|finding| {
+            let line = config.role_lines.get(&finding.role).copied().unwrap_or(1);
+            Finding::error(finding.code, line_number(line), finding.message)
+        });
+    let findings: Vec<LocatedFinding> = unknown_keys
+        .chain(roles)
+        .map(|finding| LocatedFinding::from_finding(finding, relative.clone()))
         .collect();
+    if findings.is_empty() {
+        return None;
+    }
     Some(ItemReport {
         kind: ItemKind::Config,
         name: "config".into(),
         path: relative,
         findings,
     })
+}
+
+/// The invalid entries of a change's `roles:`, as errors at the line of
+/// their key in `change.yaml`.
+fn check_change_roles(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    ctx: &change::ChangeContext,
+) -> Vec<LocatedFinding> {
+    let path = layout.change_metadata(&ctx.change);
+    let relative = path
+        .strip_prefix(layout.project_root())
+        .unwrap_or(&path)
+        .to_path_buf();
+    let raw = fs.read_to_string(&path).unwrap_or_default();
+    crate::roles::change_findings(ctx)
+        .into_iter()
+        .map(|finding| {
+            let line = crate::config::key_line(&raw, Some("roles"), &finding.role);
+            LocatedFinding::from_finding(
+                Finding::error(finding.code, line_number(line), finding.message),
+                relative.clone(),
+            )
+        })
+        .collect()
+}
+
+fn line_number(line: usize) -> u32 {
+    u32::try_from(line).unwrap_or(u32::MAX)
 }
 
 /// Validates the "decisions" subsystem: compares each local ADR with its
@@ -484,6 +516,51 @@ mod tests {
         );
         assert!(report.has_warnings());
         assert!(!report.has_errors());
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_role_under_config() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "language: en\nroles:\n  reviewer: never\n",
+        );
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == ItemKind::Config)
+            .expect("a config item");
+        let finding = &item.findings[0];
+        assert_eq!(finding.finding.code, "unknown_role");
+        assert_eq!(finding.finding.severity, Severity::Error);
+        assert_eq!(finding.finding.line, 3);
+        assert!(finding.finding.message.contains("reviewer"));
+    }
+
+    #[test]
+    fn validate_reports_an_invalid_role_setting_of_a_change() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven\nskip_specs: true\nroles:\n  developer: never\n",
+            );
+        let cfg = config(&fs);
+        let item = validate_change(
+            &fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        let finding = item
+            .findings
+            .iter()
+            .find(|f| f.finding.code == "role_not_disableable")
+            .expect("a role finding");
+        assert_eq!(finding.finding.line, 4);
+        assert!(finding.finding.message.contains("developer"));
+        assert!(finding.finding.message.contains("change.yaml"));
     }
 
     #[test]
