@@ -391,36 +391,44 @@ a:hover { color: var(--corail-texte-hover); }
 .features {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 20px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .feature {
-  padding: 33px;
+  min-width: 0;
+  padding: 26px 28px 28px;
   background: #ffffff;
   border: 1px solid var(--n150);
   border-radius: 12px;
 }
+.feature-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 8px;
+}
 .feature .symbol {
-  display: block;
-  width: 40px;
-  height: 40px;
-  margin: 0 0 24px;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 2.5px;
 }
 .feature h3 {
-  margin: 0 0 10px;
-  font-size: 20px;
+  margin: 0 0 8px;
+  font-size: 18px;
   line-height: 1.4;
   font-weight: 600;
   color: var(--bleu);
 }
+.feature-title h3 { margin: 0; }
 .feature p {
   margin: 0;
   font-size: 15.5px;
   line-height: 1.6;
 }
-.feature code, .install-note code {
+.feature code, .install-note code, .section-head code, .role-what code {
   font-family: var(--mono);
   font-size: .88em;
   padding: .1em .35em;
@@ -429,8 +437,65 @@ a:hover { color: var(--corail-texte-hover); }
   border-radius: 6px;
 }
 .more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
   margin: 36px 0 0;
 }
+
+/* How a plan is built --------------------------------------------------- */
+.roles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: role;
+}
+.role {
+  display: flex;
+  min-width: 0;
+  counter-increment: role;
+}
+.role .role-card { flex: 1; }
+.role-card {
+  display: grid;
+  grid-template-columns: 1.4em minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 14px 18px 14px 16px;
+  background: #ffffff;
+  border: 1px solid var(--n150);
+  border-radius: 12px;
+}
+.role-card::before {
+  content: counter(role);
+  grid-row: 1 / span 2;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vert-ink);
+}
+.role-name {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--bleu);
+}
+.role-what {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--n700);
+}
+.role-you .role-card {
+  background: var(--bleu);
+  border-color: var(--bleu);
+}
+.role-you .role-card::before { color: var(--jaune); }
+.role-you .role-name { color: #ffffff; }
+.role-you .role-what { color: var(--n200); }
+.role-you .role-what code { white-space: nowrap; color: #ffffff; background: rgba(255, 255, 255, .14); }
 
 /* Footer ---------------------------------------------------------------- */
 .site-footer {
@@ -475,7 +540,8 @@ a:hover { color: var(--corail-texte-hover); }
 @media (max-width: 1080px) {
   .hero .container { grid-template-columns: minmax(0, 1fr); gap: 48px; }
   .hero h1 { font-size: 46px; }
-  .features { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .features { gap: 16px; }
+  .feature { padding: 22px 22px 24px; }
 }
 @media (max-width: 760px) {
   :root { --gutter: 16px; }
@@ -497,7 +563,9 @@ a:hover { color: var(--corail-texte-hover); }
   .install { grid-template-columns: minmax(0, 1fr); padding: 20px 16px 16px; }
   .code { align-items: flex-start; }
   .code pre { white-space: pre-wrap; word-break: break-all; }
-  .feature { padding: 24px; }
+  .features { grid-template-columns: minmax(0, 1fr); }
+  .feature { padding: 22px 20px 24px; }
+  .roles { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .delta-card pre { padding: 18px 18px 22px; font-size: 12.5px; }
   .delta-card figcaption { padding: 14px 18px; }
   .delta-card figcaption code { display: none; }
@@ -596,22 +664,65 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
       </div>
       <ul class="features">
         <li class="feature">
-          <svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#00c39b" d="M518.83,0v518.83h-125.02V213.42L88.41,518.83,0,430.43,305.41,125.02H0V0h518.83Z"/></svg>
-          <h3>Changes are deltas</h3>
-          <p>A change declares <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code> or <code>RENAMED</code> requirements instead of rewriting specs, which makes codev work on existing code, not only on new projects.</p>
+          <div class="feature-title"><svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#00c39b" d="M518.83,0v518.83h-125.02V213.42L88.41,518.83,0,430.43,305.41,125.02H0V0h518.83Z"/></svg><h3>Changes are deltas</h3></div>
+          <p>A change declares <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code> or <code>RENAMED</code> requirements against the current specs, so codev works on existing code, not only on new projects.</p>
         </li>
         <li class="feature">
-          <svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#ffab03" d="M393.76,259.15c0,17.02,0,56.87-63.44,96.38-25.33,15.77-51.91,32.15-70.9,38.23-18.99-6.08-45.57-22.46-70.9-38.23-63.44-39.51-63.44-79.36-63.44-96.38V125.07h268.69v134.08ZM518.83,0H0v259.02c0,210.81,259.41,259.81,259.41,259.81,0,0,259.42-49,259.42-259.81V0h0Z"/></svg>
-          <h3>Decisions are sealed</h3>
-          <p>Accepted ADRs are sealed with a hash; changing one means superseding it, and <code>codev validate</code> catches silent edits.</p>
+          <div class="feature-title"><svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#ffab03" d="M393.76,259.15c0,17.02,0,56.87-63.44,96.38-25.33,15.77-51.91,32.15-70.9,38.23-18.99-6.08-45.57-22.46-70.9-38.23-63.44-39.51-63.44-79.36-63.44-96.38V125.07h268.69v134.08ZM518.83,0H0v259.02c0,210.81,259.41,259.81,259.41,259.81,0,0,259.42-49,259.42-259.81V0h0Z"/></svg><h3>Decisions are sealed and accepted</h3></div>
+          <p>An architecture decision takes effect when you accept it; codev seals its text with a hash, and changing it means superseding it.</p>
         </li>
         <li class="feature">
-          <svg class="symbol" viewBox="0 0 518.82 518.8" aria-hidden="true" focusable="false"><path fill="#ff5331" d="M518.82,518.3v.5H0v-.5c0-140.11,111.12-254.32,250.1-259.22-67.29-4.77-120.4-60.87-120.4-129.37S187.77,0,259.41,0s129.71,58.07,129.71,129.71-53.11,124.6-120.4,129.37c138.98,4.91,250.1,119.11,250.1,259.22Z"/></svg>
+          <div class="feature-title"><svg class="symbol" viewBox="0 0 518.82 518.8" aria-hidden="true" focusable="false"><path fill="#ff5331" d="M518.82,518.3v.5H0v-.5c0-140.11,111.12-254.32,250.1-259.22-67.29-4.77-120.4-60.87-120.4-129.37S187.77,0,259.41,0s129.71,58.07,129.71,129.71-53.11,124.6-120.4,129.37c138.98,4.91,250.1,119.11,250.1,259.22Z"/></svg><h3>Plans challenged before your review</h3></div>
+          <p><code>/codev-propose</code> checks traceability, re-reads the plan as a skeptical reviewer and hands you at most five points to challenge.</p>
+        </li>
+        <li class="feature">
+          <h3>Docs and tests in every plan</h3>
+          <p>Every spec scenario is covered by an automated test in a task, and the documentation the change affects is updated in a task.</p>
+        </li>
+        <li class="feature">
           <h3>Your team’s language</h3>
           <p>Artifacts are written in the language your team sets; their structure stays machine-readable.</p>
         </li>
+        <li class="feature">
+          <h3>Shared conventions</h3>
+          <p>A project can inherit context, rules and decisions, read-only, from a shared folder or a git repository pinned to a commit.</p>
+        </li>
+        <li class="feature">
+          <h3>A complete project from <code>codev init</code></h3>
+          <p>Skills, <code>CLAUDE.md</code> and, on GitHub, a CI workflow and a pull request template; <code>codev doctor</code> tells you what is still missing.</p>
+        </li>
+        <li class="feature">
+          <h3>Release notes generated</h3>
+          <p>Each proposal carries a release note; <code>codev changelog</code> assembles those of the changes archived since the last release.</p>
+        </li>
+        <li class="feature">
+          <h3>Updates in one command</h3>
+          <p><code>codev self-update</code> installs the latest release after verifying its checksum, then refreshes the project’s skills.</p>
+        </li>
       </ul>
       <p class="more"><a class="link-arrow" href="en/workflow.html">See the workflow <span aria-hidden="true">→</span></a></p>
+    </div>
+  </section>
+
+  <section class="band-soft section" aria-labelledby="plan-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Roles</p>
+        <h2 id="plan-title">How a plan is built</h2>
+        <p><code>/codev-propose</code> takes one role after another, each with criteria it checks before moving on. Then it stops: the plan is yours to approve.</p>
+      </div>
+      <ol class="roles">
+        <li class="role"><div class="role-card"><span class="role-name">Business analyst</span><span class="role-what">understands the request</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Code investigator</span><span class="role-what">reads the code first</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Product owner</span><span class="role-what">why and what</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">QA analyst</span><span class="role-what">observable behavior</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Architect</span><span class="role-what">how, within the decisions</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Tech lead</span><span class="role-what">tasks and their tests</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Traceability</span><span class="role-what">every scenario covered</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Contrarian</span><span class="role-what">points to challenge</span></div></li>
+        <li class="role role-you"><div class="role-card"><span class="role-name">You approve</span><span class="role-what">then ask for <code>/codev-apply</code></span></div></li>
+      </ol>
+      <p class="more"><a class="link-arrow" href="en/roles.html">Read about roles <span aria-hidden="true">→</span></a><a class="link-arrow" href="fr/roles.html" hreflang="fr" lang="fr">Les rôles, en français <span aria-hidden="true">→</span></a></p>
     </div>
   </section>
 </main>

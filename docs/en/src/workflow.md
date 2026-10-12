@@ -23,6 +23,10 @@ Two more skills support the cycle: `/codev-explore` to think an idea through
 before proposing anything, and `/codev-update` to revise a plan that is
 already written. See [Claude Code skills](skills.md).
 
+At each step, the agent works in a defined role — product owner, QA analyst,
+architect, tech lead, skeptical reviewer, developer — with criteria it checks
+before moving on, and stops where you decide. See [Roles](roles.md).
+
 ## Propose
 
 Proposing creates a change folder and writes its planning artifacts. With the

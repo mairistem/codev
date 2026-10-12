@@ -11,6 +11,7 @@
 
 - [Le workflow](workflow.md)
 - [Les skills Claude Code](skills.md)
+- [Rôles](roles.md)
 - [Concepts](concepts.md)
 
 # Guides

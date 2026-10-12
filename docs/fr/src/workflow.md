@@ -23,6 +23,11 @@ Deux autres skills accompagnent le cycle : `/codev-explore`, pour mûrir une
 idée avant de proposer quoi que ce soit, et `/codev-update`, pour réviser un
 plan déjà rédigé. Voir [Les skills Claude Code](skills.md).
 
+À chaque étape, l'agent tient un rôle défini — product owner, analyste QA,
+architecte, tech lead, relecteur sceptique, développeur — avec des critères
+qu'il vérifie avant de passer à la suite, et s'arrête là où vous décidez.
+Voir [Rôles](roles.md).
+
 ## Propose
 
 L'étape propose crée le dossier d'un change et rédige ses artefacts de
