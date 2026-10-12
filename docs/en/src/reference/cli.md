@@ -266,6 +266,11 @@ it elsewhere without opening it, for sharing; `--print` prints the Markdown
 source. `--lang` selects the English (`en`, the default) or French (`fr`)
 edition. `codev docs` works anywhere, including outside a codev project.
 
+`--print` is meant to be piped: when the reader stops early, as in
+`codev docs --print | head`, the command stops silently and exits with code 0.
+On the page, notes and warnings keep their meaning: a note has a green rule, a
+warning a coral one.
+
 ```bash
 codev docs --lang fr --write ~/Downloads/codev-manual-fr.html
 ```

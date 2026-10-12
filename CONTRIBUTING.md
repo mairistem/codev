@@ -98,6 +98,11 @@ Each chapter starts with a single `# ` title, and chapters are listed in
 order, into a single page, so links between chapters must be relative
 (`concepts.md#delta`) and point to headings that are unique across the book.
 
+Callouts are blockquotes opening on a bold title: `> **Note**` or
+`> **Warning**` in English, `> **Remarque**` or `> **Attention**` in French.
+The website and `codev docs` render notes with a green rule and warnings with
+a coral one.
+
 To preview the site, install [mdBook](https://rust-lang.github.io/mdBook/) and
 run `mdbook serve docs/en`.
 

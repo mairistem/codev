@@ -254,6 +254,12 @@ vigueur, et `supersedes` comme `deviates_from` ne prennent effet que sur une
 décision `accepted` : un remplacement ou un écart `proposed` ne change rien
 avant `codev decision accept`.
 
+Les fichiers enregistrés avec des fins de ligne Windows (CRLF) sont lus comme
+les autres. Lorsque codev réécrit le statut d'une décision — `codev decision
+accept`, ou un prédécesseur passé en `superseded` —, il conserve les fins de
+ligne du fichier et laisse le corps identique à l'octet près : le sceau reste
+valide.
+
 ## seal.yaml
 
 Chemin : `_codev/decisions/seal.yaml`. Maintenu par codev ; ne le modifiez

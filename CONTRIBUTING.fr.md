@@ -112,6 +112,11 @@ de cette liste, dans l'ordre, en une seule page : les liens entre chapitres
 doivent donc être relatifs (`concepts.md#delta`) et pointer vers des titres
 uniques dans tout le livre.
 
+Les encadrés sont des citations qui commencent par un titre en gras :
+`> **Note**` ou `> **Warning**` en anglais, `> **Remarque**` ou
+`> **Attention**` en français. Le site et `codev docs` affichent les remarques
+avec un filet vert et les avertissements avec un filet corail.
+
 Pour prévisualiser le site, installez [mdBook](https://rust-lang.github.io/mdBook/)
 et lancez `mdbook serve docs/fr`.
 

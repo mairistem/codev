@@ -280,6 +280,11 @@ système. `--write` l'écrit ailleurs sans l'ouvrir, pour la partager ;
 (`en`, par défaut) ou française (`fr`). `codev docs` fonctionne partout, y
 compris en dehors d'un projet codev.
 
+`--print` est fait pour être redirigé : lorsque le lecteur s'arrête avant la
+fin, comme dans `codev docs --print | head`, la commande s'arrête sans message
+et renvoie le code 0. Dans la page, remarques et avertissements gardent leur
+sens : une remarque porte un filet vert, un avertissement un filet corail.
+
 ```bash
 codev docs --lang fr --write ~/Downloads/codev-manual-fr.html
 ```
