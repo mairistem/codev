@@ -369,6 +369,31 @@ mod tests {
     }
 
     #[test]
+    fn design_criteria_require_the_simplest_approach_a_newcomer_can_follow() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instruction = instructions(&fs, Some("design"))
+            .unwrap()
+            .instruction
+            .unwrap_or_default();
+        let (criteria, _) = instruction
+            .split_once("Write the document")
+            .expect("the role block precedes the existing text");
+        let criteria = criteria.split_whitespace().collect::<Vec<_>>().join(" ");
+        for criterion in [
+            "the simplest that satisfies the specs",
+            "a newcomer can follow the design without knowing its history",
+        ] {
+            assert!(
+                criteria.contains(criterion),
+                "the architect criteria must mention `{criterion}`"
+            );
+        }
+    }
+
+    #[test]
     fn proposal_impact_names_the_affected_documentation() {
         let fs = project(&[(
             "/p/_codev/changes/add-auth/change.yaml",

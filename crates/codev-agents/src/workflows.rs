@@ -615,6 +615,83 @@ mod tests {
         assert!(suite < summary);
     }
 
+    fn apply_newcomer_review(body: &str) -> String {
+        flat(section(
+            body,
+            "### 5. Review as a newcomer",
+            "### 6. Finish",
+        ))
+    }
+
+    #[test]
+    fn apply_reviews_the_change_as_a_newcomer_before_the_full_suite() {
+        let apply = find("apply").unwrap().body;
+        let review = apply_newcomer_review(apply);
+        for keyword in [
+            "only the code this change added or modified",
+            "seen neither the plan nor this conversation",
+            "**Without context**",
+            "**Names**",
+            "**Size and nesting**",
+            "**Cleverness**",
+            "**Comments**",
+            "**Tests** read as a description of the behavior",
+            "The project's `rules`",
+            "Simplify directly what is unambiguous",
+            "re-run the affected tests",
+        ] {
+            assert!(
+                review.contains(keyword),
+                "the newcomer review must cite `{keyword}`"
+            );
+        }
+        // The full suite covers the simplifications, so it runs after them.
+        assert!(
+            apply.find("### 5. Review as a newcomer").unwrap()
+                < apply.find("full test suite once").unwrap()
+        );
+    }
+
+    #[test]
+    fn apply_newcomer_review_keeps_behavior_scope_and_outside_code() {
+        let review = apply_newcomer_review(find("apply").unwrap().body);
+        for guardrail in [
+            "Never change behavior",
+            "never widen the change's scope",
+            "never touch code the change did not add or modify",
+        ] {
+            assert!(
+                review.contains(guardrail),
+                "the newcomer review must say `{guardrail}`"
+            );
+        }
+    }
+
+    #[test]
+    fn apply_summary_caps_readability_notes_and_never_invents_them() {
+        let finish = flat(section(
+            find("apply").unwrap().body,
+            "### 6. Finish",
+            "## Output",
+        ));
+        for keyword in [
+            "**Readability notes**",
+            "at most three items",
+            "what, where, why",
+            "No readability concern found",
+            "never invent notes",
+        ] {
+            assert!(
+                finish.contains(keyword),
+                "the final summary must cite `{keyword}`"
+            );
+        }
+        // The notes precede the archiving invitation, inside the summary.
+        let notes = finish.find("**Readability notes**").unwrap();
+        let archive = finish.find("ready to be archived").unwrap();
+        assert!(notes < archive);
+    }
+
     #[test]
     fn configure_body_carries_testing_rules_and_the_conventions_reference() {
         let configure = find("configure").unwrap();

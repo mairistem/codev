@@ -123,6 +123,8 @@ artifacts:
       - the accepted decisions in `_codev/decisions/` that constrain the
         approach are cited and followed, or a supersession is explicitly
         proposed;
+      - the approach is the simplest that satisfies the specs, and a
+        newcomer can follow the design without knowing its history;
       - Open Questions only holds what can genuinely wait.
 
       Write the document that explains HOW to implement the change.

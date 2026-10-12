@@ -80,8 +80,12 @@ chaque tâche `- [ ]` non cochée dans l'ordre du fichier, lance la vérificatio
 indiquée par la tâche (un test, une commande, un comportement observable),
 et ne coche la case qu'une fois la vérification réussie. Les tests suivent
 d'abord votre suite de tests existante, puis les conventions de votre langage
-et vos [`rules`](reference/configuration.md#rules). Avant d'annoncer le
-change terminé, la skill lance une fois la suite de tests complète.
+et vos [`rules`](reference/configuration.md#rules). Une fois toutes les
+tâches cochées, la skill relit le code touché par le change comme le ferait
+un nouvel arrivant sur le projet, simplifie ce qui ne fait pas de doute sans
+changer le comportement ni le périmètre, et liste au plus trois notes de
+lisibilité dans son résumé. Elle lance ensuite une fois la suite de tests
+complète.
 
 Elle s'arrête au premier blocage ou à la première ambiguïté pour vous
 consulter plutôt que de deviner. Elle ne modifie que le change désigné,

@@ -109,16 +109,40 @@ A task cannot be carried out in two cases:
 In both cases, stop after the current task. The following tasks are not
 processed until the obstacle is cleared.
 
-### 5. Finish — suggest archiving as an explicit next step
+### 5. Review as a newcomer
 
-When every box is checked, run the project's full test suite once. If it
-fails, report the failure instead of the summary below: the change is not
-done.
+When every box is checked, re-read only the code this change added or
+modified — its diff — as a developer joining the project who has seen
+neither the plan nor this conversation. Check:
+
+- **Without context**: each changed function makes sense without the plan
+  or the conversation.
+- **Names** say what things do; no obscure abbreviation.
+- **Size and nesting**: a function too long or too nested is split, when it
+  splits simply.
+- **Cleverness**: dense one-liners, premature genericity, single-use
+  abstractions — the simple version wins unless the clever one is justified.
+- **Comments** explain the why where it is not obvious, never paraphrase
+  the code.
+- **Tests** read as a description of the behavior.
+- The project's `rules` from step 3c, such as size thresholds.
+
+Simplify directly what is unambiguous, then re-run the affected tests.
+Never change behavior, never widen the change's scope, never touch code the
+change did not add or modify. Keep the rest for the readability notes.
+
+### 6. Finish — suggest archiving as an explicit next step
+
+Then run the project's full test suite once. If it fails, report the
+failure instead of the summary below: the change is not done.
 
 Otherwise, summarize:
 
 - number of tasks done,
 - main files touched (one line),
+- **Readability notes** — from step 5, at most three items, one line each:
+  what, where, why. If nothing is worth raising, write "No readability
+  concern found"; never invent notes,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 
@@ -126,7 +150,7 @@ Otherwise, summarize:
 
 ## Output
 
-A final summary, as described in step 5.
+A final summary, as described in step 6.
 
 ## Guardrails
 
