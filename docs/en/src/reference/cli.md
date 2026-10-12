@@ -402,9 +402,12 @@ Options:
 Creates `_codev/changes/<NAME>/` with a `change.yaml` recording the schema,
 the creation date and the goal, when one is given. The name must be
 kebab-case: lowercase letters, digits and single hyphens, neither leading
-nor trailing; it may start with a digit. The schema defaults to the
-`schema:` key of the configuration, else `spec-driven`. Fails, writing
-nothing, with `invalid_change_id` — naming the rule the name breaks — with
+nor trailing; it may start with a digit. `archive` is reserved for the
+folder of archived changes and refused. The schema defaults to the
+`schema:` key of the configuration, else `spec-driven`; `change.yaml`
+records the name the schema was found by — the folder name of a project
+schema. Fails, writing nothing, with `invalid_change_id` — naming the rule
+the name breaks — with
 `change_exists` if the change already exists, and with `schema_not_found`
 if the schema does not exist.
 
@@ -426,7 +429,10 @@ Options:
 ```
 
 Lists the active changes, or with `--specs` the capabilities that have a main
-spec under `_codev/specs/`.
+spec: each folder under `_codev/specs/` holding a file named exactly
+`spec.md`, nested folders included. Other files, such as a `README.md` or
+`notes/myspec.md`, are not specs and are ignored, by `codev validate` as
+well.
 
 ### codev status
 
@@ -447,7 +453,9 @@ blocked `[-]` with the artifacts it waits on, or skipped `[~]` — then
 `Planning is complete.`. Fails with `no_active_change` when the project has
 no active change. In both cases, when `codev doctor` would report a missing
 check, a last `hint:` line on stderr suggests running it. A `--change` naming
-a change that does not exist fails with `unknown_change`.
+a change that does not exist fails with `unknown_change`; `--change archive`
+fails with `invalid_change_id`, since that name is reserved for the archived
+changes.
 
 When a newer codev release is known and you have not snoozed it, stderr also
 carries ``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``.
@@ -662,7 +670,9 @@ Lists the project's schemas from `_codev/schemas/` and the built-in
 `spec-driven`, with the order of their artifacts. A project schema named
 `spec-driven` replaces the built-in one. A project schema that cannot be used
 is left out of the list with a warning `schema_unusable` giving the reason;
-the others are still listed. See
+the others are still listed. A project schema is named after its folder: one
+whose `name:` says otherwise is listed under its folder name, with a warning
+`schema_name_mismatch`. See
 [Custom schemas](../guides/custom-schemas.md).
 
 ## Decisions

@@ -12,7 +12,10 @@ consignes dans des commentaires `<!-- … -->`.
 ## Spec principale
 
 Chemin : `_codev/specs/<capability>/spec.md`, où `<capability>` est formé
-d'un ou plusieurs segments en kebab-case (`ui/theme`).
+d'un ou plusieurs segments en kebab-case (`ui/theme`). Seul un fichier nommé
+exactement `spec.md` est une spec principale : les autres fichiers de
+`_codev/specs/`, comme un `README.md`, sont ignorés par `codev list --specs`
+et `codev validate`.
 
 ```markdown
 # Theme Specification
@@ -227,6 +230,7 @@ tâche indique comment la vérifier.
 ## change.yaml
 
 Chemin : `_codev/changes/<name>/change.yaml`. Écrit par `codev new change`.
+`<name>` n'est jamais `archive`, le dossier des changes archivés.
 
 ```yaml
 schema: spec-driven
@@ -236,7 +240,7 @@ goal: Let users switch the UI to a dark theme
 
 | Clé | Type | Signification |
 |---|---|---|
-| `schema` | chaîne, obligatoire | Schéma du change |
+| `schema` | chaîne, obligatoire | Schéma du change : `spec-driven`, ou le nom du dossier d'un schéma du projet sous `_codev/schemas/` |
 | `created` | date | Date de création, `YYYY-MM-DD` |
 | `goal` | chaîne | L'objectif fourni avec `--goal` |
 | `skip_specs` | booléen | Le change n'a volontairement aucun delta de spec : les artefacts qui écrivent sous `specs/` sont ignorés, et la validation accepte l'absence de deltas |

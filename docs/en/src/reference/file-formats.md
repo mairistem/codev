@@ -11,7 +11,9 @@ parsers, so templates can carry guidance in `<!-- … -->` comments.
 ## Main spec
 
 Path: `_codev/specs/<capability>/spec.md`, where `<capability>` is one or more
-kebab-case segments (`ui/theme`).
+kebab-case segments (`ui/theme`). Only a file named exactly `spec.md` is a
+main spec: other files under `_codev/specs/`, such as a `README.md`, are
+ignored by `codev list --specs` and `codev validate`.
 
 ```markdown
 # Theme Specification
@@ -221,6 +223,7 @@ verify it.
 ## change.yaml
 
 Path: `_codev/changes/<name>/change.yaml`. Written by `codev new change`.
+`<name>` is never `archive`, the folder of archived changes.
 
 ```yaml
 schema: spec-driven
@@ -230,7 +233,7 @@ goal: Let users switch the UI to a dark theme
 
 | Key | Type | Meaning |
 |---|---|---|
-| `schema` | string, required | Schema of the change |
+| `schema` | string, required | Schema of the change: `spec-driven`, or the folder name of a project schema under `_codev/schemas/` |
 | `created` | date | Creation date, `YYYY-MM-DD` |
 | `goal` | string | The goal given with `--goal` |
 | `skip_specs` | boolean | The change intentionally has no spec delta: the artifacts writing under `specs/` are skipped, and validation accepts zero deltas |

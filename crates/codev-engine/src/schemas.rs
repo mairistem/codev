@@ -54,6 +54,10 @@ impl SchemaOrigin {
 
 #[derive(Debug)]
 pub struct ResolvedSchema {
+    /// The name the schema was resolved by — the folder of a project
+    /// schema. It is the schema's identity: recorded in `change.yaml` and
+    /// shown as `schemaName`, so that what is written always resolves again.
+    name: String,
     pub graph: ArtifactGraph,
     pub origin: SchemaOrigin,
 }
@@ -75,6 +79,7 @@ pub fn resolve(fs: &dyn FileSystem, layout: &Layout, name: &str) -> Result<Resol
             })?;
         let graph = ArtifactGraph::from_yaml(&raw)?;
         return Ok(ResolvedSchema {
+            name: name.to_string(),
             graph,
             origin: SchemaOrigin::Project(project_dir),
         });
@@ -82,6 +87,7 @@ pub fn resolve(fs: &dyn FileSystem, layout: &Layout, name: &str) -> Result<Resol
 
     if name == BUILTIN_SCHEMA {
         return Ok(ResolvedSchema {
+            name: name.to_string(),
             // A failure here would be a build bug on our side, not a user
             // error: the file is embedded.
             graph: ArtifactGraph::from_yaml(BUILTIN_SCHEMA_YAML)?,
@@ -113,7 +119,14 @@ pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<(String, SchemaOrigin)>
 }
 
 impl ResolvedSchema {
+    /// The schema's name: the one it was resolved by.
     pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// The `name:` written inside `schema.yaml`, which may differ from the
+    /// folder; only `codev schemas` looks at it, to report the mismatch.
+    pub fn declared_name(&self) -> &str {
         &self.graph.schema().name
     }
 
@@ -199,6 +212,19 @@ mod tests {
         let resolved = resolve(&fs, &Layout::new("/p"), "spec-driven").unwrap();
         assert!(matches!(resolved.origin, SchemaOrigin::Project(_)));
         assert_eq!(resolved.graph.artifacts().len(), 1);
+    }
+
+    #[test]
+    fn a_resolved_schema_is_named_by_its_folder() {
+        // The folder is what resolution goes by; the `name:` inside the file
+        // must not leak into `change.yaml` or `schemaName`.
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/schemas/lite/schema.yaml",
+            "name: quick-flow\nartifacts:\n  - id: brief\n    generates: brief.md\napply:\n  requires: [brief]\n  tracks: brief.md\n",
+        );
+        let resolved = resolve(&fs, &Layout::new("/p"), "lite").unwrap();
+        assert_eq!(resolved.name(), "lite");
+        assert_eq!(resolved.declared_name(), "quick-flow");
     }
 
     #[test]

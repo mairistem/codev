@@ -667,17 +667,9 @@ fn run(cli: Cli) -> i32 {
                 },
         } => match commands::new_change(&ctx, &name, schema.as_deref(), goal) {
             Ok(outcome) => {
-                emit(
-                    json,
-                    NewChangeV1 {
-                        change_name: outcome.change.to_string(),
-                        schema_name: outcome.schema_name.clone(),
-                        change_root: outcome.change_root.display().to_string(),
-                        created: paths(&outcome.created),
-                        status: contract::statuses(&outcome.warnings),
-                    },
-                    || render::new_change(&outcome),
-                );
+                emit(json, NewChangeV1::from(&outcome), || {
+                    render::new_change(&outcome)
+                });
                 if !json {
                     render::warnings(&outcome.warnings);
                 }
@@ -703,7 +695,7 @@ fn run(cli: Cli) -> i32 {
                             json,
                             SpecsV1 {
                                 specs: outcome.specs.clone(),
-                                root: Some(outcome.root.display().to_string()),
+                                root: Some(contract::json_path(&outcome.root)),
                                 status: Vec::new(),
                             },
                             || render::specs(&outcome),
@@ -719,7 +711,7 @@ fn run(cli: Cli) -> i32 {
                             json,
                             ChangesV1 {
                                 changes: outcome.changes.iter().map(ToString::to_string).collect(),
-                                root: Some(outcome.root.display().to_string()),
+                                root: Some(contract::json_path(&outcome.root)),
                                 status: Vec::new(),
                             },
                             || render::changes(&outcome),
@@ -737,8 +729,8 @@ fn run(cli: Cli) -> i32 {
                     json,
                     StatusV1::new(
                         &outcome.status,
-                        outcome.planning_home.display().to_string(),
-                        outcome.change_root.display().to_string(),
+                        &outcome.planning_home,
+                        &outcome.change_root,
                         &outcome.warnings,
                     )
                     .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
@@ -781,7 +773,11 @@ fn run(cli: Cli) -> i32 {
                 }
                 0
             }
-            Err(err) => fail(json, instructions_shape(), &err),
+            Err(err) => fail(
+                json,
+                instructions_shape(&commands::configured_language(&ctx)),
+                &err,
+            ),
         },
 
         Command::Sync { change, json } => match commands::sync(&ctx, change.as_deref()) {
@@ -932,7 +928,7 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         SourcesListReportV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             sources: outcome.sources.iter().map(SourceStateV1::from).collect(),
                             status: Vec::new(),
                         },
@@ -947,7 +943,7 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         SourcesUpdateReportV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             changes: outcome.diff.iter().map(PinChangeV1::from).collect(),
                             lock_written: outcome.lock_written,
                             status: Vec::new(),
@@ -969,7 +965,7 @@ fn run(cli: Cli) -> i32 {
                         SourceDetailV1 {
                             source: SourceStateV1::from(&outcome.source),
                             files_exposed: outcome.files_exposed.clone(),
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             status: Vec::new(),
                         },
                         || render::sources_show(&outcome),
@@ -990,7 +986,7 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionListReportV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decisions: outcome.decisions.iter().map(decision_v1).collect(),
                             status: Vec::new(),
                         },
@@ -1005,7 +1001,7 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionShowReportV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decision: Some(decision_v1(&outcome.decision)),
                             content: Some(outcome.content.clone()),
                             status: Vec::new(),
@@ -1025,9 +1021,9 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionCreatedV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decision: Some(decision_v1(&outcome.decision)),
-                            path: Some(outcome.path.display().to_string()),
+                            path: Some(contract::json_path(&outcome.path)),
                             body_sha256: outcome.body_sha256.clone(),
                             status: Vec::new(),
                         },
@@ -1042,9 +1038,9 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionAcceptedV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decision: Some(decision_v1(&outcome.decision)),
-                            path: Some(outcome.path.display().to_string()),
+                            path: Some(contract::json_path(&outcome.path)),
                             body_sha256: Some(outcome.body_sha256.clone()),
                             superseded: outcome
                                 .superseded
@@ -1052,7 +1048,7 @@ fn run(cli: Cli) -> i32 {
                                 .map(|p| SupersededDecisionV1 {
                                     id: p.id.clone(),
                                     qualified_id: p.qualified_id.clone(),
-                                    path: p.path.display().to_string(),
+                                    path: contract::json_path(&p.path),
                                 })
                                 .collect(),
                             status: Vec::new(),
@@ -1072,12 +1068,12 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionSupersededV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             new_decision: Some(decision_v1(&outcome.new_decision)),
-                            new_path: Some(outcome.new_path.display().to_string()),
+                            new_path: Some(contract::json_path(&outcome.new_path)),
                             old_id: Some(outcome.old_id.clone()),
                             old_qualified_id: Some(outcome.old_qualified_id.clone()),
-                            old_path: Some(outcome.old_path.display().to_string()),
+                            old_path: Some(contract::json_path(&outcome.old_path)),
                             status: Vec::new(),
                         },
                         || render::decision_superseded(&outcome),
@@ -1095,11 +1091,11 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionPromotedV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decision: Some(decision_v1(&outcome.decision)),
-                            path: Some(outcome.path.display().to_string()),
+                            path: Some(contract::json_path(&outcome.path)),
                             source_change: Some(outcome.source_change.clone()),
-                            design_path: Some(outcome.design_path.display().to_string()),
+                            design_path: Some(contract::json_path(&outcome.design_path)),
                             status: Vec::new(),
                         },
                         || render::decision_promoted(&outcome),
@@ -1117,9 +1113,9 @@ fn run(cli: Cli) -> i32 {
                     emit(
                         json,
                         DecisionDeviatedV1 {
-                            root: outcome.root.display().to_string(),
+                            root: contract::json_path(&outcome.root),
                             decision: Some(decision_v1(&outcome.decision)),
-                            path: Some(outcome.path.display().to_string()),
+                            path: Some(contract::json_path(&outcome.path)),
                             target_qualified_id: Some(outcome.target_qualified_id.clone()),
                             status: Vec::new(),
                         },
@@ -1135,7 +1131,7 @@ fn run(cli: Cli) -> i32 {
                         emit(
                             json,
                             DecisionSealedV1 {
-                                root: outcome.root.display().to_string(),
+                                root: contract::json_path(&outcome.root),
                                 seal: Some(SealEntryV1 {
                                     id: outcome.id.clone(),
                                     body_sha256: outcome.body_sha256.clone(),
@@ -1167,7 +1163,7 @@ fn run(cli: Cli) -> i32 {
                                 flow: s.flow.clone(),
                             })
                             .collect(),
-                        root: Some(outcome.root.display().to_string()),
+                        root: Some(contract::json_path(&outcome.root)),
                         status: contract::statuses(&outcome.warnings),
                     },
                     || render::schemas(&outcome),
@@ -1184,11 +1180,11 @@ fn run(cli: Cli) -> i32 {
 
 fn setup_v1(outcome: &commands::SetupOutcome) -> SetupV1 {
     SetupV1 {
-        root: outcome.root.display().to_string(),
-        created: paths(&outcome.created),
-        updated: paths(&outcome.updated),
-        untouched: paths(&outcome.untouched),
-        preserved: paths(&outcome.preserved),
+        root: contract::json_path(&outcome.root),
+        created: contract::json_paths(&outcome.created),
+        updated: contract::json_paths(&outcome.updated),
+        untouched: contract::json_paths(&outcome.untouched),
+        preserved: contract::json_paths(&outcome.preserved),
         skills: outcome.skills.clone(),
         integration: outcome
             .integration
@@ -1197,10 +1193,6 @@ fn setup_v1(outcome: &commands::SetupOutcome) -> SetupV1 {
             .collect(),
         status: contract::statuses(&outcome.warnings),
     }
-}
-
-fn paths(paths: &[std::path::PathBuf]) -> Vec<String> {
-    paths.iter().map(|p| p.display().to_string()).collect()
 }
 
 fn setup_shape() -> serde_json::Value {
@@ -1268,7 +1260,7 @@ fn decision_v1(s: &commands::DecisionSummary) -> DecisionV1 {
         tags: s.tags.clone(),
         supersedes: s.supersedes.clone(),
         deviates_from: s.deviates_from.clone(),
-        path: s.path.display().to_string(),
+        path: contract::json_path(&s.path),
         origin: s.origin.clone(),
         in_effect: s.in_effect,
         superseded_by: s.superseded_by.clone(),
@@ -1353,7 +1345,7 @@ fn archive_shape() -> serde_json::Value {
     })
 }
 
-fn instructions_shape() -> serde_json::Value {
+fn instructions_shape(language: &str) -> serde_json::Value {
     json!({
         "changeName": null,
         "schemaName": null,
@@ -1362,6 +1354,7 @@ fn instructions_shape() -> serde_json::Value {
         "resolvedOutputPath": null,
         "instruction": null,
         "template": null,
+        "language": language,
         "context": [],
         "rules": [],
         "dependencies": [],
@@ -1522,7 +1515,7 @@ mod doctor_tests {
     #[test]
     fn instructions_failure_keeps_the_shape() {
         let json = crate::contract::failure(
-            super::instructions_shape(),
+            super::instructions_shape("fr"),
             "unknown_artifact",
             "unknown artifact `sketch` in schema `spec-driven`",
         );
@@ -1541,7 +1534,46 @@ mod doctor_tests {
             assert_eq!(json[field], serde_json::json!([]), "`{field}`: {json}");
         }
         assert_eq!(json["skipped"], false);
+        // `language` is a field of the success document: the failure keeps
+        // it, with the language it was given.
+        assert_eq!(json["language"], "fr");
         assert_eq!(json["status"][0]["code"], "unknown_artifact");
+    }
+
+    #[test]
+    fn setup_paths_use_slashes_on_windows() {
+        // Built with `\` explicitly, so the conversion is proven on every
+        // platform.
+        let path = |p: &str| std::path::PathBuf::from(p);
+        let outcome = crate::commands::SetupOutcome {
+            root: path("C:\\work\\acme"),
+            created: vec![path("C:\\work\\acme\\_codev\\config.yaml")],
+            updated: vec![path(
+                "C:\\work\\acme\\.claude\\skills\\codev-apply\\SKILL.md",
+            )],
+            untouched: vec![path("C:\\work\\acme\\_codev\\specs")],
+            preserved: vec![path(
+                "C:\\work\\acme\\.claude\\skills\\codev-sync\\SKILL.md",
+            )],
+            skills: Vec::new(),
+            warnings: Vec::new(),
+            config_thin: false,
+            integration: Vec::new(),
+            pins: Vec::new(),
+            doctor_missing: None,
+        };
+        let json = serde_json::to_value(super::setup_v1(&outcome)).unwrap();
+        assert_eq!(json["root"], "C:/work/acme");
+        assert_eq!(json["created"][0], "C:/work/acme/_codev/config.yaml");
+        assert_eq!(
+            json["updated"][0],
+            "C:/work/acme/.claude/skills/codev-apply/SKILL.md"
+        );
+        assert_eq!(json["untouched"][0], "C:/work/acme/_codev/specs");
+        assert_eq!(
+            json["preserved"][0],
+            "C:/work/acme/.claude/skills/codev-sync/SKILL.md"
+        );
     }
 
     #[test]

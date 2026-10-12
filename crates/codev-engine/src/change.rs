@@ -75,12 +75,11 @@ pub fn status(fs: &dyn FileSystem, layout: &Layout, ctx: &ChangeContext) -> Resu
     }
 
     let skipped = ctx.metadata.skipped_artifacts(&ctx.schema.graph);
-    Ok(status::compute(
-        &ctx.schema.graph,
-        &ctx.change,
-        &existing,
-        &skipped,
-    ))
+    let mut status = status::compute(&ctx.schema.graph, &ctx.change, &existing, &skipped);
+    // The core only knows the parsed graph, whose `name:` may differ from
+    // the folder the schema was resolved by; the latter is the schema's name.
+    status.schema_name = ctx.schema.name().to_string();
+    Ok(status)
 }
 
 /// The active changes, in alphabetical order.

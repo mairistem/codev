@@ -119,7 +119,7 @@ fn archive_relative(layout: &Layout) -> String {
     let relative = archive
         .strip_prefix(layout.project_root())
         .unwrap_or(&archive);
-    let mut text = relative.display().to_string().replace('\\', "/");
+    let mut text = codev_core::layout::slashed(relative);
     if !text.ends_with('/') {
         text.push('/');
     }

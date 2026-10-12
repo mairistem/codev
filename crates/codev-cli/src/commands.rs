@@ -10,6 +10,7 @@ use codev_core::doctor::{
     self as core_doctor, ChangelogState, Check, CheckStatus, DoctorFacts, GitSourceFact,
     VersionFacts,
 };
+use codev_core::layout::slashed;
 use codev_core::managed::{self, SpliceMode};
 use codev_core::update::UpdateNotice;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
@@ -303,7 +304,7 @@ fn resolve_inherits(ctx: &Ctx, raw: &[String]) -> Result<Vec<InheritArg>> {
                 let written = if path.starts_with('~') || Path::new(path).is_absolute() {
                     path.clone()
                 } else {
-                    portable(&absolute(ctx, path)?)
+                    slashed(&absolute(ctx, path)?)
                 };
                 let on_disk = config::expand_tilde(&written, ctx.env);
                 if !ctx.fs.exists(&on_disk) || ctx.fs.list_dir(&on_disk).is_err() {
@@ -323,7 +324,7 @@ fn resolve_inherits(ctx: &Ctx, raw: &[String]) -> Result<Vec<InheritArg>> {
                     && !url.starts_with('~')
                     && !Path::new(url).is_absolute();
                 let url = if is_local_relative {
-                    portable(&absolute(ctx, url)?)
+                    slashed(&absolute(ctx, url)?)
                 } else {
                     url.clone()
                 };
@@ -496,6 +497,9 @@ pub fn new_change(
     let schema_name = schema.unwrap_or(&config.schema).to_string();
     let resolved = schemas::resolve(ctx.fs, &layout, &schema_name)?;
 
+    // Recorded under the name it was resolved by, never the `name:` inside
+    // `schema.yaml`: the latter may differ from the folder, and the change
+    // could then no longer be loaded.
     let metadata = ChangeMetadata::new(resolved.name(), ctx.clock.today()).with_goal(goal);
     let applied = apply::execute(
         &scaffold::plan_new_change(&layout, &change, &metadata),
@@ -589,6 +593,20 @@ pub fn self_update(
 
 // ─────────────────────────────── instructions ───────────────────────────────
 
+/// The language of the current project, for a failure document that must
+/// keep the `language` field: the configured one when the project and its
+/// configuration can be read, the default otherwise. Never fails — it only
+/// decorates an error already being reported.
+pub fn configured_language(ctx: &Ctx) -> String {
+    root::discover_from_cwd(ctx.fs, ctx.env)
+        .ok()
+        .and_then(|layout| config::resolve(ctx.fs, ctx.env, &layout).ok())
+        .map_or_else(
+            || codev_core::config::DEFAULT_LANGUAGE.to_string(),
+            |config| config.language,
+        )
+}
+
 pub fn artifact_instructions(
     ctx: &Ctx,
     artifact: Option<&str>,
@@ -654,16 +672,29 @@ pub fn list_schemas(ctx: &Ctx) -> Result<SchemasOutcome> {
 
     for (name, origin) in schemas::list(ctx.fs, &layout) {
         match schemas::resolve(ctx.fs, &layout, &name) {
-            Ok(resolved) => summaries.push(SchemaSummary {
-                name,
-                origin: origin.label(),
-                flow: resolved
-                    .graph
-                    .topological_order()
-                    .iter()
-                    .map(|a| a.id.clone())
-                    .collect(),
-            }),
+            Ok(resolved) => {
+                // The folder is the schema's name; a different `name:` is
+                // harmless but misleading, so it is pointed out, not refused.
+                if resolved.declared_name() != name {
+                    warnings.push(Warning::new(
+                        "schema_name_mismatch",
+                        format!(
+                            "schema `{name}` declares the name `{declared}`; codev names it after its folder, `{name}` — set `name: {name}` in its schema.yaml",
+                            declared = resolved.declared_name()
+                        ),
+                    ));
+                }
+                summaries.push(SchemaSummary {
+                    name,
+                    origin: origin.label(),
+                    flow: resolved
+                        .graph
+                        .topological_order()
+                        .iter()
+                        .map(|a| a.id.clone())
+                        .collect(),
+                });
+            }
             // A broken custom schema must not prevent listing the others: it is
             // precisely the command one runs to understand what is going on.
             Err(err) => warnings.push(Warning::new(
@@ -1734,13 +1765,6 @@ fn resolve_change(
     }
 }
 
-/// A path as written into `config.yaml`: forward slashes on every platform.
-/// Windows accepts them, and the file stays readable (no escaped
-/// backslashes) and identical whatever machine ran `codev init`.
-fn portable(path: &Path) -> String {
-    path.display().to_string().replace('\\', "/")
-}
-
 fn absolute(ctx: &Ctx, path: &str) -> Result<PathBuf> {
     let candidate = Path::new(path);
     let joined = if candidate.is_absolute() {
@@ -2083,6 +2107,57 @@ edition = "2024"
     }
 
     #[test]
+    fn new_change_refuses_the_reserved_name_archive() {
+        let h = Harness::new().with(
+            "/p/_codev/changes/archive/2026-09-01-old/proposal.md",
+            "# Proposal",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let before = h.fs.paths();
+        let err = new_change(&h.ctx(), "archive", None, None).unwrap_err();
+        assert_eq!(err.code, "invalid_change_id");
+        assert!(err.message.contains("reserved"), "{}", err.message);
+        assert_eq!(h.fs.paths(), before, "a refused name writes nothing");
+    }
+
+    #[test]
+    fn status_refuses_the_archive_folder_as_a_change() {
+        let h = Harness::new().with(
+            "/p/_codev/changes/archive/2026-09-01-old/proposal.md",
+            "# Proposal",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let err = status(&h.ctx(), Some("archive")).unwrap_err();
+        assert_eq!(err.code, "invalid_change_id");
+        assert!(err.message.contains("reserved"), "{}", err.message);
+    }
+
+    #[test]
+    fn status_infers_the_single_change_despite_the_archive() {
+        let h = Harness::new().with(
+            "/p/_codev/changes/archive/2026-09-01-old/proposal.md",
+            "# Proposal",
+        );
+        project_with_change(&h);
+        let outcome = status(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.status.change.as_str(), "add-auth");
+    }
+
+    #[test]
+    fn configured_language_reads_the_project_configuration() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        write_helper(&h, "/p/_codev/config.yaml", "language: fr\n");
+        assert_eq!(configured_language(&h.ctx()), "fr");
+    }
+
+    #[test]
+    fn configured_language_defaults_to_en_outside_a_project() {
+        let h = Harness::new();
+        assert_eq!(configured_language(&h.ctx()), "en");
+    }
+
+    #[test]
     fn rejects_an_already_existing_change() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
@@ -2291,6 +2366,51 @@ edition = "2024"
         let err = validate(&h.ctx(), ValidateArgs::Item("ghost".into())).unwrap_err();
         assert_eq!(err.code, "unknown_item");
         assert!(err.fix.is_some_and(|f| f.contains("codev list")));
+    }
+
+    const VALID_MAIN_SPEC: &str = "# User auth Specification\n\n## Purpose\n\nUser authentication.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n";
+
+    /// A project with one valid main spec and a stray Markdown file whose
+    /// name ends with `spec.md`.
+    fn project_with_a_stray_spec_file() -> Harness {
+        let h = Harness::new()
+            .with("/p/_codev/specs/user-auth/spec.md", VALID_MAIN_SPEC)
+            .with("/p/_codev/specs/notes/myspec.md", "# Notes\n");
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        h
+    }
+
+    #[test]
+    fn validate_specs_ignores_a_stray_markdown_file() {
+        let h = project_with_a_stray_spec_file();
+        let report = validate(&h.ctx(), ValidateArgs::Specs).unwrap();
+        let names: Vec<&str> = report.items.iter().map(|i| i.name.as_str()).collect();
+        assert_eq!(names, ["user-auth"]);
+        assert!(
+            !report.has_errors() && !report.has_warnings(),
+            "{report:#?}"
+        );
+    }
+
+    #[test]
+    fn validate_all_ignores_a_stray_markdown_file() {
+        let h = project_with_a_stray_spec_file();
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        assert!(
+            !report.has_errors() && !report.has_warnings(),
+            "{report:#?}"
+        );
+        assert!(
+            report.items.iter().all(|i| !i.name.contains("notes")),
+            "{report:#?}"
+        );
+    }
+
+    #[test]
+    fn validate_does_not_find_a_stray_file_by_name() {
+        let h = project_with_a_stray_spec_file();
+        let err = validate(&h.ctx(), ValidateArgs::Item("notes/my".into())).unwrap_err();
+        assert_eq!(err.code, "unknown_item");
     }
 
     /// Small helper that inserts a file into the harness's in-memory FS.
@@ -3697,8 +3817,8 @@ The rationale for the choice.
         serde_json::to_value(
             crate::contract::StatusV1::new(
                 &outcome.status,
-                outcome.planning_home.display().to_string(),
-                outcome.change_root.display().to_string(),
+                &outcome.planning_home,
+                &outcome.change_root,
                 &outcome.warnings,
             )
             .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
@@ -4417,6 +4537,74 @@ The rationale for the choice.
             h.fs.read("/p/_codev/changes/full/change.yaml")
                 .is_some_and(|c| c.contains("schema: spec-driven"))
         );
+    }
+
+    /// A valid schema whose `name:` differs from the folder it lives in.
+    const MISNAMED_SCHEMA: &str = "name: quick-flow\nartifacts:\n  - id: brief\n    generates: brief.md\napply:\n  requires: [brief]\n  tracks: brief.md\n";
+
+    #[test]
+    fn new_change_records_the_folder_of_a_schema_named_differently() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", MISNAMED_SCHEMA);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+
+        new_change(&h.ctx(), "quick", Some("lite"), None).unwrap();
+        let metadata = h.fs.read("/p/_codev/changes/quick/change.yaml").unwrap();
+        assert!(metadata.contains("schema: lite"), "{metadata}");
+
+        // The change must be usable afterwards: the recorded name resolves.
+        let outcome = status(&h.ctx(), Some("quick")).unwrap();
+        let ids: Vec<&str> = outcome
+            .status
+            .artifacts
+            .iter()
+            .map(|a| a.id.as_str())
+            .collect();
+        assert_eq!(ids, ["brief"]);
+    }
+
+    #[test]
+    fn status_and_instructions_name_the_schema_by_its_folder() {
+        let h = Harness::new()
+            .with("/p/_codev/schemas/lite/schema.yaml", MISNAMED_SCHEMA)
+            .with("/p/_codev/changes/quick/change.yaml", "schema: lite\n");
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+
+        let outcome = status(&h.ctx(), Some("quick")).unwrap();
+        assert_eq!(outcome.status.schema_name, "lite");
+        let instructions = artifact_instructions(&h.ctx(), None, Some("quick")).unwrap();
+        assert_eq!(instructions.schema_name, "lite");
+        let err = artifact_instructions(&h.ctx(), Some("sketch"), Some("quick")).unwrap_err();
+        assert!(err.message.contains("`lite`"), "{}", err.message);
+    }
+
+    #[test]
+    fn schemas_warn_when_the_name_differs_from_the_folder() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", MISNAMED_SCHEMA);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = list_schemas(&h.ctx()).unwrap();
+
+        let names: Vec<(&str, &str)> = outcome
+            .schemas
+            .iter()
+            .map(|s| (s.name.as_str(), s.origin))
+            .collect();
+        assert_eq!(names, [("lite", "project"), ("spec-driven", "built-in")]);
+        assert_eq!(outcome.warnings.len(), 1, "{:?}", outcome.warnings);
+        let warning = &outcome.warnings[0];
+        assert_eq!(warning.code, "schema_name_mismatch");
+        assert!(
+            warning.message.contains("`lite`") && warning.message.contains("`quick-flow`"),
+            "{}",
+            warning.message
+        );
+    }
+
+    #[test]
+    fn schemas_with_matching_names_raise_no_warning() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", LITE_SCHEMA);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = list_schemas(&h.ctx()).unwrap();
+        assert!(outcome.warnings.is_empty(), "{:?}", outcome.warnings);
     }
 
     #[test]
