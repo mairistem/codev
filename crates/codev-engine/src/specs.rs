@@ -6,7 +6,8 @@ const SPEC_FILE: &str = "spec.md";
 
 /// The specified capabilities, by their path relative to `specs/`.
 ///
-/// A capability is a directory containing a `spec.md` — nested paths
+/// A capability is a directory containing a file named exactly `spec.md`;
+/// any other file is ignored, not reported. Nested paths
 /// (`identity/user-auth`) count, because how specs are organized belongs to
 /// the project, not to the tool.
 pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<String> {
@@ -15,11 +16,13 @@ pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<String> {
     };
     let mut capabilities: Vec<String> = files
         .iter()
-        .filter_map(|relative| match relative.strip_suffix(SPEC_FILE) {
-            // `specs/spec.md` — a spec at the root, with no named capability.
-            Some("") => None,
-            Some(prefix) => Some(prefix.trim_end_matches('/').to_string()),
-            None => None,
+        // `walk_files` returns `/`-separated paths. Only a file named
+        // exactly `spec.md` is a spec: matching the text suffix alone turned
+        // `notes/myspec.md` into a capability `notes/my`. A `spec.md` at the
+        // root of `specs/` has no folder, hence no capability.
+        .filter_map(|relative| {
+            let (folder, file) = relative.rsplit_once('/')?;
+            (file == SPEC_FILE).then(|| folder.to_string())
         })
         .collect();
     capabilities.sort();
@@ -48,6 +51,17 @@ mod tests {
             .with_file("/p/_codev/specs/notes.md", "x")
             .with_file("/p/_codev/specs/user-auth/README.md", "x");
         assert!(list(&fs, &Layout::new("/p")).is_empty());
+    }
+
+    #[test]
+    fn a_file_whose_name_ends_with_spec_md_is_not_a_capability() {
+        // `notes/myspec.md` used to become the capability `notes/my`, whose
+        // `spec.md` does not exist — and `validate` then failed reading it.
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/specs/user-auth/spec.md", "x")
+            .with_file("/p/_codev/specs/notes/myspec.md", "x")
+            .with_file("/p/_codev/specs/draftspec.md", "x");
+        assert_eq!(list(&fs, &Layout::new("/p")), ["user-auth"]);
     }
 
     #[test]

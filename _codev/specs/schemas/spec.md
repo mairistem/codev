@@ -21,6 +21,11 @@ A project schema that cannot be used SHALL NOT prevent listing the others:
 it is left out of the list and reported as a warning `schema_unusable`
 naming it and the reason. The command exits with code 0 in that case.
 
+A project schema whose `name:` differs from its folder SHALL still be
+listed, under its folder name, and reported as a warning
+`schema_name_mismatch` naming the folder and the `name:` found, and saying
+that the folder name is the one used. The command exits with code 0.
+
 The human output SHALL print `Available schemas:`, then for each schema a
 line `<name> (<origin>)` followed by its flow joined with `→`. With
 `--json`, the document SHALL be `{ "schemas": [{ "name", "origin", "flow" }],
@@ -56,6 +61,23 @@ line `<name> (<origin>)` followed by its flow joined with `→`. With
 - **WHEN** the user runs `codev schemas --json`
 - **THEN** `spec-driven` appears once, with origin `project`
 
+#### Scenario: A schema whose `name:` differs from its folder
+
+- **GIVEN** a valid project schema in `_codev/schemas/lite/` whose
+  `schema.yaml` says `name: quick-flow`
+- **WHEN** the user runs `codev schemas --json`
+- **THEN** the exit code is 0
+- **AND** `schemas` lists `lite` with origin `project`
+- **AND** `status` holds a warning `schema_name_mismatch` naming `lite` and
+  `quick-flow`
+
+#### Scenario: Matching names raise no warning
+
+- **GIVEN** a valid project schema in `_codev/schemas/lite/` whose
+  `schema.yaml` says `name: lite`
+- **WHEN** the user runs `codev schemas --json`
+- **THEN** `status` is empty
+
 ### Requirement: A schema is resolved from the project before the built-in one
 
 Wherever a schema is needed by name, codev SHALL use
@@ -64,6 +86,11 @@ only when the name is `spec-driven` and the project does not define it. A
 project schema's templates SHALL be read from its `templates/` folder. A
 name found nowhere SHALL fail with `schema_not_found`, whose message points
 to `codev schemas`.
+
+A schema's name is the name it is resolved by — the folder of a project
+schema. The `name:` written inside `schema.yaml` SHALL NOT change it:
+`schemaName` in `codev status` and `codev instructions`, and the schema
+named in their messages, are the folder name.
 
 #### Scenario: The project's `spec-driven` wins
 
@@ -78,6 +105,14 @@ to `codev schemas`.
 - **WHEN** the user runs `codev new change add-auth --schema imaginary`
 - **THEN** the command fails with `schema_not_found` and a message naming
   `codev schemas`
+
+#### Scenario: The folder names the schema, not its `name:`
+
+- **GIVEN** a project schema in `_codev/schemas/lite/` whose `schema.yaml`
+  says `name: quick-flow`, and a change `quick` using `lite`
+- **WHEN** the user runs `codev status --change quick --json` and
+  `codev instructions --change quick --json`
+- **THEN** `schemaName` is `lite` in both documents
 
 ### Requirement: A schema file is validated before use
 
@@ -125,10 +160,12 @@ its code; `codev schemas` reports it as `schema_unusable`.
 otherwise from the `schema:` key of `_codev/config.yaml`, otherwise
 `spec-driven`. The chosen schema MUST be resolved and valid before anything
 is written: otherwise the command fails with the schema's error and creates
-no folder. The schema is recorded in the change's `change.yaml`, and every
-later command uses the recorded schema: changing `schema:` in the
-configuration does not affect existing changes. A change folder without
-`change.yaml` uses the `schema:` of the configuration, or `spec-driven`.
+no folder. The schema is recorded in the change's `change.yaml` under the
+name it was resolved by — never the `name:` inside its `schema.yaml` — so
+that every later command finds it again, and every later command uses the
+recorded schema: changing `schema:` in the configuration does not affect
+existing changes. A change folder without `change.yaml` uses the `schema:`
+of the configuration, or `spec-driven`.
 
 #### Scenario: The configured default
 
@@ -142,6 +179,14 @@ configuration does not affect existing changes. A change folder without
 - **GIVEN** a configuration with `schema: lite`
 - **WHEN** the user runs `codev new change full --schema spec-driven`
 - **THEN** its `change.yaml` holds `schema: spec-driven`
+
+#### Scenario: A schema whose `name:` differs from its folder is recorded by its folder
+
+- **GIVEN** a valid project schema in `_codev/schemas/lite/` whose
+  `schema.yaml` says `name: quick-flow`
+- **WHEN** the user runs `codev new change quick --schema lite`
+- **THEN** its `change.yaml` holds `schema: lite`
+- **AND** `codev status --change quick` lists the artifacts of `lite`
 
 #### Scenario: An unknown schema creates nothing
 

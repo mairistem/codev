@@ -34,6 +34,12 @@ Available schemas:
 Un schéma de projet nommé `spec-driven` remplace le schéma intégré, sans rien
 changer d'autre.
 
+Le nom d'un schéma est son dossier : `--schema lite`, `schema: lite` et
+`change.yaml` désignent tous `_codev/schemas/lite/`. Gardez le `name:` de
+`schema.yaml` identique au dossier ; s'il diffère, codev utilise tout de même
+le nom du dossier et `codev schemas` signale un avertissement
+`schema_name_mismatch`.
+
 ## Écrire un schéma
 
 ```yaml
@@ -63,7 +69,7 @@ apply:
 
 | Clé | Obligatoire | Signification |
 |---|---|---|
-| `name` | oui | Nom du schéma, en kebab-case — reprenez le nom du dossier du schéma |
+| `name` | oui | Nom du schéma, en kebab-case — le nom du dossier du schéma, celui qu'utilise codev |
 | `version` | non | Version du format de schéma, `1` par défaut |
 | `description` | non | Description en une ligne |
 | `artifacts` | oui | Les artefacts d'un change, au moins un |
@@ -103,8 +109,9 @@ ou faites-en le schéma par défaut du projet dans `_codev/config.yaml` :
 schema: lite
 ```
 
-Le schéma est enregistré dans le `change.yaml` de chaque change : modifier le
-schéma par défaut n'affecte donc pas les changes déjà en cours.
+Le schéma est enregistré dans le `change.yaml` de chaque change, sous le nom
+de son dossier : modifier le schéma par défaut n'affecte donc pas les changes
+déjà en cours.
 
 Les skills fonctionnent avec n'importe quel schéma : `/codev-propose` rédige
 les artefacts prêts, dans l'ordre des dépendances, au moyen de

@@ -15,8 +15,9 @@ you can use in scripts and CI.
   A consumer parses both cases with the same code.
 - **Stable names.** Field names are camelCase. Codes are stable and meant to
   be tested; messages are meant to be read and may be reworded.
-- **Portable paths.** Paths use `/` separators on every OS. Paths inside
-  findings are relative to the project root.
+- **Portable paths.** Every path, absolute or relative, uses `/` separators
+  on every OS — on Windows, `C:/work/acme-app`. Paths inside findings are
+  relative to the project root.
 - **Additive evolution.** Within version 1, fields may be added, never renamed
   or removed. Some optional fields are omitted when empty, as noted below.
 
@@ -52,7 +53,7 @@ Common error codes:
 | `no_active_change` | The project has no active change |
 | `ambiguous_change` | Several active changes and no `--change` |
 | `unknown_change` | The named change does not exist |
-| `invalid_change_id` | A change name that is not kebab-case; the message names the rule it breaks |
+| `invalid_change_id` | A change name that is not kebab-case, or the reserved `archive`; the message names the rule it breaks |
 | `change_exists` | `new change` with a name already taken |
 | `schema_not_found` | Unknown schema name |
 | `schema_invalid`, `schema_unreadable` | A schema file that codev refuses: a structural defect, or invalid YAML or an unknown key |
@@ -377,6 +378,10 @@ see the [codes](cli.md#codev-self-update).
 | `decisions` | The decisions in effect — filled for `design`, empty for other artifacts |
 | `skipped` | `true` when `skip_specs` disables this artifact: it must not be written |
 
+A failure keeps this shape, with `language` still set — the configured
+language, or `en` when the configuration cannot be read — and the other
+fields `null` or empty.
+
 ### validate
 
 ```json
@@ -440,7 +445,9 @@ lists main specs removed by a change that retires a capability.
 ```
 
 `origin` is `project` or `built-in`. A project schema that cannot be used is
-left out of `schemas`, with a warning `schema_unusable` in `status`.
+left out of `schemas`, with a warning `schema_unusable` in `status`. A project
+schema whose `name:` differs from its folder is listed under its folder name,
+with a warning `schema_name_mismatch`.
 
 ### decision
 

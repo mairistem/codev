@@ -423,8 +423,11 @@ Options:
 Crée `_codev/changes/<NAME>/` avec un `change.yaml` qui enregistre le schéma,
 la date de création et l'objectif, s'il est fourni. Le nom doit être en
 kebab-case : lettres minuscules, chiffres et tirets simples, ni en tête ni en
-fin ; il peut commencer par un chiffre. Par défaut, le schéma est celui de la
-clé `schema:` de la configuration, à défaut `spec-driven`. Échoue sans rien
+fin ; il peut commencer par un chiffre. `archive` est réservé au dossier
+des changes archivés et refusé. Par défaut, le schéma est celui de la
+clé `schema:` de la configuration, à défaut `spec-driven` ; `change.yaml`
+enregistre le nom sous lequel le schéma a été trouvé — le nom du dossier pour
+un schéma du projet. Échoue sans rien
 écrire avec `invalid_change_id` — en nommant la règle que le nom enfreint —,
 avec `change_exists` si le change existe déjà, et avec `schema_not_found` si
 le schéma n'existe pas.
@@ -447,7 +450,10 @@ Options:
 ```
 
 Liste les changes actifs ou, avec `--specs`, les capacités qui possèdent une
-spec principale sous `_codev/specs/`.
+spec principale : chaque dossier de `_codev/specs/` contenant un fichier
+nommé exactement `spec.md`, dossiers imbriqués compris. Les autres fichiers,
+comme un `README.md` ou `notes/myspec.md`, ne sont pas des specs et sont
+ignorés, par `codev validate` également.
 
 ### codev status
 
@@ -469,7 +475,8 @@ bloqué `[-]` avec les artefacts qu'il attend, ou ignoré `[~]` — puis
 aucun change actif. Dans les deux cas, lorsque `codev doctor` signalerait une
 vérification manquante, une dernière ligne `hint:` sur stderr suggère de le
 lancer. Un `--change` qui nomme un change inexistant échoue avec
-`unknown_change`.
+`unknown_change` ; `--change archive` échoue avec `invalid_change_id`, car ce
+nom est réservé aux changes archivés.
 
 Lorsqu'une release plus récente de codev est connue et que vous ne l'avez pas
 mise en sourdine, stderr porte aussi
@@ -691,7 +698,10 @@ Liste les schémas du projet, issus de `_codev/schemas/`, ainsi que le schéma
 intégré `spec-driven`, avec l'ordre de leurs artefacts. Un schéma du projet
 nommé `spec-driven` remplace le schéma intégré. Un schéma du projet
 inutilisable est écarté de la liste avec un avertissement `schema_unusable`
-qui en donne la raison ; les autres restent listés. Voir
+qui en donne la raison ; les autres restent listés. Un schéma du projet
+porte le nom de son dossier : celui dont le `name:` indique autre chose est
+listé sous le nom de son dossier, avec un avertissement
+`schema_name_mismatch`. Voir
 [Schémas personnalisés](../guides/custom-schemas.md).
 
 ## Décisions

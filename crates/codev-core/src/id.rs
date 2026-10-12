@@ -16,7 +16,7 @@ pub struct ChangeId(String);
 
 impl ChangeId {
     pub fn parse(raw: &str) -> Result<Self> {
-        let reason = kebab_violation(raw);
+        let reason = kebab_violation(raw).or_else(|| reserved(raw));
         match reason {
             Some(reason) => Err(CoreError::InvalidChangeId {
                 raw: raw.to_string(),
@@ -41,6 +41,20 @@ impl AsRef<str> for ChangeId {
     fn as_ref(&self) -> &str {
         &self.0
     }
+}
+
+/// The folder of `_codev/changes/` that holds the archived changes. A
+/// change of that name would be indistinguishable from the archive itself —
+/// listed, inferred or loaded as a change — so the name is refused, by every
+/// command, with the change-name rule.
+pub const RESERVED_CHANGE_NAME: &str = "archive";
+
+fn reserved(raw: &str) -> Option<String> {
+    (raw == RESERVED_CHANGE_NAME).then(|| {
+        format!(
+            "`{RESERVED_CHANGE_NAME}` is reserved for the archived changes; choose another name"
+        )
+    })
 }
 
 /// True if `raw` is an acceptable kebab-case identifier.
@@ -121,6 +135,21 @@ mod tests {
                 message.contains(expected),
                 "`{raw}`: message `{message}` should mention `{expected}`"
             );
+        }
+    }
+
+    #[test]
+    fn archive_is_a_reserved_name() {
+        let err = ChangeId::parse("archive").unwrap_err();
+        assert_eq!(err.code(), "invalid_change_id");
+        let message = err.to_string();
+        assert!(message.contains("reserved"), "{message}");
+    }
+
+    #[test]
+    fn names_containing_archive_are_accepted() {
+        for ok in ["archive-old-specs", "fix-archive", "archives"] {
+            assert!(ChangeId::parse(ok).is_ok(), "{ok} should be accepted");
         }
     }
 

@@ -15,11 +15,28 @@ pub const CONFIG_FILE: &str = "config.yaml";
 pub const LOCK_FILE: &str = "codev.lock";
 pub const CHANGE_METADATA_FILE: &str = "change.yaml";
 
+/// A path written with `/` separators, whatever the system.
+///
+/// The one place where codev turns a path into text meant for a machine or
+/// for a shared file: the JSON contract (consumed by skills that must not
+/// care about the user's OS), the paths written into `config.yaml`, the git
+/// pathspecs. Windows accepts `/` as well, so nothing is lost.
+///
+/// Tricky detail: on Unix, `path.components()` of an absolute path yields a
+/// first `Component::RootDir` whose `as_os_str()` is already `"/"`; a naive
+/// `join("/")` then produces `"//Users/…"`. Going through `to_string_lossy`
+/// on the whole path and replacing only the Windows separator avoids it.
+pub fn slashed(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
+}
+
 const SPECS_DIR: &str = "specs";
 const DECISIONS_DIR: &str = "decisions";
 const DECISIONS_SEAL_FILE: &str = "seal.yaml";
 const CHANGES_DIR: &str = "changes";
-const ARCHIVE_DIR: &str = "archive";
+/// The archive folder is the reserved change name: one constant, so they
+/// cannot drift apart.
+const ARCHIVE_DIR: &str = crate::id::RESERVED_CHANGE_NAME;
 const SCHEMAS_DIR: &str = "schemas";
 
 /// Every "where does this file live?" question, in one place.
@@ -110,6 +127,31 @@ impl Layout {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn slashed_does_not_double_the_separator_on_an_absolute_path() {
+        // Regression: `path.components().join("/")` produced `//Users/x` for
+        // an absolute Unix path, because `Component::RootDir` is already
+        // `"/"` and got glued back by the `join("/")`. The JSON contract
+        // then told its consumers about paths that did not exist.
+        assert_eq!(slashed(Path::new("/Users/x/y")), "/Users/x/y");
+        assert_eq!(slashed(Path::new("/")), "/");
+        assert_eq!(slashed(Path::new("relative/path")), "relative/path");
+    }
+
+    #[test]
+    fn slashed_translates_the_windows_separator() {
+        // Built with `\` explicitly, so the Windows behavior is checked on
+        // every platform, drive prefix included.
+        assert_eq!(
+            slashed(Path::new("relative\\sub\\file.md")),
+            "relative/sub/file.md"
+        );
+        assert_eq!(
+            slashed(Path::new("C:\\work\\acme\\_codev")),
+            "C:/work/acme/_codev"
+        );
+    }
 
     #[test]
     fn builds_paths_from_the_project_root() {

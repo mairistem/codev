@@ -33,6 +33,11 @@ Available schemas:
 A project schema named `spec-driven` replaces the built-in one, without
 changing anything else.
 
+A schema's name is its folder: `--schema lite`, `schema: lite` and
+`change.yaml` all refer to `_codev/schemas/lite/`. Keep the `name:` inside
+`schema.yaml` equal to the folder; when it differs, codev still uses the
+folder name and `codev schemas` reports a warning `schema_name_mismatch`.
+
 ## Writing a schema
 
 ```yaml
@@ -62,7 +67,7 @@ apply:
 
 | Key | Required | Meaning |
 |---|---|---|
-| `name` | yes | Schema name, in kebab-case — use the name of the schema's folder |
+| `name` | yes | Schema name, in kebab-case — the name of the schema's folder, which is what codev uses |
 | `version` | no | Schema format version, `1` by default |
 | `description` | no | One-line description |
 | `artifacts` | yes | The artifacts of a change, at least one |
@@ -99,8 +104,8 @@ or make it the project default in `_codev/config.yaml`:
 schema: lite
 ```
 
-The schema is recorded in each change's `change.yaml`, so changing the default
-does not affect changes already in progress.
+The schema is recorded in each change's `change.yaml`, under its folder
+name, so changing the default does not affect changes already in progress.
 
 The skills work with any schema: `/codev-propose` writes whatever artifacts
 are ready, in dependency order, using `codev instructions`. Per-artifact

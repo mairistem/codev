@@ -160,7 +160,10 @@ parentheses, `Decisions in effect:`, `Instruction:`, `Template:`, and
 - the codes of the change choice specified by the `changes` capability.
 
 With `--json`, the document carries the code in `status`, with `artifact`,
-`changeName` and the other single values `null` and the arrays empty.
+`changeName` and the other single values `null`, the arrays empty, and
+`language` set as on success — the `language:` of the project
+configuration, `en` when absent — or `en` when the configuration cannot be
+read, so that the failure keeps every field of the success document.
 
 #### Scenario: Unknown artifact
 
@@ -168,6 +171,20 @@ With `--json`, the document carries the code in `status`, with `artifact`,
 - **THEN** the exit code is 1
 - **AND** `status[0].code` is `unknown_artifact`, its message names
   `sketch` and `spec-driven`, and `artifact` is `null`
+
+#### Scenario: The failure document keeps the configured language
+
+- **GIVEN** a configuration with `language: fr`
+- **WHEN** the user runs `codev instructions sketch --change add-auth --json`
+- **THEN** the exit code is 1
+- **AND** `language` is `fr`
+
+#### Scenario: The failure document outside a project
+
+- **GIVEN** a directory outside any codev project
+- **WHEN** the user runs `codev instructions --json`
+- **THEN** `status[0].code` is `no_codev_root`
+- **AND** `language` is `en`
 
 #### Scenario: Nothing left to write
 

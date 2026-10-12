@@ -18,9 +18,9 @@ et que vous pouvez utiliser dans vos scripts et votre CI.
 - **Des noms stables.** Les noms de champs sont en camelCase. Les codes sont
   stables et faits pour être testés ; les messages sont faits pour être lus et
   peuvent être reformulés.
-- **Des chemins portables.** Les chemins utilisent le séparateur `/` sur tous
-  les systèmes. Les chemins figurant dans les constats sont relatifs à la
-  racine du projet.
+- **Des chemins portables.** Tous les chemins, absolus ou relatifs, utilisent
+  le séparateur `/` sur tous les systèmes — sous Windows, `C:/work/acme-app`.
+  Les chemins figurant dans les constats sont relatifs à la racine du projet.
 - **Une évolution par ajout.** Au sein de la version 1, des champs peuvent être
   ajoutés, jamais renommés ni supprimés. Certains champs facultatifs sont omis
   lorsqu'ils sont vides, comme indiqué ci-dessous.
@@ -57,7 +57,7 @@ Codes d'erreur courants :
 | `no_active_change` | Le projet n'a aucun change actif |
 | `ambiguous_change` | Plusieurs changes actifs et aucun `--change` |
 | `unknown_change` | Le change désigné n'existe pas |
-| `invalid_change_id` | Un nom de change qui n'est pas en kebab-case ; le message nomme la règle enfreinte |
+| `invalid_change_id` | Un nom de change qui n'est pas en kebab-case, ou le nom réservé `archive` ; le message nomme la règle enfreinte |
 | `change_exists` | `new change` avec un nom déjà pris |
 | `schema_not_found` | Nom de schéma inconnu |
 | `schema_invalid`, `schema_unreadable` | Un fichier de schéma que codev refuse : un défaut de structure, ou un YAML invalide ou une clé inconnue |
@@ -385,6 +385,10 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 | `decisions` | Les décisions en vigueur — renseigné pour `design`, vide pour les autres artefacts |
 | `skipped` | `true` lorsque `skip_specs` désactive cet artefact : il ne doit pas être rédigé |
 
+Un échec conserve cette forme, avec `language` toujours renseigné — la langue
+configurée, ou `en` lorsque la configuration ne peut pas être lue — et les
+autres champs à `null` ou vides.
+
 ### validate
 
 ```json
@@ -449,6 +453,8 @@ les specs principales supprimées par un change qui retire une capacité.
 
 `origin` vaut `project` ou `built-in`. Un schéma du projet inutilisable est
 écarté de `schemas`, avec un avertissement `schema_unusable` dans `status`.
+Un schéma du projet dont le `name:` diffère de son dossier est listé sous le
+nom de son dossier, avec un avertissement `schema_name_mismatch`.
 
 ### decision
 

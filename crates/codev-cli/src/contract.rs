@@ -155,7 +155,7 @@ impl From<&codev_engine::update::Outcome> for SelfUpdateV1 {
             url: outcome.url.clone(),
             action: outcome.action.as_str(),
             install_method: outcome.method.as_str(),
-            path: outcome.path.display().to_string(),
+            path: json_path(&outcome.path),
             hint: outcome.method.upgrade_hint(),
             project_updated: outcome.project_updated.is_some(),
             status: statuses(&outcome.warnings),
@@ -180,15 +180,15 @@ pub fn self_update_shape(current: &str) -> serde_json::Value {
 impl StatusV1 {
     pub fn new(
         status: &ChangeStatus,
-        planning_home: String,
-        change_root: String,
+        planning_home: &std::path::Path,
+        change_root: &std::path::Path,
         warnings: &[Warning],
     ) -> Self {
         Self {
             change_name: status.change.to_string(),
             schema_name: status.schema_name.clone(),
-            planning_home,
-            change_root,
+            planning_home: json_path(planning_home),
+            change_root: json_path(change_root),
             apply_requires: status.apply_requires.clone(),
             is_planning_complete: status.planning_complete,
             artifacts: status
@@ -350,7 +350,7 @@ impl SourceStateV1 {
             git_ref: status.git_ref.clone(),
             subpath: status.subpath.clone(),
             sha: status.sha.clone(),
-            resolved_path: status.resolved_path.as_ref().map(|p| to_slash(p)),
+            resolved_path: status.resolved_path.as_ref().map(|p| json_path(p)),
         }
     }
 }
@@ -556,7 +556,7 @@ impl From<&Instructions> for InstructionsV1 {
             schema_name: instructions.schema_name.clone(),
             artifact: instructions.artifact_id.clone(),
             description: instructions.description.clone(),
-            resolved_output_path: instructions.resolved_output_path.display().to_string(),
+            resolved_output_path: json_path(&instructions.resolved_output_path),
             instruction: instructions.instruction.clone(),
             template: instructions.template.clone(),
             language: instructions.language.clone(),
@@ -567,7 +567,7 @@ impl From<&Instructions> for InstructionsV1 {
                 .iter()
                 .map(|d| DependencyV1 {
                     id: d.id.clone(),
-                    path: d.path.display().to_string(),
+                    path: json_path(&d.path),
                     done: d.done,
                 })
                 .collect(),
@@ -581,7 +581,7 @@ impl From<&Instructions> for InstructionsV1 {
                     title: d.title.clone(),
                     status: d.status.clone(),
                     tags: d.tags.clone(),
-                    path: to_slash(&d.path),
+                    path: json_path(&d.path),
                     origin: d.origin.clone(),
                 })
                 .collect(),
@@ -653,7 +653,7 @@ impl From<&codev_engine::integration::IntegrationStep> for IntegrationStepV1 {
         Self {
             step: step.step.as_str(),
             action: step.action.as_str(),
-            path: step.path.as_deref().map(to_slash),
+            path: step.path.as_deref().map(json_path),
             reason: step.reason.clone(),
         }
     }
@@ -699,7 +699,7 @@ impl From<&crate::commands::DoctorOutcome> for DoctorReportV1 {
     fn from(outcome: &crate::commands::DoctorOutcome) -> Self {
         let (total, missing, warnings) = codev_core::doctor::summary(&outcome.checks);
         Self {
-            root: outcome.root.display().to_string(),
+            root: json_path(&outcome.root),
             checks: outcome
                 .checks
                 .iter()
@@ -761,7 +761,7 @@ impl ValidateReportV1 {
         use codev_engine::validate::ItemKind;
 
         Self {
-            root: to_slash(&report.root),
+            root: json_path(&report.root),
             has_warnings: report.has_warnings(),
             items: report
                 .items
@@ -774,12 +774,12 @@ impl ValidateReportV1 {
                         ItemKind::Config => "config",
                     },
                     name: item.name.clone(),
-                    path: to_slash(&item.path),
+                    path: json_path(&item.path),
                     findings: item
                         .findings
                         .iter()
                         .map(|f| FindingV1 {
-                            path: to_slash(&f.path),
+                            path: json_path(&f.path),
                             line: f.finding.line,
                             severity: match f.finding.severity {
                                 Severity::Error => "error",
@@ -797,20 +797,15 @@ impl ValidateReportV1 {
     }
 }
 
-/// Writes a `Path` with `/` separators, whatever the system.
-///
-/// The JSON contract is consumed by skills that do not need to know the
-/// user's OS; enforcing a single separator avoids conditional branches on
-/// the agent's side.
-///
-/// Tricky detail: on Unix, `path.components()` of an absolute path yields a
-/// first `Component::RootDir` whose `as_os_str()` is already `"/"`. A naive
-/// `join("/")` then adds a leading separator and produces `"//Users/…"` — a
-/// bug observable in JSON reports before this fix. So we go through
-/// `to_string_lossy` on the whole path and only replace the Windows
-/// separator, which remains the only case where the native path differs.
-fn to_slash(path: &std::path::Path) -> String {
-    path.to_string_lossy().replace('\\', "/")
+/// Every path of a JSON document goes through this: `/` separators on
+/// every OS (see `codev_core::layout::slashed`).
+pub fn json_path(path: &std::path::Path) -> String {
+    codev_core::layout::slashed(path)
+}
+
+/// A list of paths for a JSON document, each through [`json_path`].
+pub fn json_paths(paths: &[std::path::PathBuf]) -> Vec<String> {
+    paths.iter().map(|p| json_path(p)).collect()
 }
 
 #[derive(Debug, Serialize)]
@@ -831,11 +826,11 @@ impl SyncReportV1 {
     pub fn from(outcome: &codev_engine::sync::SyncOutcome) -> Self {
         Self {
             change_name: outcome.change.clone(),
-            root: to_slash(&outcome.root),
-            updated: paths_slash(&outcome.updated),
-            created: paths_slash(&outcome.created),
-            unchanged: paths_slash(&outcome.unchanged),
-            deleted: paths_slash(&outcome.deleted),
+            root: json_path(&outcome.root),
+            updated: json_paths(&outcome.updated),
+            created: json_paths(&outcome.created),
+            unchanged: json_paths(&outcome.unchanged),
+            deleted: json_paths(&outcome.deleted),
             status: Vec::new(),
         }
     }
@@ -860,19 +855,15 @@ impl ArchiveReportV1 {
     pub fn from(outcome: &codev_engine::archive::ArchiveOutcome) -> Self {
         Self {
             change_name: outcome.change.clone(),
-            root: to_slash(&outcome.root),
-            updated: paths_slash(&outcome.updated),
-            created: paths_slash(&outcome.created),
-            unchanged: paths_slash(&outcome.unchanged),
-            deleted: paths_slash(&outcome.deleted),
-            moved_to: to_slash(&outcome.moved_to),
+            root: json_path(&outcome.root),
+            updated: json_paths(&outcome.updated),
+            created: json_paths(&outcome.created),
+            unchanged: json_paths(&outcome.unchanged),
+            deleted: json_paths(&outcome.deleted),
+            moved_to: json_path(&outcome.moved_to),
             status: Vec::new(),
         }
     }
-}
-
-fn paths_slash(paths: &[std::path::PathBuf]) -> Vec<String> {
-    paths.iter().map(|p| to_slash(p)).collect()
 }
 
 #[derive(Debug, Serialize)]
@@ -883,6 +874,18 @@ pub struct NewChangeV1 {
     pub change_root: String,
     pub created: Vec<String>,
     pub status: Vec<StatusEntry>,
+}
+
+impl From<&crate::commands::NewChangeOutcome> for NewChangeV1 {
+    fn from(outcome: &crate::commands::NewChangeOutcome) -> Self {
+        Self {
+            change_name: outcome.change.to_string(),
+            schema_name: outcome.schema_name.clone(),
+            change_root: json_path(&outcome.change_root),
+            created: json_paths(&outcome.created),
+            status: statuses(&outcome.warnings),
+        }
+    }
 }
 
 /// `codev changelog --format json`.
@@ -939,7 +942,7 @@ impl From<&crate::commands::ChangelogOutcome> for ChangelogV1 {
     fn from(outcome: &crate::commands::ChangelogOutcome) -> Self {
         use codev_core::changelog::EntrySource;
         Self {
-            root: Some(outcome.root.display().to_string()),
+            root: Some(json_path(&outcome.root)),
             since: outcome.since.clone(),
             until: outcome.until.clone(),
             release: outcome
@@ -969,7 +972,7 @@ impl From<&crate::commands::ChangelogOutcome> for ChangelogV1 {
                 .written
                 .as_ref()
                 .map(|(path, action)| ChangelogWrittenV1 {
-                    path: path.display().to_string(),
+                    path: json_path(path),
                     action: action.as_str(),
                 }),
             status: statuses(&outcome.warnings),
@@ -1036,8 +1039,8 @@ apply:
         let status = status::compute(&graph, &change, &existing, &BTreeSet::new());
         let v1 = StatusV1::new(
             &status,
-            "/p".into(),
-            "/p/_codev/changes/add-auth".into(),
+            std::path::Path::new("/p"),
+            std::path::Path::new("/p/_codev/changes/add-auth"),
             &[Warning::new("inherit_unresolved", "missing source")],
         );
         serde_json::to_value(v1).unwrap()
@@ -1070,28 +1073,134 @@ apply:
         assert_eq!(artifacts[1]["outputPath"], "specs/**/*.md");
     }
 
+    /// A Windows project root, built with `\` explicitly: on Unix it is a
+    /// single odd component, which is enough to prove the conversion on
+    /// every platform (the Windows CI job runs it on real paths).
+    const WINDOWS_ROOT: &str = "C:\\work\\acme";
+
+    fn windows(path: &str) -> PathBuf {
+        PathBuf::from(format!("{WINDOWS_ROOT}\\{}", path.replace('/', "\\")))
+    }
+
     #[test]
-    fn to_slash_does_not_double_the_separator_on_an_absolute_path() {
-        // Regression: `path.components().join("/")` produced `//Users/x` for
-        // an absolute Unix path, because `Component::RootDir` is already
-        // `"/"` and got glued back by the `join("/")`. The JSON contract
-        // then told its consumers about paths that did not exist.
-        assert_eq!(to_slash(std::path::Path::new("/Users/x/y")), "/Users/x/y");
-        assert_eq!(to_slash(std::path::Path::new("/")), "/");
+    fn status_paths_use_slashes_on_windows() {
+        let graph = ArtifactGraph::from_yaml(SPEC_DRIVEN).unwrap();
+        let change = ChangeId::parse("add-auth").unwrap();
+        let status = status::compute(&graph, &change, &BTreeSet::new(), &BTreeSet::new());
+        let json = serde_json::to_value(StatusV1::new(
+            &status,
+            std::path::Path::new(WINDOWS_ROOT),
+            &windows("_codev/changes/add-auth"),
+            &[],
+        ))
+        .unwrap();
+        assert_eq!(json["planningHome"], "C:/work/acme");
+        assert_eq!(json["changeRoot"], "C:/work/acme/_codev/changes/add-auth");
+    }
+
+    #[test]
+    fn instructions_paths_use_slashes_on_windows() {
+        use codev_engine::instructions::{DecisionRef, Dependency};
+        let instructions = Instructions {
+            change: ChangeId::parse("add-auth").unwrap(),
+            schema_name: "spec-driven".into(),
+            artifact_id: "specs".into(),
+            description: None,
+            resolved_output_path: windows("_codev/changes/add-auth/specs/**/*.md"),
+            instruction: None,
+            template: None,
+            language: "en".into(),
+            context: Vec::new(),
+            rules: Vec::new(),
+            dependencies: vec![Dependency {
+                id: "proposal".into(),
+                path: windows("_codev/changes/add-auth/proposal.md"),
+                done: true,
+            }],
+            unlocks: Vec::new(),
+            decisions: vec![DecisionRef {
+                id: "0001".into(),
+                qualified_id: "project/0001".into(),
+                title: "Foundation".into(),
+                status: "accepted".into(),
+                tags: vec![],
+                path: PathBuf::from("_codev\\decisions\\0001-foundation.md"),
+                origin: "project".into(),
+            }],
+            skipped: false,
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
         assert_eq!(
-            to_slash(std::path::Path::new("relative/path")),
-            "relative/path"
+            json["resolvedOutputPath"],
+            "C:/work/acme/_codev/changes/add-auth/specs/**/*.md"
+        );
+        assert_eq!(
+            json["dependencies"][0]["path"],
+            "C:/work/acme/_codev/changes/add-auth/proposal.md"
+        );
+        assert_eq!(
+            json["decisions"][0]["path"],
+            "_codev/decisions/0001-foundation.md"
         );
     }
 
     #[test]
-    fn to_slash_translates_the_windows_separator() {
-        // Simulates the natural result of a `path.to_string_lossy()` on
-        // Windows without depending on the underlying system.
+    fn new_change_paths_use_slashes_on_windows() {
+        let outcome = crate::commands::NewChangeOutcome {
+            change: ChangeId::parse("fix-bug").unwrap(),
+            schema_name: "spec-driven".into(),
+            change_root: windows("_codev/changes/fix-bug"),
+            created: vec![windows("_codev/changes/fix-bug/change.yaml")],
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(NewChangeV1::from(&outcome)).unwrap();
+        assert_eq!(json["changeRoot"], "C:/work/acme/_codev/changes/fix-bug");
         assert_eq!(
-            to_slash(std::path::Path::new("relative\\sub\\file.md")),
-            "relative/sub/file.md"
+            json["created"],
+            serde_json::json!(["C:/work/acme/_codev/changes/fix-bug/change.yaml"])
         );
+    }
+
+    #[test]
+    fn unix_paths_are_written_unchanged() {
+        let graph = ArtifactGraph::from_yaml(SPEC_DRIVEN).unwrap();
+        let change = ChangeId::parse("add-auth").unwrap();
+        let status = status::compute(&graph, &change, &BTreeSet::new(), &BTreeSet::new());
+        let json = serde_json::to_value(StatusV1::new(
+            &status,
+            std::path::Path::new("/home/you/acme"),
+            std::path::Path::new("/home/you/acme/_codev/changes/add-auth"),
+            &[],
+        ))
+        .unwrap();
+        assert_eq!(json["planningHome"], "/home/you/acme");
+        assert_eq!(json["changeRoot"], "/home/you/acme/_codev/changes/add-auth");
+    }
+
+    #[test]
+    fn json_documents_never_render_a_native_path() {
+        // Every JSON field is filled in this file or in `main.rs`; a path
+        // rendered with `display()` keeps `\` on Windows, which the contract
+        // forbids. Human output lives in `render.rs` and may stay native, so
+        // the two files that build JSON documents must never use it: go
+        // through `json_path` / `json_paths` instead.
+        for (file, source) in [
+            ("contract.rs", include_str!("contract.rs")),
+            ("main.rs", include_str!("main.rs")),
+        ] {
+            let pattern = ["display()", ".to_string()"].concat();
+            let offending: Vec<(usize, &str)> = source
+                .lines()
+                .enumerate()
+                .filter(|(_, line)| line.contains(&pattern))
+                .map(|(n, line)| (n + 1, line.trim()))
+                .collect();
+            assert!(
+                offending.is_empty(),
+                "{file} renders a native path into JSON: {offending:?}"
+            );
+        }
     }
 
     #[test]
