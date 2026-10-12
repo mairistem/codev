@@ -629,4 +629,103 @@ mod tests {
                 .any(|w| w.code == "inherit_unresolved")
         );
     }
+
+    #[test]
+    fn dependencies_not_written_yet_are_not_done() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instr = instructions(&fs, Some("tasks")).unwrap();
+        let deps: Vec<(&str, bool)> = instr
+            .dependencies
+            .iter()
+            .map(|d| (d.id.as_str(), d.done))
+            .collect();
+        assert_eq!(deps, [("specs", false), ("design", false)]);
+    }
+
+    #[test]
+    fn instructions_carry_the_configured_language() {
+        let change = (
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        );
+        let default = project(&[change]);
+        assert_eq!(
+            instructions(&default, Some("proposal")).unwrap().language,
+            "en"
+        );
+        let french = project(&[change, ("/p/_codev/config.yaml", "language: fr\n")]);
+        assert_eq!(
+            instructions(&french, Some("proposal")).unwrap().language,
+            "fr"
+        );
+    }
+
+    #[test]
+    fn a_project_schema_without_instruction_nor_template_gives_null() {
+        let fs = project(&[
+            (
+                "/p/_codev/schemas/lite/schema.yaml",
+                "name: lite\nartifacts:\n  - id: brief\n    generates: brief.md\napply:\n  requires: [brief]\n  tracks: brief.md\n",
+            ),
+            ("/p/_codev/changes/add-auth/change.yaml", "schema: lite"),
+        ]);
+        let instr = instructions(&fs, Some("brief")).unwrap();
+        assert_eq!(instr.instruction, None);
+        assert_eq!(instr.template, None);
+    }
+
+    #[test]
+    fn a_missing_project_template_fails_with_template_not_found() {
+        let fs = project(&[
+            (
+                "/p/_codev/schemas/lite/schema.yaml",
+                "name: lite\nartifacts:\n  - id: brief\n    generates: brief.md\n    template: brief.md\napply:\n  requires: [brief]\n  tracks: brief.md\n",
+            ),
+            ("/p/_codev/changes/add-auth/change.yaml", "schema: lite"),
+        ]);
+        let err = instructions(&fs, Some("brief")).unwrap_err();
+        assert_eq!(err.code(), "template_not_found");
+    }
+
+    #[test]
+    fn inherited_blocks_come_before_the_project_ones() {
+        let fs = project(&[
+            (
+                "/home/shared/_codev/config.yaml",
+                "context: |\n  Shared context\nrules:\n  specs:\n    - Shared rule\n",
+            ),
+            (
+                "/p/_codev/config.yaml",
+                "inherits:\n  - path: ~/shared\ncontext: |\n  Project context\nrules:\n  specs:\n    - Project rule\n",
+            ),
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
+        ]);
+        let instr = instructions(&fs, Some("specs")).unwrap();
+        let blocks = |blocks: &[Block]| -> Vec<(String, String)> {
+            blocks
+                .iter()
+                .map(|b| (b.origin.clone(), b.text.clone()))
+                .collect()
+        };
+        assert_eq!(
+            blocks(&instr.context),
+            [
+                ("path:~/shared".to_string(), "Shared context".to_string()),
+                ("project".to_string(), "Project context".to_string()),
+            ]
+        );
+        assert_eq!(
+            blocks(&instr.rules),
+            [
+                ("path:~/shared".to_string(), "Shared rule".to_string()),
+                ("project".to_string(), "Project rule".to_string()),
+            ]
+        );
+    }
 }

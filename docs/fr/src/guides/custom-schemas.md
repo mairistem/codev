@@ -63,7 +63,7 @@ apply:
 
 | Clé | Obligatoire | Signification |
 |---|---|---|
-| `name` | oui | Nom du schéma, en kebab-case |
+| `name` | oui | Nom du schéma, en kebab-case — reprenez le nom du dossier du schéma |
 | `version` | non | Version du format de schéma, `1` par défaut |
 | `description` | non | Description en une ligne |
 | `artifacts` | oui | Les artefacts d'un change, au moins un |
@@ -81,7 +81,9 @@ Les clés inconnues sont rejetées : une faute de frappe ne peut donc pas
 produire en silence un workflow qui se comporte autrement que ce que vous avez
 écrit. codev rejette également un schéma dont les dépendances font référence à
 un artefact inexistant ou forment un cycle, en nommant les artefacts
-concernés.
+concernés. `codev schemas` liste malgré tout les autres schémas, et signale
+celui qui est refusé par un avertissement `schema_unusable` qui en donne la
+raison.
 
 Un artefact est **terminé** lorsque son fichier existe — ou, pour un motif
 glob, lorsqu'au moins un fichier correspond. Il est **prêt** lorsque tous les

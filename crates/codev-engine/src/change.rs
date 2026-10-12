@@ -211,4 +211,20 @@ mod tests {
             .collect();
         assert_eq!(names, ["add-auth", "fix-bug"]);
     }
+
+    #[test]
+    fn list_ignores_folders_that_are_not_change_names() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/changes/fix-bug/proposal.md", "x")
+            .with_file("/p/_codev/changes/add-auth/proposal.md", "x")
+            .with_file("/p/_codev/changes/Notes_2026/todo.md", "x")
+            .with_file("/p/_codev/changes/archive/2026-01-01-old/proposal.md", "x");
+
+        let names: Vec<String> = list(&fs, &Layout::new("/p"))
+            .iter()
+            .map(ToString::to_string)
+            .collect();
+        assert_eq!(names, ["add-auth", "fix-bug"]);
+    }
 }

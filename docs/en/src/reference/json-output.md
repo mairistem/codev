@@ -52,8 +52,11 @@ Common error codes:
 | `no_active_change` | The project has no active change |
 | `ambiguous_change` | Several active changes and no `--change` |
 | `unknown_change` | The named change does not exist |
+| `invalid_change_id` | A change name that is not kebab-case; the message names the rule it breaks |
 | `change_exists` | `new change` with a name already taken |
 | `schema_not_found` | Unknown schema name |
+| `schema_invalid`, `schema_unreadable` | A schema file that codev refuses: a structural defect, or invalid YAML or an unknown key |
+| `unknown_artifact` | `instructions` with an artifact that the change's schema does not have |
 | `no_artifact_ready` | `instructions` without an artifact, and none is ready |
 | `template_not_found` | A schema references a missing template |
 | `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
@@ -333,7 +336,7 @@ see the [codes](cli.md#codev-self-update).
   "artifact": "design",
   "description": "Technical approach and decisions",
   "resolvedOutputPath": "/home/you/acme-app/_codev/changes/add-dark-mode/design.md",
-  "instruction": "Write the document that explains HOW to implement the change.\n…",
+  "instruction": "Role: architect — owns HOW.\n…",
   "template": "# Design: <change title>\n…",
   "language": "en",
   "context": [
@@ -436,7 +439,8 @@ lists main specs removed by a change that retires a capability.
 }
 ```
 
-`origin` is `project` or `built-in`.
+`origin` is `project` or `built-in`. A project schema that cannot be used is
+left out of `schemas`, with a warning `schema_unusable` in `status`.
 
 ### decision
 
@@ -462,7 +466,8 @@ and `codev decision show --json` returns `{ "root", "decision", "content",
 ```
 
 `deviatedBy` is added for an inherited decision set aside by a local
-deviation. `origin` is `project`, `path:<path>` or `git:<url>`.
+deviation. `origin` is `project`, `path:<path>` or `git:<url>`. `path` is
+relative to the project for a decision inside it, absolute otherwise.
 
 The commands that create or seal decisions return:
 

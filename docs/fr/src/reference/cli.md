@@ -189,7 +189,10 @@ modification de la configuration `mcp:`. Une skill dont le contenu diffère de
 ce que génère cette version, mais qui porte la marque de cette version, a été
 modifiée à la main : elle est laissée en place et signalée, sauf si vous
 passez `--force`. Les skills retirées de `workflows:` ne sont pas
-supprimées.
+supprimées. Un nom de workflow inconnu est ignoré avec un avertissement
+`unknown_workflow`. Les dossiers manquants de `_codev/` et un
+`_codev/config.yaml` manquant sont recréés ; aucun fichier existant n'est
+jamais écrasé.
 
 `codev update` rafraîchit aussi les sections gérées par codev dans `CLAUDE.md`
 et dans le modèle de pull request, ainsi que `.github/workflows/codev.yml`
@@ -418,10 +421,13 @@ Options:
 ```
 
 Crée `_codev/changes/<NAME>/` avec un `change.yaml` qui enregistre le schéma,
-la date de création et l'objectif. Le nom doit être en kebab-case : lettres
-minuscules, chiffres et tirets simples. Par défaut, le schéma est celui de la
-clé `schema:` de la configuration, à défaut `spec-driven`. Échoue avec
-`change_exists` si le change existe déjà.
+la date de création et l'objectif, s'il est fourni. Le nom doit être en
+kebab-case : lettres minuscules, chiffres et tirets simples, ni en tête ni en
+fin ; il peut commencer par un chiffre. Par défaut, le schéma est celui de la
+clé `schema:` de la configuration, à défaut `spec-driven`. Échoue sans rien
+écrire avec `invalid_change_id` — en nommant la règle que le nom enfreint —,
+avec `change_exists` si le change existe déjà, et avec `schema_not_found` si
+le schéma n'existe pas.
 
 ```bash
 codev new change add-dark-mode --goal "Let users switch the UI to a dark theme"
@@ -457,10 +463,13 @@ Options:
 ```
 
 Affiche l'état de chaque artefact d'un change — terminé `[x]`, prêt `[ ]`,
-bloqué `[-]` ou ignoré `[~]` — et indique si la planification est complète.
-Échoue avec `no_active_change` lorsque le projet n'a aucun change actif. Dans
-les deux cas, lorsque `codev doctor` signalerait une vérification manquante,
-une dernière ligne `hint:` sur stderr suggère de le lancer.
+bloqué `[-]` avec les artefacts qu'il attend, ou ignoré `[~]` — puis
+`Planning: <n>/<total> artifacts` et le prochain artefact à rédiger, ou
+`Planning is complete.`. Échoue avec `no_active_change` lorsque le projet n'a
+aucun change actif. Dans les deux cas, lorsque `codev doctor` signalerait une
+vérification manquante, une dernière ligne `hint:` sur stderr suggère de le
+lancer. Un `--change` qui nomme un change inexistant échoue avec
+`unknown_change`.
 
 Lorsqu'une release plus récente de codev est connue et que vous ne l'avez pas
 mise en sourdine, stderr porte aussi
@@ -494,7 +503,15 @@ l'instruction du schéma, le template, la langue des artefacts, le contexte et
 les règles du projet avec leur provenance, les dépendances à lire au
 préalable, et ce que l'artefact débloque. Pour l'artefact `design`, la
 commande liste aussi les décisions d'architecture en vigueur. Sans
-`ARTIFACT`, elle choisit le premier artefact prêt à être rédigé.
+`ARTIFACT`, elle choisit le premier artefact prêt à être rédigé. Elle n'écrit
+aucun fichier.
+
+Pour un artefact désactivé par `skip_specs`, elle indique qu'il ne doit pas
+être créé, avec un avertissement `artifact_skipped`. Elle échoue avec
+`unknown_artifact` lorsque `ARTIFACT` n'est pas un artefact du schéma du
+change, avec `no_artifact_ready` lorsque `ARTIFACT` est omis et qu'aucun
+artefact n'est prêt, et avec `template_not_found` lorsqu'un schéma du projet
+déclare un fichier de template qu'il ne contient pas.
 
 Les skills l'appellent avec `--json` ; voir
 [`codev instructions`](json-output.md#instructions).
@@ -671,7 +688,10 @@ Options:
 ```
 
 Liste les schémas du projet, issus de `_codev/schemas/`, ainsi que le schéma
-intégré `spec-driven`, avec l'ordre de leurs artefacts. Voir
+intégré `spec-driven`, avec l'ordre de leurs artefacts. Un schéma du projet
+nommé `spec-driven` remplace le schéma intégré. Un schéma du projet
+inutilisable est écarté de la liste avec un avertissement `schema_unusable`
+qui en donne la raison ; les autres restent listés. Voir
 [Schémas personnalisés](../guides/custom-schemas.md).
 
 ## Décisions
@@ -733,6 +753,14 @@ Options:
       --json
   -h, --help  Print help
 ```
+
+Affiche un en-tête — l'identifiant court et qualifié, le titre, le statut, la
+date, puis les tags, `Supersedes` et `Superseded by` lorsqu'ils sont
+renseignés, et le chemin du fichier, relatif au projet ou absolu pour une
+source héritée située en dehors — suivi du contenu du fichier. Échoue avec
+`unknown_decision_id` lorsqu'aucune décision ne correspond, et avec
+`ambiguous_decision_id`, en listant les candidates, lorsqu'un identifiant
+court en désigne plusieurs : utilisez alors l'identifiant qualifié.
 
 ### codev decision new
 

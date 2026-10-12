@@ -57,8 +57,11 @@ Codes d'erreur courants :
 | `no_active_change` | Le projet n'a aucun change actif |
 | `ambiguous_change` | Plusieurs changes actifs et aucun `--change` |
 | `unknown_change` | Le change désigné n'existe pas |
+| `invalid_change_id` | Un nom de change qui n'est pas en kebab-case ; le message nomme la règle enfreinte |
 | `change_exists` | `new change` avec un nom déjà pris |
 | `schema_not_found` | Nom de schéma inconnu |
+| `schema_invalid`, `schema_unreadable` | Un fichier de schéma que codev refuse : un défaut de structure, ou un YAML invalide ou une clé inconnue |
+| `unknown_artifact` | `instructions` avec un artefact que le schéma du change n'a pas |
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
@@ -341,7 +344,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
   "artifact": "design",
   "description": "Technical approach and decisions",
   "resolvedOutputPath": "/home/you/acme-app/_codev/changes/add-dark-mode/design.md",
-  "instruction": "Write the document that explains HOW to implement the change.\n…",
+  "instruction": "Role: architect — owns HOW.\n…",
   "template": "# Design: <change title>\n…",
   "language": "en",
   "context": [
@@ -444,7 +447,8 @@ les specs principales supprimées par un change qui retire une capacité.
 }
 ```
 
-`origin` vaut `project` ou `built-in`.
+`origin` vaut `project` ou `built-in`. Un schéma du projet inutilisable est
+écarté de `schemas`, avec un avertissement `schema_unusable` dans `status`.
 
 ### decision
 
@@ -471,7 +475,8 @@ présente ainsi :
 ```
 
 `deviatedBy` est ajouté pour une décision héritée écartée par un écart local.
-`origin` vaut `project`, `path:<path>` ou `git:<url>`.
+`origin` vaut `project`, `path:<path>` ou `git:<url>`. `path` est relatif au
+projet pour une décision qui s'y trouve, absolu sinon.
 
 Les commandes qui créent ou scellent des décisions renvoient :
 

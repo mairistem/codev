@@ -1503,6 +1503,67 @@ mod doctor_tests {
         assert_eq!(json["status"][0]["code"], "no_codev_root");
         assert_eq!(json["status"][0]["level"], "error");
     }
+
+    #[test]
+    fn status_failure_keeps_the_shape() {
+        let json = crate::contract::failure(
+            super::status_shape(),
+            "ambiguous_change",
+            "several active changes: add-auth, fix-bug — specify which one",
+        );
+        assert!(json["changeName"].is_null() && json["changeRoot"].is_null());
+        assert!(json["planningHome"].is_null() && json["schemaName"].is_null());
+        assert_eq!(json["artifacts"], serde_json::json!([]));
+        assert_eq!(json["applyRequires"], serde_json::json!([]));
+        assert_eq!(json["isPlanningComplete"], false);
+        assert_eq!(json["status"][0]["code"], "ambiguous_change");
+    }
+
+    #[test]
+    fn instructions_failure_keeps_the_shape() {
+        let json = crate::contract::failure(
+            super::instructions_shape(),
+            "unknown_artifact",
+            "unknown artifact `sketch` in schema `spec-driven`",
+        );
+        for field in [
+            "changeName",
+            "schemaName",
+            "artifact",
+            "description",
+            "resolvedOutputPath",
+            "instruction",
+            "template",
+        ] {
+            assert!(json[field].is_null(), "`{field}` should be null: {json}");
+        }
+        for field in ["context", "rules", "dependencies", "unlocks", "decisions"] {
+            assert_eq!(json[field], serde_json::json!([]), "`{field}`: {json}");
+        }
+        assert_eq!(json["skipped"], false);
+        assert_eq!(json["status"][0]["code"], "unknown_artifact");
+    }
+
+    #[test]
+    fn setup_failure_keeps_the_shape() {
+        let json = crate::contract::failure(
+            super::setup_shape(),
+            "no_codev_root",
+            "no codev project found from /elsewhere",
+        );
+        assert!(json["root"].is_null());
+        for field in [
+            "created",
+            "updated",
+            "untouched",
+            "preserved",
+            "skills",
+            "integration",
+        ] {
+            assert_eq!(json[field], serde_json::json!([]), "`{field}`: {json}");
+        }
+        assert_eq!(json["status"][0]["code"], "no_codev_root");
+    }
 }
 
 #[cfg(test)]
