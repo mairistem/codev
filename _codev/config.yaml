@@ -11,7 +11,7 @@ language: en
 
 # Every contributor runs a codev that understands this repository's planning
 # format; `codev doctor` and the skills say so otherwise.
-codev_version: ">=0.5"
+codev_version: ">=0.6"
 
 workflows:
   - propose
@@ -21,6 +21,7 @@ workflows:
   - archive
   - update
   - onboard
+  - configure
 
 # The Jira MCP available in our Claude Code environment. Injected into the
 # skills' frontmatter at install time (see `mcp__claude_ai_Atlassian_Rovo__*`
