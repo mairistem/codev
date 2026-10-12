@@ -1648,9 +1648,15 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
         .filter(|f| f.finding.severity == codev_core::parser::ast::Severity::Warning)
         .count();
 
+    let cached = engine_update::cached_notice(ctx.fs, ctx.env, ctx.clock, ctx.version);
     let facts = DoctorFacts {
         rules_present: resolved.rules.values().any(|blocks| !blocks.is_empty()),
         language_set: project.language.is_some(),
+        unknown_config_keys: resolved
+            .unknown_keys
+            .iter()
+            .map(|u| u.key.clone())
+            .collect(),
         skills: ClaudeCode::skill_states(ctx.fs, root, &selected, ctx.version),
         main_specs: specs::list(ctx.fs, layout).len(),
         accepted_decisions,
@@ -1671,9 +1677,11 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
         version: VersionFacts {
             running: ctx.version.to_string(),
             requirement: version_requirement(ctx, resolved.codev_version.as_deref()),
-            newer_release: engine_update::cached_notice(ctx.fs, ctx.env, ctx.clock, ctx.version)
+            newer_release: cached
+                .as_ref()
                 .filter(|n| n.available)
-                .map(|n| n.latest),
+                .map(|n| n.latest.clone()),
+            latest_known: cached.map(|n| n.latest),
         },
     };
     Ok(DoctorOutcome {
@@ -3830,6 +3838,174 @@ The rationale for the choice.
         assert_eq!(version.code, "update_available");
         assert!(version.message.contains("0.6.0"), "{}", version.message);
         assert!(h.http.calls().is_empty());
+    }
+
+    // ─────────────── forward-compatible configuration ───────────────
+
+    fn with_config(h: &Harness, yaml: &str) {
+        h.fs.write(Path::new("/p/_codev/config.yaml"), yaml)
+            .unwrap();
+    }
+
+    #[test]
+    fn status_warns_on_an_unknown_config_key_and_quotes_the_requirement() {
+        let h = Harness::new();
+        project_with_change(&h);
+        with_config(&h, "codev_version: \">=0.9\"\nreview_policy: strict\n");
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        assert_eq!(outcome.status.change.as_str(), "add-auth");
+        let json = status_json(&outcome);
+        let entry = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|e| e["code"] == "unknown_config_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        let message = entry["message"].as_str().unwrap();
+        assert!(message.contains("`review_policy`"), "{message}");
+        assert!(message.contains("\">=0.9\""), "{message}");
+        assert!(message.contains("codev self-update"), "{message}");
+    }
+
+    #[test]
+    fn status_warns_on_a_misspelled_top_level_key() {
+        let h = Harness::new();
+        project_with_change(&h);
+        with_config(&h, "shema: spec-driven\n");
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        assert_eq!(outcome.status.schema_name, "spec-driven");
+        let warning = outcome
+            .warnings
+            .iter()
+            .find(|w| w.code == "unknown_config_key")
+            .unwrap();
+        assert!(warning.message.contains("`shema`"), "{}", warning.message);
+        assert!(
+            warning.message.contains("newer codev"),
+            "{}",
+            warning.message
+        );
+    }
+
+    #[test]
+    fn update_installs_skills_despite_an_unknown_mcp_key() {
+        let h = Harness::new().with(
+            "/p/_codev/config.yaml",
+            "mcp:\n  jira_tool: mcp__a__getJiraIssue\n  design_tool: mcp__b__get\n",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert!(
+            outcome
+                .warnings
+                .iter()
+                .any(|w| w.code == "unknown_config_key" && w.message.contains("`mcp.design_tool`")),
+            "{:?}",
+            outcome.warnings
+        );
+        let skill =
+            h.fs.read_to_string(Path::new("/p/.claude/skills/codev-propose/SKILL.md"))
+                .unwrap();
+        assert!(skill.contains("mcp__a__getJiraIssue"));
+    }
+
+    #[test]
+    fn status_fails_on_an_unknown_changelog_key_quoting_the_requirement() {
+        let h = Harness::new();
+        project_with_change(&h);
+        with_config(
+            &h,
+            "codev_version: \">=0.9\"\nchangelog:\n  since: v1.0.0\n",
+        );
+        let err = status(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "invalid");
+        assert!(err.message.contains("since"), "{}", err.message);
+        assert!(err.message.contains("\">=0.9\""), "{}", err.message);
+        assert!(err.message.contains("codev self-update"), "{}", err.message);
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_config_key_as_a_warning() {
+        let h = Harness::new();
+        project_with_change(&h);
+        with_config(
+            &h,
+            "schema: spec-driven\nlanguage: en\nreview_policy: strict\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == codev_engine::validate::ItemKind::Config)
+            .expect("a config item");
+        assert_eq!(item.findings.len(), 1);
+        assert_eq!(item.findings[0].finding.code, "unknown_config_key");
+        assert_eq!(item.findings[0].finding.line, 3);
+        // `--strict` fails on warnings, plain `validate` on errors only.
+        assert!(item.has_warnings() && !item.has_errors(), "{item:?}");
+        let json = serde_json::to_value(crate::contract::ValidateReportV1::from(&report)).unwrap();
+        assert!(json.to_string().contains("\"kind\":\"config\""), "{json}");
+        // Scoped runs leave the configuration out.
+        let changes = validate(&h.ctx(), ValidateArgs::Changes).unwrap();
+        assert!(
+            changes
+                .items
+                .iter()
+                .all(|i| i.kind != codev_engine::validate::ItemKind::Config)
+        );
+    }
+
+    #[test]
+    fn validate_has_no_config_item_when_clean() {
+        let h = Harness::new();
+        project_with_change(&h);
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .all(|i| i.kind != codev_engine::validate::ItemKind::Config)
+        );
+    }
+
+    #[test]
+    fn doctor_reports_an_unknown_config_key() {
+        let h = Harness::new().with(
+            "/p/_codev/config.yaml",
+            "language: en\nreview_policy: strict\n",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        let keys = check(&outcome, "config.keys");
+        assert_eq!(keys.status, CheckStatus::Warning);
+        assert_eq!(keys.code, "unknown_config_key");
+        assert!(keys.message.contains("`review_policy`"), "{}", keys.message);
+        assert!(
+            keys.fix
+                .as_deref()
+                .unwrap()
+                .starts_with("correct or remove"),
+            "{:?}",
+            keys.fix
+        );
+    }
+
+    #[test]
+    fn doctor_fixes_a_codev_above_the_requirement_with_an_explicit_version() {
+        // The harness runs codev 0.1.0.
+        let h = Harness::new();
+        let cache = cache_knowing(&h, "0.0.8");
+        let h = h.with(UPDATE_CACHE, &cache).with(
+            "/p/_codev/config.yaml",
+            "codev_version: \">=0.0.5, <0.1\"\n",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let version = check(&doctor(&h.ctx()).unwrap(), "codev_version").clone();
+        assert_eq!(version.code, "codev_version_unsatisfied");
+        assert_eq!(
+            version.fix.as_deref(),
+            Some("codev self-update --version 0.0.8")
+        );
     }
 
     #[test]

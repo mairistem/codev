@@ -54,6 +54,86 @@ pub fn satisfies(requirement: &str, current: &str) -> Option<bool> {
     Some(requirement.matches(&current))
 }
 
+/// On which side of a requirement an unsatisfying version lies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RequirementSide {
+    /// Too old: a plain `codev self-update` moves towards the requirement.
+    Below,
+    /// Too new: only an explicit `--version` downgrade satisfies it.
+    Above,
+}
+
+/// Where `current` stands when it does not satisfy `requirement`; `None`
+/// when it does, or when either does not parse. A failing upper bound
+/// (`<`, `<=`, or `=`, `~`, `^`, `*` whose base is below `current`) wins
+/// over a failing lower bound: the downgrade is the one that needs saying.
+pub fn requirement_side(requirement: &str, current: &str) -> Option<RequirementSide> {
+    let requirement = parse_requirement(requirement).ok()?;
+    let current = parse_version(current)?;
+    if requirement.matches(&current) {
+        return None;
+    }
+    let above = requirement
+        .comparators
+        .iter()
+        .filter(|c| !c.matches(&current))
+        .any(|c| match c.op {
+            semver::Op::Less | semver::Op::LessEq => true,
+            semver::Op::Greater | semver::Op::GreaterEq => false,
+            _ => base_version(c) < current,
+        });
+    Some(if above {
+        RequirementSide::Above
+    } else {
+        RequirementSide::Below
+    })
+}
+
+/// The release to name in `codev self-update --version` when the running
+/// codev is above `requirement`, in order of preference: the latest
+/// release the update cache knows, when it satisfies the requirement; the
+/// version of an inclusive upper bound written in full (`<=0.6.2`,
+/// `=0.6.2`); the lowest version a lower bound admits (`>=0.5` → `0.5.0`),
+/// when it satisfies the whole requirement. `None` when nothing names a
+/// version — the caller then asks for one.
+pub fn downgrade_target(requirement: &str, latest_known: Option<&str>) -> Option<String> {
+    let req = parse_requirement(requirement).ok()?;
+    if let Some(latest) = latest_known.and_then(parse_version)
+        && req.matches(&latest)
+    {
+        return Some(latest.to_string());
+    }
+    let exact_upper = req.comparators.iter().find_map(|c| {
+        let full = c.minor.is_some() && c.patch.is_some() && c.pre.is_empty();
+        let inclusive = matches!(c.op, semver::Op::LessEq | semver::Op::Exact);
+        (full && inclusive).then(|| base_version(c))
+    });
+    if let Some(version) = exact_upper.filter(|v| req.matches(v)) {
+        return Some(version.to_string());
+    }
+    req.comparators
+        .iter()
+        .filter(|c| {
+            matches!(
+                c.op,
+                semver::Op::GreaterEq
+                    | semver::Op::Exact
+                    | semver::Op::Tilde
+                    | semver::Op::Caret
+                    | semver::Op::Wildcard
+            )
+        })
+        .map(base_version)
+        .filter(|v| req.matches(v))
+        .max()
+        .map(|v| v.to_string())
+}
+
+/// The version a comparator is written with, missing parts as 0.
+fn base_version(c: &semver::Comparator) -> Version {
+    Version::new(c.major, c.minor.unwrap_or(0), c.patch.unwrap_or(0))
+}
+
 // ─────────────────────────────── check policy ───────────────────────────────
 
 /// What the environment says about the background check.
@@ -525,6 +605,68 @@ mod tests {
         let err = parse_requirement("latest").unwrap_err();
         assert!(err.contains("latest"), "{err}");
         assert_eq!(satisfies("latest", "0.6.0"), None);
+    }
+
+    #[test]
+    fn a_version_above_an_upper_bound_is_above() {
+        use RequirementSide::*;
+        assert_eq!(requirement_side(">=0.5, <0.7", "0.7.1"), Some(Above));
+        assert_eq!(requirement_side("<=0.6.2", "0.7.0"), Some(Above));
+        assert_eq!(requirement_side("^0.5", "0.6.0"), Some(Above));
+        assert_eq!(requirement_side("~0.5.1", "0.6.0"), Some(Above));
+        assert_eq!(requirement_side("=0.5", "0.6.0"), Some(Above));
+        assert_eq!(requirement_side(">=0.5, <0.7", "0.6.0"), None);
+    }
+
+    #[test]
+    fn a_version_below_a_lower_bound_is_below() {
+        use RequirementSide::*;
+        assert_eq!(requirement_side(">=0.7", "0.6.0"), Some(Below));
+        assert_eq!(requirement_side("^0.6", "0.5.9"), Some(Below));
+        assert_eq!(requirement_side(">=0.5, <0.7", "0.4.0"), Some(Below));
+        assert_eq!(requirement_side("latest", "0.6.0"), None);
+    }
+
+    #[test]
+    fn the_downgrade_target_prefers_the_cached_release() {
+        assert_eq!(
+            downgrade_target(">=0.5, <0.7", Some("0.6.4")).as_deref(),
+            Some("0.6.4")
+        );
+        assert_eq!(
+            downgrade_target("<=0.6.2", Some("v0.6.1")).as_deref(),
+            Some("0.6.1")
+        );
+    }
+
+    #[test]
+    fn the_downgrade_target_falls_back_to_an_exact_upper_bound() {
+        assert_eq!(downgrade_target("<=0.6.2", None).as_deref(), Some("0.6.2"));
+        assert_eq!(
+            downgrade_target(">=0.5, <=0.6.2", Some("0.7.0")).as_deref(),
+            Some("0.6.2")
+        );
+        assert_eq!(downgrade_target("=0.5.3", None).as_deref(), Some("0.5.3"));
+    }
+
+    #[test]
+    fn the_downgrade_target_falls_back_to_the_lowest_admitted_version() {
+        assert_eq!(
+            downgrade_target("^0.5", Some("0.6.0")).as_deref(),
+            Some("0.5.0")
+        );
+        assert_eq!(
+            downgrade_target(">=0.5, <0.7", None).as_deref(),
+            Some("0.5.0")
+        );
+        assert_eq!(downgrade_target("~0.5.1", None).as_deref(), Some("0.5.1"));
+    }
+
+    #[test]
+    fn no_downgrade_target_without_any_bound() {
+        assert_eq!(downgrade_target("<0.7", None), None);
+        assert_eq!(downgrade_target("<0.7", Some("0.7.0")), None);
+        assert_eq!(downgrade_target("latest", Some("0.6.0")), None);
     }
 
     #[test]

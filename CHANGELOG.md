@@ -14,6 +14,14 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `codev self-update` downloads the latest release for your platform, verifies its SHA-256, replaces the binary and refreshes the current project; `--check` only reports, `--snooze` silences the notice for 7 days, and a cargo or package-manager installation is left alone with the right command printed instead.
 - `codev status` tells you when a newer codev is available — at most one anonymous request to GitHub per day, never in CI or with `CODEV_NO_UPDATE_CHECK=1` — and `codev status --json` exposes it in an `update` object; the skills offer to update at the start of an action.
 - `codev_version` in `_codev/config.yaml` sets the codev versions a team accepts; `codev doctor` reports a `codev_version` check when the running codev does not satisfy it, or when a newer release is known.
+
+### Changed
+
+- A key of `_codev/config.yaml` that your codev does not know — typically one added by a newer codev — is now a warning `unknown_config_key` instead of an error, naming the key and the project's `codev_version`, and pointing to `codev self-update`; `codev validate --strict` and the new `config.keys` check of `codev doctor` report it. codev 0.5 and earlier still reject such keys.
+
+### Fixed
+
+- When the running codev is newer than the project's `codev_version` allows, `codev doctor` now suggests `codev self-update --version <X.Y.Z>` with a version that satisfies it, instead of a `codev self-update` that refuses to downgrade.
 <!-- codev:end -->
 
 ## [0.5.0] - 2026-10-12

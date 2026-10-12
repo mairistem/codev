@@ -373,6 +373,7 @@ may be reworded between versions; codes are not.
 | `release_note_missing` | warning | An active change's proposal has no `## Release note` section |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
+| `unknown_config_key` | warning | `_codev/config.yaml` holds a top-level or `mcp` key this codev does not know — see [Unknown keys](configuration.md#unknown-keys) |
 | `decision_orphan_seal` | warning | A seal has no matching decision |
 | `decision_supersedes_unknown` | warning | `supersedes` names an unknown decision |
 | `decision_id_collision` | warning | A local and an inherited decision share an id |

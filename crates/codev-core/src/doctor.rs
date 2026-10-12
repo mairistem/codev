@@ -100,6 +100,9 @@ pub struct VersionFacts {
     pub requirement: Option<(String, bool)>,
     /// A release newer than `running`, as the update cache knows it.
     pub newer_release: Option<String>,
+    /// The latest release the update cache knows, newer or not: the
+    /// downgrade target when `running` is above the requirement.
+    pub latest_known: Option<String>,
 }
 
 /// Everything [`evaluate`] needs, read by the shell.
@@ -109,6 +112,9 @@ pub struct DoctorFacts {
     pub rules_present: bool,
     /// `language:` is written in the project's `config.yaml`.
     pub language_set: bool,
+    /// Keys of the project's `config.yaml` the running codev ignores
+    /// (`mcp.<key>` inside `mcp`).
+    pub unknown_config_keys: Vec<String>,
     /// `(skill name, state)` for every configured workflow.
     pub skills: Vec<(String, SkillState)>,
     pub main_specs: usize,
@@ -135,6 +141,7 @@ pub struct DoctorFacts {
 pub const CHECK_IDS: &[&str] = &[
     "config.rules",
     "config.language",
+    "config.keys",
     "skills",
     "sources",
     "codev_version",
@@ -176,6 +183,22 @@ fn not_ok(
     }
 }
 
+/// The fix of an unsatisfied `codev_version`: a plain `codev self-update`
+/// refuses to downgrade, so a codev above the requirement gets an explicit
+/// `--version`.
+fn version_fix(requirement: &str, version: &VersionFacts) -> String {
+    use crate::update::{RequirementSide, downgrade_target, requirement_side};
+    if requirement_side(requirement, &version.running) != Some(RequirementSide::Above) {
+        return "codev self-update".to_string();
+    }
+    match downgrade_target(requirement, version.latest_known.as_deref()) {
+        Some(target) => format!("codev self-update --version {target}"),
+        None => format!(
+            "codev self-update --version <X.Y.Z>, with a release that satisfies \"{requirement}\""
+        ),
+    }
+}
+
 /// Evaluates every check, in the order of [`CHECK_IDS`]. `pr_template` is
 /// left out when the repository is not on GitHub.
 pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
@@ -206,6 +229,38 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
             "language_missing",
             "no language: in _codev/config.yaml",
             "add `language: <code>` (e.g. `language: en`) to _codev/config.yaml",
+        )
+    });
+
+    let version = &facts.version;
+    let requirement_unsatisfied = matches!(version.requirement, Some((_, false)));
+    checks.push(if facts.unknown_config_keys.is_empty() {
+        ok(
+            "config.keys",
+            Configuration,
+            "no unknown key in _codev/config.yaml",
+        )
+    } else {
+        let keys = facts
+            .unknown_config_keys
+            .iter()
+            .map(|k| format!("`{k}`"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        not_ok(
+            "config.keys",
+            Configuration,
+            Warning,
+            "unknown_config_key",
+            format!("_codev/config.yaml has key(s) this codev ignores: {keys}"),
+            if requirement_unsatisfied {
+                "codev self-update".to_string()
+            } else {
+                format!(
+                    "correct or remove {keys} in _codev/config.yaml, \
+                     or run `codev self-update` if a newer codev added it"
+                )
+            },
         )
     });
 
@@ -290,7 +345,6 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
         )
     });
 
-    let version = &facts.version;
     checks.push(match (&version.requirement, &version.newer_release) {
         (Some((requirement, false)), _) => not_ok(
             "codev_version",
@@ -301,7 +355,7 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
                 "codev {} does not satisfy codev_version: \"{requirement}\"",
                 version.running
             ),
-            "codev self-update",
+            version_fix(requirement, version),
         ),
         (_, Some(latest)) => not_ok(
             "codev_version",
@@ -510,7 +564,9 @@ mod tests {
                 running: "0.6.0".into(),
                 requirement: Some((">=0.5".into(), true)),
                 newer_release: None,
+                latest_known: Some("0.6.0".into()),
             },
+            unknown_config_keys: Vec::new(),
         }
     }
 
@@ -555,6 +611,7 @@ mod tests {
         assert_eq!(check(&checks, "decisions").status, CheckStatus::Warning);
         assert_eq!(check(&checks, "ci").code, "ci_validate_missing");
         for id in [
+            "config.keys",
             "config.language",
             "skills",
             "sources",
@@ -708,7 +765,7 @@ mod tests {
             accepted_decisions: 0,
             ..complete()
         };
-        assert_eq!(summary(&evaluate(&facts)), (12, 2, 1));
+        assert_eq!(summary(&evaluate(&facts)), (13, 2, 1));
     }
 
     #[test]
@@ -718,6 +775,7 @@ mod tests {
                 running: "0.6.0".into(),
                 requirement: Some((">=0.7".into(), false)),
                 newer_release: Some("0.7.0".into()),
+                latest_known: Some("0.7.0".into()),
             },
             ..complete()
         };
@@ -737,6 +795,7 @@ mod tests {
                 running: "0.6.0".into(),
                 requirement: None,
                 newer_release: Some("0.7.0".into()),
+                latest_known: Some("0.7.0".into()),
             },
             ..complete()
         };
@@ -746,5 +805,88 @@ mod tests {
         assert_eq!(version.code, "update_available");
         assert_eq!(version.fix.as_deref(), Some("codev self-update"));
         assert_eq!(summary(&checks).1, 0, "never counted as missing");
+    }
+
+    fn above(requirement: &str, running: &str, latest_known: Option<&str>) -> Check {
+        let facts = DoctorFacts {
+            version: VersionFacts {
+                running: running.into(),
+                requirement: Some((requirement.into(), false)),
+                newer_release: None,
+                latest_known: latest_known.map(Into::into),
+            },
+            ..complete()
+        };
+        check(&evaluate(&facts), "codev_version").clone()
+    }
+
+    #[test]
+    fn codev_version_above_the_bound_fixes_with_an_explicit_version() {
+        let version = above(">=0.5, <0.7", "0.7.1", Some("0.6.4"));
+        assert_eq!(version.status, CheckStatus::Missing);
+        assert_eq!(version.code, "codev_version_unsatisfied");
+        assert_eq!(
+            version.fix.as_deref(),
+            Some("codev self-update --version 0.6.4")
+        );
+        assert_eq!(
+            above("<=0.6.2", "0.7.0", None).fix.as_deref(),
+            Some("codev self-update --version 0.6.2")
+        );
+        assert_eq!(
+            above("^0.5", "0.6.0", Some("0.6.0")).fix.as_deref(),
+            Some("codev self-update --version 0.5.0")
+        );
+    }
+
+    #[test]
+    fn codev_version_above_without_any_target_names_the_requirement() {
+        let fix = above("<0.6", "0.6.0", None).fix.unwrap();
+        assert!(
+            fix.starts_with("codev self-update --version <X.Y.Z>"),
+            "{fix}"
+        );
+        assert!(fix.contains("\"<0.6\""), "{fix}");
+    }
+
+    #[test]
+    fn unknown_config_keys_are_a_warning() {
+        let facts = DoctorFacts {
+            unknown_config_keys: vec!["review_policy".into(), "mcp.design_tool".into()],
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        let keys = check(&checks, "config.keys");
+        assert_eq!(keys.status, CheckStatus::Warning);
+        assert_eq!(keys.code, "unknown_config_key");
+        assert_eq!(keys.group, CheckGroup::Configuration);
+        assert!(keys.message.contains("`review_policy`"), "{}", keys.message);
+        assert!(
+            keys.message.contains("`mcp.design_tool`"),
+            "{}",
+            keys.message
+        );
+        let fix = keys.fix.as_deref().unwrap();
+        assert!(fix.starts_with("correct or remove"), "{fix}");
+        assert_eq!(summary(&checks).1, 0, "never counted as missing");
+    }
+
+    #[test]
+    fn unknown_config_keys_with_an_unsatisfied_requirement_fix_with_self_update() {
+        let facts = DoctorFacts {
+            unknown_config_keys: vec!["review_policy".into()],
+            version: VersionFacts {
+                running: "0.6.0".into(),
+                requirement: Some((">=9".into(), false)),
+                newer_release: None,
+                latest_known: None,
+            },
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        assert_eq!(
+            check(&checks, "config.keys").fix.as_deref(),
+            Some("codev self-update")
+        );
     }
 }

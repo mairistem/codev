@@ -1,9 +1,10 @@
 # Configuration
 
 Un projet codev se configure dans `_codev/config.yaml`. Toutes les clés sont
-facultatives : un projet peut même fonctionner sans ce fichier. Les clés
-inconnues sont rejetées avec une erreur qui liste les clés valides : une faute
-de frappe ne passe donc jamais inaperçue.
+facultatives : un projet peut même fonctionner sans ce fichier. Une clé que
+codev ne connaît pas est signalée, par un avertissement au premier niveau et
+dans `mcp`, par une erreur ailleurs : une faute de frappe ne passe donc
+jamais inaperçue. Voir [Clés inconnues](#clés-inconnues).
 
 `codev init` génère le fichier avec les valeurs qu'il a détectées, chacune
 précédée d'un commentaire indiquant sa provenance. Vous pouvez le modifier à la
@@ -198,14 +199,56 @@ Mettez la valeur entre guillemets, car YAML interprète `>` à sa façon. Propre
 au projet, jamais héritée.
 
 Lorsque le codev en cours ne la satisfait pas, `codev doctor` signale la
-vérification `codev_version` comme manquante, avec la correction
-`codev self-update`, et les skills proposent de mettre à jour avant d'agir.
-Une valeur qui n'est pas une exigence fait échouer toutes les commandes avec
+vérification `codev_version` comme manquante et les skills proposent de mettre
+à jour avant d'agir. La correction est `codev self-update` quand le codev en
+cours est trop ancien. Quand il est trop récent — au-delà d'une borne
+supérieure comme `<0.7` — un simple `codev self-update` refuserait de
+rétrograder : la correction nomme donc une version,
+`codev self-update --version 0.6.4`, prise dans la dernière version publiée
+que connaît le cache de mise à jour si elle satisfait l'exigence, sinon dans
+l'exigence elle-même (`<=0.6.2` donne `0.6.2`, `^0.5` donne `0.5.0`). Une
+valeur qui n'est pas une exigence fait échouer toutes les commandes avec
 `invalid_codev_version`.
 
 codev 0.5 et les versions antérieures ne connaissent pas cette clé et
 rejettent le fichier : ajoutez-la une fois que tout le monde utilise une
 version qui la connaît.
+
+## Clés inconnues
+
+Une version plus récente de codev peut ajouter des clés qu'une version plus
+ancienne ne connaît pas. Pour qu'un codev plus ancien continue de fonctionner
+sur une configuration plus récente et vous dise ce dont il a besoin, les clés
+inconnues sont traitées selon ce que produirait le fait de les ignorer :
+
+| Emplacement | Clé inconnue | Pourquoi |
+|---|---|---|
+| premier niveau | avertissement `unknown_config_key`, clé ignorée | chaque clé est une fonctionnalité indépendante : le reste de la configuration s'applique |
+| `mcp` | avertissement `unknown_config_key` (`mcp.<clé>`), clé ignorée | un outil inconnu laisse seulement cette intégration non configurée |
+| une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
+| `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
+
+L'avertissement nomme la clé, indique que le projet demande peut-être une
+version plus récente de codev, cite `codev_version` quand le fichier la
+définit et renvoie à `codev self-update` ; l'erreur fait de même quand
+`codev_version` est définie. L'avertissement apparaît :
+
+- dans la sortie de `codev status`, `codev new change`, `codev init` et
+  `codev update`, et dans le tableau `status` de leur sortie `--json` ;
+- dans `codev validate`, comme constat `warning` d'un élément `config`, à la
+  ligne de la clé : `codev validate --strict` — le cas de la CI — échoue
+  donc, tandis que `codev validate` seul réussit ;
+- dans `codev doctor`, comme vérification `config.keys`.
+
+Les clés de la configuration d'une source héritée ne sont pas signalées :
+seuls son `context` et ses `rules` sont lus.
+
+Cette tolérance commence avec la version de codev qui l'a introduite :
+**codev 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
+niveau. Lorsque vous ajoutez une clé que seules les versions récentes
+connaissent, relevez aussi `codev_version` : les membres de l'équipe restés
+sur un codev plus ancien apprendront par `codev doctor` et les skills quelle
+version installer.
 
 ## Variables d'environnement
 

@@ -137,9 +137,50 @@ pub fn validate_all(
         items.push(validate_spec(fs, layout, &capability)?);
     }
     items.push(validate_decisions(fs, env, layout, config)?);
+    if let Some(item) = validate_config(layout, config) {
+        items.push(item);
+    }
     Ok(ValidateReport {
         root: layout.project_root().to_path_buf(),
         items,
+    })
+}
+
+/// The keys of `_codev/config.yaml` this codev ignores, one warning each
+/// at its line; `None` when there is none, so a clean project's report
+/// does not change.
+pub fn validate_config(layout: &Layout, config: &ResolvedConfig) -> Option<ItemReport> {
+    if config.unknown_keys.is_empty() {
+        return None;
+    }
+    let path = layout.config_file();
+    let relative = path
+        .strip_prefix(layout.project_root())
+        .unwrap_or(&path)
+        .to_path_buf();
+    let findings = config
+        .unknown_keys
+        .iter()
+        .map(|unknown| {
+            LocatedFinding::from_finding(
+                Finding {
+                    severity: Severity::Warning,
+                    code: crate::config::UNKNOWN_CONFIG_KEY,
+                    line: u32::try_from(unknown.line).unwrap_or(u32::MAX),
+                    message: crate::config::unknown_key_message(
+                        &unknown.key,
+                        config.codev_version.as_deref(),
+                    ),
+                },
+                relative.clone(),
+            )
+        })
+        .collect();
+    Some(ItemReport {
+        kind: ItemKind::Config,
+        name: "config".into(),
+        path: relative,
+        findings,
     })
 }
 
@@ -412,6 +453,44 @@ mod tests {
 
     fn config(fs: &dyn FileSystem) -> ResolvedConfig {
         crate::config::resolve(fs, &env(), &Layout::new("/p")).unwrap()
+    }
+
+    #[test]
+    fn validate_all_reports_unknown_config_keys() {
+        let fs = project_with_well_formed_change().with_file(
+            "/p/_codev/config.yaml",
+            "schema: spec-driven\nlanguage: en\nreview_policy: strict\n",
+        );
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == ItemKind::Config)
+            .expect("a config item");
+        assert_eq!(item.name, "config");
+        assert_eq!(
+            item.path,
+            std::path::Path::new("_codev").join("config.yaml")
+        );
+        assert_eq!(item.findings.len(), 1);
+        let finding = &item.findings[0].finding;
+        assert_eq!(finding.code, "unknown_config_key");
+        assert_eq!(finding.severity, Severity::Warning);
+        assert_eq!(finding.line, 3);
+        assert!(
+            finding.message.contains("`review_policy`"),
+            "{}",
+            finding.message
+        );
+        assert!(report.has_warnings());
+        assert!(!report.has_errors());
+    }
+
+    #[test]
+    fn validate_all_has_no_config_item_for_a_clean_config() {
+        let fs = project_with_well_formed_change();
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
+        assert!(report.items.iter().all(|i| i.kind != ItemKind::Config));
     }
 
     fn project_with_well_formed_change() -> MemoryFileSystem {

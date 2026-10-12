@@ -171,6 +171,7 @@ Configuration
   ✗ config.rules     no rules: in _codev/config.yaml
       fix: /codev-configure
   ✓ config.language  language: is set
+  ✓ config.keys      no unknown key in _codev/config.yaml
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
   ✓ codev_version    no newer codev release known
@@ -188,7 +189,7 @@ Repository
   ✓ pr_template      the pull request template has the codev section
   ✓ changelog        CHANGELOG.md matches the archived changes
 
-12 check(s), 2 to fix, 1 warning(s)
+13 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` signale un élément manquant, `!` un avertissement — un projet peut très
@@ -200,7 +201,11 @@ voir [Notes de version et CHANGELOG](release-notes.md). La vérification `codev_
 lorsque le codev en cours ne satisfait pas le
 [`codev_version`](../reference/configuration.md#codev_version) du projet, et
 devient un avertissement lorsque le cache de vérification connaît une release
-plus récente ; la correction est `codev self-update`. La liste complète des
+plus récente ; la correction est `codev self-update`, ou
+`codev self-update --version <X.Y.Z>` lorsque le codev en cours est plus récent
+que ce que l'exigence autorise. La vérification `config.keys` signale les clés
+de `_codev/config.yaml` que ce codev ne connaît pas — voir
+[Clés inconnues](../reference/configuration.md#clés-inconnues). La liste complète des
 vérifications se trouve dans la
 [référence de la CLI](../reference/cli.md#codev-doctor).
 

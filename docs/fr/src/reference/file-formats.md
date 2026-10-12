@@ -384,6 +384,7 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `release_note_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Release note` |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
+| `unknown_config_key` | avertissement | `_codev/config.yaml` contient une clé de premier niveau ou de `mcp` que ce codev ne connaît pas — voir [Clés inconnues](configuration.md#clés-inconnues) |
 | `decision_orphan_seal` | avertissement | Un sceau ne correspond à aucune décision |
 | `decision_supersedes_unknown` | avertissement | `supersedes` désigne une décision inconnue |
 | `decision_id_collision` | avertissement | Une décision locale et une décision héritée partagent un identifiant |
