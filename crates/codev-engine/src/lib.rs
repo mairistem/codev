@@ -30,10 +30,11 @@ pub mod schemas;
 pub mod sources;
 pub mod specs;
 pub mod sync;
+pub mod update;
 pub mod validate;
 
 pub use error::{EngineError, Result, Warning};
 pub use ports::{
-    Clock, Env, FileSystem, ProcessOutput, ProcessRunner, RealFileSystem, RealProcessRunner,
-    SystemClock, SystemEnv,
+    Clock, CurlHttp, Env, Executable, FileSystem, Http, ProcessOutput, ProcessRunner,
+    RealExecutable, RealFileSystem, RealProcessRunner, SystemClock, SystemEnv,
 };

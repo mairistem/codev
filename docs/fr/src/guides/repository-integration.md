@@ -173,6 +173,7 @@ Configuration
   ✓ config.language  language: is set
   ✓ skills           8 skill(s) installed and current
   ✓ sources          no inherited git source
+  ✓ codev_version    no newer codev release known
 
 Planning
   ✗ specs            no main spec in _codev/specs/
@@ -187,7 +188,7 @@ Repository
   ✓ pr_template      the pull request template has the codev section
   ✓ changelog        CHANGELOG.md matches the archived changes
 
-11 check(s), 2 to fix, 1 warning(s)
+12 check(s), 2 to fix, 1 warning(s)
 ```
 
 `✗` signale un élément manquant, `!` un avertissement — un projet peut très
@@ -195,9 +196,13 @@ bien n'avoir aucune décision acceptée. La vérification `pr_template`
 n'apparaît que pour un dépôt GitHub. La vérification `changelog`, simple
 avertissement, compare la section `[Unreleased]` de `CHANGELOG.md` avec ce
 que génère `codev changelog` ; la correction est `codev changelog --write` —
-voir [Notes de version et CHANGELOG](release-notes.md). La liste complète des
-vérifications se
-trouve dans la [référence de la CLI](../reference/cli.md#codev-doctor).
+voir [Notes de version et CHANGELOG](release-notes.md). La vérification `codev_version` est manquante
+lorsque le codev en cours ne satisfait pas le
+[`codev_version`](../reference/configuration.md#codev_version) du projet, et
+devient un avertissement lorsque le cache de vérification connaît une release
+plus récente ; la correction est `codev self-update`. La liste complète des
+vérifications se trouve dans la
+[référence de la CLI](../reference/cli.md#codev-doctor).
 
 `codev init` et `codev status` se terminent par une ligne d'indication
 lorsqu'il manque quelque chose, et `/codev-onboard` liste les éléments

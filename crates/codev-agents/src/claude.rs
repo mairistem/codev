@@ -106,7 +106,10 @@ impl ClaudeCode {
     /// removed cleanly and replaced by an informative fallback in the body.
     pub fn render(workflow: &Workflow, version: &str, ctx: &RenderCtx) -> String {
         let tools = substitute_jira_mcp(workflow.allowed_tools, ctx.jira_mcp_tool.as_deref());
-        let body = substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref());
+        let body = substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref()).replace(
+            crate::workflows::UPDATE_NOTICE_PLACEHOLDER,
+            crate::workflows::UPDATE_NOTICE.trim_end(),
+        );
         format!(
             "---\n\
              name: {name}\n\

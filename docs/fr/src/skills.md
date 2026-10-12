@@ -41,6 +41,26 @@ doit lancer vos tests et vos commandes de build. `codev-sync` et
 `codev-archive` ne peuvent écrire aucun fichier : toutes leurs modifications
 passent par la CLI.
 
+## Annonce des mises à jour
+
+`/codev-propose`, `/codev-apply`, `/codev-update`, `/codev-sync` et
+`/codev-archive` lisent les objets `update` et `versionRequirement` de leur
+premier `codev status --json`. Lorsque le `codev_version` du projet n'est pas
+satisfait, ou qu'un codev plus récent est disponible et n'est pas en
+sourdine, la skill le signale en une ligne, avec le lien de la release, et
+vous demande **Update now** ou **Later** avant toute autre chose :
+
+- **Update now** lance `codev self-update --yes`, puis reprend l'action ;
+- **Later** lance `codev self-update --snooze` — 7 jours de silence pour
+  cette version — puis reprend l'action. Pour un `codev_version` non
+  satisfait, rien n'est mis en sourdine : c'est l'équipe qui l'a demandé.
+
+La question est posée une fois par action, jamais au milieu : `/codev-apply`
+la pose avant la première tâche. `/codev-explore`, `/codev-onboard` et
+`/codev-configure` ne la posent jamais ; `/codev-onboard` relaie
+`codev doctor`, dont la vérification `codev_version` dit la même chose.
+Aucune skill n'a besoin de plus que `Bash(codev:*)` pour cela.
+
 ## Les skills en détail
 
 ### Propose (`/codev-propose`)

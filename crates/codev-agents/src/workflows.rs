@@ -20,6 +20,17 @@ pub struct Workflow {
     pub body: &'static str,
 }
 
+/// The update notice shared by the action workflows: substituted for
+/// [`UPDATE_NOTICE_PLACEHOLDER`] right after their first
+/// `codev status --json`, so the five copies can never drift apart.
+pub const UPDATE_NOTICE: &str = include_str!("../../../assets/workflows/_update-notice.md");
+
+pub const UPDATE_NOTICE_PLACEHOLDER: &str = "{{UPDATE_NOTICE}}";
+
+/// The workflows whose body carries [`UPDATE_NOTICE_PLACEHOLDER`]: the ones
+/// that act. `explore`, `onboard` and `configure` never offer an update.
+pub const UPDATE_NOTICE_WORKFLOWS: &[&str] = &["propose", "apply", "update", "sync", "archive"];
+
 /// The workflows shipped by this version.
 ///
 /// The catalog only contains what the CLI can actually serve: a workflow
@@ -622,5 +633,114 @@ mod tests {
             flat(configure.body).contains("testing rules"),
             "the drafted `tasks` rules must include testing rules"
         );
+    }
+
+    fn rendered(id: &str) -> String {
+        crate::claude::ClaudeCode::render(
+            find(id).unwrap(),
+            "0.6.0",
+            &crate::claude::RenderCtx::default(),
+        )
+    }
+
+    #[test]
+    fn action_skills_carry_the_update_notice_once() {
+        for id in UPDATE_NOTICE_WORKFLOWS {
+            let body = find(id).unwrap().body;
+            assert_eq!(
+                body.matches(UPDATE_NOTICE_PLACEHOLDER).count(),
+                1,
+                "`{id}` must carry the notice exactly once"
+            );
+            // Right after the first `codev status --json`, before acting.
+            let status = body
+                .find("codev status --change \"<name>\" --json")
+                .unwrap();
+            let notice = body.find(UPDATE_NOTICE_PLACEHOLDER).unwrap();
+            assert!(status < notice, "`{id}`: the notice reads that JSON");
+            assert!(
+                body[status..notice].matches("```").count() == 1,
+                "`{id}`: the notice follows the first status block directly"
+            );
+            let skill = rendered(id);
+            assert!(!skill.contains(UPDATE_NOTICE_PLACEHOLDER), "{id}");
+            assert_eq!(skill.matches("codev self-update --snooze").count(), 1);
+        }
+        // `apply` asks before its first task, never between tasks.
+        let apply = find("apply").unwrap().body;
+        assert!(
+            apply.find(UPDATE_NOTICE_PLACEHOLDER).unwrap()
+                < apply.find("### 2. Read the tasks").unwrap()
+        );
+    }
+
+    #[test]
+    fn read_only_skills_never_offer_an_update() {
+        for workflow in CATALOG
+            .iter()
+            .filter(|w| !UPDATE_NOTICE_WORKFLOWS.contains(&w.id))
+        {
+            assert!(
+                !workflow.body.contains(UPDATE_NOTICE_PLACEHOLDER)
+                    && !workflow.body.contains("self-update"),
+                "`{}` must not offer an update",
+                workflow.id
+            );
+        }
+        assert_eq!(
+            CATALOG
+                .iter()
+                .filter(|w| !UPDATE_NOTICE_WORKFLOWS.contains(&w.id))
+                .map(|w| w.id)
+                .collect::<Vec<_>>(),
+            ["explore", "onboard", "configure"]
+        );
+    }
+
+    #[test]
+    fn update_notice_offers_now_and_later_with_self_update() {
+        let notice = flat(UPDATE_NOTICE);
+        for needle in [
+            "once per action, before acting",
+            "versionRequirement.satisfied",
+            "update.available",
+            "update.snoozed",
+            "update.url",
+            "**Update now**",
+            "codev self-update --yes",
+            "**Later**",
+            "codev self-update --snooze",
+            "for a requirement, run nothing",
+            "otherwise, say nothing about updates",
+            "never in the middle of it",
+        ] {
+            assert!(notice.contains(needle), "the notice must say `{needle}`");
+        }
+    }
+
+    #[test]
+    fn allowed_tools_are_unchanged_by_the_notice() {
+        let expected = [
+            (
+                "propose",
+                "Bash(codev:*), Read, Write, Edit, Glob, Grep, {{JIRA_MCP_TOOL}}",
+            ),
+            (
+                "apply",
+                "Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash",
+            ),
+            ("update", "Bash(codev:*), Read, Write, Edit, Glob, Grep"),
+            ("sync", "Bash(codev:*), Read"),
+            ("archive", "Bash(codev:*), Read"),
+        ];
+        for (id, tools) in expected {
+            assert_eq!(find(id).unwrap().allowed_tools, tools, "{id}");
+        }
+    }
+
+    #[test]
+    fn configure_preserves_codev_version() {
+        let body = flat(find("configure").unwrap().body);
+        assert!(body.contains("`inherits`, `codev_version`"), "{body}");
     }
 }

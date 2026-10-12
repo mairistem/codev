@@ -4,10 +4,25 @@
 
 ### Does codev send my code to a model?
 
-No. The `codev` binary never calls a language model and, apart from
-`codev sources update` fetching inherited git sources, never uses the network.
+No. The `codev` binary never calls a language model. It uses the network
+only to fetch inherited git sources (`codev sources update`) and to look for a
+newer codev release (`codev status`, `codev self-update`).
 Your agent — Claude Code — does the writing, with the same access it has in
 any other session.
+
+### Does codev check for updates?
+
+Yes, and only that. At most once every 24 hours, `codev status` sends one
+anonymous HTTPS request to GitHub's public API
+(`https://api.github.com/repos/mairistem/codev/releases/latest`) to read the
+latest release number, and caches it in `~/.cache/codev/update-check.json`.
+Nothing about you or your project is sent; there is no telemetry. A failed
+request is silent and is not retried before the next day.
+
+The check never runs when `CI` is set, so pipelines stay reproducible. To
+turn it off on your machine, set `CODEV_NO_UPDATE_CHECK=1`. Nothing is ever
+installed without your consent: updating takes `codev self-update`, or your
+answer "Update now" in a skill.
 
 ### Can I use codev without Claude Code?
 
@@ -178,6 +193,26 @@ file untouched. Keep exactly one pair of markers, or remove them all to let
 Run `codev sources update`. `unlocked` means the source has never been
 resolved; `needs_update` means it is pinned in `codev.lock` but missing from
 your local cache, typically on a fresh machine.
+
+### `codev self-update` reports `update_checksum_mismatch`
+
+The downloaded archive does not match its line in the release's
+`SHA256SUMS`, or that line is missing. Nothing was installed. Retry later — a
+proxy may have altered the download — and, if it persists, report it: it is
+the check that protects you from a tampered archive.
+
+### `codev self-update` reports `update_not_writable`
+
+codev cannot write in the folder of its binary, for example `/usr/local/bin`
+owned by root. Reinstall codev in a folder you own (`install.sh` uses
+`~/.local/bin`), or run the command with the rights that folder needs.
+
+### `codev self-update` says codev is managed elsewhere
+
+Your binary was installed by `cargo install`, built from a clone, or
+installed by a package manager: codev leaves it to that tool and prints the
+command to run, such as `cargo install --path crates/codev-cli` from an
+up-to-date clone.
 
 ### `codev: command not found`
 

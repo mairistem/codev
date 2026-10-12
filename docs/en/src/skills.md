@@ -38,6 +38,26 @@ must not write files is not given the tools to do so.
 commands. `codev-sync` and `codev-archive` cannot write files at all: every
 change they make goes through the CLI.
 
+## Update notice
+
+`/codev-propose`, `/codev-apply`, `/codev-update`, `/codev-sync` and
+`/codev-archive` read the `update` and `versionRequirement` objects of their
+first `codev status --json`. When the project's `codev_version` is not
+satisfied, or a newer codev is available and not snoozed, the skill says so
+in one line, with the release link, and asks **Update now** or **Later**
+before doing anything else:
+
+- **Update now** runs `codev self-update --yes`, then resumes the action;
+- **Later** runs `codev self-update --snooze` — 7 days of silence for that
+  version — then resumes. For an unsatisfied `codev_version`, nothing is
+  snoozed: the team asked for it.
+
+The question is asked once per action, never in the middle of one:
+`/codev-apply` asks it before the first task. `/codev-explore`,
+`/codev-onboard` and `/codev-configure` never ask; `/codev-onboard` relays
+`codev doctor`, whose `codev_version` check says the same thing. No skill
+needs more than `Bash(codev:*)` for it.
+
 ## The skills in detail
 
 ### Propose (`/codev-propose`)

@@ -172,9 +172,37 @@ codev completions powershell | Out-String | Invoke-Expression
 
 ## Mise à jour
 
-Relancez l'installateur ou téléchargez une release plus récente. Ensuite, dans
-chaque projet, régénérez les skills pour qu'elles correspondent à la nouvelle
-version :
+Lancez `codev self-update` :
+
+```bash
+codev self-update                  # demande confirmation dans un terminal
+codev self-update --check          # indique seulement la version installée et la plus récente
+codev self-update --version 0.5.0  # une version précise, rétrogradation comprise
+```
+
+La commande télécharge la release la plus récente pour votre plateforme,
+vérifie son SHA-256 avec le `SHA256SUMS` de la release — comme le font les
+installateurs — et remplace le binaire sur place. Ensuite, dans un projet
+codev, elle lance `codev update` avec le nouveau binaire. Elle a besoin de
+`curl` et de `tar`, fournis par macOS, la plupart des distributions Linux et
+Windows 10 ou ultérieur.
+
+`codev self-update` ne remplace qu'un binaire installé par `install.sh`,
+`install.ps1` ou à la main. Si codev a été installé avec `cargo install`,
+compilé depuis un clone ou installé par un gestionnaire de paquets, elle
+affiche la commande qui le met à jour et ne modifie rien. Elle ne rétrograde
+jamais, sauf si vous passez `--version`. Sous Windows, l'ancien binaire est
+conservé sous le nom `codev.old.exe` à côté du nouveau, jusqu'à ce que la
+commande codev suivante le supprime.
+
+`codev status` vous signale l'existence d'une release plus récente, au plus
+une fois par jour ; voir
+[codev vérifie-t-il les mises à jour ?](faq.md#codev-vérifie-t-il-les-mises-à-jour-)
+pour le désactiver.
+
+Vous pouvez toujours relancer l'installateur ou télécharger une release plus
+récente. Ensuite, dans chaque projet, régénérez les skills pour qu'elles
+correspondent à la nouvelle version :
 
 ```bash
 codev update

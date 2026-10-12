@@ -51,6 +51,8 @@ mcp:
 changelog:
   exclude:
     - 2026-03-02-legacy-import
+
+codev_version: ">=0.5"
 ```
 
 ## schema
@@ -188,11 +190,30 @@ Utilisez-la pour adopter `codev changelog` dans un projet dont le
 qu'ils ne soient pas listés deux fois. Voir
 [Notes de version et CHANGELOG](../guides/release-notes.md).
 
+## codev_version
+
+Les versions de codev que l'équipe accepte, sous forme d'exigence de version
+sémantique dans la syntaxe de Cargo : `">=0.5"`, `"^0.6"`, `">=0.5, <0.8"`.
+Mettez la valeur entre guillemets, car YAML interprète `>` à sa façon. Propre
+au projet, jamais héritée.
+
+Lorsque le codev en cours ne la satisfait pas, `codev doctor` signale la
+vérification `codev_version` comme manquante, avec la correction
+`codev self-update`, et les skills proposent de mettre à jour avant d'agir.
+Une valeur qui n'est pas une exigence fait échouer toutes les commandes avec
+`invalid_codev_version`.
+
+codev 0.5 et les versions antérieures ne connaissent pas cette clé et
+rejettent le fichier : ajoutez-la une fois que tout le monde utilise une
+version qui la connaît.
+
 ## Variables d'environnement
 
 | Variable | Utilisée par | Effet |
 |---|---|---|
 | `LC_ALL`, `LC_MESSAGES`, `LANG` | `codev init` | Valeur par défaut de `language:` lorsque `--language` n'est pas fourni |
-| `XDG_CACHE_HOME` | sources git | Emplacement du cache : `$XDG_CACHE_HOME/codev/`, sinon `~/.cache/codev/` |
+| `XDG_CACHE_HOME` | sources git, vérification des mises à jour | Emplacement du cache : `$XDG_CACHE_HOME/codev/`, sinon `~/.cache/codev/` |
+| `CI` | `codev status` | N'importe quelle valeur désactive la vérification des mises à jour |
+| `CODEV_NO_UPDATE_CHECK` | `codev status` | `1` désactive la vérification des mises à jour |
 | `VISUAL`, `EDITOR` | `codev init` | Éditeur ouvert lorsque la question du contexte reste sans réponse |
 | `CODEV_VERSION` | `install.sh`, `install.ps1` | Version à installer à la place de la plus récente |

@@ -41,6 +41,11 @@ pub struct ProjectConfig {
     /// this repository's `CHANGELOG.md`.
     #[serde(default)]
     pub changelog: ChangelogConfig,
+    /// The codev versions the team accepts, as a Cargo requirement
+    /// (`">=0.5"`). Project only: the team writing in this repository owns
+    /// it, an inherited source does not.
+    #[serde(default)]
+    pub codev_version: Option<String>,
 }
 
 /// The `changelog:` block of `_codev/config.yaml`.
@@ -117,6 +122,8 @@ pub struct ResolvedConfig {
     /// depend on the user's Claude Code configuration, not on the source
     /// project.
     pub mcp: McpConfig,
+    /// `codev_version`, already validated.
+    pub codev_version: Option<String>,
     pub warnings: Vec<Warning>,
 }
 
@@ -153,6 +160,14 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
             reason: format!(
                 "`language: {code}` is not a language code; use an ISO 639 code such as `en`, `fr` or `pt-BR`"
             ),
+        });
+    }
+    if let Some(requirement) = &config.codev_version
+        && let Err(reason) = codev_core::update::parse_requirement(requirement)
+    {
+        return Err(EngineError::InvalidCodevVersion {
+            path: path.to_path_buf(),
+            reason,
         });
     }
     Ok(Some(config))
@@ -270,6 +285,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         // names depend on the user's Claude Code configuration, not on a
         // shared repository.
         mcp: project.mcp.clone(),
+        codev_version: project.codev_version.clone(),
         warnings,
     })
 }
@@ -677,5 +693,26 @@ mod tests {
             .to_string();
         assert!(err.contains("`language: French`"), "{err}");
         assert!(err.contains("ISO 639"), "{err}");
+    }
+
+    #[test]
+    fn codev_version_is_read_from_the_project_config() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "codev_version: \">=0.5\"\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.codev_version.as_deref(), Some(">=0.5"));
+        let fs =
+            MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "schema: spec-driven\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.codev_version.is_none());
+    }
+
+    #[test]
+    fn an_invalid_codev_version_fails_with_its_code() {
+        let fs =
+            MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "codev_version: latest\n");
+        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
+        assert_eq!(err.code(), "invalid_codev_version");
+        assert!(err.to_string().contains("latest"), "{err}");
     }
 }

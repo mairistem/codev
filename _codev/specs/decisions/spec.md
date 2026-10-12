@@ -376,7 +376,10 @@ tag, mandatory), and `subpath` (path within the repository, optional).
 The validator MUST refuse to expose the content of a `git:` source until
 a SHA has been locked in `_codev/codev.lock`. No everyday command
 (`list`, `show`, `status`, `instructions`, `validate`, `sync`, `archive`)
-SHALL contact the network — only `codev sources update` moves a pin.
+SHALL contact an inherited source's remote — only `codev sources update`
+moves a pin. The daily update check of `codev status`, a request to the
+codev release API that never involves an inherited source, is the only
+network access of an everyday command.
 
 #### Scenario: Git source declared but not locked
 

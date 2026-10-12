@@ -7,8 +7,8 @@ workflows, the MCPs or the schema.
 - Reads the project at surface level, within a **budget** defined below.
 - Modifies **only** the `context` and `rules` fields of
   `_codev/config.yaml`.
-- **Preserves** `schema`, `language`, `workflows`, `mcp`, `inherits` and every
-  existing comment — the `codev init` probe filled those fields; they
+- **Preserves** `schema`, `language`, `workflows`, `mcp`, `inherits`,
+  `codev_version` and every existing comment — the `codev init` probe filled those fields; they
   are not replayed.
 - **Writes nothing without confirmation** — show the diff, ask, write.
 
@@ -158,7 +158,7 @@ If `yes`:
 
 - **Edit** `_codev/config.yaml` — replace only the `context:` and
   `rules:` sections. **Preserve** `schema`, `language`, `workflows`,
-  `mcp`, `inherits`, and **every comment**.
+  `mcp`, `inherits`, `codev_version`, and **every comment**.
 - Add a comment above `context:`:
   `# written by /codev-configure`. If there was already one
   (e.g. "detected from Cargo.toml"), replace it with the new one.
@@ -180,7 +180,7 @@ answer: a write acknowledgment or a polite refusal.
 - **No writing before explicit confirmation** — not even partially, not
   even "just to test".
 - **Strictly preserved fields**: `schema`, `workflows`, `mcp`,
-  `inherits`. If the patch touched anything else, that is a bug in the
+  `inherits`, `codev_version`. If the patch touched anything else, that is a bug in the
   skill: stop and report it to the user.
 - **Refuse if `_codev/config.yaml` is missing** — this skill never
   creates it from scratch.

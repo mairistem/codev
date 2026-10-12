@@ -9,6 +9,10 @@ schema: spec-driven
 # `### Requirement:` always stay in English.
 language: en
 
+# Every contributor runs a codev that understands this repository's planning
+# format; `codev doctor` and the skills say so otherwise.
+codev_version: ">=0.5"
+
 workflows:
   - propose
   - explore

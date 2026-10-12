@@ -34,6 +34,11 @@ pub enum EngineError {
     #[error("{path} is invalid: {reason}")]
     Invalid { path: PathBuf, reason: String },
 
+    /// `codev_version:` is not a version requirement. A code of its own: a
+    /// team relying on it must learn that the alignment is off.
+    #[error("{path} is invalid: {reason}")]
+    InvalidCodevVersion { path: PathBuf, reason: String },
+
     /// The validation preflight of `sync` or `archive` found errors. A
     /// variant of its own, not an `Invalid`, so that the stable code a
     /// consumer tests is the code itself, not a word inside the message.
@@ -72,6 +77,7 @@ impl EngineError {
             Self::TemplateNotFound { .. } => "template_not_found",
             Self::Unreadable { .. } => "unreadable",
             Self::Invalid { .. } => "invalid",
+            Self::InvalidCodevVersion { .. } => "invalid_codev_version",
             Self::ValidationFailed { .. } => "validation_failed",
             Self::Write { .. } => "write_failed",
             Self::UnknownRef { .. } => "unknown_ref",

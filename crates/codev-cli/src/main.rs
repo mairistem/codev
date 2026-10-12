@@ -11,7 +11,9 @@ mod init_prompts;
 mod render;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use codev_engine::{RealFileSystem, RealProcessRunner, SystemClock, SystemEnv};
+use codev_engine::{
+    CurlHttp, RealExecutable, RealFileSystem, RealProcessRunner, SystemClock, SystemEnv,
+};
 use serde::Serialize;
 use serde_json::json;
 
@@ -25,6 +27,9 @@ use contract::{
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The target triple this binary was built for, set by `build.rs`.
+const TARGET: &str = env!("CODEV_TARGET");
 
 #[derive(Parser)]
 #[command(
@@ -158,10 +163,41 @@ enum Command {
         json: bool,
     },
 
+    /// Download and install the latest codev release, verified
+    ///
+    /// Downloads the release archive for this platform from GitHub,
+    /// verifies its SHA-256 against the release's `SHA256SUMS`, replaces
+    /// this binary atomically, then runs the new binary's `codev update` in
+    /// the current project, if any. Never downgrades unless `--version` asks
+    /// for it. A binary installed by cargo, a cargo build or a package
+    /// manager is left alone: the command that upgrades it is printed
+    /// instead.
+    SelfUpdate {
+        /// Install this version (`X.Y.Z`) instead of the latest; allows a
+        /// downgrade
+        #[arg(long, value_name = "X.Y.Z")]
+        version: Option<String>,
+        /// Only report the running and latest versions (exit code 0 whether
+        /// or not an update is available)
+        #[arg(long, conflicts_with = "snooze")]
+        check: bool,
+        /// Silence the update notice for the latest known version, for 7
+        /// days
+        #[arg(long, conflicts_with = "version")]
+        snooze: bool,
+        /// Do not ask for confirmation
+        #[arg(long, short = 'y')]
+        yes: bool,
+        /// JSON output; implies `--yes`
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Check what the project's codev setup still lacks, and how to fix it
     ///
-    /// Read-only and offline: configuration, skills, specs, decisions,
-    /// inherited sources, `CLAUDE.md`, CI and pull request template,
+    /// Read-only and offline: configuration, skills, inherited sources, the
+    /// running codev version against `codev_version` and the cached update
+    /// check, specs, decisions, `CLAUDE.md`, CI and pull request template,
     /// `codev validate`, and whether `CHANGELOG.md` matches the archived
     /// changes. Each check is ok, missing or a warning, with the command or
     /// skill that fixes it.
@@ -489,13 +525,27 @@ fn run(cli: Cli) -> i32 {
     let env = SystemEnv;
     let clock = SystemClock;
     let runner = RealProcessRunner;
+    let http = CurlHttp {
+        runner: &runner,
+        user_agent: format!("codev/{VERSION}"),
+    };
+    let exe = RealExecutable;
     let ctx = Ctx {
         fs: &fs,
         env: &env,
         clock: &clock,
         runner: &runner,
+        http: &http,
+        exe: &exe,
         version: VERSION,
+        target: TARGET,
     };
+
+    // A Windows update leaves the previous binary next to this one: it was
+    // still running then, it is not now.
+    if cfg!(windows) {
+        codev_engine::update::cleanup_previous_binary(&exe);
+    }
 
     match cli.command {
         Command::Docs { print, write, lang } => {
@@ -690,11 +740,13 @@ fn run(cli: Cli) -> i32 {
                         outcome.planning_home.display().to_string(),
                         outcome.change_root.display().to_string(),
                         &outcome.warnings,
-                    ),
+                    )
+                    .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
                     || render::status(&outcome.status),
                 );
                 if !json {
                     render::warnings(&outcome.warnings);
+                    update_line(outcome.update.as_ref());
                     doctor_hint(&ctx);
                 }
                 0
@@ -708,6 +760,7 @@ fn run(cli: Cli) -> i32 {
                     eprintln!("hint: the config is sparse — /codev-configure can enrich it");
                 }
                 if !json && err.code == "no_active_change" {
+                    update_line(commands::update_notice(&ctx).as_ref());
                     doctor_hint(&ctx);
                 }
                 exit
@@ -778,6 +831,41 @@ fn run(cli: Cli) -> i32 {
                     0
                 }
                 Err(err) => fail(json, contract::changelog_shape(), &err),
+            }
+        }
+
+        Command::SelfUpdate {
+            version,
+            check,
+            snooze,
+            yes,
+            json,
+        } => {
+            let args = commands::SelfUpdateArgs {
+                version,
+                check,
+                snooze,
+            };
+            let interactive = !yes && !json && std::io::IsTerminal::is_terminal(&std::io::stdin());
+            let mut confirm = |current: &str, target: &str| {
+                !interactive
+                    || dialoguer::Confirm::new()
+                        .with_prompt(format!("Update codev {current} to {target}?"))
+                        .default(true)
+                        .interact()
+                        .unwrap_or(false)
+            };
+            match commands::self_update(&ctx, &args, &mut confirm) {
+                Ok(outcome) => {
+                    emit(json, contract::SelfUpdateV1::from(&outcome), || {
+                        render::self_update(&outcome)
+                    });
+                    if !json {
+                        render::warnings(&outcome.warnings);
+                    }
+                    0
+                }
+                Err(err) => fail(json, contract::self_update_shape(VERSION), &err),
             }
         }
 
@@ -1135,6 +1223,15 @@ fn doctor_shape() -> serde_json::Value {
     })
 }
 
+/// One line on stderr when a newer codev is available and not snoozed.
+fn update_line(notice: Option<&codev_core::update::UpdateNotice>) {
+    if let Some(notice) = notice
+        && notice.should_announce()
+    {
+        eprintln!("{}", notice.line());
+    }
+}
+
 /// One line on stderr when `codev doctor` would report a missing check.
 /// Silent when doctor cannot run: a hint never breaks a command.
 fn doctor_hint(ctx: &commands::Ctx) {
@@ -1360,6 +1457,38 @@ mod parsing_tests {
         };
         assert_eq!(id, "0007");
         assert!(json);
+    }
+
+    #[test]
+    fn self_update_flags_parse() {
+        let cli = Cli::try_parse_from([
+            "codev",
+            "self-update",
+            "--version",
+            "0.5.0",
+            "--yes",
+            "--json",
+        ])
+        .unwrap();
+        let Command::SelfUpdate {
+            version,
+            check,
+            snooze,
+            yes,
+            json,
+        } = cli.command
+        else {
+            panic!("expected `self-update`");
+        };
+        assert_eq!(version.as_deref(), Some("0.5.0"));
+        assert!(yes && json && !check && !snooze);
+        // `--check` and `--snooze` exclude each other, as do `--snooze` and
+        // `--version`.
+        assert!(Cli::try_parse_from(["codev", "self-update", "--check", "--snooze"]).is_err());
+        assert!(
+            Cli::try_parse_from(["codev", "self-update", "--snooze", "--version", "1.0.0"])
+                .is_err()
+        );
     }
 }
 

@@ -29,6 +29,7 @@ pub mod parser;
 pub mod plan;
 pub mod schema;
 pub mod status;
+pub mod update;
 pub mod validate;
 
 pub use error::{CoreError, Result};

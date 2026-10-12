@@ -91,6 +91,17 @@ pub enum ChangelogState {
     Current,
 }
 
+/// The running codev against the project's requirement and the cached
+/// update check.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct VersionFacts {
+    pub running: String,
+    /// `codev_version`, and whether `running` satisfies it.
+    pub requirement: Option<(String, bool)>,
+    /// A release newer than `running`, as the update cache knows it.
+    pub newer_release: Option<String>,
+}
+
 /// Everything [`evaluate`] needs, read by the shell.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DoctorFacts {
@@ -117,6 +128,7 @@ pub struct DoctorFacts {
     pub validate_errors: usize,
     pub validate_warnings: usize,
     pub changelog: ChangelogState,
+    pub version: VersionFacts,
 }
 
 /// Stable check ids, in report order.
@@ -125,6 +137,7 @@ pub const CHECK_IDS: &[&str] = &[
     "config.language",
     "skills",
     "sources",
+    "codev_version",
     "specs",
     "decisions",
     "validate",
@@ -275,6 +288,42 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
             Configuration,
             format!("{} git source(s) pinned", facts.git_sources.len()),
         )
+    });
+
+    let version = &facts.version;
+    checks.push(match (&version.requirement, &version.newer_release) {
+        (Some((requirement, false)), _) => not_ok(
+            "codev_version",
+            Configuration,
+            Missing,
+            "codev_version_unsatisfied",
+            format!(
+                "codev {} does not satisfy codev_version: \"{requirement}\"",
+                version.running
+            ),
+            "codev self-update",
+        ),
+        (_, Some(latest)) => not_ok(
+            "codev_version",
+            Configuration,
+            Warning,
+            "update_available",
+            format!("codev {latest} is available (you have {})", version.running),
+            "codev self-update",
+        ),
+        (Some((requirement, true)), None) => ok(
+            "codev_version",
+            Configuration,
+            format!(
+                "codev {} satisfies codev_version: \"{requirement}\"",
+                version.running
+            ),
+        ),
+        (None, None) => ok(
+            "codev_version",
+            Configuration,
+            "no newer codev release known",
+        ),
     });
 
     checks.push(if facts.main_specs > 0 {
@@ -457,6 +506,11 @@ mod tests {
             validate_errors: 0,
             validate_warnings: 0,
             changelog: ChangelogState::Current,
+            version: VersionFacts {
+                running: "0.6.0".into(),
+                requirement: Some((">=0.5".into(), true)),
+                newer_release: None,
+            },
         }
     }
 
@@ -504,6 +558,7 @@ mod tests {
             "config.language",
             "skills",
             "sources",
+            "codev_version",
             "claude_md",
             "validate",
         ] {
@@ -653,6 +708,43 @@ mod tests {
             accepted_decisions: 0,
             ..complete()
         };
-        assert_eq!(summary(&evaluate(&facts)), (11, 2, 1));
+        assert_eq!(summary(&evaluate(&facts)), (12, 2, 1));
+    }
+
+    #[test]
+    fn codev_version_unsatisfied_is_missing() {
+        let facts = DoctorFacts {
+            version: VersionFacts {
+                running: "0.6.0".into(),
+                requirement: Some((">=0.7".into(), false)),
+                newer_release: Some("0.7.0".into()),
+            },
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        let version = check(&checks, "codev_version");
+        assert_eq!(version.status, CheckStatus::Missing);
+        assert_eq!(version.code, "codev_version_unsatisfied");
+        assert_eq!(version.fix.as_deref(), Some("codev self-update"));
+        assert!(version.message.contains(">=0.7"), "{}", version.message);
+        assert_eq!(version.group, CheckGroup::Configuration);
+    }
+
+    #[test]
+    fn a_known_newer_release_is_a_warning() {
+        let facts = DoctorFacts {
+            version: VersionFacts {
+                running: "0.6.0".into(),
+                requirement: None,
+                newer_release: Some("0.7.0".into()),
+            },
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        let version = check(&checks, "codev_version");
+        assert_eq!(version.status, CheckStatus::Warning);
+        assert_eq!(version.code, "update_available");
+        assert_eq!(version.fix.as_deref(), Some("codev self-update"));
+        assert_eq!(summary(&checks).1, 0, "never counted as missing");
     }
 }

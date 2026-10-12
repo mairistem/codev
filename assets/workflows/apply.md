@@ -35,6 +35,8 @@ Then check the planning:
 codev status --change "<name>" --json
 ```
 
+{{UPDATE_NOTICE}}
+
 If `isPlanningComplete` is `false`, stop: planning is not ready. Say which
 artifacts are missing and suggest `/codev-propose` or editing by hand.
 Implement nothing.
