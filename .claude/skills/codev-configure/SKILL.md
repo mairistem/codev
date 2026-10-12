@@ -5,7 +5,7 @@ allowed-tools: "Bash(codev:*), Read, Write, Edit, Glob, Grep"
 license: MIT
 metadata:
   generator: codev
-  version: "0.6.0"
+  version: "0.6.1"
 ---
 
 Enrich `_codev/config.yaml` by analyzing the project — propose a detailed
