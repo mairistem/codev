@@ -60,6 +60,9 @@ for comparison.
 - **At most 8 source files**, prioritized by recency
   (`git log --since='6 months ago' --pretty=format: --name-only | sort | uniq -c | sort -rn | head -20`
   then filter by the extension of the detected language).
+- **At most 3 existing test files**, found with `Glob` on the language's
+  test naming, plus the manifest's test scripts and dev-dependencies and the
+  CI workflow — they ground the testing rules.
 - `ls _codev/` and `ls src/` (or equivalent for the stack) — **one
   level only**, just to grasp the structure.
 
@@ -94,6 +97,25 @@ know before writing". It must cover:
 - **Checkable on review** — no "clean", no "elegant".
 - **Grounded** in what the project does, not generic.
 
+**Testing rules** — in addition, propose for `tasks` the testing rules of
+the detected language: framework, where tests live, naming, unit or
+integration level, the commands that run and check them. The project's
+existing practice wins: describe what its tests actually do. Only when the
+project has no tests yet, fall back on these conventions:
+
+- **Rust**: unit tests in `#[cfg(test)] mod tests` next to the code,
+  integration tests in `tests/`, doc tests for public examples; `cargo test`,
+  `cargo clippy -- -D warnings`, `cargo fmt --check`.
+- **TypeScript / JavaScript**: the runner already in `package.json` (Vitest
+  or Jest), `*.test.ts` next to the code or in `__tests__/`, Testing Library
+  for UI, no snapshot of large trees; `tsc --noEmit` and the linter in CI.
+- **Python**: pytest, `tests/` mirroring the package, fixtures and
+  `parametrize`; `ruff` and a type checker if configured.
+- **Go**: `_test.go` in the same package, table-driven tests;
+  `go test ./...`, `go vet`.
+- **Java**: JUnit 5 under `src/test/java` mirroring the main package,
+  Mockito only at boundaries; `mvn verify` / `gradle check`.
+
 Write both blocks in the language set by the `language:` key of the same
 file (`en` when absent): the team reads and maintains them.
 
@@ -122,6 +144,8 @@ design:
   - Cite a decision from _codev/decisions/ that constrains the choice.
 tasks:
   - Each task states how to verify that it is done.
+  - "Unit tests in #[cfg(test)] mod tests next to the code, integration
+     tests in tests/; cargo test, cargo clippy -- -D warnings."
 ```
 
 ### 5. Ask for confirmation, then write
@@ -160,6 +184,6 @@ answer: a write acknowledgment or a polite refusal.
   skill: stop and report it to the user.
 - **Refuse if `_codev/config.yaml` is missing** — this skill never
   creates it from scratch.
-- **Respect the reading budget** — at most 5 docs and 8 source files,
-  a single level of `ls`. A bigger project does not deserve more
+- **Respect the reading budget** — at most 5 docs, 8 source files and
+  3 test files, a single level of `ls`. A bigger project does not deserve more
   reading: what matters fits in the most-touched files.

@@ -339,6 +339,54 @@ mod tests {
     }
 
     #[test]
+    fn tasks_criteria_require_documentation_and_automated_tests() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instruction = instructions(&fs, Some("tasks"))
+            .unwrap()
+            .instruction
+            .unwrap_or_default();
+        let (criteria, _) = instruction
+            .split_once("Break down the implementation work.")
+            .expect("the role block precedes the existing text");
+        for criterion in [
+            "documentation the change affects",
+            "states that none is affected",
+            "covered by an automated test",
+            "only when automation is impossible",
+            "project's existing test suite",
+            "conventions of its language",
+            "the project's `rules`",
+        ] {
+            assert!(
+                criteria.contains(criterion),
+                "the tech lead criteria must mention `{criterion}`"
+            );
+        }
+    }
+
+    #[test]
+    fn proposal_impact_names_the_affected_documentation() {
+        let fs = project(&[(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        )]);
+        let instruction = instructions(&fs, Some("proposal"))
+            .unwrap()
+            .instruction
+            .unwrap_or_default();
+        let (_, impact) = instruction
+            .split_once("- **Impact**:")
+            .expect("the proposal instruction describes Impact");
+        assert!(
+            impact.contains("documentation to update"),
+            "Impact must name the affected documentation"
+        );
+    }
+
+    #[test]
     fn a_project_schema_instruction_is_returned_as_written() {
         // Roles belong to the schema: codev adds none to a custom one.
         let fs = project(&[

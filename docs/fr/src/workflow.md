@@ -73,7 +73,10 @@ l'absence de deltas.
 `/codev-apply <name>` implémente le plan. La skill lit `tasks.md`, traite
 chaque tâche `- [ ]` non cochée dans l'ordre du fichier, lance la vérification
 indiquée par la tâche (un test, une commande, un comportement observable),
-puis coche la case.
+et ne coche la case qu'une fois la vérification réussie. Les tests suivent
+d'abord votre suite de tests existante, puis les conventions de votre langage
+et vos [`rules`](reference/configuration.md#rules). Avant d'annoncer le
+change terminé, la skill lance une fois la suite de tests complète.
 
 Elle s'arrête au premier blocage ou à la première ambiguïté pour vous
 consulter plutôt que de deviner. Elle ne modifie que le change désigné,

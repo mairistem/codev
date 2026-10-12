@@ -66,10 +66,16 @@ build understanding, then write. Each task in `tasks.md` states how to
 verify it is done — that verification is the acceptance criterion, not a
 suggestion.
 
-**c. Implement.** Write the code, the tests, the configuration. Target
-what the task asks for, nothing more.
+**c. Implement.** Write the code, the tests, the configuration, the
+documentation. Target what the task asks for, nothing more. Write tests
+like the project's existing test suite (framework, location, naming, unit
+or integration level), then by the conventions of its language and the
+project's `rules` — `codev instructions tasks --change "<name>" --json`
+returns them with the `context`.
 
 **d. Verify.** Run the command, the test, the observation the task cites.
+Take the test command from that `context` or `rules`, the manifest or the CI
+configuration — never guess one; if none is found, ask the user.
 A failing build, a test turning red, a missing behavior: the task is not
 done. Fix, run again.
 
@@ -103,7 +109,11 @@ processed until the obstacle is cleared.
 
 ### 5. Finish — suggest archiving as an explicit next step
 
-When every box is checked, summarize:
+When every box is checked, run the project's full test suite once. If it
+fails, report the failure instead of the summary below: the change is not
+done.
+
+Otherwise, summarize:
 
 - number of tasks done,
 - main files touched (one line),

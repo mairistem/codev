@@ -31,7 +31,8 @@ artifacts:
         - *Modified Capabilities*: only those whose REQUIREMENTS change,
           not those where only the implementation changes. Reuse the exact
           existing path under `_codev/specs/`.
-      - **Impact**: affected code, APIs, dependencies and systems.
+      - **Impact**: affected code, APIs, dependencies and systems, and the
+        documentation to update (user docs, README, reference, help).
 
       The Capabilities section is the contract between this artifact and the
       specs: every capability listed must have its own spec file. Study the
@@ -152,7 +153,15 @@ artifacts:
       - each task fits one work session and is ordered by dependency;
       - each task names its verification (test, command, observable
         behavior);
-      - every spec scenario is covered by at least one task's verification.
+      - every spec scenario is covered by at least one task's verification;
+      - the documentation the change affects (user docs, README, reference,
+        help) is updated in a task, or the plan states that none is affected;
+      - every spec scenario is covered by an automated test written in a
+        task — a manual check only when automation is impossible, with the
+        reason;
+      - tests follow the project's existing test suite, then the testing
+        conventions of its language (framework, location, naming, unit or
+        integration level), and the project's `rules`.
 
       Break down the implementation work.
 
