@@ -524,7 +524,96 @@ pub struct SetupV1 {
     /// The skills left in place because they were edited by hand.
     pub preserved: Vec<String>,
     pub skills: Vec<String>,
+    /// One entry per repository integration step (`CLAUDE.md`, CI, pull
+    /// request template). Additive in v1; empty when no step ran.
+    pub integration: Vec<IntegrationStepV1>,
     pub status: Vec<StatusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntegrationStepV1 {
+    /// `claude_md`, `ci` or `pr_template`.
+    pub step: &'static str,
+    /// `created`, `appended`, `refreshed`, `unchanged` or `skipped`.
+    pub action: &'static str,
+    /// Relative to the project, with `/` separators; `null` when no file is
+    /// concerned.
+    pub path: Option<String>,
+    pub reason: Option<String>,
+}
+
+impl From<&codev_engine::integration::IntegrationStep> for IntegrationStepV1 {
+    fn from(step: &codev_engine::integration::IntegrationStep) -> Self {
+        Self {
+            step: step.step.as_str(),
+            action: step.action.as_str(),
+            path: step.path.as_deref().map(to_slash),
+            reason: step.reason.clone(),
+        }
+    }
+}
+
+/// `codev doctor --json`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DoctorReportV1 {
+    pub root: String,
+    pub checks: Vec<CheckV1>,
+    pub summary: DoctorSummaryV1,
+    pub status: Vec<StatusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckV1 {
+    /// Stable: `config.rules`, `config.language`, `skills`, `sources`,
+    /// `specs`, `decisions`, `validate`, `claude_md`, `ci`, `pr_template`.
+    pub id: &'static str,
+    /// `configuration`, `planning` or `repository`.
+    pub group: &'static str,
+    /// `ok`, `missing` or `warning`.
+    pub status: &'static str,
+    /// `ok`, or a stable code such as `rules_missing`.
+    pub code: &'static str,
+    pub message: String,
+    /// The command or skill that fixes it; `null` when `ok`.
+    pub fix: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DoctorSummaryV1 {
+    pub total: usize,
+    pub missing: usize,
+    pub warnings: usize,
+}
+
+impl From<&crate::commands::DoctorOutcome> for DoctorReportV1 {
+    fn from(outcome: &crate::commands::DoctorOutcome) -> Self {
+        let (total, missing, warnings) = codev_core::doctor::summary(&outcome.checks);
+        Self {
+            root: outcome.root.display().to_string(),
+            checks: outcome
+                .checks
+                .iter()
+                .map(|c| CheckV1 {
+                    id: c.id,
+                    group: c.group.as_str(),
+                    status: c.status.as_str(),
+                    code: c.code,
+                    message: c.message.clone(),
+                    fix: c.fix.clone(),
+                })
+                .collect(),
+            summary: DoctorSummaryV1 {
+                total,
+                missing,
+                warnings,
+            },
+            status: Vec::new(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -1002,5 +1091,79 @@ apply:
         assert_eq!(json["root"], serde_json::Value::Null);
         assert_eq!(json["status"][0]["level"], "error");
         assert_eq!(json["status"][0]["code"], "no_codev_root");
+    }
+
+    #[test]
+    fn setup_report_exposes_integration_in_camel_case() {
+        use codev_engine::integration::{IntegrationStep, Step, StepAction};
+        let report = SetupV1 {
+            root: "/p".into(),
+            created: Vec::new(),
+            updated: Vec::new(),
+            untouched: Vec::new(),
+            preserved: Vec::new(),
+            skills: Vec::new(),
+            integration: vec![
+                IntegrationStepV1::from(&IntegrationStep {
+                    step: Step::Ci,
+                    action: StepAction::Created,
+                    path: Some(PathBuf::from(".github/workflows/codev.yml")),
+                    reason: None,
+                    snippet: Some("not in the JSON".into()),
+                }),
+                IntegrationStepV1::from(&IntegrationStep::skipped(
+                    Step::PrTemplate,
+                    None,
+                    "not a GitHub repository",
+                )),
+            ],
+            status: Vec::new(),
+        };
+        let json = serde_json::to_value(report).unwrap();
+        let steps = json["integration"].as_array().unwrap();
+        assert_eq!(steps[0]["step"], "ci");
+        assert_eq!(steps[0]["action"], "created");
+        assert_eq!(steps[0]["path"], ".github/workflows/codev.yml");
+        assert!(steps[0]["reason"].is_null());
+        assert!(steps[0].get("snippet").is_none());
+        assert_eq!(steps[1]["action"], "skipped");
+        assert!(steps[1]["path"].is_null());
+        assert_eq!(steps[1]["reason"], "not a GitHub repository");
+    }
+
+    #[test]
+    fn doctor_report_exposes_the_expected_fields() {
+        use codev_core::doctor::{DoctorFacts, evaluate};
+        let outcome = crate::commands::DoctorOutcome {
+            root: "/p".into(),
+            checks: evaluate(&DoctorFacts {
+                language_set: true,
+                ..DoctorFacts::default()
+            }),
+        };
+        let json = serde_json::to_value(DoctorReportV1::from(&outcome)).unwrap();
+        for field in ["root", "checks", "summary", "status"] {
+            assert!(json.get(field).is_some(), "missing `{field}`");
+        }
+        let checks = json["checks"].as_array().unwrap();
+        for check in checks {
+            for field in ["id", "group", "status", "code", "message", "fix"] {
+                assert!(check.get(field).is_some(), "missing `{field}` in {check}");
+            }
+        }
+        let rules = checks.iter().find(|c| c["id"] == "config.rules").unwrap();
+        assert_eq!(rules["group"], "configuration");
+        assert_eq!(rules["status"], "missing");
+        assert_eq!(rules["code"], "rules_missing");
+        assert_eq!(rules["fix"], "/codev-configure");
+        let language = checks
+            .iter()
+            .find(|c| c["id"] == "config.language")
+            .unwrap();
+        assert_eq!(language["code"], "ok");
+        assert!(language["fix"].is_null());
+        let missing = checks.iter().filter(|c| c["status"] == "missing").count();
+        assert_eq!(json["summary"]["missing"], missing);
+        assert_eq!(json["summary"]["total"], checks.len());
     }
 }

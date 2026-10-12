@@ -20,6 +20,7 @@ pub mod design;
 pub mod detect;
 pub mod error;
 pub mod instructions;
+pub mod integration;
 pub mod metadata;
 pub mod ports;
 pub mod root;

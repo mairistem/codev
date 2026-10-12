@@ -16,8 +16,8 @@ use codev_engine::validate::{ItemKind, ValidateReport};
 use crate::commands::{
     ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome, DecisionDeviatedOutcome,
     DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome, DecisionShowOutcome,
-    DecisionSupersededOutcome, NewChangeOutcome, SchemasOutcome, SetupOutcome, SourcesListOutcome,
-    SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
+    DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome, SchemasOutcome, SetupOutcome,
+    SourcesListOutcome, SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
 };
 
 /// Warnings go to stderr, never to stdout: a `codev list` redirected to a
@@ -51,7 +51,21 @@ pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
             outcome.skills.join(", ")
         );
     }
+    for pin in &outcome.pins {
+        if let codev_engine::sources::PinChange::Added { url, git_ref, to } = pin {
+            let short = &to[..to.len().min(12)];
+            let _ = writeln!(out, "  Inherits    {url} @{git_ref} → pinned {short}");
+        }
+    }
     let _ = writeln!(out);
+
+    if !outcome.integration.is_empty() {
+        let _ = writeln!(out, "  Repository integration");
+        for step in &outcome.integration {
+            integration_line(&mut out, step);
+        }
+        let _ = writeln!(out);
+    }
 
     if outcome.changed_anything() {
         let _ = writeln!(
@@ -107,6 +121,93 @@ pub fn setup(outcome: &SetupOutcome, initialized: bool) -> String {
                 first.map(String::as_str).unwrap_or("codev-propose")
             );
         }
+    }
+    if initialized && let Some(missing) = outcome.doctor_missing.filter(|n| *n > 0) {
+        let _ = writeln!(out);
+        let _ = writeln!(
+            out,
+            "Run `codev doctor` to see the {missing} setup check(s) still to fix."
+        );
+    }
+    out
+}
+
+/// One line per integration step: what happened to which file, and why
+/// when it was skipped. The GitLab job follows its line, ready to paste.
+fn integration_line(out: &mut String, step: &codev_engine::integration::IntegrationStep) {
+    use codev_engine::integration::{Step, StepAction};
+    let label = match (&step.path, step.step) {
+        (Some(path), _) => path.display().to_string(),
+        (None, Step::ClaudeMd) => "CLAUDE.md".to_string(),
+        (None, Step::Ci) => "CI".to_string(),
+        (None, Step::PrTemplate) => "pull request template".to_string(),
+    };
+    let (mark, verb) = match step.action {
+        StepAction::Created => ("+", "created"),
+        StepAction::Appended => ("+", "codev section appended"),
+        StepAction::Refreshed => ("~", "codev section refreshed"),
+        StepAction::Unchanged => ("=", "up to date"),
+        StepAction::Skipped => ("-", "skipped"),
+    };
+    let verb = match (step.step, step.action) {
+        (Step::Ci, StepAction::Refreshed) => "refreshed",
+        _ => verb,
+    };
+    match &step.reason {
+        Some(reason) => {
+            let _ = writeln!(out, "    {mark} {label:<34} {verb}: {reason}");
+        }
+        None => {
+            let _ = writeln!(out, "    {mark} {label:<34} {verb}");
+        }
+    }
+    if let Some(snippet) = &step.snippet {
+        let _ = writeln!(out);
+        for line in snippet.lines() {
+            let _ = writeln!(out, "        {line}");
+        }
+        let _ = writeln!(out);
+    }
+}
+
+/// Human rendering of `codev doctor`: the checks grouped, the fix under
+/// each one that is not ok, and the count on the last line.
+pub fn doctor(outcome: &DoctorOutcome) -> String {
+    use codev_core::doctor::{CheckGroup, CheckStatus};
+    let mut out = String::new();
+    let _ = writeln!(out, "codev doctor — {}", outcome.root.display());
+    for group in [
+        CheckGroup::Configuration,
+        CheckGroup::Planning,
+        CheckGroup::Repository,
+    ] {
+        let checks: Vec<_> = outcome.checks.iter().filter(|c| c.group == group).collect();
+        if checks.is_empty() {
+            continue;
+        }
+        let _ = writeln!(out);
+        let _ = writeln!(out, "{}", group.label());
+        for check in checks {
+            let mark = match check.status {
+                CheckStatus::Ok => "✓",
+                CheckStatus::Missing => "✗",
+                CheckStatus::Warning => "!",
+            };
+            let _ = writeln!(out, "  {mark} {:<16} {}", check.id, check.message);
+            if let Some(fix) = &check.fix {
+                let _ = writeln!(out, "      fix: {fix}");
+            }
+        }
+    }
+    let (total, missing, warnings) = codev_core::doctor::summary(&outcome.checks);
+    let _ = writeln!(out);
+    if warnings > 0 {
+        let _ = writeln!(
+            out,
+            "{total} check(s), {missing} to fix, {warnings} warning(s)"
+        );
+    } else {
+        let _ = writeln!(out, "{total} check(s), {missing} to fix");
     }
     out
 }
@@ -844,6 +945,9 @@ apply:
             skills: skills.iter().map(|s| s.to_string()).collect(),
             warnings: Vec::new(),
             config_thin,
+            integration: Vec::new(),
+            pins: Vec::new(),
+            doctor_missing: None,
         }
     }
 
@@ -950,5 +1054,85 @@ apply:
         assert!(!out.contains("Hash"), "nothing is sealed: {out}");
         assert!(out.contains("Review the ADR"), "{out}");
         assert!(out.contains("`codev decision accept 0001`"), "{out}");
+    }
+
+    #[test]
+    fn setup_lists_integration_steps_and_reasons() {
+        use codev_engine::integration::{IntegrationStep, Step, StepAction};
+        let mut outcome = setup_outcome(&["codev-propose"], false);
+        outcome.integration = vec![
+            IntegrationStep {
+                step: Step::ClaudeMd,
+                action: StepAction::Created,
+                path: Some("CLAUDE.md".into()),
+                reason: None,
+                snippet: None,
+            },
+            IntegrationStep {
+                snippet: Some("codev:\n  script:\n    - codev validate --strict\n".into()),
+                ..IntegrationStep::skipped(
+                    Step::Ci,
+                    Some(".gitlab-ci.yml".into()),
+                    "codev never edits .gitlab-ci.yml",
+                )
+            },
+            IntegrationStep::skipped(Step::PrTemplate, None, "not a GitHub repository"),
+        ];
+        let rendered = setup(&outcome, true);
+        assert!(rendered.contains("Repository integration"));
+        assert!(rendered.contains("+ CLAUDE.md"));
+        assert!(rendered.contains("created"));
+        assert!(rendered.contains("- .gitlab-ci.yml"));
+        assert!(rendered.contains("skipped: codev never edits .gitlab-ci.yml"));
+        assert!(rendered.contains("        codev:\n"));
+        assert!(rendered.contains("- pull request template"));
+        assert!(rendered.contains("skipped: not a GitHub repository"));
+    }
+
+    #[test]
+    fn setup_ends_with_the_doctor_hint_when_something_is_missing() {
+        let mut outcome = setup_outcome(&["codev-propose"], false);
+        outcome.doctor_missing = Some(2);
+        let rendered = setup(&outcome, true);
+        assert!(
+            rendered
+                .trim_end()
+                .ends_with("Run `codev doctor` to see the 2 setup check(s) still to fix."),
+            "{rendered}"
+        );
+        outcome.doctor_missing = Some(0);
+        assert!(!setup(&outcome, true).contains("codev doctor"));
+        outcome.doctor_missing = Some(2);
+        // `codev update` keeps its short summary.
+        assert!(!setup(&outcome, false).contains("codev doctor"));
+    }
+
+    #[test]
+    fn doctor_output_groups_checks_and_ends_with_the_count() {
+        use codev_core::doctor::{DoctorFacts, evaluate};
+        let facts = DoctorFacts {
+            language_set: true,
+            claude_md_section: true,
+            ..DoctorFacts::default()
+        };
+        let outcome = DoctorOutcome {
+            root: "/home/you/acme-app".into(),
+            checks: evaluate(&facts),
+        };
+        let rendered = doctor(&outcome);
+        let configuration = rendered.find("\nConfiguration\n").unwrap();
+        let planning = rendered.find("\nPlanning\n").unwrap();
+        let repository = rendered.find("\nRepository\n").unwrap();
+        assert!(configuration < planning && planning < repository);
+        assert!(rendered.contains("  ✗ config.rules"));
+        assert!(rendered.contains("      fix: /codev-configure"));
+        assert!(rendered.contains("  ✓ config.language"));
+        assert!(rendered.contains("  ! decisions"));
+        assert!(
+            rendered
+                .trim_end()
+                .ends_with("9 check(s), 3 to fix, 1 warning(s)"),
+            "{rendered}"
+        );
     }
 }

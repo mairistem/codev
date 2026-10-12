@@ -218,6 +218,15 @@ pub fn run_sources_update(
             });
         }
         let stdout = out.stdout_str();
+        if stdout.trim().is_empty() {
+            return Err(EngineError::Invalid {
+                path: PathBuf::from(&src.git),
+                reason: format!(
+                    "ref `{}` not found in `{}` — set the right branch or tag in `ref:`",
+                    src.git_ref, src.git
+                ),
+            });
+        }
         // Line in the `<sha>\t<ref>` format
         let sha = stdout
             .lines()

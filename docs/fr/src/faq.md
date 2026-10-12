@@ -29,6 +29,16 @@ proposal d'une ligne, un delta d'une seule exigence, une liste de deux tâches.
 Pour un change sans impact sur le comportement, définissez
 `skip_specs: true` dans son `change.yaml`.
 
+### Puis-je tenir codev à l'écart de `CLAUDE.md`, de la CI ou du modèle de pull request ?
+
+Oui. Passez `--no-claude-md`, `--no-ci` ou `--no-pr-template` à `codev init`,
+ou `--no-integration` pour les trois. `codev update` ne les ajoute jamais par
+la suite. Pour garder le workflow tout en en reprenant la main, supprimez sa
+première ligne, `# codev:managed` : codev laisse alors le fichier tranquille.
+Pour retirer le texte de codev de `CLAUDE.md` ou du modèle, supprimez le bloc
+compris entre les marqueurs `codev:begin` et `codev:end`. Voir
+[Intégration au dépôt et codev doctor](guides/repository-integration.md).
+
 ### Comment partager cette documentation ?
 
 ```bash
@@ -154,6 +164,21 @@ en anglais quelle que soit la langue des artefacts ; voir
    signale et rédige la proposal à partir de votre seule demande.
 
 Voir [Jira et autres serveurs MCP](guides/mcp.md).
+
+### `codev init` signale `inherit_pin_failed`
+
+Une source git passée avec `--inherit` a été déclarée mais n'a pas pu être
+épinglée : `git` est absent, le réseau ou vos identifiants ont échoué, ou la
+`ref` n'existe pas (`main` par défaut ; un dépôt dont la branche par défaut
+est `master` demande `…/repo.git@master`). Corrigez la cause — ou la `ref:`
+dans `_codev/config.yaml` —, puis lancez `codev sources update`.
+
+### `codev init` signale `managed_section_malformed`
+
+`CLAUDE.md` ou le modèle de pull request contient une ligne
+`<!-- codev:begin` sans `<!-- codev:end -->` correspondant, ou plusieurs.
+codev n'a pas touché au fichier. Gardez exactement une paire de marqueurs, ou
+supprimez-les tous pour que `codev init` ajoute une section neuve.
 
 ### Une source git est `unlocked` ou `needs_update`
 

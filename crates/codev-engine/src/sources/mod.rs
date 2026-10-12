@@ -7,7 +7,10 @@
 //! - `update`: plan + execution of `codev sources update`.
 //!
 //! No everyday command (`status`, `instructions`, `validate`, `sync`,
-//! `archive`) ever goes down here. Only `codev sources update` does.
+//! `archive`, `doctor`) ever goes down here. `codev sources update` does,
+//! and so does `codev init --inherit`, but only to *add* the first pins of a
+//! project that has no `_codev/codev.lock` yet: moving a pin stays the job
+//! of `codev sources update` alone, as decision 0005 requires.
 
 pub mod cache;
 pub mod lockfile;

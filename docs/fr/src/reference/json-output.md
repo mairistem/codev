@@ -84,12 +84,99 @@ exemple `inherit_unresolved`, `git_source_unlocked`, `unknown_workflow` ou
   "untouched": ["…"],
   "preserved": ["/home/you/acme-app/.claude/skills/codev-apply/SKILL.md"],
   "skills": ["codev-propose", "codev-explore", "…"],
+  "integration": [
+    {
+      "step": "claude_md",
+      "action": "appended",
+      "path": "CLAUDE.md",
+      "reason": null
+    },
+    {
+      "step": "ci",
+      "action": "skipped",
+      "path": ".github/workflows/codev.yml",
+      "reason": ".github/workflows/ci.yml already runs codev validate"
+    },
+    {
+      "step": "pr_template",
+      "action": "created",
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "reason": null
+    }
+  ],
   "status": []
 }
 ```
 
 `preserved` liste les skills laissées en place parce qu'elles ont été
-modifiées à la main.
+modifiées à la main. `integration` compte une entrée par étape d'intégration
+au dépôt : `step` vaut `claude_md`, `ci` ou `pr_template` ; `action` vaut
+`created`, `appended`, `refreshed`, `unchanged` ou `skipped` ; `path` est
+relatif au projet, ou `null` ; `reason` explique une étape écartée, ou vaut
+`null`. `codev update` ne liste que les fichiers gérés qu'il a trouvés.
+L'indication `codev doctor` et le job GitLab n'apparaissent que dans la
+sortie humaine.
+
+Avertissements propres à `init` : `inherit_not_written` (`--inherit` alors
+que `config.yaml` existe), `inherit_pin_failed` (une source git n'a pas pu
+être épinglée) et `managed_section_malformed` (marqueurs codev déséquilibrés ;
+le fichier reste intact). Une valeur `--inherit` invalide échoue avec
+`invalid_inherit`.
+
+### doctor
+
+`codev doctor --json` :
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "checks": [
+    {
+      "id": "config.rules",
+      "group": "configuration",
+      "status": "missing",
+      "code": "rules_missing",
+      "message": "no rules: in _codev/config.yaml",
+      "fix": "/codev-configure"
+    },
+    {
+      "id": "config.language",
+      "group": "configuration",
+      "status": "ok",
+      "code": "ok",
+      "message": "language: is set",
+      "fix": null
+    },
+    "…"
+  ],
+  "summary": {
+    "total": 10,
+    "missing": 2,
+    "warnings": 1
+  },
+  "status": []
+}
+```
+
+Chaque vérification a un `id` stable, son `group`, un `status` (`ok`,
+`missing` ou `warning`), un `code` stable (`ok` lorsque la vérification
+réussit), un `message` et un `fix` — la commande ou la skill à lancer — ou
+`null` lorsque le statut est `ok`. Les vérifications suivent l'ordre du
+tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
+`summary.missing` détermine le code de sortie de `--strict`.
+
+| `id` de la vérification | `group` | Codes lorsque le statut n'est pas `ok` |
+|---|---|---|
+| `config.rules` | `configuration` | `rules_missing` |
+| `config.language` | `configuration` | `language_missing` |
+| `skills` | `configuration` | `skills_missing`, `skills_outdated` |
+| `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
+| `specs` | `planning` | `no_main_spec` |
+| `decisions` | `planning` | `no_accepted_decision` (avertissement) |
+| `validate` | `planning` | `validate_errors`, `validate_warnings` (avertissement) |
+| `claude_md` | `repository` | `claude_md_section_missing` |
+| `ci` | `repository` | `ci_validate_missing` |
+| `pr_template` | `repository` | `pr_template_section_missing` |
 
 ### new change
 

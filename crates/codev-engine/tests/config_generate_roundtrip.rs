@@ -93,3 +93,33 @@ fn generated_minimal_yaml_is_readable() {
     // No `mcp:` block generated → jira_tool missing (default McpConfig).
     assert!(parsed.mcp.jira_tool.is_none());
 }
+
+#[test]
+fn generated_config_with_inherits_reads_back() {
+    use codev_core::config::InheritArg;
+
+    let mut g = from_detected(&detected_full(), &UserChoices::defaults_full());
+    g.inherits = vec![
+        InheritArg::Git {
+            url: "git@github.com:acme/conventions.git".into(),
+            git_ref: "1.0".into(),
+        },
+        InheritArg::Path("/home/you/my conventions #2".into()),
+    ];
+    let yaml = render(&g);
+
+    let parsed: ProjectConfig =
+        serde_norway::from_str(&yaml).expect("generated YAML must parse through ProjectConfig");
+    assert_eq!(parsed.inherits.len(), 2);
+    assert_eq!(
+        parsed.inherits[0].git.as_deref(),
+        Some("git@github.com:acme/conventions.git")
+    );
+    // Quoted on purpose: unquoted, `1.0` would read back as a number.
+    assert_eq!(parsed.inherits[0].git_ref.as_deref(), Some("1.0"));
+    assert_eq!(
+        parsed.inherits[1].path.as_deref(),
+        Some("/home/you/my conventions #2")
+    );
+    assert!(parsed.inherits[1].git_ref.is_none());
+}

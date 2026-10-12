@@ -30,14 +30,24 @@ codev initialized in /home/you/acme-app
   Structure   _codev/ — specs, decisions, changes, schemas
   Skills      codev-propose, codev-explore, codev-onboard, codev-apply, codev-sync, codev-archive, codev-update, codev-configure → .claude/skills/
 
-  14 file(s) created, 0 updated
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/codev.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
 
 → Recommended next step: in Claude Code, run /codev-configure.
   Claude will analyze the project and enrich _codev/config.yaml
   (context, per-artifact rules) — ~30 seconds.
 
 Or skip this step and run /codev-propose <an-idea> directly.
+
+Run `codev doctor` to see the 2 setup check(s) still to fix.
 ```
+
+This repository has a GitHub remote, so codev also wrote a CI workflow and a
+pull request template; see step 5 below.
 
 Restart Claude Code (or start a new session) so it discovers the new skills.
 
@@ -81,9 +91,55 @@ Restart Claude Code (or start a new session) so it discovers the new skills.
    ```
 
 4. **Installs the skills** into `.claude/skills/codev-<workflow>/SKILL.md`.
+5. **Integrates codev into the repository**, unless you opt out:
+   - a codev section in `CLAUDE.md`, created if missing, telling Claude Code
+     that the specs are authoritative and that behavior changes go through
+     `/codev-propose` then `/codev-apply`;
+   - on GitHub, `.github/workflows/codev.yml`, which runs
+     `codev validate --strict` on every push and pull request;
+   - on GitHub, a codev section in the pull request template.
 
-If `_codev/config.yaml` already exists, `codev init` leaves it untouched and
-only installs or refreshes the skills.
+   codev's text sits between `<!-- codev:begin -->` and `<!-- codev:end -->`
+   markers and never replaces yours. `--no-claude-md`, `--no-ci`,
+   `--no-pr-template` and `--no-integration` skip these files. See
+   [Repository integration and codev doctor](guides/repository-integration.md).
+6. **Declares inherited sources** given with `--inherit`, and pins the git
+   ones right away. See [Inherited sources](guides/inherited-sources.md).
+
+If `_codev/config.yaml` already exists, `codev init` leaves it untouched: it
+only installs or refreshes the skills and the repository integration.
+
+`codev doctor` then lists what the setup still lacks — here, rules and a first
+spec — with the command or skill that fixes each item:
+
+```bash
+codev doctor
+```
+
+```text
+codev doctor — /home/you/acme-app
+
+Configuration
+  ✗ config.rules     no rules: in _codev/config.yaml
+      fix: /codev-configure
+  ✓ config.language  language: is set
+  ✓ skills           8 skill(s) installed and current
+  ✓ sources          no inherited git source
+
+Planning
+  ✗ specs            no main spec in _codev/specs/
+      fix: /codev-propose <a change> — documenting existing behavior is planned work too
+  ! decisions        no accepted decision (not every project needs one)
+      fix: codev decision new "<title>"
+  ✓ validate         codev validate reports no issue
+
+Repository
+  ✓ claude_md        CLAUDE.md has the codev section
+  ✓ ci               .github/workflows/codev.yml runs codev validate
+  ✓ pr_template      the pull request template has the codev section
+
+10 check(s), 2 to fix, 1 warning(s)
+```
 
 > **Note**
 > The recommended next step, `/codev-configure`, lets Claude read your

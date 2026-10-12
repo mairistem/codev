@@ -16,6 +16,7 @@
 # Guides
 
 - [Inherited sources](guides/inherited-sources.md)
+- [Repository integration and codev doctor](guides/repository-integration.md)
 - [Jira and other MCP servers](guides/mcp.md)
 - [Artifact language](guides/artifact-language.md)
 - [Custom schemas](guides/custom-schemas.md)

@@ -2,19 +2,20 @@
 
 <!-- What this pull request changes, in one or two sentences. -->
 
-## Related codev change
-
-<!-- Folder name under `_codev/changes/`, or its archive path.
-     A trivial fix (typo, documentation wording) does not need a codev change. -->
-
 Closes #
+
+<!-- codev:begin — managed by codev; `codev update` rewrites this block, edit outside it -->
+## codev
+
+- codev change: <!-- folder under `_codev/changes/`, or "trivial fix, no change" -->
+- [ ] `codev validate --strict` passes.
+<!-- codev:end -->
 
 ## Checklist
 
 - [ ] `cargo fmt --all --check` passes.
 - [ ] `cargo clippy --workspace --all-targets -- -D warnings` passes.
 - [ ] `cargo test --workspace` passes.
-- [ ] `codev validate --strict` passes.
 - [ ] Documentation updated in **both** `docs/en/` and `docs/fr/` if behavior changed.
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` for user-visible changes.
 

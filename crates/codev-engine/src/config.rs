@@ -365,7 +365,7 @@ fn classify(source: &InheritSource, config_path: &Path) -> Result<Source> {
 ///
 /// Only at the start, and only when followed by the end of the string or a
 /// separator — `~something` is not a user's home directory here.
-pub(crate) fn expand_tilde(raw: &str, env: &dyn Env) -> PathBuf {
+pub fn expand_tilde(raw: &str, env: &dyn Env) -> PathBuf {
     let rest = match raw.strip_prefix('~') {
         Some("") => "",
         Some(rest) if rest.starts_with('/') => &rest[1..],

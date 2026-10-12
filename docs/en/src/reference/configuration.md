@@ -116,6 +116,22 @@ An entry declares exactly one of `path` and `git`; `ref` and `subpath` are
 rejected on a `path` entry. Git sources are pinned in `_codev/codev.lock` by
 `codev sources update`. See [Inherited sources](../guides/inherited-sources.md).
 
+`codev init --inherit <SOURCE>` writes this key for you when it creates the
+configuration, one entry per flag, under a `# set with codev init --inherit`
+comment, and pins the git sources at once:
+
+```bash
+codev init --yes --inherit git@github.com:acme/codev-standards.git@v2 --inherit ~/src/acme-standards
+```
+
+```yaml
+# set with codev init --inherit
+inherits:
+  - git: git@github.com:acme/codev-standards.git
+    ref: v2
+  - path: ~/src/acme-standards
+```
+
 ## mcp
 
 Names of the MCP tools the skills may call. These are specific to each Claude

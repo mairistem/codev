@@ -1,0 +1,598 @@
+//! `codev doctor`: what a project's codev setup still lacks.
+//!
+//! Pure evaluation: the shell gathers [`DoctorFacts`] (reading files, never
+//! writing, never spawning a process), [`evaluate`] turns them into the
+//! list of checks. Ids and codes are part of the JSON contract: they never
+//! change meaning.
+
+/// A check's verdict.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckStatus {
+    Ok,
+    Missing,
+    Warning,
+}
+
+impl CheckStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Ok => "ok",
+            Self::Missing => "missing",
+            Self::Warning => "warning",
+        }
+    }
+}
+
+/// The group a check is displayed under.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckGroup {
+    Configuration,
+    Planning,
+    Repository,
+}
+
+impl CheckGroup {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Configuration => "configuration",
+            Self::Planning => "planning",
+            Self::Repository => "repository",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Configuration => "Configuration",
+            Self::Planning => "Planning",
+            Self::Repository => "Repository",
+        }
+    }
+}
+
+/// One evaluated check.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Check {
+    pub id: &'static str,
+    pub group: CheckGroup,
+    pub status: CheckStatus,
+    /// `ok` when the check passes, otherwise a stable code.
+    pub code: &'static str,
+    pub message: String,
+    /// The exact command or skill that fixes it; `None` when `ok`.
+    pub fix: Option<String>,
+}
+
+/// The state of one installed skill.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SkillState {
+    /// Present and stamped with the running version.
+    Current,
+    /// Present, stamped with another version (or none).
+    Outdated(Option<String>),
+    Missing,
+}
+
+/// An inherited git source, as the lock and the cache see it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GitSourceFact {
+    pub url: String,
+    pub pinned: bool,
+    pub cached: bool,
+}
+
+/// Everything [`evaluate`] needs, read by the shell.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct DoctorFacts {
+    /// At least one `rules:` entry, inherited ones included.
+    pub rules_present: bool,
+    /// `language:` is written in the project's `config.yaml`.
+    pub language_set: bool,
+    /// `(skill name, state)` for every configured workflow.
+    pub skills: Vec<(String, SkillState)>,
+    pub main_specs: usize,
+    /// Accepted decisions, local and inherited.
+    pub accepted_decisions: usize,
+    pub git_sources: Vec<GitSourceFact>,
+    /// Lock entries whose `(git, ref)` no source declares.
+    pub stale_pins: Vec<String>,
+    pub claude_md_section: bool,
+    /// CI files (relative paths) with a line running `codev validate`.
+    pub ci_validating_files: Vec<String>,
+    pub is_github: bool,
+    pub is_gitlab: bool,
+    /// The pull request template holds the codev section. Only meaningful
+    /// when `is_github`.
+    pub pr_template_section: bool,
+    pub validate_errors: usize,
+    pub validate_warnings: usize,
+}
+
+/// Stable check ids, in report order.
+pub const CHECK_IDS: &[&str] = &[
+    "config.rules",
+    "config.language",
+    "skills",
+    "sources",
+    "specs",
+    "decisions",
+    "validate",
+    "claude_md",
+    "ci",
+    "pr_template",
+];
+
+fn ok(id: &'static str, group: CheckGroup, message: impl Into<String>) -> Check {
+    Check {
+        id,
+        group,
+        status: CheckStatus::Ok,
+        code: "ok",
+        message: message.into(),
+        fix: None,
+    }
+}
+
+fn not_ok(
+    id: &'static str,
+    group: CheckGroup,
+    status: CheckStatus,
+    code: &'static str,
+    message: impl Into<String>,
+    fix: impl Into<String>,
+) -> Check {
+    Check {
+        id,
+        group,
+        status,
+        code,
+        message: message.into(),
+        fix: Some(fix.into()),
+    }
+}
+
+/// Evaluates every check, in the order of [`CHECK_IDS`]. `pr_template` is
+/// left out when the repository is not on GitHub.
+pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
+    use CheckGroup::*;
+    use CheckStatus::*;
+    let mut checks = Vec::new();
+
+    checks.push(if facts.rules_present {
+        ok("config.rules", Configuration, "rules: is set")
+    } else {
+        not_ok(
+            "config.rules",
+            Configuration,
+            Missing,
+            "rules_missing",
+            "no rules: in _codev/config.yaml",
+            "/codev-configure",
+        )
+    });
+
+    checks.push(if facts.language_set {
+        ok("config.language", Configuration, "language: is set")
+    } else {
+        not_ok(
+            "config.language",
+            Configuration,
+            Missing,
+            "language_missing",
+            "no language: in _codev/config.yaml",
+            "add `language: <code>` (e.g. `language: en`) to _codev/config.yaml",
+        )
+    });
+
+    let missing: Vec<&str> = facts
+        .skills
+        .iter()
+        .filter(|(_, s)| *s == SkillState::Missing)
+        .map(|(n, _)| n.as_str())
+        .collect();
+    let outdated: Vec<&str> = facts
+        .skills
+        .iter()
+        .filter(|(_, s)| matches!(s, SkillState::Outdated(_)))
+        .map(|(n, _)| n.as_str())
+        .collect();
+    checks.push(if !missing.is_empty() {
+        not_ok(
+            "skills",
+            Configuration,
+            Missing,
+            "skills_missing",
+            format!("skill(s) not installed: {}", missing.join(", ")),
+            "codev update",
+        )
+    } else if !outdated.is_empty() {
+        not_ok(
+            "skills",
+            Configuration,
+            Missing,
+            "skills_outdated",
+            format!(
+                "skill(s) generated by another codev version: {}",
+                outdated.join(", ")
+            ),
+            "codev update",
+        )
+    } else {
+        ok(
+            "skills",
+            Configuration,
+            format!("{} skill(s) installed and current", facts.skills.len()),
+        )
+    });
+
+    let pending: Vec<&str> = facts
+        .git_sources
+        .iter()
+        .filter(|s| !s.pinned || !s.cached)
+        .map(|s| s.url.as_str())
+        .collect();
+    checks.push(if !pending.is_empty() {
+        not_ok(
+            "sources",
+            Configuration,
+            Missing,
+            "source_unpinned",
+            format!(
+                "git source(s) not pinned or not cached: {}",
+                pending.join(", ")
+            ),
+            "codev sources update",
+        )
+    } else if !facts.stale_pins.is_empty() {
+        not_ok(
+            "sources",
+            Configuration,
+            Warning,
+            "lock_stale",
+            format!(
+                "_codev/codev.lock pins undeclared source(s): {}",
+                facts.stale_pins.join(", ")
+            ),
+            "codev sources update",
+        )
+    } else if facts.git_sources.is_empty() {
+        ok("sources", Configuration, "no inherited git source")
+    } else {
+        ok(
+            "sources",
+            Configuration,
+            format!("{} git source(s) pinned", facts.git_sources.len()),
+        )
+    });
+
+    checks.push(if facts.main_specs > 0 {
+        ok(
+            "specs",
+            Planning,
+            format!("{} main spec(s)", facts.main_specs),
+        )
+    } else {
+        not_ok(
+            "specs",
+            Planning,
+            Missing,
+            "no_main_spec",
+            "no main spec in _codev/specs/",
+            "/codev-propose <a change> — documenting existing behavior is planned work too",
+        )
+    });
+
+    checks.push(if facts.accepted_decisions > 0 {
+        ok(
+            "decisions",
+            Planning,
+            format!("{} accepted decision(s)", facts.accepted_decisions),
+        )
+    } else {
+        not_ok(
+            "decisions",
+            Planning,
+            Warning,
+            "no_accepted_decision",
+            "no accepted decision (not every project needs one)",
+            "codev decision new \"<title>\"",
+        )
+    });
+
+    checks.push(if facts.validate_errors > 0 {
+        not_ok(
+            "validate",
+            Planning,
+            Missing,
+            "validate_errors",
+            format!("codev validate reports {} error(s)", facts.validate_errors),
+            "codev validate",
+        )
+    } else if facts.validate_warnings > 0 {
+        not_ok(
+            "validate",
+            Planning,
+            Warning,
+            "validate_warnings",
+            format!(
+                "codev validate reports {} warning(s)",
+                facts.validate_warnings
+            ),
+            "codev validate",
+        )
+    } else {
+        ok("validate", Planning, "codev validate reports no issue")
+    });
+
+    checks.push(if facts.claude_md_section {
+        ok("claude_md", Repository, "CLAUDE.md has the codev section")
+    } else {
+        not_ok(
+            "claude_md",
+            Repository,
+            Missing,
+            "claude_md_section_missing",
+            "CLAUDE.md has no codev section",
+            "codev init",
+        )
+    });
+
+    checks.push(if let Some(file) = facts.ci_validating_files.first() {
+        ok("ci", Repository, format!("{file} runs codev validate"))
+    } else {
+        let fix = if facts.is_github {
+            "codev init"
+        } else if facts.is_gitlab {
+            "add the job printed by `codev init` to .gitlab-ci.yml"
+        } else {
+            "add `codev validate --strict` to your CI pipeline"
+        };
+        not_ok(
+            "ci",
+            Repository,
+            Missing,
+            "ci_validate_missing",
+            "no CI file runs codev validate",
+            fix,
+        )
+    });
+
+    if facts.is_github {
+        checks.push(if facts.pr_template_section {
+            ok(
+                "pr_template",
+                Repository,
+                "the pull request template has the codev section",
+            )
+        } else {
+            not_ok(
+                "pr_template",
+                Repository,
+                Missing,
+                "pr_template_section_missing",
+                "the pull request template has no codev section",
+                "codev init",
+            )
+        });
+    }
+
+    // Report order follows CHECK_IDS, whatever the evaluation order above.
+    checks.sort_by_key(|c| CHECK_IDS.iter().position(|id| *id == c.id));
+    checks
+}
+
+/// `(total, missing, warnings)`.
+pub fn summary(checks: &[Check]) -> (usize, usize, usize) {
+    let missing = checks
+        .iter()
+        .filter(|c| c.status == CheckStatus::Missing)
+        .count();
+    let warnings = checks
+        .iter()
+        .filter(|c| c.status == CheckStatus::Warning)
+        .count();
+    (checks.len(), missing, warnings)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn complete() -> DoctorFacts {
+        DoctorFacts {
+            rules_present: true,
+            language_set: true,
+            skills: vec![("codev-propose".into(), SkillState::Current)],
+            main_specs: 3,
+            accepted_decisions: 2,
+            git_sources: vec![GitSourceFact {
+                url: "git@github.com:acme/c.git".into(),
+                pinned: true,
+                cached: true,
+            }],
+            stale_pins: Vec::new(),
+            claude_md_section: true,
+            ci_validating_files: vec![".github/workflows/ci.yml".into()],
+            is_github: true,
+            is_gitlab: false,
+            pr_template_section: true,
+            validate_errors: 0,
+            validate_warnings: 0,
+        }
+    }
+
+    fn check<'a>(checks: &'a [Check], id: &str) -> &'a Check {
+        checks
+            .iter()
+            .find(|c| c.id == id)
+            .unwrap_or_else(|| panic!("no check `{id}`"))
+    }
+
+    #[test]
+    fn a_complete_project_is_all_ok_in_the_stable_order() {
+        let checks = evaluate(&complete());
+        assert!(checks.iter().all(|c| c.status == CheckStatus::Ok));
+        let ids: Vec<&str> = checks.iter().map(|c| c.id).collect();
+        assert_eq!(ids, CHECK_IDS);
+        assert!(checks.iter().all(|c| c.fix.is_none() && c.code == "ok"));
+    }
+
+    #[test]
+    fn fresh_project_checks() {
+        let facts = DoctorFacts {
+            language_set: true,
+            skills: vec![("codev-propose".into(), SkillState::Current)],
+            claude_md_section: true,
+            ..DoctorFacts::default()
+        };
+        let checks = evaluate(&facts);
+        assert_eq!(check(&checks, "config.rules").code, "rules_missing");
+        assert_eq!(
+            check(&checks, "config.rules").fix.as_deref(),
+            Some("/codev-configure")
+        );
+        assert_eq!(check(&checks, "specs").status, CheckStatus::Missing);
+        assert!(
+            check(&checks, "specs")
+                .fix
+                .as_deref()
+                .unwrap()
+                .contains("/codev-propose")
+        );
+        assert_eq!(check(&checks, "decisions").status, CheckStatus::Warning);
+        assert_eq!(check(&checks, "ci").code, "ci_validate_missing");
+        for id in [
+            "config.language",
+            "skills",
+            "sources",
+            "claude_md",
+            "validate",
+        ] {
+            assert_eq!(check(&checks, id).status, CheckStatus::Ok, "{id}");
+        }
+        assert!(checks.iter().all(|c| c.id != "pr_template"));
+    }
+
+    #[test]
+    fn outdated_skills_are_missing_with_skills_outdated() {
+        let facts = DoctorFacts {
+            skills: vec![(
+                "codev-propose".into(),
+                SkillState::Outdated(Some("0.3.0".into())),
+            )],
+            ..complete()
+        };
+        let skills = evaluate(&facts)
+            .into_iter()
+            .find(|c| c.id == "skills")
+            .unwrap();
+        assert_eq!(skills.status, CheckStatus::Missing);
+        assert_eq!(skills.code, "skills_outdated");
+        assert_eq!(skills.fix.as_deref(), Some("codev update"));
+
+        let facts = DoctorFacts {
+            skills: vec![("codev-apply".into(), SkillState::Missing)],
+            ..complete()
+        };
+        assert_eq!(check(&evaluate(&facts), "skills").code, "skills_missing");
+    }
+
+    #[test]
+    fn unpinned_source_is_missing() {
+        let facts = DoctorFacts {
+            git_sources: vec![GitSourceFact {
+                url: "https://example.com/c.git".into(),
+                pinned: false,
+                cached: false,
+            }],
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        let sources = check(&checks, "sources");
+        assert_eq!(sources.status, CheckStatus::Missing);
+        assert_eq!(sources.code, "source_unpinned");
+        assert_eq!(sources.fix.as_deref(), Some("codev sources update"));
+    }
+
+    #[test]
+    fn stale_pin_is_a_warning() {
+        let facts = DoctorFacts {
+            stale_pins: vec!["https://old.example/c.git@main".into()],
+            ..complete()
+        };
+        let checks = evaluate(&facts);
+        assert_eq!(check(&checks, "sources").status, CheckStatus::Warning);
+        assert_eq!(check(&checks, "sources").code, "lock_stale");
+    }
+
+    #[test]
+    fn pr_template_check_only_on_github() {
+        let facts = DoctorFacts {
+            pr_template_section: false,
+            ..complete()
+        };
+        assert_eq!(
+            check(&evaluate(&facts), "pr_template").code,
+            "pr_template_section_missing"
+        );
+        let facts = DoctorFacts {
+            is_github: false,
+            ..complete()
+        };
+        assert!(evaluate(&facts).iter().all(|c| c.id != "pr_template"));
+    }
+
+    #[test]
+    fn ci_fix_depends_on_the_forge() {
+        let base = DoctorFacts {
+            ci_validating_files: Vec::new(),
+            ..complete()
+        };
+        assert_eq!(
+            check(&evaluate(&base), "ci").fix.as_deref(),
+            Some("codev init")
+        );
+        let gitlab = DoctorFacts {
+            is_github: false,
+            is_gitlab: true,
+            ..base.clone()
+        };
+        assert!(
+            check(&evaluate(&gitlab), "ci")
+                .fix
+                .as_deref()
+                .unwrap()
+                .contains(".gitlab-ci.yml")
+        );
+    }
+
+    #[test]
+    fn validate_warnings_are_a_warning_and_errors_missing() {
+        let warnings = DoctorFacts {
+            validate_warnings: 2,
+            ..complete()
+        };
+        assert_eq!(
+            check(&evaluate(&warnings), "validate").code,
+            "validate_warnings"
+        );
+        let errors = DoctorFacts {
+            validate_errors: 1,
+            validate_warnings: 2,
+            ..complete()
+        };
+        let checks = evaluate(&errors);
+        assert_eq!(check(&checks, "validate").status, CheckStatus::Missing);
+        assert_eq!(check(&checks, "validate").code, "validate_errors");
+    }
+
+    #[test]
+    fn summary_counts_missing_and_warnings() {
+        let facts = DoctorFacts {
+            rules_present: false,
+            main_specs: 0,
+            accepted_decisions: 0,
+            ..complete()
+        };
+        assert_eq!(summary(&evaluate(&facts)), (10, 2, 1));
+    }
+}

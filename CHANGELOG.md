@@ -41,6 +41,27 @@ Detailed notes for each version are on the corresponding GitHub Release.
   operability, performance or accessibility lenses when the proposal's Impact
   touches them, and the project's `rules:` — and ends its summary with at most
   five "Points to challenge", or says none was found.
+- `codev init --inherit <SOURCE>` (repeatable) declares inherited sources in
+  the generated `config.yaml` — a git URL with an optional `@<ref>` (`main` by
+  default) or a local folder — and pins the git ones in `_codev/codev.lock`
+  right away. A pinning failure only warns (`inherit_pin_failed`); an invalid
+  value is refused before anything is written (`invalid_inherit`).
+- `codev init` integrates codev into the repository: a codev section in
+  `CLAUDE.md` telling Claude Code to plan behavior changes with
+  `/codev-propose`, and on GitHub a `.github/workflows/codev.yml` running
+  `codev validate --strict` with codev pinned to the running version, and a
+  codev section in the pull request template. On GitLab it prints a job to
+  paste. Opt out with `--no-claude-md`, `--no-ci`, `--no-pr-template` or
+  `--no-integration`. codev's text sits between `<!-- codev:begin -->` and
+  `<!-- codev:end -->` markers and never replaces yours.
+- `codev update` refreshes those managed sections and the managed workflow,
+  and never adds one a project does not have.
+- `codev init --json` and `codev update --json` gain an `integration` array.
+- `codev doctor [--json] [--strict]` lists what the codev setup still lacks —
+  rules, language, skills, specs, decisions, source pins, `CLAUDE.md`, CI,
+  pull request template, validation — with the command or skill that fixes
+  each item. `codev init` and `codev status` point to it when something is
+  missing, and `/codev-onboard` relays its findings.
 
 ## [0.4.0] - 2026-09-30
 

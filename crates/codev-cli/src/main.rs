@@ -11,7 +11,7 @@ mod init_prompts;
 mod render;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use codev_engine::{RealFileSystem, SystemClock, SystemEnv};
+use codev_engine::{RealFileSystem, RealProcessRunner, SystemClock, SystemEnv};
 use serde::Serialize;
 use serde_json::json;
 
@@ -19,8 +19,8 @@ use commands::{Ctx, Failure};
 use contract::{
     ArchiveReportV1, ChangesV1, DecisionAcceptedV1, DecisionCreatedV1, DecisionDeviatedV1,
     DecisionListReportV1, DecisionPromotedV1, DecisionSealedV1, DecisionShowReportV1,
-    DecisionSupersededV1, DecisionV1, InstructionsV1, NewChangeV1, PinChangeV1, SchemaV1,
-    SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1,
+    DecisionSupersededV1, DecisionV1, DoctorReportV1, InstructionsV1, NewChangeV1, PinChangeV1,
+    SchemaV1, SchemasV1, SealEntryV1, SetupV1, SourceDetailV1, SourceStateV1, SourcesListReportV1,
     SourcesUpdateReportV1, SpecsV1, StatusV1, SupersededDecisionV1, SyncReportV1, ValidateReportV1,
 };
 
@@ -103,15 +103,50 @@ enum Command {
         /// otherwise `en`
         #[arg(long, value_name = "CODE", value_parser = parse_language)]
         language: Option<String>,
+        /// Inherit conventions from a source, written under `inherits:`
+        /// (repeatable). A git URL (`git@…`, `https://…`, `ssh://…`,
+        /// `file://…`, or ending in `.git`), optionally suffixed with
+        /// `@<ref>` (default `main`), or a local folder. Git sources are
+        /// pinned in `_codev/codev.lock` right away
+        #[arg(long, value_name = "SOURCE")]
+        inherit: Vec<String>,
+        /// Do not write codev's section in `CLAUDE.md`
+        #[arg(long)]
+        no_claude_md: bool,
+        /// Do not write `.github/workflows/codev.yml`
+        #[arg(long)]
+        no_ci: bool,
+        /// Do not write codev's section in the pull request template
+        #[arg(long)]
+        no_pr_template: bool,
+        /// Skip all repository integration: same as `--no-claude-md --no-ci
+        /// --no-pr-template`
+        #[arg(long)]
+        no_integration: bool,
         #[arg(long)]
         json: bool,
     },
 
-    /// Regenerate the skills after a codev upgrade
+    /// Regenerate the skills, and refresh codev's managed sections, after a
+    /// codev upgrade
     Update {
         /// Rewrite skills even if they were edited by hand
         #[arg(long)]
         force: bool,
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Check what the project's codev setup still lacks, and how to fix it
+    ///
+    /// Read-only and offline: configuration, skills, specs, decisions,
+    /// inherited sources, `CLAUDE.md`, CI and pull request template, and
+    /// `codev validate`. Each check is ok, missing or a warning, with the
+    /// command or skill that fixes it.
+    Doctor {
+        /// Exit with code 1 when a check is missing (warnings never fail)
+        #[arg(long)]
+        strict: bool,
         #[arg(long)]
         json: bool,
     },
@@ -398,10 +433,12 @@ fn run(cli: Cli) -> i32 {
     let fs = RealFileSystem;
     let env = SystemEnv;
     let clock = SystemClock;
+    let runner = RealProcessRunner;
     let ctx = Ctx {
         fs: &fs,
         env: &env,
         clock: &clock,
+        runner: &runner,
         version: VERSION,
     };
 
@@ -467,6 +504,11 @@ fn run(cli: Cli) -> i32 {
             no_detect,
             preset,
             language,
+            inherit,
+            no_claude_md,
+            no_ci,
+            no_pr_template,
+            no_integration,
             json,
         } => {
             let path = path.unwrap_or_else(|| ".".to_string());
@@ -475,12 +517,23 @@ fn run(cli: Cli) -> i32 {
                 no_detect,
                 preset: preset.map(PresetArg::to_preset),
                 language,
+                inherits: inherit,
+                no_claude_md: no_claude_md || no_integration,
+                no_ci: no_ci || no_integration,
+                no_pr_template: no_pr_template || no_integration,
             };
             match commands::init(&ctx, &path, force, &init_opts) {
                 Ok(outcome) => {
                     emit(json, setup_v1(&outcome), || render::setup(&outcome, true));
                     if !json {
                         render::warnings(&outcome.warnings);
+                        if outcome
+                            .warnings
+                            .iter()
+                            .any(|w| w.code == "inherit_pin_failed")
+                        {
+                            eprintln!("help: run codev sources update");
+                        }
                     }
                     0
                 }
@@ -587,6 +640,7 @@ fn run(cli: Cli) -> i32 {
                 );
                 if !json {
                     render::warnings(&outcome.warnings);
+                    doctor_hint(&ctx);
                 }
                 0
             }
@@ -597,6 +651,9 @@ fn run(cli: Cli) -> i32 {
                 // stays strictly unchanged.
                 if !json && err.code == "no_active_change" && config_is_thin(&ctx) {
                     eprintln!("hint: the config is sparse — /codev-configure can enrich it");
+                }
+                if !json && err.code == "no_active_change" {
+                    doctor_hint(&ctx);
                 }
                 exit
             }
@@ -637,6 +694,20 @@ fn run(cli: Cli) -> i32 {
                 0
             }
             Err(err) => fail(json, archive_shape(), &err),
+        },
+
+        Command::Doctor { strict, json } => match commands::doctor(&ctx) {
+            Ok(outcome) => {
+                emit(json, DoctorReportV1::from(&outcome), || {
+                    render::doctor(&outcome)
+                });
+                if strict && outcome.missing() > 0 {
+                    1
+                } else {
+                    0
+                }
+            }
+            Err(err) => fail(json, doctor_shape(), &err),
         },
 
         Command::Validate {
@@ -946,6 +1017,11 @@ fn setup_v1(outcome: &commands::SetupOutcome) -> SetupV1 {
         untouched: paths(&outcome.untouched),
         preserved: paths(&outcome.preserved),
         skills: outcome.skills.clone(),
+        integration: outcome
+            .integration
+            .iter()
+            .map(contract::IntegrationStepV1::from)
+            .collect(),
         status: contract::statuses(&outcome.warnings),
     }
 }
@@ -962,7 +1038,26 @@ fn setup_shape() -> serde_json::Value {
         "untouched": [],
         "preserved": [],
         "skills": [],
+        "integration": [],
     })
+}
+
+fn doctor_shape() -> serde_json::Value {
+    json!({
+        "root": null,
+        "checks": [],
+        "summary": { "total": 0, "missing": 0, "warnings": 0 },
+    })
+}
+
+/// One line on stderr when `codev doctor` would report a missing check.
+/// Silent when doctor cannot run: a hint never breaks a command.
+fn doctor_hint(ctx: &commands::Ctx) {
+    if let Some(missing) = commands::doctor_missing_from_cwd(ctx)
+        && missing > 0
+    {
+        eprintln!("hint: {missing} codev setup check(s) to fix — run `codev doctor`");
+    }
 }
 
 fn status_shape() -> serde_json::Value {
@@ -1180,6 +1275,19 @@ mod parsing_tests {
         };
         assert_eq!(id, "0007");
         assert!(json);
+    }
+}
+
+#[cfg(test)]
+mod doctor_tests {
+    #[test]
+    fn doctor_failure_keeps_the_shape() {
+        let json = crate::contract::failure(super::doctor_shape(), "no_codev_root", "no project");
+        assert_eq!(json["checks"], serde_json::json!([]));
+        assert!(json["root"].is_null());
+        assert_eq!(json["summary"]["missing"], 0);
+        assert_eq!(json["status"][0]["code"], "no_codev_root");
+        assert_eq!(json["status"][0]["level"], "error");
     }
 }
 

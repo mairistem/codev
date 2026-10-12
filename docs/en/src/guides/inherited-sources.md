@@ -29,6 +29,54 @@ Inheritance is not transitive: if a source itself declares `inherits:`, those
 sources are ignored and codev warns you. Declare every source you need
 directly in your project.
 
+## Declaring sources at init
+
+The quickest way to start a project on shared conventions is to name the
+sources when you initialize it, once per `--inherit`:
+
+```bash
+codev init --yes --inherit /home/you/acme-standards.git@main
+```
+
+```text
+codev initialized in /home/you/acme-api
+
+  Structure   _codev/ — specs, decisions, changes, schemas
+  Skills      codev-propose, codev-explore, codev-onboard, codev-apply, codev-sync, codev-archive, codev-update, codev-configure → .claude/skills/
+  Inherits    /home/you/acme-standards.git @main → pinned 8dc995327621
+…
+```
+
+`codev init` writes them under `inherits:` in the new `_codev/config.yaml`:
+
+```yaml
+# set with codev init --inherit
+inherits:
+  - git: /home/you/acme-standards.git
+    ref: main
+```
+
+A value starting with `git@`, `https://`, `http://`, `ssh://` or `file://`, or
+ending in `.git`, is a git source; `@<ref>` picks the branch or tag, and `main`
+is used without it. Anything else is a local folder, which must exist. A
+value that is obviously wrong — empty, a missing folder, a git URL ending in
+`@` — is refused with `invalid_inherit` before anything is written.
+
+Git sources are pinned right away, exactly as `codev sources update` would.
+When that fails — no network, missing credentials, a `ref` that does not
+exist — the project is still initialized and the source still declared, but
+left unpinned:
+
+```text
+warning: git source `https://git.example.com/acme/codev-standards.git` has no locked SHA — run `codev sources update` to resolve it
+warning: the inherited git source(s) could not be pinned: https://git.example.com/acme/codev-standards.git is invalid: ls-remote for `https://git.example.com/acme/codev-standards.git` failed: fatal: unable to access 'https://git.example.com/acme/codev-standards.git/': Could not resolve host: git.example.com
+help: run codev sources update
+```
+
+Fix the cause, then run `codev sources update`. `codev init` never moves an
+existing pin and never edits an existing `config.yaml`: on an initialized
+project, add sources under `inherits:` by hand.
+
 ## Local sources
 
 A `path:` source is a folder on your machine — typically a clone of your
@@ -93,8 +141,9 @@ resolved_at = "2026-09-30"
 **Commit `codev.lock`.** Everyone working on the project then reads exactly the
 same commit, and a change of pin shows up in review like any other diff.
 
-`codev sources update` is the only command that contacts the network. Every
-other command reads the locked commit from the cache, offline. Run
+`codev sources update` and `codev init --inherit` are the only commands that
+contact the network, and only `codev sources update` moves a pin. Every other
+command reads the locked commit from the cache, offline. Run
 `codev sources update` again to move the pins to the current commit of each
 `ref`; it reports each source as added (`+`), moved (`~`, with the old and
 new commits) or unchanged (`=`).

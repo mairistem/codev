@@ -481,6 +481,25 @@ mod tests {
     }
 
     #[test]
+    fn onboard_body_relays_codev_doctor() {
+        let onboard = find("onboard").unwrap();
+        for keyword in [
+            "codev doctor --json",
+            "at most five",
+            "codev setup complete",
+            "Never run a fix yourself",
+            "skip this list silently",
+        ] {
+            assert!(
+                onboard.body.contains(keyword),
+                "the onboard body lost `{keyword}`"
+            );
+        }
+        // Still strictly read-only.
+        assert_eq!(onboard.allowed_tools, "Bash(codev:*), Read, Glob");
+    }
+
+    #[test]
     fn propose_body_carries_the_review_steps() {
         // The review steps and the output contract of the plan are what the
         // agent follows; a rework of the body must not drop them silently.
