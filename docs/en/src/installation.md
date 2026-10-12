@@ -176,5 +176,8 @@ regenerate the skills so they match the new version:
 codev update
 ```
 
-See [`codev update`](reference/cli.md#codev-update) for how hand-edited skills
-are handled.
+`codev update` also refreshes codev's managed sections in `CLAUDE.md` and the
+pull request template, and the codev version pinned in
+`.github/workflows/codev.yml`, where `codev init` wrote them. See
+[`codev update`](reference/cli.md#codev-update) for how hand-edited skills
+are handled, and `codev doctor` to check the result.

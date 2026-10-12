@@ -75,6 +75,30 @@ A freshly initialized project (no spec, no change, no decision) is a
 normal case — say so: "freshly initialized project, ready for your
 first change".
 
+Then check what the codev setup still lacks:
+
+```bash
+codev doctor --json
+```
+
+Each entry of `checks` has an `id`, a `status` (`ok`, `missing`,
+`warning`) and a `fix`. Add to the "here you have" block:
+
+- the checks whose `status` is `missing` — **at most five**, one line
+  each, with their `fix` verbatim:
+
+  > - Setup to complete:
+  >   - `config.rules` — fix: `/codev-configure`
+  >   - `specs` — fix: `/codev-propose <a change>`
+
+- or, when none is `missing`, one line: "codev setup complete".
+
+Warnings may be summarized as a count ("1 warning, see `codev doctor`").
+Never run a fix yourself — not even `codev init` or `codev update`: name
+it, the user acts. If `codev doctor` fails or does not exist (an older
+codev), skip this list silently and go on. The recommended next action
+of block 3 does not change.
+
 ### 3. Recommend the next action (block 3 — "what's next")
 
 Ordered resolution, from the most constraining to the most general.
@@ -147,6 +171,8 @@ that…"). The reader wants the map of the terrain, not a guided tour.
 
 - **No writing** — no file, no skill, no change, no decision.
   `allowed-tools` contains only `Bash(codev:*), Read, Glob`.
+- **Never run a doctor fix** — `codev doctor` only reports; relay its
+  `fix` lines, do not execute them.
 - **Never run `codev init`** — if the repository is not initialized,
   display the command and let the user type it.
 - **No excess detail** — numbers, not exhaustive lists. A user who

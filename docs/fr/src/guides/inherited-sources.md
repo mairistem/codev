@@ -30,6 +30,55 @@ L'héritage n'est pas transitif : si une source déclare elle-même
 `inherits:`, ces sources sont ignorées et codev vous en avertit. Déclarez
 directement dans votre projet toutes les sources dont vous avez besoin.
 
+## Déclarer les sources à l'initialisation
+
+Le plus rapide pour démarrer un projet sur des conventions partagées est de
+nommer les sources dès l'initialisation, une par `--inherit` :
+
+```bash
+codev init --yes --inherit /home/you/acme-standards.git@main
+```
+
+```text
+codev initialized in /home/you/acme-api
+
+  Structure   _codev/ — specs, decisions, changes, schemas
+  Skills      codev-propose, codev-explore, codev-onboard, codev-apply, codev-sync, codev-archive, codev-update, codev-configure → .claude/skills/
+  Inherits    /home/you/acme-standards.git @main → pinned 8dc995327621
+…
+```
+
+`codev init` les écrit sous `inherits:` dans le nouveau `_codev/config.yaml` :
+
+```yaml
+# set with codev init --inherit
+inherits:
+  - git: /home/you/acme-standards.git
+    ref: main
+```
+
+Une valeur qui commence par `git@`, `https://`, `http://`, `ssh://` ou
+`file://`, ou qui se termine par `.git`, est une source git ; `@<ref>` choisit
+la branche ou le tag, et `main` s'applique en son absence. Toute autre valeur
+est un dossier local, qui doit exister. Une valeur manifestement fausse — vide,
+un dossier absent, une URL git terminée par `@` — est refusée avec
+`invalid_inherit` avant toute écriture.
+
+Les sources git sont épinglées aussitôt, exactement comme le ferait
+`codev sources update`. Si cela échoue — pas de réseau, identifiants
+manquants, `ref` inexistante —, le projet est tout de même initialisé et la
+source déclarée, mais elle reste non épinglée :
+
+```text
+warning: git source `https://git.example.com/acme/codev-standards.git` has no locked SHA — run `codev sources update` to resolve it
+warning: the inherited git source(s) could not be pinned: https://git.example.com/acme/codev-standards.git is invalid: ls-remote for `https://git.example.com/acme/codev-standards.git` failed: fatal: unable to access 'https://git.example.com/acme/codev-standards.git/': Could not resolve host: git.example.com
+help: run codev sources update
+```
+
+Corrigez la cause, puis lancez `codev sources update`. `codev init` ne déplace
+jamais un épinglage existant et ne modifie jamais un `config.yaml` existant :
+sur un projet déjà initialisé, ajoutez les sources sous `inherits:` à la main.
+
 ## Sources locales
 
 Une source `path:` est un dossier de votre machine — en général un clone du
@@ -97,8 +146,9 @@ resolved_at = "2026-09-30"
 lisent alors exactement le même commit, et un changement d'épinglage apparaît
 en revue comme n'importe quel autre diff.
 
-`codev sources update` est la seule commande qui accède au réseau. Toutes les
-autres lisent le commit verrouillé depuis le cache, hors ligne. Relancez
+`codev sources update` et `codev init --inherit` sont les seules commandes qui
+accèdent au réseau, et seule `codev sources update` déplace un épinglage.
+Toutes les autres lisent le commit verrouillé depuis le cache, hors ligne. Relancez
 `codev sources update` pour déplacer les épinglages vers le commit actuel de
 chaque `ref` ; la commande indique pour chaque source si elle est ajoutée
 (`+`), déplacée (`~`, avec l'ancien et le nouveau commit) ou inchangée (`=`).

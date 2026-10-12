@@ -17,7 +17,8 @@ Usage: codev <COMMAND>
 
 Commands:
   init          Initialize codev in a project and install the Claude Code skills
-  update        Regenerate the skills after a codev upgrade
+  update        Regenerate the skills, and refresh codev's managed sections, after a codev upgrade
+  doctor        Check what the project's codev setup still lacks, and how to fix it
   new           Create a new item
   list          List active changes, or specified capabilities with --specs
   status        Show the state of a change's artifacts
@@ -96,6 +97,21 @@ Options:
       --language <CODE>
           Language of the prose skills write in artifacts, as an ISO 639 code (`en`, `fr`, `pt-BR`…). Default: detected from the locale, otherwise `en`
 
+      --inherit <SOURCE>
+          Inherit conventions from a source, written under `inherits:` (repeatable). A git URL (`git@…`, `https://…`, `ssh://…`, `file://…`, or ending in `.git`), optionally suffixed with `@<ref>` (default `main`), or a local folder. Git sources are pinned in `_codev/codev.lock` right away
+
+      --no-claude-md
+          Do not write codev's section in `CLAUDE.md`
+
+      --no-ci
+          Do not write `.github/workflows/codev.yml`
+
+      --no-pr-template
+          Do not write codev's section in the pull request template
+
+      --no-integration
+          Skip all repository integration: same as `--no-claude-md --no-ci --no-pr-template`
+
       --json
 
 
@@ -121,16 +137,41 @@ détection et les questions.
   [Langue des artefacts](../guides/artifact-language.md).
 - `--no-detect` désactive la détection des manifestes, de la licence, de la
   CI, de la locale et des serveurs MCP.
+- `--inherit <SOURCE>` déclare une source héritée sous `inherits:`, une fois
+  par source. Une valeur qui commence par `git@`, `https://`, `http://`,
+  `ssh://` ou `file://`, ou qui se termine par `.git`, est une source git ; un
+  suffixe `@<ref>` choisit la branche ou le tag (`…/conventions.git@v2`),
+  `main` à défaut. Toute autre valeur est un dossier local, qui doit exister ;
+  un chemin relatif est écrit sous forme absolue. Les sources git sont
+  aussitôt épinglées dans `_codev/codev.lock`, comme le ferait
+  `codev sources update` ; si cela échoue (réseau, identifiants, ref
+  inconnue), init réussit quand même, avertit avec `inherit_pin_failed` et
+  affiche `help: run codev sources update`. Une valeur invalide échoue avec
+  `invalid_inherit` avant toute écriture. Voir
+  [Sources héritées](../guides/inherited-sources.md).
+- `--no-claude-md`, `--no-ci` et `--no-pr-template` écartent chacun un
+  fichier d'intégration ; `--no-integration` écarte les trois. Voir
+  [Intégration au dépôt et codev doctor](../guides/repository-integration.md).
+
+Sauf refus de votre part, `codev init` écrit aussi la section de codev dans
+`CLAUDE.md` et, sur GitHub, `.github/workflows/codev.yml` et une section dans
+le modèle de pull request. Le récapitulatif indique pour chaque fichier s'il a
+été créé, complété, rafraîchi, laissé à jour ou écarté, avec la raison ; pour
+un dépôt GitLab, il affiche un job à coller dans `.gitlab-ci.yml`, que codev
+ne modifie jamais. La dernière ligne suggère `codev doctor` lorsqu'il manque
+encore quelque chose.
 
 Si `_codev/config.yaml` existe déjà, il reste intact : `codev init` se
-contente de créer les dossiers manquants et d'installer ou de rafraîchir les
-skills. Les skills que vous avez modifiées à la main sont préservées, sauf si
-vous passez `--force`.
+contente de créer les dossiers manquants, d'installer ou de rafraîchir les
+skills, et d'ajouter ou de rafraîchir les fichiers d'intégration. Les sources
+`--inherit` ne sont alors pas écrites ; l'avertissement `inherit_not_written`
+les nomme pour que vous les ajoutiez à la main. Les skills que vous avez
+modifiées à la main sont préservées, sauf si vous passez `--force`.
 
 ### codev update
 
 ```text
-Regenerate the skills after a codev upgrade
+Regenerate the skills, and refresh codev's managed sections, after a codev upgrade
 
 Usage: codev update [OPTIONS]
 
@@ -147,6 +188,58 @@ ce que génère cette version, mais qui porte la marque de cette version, a ét�
 modifiée à la main : elle est laissée en place et signalée, sauf si vous
 passez `--force`. Les skills retirées de `workflows:` ne sont pas
 supprimées.
+
+`codev update` rafraîchit aussi les sections gérées par codev dans `CLAUDE.md`
+et dans le modèle de pull request, ainsi que `.github/workflows/codev.yml`
+lorsque sa première ligne est `# codev:managed` — ce qui aligne sa version
+épinglée sur celle qui s'exécute. Il ne rafraîchit que ce qui existe : il ne
+crée jamais ces fichiers et n'ajoute aucune section, si bien qu'un projet
+initialisé avec `--no-integration` reste tel quel.
+
+### codev doctor
+
+```text
+Check what the project's codev setup still lacks, and how to fix it
+
+Read-only and offline: configuration, skills, specs, decisions, inherited sources, `CLAUDE.md`, CI and pull request template, and `codev validate`. Each check is ok, missing or a warning, with the command or skill that fixes it.
+
+Usage: codev doctor [OPTIONS]
+
+Options:
+      --strict
+          Exit with code 1 when a check is missing (warnings never fail)
+
+      --json
+
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Liste ce qui manque encore à l'installation de codev dans le projet, regroupé
+sous Configuration, Planning et Repository, avec la commande ou la skill qui
+corrige chaque point. La commande n'écrit rien, ne lance pas `git` et n'a pas
+besoin du réseau.
+
+| Vérification | Réussie lorsque | Correction |
+|---|---|---|
+| `config.rules` | `rules:` a au moins une entrée, héritées comprises | `/codev-configure` |
+| `config.language` | `language:` est défini | ajouter `language: <code>` |
+| `skills` | chaque skill configurée est installée et générée par cette version de codev | `codev update` |
+| `sources` | chaque source git est épinglée dans `codev.lock` et présente dans le cache | `codev sources update` |
+| `specs` | au moins une spec principale existe | `/codev-propose` |
+| `decisions` | au moins une décision est acceptée — simple avertissement | `codev decision new` |
+| `validate` | `codev validate` ne signale rien | `codev validate` |
+| `claude_md` | `CLAUDE.md` contient la section de codev | `codev init` |
+| `ci` | un workflow GitHub ou `.gitlab-ci.yml` exécute `codev validate` | `codev init` sur GitHub |
+| `pr_template` | le modèle de pull request contient la section de codev — GitHub uniquement | `codev init` |
+
+Chaque ligne affiche `✓` (ok), `✗` (manquant) ou `!` (avertissement) ; la
+dernière ligne compte les vérifications et celles qui restent à corriger. Le
+code de sortie vaut `0`, sauf avec `--strict` lorsqu'une vérification manque :
+les avertissements ne font jamais échouer la commande. Voir
+[Intégration au dépôt et codev doctor](../guides/repository-integration.md)
+et, pour `--json`, [Sortie JSON](json-output.md#doctor).
 
 ### codev docs
 
@@ -277,7 +370,9 @@ Options:
 
 Affiche l'état de chaque artefact d'un change — terminé `[x]`, prêt `[ ]`,
 bloqué `[-]` ou ignoré `[~]` — et indique si la planification est complète.
-Échoue avec `no_active_change` lorsque le projet n'a aucun change actif.
+Échoue avec `no_active_change` lorsque le projet n'a aucun change actif. Dans
+les deux cas, lorsque `codev doctor` signalerait une vérification manquante,
+une dernière ligne `hint:` sur stderr suggère de le lancer.
 
 ### codev instructions
 

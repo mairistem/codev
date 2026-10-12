@@ -28,6 +28,15 @@ Every change goes through the same cycle, but the plan can be small: a
 one-line proposal, a one-requirement delta, a two-task list. For a change that
 has no behavioral impact, set `skip_specs: true` in its `change.yaml`.
 
+### Can I keep codev out of `CLAUDE.md`, CI or the pull request template?
+
+Yes. Pass `--no-claude-md`, `--no-ci` or `--no-pr-template` to `codev init`,
+or `--no-integration` for all three. `codev update` never adds them later.
+To keep the workflow but own it, delete its first line, `# codev:managed`:
+codev then leaves the file alone. To remove codev's text from `CLAUDE.md` or
+the template, delete the block between the `codev:begin` and `codev:end`
+markers. See [Repository integration and codev doctor](guides/repository-integration.md).
+
 ### How do I share this documentation?
 
 ```bash
@@ -148,6 +157,21 @@ whatever the artifact language; see
    writes the proposal from your request alone.
 
 See [Jira and other MCP servers](guides/mcp.md).
+
+### `codev init` warns `inherit_pin_failed`
+
+A git source given with `--inherit` was declared but could not be pinned:
+`git` is missing, the network or your credentials failed, or the `ref` does
+not exist (the default is `main`; a repository whose default branch is
+`master` needs `…/repo.git@master`). Fix the cause — or the `ref:` in
+`_codev/config.yaml` — then run `codev sources update`.
+
+### `codev init` warns `managed_section_malformed`
+
+`CLAUDE.md` or the pull request template has a `<!-- codev:begin` line
+without a matching `<!-- codev:end -->`, or several of them. codev left the
+file untouched. Keep exactly one pair of markers, or remove them all to let
+`codev init` append a fresh section.
 
 ### A git source is `unlocked` or `needs_update`
 

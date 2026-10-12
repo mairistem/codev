@@ -1,7 +1,10 @@
 use std::path::{Path, PathBuf};
 
+use codev_core::doctor::SkillState;
+use codev_core::managed::SpliceMode;
 use codev_core::{Plan, WriteMode};
 use codev_engine::FileSystem;
+use codev_engine::integration::{self, IntegrationPlan, Step};
 
 use crate::target::{AgentTarget, SkillsPlan};
 use crate::workflows::Workflow;
@@ -170,6 +173,88 @@ impl AgentTarget for ClaudeCode {
         }
 
         SkillsPlan { plan, preserved }
+    }
+}
+
+/// The `CLAUDE.md` file Claude Code reads at the project root.
+pub const CLAUDE_MD: &str = "CLAUDE.md";
+
+impl ClaudeCode {
+    /// The body of codev's managed section in `CLAUDE.md`.
+    ///
+    /// Written for Claude Code, in English whatever the artifact language:
+    /// short, imperative, naming only skills that are installed.
+    pub fn claude_md_body(skills: &[String]) -> String {
+        let has = |name: &str| skills.iter().any(|s| s == name);
+        let implement = if has("codev-apply") {
+            "then implement it with `/codev-apply`"
+        } else {
+            "then implement it by following the change's `tasks.md`"
+        };
+        let propose = if has("codev-propose") {
+            "start with `/codev-propose`"
+        } else {
+            "start by creating a codev change (`codev new change <name>`)"
+        };
+        let mut body = String::from("## Spec-driven development with codev\n\n");
+        body.push_str("This repository follows spec-driven development with codev.\n\n");
+        body.push_str("- `_codev/specs/` describes the current behavior and is authoritative.\n");
+        body.push_str(
+            "- `_codev/decisions/` holds accepted architecture decisions: follow them, do not re-debate them.\n",
+        );
+        body.push_str(&format!(
+            "- For any change of behavior, {propose}, {implement}. Do not modify behavior without a codev change.\n"
+        ));
+        body.push_str("- Trivial fixes (typos, documentation wording) are exempt.\n");
+        body.push_str("- Run `codev validate` before committing.\n");
+        if !skills.is_empty() {
+            let list: Vec<String> = skills.iter().map(|s| format!("`/{s}`")).collect();
+            body.push_str(&format!("\nInstalled skills: {}.\n", list.join(", ")));
+        }
+        body
+    }
+
+    /// Plans codev's section in `CLAUDE.md`: created or appended by `init`
+    /// (`SpliceMode::Init`), only refreshed by `update`
+    /// (`SpliceMode::Refresh`).
+    pub fn plan_claude_md(
+        fs: &dyn FileSystem,
+        project_root: &Path,
+        skills: &[String],
+        mode: SpliceMode,
+    ) -> IntegrationPlan {
+        let existing = fs.read_to_string(&project_root.join(CLAUDE_MD)).ok();
+        integration::plan_managed_markdown(
+            project_root,
+            Path::new(CLAUDE_MD),
+            existing.as_deref(),
+            &Self::claude_md_body(skills),
+            mode,
+            Step::ClaudeMd,
+        )
+    }
+
+    /// The state of each skill of `workflows`: missing, stamped with
+    /// another version, or current. Read-only — for `codev doctor`.
+    pub fn skill_states(
+        fs: &dyn FileSystem,
+        project_root: &Path,
+        workflows: &[&Workflow],
+        version: &str,
+    ) -> Vec<(String, SkillState)> {
+        workflows
+            .iter()
+            .map(|w| {
+                let state = match fs.read_to_string(&Self::skill_file(project_root, w.id)) {
+                    Err(_) => SkillState::Missing,
+                    Ok(contents) => match stamped_version(&contents) {
+                        Some(v) if v == version => SkillState::Current,
+                        other => SkillState::Outdated(other),
+                    },
+                };
+                (Self::skill_name(w.id), state)
+            })
+            .collect()
     }
 }
 
@@ -452,5 +537,87 @@ mod tests {
             .unwrap();
         assert!(!line.ends_with(", \""));
         assert!(line.ends_with('"'));
+    }
+
+    fn names(list: &[&str]) -> Vec<String> {
+        list.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn claude_md_section_names_propose_apply_and_the_installed_skills() {
+        let body =
+            ClaudeCode::claude_md_body(&names(&["codev-propose", "codev-explore", "codev-apply"]));
+        assert!(
+            body.contains("`_codev/specs/` describes the current behavior and is authoritative")
+        );
+        assert!(body.contains("`_codev/decisions/`"));
+        assert!(
+            body.contains("start with `/codev-propose`, then implement it with `/codev-apply`")
+        );
+        assert!(body.contains("Do not modify behavior without a codev change"));
+        assert!(body.contains("Trivial fixes"));
+        assert!(body.contains("`codev validate`"));
+        assert!(
+            body.contains("Installed skills: `/codev-propose`, `/codev-explore`, `/codev-apply`.")
+        );
+
+        let fs = MemoryFileSystem::new();
+        let planned = ClaudeCode::plan_claude_md(
+            &fs,
+            Path::new("/p"),
+            &names(&["codev-propose"]),
+            SpliceMode::Init,
+        );
+        codev_engine::apply::execute(&planned.plan, &fs).unwrap();
+        let written = fs.read("/p/CLAUDE.md").unwrap();
+        assert!(codev_core::managed::has_section(&written));
+    }
+
+    #[test]
+    fn claude_md_falls_back_to_tasks_when_apply_is_not_installed() {
+        let body = ClaudeCode::claude_md_body(&names(&["codev-propose", "codev-explore"]));
+        assert!(body.contains("following the change's `tasks.md`"));
+        assert!(!body.contains("/codev-apply"));
+    }
+
+    #[test]
+    fn claude_md_refresh_keeps_user_text_and_adds_nothing_when_absent() {
+        let fs = MemoryFileSystem::new().with_file("/p/CLAUDE.md", "# Team notes\n");
+        let planned = ClaudeCode::plan_claude_md(
+            &fs,
+            Path::new("/p"),
+            &names(&["codev-propose"]),
+            SpliceMode::Refresh,
+        );
+        assert!(planned.plan.is_empty() && planned.steps.is_empty());
+    }
+
+    #[test]
+    fn skill_states_report_missing_outdated_and_current() {
+        let propose = workflows::find("propose").unwrap();
+        let explore = workflows::find("explore").unwrap();
+        let apply = workflows::find("apply").unwrap();
+        let fs = MemoryFileSystem::new()
+            .with_file(
+                "/p/.claude/skills/codev-propose/SKILL.md",
+                ClaudeCode::render(propose, VERSION, &RenderCtx::default()),
+            )
+            .with_file(
+                "/p/.claude/skills/codev-explore/SKILL.md",
+                ClaudeCode::render(explore, "0.0.9", &RenderCtx::default()),
+            );
+        let states =
+            ClaudeCode::skill_states(&fs, Path::new("/p"), &[propose, explore, apply], VERSION);
+        assert_eq!(
+            states,
+            [
+                ("codev-propose".to_string(), SkillState::Current),
+                (
+                    "codev-explore".to_string(),
+                    SkillState::Outdated(Some("0.0.9".into()))
+                ),
+                ("codev-apply".to_string(), SkillState::Missing),
+            ]
+        );
     }
 }

@@ -79,11 +79,97 @@ Warnings reuse the codes of the condition they report, for example
   "untouched": ["…"],
   "preserved": ["/home/you/acme-app/.claude/skills/codev-apply/SKILL.md"],
   "skills": ["codev-propose", "codev-explore", "…"],
+  "integration": [
+    {
+      "step": "claude_md",
+      "action": "appended",
+      "path": "CLAUDE.md",
+      "reason": null
+    },
+    {
+      "step": "ci",
+      "action": "skipped",
+      "path": ".github/workflows/codev.yml",
+      "reason": ".github/workflows/ci.yml already runs codev validate"
+    },
+    {
+      "step": "pr_template",
+      "action": "created",
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "reason": null
+    }
+  ],
   "status": []
 }
 ```
 
 `preserved` lists the skills left in place because they were edited by hand.
+`integration` has one entry per repository integration step: `step` is
+`claude_md`, `ci` or `pr_template`; `action` is `created`, `appended`,
+`refreshed`, `unchanged` or `skipped`; `path` is relative to the project, or
+`null`; `reason` explains a skipped step, or is `null`. `codev update` only
+lists the managed files it found. The `codev doctor` hint and the GitLab
+snippet are human output only.
+
+Warnings specific to `init`: `inherit_not_written` (`--inherit` with an
+existing `config.yaml`), `inherit_pin_failed` (a git source could not be
+pinned) and `managed_section_malformed` (unbalanced codev markers; the file
+is left untouched). An invalid `--inherit` value fails with
+`invalid_inherit`.
+
+### doctor
+
+`codev doctor --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "checks": [
+    {
+      "id": "config.rules",
+      "group": "configuration",
+      "status": "missing",
+      "code": "rules_missing",
+      "message": "no rules: in _codev/config.yaml",
+      "fix": "/codev-configure"
+    },
+    {
+      "id": "config.language",
+      "group": "configuration",
+      "status": "ok",
+      "code": "ok",
+      "message": "language: is set",
+      "fix": null
+    },
+    "…"
+  ],
+  "summary": {
+    "total": 10,
+    "missing": 2,
+    "warnings": 1
+  },
+  "status": []
+}
+```
+
+Each check has a stable `id`, its `group`, a `status` (`ok`, `missing` or
+`warning`), a stable `code` (`ok` when the check passes), a `message`, and a
+`fix` — the command or skill to run — or `null` when `ok`. Checks come in the
+order of the table below; `pr_template` is only present for GitHub
+repositories. `summary.missing` drives the exit status of `--strict`.
+
+| Check `id` | `group` | Codes when not `ok` |
+|---|---|---|
+| `config.rules` | `configuration` | `rules_missing` |
+| `config.language` | `configuration` | `language_missing` |
+| `skills` | `configuration` | `skills_missing`, `skills_outdated` |
+| `sources` | `configuration` | `source_unpinned`, `lock_stale` (warning) |
+| `specs` | `planning` | `no_main_spec` |
+| `decisions` | `planning` | `no_accepted_decision` (warning) |
+| `validate` | `planning` | `validate_errors`, `validate_warnings` (warning) |
+| `claude_md` | `repository` | `claude_md_section_missing` |
+| `ci` | `repository` | `ci_validate_missing` |
+| `pr_template` | `repository` | `pr_template_section_missing` |
 
 ### new change
 

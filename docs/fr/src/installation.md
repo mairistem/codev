@@ -180,5 +180,9 @@ version :
 codev update
 ```
 
-Consultez [`codev update`](reference/cli.md#codev-update) pour savoir comment
-sont traitées les skills modifiées à la main.
+`codev update` rafraîchit aussi les sections gérées par codev dans `CLAUDE.md`
+et dans le modèle de pull request, ainsi que la version de codev épinglée dans
+`.github/workflows/codev.yml`, là où `codev init` les a écrites. Consultez
+[`codev update`](reference/cli.md#codev-update) pour savoir comment sont
+traitées les skills modifiées à la main, et `codev doctor` pour vérifier le
+résultat.

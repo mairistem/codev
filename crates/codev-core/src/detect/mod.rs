@@ -5,6 +5,7 @@
 //! processes. The orchestration that queries the file system lives
 //! in `codev-engine::detect`.
 
+pub mod forge;
 pub mod license;
 pub mod locale;
 pub mod mcp;

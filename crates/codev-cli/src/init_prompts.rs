@@ -40,6 +40,15 @@ pub struct InitOptions {
     pub preset: Option<Preset>,
     /// `--language` — overrides the language detected from the locale.
     pub language: Option<String>,
+    /// `--inherit` — inherited sources as typed, in order. Parsed and
+    /// checked by `commands::init` before anything is written.
+    pub inherits: Vec<String>,
+    /// `--no-claude-md` (or `--no-integration`).
+    pub no_claude_md: bool,
+    /// `--no-ci` (or `--no-integration`).
+    pub no_ci: bool,
+    /// `--no-pr-template` (or `--no-integration`).
+    pub no_pr_template: bool,
 }
 
 /// True if a prompt should be shown to the user.
@@ -254,6 +263,7 @@ mod tests {
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         assert!(!should_prompt(&opts, true));
     }
@@ -277,6 +287,7 @@ mod tests {
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         let choices = run(&Detected::empty(), &opts).unwrap();
         assert_eq!(choices.workflows.len(), 8);
@@ -293,6 +304,7 @@ mod tests {
             no_detect: false,
             preset: Some(Preset::Minimal),
             language: None,
+            ..Default::default()
         };
         let choices = run(&Detected::empty(), &opts).unwrap();
         assert_eq!(
@@ -308,6 +320,7 @@ mod tests {
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         let detected = Detected {
             mcps: vec![DetectedMcp {
@@ -332,6 +345,7 @@ mod tests {
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         let choices = run(&Detected::empty(), &opts).unwrap();
         assert!(choices.jira_tool_confirmed.is_none());

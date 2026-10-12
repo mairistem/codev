@@ -122,6 +122,22 @@ Une entrée déclare exactement une clé parmi `path` et `git` ; `ref` et
 dans `_codev/codev.lock` par `codev sources update`. Voir
 [Sources héritées](../guides/inherited-sources.md).
 
+`codev init --inherit <SOURCE>` écrit cette clé pour vous lorsqu'il crée la
+configuration, une entrée par option, sous un commentaire
+`# set with codev init --inherit`, et épingle aussitôt les sources git :
+
+```bash
+codev init --yes --inherit git@github.com:acme/codev-standards.git@v2 --inherit ~/src/acme-standards
+```
+
+```yaml
+# set with codev init --inherit
+inherits:
+  - git: git@github.com:acme/codev-standards.git
+    ref: v2
+  - path: ~/src/acme-standards
+```
+
 ## mcp
 
 Les noms des outils MCP que les skills peuvent appeler. Ils sont propres à

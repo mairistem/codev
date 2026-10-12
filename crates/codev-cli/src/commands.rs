@@ -4,6 +4,9 @@ use std::path::{Path, PathBuf};
 use codev_agents::claude::ClaudeCode;
 use codev_agents::target::AgentTarget;
 use codev_agents::workflows;
+use codev_core::config::InheritArg;
+use codev_core::doctor::{self as core_doctor, Check, CheckStatus, DoctorFacts, GitSourceFact};
+use codev_core::managed::{self, SpliceMode};
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
 use codev_engine::apply::{self, Applied};
 use codev_engine::archive as engine_archive;
@@ -12,15 +15,14 @@ use codev_engine::config;
 use codev_engine::decisions as engine_decisions;
 use codev_engine::decisions_actions as engine_actions;
 use codev_engine::instructions::Instructions;
+use codev_engine::integration::{self, IntegrationPlan, IntegrationStep};
 use codev_engine::metadata::ChangeMetadata;
 use codev_engine::sources as engine_sources;
 use codev_engine::sync as engine_sync;
 use codev_engine::sync::SyncOutcome;
 use codev_engine::validate as engine_validate;
 use codev_engine::validate::ValidateReport;
-use codev_engine::{
-    Clock, EngineError, Env, FileSystem, ProcessRunner, RealProcessRunner, Warning,
-};
+use codev_engine::{Clock, EngineError, Env, FileSystem, ProcessRunner, Warning};
 use codev_engine::{change, instructions, root, scaffold, schemas, specs};
 
 /// A command failure, reduced to what both outputs need: a stable code for
@@ -74,6 +76,8 @@ pub struct Ctx<'a> {
     pub fs: &'a dyn FileSystem,
     pub env: &'a dyn Env,
     pub clock: &'a dyn Clock,
+    /// Only `codev sources update` and `codev init --inherit <git>` use it.
+    pub runner: &'a dyn ProcessRunner,
     pub version: &'a str,
 }
 
@@ -92,6 +96,13 @@ pub struct SetupOutcome {
     /// decide on the hint in human output; does not appear in the JSON
     /// contract.
     pub config_thin: bool,
+    /// What each repository integration step did.
+    pub integration: Vec<IntegrationStep>,
+    /// The pins `codev init --inherit` added to `_codev/codev.lock`.
+    pub pins: Vec<engine_sources::PinChange>,
+    /// Number of `codev doctor` checks still missing, for the human hint.
+    /// `None` when doctor could not run — the hint is then left out.
+    pub doctor_missing: Option<usize>,
 }
 
 /// Initializes codev in a project.
@@ -119,12 +130,29 @@ pub fn init(
     let layout = Layout::new(&root_path);
     let config_path = layout.project_root().join("_codev").join("config.yaml");
 
+    // Inherited sources are checked before the first write: a typo in a
+    // path must not leave a half-initialized project behind.
+    let inherits = resolve_inherits(ctx, &opts.inherits)?;
+    let mut warnings = Vec::new();
+
     // Writes the generated config.yaml ONLY if missing — an existing file is
     // never touched; the user's configuration stays in charge. It goes
     // through a plan like every other write, so that it is counted among
     // the created files.
     let mut config_written = Applied::default();
-    if !ctx.fs.exists(&config_path) {
+    if ctx.fs.exists(&config_path) {
+        if !inherits.is_empty() {
+            let listed: Vec<String> = inherits.iter().map(describe_inherit).collect();
+            warnings.push(Warning::new(
+                "inherit_not_written",
+                format!(
+                    "{} already exists and is never rewritten: add {} under `inherits:` by hand",
+                    config_path.display(),
+                    listed.join(", ")
+                ),
+            ));
+        }
+    } else {
         let detected = if opts.no_detect {
             codev_core::detect::Detected::empty()
         } else {
@@ -132,7 +160,8 @@ pub fn init(
         };
         let choices = crate::init_prompts::run(&detected, opts)
             .map_err(|e| Failure::new("prompt_failed", e.to_string()))?;
-        let generated = codev_core::config::from_detected(&detected, &choices);
+        let mut generated = codev_core::config::from_detected(&detected, &choices);
+        generated.inherits = inherits.clone();
         let mut plan = Plan::new();
         plan.dir(layout.planning_dir()).write(
             &config_path,
@@ -146,25 +175,207 @@ pub fn init(
     // does not rewrite the config.yaml written above thanks to
     // WriteMode::CreateOnly.
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
+    let config_created = !config_written.created.is_empty();
+
+    // Pin the git sources this init has just declared, before the skills
+    // resolve the configuration — so that resolution sees the pins. Only
+    // into a project without a lock: init may add the first pins, never
+    // move one — that is `codev sources update`'s job (decision 0005).
+    let git_sources: Vec<engine_sources::GitSourceInput> = if !config_created {
+        Vec::new()
+    } else {
+        inherits
+            .iter()
+            .filter_map(|source| match source {
+                InheritArg::Git { url, git_ref } => Some(engine_sources::GitSourceInput {
+                    git: url.clone(),
+                    git_ref: git_ref.clone(),
+                    subpath: None,
+                }),
+                InheritArg::Path(_) => None,
+            })
+            .collect()
+    };
+    let mut pins = Vec::new();
+    let mut lock_created = None;
+    if !git_sources.is_empty() {
+        let lock_path = layout.planning_dir().join("codev.lock");
+        if ctx.fs.exists(&lock_path) {
+            warnings.push(Warning::new(
+                "inherit_pin_failed",
+                format!(
+                    "{} already exists; init never moves a pin",
+                    lock_path.display()
+                ),
+            ));
+        } else {
+            match engine_sources::run_sources_update(
+                ctx.fs,
+                ctx.env,
+                ctx.runner,
+                ctx.clock,
+                &layout,
+                &git_sources,
+            ) {
+                Ok(pinned) => {
+                    if pinned.lock_written {
+                        lock_created = Some(lock_path);
+                    }
+                    pins = pinned.diff;
+                }
+                Err(err) => warnings.push(Warning::new(
+                    "inherit_pin_failed",
+                    format!("the inherited git source(s) could not be pinned: {err}"),
+                )),
+            }
+        }
+    }
+
     let mut outcome = install_skills(ctx, &layout, force)?;
     outcome.absorb(config_written);
     outcome.absorb(scaffolded);
+    outcome.created.extend(lock_created);
+    outcome.pins = pins;
+    outcome.warnings.extend(warnings);
+
+    let integration = plan_integration(
+        ctx,
+        &layout,
+        &outcome.skills,
+        SpliceMode::Init,
+        IntegrationFlags {
+            claude_md: !opts.no_claude_md,
+            ci: !opts.no_ci,
+            pr_template: !opts.no_pr_template,
+        },
+    );
+    outcome.apply_integration(ctx, integration)?;
+
     // The scaffold reports the config written above as untouched: it is
     // listed once, as created.
     let created = outcome.created.clone();
     outcome.untouched.retain(|p| !created.contains(p));
+
+    outcome.doctor_missing = doctor_at(ctx, &layout).ok().map(|d| {
+        d.checks
+            .iter()
+            .filter(|c| c.status == CheckStatus::Missing)
+            .count()
+    });
     Ok(outcome)
+}
+
+/// Parses `--inherit` values, checks them against the file system and makes
+/// relative paths absolute, so the written config resolves from any folder.
+fn resolve_inherits(ctx: &Ctx, raw: &[String]) -> Result<Vec<InheritArg>> {
+    let mut out = Vec::new();
+    for value in raw {
+        let source = codev_core::config::inherit::parse(value).map_err(|reason| {
+            Failure::new(
+                "invalid_inherit",
+                format!("invalid --inherit value: {reason}"),
+            )
+        })?;
+        match &source {
+            InheritArg::Path(path) => {
+                let written = if path.starts_with('~') || Path::new(path).is_absolute() {
+                    path.clone()
+                } else {
+                    portable(&absolute(ctx, path)?)
+                };
+                let on_disk = config::expand_tilde(&written, ctx.env);
+                if !ctx.fs.exists(&on_disk) || ctx.fs.list_dir(&on_disk).is_err() {
+                    return Err(Failure::new(
+                        "invalid_inherit",
+                        format!("inherited source `{path}` is not an existing folder"),
+                    )
+                    .with_fix("check the path, or give a git URL (`…/conventions.git@main`)"));
+                }
+                out.push(InheritArg::Path(written));
+            }
+            InheritArg::Git { url, git_ref } => {
+                // A local repository given by a relative path: git would
+                // resolve it against whatever folder it runs in.
+                let is_local_relative = !url.contains("://")
+                    && !url.contains(':')
+                    && !url.starts_with('~')
+                    && !Path::new(url).is_absolute();
+                let url = if is_local_relative {
+                    portable(&absolute(ctx, url)?)
+                } else {
+                    url.clone()
+                };
+                out.push(InheritArg::Git {
+                    url,
+                    git_ref: git_ref.clone(),
+                });
+            }
+        }
+    }
+    Ok(out)
+}
+
+fn describe_inherit(source: &InheritArg) -> String {
+    match source {
+        InheritArg::Git { url, git_ref } => format!("`git: {url}` (ref `{git_ref}`)"),
+        InheritArg::Path(path) => format!("`path: {path}`"),
+    }
+}
+
+/// Which integration steps run.
+struct IntegrationFlags {
+    claude_md: bool,
+    ci: bool,
+    pr_template: bool,
+}
+
+/// Plans the repository integration: `CLAUDE.md` (Claude Code's file), the
+/// CI workflow and the pull request template (the forge's files).
+fn plan_integration(
+    ctx: &Ctx,
+    layout: &Layout,
+    skills: &[String],
+    mode: SpliceMode,
+    flags: IntegrationFlags,
+) -> IntegrationPlan {
+    let root = layout.project_root();
+    let facts = integration::RepoFacts::probe(ctx.fs, root);
+    let mut planned = IntegrationPlan::default();
+    if flags.claude_md {
+        planned.merge(ClaudeCode::plan_claude_md(ctx.fs, root, skills, mode));
+    }
+    if flags.ci {
+        planned.merge(integration::plan_ci(&facts, ctx.version, mode));
+    }
+    if flags.pr_template {
+        planned.merge(integration::plan_pr_template(&facts, mode));
+    }
+    planned
 }
 
 /// Regenerates the skills of an already initialized project.
 ///
 /// Also runs the scaffolding plan: in "create only what is missing" mode, it
-/// restores a deleted folder without touching anything else.
+/// restores a deleted folder without touching anything else. Integration
+/// files are only refreshed where codev's markers already are: `update`
+/// never adds a section a project does not have.
 pub fn update(ctx: &Ctx, force: bool) -> Result<SetupOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let scaffolded = apply::execute(&scaffold::plan_init(&layout), ctx.fs)?;
     let mut outcome = install_skills(ctx, &layout, force)?;
     outcome.absorb(scaffolded);
+    let integration = plan_integration(
+        ctx,
+        &layout,
+        &outcome.skills,
+        SpliceMode::Refresh,
+        IntegrationFlags {
+            claude_md: true,
+            ci: true,
+            pr_template: true,
+        },
+    );
+    outcome.apply_integration(ctx, integration)?;
     Ok(outcome)
 }
 
@@ -201,6 +412,9 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
             .collect(),
         warnings,
         config_thin,
+        integration: Vec::new(),
+        pins: Vec::new(),
+        doctor_missing: None,
     };
     outcome.absorb(applied);
     Ok(outcome)
@@ -215,6 +429,14 @@ impl SetupOutcome {
 
     pub fn changed_anything(&self) -> bool {
         !self.created.is_empty() || !self.updated.is_empty()
+    }
+
+    fn apply_integration(&mut self, ctx: &Ctx, planned: IntegrationPlan) -> Result<()> {
+        let applied = apply::execute(&planned.plan, ctx.fs)?;
+        self.absorb(applied);
+        self.integration.extend(planned.steps);
+        self.warnings.extend(planned.warnings);
+        Ok(())
     }
 }
 
@@ -1024,10 +1246,10 @@ pub fn sources_update(ctx: &Ctx) -> Result<SourcesUpdateOutcome> {
     let cfg_path = layout.config_file();
     let project = config::load(ctx.fs, &cfg_path)?.unwrap_or_default();
     let sources = engine_sources::GitSourceInput::from_inherits(&project.inherits);
-    // `sources update` is the only command that drives `git`.
-    let runner: &dyn ProcessRunner = &RealProcessRunner;
-    let outcome =
-        engine_sources::run_sources_update(ctx.fs, ctx.env, runner, ctx.clock, &layout, &sources)?;
+    // With `init --inherit`, the only command that drives `git`.
+    let outcome = engine_sources::run_sources_update(
+        ctx.fs, ctx.env, ctx.runner, ctx.clock, &layout, &sources,
+    )?;
     Ok(SourcesUpdateOutcome {
         root: outcome.root,
         diff: outcome.diff,
@@ -1065,6 +1287,115 @@ pub fn sources_show(ctx: &Ctx, target: &str) -> Result<SourcesShowOutcome> {
     })
 }
 
+// ─────────────────────────────── doctor ───────────────────────────────
+
+pub struct DoctorOutcome {
+    pub root: PathBuf,
+    pub checks: Vec<Check>,
+}
+
+impl DoctorOutcome {
+    pub fn missing(&self) -> usize {
+        core_doctor::summary(&self.checks).1
+    }
+}
+
+/// `codev doctor`: read-only, offline. Gathers the facts through the
+/// engine and the Claude Code target, and lets the core judge them.
+pub fn doctor(ctx: &Ctx) -> Result<DoctorOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    doctor_at(ctx, &layout)
+}
+
+fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
+    let root = layout.project_root();
+    let project = config::load(ctx.fs, &layout.config_file())?.unwrap_or_default();
+    let resolved = config::resolve(ctx.fs, ctx.env, layout)?;
+    let (selected, _) = workflows::select(resolved.workflows.as_deref());
+
+    let index = engine_decisions::index(ctx.fs, ctx.env, layout, &resolved)?;
+    let accepted_decisions = index
+        .entries
+        .iter()
+        .filter(|e| {
+            matches!(
+                e.decision.status,
+                codev_core::decisions::DecisionStatus::Accepted
+            )
+        })
+        .count();
+
+    let states = engine_sources::list_source_states(ctx.fs, ctx.env, layout)?;
+    let git_sources: Vec<GitSourceFact> = states
+        .iter()
+        .filter(|s| s.kind == engine_sources::SourceKind::Git)
+        .map(|s| GitSourceFact {
+            url: s.address.clone(),
+            pinned: s.state != engine_sources::SourceState::Unlocked,
+            cached: s.state == engine_sources::SourceState::Locked,
+        })
+        .collect();
+    let declared = engine_sources::GitSourceInput::from_inherits(&project.inherits);
+    let lock = engine_sources::lockfile::load(ctx.fs, &layout.planning_dir().join("codev.lock"))?;
+    let stale_pins: Vec<String> = lock
+        .map(|lock| {
+            lock.sources
+                .into_iter()
+                .filter(|e| {
+                    !declared
+                        .iter()
+                        .any(|d| d.git == e.git && d.git_ref == e.git_ref)
+                })
+                .map(|e| format!("{}@{}", e.git, e.git_ref))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let repo = integration::RepoFacts::probe(ctx.fs, root);
+    let claude_md_section = ctx
+        .fs
+        .read_to_string(&root.join(codev_agents::claude::CLAUDE_MD))
+        .is_ok_and(|text| managed::has_section(&text));
+
+    let report = engine_validate::validate_all(ctx.fs, ctx.env, layout, &resolved)?;
+    let findings = report.items.iter().flat_map(|i| i.findings.iter());
+    let validate_errors = findings.clone().filter(|f| f.is_error()).count();
+    let validate_warnings = findings
+        .filter(|f| f.finding.severity == codev_core::parser::ast::Severity::Warning)
+        .count();
+
+    let facts = DoctorFacts {
+        rules_present: resolved.rules.values().any(|blocks| !blocks.is_empty()),
+        language_set: project.language.is_some(),
+        skills: ClaudeCode::skill_states(ctx.fs, root, &selected, ctx.version),
+        main_specs: specs::list(ctx.fs, layout).len(),
+        accepted_decisions,
+        git_sources,
+        stale_pins,
+        claude_md_section,
+        ci_validating_files: repo.ci_files_running_validate(),
+        is_github: repo.is_github,
+        is_gitlab: repo.is_gitlab,
+        pr_template_section: repo
+            .pr_template
+            .as_ref()
+            .is_some_and(|(_, text)| managed::has_section(text)),
+        validate_errors,
+        validate_warnings,
+    };
+    Ok(DoctorOutcome {
+        root: root.to_path_buf(),
+        checks: core_doctor::evaluate(&facts),
+    })
+}
+
+/// Number of missing doctor checks in the current project, for the one-line
+/// hint of `codev status`. `None` when doctor cannot run: a hint never
+/// breaks the command it decorates.
+pub fn doctor_missing_from_cwd(ctx: &Ctx) -> Option<usize> {
+    doctor(ctx).ok().map(|d| d.missing())
+}
+
 // ─────────────────────────────── helpers ───────────────────────────────
 
 /// Resolves which change to act on.
@@ -1100,6 +1431,13 @@ fn resolve_change(
             .with_fix(format!("`--change {}`", names[0])))
         }
     }
+}
+
+/// A path as written into `config.yaml`: forward slashes on every platform.
+/// Windows accepts them, and the file stays readable (no escaped
+/// backslashes) and identical whatever machine ran `codev init`.
+fn portable(path: &Path) -> String {
+    path.display().to_string().replace('\\', "/")
 }
 
 fn absolute(ctx: &Ctx, path: &str) -> Result<PathBuf> {
@@ -1141,7 +1479,7 @@ fn clean(path: PathBuf) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codev_engine::ports::{FixedClock, FixedEnv, MemoryFileSystem};
+    use codev_engine::ports::{FixedClock, FixedEnv, MemoryFileSystem, MockProcessRunner};
 
     /// Default `init` options for the tests: non-interactive (--yes), probe
     /// disabled (deterministic results, no real manifest to detect in a
@@ -1152,6 +1490,7 @@ mod tests {
             no_detect: true,
             preset: None,
             language: None,
+            ..Default::default()
         }
     }
 
@@ -1159,6 +1498,7 @@ mod tests {
         fs: MemoryFileSystem,
         env: FixedEnv,
         clock: FixedClock,
+        runner: MockProcessRunner,
     }
 
     impl Harness {
@@ -1169,6 +1509,7 @@ mod tests {
                 fs: MemoryFileSystem::new(),
                 env,
                 clock: FixedClock("2026-09-08".into()),
+                runner: MockProcessRunner::new(),
             }
         }
 
@@ -1177,11 +1518,17 @@ mod tests {
             self
         }
 
+        fn with_runner(mut self, runner: MockProcessRunner) -> Self {
+            self.runner = runner;
+            self
+        }
+
         fn ctx(&self) -> Ctx<'_> {
             Ctx {
                 fs: &self.fs,
                 env: &self.env,
                 clock: &self.clock,
+                runner: &self.runner,
                 version: "0.1.0",
             }
         }
@@ -1227,8 +1574,8 @@ mod tests {
             outcome.created
         );
         assert!(!outcome.untouched.contains(&config));
-        // 8 skills + config.yaml + 5 `.gitkeep`.
-        assert_eq!(outcome.created.len(), 14, "{:?}", outcome.created);
+        // 8 skills + config.yaml + 5 `.gitkeep` + CLAUDE.md.
+        assert_eq!(outcome.created.len(), 15, "{:?}", outcome.created);
     }
 
     #[test]
@@ -1282,6 +1629,7 @@ edition = "2024"
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
 
@@ -1322,6 +1670,7 @@ edition = "2024"
             no_detect: false,
             preset: None,
             language: None,
+            ..Default::default()
         };
         init(&h.ctx(), ".", false, &opts).unwrap();
 
@@ -1343,6 +1692,7 @@ edition = "2024"
             no_detect: false,
             preset: None,
             language: Some("de".into()),
+            ..Default::default()
         };
         init(&h.ctx(), ".", false, &opts).unwrap();
 
@@ -2291,5 +2641,362 @@ The rationale for the choice.
         // The mismatch is not a warning; has_warnings may be false or true
         // depending on the other findings, but the exit code would have
         // flipped on `has_errors` alone, without depending on strict.
+    }
+
+    // ─────────────── init --inherit, integration, update, doctor ───────────────
+
+    fn git_ok(stdout: &str) -> codev_engine::ProcessOutput {
+        codev_engine::ProcessOutput {
+            stdout: stdout.as_bytes().to_vec(),
+            stderr: Vec::new(),
+            exit_code: 0,
+        }
+    }
+
+    fn reachable_git() -> MockProcessRunner {
+        MockProcessRunner::new()
+            .with_response("git", &["--version"], git_ok("git version 2.45.0\n"))
+            .with_response(
+                "git",
+                &["ls-remote"],
+                git_ok("9f2c1ab7d00d\trefs/heads/main\n"),
+            )
+            .with_response("git", &["init"], git_ok(""))
+            .with_response("git", &["-C"], git_ok(""))
+    }
+
+    fn opts_with(inherits: &[&str]) -> crate::init_prompts::InitOptions {
+        crate::init_prompts::InitOptions {
+            inherits: inherits.iter().map(|s| s.to_string()).collect(),
+            ..test_init_opts()
+        }
+    }
+
+    #[test]
+    fn init_writes_inherits_and_pins_git_sources() {
+        let h = Harness::new()
+            .with("/home/shared/_codev/config.yaml", "context: |\n  Shared\n")
+            .with_runner(reachable_git());
+        let outcome = init(
+            &h.ctx(),
+            ".",
+            false,
+            &opts_with(&[
+                "git@github.com:acme/conventions.git@v2",
+                "~/shared",
+                "../home/shared",
+            ]),
+        )
+        .unwrap();
+
+        let config = h.fs.read("/p/_codev/config.yaml").unwrap();
+        assert!(
+            config.contains(
+                "# set with codev init --inherit\ninherits:\n  - git: git@github.com:acme/conventions.git\n    ref: v2\n  - path: ~/shared\n  - path: /home/shared\n"
+            ),
+            "{config}"
+        );
+        let lock = h.fs.read("/p/_codev/codev.lock").unwrap();
+        assert!(lock.contains("commit = \"9f2c1ab7d00d\""), "{lock}");
+        assert!(lock.contains("ref = \"v2\""), "{lock}");
+        assert!(matches!(
+            outcome.pins.as_slice(),
+            [engine_sources::PinChange::Added { .. }]
+        ));
+        assert!(
+            outcome
+                .warnings
+                .iter()
+                .all(|w| w.code != "inherit_pin_failed")
+        );
+        // The written config reads back.
+        config::resolve(&h.fs, &h.env, &Layout::new("/p")).unwrap();
+    }
+
+    #[test]
+    fn init_refuses_a_missing_inherit_path_before_writing() {
+        let h = Harness::new();
+        for bad in ["./does-not-exist", "", "git@github.com:acme/c.git@"] {
+            let err = init(&h.ctx(), ".", false, &opts_with(&[bad])).unwrap_err();
+            assert_eq!(err.code, "invalid_inherit", "{bad}");
+        }
+        assert!(h.fs.paths().is_empty(), "{:?}", h.fs.paths());
+    }
+
+    #[test]
+    fn init_keeps_an_existing_config_and_warns_inherit_not_written() {
+        let original = "schema: spec-driven\n";
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", original)
+            .with("/home/shared/_codev/config.yaml", "");
+        let outcome = init(&h.ctx(), ".", false, &opts_with(&["/home/shared"])).unwrap();
+        assert_eq!(h.fs.read("/p/_codev/config.yaml").unwrap(), original);
+        let warning = outcome
+            .warnings
+            .iter()
+            .find(|w| w.code == "inherit_not_written")
+            .expect("inherit_not_written");
+        assert!(warning.message.replace('\\', "/").contains("/home/shared"));
+    }
+
+    #[test]
+    fn init_survives_a_pin_failure() {
+        let runner = MockProcessRunner::new()
+            .with_response("git", &["--version"], git_ok("git version 2.45.0\n"))
+            .with_response(
+                "git",
+                &["ls-remote"],
+                codev_engine::ProcessOutput {
+                    stdout: Vec::new(),
+                    stderr: b"fatal: unable to access 'https://unreachable.example/'".to_vec(),
+                    exit_code: 128,
+                },
+            );
+        let h = Harness::new().with_runner(runner);
+        let outcome = init(
+            &h.ctx(),
+            ".",
+            false,
+            &opts_with(&["https://unreachable.example/acme/c.git"]),
+        )
+        .unwrap();
+        assert!(
+            h.fs.read("/p/_codev/config.yaml")
+                .unwrap()
+                .contains("git: https://unreachable.example/acme/c.git")
+        );
+        assert!(h.fs.read("/p/_codev/codev.lock").is_none());
+        assert!(
+            h.fs.read("/p/.claude/skills/codev-propose/SKILL.md")
+                .is_some()
+        );
+        assert!(
+            outcome
+                .warnings
+                .iter()
+                .any(|w| w.code == "inherit_pin_failed" && w.message.contains("unable to access"))
+        );
+    }
+
+    fn action_of(outcome: &SetupOutcome, step: integration::Step) -> integration::StepAction {
+        outcome
+            .integration
+            .iter()
+            .find(|s| s.step == step)
+            .unwrap_or_else(|| panic!("no step {step:?}: {:?}", outcome.integration))
+            .action
+    }
+
+    #[test]
+    fn init_writes_the_three_integration_files_on_github() {
+        use integration::{Step, StepAction};
+        let h = Harness::new().with("/p/.github/dependabot.yml", "version: 2\n");
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        for step in [Step::ClaudeMd, Step::Ci, Step::PrTemplate] {
+            assert_eq!(action_of(&outcome, step), StepAction::Created, "{step:?}");
+        }
+        let claude = h.fs.read("/p/CLAUDE.md").unwrap();
+        assert!(claude.contains("/codev-propose") && claude.contains("/codev-apply"));
+        let workflow = h.fs.read("/p/.github/workflows/codev.yml").unwrap();
+        assert!(workflow.contains("CODEV_VERSION=0.1.0"));
+        assert!(workflow.contains("codev validate --strict"));
+        let template = h.fs.read("/p/.github/PULL_REQUEST_TEMPLATE.md").unwrap();
+        assert!(template.contains("codev change"));
+        assert!(template.contains("`codev validate --strict` passes"));
+    }
+
+    #[test]
+    fn init_outside_github_writes_only_claude_md_and_says_why() {
+        use integration::{Step, StepAction};
+        let h = Harness::new();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        assert_eq!(action_of(&outcome, Step::ClaudeMd), StepAction::Created);
+        assert_eq!(action_of(&outcome, Step::Ci), StepAction::Skipped);
+        assert_eq!(action_of(&outcome, Step::PrTemplate), StepAction::Skipped);
+        assert!(!h.fs.exists(Path::new("/p/.github")));
+    }
+
+    #[test]
+    fn init_appends_to_an_existing_claude_md() {
+        let user = "# Team rules\n\nAlways write tests.\n";
+        let h = Harness::new().with("/p/CLAUDE.md", user);
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        assert_eq!(
+            action_of(&outcome, integration::Step::ClaudeMd),
+            integration::StepAction::Appended
+        );
+        let written = h.fs.read("/p/CLAUDE.md").unwrap();
+        assert!(written.starts_with(user));
+        assert!(managed::has_section(&written));
+    }
+
+    #[test]
+    fn init_no_integration_writes_none() {
+        let h = Harness::new().with("/p/.github/dependabot.yml", "version: 2\n");
+        let opts = crate::init_prompts::InitOptions {
+            no_claude_md: true,
+            no_ci: true,
+            no_pr_template: true,
+            ..test_init_opts()
+        };
+        let outcome = init(&h.ctx(), ".", false, &opts).unwrap();
+        assert!(outcome.integration.is_empty());
+        assert!(h.fs.read("/p/CLAUDE.md").is_none());
+        assert!(h.fs.read("/p/.github/workflows/codev.yml").is_none());
+        assert!(h.fs.read("/p/.github/PULL_REQUEST_TEMPLATE.md").is_none());
+    }
+
+    #[test]
+    fn init_no_ci_skips_only_the_workflow() {
+        let h = Harness::new().with("/p/.github/dependabot.yml", "version: 2\n");
+        let opts = crate::init_prompts::InitOptions {
+            no_ci: true,
+            ..test_init_opts()
+        };
+        init(&h.ctx(), ".", false, &opts).unwrap();
+        assert!(h.fs.read("/p/CLAUDE.md").is_some());
+        assert!(h.fs.read("/p/.github/PULL_REQUEST_TEMPLATE.md").is_some());
+        assert!(h.fs.read("/p/.github/workflows/codev.yml").is_none());
+    }
+
+    #[test]
+    fn rerunning_init_with_integration_is_idempotent() {
+        let h = Harness::new().with("/p/.github/dependabot.yml", "version: 2\n");
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let second = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        assert!(!second.changed_anything(), "{:?}", second.updated);
+        assert!(
+            second
+                .integration
+                .iter()
+                .all(|s| s.action == integration::StepAction::Unchanged)
+        );
+    }
+
+    #[test]
+    fn update_refreshes_the_claude_md_section_and_adds_nothing_when_opted_out() {
+        let stale = format!(
+            "Team intro.\n\n{}\nTeam outro.\n",
+            managed::render_section("old codev text")
+        );
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "schema: spec-driven\n")
+            .with("/p/CLAUDE.md", &stale)
+            .with("/p/.github/dependabot.yml", "version: 2\n");
+        let outcome = update(&h.ctx(), false).unwrap();
+        let written = h.fs.read("/p/CLAUDE.md").unwrap();
+        assert!(written.starts_with("Team intro.\n\n<!-- codev:begin"));
+        assert!(written.ends_with("<!-- codev:end -->\n\nTeam outro.\n"));
+        assert!(!written.contains("old codev text"));
+        assert_eq!(
+            action_of(&outcome, integration::Step::ClaudeMd),
+            integration::StepAction::Refreshed
+        );
+        // GitHub project without workflow nor template: update adds neither.
+        assert!(h.fs.read("/p/.github/workflows/codev.yml").is_none());
+        assert!(h.fs.read("/p/.github/PULL_REQUEST_TEMPLATE.md").is_none());
+        let again = update(&h.ctx(), false).unwrap();
+        assert!(!again.changed_anything());
+    }
+
+    #[test]
+    fn init_records_the_doctor_count_for_the_hint() {
+        let h = Harness::new();
+        let outcome = init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        // rules, specs, ci are missing on a fresh project outside GitHub.
+        assert_eq!(outcome.doctor_missing, Some(3));
+    }
+
+    fn check<'a>(outcome: &'a DoctorOutcome, id: &str) -> &'a Check {
+        outcome
+            .checks
+            .iter()
+            .find(|c| c.id == id)
+            .unwrap_or_else(|| panic!("no check {id}"))
+    }
+
+    #[test]
+    fn doctor_on_a_fresh_project_reports_the_expected_statuses() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        assert_eq!(check(&outcome, "config.rules").status, CheckStatus::Missing);
+        assert_eq!(check(&outcome, "specs").status, CheckStatus::Missing);
+        assert_eq!(check(&outcome, "decisions").status, CheckStatus::Warning);
+        assert_eq!(check(&outcome, "ci").status, CheckStatus::Missing);
+        for id in [
+            "config.language",
+            "skills",
+            "sources",
+            "claude_md",
+            "validate",
+        ] {
+            assert_eq!(check(&outcome, id).status, CheckStatus::Ok, "{id}");
+        }
+        assert!(outcome.checks.iter().all(|c| c.id != "pr_template"));
+    }
+
+    #[test]
+    fn doctor_reports_outdated_skills_and_unpinned_sources() {
+        let h = Harness::new()
+            .with(
+                "/p/_codev/config.yaml",
+                "language: en\nworkflows: [propose]\ninherits:\n  - git: https://example.com/c.git\n    ref: main\n",
+            )
+            .with(
+                "/p/.claude/skills/codev-propose/SKILL.md",
+                "---\nname: codev-propose\nmetadata:\n  version: \"0.0.1\"\n---\nbody\n",
+            );
+        let outcome = doctor(&h.ctx()).unwrap();
+        assert_eq!(check(&outcome, "skills").code, "skills_outdated");
+        assert_eq!(check(&outcome, "sources").code, "source_unpinned");
+    }
+
+    #[test]
+    fn doctor_recognizes_cargo_run_validate_in_ci() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "language: en\n")
+            .with(
+                "/p/.github/workflows/ci.yml",
+                "jobs:\n  d:\n    steps:\n      - run: cargo run --locked --quiet --bin codev -- validate --strict\n",
+            );
+        let outcome = doctor(&h.ctx()).unwrap();
+        assert_eq!(check(&outcome, "ci").status, CheckStatus::Ok);
+        assert_eq!(
+            check(&outcome, "pr_template").code,
+            "pr_template_section_missing"
+        );
+    }
+
+    #[test]
+    fn doctor_writes_nothing() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let before: Vec<(PathBuf, Option<String>)> =
+            h.fs.paths()
+                .into_iter()
+                .map(|p| {
+                    let c = h.fs.read(&p);
+                    (p, c)
+                })
+                .collect();
+        doctor(&h.ctx()).unwrap();
+        let after: Vec<(PathBuf, Option<String>)> =
+            h.fs.paths()
+                .into_iter()
+                .map(|p| {
+                    let c = h.fs.read(&p);
+                    (p, c)
+                })
+                .collect();
+        assert_eq!(before, after);
+        assert!(h.runner.calls().is_empty());
+    }
+
+    #[test]
+    fn doctor_outside_a_project_fails_with_no_codev_root() {
+        let h = Harness::new();
+        let err = doctor(&h.ctx()).err().expect("doctor must fail");
+        assert_eq!(err.code, "no_codev_root");
     }
 }

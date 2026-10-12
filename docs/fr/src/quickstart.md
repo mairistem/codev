@@ -32,14 +32,24 @@ codev initialized in /home/you/acme-app
   Structure   _codev/ — specs, decisions, changes, schemas
   Skills      codev-propose, codev-explore, codev-onboard, codev-apply, codev-sync, codev-archive, codev-update, codev-configure → .claude/skills/
 
-  14 file(s) created, 0 updated
+  Repository integration
+    + CLAUDE.md                          created
+    + .github/workflows/codev.yml        created
+    + .github/PULL_REQUEST_TEMPLATE.md   created
+
+  17 file(s) created, 0 updated
 
 → Recommended next step: in Claude Code, run /codev-configure.
   Claude will analyze the project and enrich _codev/config.yaml
   (context, per-artifact rules) — ~30 seconds.
 
 Or skip this step and run /codev-propose <an-idea> directly.
+
+Run `codev doctor` to see the 2 setup check(s) still to fix.
 ```
+
+Ce dépôt a un remote GitHub : codev a donc aussi écrit un workflow de CI et un
+modèle de pull request ; voir l'étape 5 ci-dessous.
 
 Redémarrez Claude Code (ou ouvrez une nouvelle session) pour qu'il découvre les
 nouvelles skills.
@@ -86,9 +96,56 @@ nouvelles skills.
    ```
 
 4. **Il installe les skills** dans `.claude/skills/codev-<workflow>/SKILL.md`.
+5. **Il intègre codev au dépôt**, sauf si vous le refusez :
+   - une section codev dans `CLAUDE.md`, créé s'il n'existe pas, qui indique à
+     Claude Code que les specs font foi et que tout changement de
+     comportement passe par `/codev-propose` puis `/codev-apply` ;
+   - sur GitHub, `.github/workflows/codev.yml`, qui exécute
+     `codev validate --strict` à chaque push et pull request ;
+   - sur GitHub, une section codev dans le modèle de pull request.
 
-Si `_codev/config.yaml` existe déjà, `codev init` n'y touche pas et se contente
-d'installer ou de rafraîchir les skills.
+   Le texte de codev se trouve entre les marqueurs `<!-- codev:begin -->` et
+   `<!-- codev:end -->` et ne remplace jamais le vôtre. `--no-claude-md`,
+   `--no-ci`, `--no-pr-template` et `--no-integration` écartent ces fichiers.
+   Voir [Intégration au dépôt et codev doctor](guides/repository-integration.md).
+6. **Il déclare les sources héritées** passées avec `--inherit`, et épingle
+   aussitôt les sources git. Voir [Sources héritées](guides/inherited-sources.md).
+
+Si `_codev/config.yaml` existe déjà, `codev init` n'y touche pas : il se
+contente d'installer ou de rafraîchir les skills et l'intégration au dépôt.
+
+`codev doctor` liste ensuite ce qui manque encore à l'installation — ici, des
+règles et une première spec — avec la commande ou la skill qui corrige chaque
+point :
+
+```bash
+codev doctor
+```
+
+```text
+codev doctor — /home/you/acme-app
+
+Configuration
+  ✗ config.rules     no rules: in _codev/config.yaml
+      fix: /codev-configure
+  ✓ config.language  language: is set
+  ✓ skills           8 skill(s) installed and current
+  ✓ sources          no inherited git source
+
+Planning
+  ✗ specs            no main spec in _codev/specs/
+      fix: /codev-propose <a change> — documenting existing behavior is planned work too
+  ! decisions        no accepted decision (not every project needs one)
+      fix: codev decision new "<title>"
+  ✓ validate         codev validate reports no issue
+
+Repository
+  ✓ claude_md        CLAUDE.md has the codev section
+  ✓ ci               .github/workflows/codev.yml runs codev validate
+  ✓ pr_template      the pull request template has the codev section
+
+10 check(s), 2 to fix, 1 warning(s)
+```
 
 > **Remarque**
 > L'étape suivante recommandée, `/codev-configure`, laisse Claude lire votre

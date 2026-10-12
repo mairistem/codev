@@ -98,7 +98,9 @@ change, ni artefact, ni fichier. Une fois l'idée claire, elle suggère
 Une visite guidée en lecture seule pour qui découvre codev : ce que fait
 l'outil, ce que contient le projet actuel (specs, changes actifs, décisions),
 et l'action à mener ensuite — par exemple `/codev-configure` sur un projet
-fraîchement initialisé.
+fraîchement initialisé. Elle lance aussi `codev doctor --json` et liste
+jusqu'à cinq éléments manquants de l'installation avec leur correction, sans
+en exécuter aucune.
 
 ### Configure (`/codev-configure`)
 

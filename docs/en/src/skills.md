@@ -89,7 +89,8 @@ file. When the idea is clear, it suggests `/codev-propose`.
 A read-only tour for someone discovering codev: what the tool does, what the
 current project contains (specs, active changes, decisions), and the one
 action to take next — for example `/codev-configure` on a freshly initialized
-project.
+project. It also runs `codev doctor --json` and lists up to five missing
+setup items with their fix, without running any of them.
 
 ### Configure (`/codev-configure`)
 
