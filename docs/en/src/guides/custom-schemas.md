@@ -62,7 +62,7 @@ apply:
 
 | Key | Required | Meaning |
 |---|---|---|
-| `name` | yes | Schema name, in kebab-case |
+| `name` | yes | Schema name, in kebab-case — use the name of the schema's folder |
 | `version` | no | Schema format version, `1` by default |
 | `description` | no | One-line description |
 | `artifacts` | yes | The artifacts of a change, at least one |
@@ -79,7 +79,8 @@ apply:
 Unknown keys are rejected, so a typo cannot silently produce a workflow that
 behaves differently from what you wrote. codev also rejects a schema whose
 dependencies reference a missing artifact or form a cycle, and names the
-artifacts involved.
+artifacts involved. `codev schemas` still lists the other schemas, and
+reports the refused one as a warning `schema_unusable` with the reason.
 
 An artifact is **done** when its file exists — or, for a glob, when at least
 one file matches. It is **ready** when all the artifacts it requires are done.

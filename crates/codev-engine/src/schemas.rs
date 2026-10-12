@@ -221,4 +221,16 @@ mod tests {
             .collect();
         assert_eq!(names, ["custom", "spec-driven"]);
     }
+
+    #[test]
+    fn a_project_spec_driven_is_listed_once_as_project() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/schemas/spec-driven/schema.yaml",
+            "name: spec-driven\nartifacts:\n  - id: proposal\n    generates: proposal.md\napply:\n  requires: [proposal]\n  tracks: proposal.md\n",
+        );
+        let listed = list(&fs, &Layout::new("/p"));
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].0, "spec-driven");
+        assert_eq!(listed[0].1.label(), "project");
+    }
 }

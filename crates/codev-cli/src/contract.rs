@@ -1405,4 +1405,48 @@ apply:
         assert_eq!(json["summary"]["missing"], missing);
         assert_eq!(json["summary"]["total"], checks.len());
     }
+
+    #[test]
+    fn new_change_json_carries_the_change_and_its_files() {
+        let json = serde_json::to_value(NewChangeV1 {
+            change_name: "add-auth".into(),
+            schema_name: "spec-driven".into(),
+            change_root: "/p/_codev/changes/add-auth".into(),
+            created: vec!["/p/_codev/changes/add-auth/change.yaml".into()],
+            status: Vec::new(),
+        })
+        .unwrap();
+        assert_eq!(json["changeName"], "add-auth");
+        assert_eq!(json["schemaName"], "spec-driven");
+        assert_eq!(json["changeRoot"], "/p/_codev/changes/add-auth");
+        assert_eq!(
+            json["created"],
+            json!(["/p/_codev/changes/add-auth/change.yaml"])
+        );
+        assert_eq!(json["status"], json!([]));
+    }
+
+    #[test]
+    fn list_documents_carry_their_items_and_root() {
+        let changes = serde_json::to_value(ChangesV1 {
+            changes: vec!["add-auth".into(), "fix-bug".into()],
+            root: Some("/p".into()),
+            status: Vec::new(),
+        })
+        .unwrap();
+        assert_eq!(
+            changes,
+            json!({ "changes": ["add-auth", "fix-bug"], "root": "/p", "status": [] })
+        );
+        let specs = serde_json::to_value(SpecsV1 {
+            specs: vec!["identity/sso".into(), "user-auth".into()],
+            root: Some("/p".into()),
+            status: Vec::new(),
+        })
+        .unwrap();
+        assert_eq!(
+            specs,
+            json!({ "specs": ["identity/sso", "user-auth"], "root": "/p", "status": [] })
+        );
+    }
 }

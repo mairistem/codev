@@ -179,7 +179,9 @@ when the key is absent), for example after upgrading codev or changing the
 `mcp:` configuration. A skill whose content differs from what this version
 generates, but which carries this version's stamp, was edited by hand: it is
 left in place and reported, unless you pass `--force`. Skills removed from
-`workflows:` are not deleted.
+`workflows:` are not deleted. An unknown workflow name is ignored with a
+warning `unknown_workflow`. Missing `_codev/` folders and a missing
+`_codev/config.yaml` are recreated; existing files are never overwritten.
 
 `codev update` also refreshes codev's managed sections in `CLAUDE.md` and the
 pull request template, and `.github/workflows/codev.yml` when its first line
@@ -398,10 +400,13 @@ Options:
 ```
 
 Creates `_codev/changes/<NAME>/` with a `change.yaml` recording the schema,
-the creation date and the goal. The name must be kebab-case: lowercase
-letters, digits and single hyphens. The schema defaults to the `schema:` key
-of the configuration, else `spec-driven`. Fails with `change_exists` if the
-change already exists.
+the creation date and the goal, when one is given. The name must be
+kebab-case: lowercase letters, digits and single hyphens, neither leading
+nor trailing; it may start with a digit. The schema defaults to the
+`schema:` key of the configuration, else `spec-driven`. Fails, writing
+nothing, with `invalid_change_id` — naming the rule the name breaks — with
+`change_exists` if the change already exists, and with `schema_not_found`
+if the schema does not exist.
 
 ```bash
 codev new change add-dark-mode --goal "Let users switch the UI to a dark theme"
@@ -437,10 +442,12 @@ Options:
 ```
 
 Shows the state of each artifact of a change — done `[x]`, ready `[ ]`,
-blocked `[-]` or skipped `[~]` — and whether planning is complete. Fails with
-`no_active_change` when the project has no active change. In both cases, when
-`codev doctor` would report a missing check, a last `hint:` line on stderr
-suggests running it.
+blocked `[-]` with the artifacts it waits on, or skipped `[~]` — then
+`Planning: <n>/<total> artifacts` and the next artifact to write, or
+`Planning is complete.`. Fails with `no_active_change` when the project has
+no active change. In both cases, when `codev doctor` would report a missing
+check, a last `hint:` line on stderr suggests running it. A `--change` naming
+a change that does not exist fails with `unknown_change`.
 
 When a newer codev release is known and you have not snoozed it, stderr also
 carries ``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``.
@@ -472,7 +479,14 @@ schema's instruction, the template, the artifact language, the project
 context and rules with their origin, the dependencies to read first, and what
 the artifact unlocks. For the `design` artifact, it also lists the
 architecture decisions in effect. Without `ARTIFACT`, it picks the first
-artifact that is ready to write.
+artifact that is ready to write. It writes no file.
+
+For an artifact disabled by `skip_specs`, it says the artifact must not be
+created, with a warning `artifact_skipped`. It fails with `unknown_artifact`
+when `ARTIFACT` is not an artifact of the change's schema, with
+`no_artifact_ready` when `ARTIFACT` is omitted and nothing is ready, and with
+`template_not_found` when a project schema declares a template file it does
+not hold.
 
 The skills call it with `--json`; see
 [`codev instructions`](json-output.md#instructions).
@@ -645,7 +659,10 @@ Options:
 ```
 
 Lists the project's schemas from `_codev/schemas/` and the built-in
-`spec-driven`, with the order of their artifacts. See
+`spec-driven`, with the order of their artifacts. A project schema named
+`spec-driven` replaces the built-in one. A project schema that cannot be used
+is left out of the list with a warning `schema_unusable` giving the reason;
+the others are still listed. See
 [Custom schemas](../guides/custom-schemas.md).
 
 ## Decisions
@@ -707,6 +724,13 @@ Options:
       --json
   -h, --help  Print help
 ```
+
+Prints a header — the short and qualified id, title, status, date, then
+tags, `Supersedes` and `Superseded by` when set, and the file's path,
+relative to the project or absolute for an inherited source outside it —
+followed by the file's content. Fails with `unknown_decision_id` when no
+decision matches, and with `ambiguous_decision_id`, listing the candidates,
+when a short id matches several: use the qualified id then.
 
 ### codev decision new
 

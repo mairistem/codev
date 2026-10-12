@@ -1035,6 +1035,19 @@ apply:
         assert!(changes(&outcome).contains("codev new change"));
     }
 
+    #[test]
+    fn an_empty_spec_list_says_when_specs_appear() {
+        let outcome = SpecsOutcome {
+            root: "/p".into(),
+            specs: Vec::new(),
+        };
+        let rendered = specs(&outcome);
+        assert!(
+            rendered.contains("appear when a change is synced or archived"),
+            "{rendered}"
+        );
+    }
+
     fn setup_outcome(skills: &[&str], config_thin: bool) -> SetupOutcome {
         SetupOutcome {
             root: "/p".into(),
@@ -1237,5 +1250,60 @@ apply:
                 .ends_with("12 check(s), 3 to fix, 2 warning(s)"),
             "{rendered}"
         );
+    }
+
+    fn bare_instructions() -> codev_engine::instructions::Instructions {
+        codev_engine::instructions::Instructions {
+            change: ChangeId::parse("add-auth").unwrap(),
+            schema_name: "spec-driven".into(),
+            artifact_id: "proposal".into(),
+            description: None,
+            resolved_output_path: std::path::PathBuf::from(
+                "/p/_codev/changes/add-auth/proposal.md",
+            ),
+            instruction: Some("Write the proposal.".into()),
+            template: Some("# Proposal".into()),
+            language: "en".into(),
+            context: Vec::new(),
+            rules: Vec::new(),
+            dependencies: Vec::new(),
+            unlocks: vec!["specs".into()],
+            decisions: Vec::new(),
+            skipped: false,
+            warnings: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn skipped_instructions_show_neither_instruction_nor_template() {
+        let mut instr = bare_instructions();
+        instr.artifact_id = "specs".into();
+        instr.skipped = true;
+        let rendered = super::instructions(&instr);
+        assert!(rendered.starts_with("Artifact: specs"), "{rendered}");
+        assert!(rendered.contains("Write to: "), "{rendered}");
+        assert!(rendered.contains("Language: en"), "{rendered}");
+        assert!(
+            rendered.contains("disabled by `skip_specs`: do not create it"),
+            "{rendered}"
+        );
+        for absent in ["Instruction:", "Template:", "Unlocks:"] {
+            assert!(!rendered.contains(absent), "`{absent}` in:\n{rendered}");
+        }
+    }
+
+    #[test]
+    fn instructions_without_context_rules_or_dependencies_have_no_empty_heading() {
+        let rendered = super::instructions(&bare_instructions());
+        for absent in [
+            "Read before writing:",
+            "Project context:",
+            "Rules for this artifact:",
+            "Decisions in effect:",
+        ] {
+            assert!(!rendered.contains(absent), "`{absent}` in:\n{rendered}");
+        }
+        assert!(rendered.contains("Instruction:"), "{rendered}");
+        assert!(rendered.contains("Template:"), "{rendered}");
     }
 }

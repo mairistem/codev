@@ -278,4 +278,17 @@ apply:
         let schema = Schema::parse(&yaml).unwrap();
         assert!(schema.artifact("proposal").unwrap().is_pattern());
     }
+
+    #[test]
+    fn rejects_an_empty_artifact_list_and_an_empty_apply_requires() {
+        let no_artifact = "name: empty\nartifacts: []\napply:\n  requires: [a]\n  tracks: a.md\n";
+        let err = Schema::parse(no_artifact).unwrap_err();
+        assert_eq!(err.code(), "schema_invalid");
+        assert!(err.to_string().contains("no artifact"), "{err}");
+
+        let no_apply = MINIMAL.replace("requires: [tasks]", "requires: []");
+        let err = Schema::parse(&no_apply).unwrap_err();
+        assert_eq!(err.code(), "schema_invalid");
+        assert!(err.to_string().contains("apply.requires"), "{err}");
+    }
 }

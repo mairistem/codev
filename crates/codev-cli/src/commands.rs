@@ -2075,17 +2075,23 @@ edition = "2024"
     fn rejects_an_invalid_change_name() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let before = h.fs.paths();
         let err = new_change(&h.ctx(), "Add Auth", None, None).unwrap_err();
         assert_eq!(err.code, "invalid_change_id");
+        assert!(err.message.contains("space"), "{}", err.message);
+        assert_eq!(h.fs.paths(), before, "a refused name writes nothing");
     }
 
     #[test]
     fn rejects_an_already_existing_change() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
-        new_change(&h.ctx(), "add-auth", None, None).unwrap();
-        let err = new_change(&h.ctx(), "add-auth", None, None).unwrap_err();
+        new_change(&h.ctx(), "add-auth", None, Some("First goal".into())).unwrap();
+        let metadata = "/p/_codev/changes/add-auth/change.yaml";
+        let before = h.fs.read(metadata);
+        let err = new_change(&h.ctx(), "add-auth", None, Some("Other".into())).unwrap_err();
         assert_eq!(err.code, "change_exists");
+        assert_eq!(h.fs.read(metadata), before, "the existing change is kept");
     }
 
     #[test]
@@ -2306,8 +2312,14 @@ edition = "2024"
         let outcome = list_schemas(&h.ctx()).unwrap();
 
         assert_eq!(outcome.schemas.len(), 1, "spec-driven stays listed");
+        assert_eq!(outcome.schemas[0].name, "spec-driven");
         assert_eq!(outcome.warnings.len(), 1);
         assert_eq!(outcome.warnings[0].code, "schema_unusable");
+        assert!(
+            outcome.warnings[0].message.contains("`broken`"),
+            "{}",
+            outcome.warnings[0].message
+        );
     }
 
     // ─────────────── decision seal ───────────────
@@ -4129,6 +4141,528 @@ The rationale for the choice.
         assert!(
             exe.read("C:/Users/me/AppData/Local/Programs/codev/codev.old.exe")
                 .is_none()
+        );
+    }
+
+    // ─────────────── changes: new change, list, status ───────────────
+
+    #[test]
+    fn new_change_writes_schema_date_and_goal_only() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let before = h.fs.paths();
+        let outcome = new_change(
+            &h.ctx(),
+            "add-auth",
+            None,
+            Some("Add authentication".into()),
+        )
+        .unwrap();
+
+        let metadata = PathBuf::from("/p/_codev/changes/add-auth/change.yaml");
+        assert_eq!(
+            h.fs.read(&metadata).unwrap(),
+            "schema: spec-driven\ncreated: 2026-09-08\ngoal: Add authentication\n"
+        );
+        let added: Vec<PathBuf> =
+            h.fs.paths()
+                .into_iter()
+                .filter(|p| !before.contains(p))
+                .collect();
+        assert_eq!(
+            added,
+            std::slice::from_ref(&metadata),
+            "change.yaml is the only file"
+        );
+        assert_eq!(outcome.created, [metadata]);
+        assert_eq!(outcome.schema_name, "spec-driven");
+        assert_eq!(
+            outcome.change_root,
+            PathBuf::from("/p/_codev/changes/add-auth")
+        );
+
+        let rendered = crate::render::new_change(&outcome);
+        assert!(rendered.contains("Change `add-auth` created"), "{rendered}");
+        assert!(rendered.contains("Schema    spec-driven"), "{rendered}");
+        assert!(
+            rendered.contains("codev instructions --change add-auth"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn new_change_ignores_a_blank_goal() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, Some("  ".into())).unwrap();
+        let metadata = h.fs.read("/p/_codev/changes/add-auth/change.yaml").unwrap();
+        assert!(!metadata.contains("goal"), "{metadata}");
+    }
+
+    #[test]
+    fn status_of_a_fresh_change_has_only_the_proposal_ready() {
+        let h = Harness::new();
+        project_with_change(&h);
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+
+        let artifact = |id: &str| {
+            json["artifacts"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|a| a["id"] == id)
+                .unwrap_or_else(|| panic!("artifact `{id}` missing"))
+                .clone()
+        };
+        assert_eq!(artifact("proposal")["status"], "ready");
+        for id in ["specs", "design"] {
+            assert_eq!(artifact(id)["status"], "blocked");
+            assert_eq!(artifact(id)["missingDeps"], serde_json::json!(["proposal"]));
+        }
+        assert_eq!(artifact("tasks")["status"], "blocked");
+        assert_eq!(
+            artifact("tasks")["missingDeps"],
+            serde_json::json!(["specs", "design"])
+        );
+        assert_eq!(json["applyRequires"], serde_json::json!(["tasks"]));
+        assert_eq!(json["isPlanningComplete"], false);
+    }
+
+    #[test]
+    fn status_after_the_proposal_shows_specs_and_design_ready() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# Proposal\n");
+
+        let rendered = crate::render::status(&status(&h.ctx(), Some("add-auth")).unwrap().status);
+        for line in [
+            "Change: add-auth",
+            "Schema: spec-driven",
+            "[x] proposal",
+            "[ ] specs",
+            "[ ] design",
+            "[-] tasks (waiting on: specs, design)",
+            "Planning: 1/4 artifacts",
+            "Next:     specs",
+        ] {
+            assert!(rendered.contains(line), "missing `{line}` in:\n{rendered}");
+        }
+    }
+
+    #[test]
+    fn status_resolves_the_project_root_from_a_subfolder() {
+        let mut h = Harness::new();
+        project_with_change(&h);
+        h.env.cwd = PathBuf::from("/p/src");
+
+        let outcome = status(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.planning_home, PathBuf::from("/p"));
+        assert_eq!(
+            outcome.change_root,
+            PathBuf::from("/p/_codev/changes/add-auth")
+        );
+    }
+
+    #[test]
+    fn instructions_refuse_an_invalid_change_name() {
+        let h = Harness::new();
+        project_with_change(&h);
+        let err = artifact_instructions(&h.ctx(), None, Some("Bad")).unwrap_err();
+        assert_eq!(err.code, "invalid_change_id");
+    }
+
+    // ─────────────── instructions ───────────────
+
+    #[test]
+    fn instructions_for_the_next_artifact_keep_the_glob_and_write_nothing() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# Proposal\n");
+        let before = h.fs.paths();
+
+        let instr = artifact_instructions(&h.ctx(), None, Some("add-auth")).unwrap();
+        assert_eq!(instr.artifact_id, "specs");
+        assert_eq!(
+            instr.resolved_output_path,
+            PathBuf::from("/p/_codev/changes/add-auth/specs/**/*.md")
+        );
+        assert_eq!(h.fs.paths(), before, "instructions write nothing");
+    }
+
+    #[test]
+    fn human_instructions_list_the_sections_in_order() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(
+            &h,
+            "/p/_codev/config.yaml",
+            "context: |\n  Rust project.\nrules:\n  specs:\n    - Observable behavior only.\n",
+        );
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# Proposal\n");
+
+        let instr = artifact_instructions(&h.ctx(), Some("specs"), Some("add-auth")).unwrap();
+        let rendered = crate::render::instructions(&instr);
+        assert!(
+            rendered.starts_with("Artifact: specs (change `add-auth`, schema spec-driven)"),
+            "{rendered}"
+        );
+        let mut last = 0;
+        for section in [
+            "Write to: ",
+            "Language: en",
+            "Read before writing:",
+            "[x] proposal",
+            "Project context:",
+            "(project) Rust project.",
+            "Rules for this artifact:",
+            "(project) Observable behavior only.",
+            "Instruction:",
+            "Template:",
+            "Unlocks: tasks",
+        ] {
+            let at = rendered[last..]
+                .find(section)
+                .unwrap_or_else(|| panic!("`{section}` missing or out of order in:\n{rendered}"));
+            last += at;
+        }
+    }
+
+    #[test]
+    fn instructions_of_an_unknown_artifact_name_it_and_the_schema() {
+        let h = Harness::new();
+        project_with_change(&h);
+        let err = artifact_instructions(&h.ctx(), Some("sketch"), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "unknown_artifact");
+        assert!(
+            err.message.contains("sketch") && err.message.contains("spec-driven"),
+            "{}",
+            err.message
+        );
+    }
+
+    // ─────────────── schemas ───────────────
+
+    const LITE_SCHEMA: &str = "name: lite\nartifacts:\n  - id: brief\n    generates: brief.md\n  - id: plan\n    generates: tasks.md\n    requires: [brief]\napply:\n  requires: [plan]\n  tracks: tasks.md\n";
+
+    #[test]
+    fn schemas_list_a_project_schema_with_its_flow_before_the_built_in_one() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", LITE_SCHEMA);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = list_schemas(&h.ctx()).unwrap();
+
+        let listed: Vec<(&str, &str, Vec<&str>)> = outcome
+            .schemas
+            .iter()
+            .map(|s| {
+                (
+                    s.name.as_str(),
+                    s.origin,
+                    s.flow.iter().map(String::as_str).collect(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            listed,
+            [
+                ("lite", "project", vec!["brief", "plan"]),
+                (
+                    "spec-driven",
+                    "built-in",
+                    vec!["proposal", "specs", "design", "tasks"]
+                ),
+            ]
+        );
+        let rendered = crate::render::schemas(&outcome);
+        assert!(
+            rendered.starts_with(
+                "Available schemas:\n  lite (project)\n    brief → plan\n  spec-driven (built-in)\n"
+            ),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn status_uses_the_project_spec_driven_schema() {
+        let h = Harness::new().with(
+            "/p/_codev/schemas/spec-driven/schema.yaml",
+            "name: spec-driven\nartifacts:\n  - id: proposal\n    generates: proposal.md\napply:\n  requires: [proposal]\n  tracks: proposal.md\n",
+        );
+        project_with_change(&h);
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        let ids: Vec<&str> = outcome
+            .status
+            .artifacts
+            .iter()
+            .map(|a| a.id.as_str())
+            .collect();
+        assert_eq!(ids, ["proposal"]);
+    }
+
+    #[test]
+    fn new_change_takes_the_schema_from_the_flag_then_the_configuration() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", LITE_SCHEMA);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        write_helper(&h, "/p/_codev/config.yaml", "schema: lite\n");
+
+        let quick = new_change(&h.ctx(), "quick", None, None).unwrap();
+        assert_eq!(quick.schema_name, "lite");
+        assert!(
+            h.fs.read("/p/_codev/changes/quick/change.yaml")
+                .is_some_and(|c| c.contains("schema: lite"))
+        );
+
+        let full = new_change(&h.ctx(), "full", Some("spec-driven"), None).unwrap();
+        assert_eq!(full.schema_name, "spec-driven");
+        assert!(
+            h.fs.read("/p/_codev/changes/full/change.yaml")
+                .is_some_and(|c| c.contains("schema: spec-driven"))
+        );
+    }
+
+    #[test]
+    fn changing_the_configured_schema_leaves_existing_changes_alone() {
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", LITE_SCHEMA);
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/config.yaml", "schema: lite\n");
+
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        assert_eq!(outcome.status.schema_name, "spec-driven");
+        let ids: Vec<&str> = outcome
+            .status
+            .artifacts
+            .iter()
+            .map(|a| a.id.as_str())
+            .collect();
+        assert_eq!(ids, ["proposal", "specs", "design", "tasks"]);
+    }
+
+    // ─────────────── decision show ───────────────
+
+    #[test]
+    fn decision_show_prints_the_header_then_the_file() {
+        let adr = "---\nid: \"0001\"\ntitle: Foundation\nstatus: accepted\ndate: 2026-09-08\ntags: [arch]\n---\n\n## Context\n\nWhy.\n";
+        let h = Harness::new().with("/p/_codev/decisions/0001-foundation.md", adr);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+
+        let outcome = decision_show(&h.ctx(), "0001").unwrap();
+        assert_eq!(
+            outcome.decision.path,
+            PathBuf::from("_codev/decisions/0001-foundation.md")
+        );
+        assert_eq!(outcome.content, adr);
+        let rendered = crate::render::decision_show(&outcome);
+        assert!(
+            rendered.starts_with(
+                "ID:     0001 (project/0001)\nTitle:  Foundation\nStatus: accepted\nDate:   2026-09-08\nTags:   arch\n"
+            ),
+            "{rendered}"
+        );
+        let file_line = format!("File:   {}\n\n", outcome.decision.path.display());
+        assert!(rendered.contains(&file_line), "{rendered}");
+        assert!(rendered.ends_with(adr), "the file follows unchanged");
+    }
+
+    fn colliding_decisions() -> Harness {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with(
+                "/p/_codev/decisions/0007-local.md",
+                "---\nid: \"0007\"\ntitle: Local choice\nstatus: accepted\ndate: 2026-09-08\n---\n\nx\n",
+            )
+            .with(
+                "/home/shared/_codev/decisions/0007-shared.md",
+                &inherited_adr("0007"),
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        h
+    }
+
+    #[test]
+    fn decision_show_refuses_an_ambiguous_id_and_lists_the_candidates() {
+        let h = colliding_decisions();
+        let err = decision_show(&h.ctx(), "0007")
+            .err()
+            .expect("an ambiguous id is refused");
+        assert_eq!(err.code, "ambiguous_decision_id");
+        assert!(
+            err.message.contains("project/0007") && err.message.contains("path:~/shared/0007"),
+            "{}",
+            err.message
+        );
+    }
+
+    #[test]
+    fn decision_show_accepts_a_qualified_id() {
+        let h = colliding_decisions();
+        let outcome = decision_show(&h.ctx(), "path:~/shared/0007").unwrap();
+        assert_eq!(outcome.decision.origin, "path:~/shared");
+        assert_eq!(outcome.decision.title, "Source choice");
+        let local = decision_show(&h.ctx(), "project/0007").unwrap();
+        assert_eq!(local.decision.title, "Local choice");
+    }
+
+    #[test]
+    fn decision_show_of_an_inherited_decision_gives_its_origin_and_absolute_path() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with(
+                "/shared/_codev/decisions/0100-shared.md",
+                &inherited_adr("0100"),
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+
+        let outcome = decision_show(&h.ctx(), "0100").unwrap();
+        assert_eq!(outcome.decision.origin, "path:/shared");
+        assert_eq!(outcome.decision.qualified_id, "path:/shared/0100");
+        assert_eq!(
+            outcome.decision.path,
+            PathBuf::from("/shared/_codev/decisions/0100-shared.md")
+        );
+        assert_eq!(outcome.content, inherited_adr("0100"));
+    }
+
+    #[test]
+    fn decision_show_refuses_an_unknown_id() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let err = decision_show(&h.ctx(), "9999")
+            .err()
+            .expect("an unknown id is refused");
+        assert_eq!(err.code, "unknown_decision_id");
+        assert!(
+            err.message.contains("codev decision list"),
+            "{}",
+            err.message
+        );
+    }
+
+    // ─────────────── update: skills ───────────────
+
+    fn skill_path(workflow: &str) -> PathBuf {
+        PathBuf::from(format!("/p/.claude/skills/codev-{workflow}/SKILL.md"))
+    }
+
+    #[test]
+    fn update_creates_missing_and_rewrites_outdated_skills() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        h.fs.remove_file(&skill_path("explore")).unwrap();
+        let sync = h.fs.read(skill_path("sync")).unwrap();
+        write_helper(
+            &h,
+            "/p/.claude/skills/codev-sync/SKILL.md",
+            &sync.replace("version: \"0.1.0\"", "version: \"0.0.1\""),
+        );
+
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert!(
+            outcome.created.contains(&skill_path("explore")),
+            "{:?}",
+            outcome.created
+        );
+        assert!(
+            outcome.updated.contains(&skill_path("sync")),
+            "{:?}",
+            outcome.updated
+        );
+        for workflow in ["explore", "sync"] {
+            assert!(
+                h.fs.read(skill_path(workflow))
+                    .is_some_and(|c| c.contains("version: \"0.1.0\"")),
+                "`{workflow}` carries the running version"
+            );
+        }
+    }
+
+    #[test]
+    fn a_second_update_has_nothing_to_do() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        update(&h.ctx(), false).unwrap();
+
+        let again = update(&h.ctx(), false).unwrap();
+        assert!(again.created.is_empty() && again.updated.is_empty());
+        let rendered = crate::render::setup(&again, false);
+        assert!(rendered.starts_with("codev updated in "), "{rendered}");
+        assert!(
+            rendered.contains("Nothing to do, everything is already in place."),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn update_force_rewrites_a_hand_edited_skill() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let rendered = h.fs.read(skill_path("apply")).unwrap();
+        write_helper(
+            &h,
+            "/p/.claude/skills/codev-apply/SKILL.md",
+            &format!("{rendered}\nMy own rule.\n"),
+        );
+
+        let kept = update(&h.ctx(), false).unwrap();
+        assert_eq!(kept.preserved, [skill_path("apply")]);
+
+        let forced = update(&h.ctx(), true).unwrap();
+        assert!(
+            forced.updated.contains(&skill_path("apply")),
+            "{:?}",
+            forced.updated
+        );
+        assert!(forced.preserved.is_empty());
+        assert_eq!(h.fs.read(skill_path("apply")).unwrap(), rendered);
+    }
+
+    #[test]
+    fn update_ignores_an_unknown_workflow_with_a_warning() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        write_helper(&h, "/p/_codev/config.yaml", "workflows: [propose, bogus]\n");
+
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert_eq!(outcome.skills, ["codev-propose"]);
+        assert!(
+            outcome
+                .warnings
+                .iter()
+                .any(|w| w.code == "unknown_workflow" && w.message.contains("`bogus`")),
+            "{:?}",
+            outcome.warnings
+        );
+    }
+
+    #[test]
+    fn update_keeps_the_skill_of_a_workflow_no_longer_listed() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let apply_skill = h.fs.read(skill_path("apply"));
+        assert!(apply_skill.is_some(), "the default catalog installs apply");
+        write_helper(&h, "/p/_codev/config.yaml", "workflows: [propose]\n");
+
+        update(&h.ctx(), false).unwrap();
+        assert_eq!(h.fs.read(skill_path("apply")), apply_skill);
+    }
+
+    #[test]
+    fn update_recreates_a_deleted_codev_folder() {
+        let h = Harness::new().with("/p/_codev/config.yaml", "schema: spec-driven\n");
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert!(
+            outcome
+                .created
+                .contains(&PathBuf::from("/p/_codev/specs/.gitkeep")),
+            "{:?}",
+            outcome.created
+        );
+        assert!(
+            outcome
+                .untouched
+                .contains(&PathBuf::from("/p/_codev/config.yaml"))
+        );
+        assert_eq!(
+            h.fs.read("/p/_codev/config.yaml").unwrap(),
+            "schema: spec-driven\n"
         );
     }
 }
