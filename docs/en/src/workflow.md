@@ -76,7 +76,10 @@ each unchecked `- [ ]` task in file order, runs the verification the task
 names (a test, a command, an observable behavior), and checks the box only
 once it passes. Tests follow your existing test suite first, then your
 language's conventions and your [`rules`](reference/configuration.md#rules).
-Before reporting the change as done, it runs the full test suite once.
+Once every task is checked, it re-reads the code the change touched as a
+newcomer to the project would, simplifies what is unambiguous without
+changing behavior or scope, and lists up to three readability notes in its
+summary. Then it runs the full test suite once.
 
 It stops at the first blocker or ambiguity and asks you rather than
 guessing. It modifies only the named change, never archives and never syncs:

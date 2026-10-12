@@ -154,11 +154,14 @@ through each unchecked task of `tasks.md` in order, verifies it, and checks
 it off only once the verification passes. It writes tests like your existing
 test suite, then by your language's conventions and your `rules`. It takes
 the test command from your configuration, manifest or CI, and asks you when
-it finds none. Before reporting the change as done, it runs the full test
-suite once. It stops at the first blocker or ambiguity. It never modifies
+it finds none. Once every task is checked, it reviews the code the change
+touched as a newcomer would: it simplifies what is unambiguous, without
+changing behavior or scope, and reports up to three readability notes.
+Then it runs the full test suite once. It stops at the first blocker or ambiguity. It never modifies
 another change, never syncs and never archives.
 
-Role: [developer](roles.md#developer-codev-apply).
+Roles: [developer](roles.md#developer-codev-apply),
+[newcomer reviewer](roles.md#newcomer-reviewer-codev-apply).
 
 ### Update (`/codev-update`)
 

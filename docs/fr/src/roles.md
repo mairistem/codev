@@ -30,7 +30,7 @@ s'arrête pour votre relecture.
 | Enquêteur de code | Que fait déjà le projet ? | `context` et `rules` sont lus ; l'implémentation concernée, les tests voisins, la configuration et la documentation sont examinés, en lecture seule et à la mesure du change ; périmètre, approche et tâches s'appuient sur ce qui a été trouvé ; comportement observé, hypothèses et propositions restent distincts ; les contradictions avec les specs existantes sont signalées, pas tranchées seul ; aucune tâche « explorer le code » n'est laissée à l'implémentation | Étape 4c, avant de rédiger chaque artefact |
 | Product owner | Pourquoi ce change, et qu'est-ce qui change ? | Why énonce le problème et pourquoi maintenant en une ou deux phrases ; What Changes est une liste de points concrets ; chaque changement incompatible est marqué **BREAKING** ; chaque capacité listée a son fichier de spec (ou `skip_specs: true`) ; la note de version est écrite pour les utilisateurs, classée par catégorie, avec les éléments incompatibles marqués, ou `None` pour un change interne ; aucun détail d'implémentation | [`proposal.md`](reference/file-formats.md#proposalmd) |
 | Analyste QA | Quel comportement observable doit tenir ? | Chaque exigence emploie SHALL ou MUST sur un comportement observable ; chaque exigence a au moins un scénario nominal et un scénario d'erreur ou de cas limite, ou explique pourquoi aucun ne s'applique ; ni noms internes, ni bibliothèques, ni étapes d'implémentation | [Deltas de spec](reference/file-formats.md#delta-de-spec) |
-| Architecte | Comment le construire ? | Chaque décision nomme l'alternative qu'elle écarte et pourquoi ; chaque risque a sa mitigation ; les décisions acceptées qui contraignent l'approche sont citées et suivies, ou un remplacement est explicitement proposé ; les Open Questions ne contiennent que ce qui peut réellement attendre | [`design.md`](reference/file-formats.md#designmd) — rédigé seulement si le change le demande |
+| Architecte | Comment le construire ? | Chaque décision nomme l'alternative qu'elle écarte et pourquoi ; chaque risque a sa mitigation ; les décisions acceptées qui contraignent l'approche sont citées et suivies, ou un remplacement est explicitement proposé ; l'approche est la plus simple qui satisfasse les specs, et un nouvel arrivant peut suivre le design sans en connaître l'historique ; les Open Questions ne contiennent que ce qui peut réellement attendre | [`design.md`](reference/file-formats.md#designmd) — rédigé seulement si le change le demande |
 | Tech lead | Dans quel ordre, et comment vérifier chaque étape ? | Chaque tâche tient en une séance de travail et suit l'ordre des dépendances ; chaque tâche nomme sa vérification (test, commande, comportement observable) ; chaque scénario de spec est couvert par la vérification d'une tâche, avec un test automatisé — une vérification manuelle seulement si l'automatisation est impossible, avec la raison ; la documentation concernée est mise à jour dans une tâche, ou le plan indique qu'aucune ne l'est ; les tests suivent la suite existante du projet, puis les conventions de son langage et les `rules` du projet | [`tasks.md`](reference/file-formats.md#tasksmd) |
 | Contrôleur de traçabilité | Les artefacts concordent-ils entre eux ? | Chaque capacité de la proposal a son fichier de spec, et chaque fichier de spec est listé dans la proposal ; chaque exigence a un scénario nominal et un scénario d'erreur ou de cas limite ; chaque scénario est couvert par une tâche dont la vérification nomme un test automatisé, ou explique pourquoi l'automatisation est impossible ; une tâche met à jour la documentation lorsque la section Impact touche un comportement documenté ; la note de version concorde avec le plan ; chaque vérification est concrète. Les manques sont corrigés dans les artefacts | Étape 6 |
 | Relecteur sceptique (contradicteur) | Le plan résisterait-il à un relecteur qui ne l'a pas écrit ? | Le plan est relu sous l'angle du besoin, du périmètre, des specs, des décisions, des hypothèses et des tâches — plus sécurité et confidentialité, compatibilité et migration, exploitabilité, performance, accessibilité et UX lorsque la section Impact les touche, et les `rules` du projet ; ce qui ne fait pas de doute est corrigé ; ce qui demande une décision humaine est consigné dans les Open Questions du design (ou de la proposal, sans design) ; le périmètre n'est jamais élargi ; au plus cinq **points à challenger**, classés par impact, ou la mention qu'aucun n'a été relevé | Étape 7 |
@@ -44,6 +44,7 @@ challenger et attend. Voir [Là où vous décidez](#là-où-vous-décidez).
 |---|---|---|---|
 | `/codev-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-codev-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
 | `/codev-apply` | [Développeur](#développeur-codev-apply) | Chaque tâche fonctionne-t-elle, vérification à l'appui ? | Code du projet, cases de `tasks.md` |
+| `/codev-apply` | [Relecteur nouvel arrivant](#relecteur-nouvel-arrivant-codev-apply) | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? | Simplifications dans le périmètre du change |
 | `/codev-sync`, `/codev-archive` | [Mainteneur des specs vivantes](#mainteneur-des-specs-vivantes-codev-sync-codev-archive) | Les specs principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
 | `/codev-update` | [Éditeur](#éditeur-codev-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_codev/changes/<name>/` uniquement |
 | `/codev-onboard` | [Guide](#guide-codev-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
@@ -88,9 +89,36 @@ when, pour chaque tâche :
 
 Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
 cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
+et après la [relecture du nouvel arrivant](#relecteur-nouvel-arrivant-codev-apply),
 elle lance une fois la suite de tests complète du projet ; un échec est
 signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
 touche jamais un autre change, ne synchronise jamais et n'archive jamais.
+
+### Relecteur nouvel arrivant (`/codev-apply`)
+
+Une fois toutes les tâches cochées, et avant la suite de tests complète,
+relit uniquement le code que le change a ajouté ou modifié, comme un
+développeur qui rejoint le projet sans avoir vu ni le plan ni la
+conversation. Done when :
+
+- chaque fonction modifiée se comprend sans le plan ni la conversation ;
+- les noms disent ce que font les choses, sans abréviation obscure ;
+- une fonction trop longue ou trop imbriquée est découpée, quand elle se
+  découpe simplement ;
+- les lignes trop denses, la généricité prématurée et les abstractions à
+  usage unique cèdent la place à la version simple, sauf si la version
+  astucieuse se justifie ;
+- les commentaires expliquent le pourquoi lorsqu'il n'est pas évident, et
+  ne paraphrasent jamais le code ;
+- les tests se lisent comme une description du comportement ;
+- les `rules` du projet, par exemple des seuils de taille, sont respectées ;
+- ce qui ne fait pas de doute est simplifié et les tests concernés sont
+  relancés ; le reste devient au plus trois **notes de lisibilité** dans le
+  résumé final — quoi, où, pourquoi — ou la mention qu'aucune n'a été
+  relevée.
+
+Il ne change jamais le comportement, n'élargit jamais le périmètre du change
+et ne touche jamais au code que le change n'a ni ajouté ni modifié.
 
 ### Mainteneur des specs vivantes (`/codev-sync`, `/codev-archive`)
 
@@ -183,4 +211,4 @@ L'agent s'arrête et vous passe la main à ces moments :
   **Later** avant d'agir (voir
   [Annonce des mises à jour](skills.md#annonce-des-mises-à-jour)).
 - **Archiver.** `/codev-apply` n'archive jamais : une fois l'implémentation
-  relue, lancez `/codev-archive` ou `codev archive`.
+  relue, en commençant par ses notes de lisibilité, lancez `/codev-archive` ou `codev archive`.

@@ -167,12 +167,16 @@ vérifie et ne la coche qu'une fois la vérification réussie. Elle écrit les
 tests à la manière de votre suite de tests existante, puis selon les
 conventions de votre langage et vos `rules`. Elle prend la commande de test
 dans votre configuration, votre manifeste ou votre CI, et vous la demande si
-elle n'en trouve aucune. Avant d'annoncer le change terminé, elle lance une
-fois la suite de tests complète. Elle s'arrête au premier blocage ou à la première
+elle n'en trouve aucune. Une fois toutes les tâches cochées, elle relit le
+code touché par le change comme le ferait un nouvel arrivant : elle simplifie
+ce qui ne fait pas de doute, sans changer le comportement ni le périmètre, et
+signale au plus trois notes de lisibilité. Elle lance ensuite une fois la
+suite de tests complète. Elle s'arrête au premier blocage ou à la première
 ambiguïté. Elle ne modifie jamais un autre change, ne synchronise jamais et
 n'archive jamais.
 
-Rôle : [développeur](roles.md#développeur-codev-apply).
+Rôles : [développeur](roles.md#développeur-codev-apply),
+[relecteur nouvel arrivant](roles.md#relecteur-nouvel-arrivant-codev-apply).
 
 ### Update (`/codev-update`)
 
