@@ -281,7 +281,7 @@ fn resolve_inherits(ctx: &Ctx, raw: &[String]) -> Result<Vec<InheritArg>> {
                 let written = if path.starts_with('~') || Path::new(path).is_absolute() {
                     path.clone()
                 } else {
-                    absolute(ctx, path)?.display().to_string()
+                    portable(&absolute(ctx, path)?)
                 };
                 let on_disk = config::expand_tilde(&written, ctx.env);
                 if !ctx.fs.exists(&on_disk) || ctx.fs.list_dir(&on_disk).is_err() {
@@ -301,7 +301,7 @@ fn resolve_inherits(ctx: &Ctx, raw: &[String]) -> Result<Vec<InheritArg>> {
                     && !url.starts_with('~')
                     && !Path::new(url).is_absolute();
                 let url = if is_local_relative {
-                    absolute(ctx, url)?.display().to_string()
+                    portable(&absolute(ctx, url)?)
                 } else {
                     url.clone()
                 };
@@ -1431,6 +1431,13 @@ fn resolve_change(
             .with_fix(format!("`--change {}`", names[0])))
         }
     }
+}
+
+/// A path as written into `config.yaml`: forward slashes on every platform.
+/// Windows accepts them, and the file stays readable (no escaped
+/// backslashes) and identical whatever machine ran `codev init`.
+fn portable(path: &Path) -> String {
+    path.display().to_string().replace('\\', "/")
 }
 
 fn absolute(ctx: &Ctx, path: &str) -> Result<PathBuf> {
@@ -2682,12 +2689,7 @@ The rationale for the choice.
         )
         .unwrap();
 
-        // Paths resolved by init use the platform separator: compare them
-        // with forward slashes so the test holds on Windows too.
-        let config =
-            h.fs.read("/p/_codev/config.yaml")
-                .unwrap()
-                .replace('\\', "/");
+        let config = h.fs.read("/p/_codev/config.yaml").unwrap();
         assert!(
             config.contains(
                 "# set with codev init --inherit\ninherits:\n  - git: git@github.com:acme/conventions.git\n    ref: v2\n  - path: ~/shared\n  - path: /home/shared\n"
