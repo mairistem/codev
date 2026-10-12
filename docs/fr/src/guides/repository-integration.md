@@ -54,9 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Install codev 0.6.0
+      - name: Install codev 0.6.1
         run: |
-          curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.6.0 sh
+          curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.6.1 sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Validate specs and changes
         run: codev validate --strict
@@ -85,7 +85,7 @@ codev ne modifie jamais aucun autre fichier de workflow. Sur un dépôt GitLab
           image: debian:stable-slim
           before_script:
             - apt-get update -qq && apt-get install -y -qq curl ca-certificates
-            - curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.6.0 sh
+            - curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.6.1 sh
           script:
             - ~/.local/bin/codev validate --strict
 
