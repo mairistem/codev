@@ -56,3 +56,19 @@ rules:
     # map.
     - "Each task states how to verify it is done: a named test, a command, or
        an observable behavior."
+    - Every change of observable behavior includes a task that updates the
+      documentation in both docs/en and docs/fr (same chapters, French in
+      vouvoiement), or the change states that no documentation is affected.
+    - Every spec scenario is covered by an automated test, added or updated
+      in a task. A manual check is acceptable only when automation is
+      impossible, and the task says why.
+    - "Tests follow the project's Rust conventions: unit tests in a
+       #[cfg(test)] mod tests next to the code; cross-crate and golden tests
+       under crates/*/tests; test names describe the behavior
+       (sync_refuses_a_change_that_fails_validation); engine and CLI tests use
+       the in-memory FileSystem and FixedEnv ports, never temporary
+       directories; no assumption about the path separator or line endings,
+       since CI also runs on Windows."
+    - The definition of done for every task includes cargo fmt --all --check,
+      cargo clippy --workspace --all-targets -- -D warnings, and
+      cargo test --workspace, all passing.
