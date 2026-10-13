@@ -712,17 +712,33 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
         <p><code>/codev-propose</code> takes one role after another, each with criteria it checks before moving on. Then it stops: the plan is yours to approve.</p>
       </div>
       <ol class="roles">
-        <li class="role"><div class="role-card"><span class="role-name">Business analyst</span><span class="role-what">understands the request</span></div></li>
-        <li class="role"><div class="role-card"><span class="role-name">Code investigator</span><span class="role-what">reads the code first</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Analyst</span><span class="role-what">understands the request</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Investigator</span><span class="role-what">reads the code first</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">Product owner</span><span class="role-what">why and what</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">QA analyst</span><span class="role-what">observable behavior</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">Architect</span><span class="role-what">how, within the decisions</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">Tech lead</span><span class="role-what">tasks and their tests</span></div></li>
-        <li class="role"><div class="role-card"><span class="role-name">Traceability</span><span class="role-what">every scenario covered</span></div></li>
-        <li class="role"><div class="role-card"><span class="role-name">Contrarian</span><span class="role-what">points to challenge</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Tracer</span><span class="role-what">every scenario covered</span></div></li>
+        <li class="role"><div class="role-card"><span class="role-name">Skeptic</span><span class="role-what">points to challenge</span></div></li>
         <li class="role role-you"><div class="role-card"><span class="role-name">You approve</span><span class="role-what">then ask for <code>/codev-apply</code></span></div></li>
       </ol>
       <p class="more"><a class="link-arrow" href="en/roles.html">Read about roles <span aria-hidden="true">→</span></a><a class="link-arrow" href="fr/roles.html" hreflang="fr" lang="fr">Les rôles, en français <span aria-hidden="true">→</span></a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="dogfood-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Built with codev</p>
+        <h2 id="dogfood-title">codev is developed with codev</h2>
+        <p>Every change to this repository is planned, reviewed and archived with the tool itself, and every pull request runs <code>codev validate --strict</code>. Its <code>_codev/</code> folder is a real-world example you can browse.</p>
+      </div>
+      <p class="more">
+        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/specs">The living specs <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/changes/archive">Every archived change <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md">A review record <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/decisions">The architecture decisions <span aria-hidden="true">→</span></a>
+      </p>
     </div>
   </section>
 </main>

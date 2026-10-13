@@ -165,6 +165,22 @@ _codev/
 - **Votre langue.** Les artefacts sont rédigés dans la langue choisie par votre
   équipe ; leur structure reste lisible par la machine.
 
+## Développé avec codev
+
+codev est développé avec codev. Chaque évolution de ce dépôt — y compris les
+rôles, les experts et les comptes rendus de revue décrits plus haut — a été
+planifiée, relue et archivée avec l'outil lui-même, et chaque pull request
+passe `codev validate --strict`. Parcourez-le comme un exemple réel :
+
+- [`_codev/specs/`](_codev/specs/) — les specs vivantes, qui décrivent ce que
+  fait codev aujourd'hui ;
+- [`_codev/changes/archive/`](_codev/changes/archive/) — chaque change, avec
+  son proposal, ses deltas de spec, son design et ses tâches ;
+- [un compte rendu de revue](_codev/changes/archive/2026-10-13-review-record/review.md) — les remarques avec leurs preuves, les
+  réponses de l'auteur et la façon dont chacune a été tranchée ;
+- [`_codev/decisions/`](_codev/decisions/) — les décisions d'architecture
+  scellées.
+
 ## Comparaison
 
 codev fait partie des nombreux outils de développement piloté par les specs
