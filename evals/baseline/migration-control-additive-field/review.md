@@ -4,10 +4,10 @@
 
 ## plan.challenge
 
-### skeptic
-
-Disabled by configuration.
-
 ### migration
 
 No finding.
+
+### skeptic
+
+Disabled by configuration.

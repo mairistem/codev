@@ -2,8 +2,8 @@
   "format": 1,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.33087760000000005,
-  "durationMs": 30940,
+  "costUsd": 0.30200740000000004,
+  "durationMs": 20840,
   "strayed": [],
   "review": {
     "archive": {
@@ -17,104 +17,7 @@
     },
     "changeName": "fetch-exchange-rates",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "Err(error) => return Err(format!(\"rates feed {url}: {error} after {ATTEMPTS} attempts\")),\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-1",
-        "line": 9,
-        "location": "src/rates.rs:37",
-        "recommendation": "Emit a `warn!`/`error!` with fields (attempts, error) on the final failure, or confirm the caller logs it, so that stale rates kept by the caller do not go unnoticed for days.",
-        "reported": false,
-        "role": "ops",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Final fetch failure is returned but never logged or counted"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "pub fn fetch_rates() -> Result<Rates, String> {\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-2",
-        "line": 25,
-        "location": "src/rates.rs:18-37",
-        "recommendation": "Return a typed error (e.g. an enum wrapping `reqwest::Error`, or `anyhow::Error` with context) so the caller can distinguish a missing variable, a transport failure and an invalid body, and keep the source chain.",
-        "reported": true,
-        "role": "ops",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Errors flattened to String, losing their source chain"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "match client.get(&url).send().and_then(|r| r.error_for_status()) {\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-3",
-        "line": 41,
-        "location": "src/rates.rs:26",
-        "recommendation": "Retry only on transport errors, timeouts, 429 and 5xx; fail at once on other 4xx (e.g. a wrong `RATES_FEED_URL` returning 404) so the misconfiguration surfaces without the backoff delay.",
-        "reported": true,
-        "role": "ops",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Permanent HTTP errors (4xx) are retried like transient ones"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "let rates: Rates = response.json().map_err(|e| format!(\"rates feed {url}: invalid body: {e}\"))?;\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-4",
-        "line": 55,
-        "location": "src/rates.rs:28",
-        "recommendation": "Keep the URL out of error strings (or log only its host), in case `RATES_FEED_URL` ever carries an API key in its query string; line 37 does the same.",
-        "reported": false,
-        "role": "ops",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Feed URL embedded in error messages"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/fetch-exchange-rates/review.md",
@@ -137,7 +40,7 @@
         "roles": [
           {
             "role": "ops",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "role": "newcomer",

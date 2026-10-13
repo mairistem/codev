@@ -42,6 +42,19 @@ identifier, a location. Leave aside anonymous aggregates, and legal
 questions the code cannot answer (the controller decides the lawful basis;
 the change states it).
 
+Do not report:
+
+- personal data the change neither adds, copies, exposes nor keeps —
+  data already in place before it, such as old logs the change stops
+  feeding;
+- a protection the change adds for not being stronger than what its
+  proposal promises: a re-identification that depends on data you could
+  not see — a small domain, a rare name — is recorded with confidence
+  `low`;
+- a personal detail sent to a processor when the purpose the plan
+  states needs that very detail, such as a delivery address sent to the
+  carrier; whatever goes beyond what the purpose needs stays a finding.
+
 ## Signals
 
 - **Collected "just in case"**: a field with no use in the change.
@@ -99,6 +112,8 @@ One line per finding: the data, where it flows or stays, the principle at
 stake (cite the GDPR article when it is one of the above), the severity
 (high when personal data leaks to logs, third parties or the public, or
 special-category data is processed without a guard; medium when retention
-or erasure is undefined; low otherwise), and the fix. Raise a missing
-lawful basis or impact assessment as a question for the team, not as a
-code fix.
+or erasure is undefined; low otherwise), and the fix. Name the data and
+where it ends up: the field, and the log, processor, table or person that
+receives or keeps it. Raise a missing lawful basis, purpose or impact
+assessment as a question for the team, not as a code fix, with confidence
+`low`: only the controller can tell what was decided.

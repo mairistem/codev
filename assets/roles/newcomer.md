@@ -18,6 +18,22 @@ done_when:
   - The project's `rules`, such as size thresholds
 ---
 
+## Scope
+
+Read only the code the change adds or modifies, for how easily a
+developer who joins the project follows it. Leave aside whether it is
+correct — a wrong result, a type that lies, a missing case — which
+belongs to the developer and the experts, unless the code's shape is what
+hides it; and missing tests: judge the tests the change has, not those it
+lacks.
+
+Do not report:
+
+- a comment or docstring that is accurate and helps, for repeating a
+  value a constant also holds;
+- a matter of taste a reader would not stumble on — a name you would
+  have chosen differently, one style of loop over another.
+
 ## Signals
 
 - **Boolean parameters**: `render(true, false)` — the call site cannot be
@@ -51,3 +67,13 @@ done_when:
 - **Java**: a class hierarchy for one variant; checked exceptions caught and
   swallowed; a builder or factory for an object with two fields; `Optional`
   used as a field or parameter.
+
+## Reporting
+
+One finding per function or block: group what makes it hard to follow —
+its nesting, a duplicated branch, a filter with no explanation, its
+names — into one finding located at it, ranked by what costs the reader
+most, with the simpler version as the fix. Say where a newcomer stumbles:
+the line they would misread, or the question they could not answer
+without the plan. The severity is medium when a reader is likely to
+misread what the code does, low otherwise.

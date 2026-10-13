@@ -10,7 +10,10 @@ separate path.
 
 ### Decision: The progress reporter takes a `quiet` switch
 
-`Progress::new(quiet)` does nothing when `quiet` is set; errors keep their
-own path, so they cannot be silenced by mistake.
+`src/main.rs` accepts `--quiet` before the file and passes it to
+`import::run(path, quiet)`, which hands it to `Progress::new(quiet)`; the
+flag joins `FLAGS`, the list `docs_mention_every_flag` checks against
+`docs/cli.md`. `Progress::new(quiet)` does nothing when `quiet` is set;
+errors keep their own path, so they cannot be silenced by mistake.
 
 **Alternatives considered**: redirecting standard error (would hide errors).

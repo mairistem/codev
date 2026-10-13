@@ -2,8 +2,8 @@
   "format": 1,
   "case": "newcomer-code-clever-one-liner",
   "error": null,
-  "costUsd": 0.3525794,
-  "durationMs": 39815,
+  "costUsd": 0.27291560000000004,
+  "durationMs": 28213,
   "strayed": [],
   "review": {
     "archive": {
@@ -11,10 +11,6 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## plan.challenge` section, while roles were active at it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-newcomer-1 (The premium test is a bit trick that does not mean \"10 euros and more\") is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -25,7 +21,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
         "history": [
           {
             "by": "newcomer",
@@ -37,110 +33,14 @@
         ],
         "id": "R-newcomer-1",
         "line": 9,
-        "location": "src/pricing.ts:10",
-        "recommendation": "Replace the bit trick with the rule the proposal states, behind a named constant: `const PREMIUM_THRESHOLD_CENTS = 1000;` and `p.cents >= PREMIUM_THRESHOLD_CENTS`. As written, `(cents >> 4) & 0x3e8` only tests some bits of `cents / 16` against the bit pattern of 1000: 128 cents (1.28 €) gives 8 & 1000 = 8 and lands in \"hi\", 999 cents gives 62 & 1000 = 40 and lands in \"hi\", while 16384 cents (163.84 €) gives 1024 & 1000 = 0 and lands in \"lo\". A reader cannot see the threshold, and the proposal's \"premium products (10 euros and more)\" is not what runs.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "The premium test is a bit trick that does not mean \"10 euros and more\""
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-2",
-        "line": 31,
         "location": "src/pricing.ts:9-10",
-        "recommendation": "Write it as a plain function: compute `isPremium(p)` once, then push into one of two arrays (or use two `filter` calls) and return them. A reduce whose callback mutates the accumulator through `||=` and returns it via a comma operator has to be decoded token by token; the simple version wins and costs nothing here.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "`bucket` is a dense one-liner with a comma expression and `||=` inside an index"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-3",
-        "line": 51,
-        "location": "src/pricing.ts:9-10",
-        "recommendation": "Name the function after what it does (`splitByPriceBand`, or `partitionPremium`), the parameter `prices`, and use keys that match the doc comment and the domain (`cheap` / `premium`) instead of the magic strings \"hi\" / \"lo\".",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Names say nothing: `bucket`, `ps`, `a`, `p`, `\"hi\"` / `\"lo\"`"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-4",
-        "line": 70,
-        "location": "src/pricing.ts:10",
-        "recommendation": "Declare the result as `{ cheap: Price[]; premium: Price[] }` and always initialise both arrays. Today a caller reading the signature cannot know the keys are \"hi\" and \"lo\", and when no price falls in a band the key is missing, so `bucket(prices).hi` is `undefined` while the type claims `Price[]`.",
+        "recommendation": "Rewrite `bucket` as a plain function a newcomer can read without the plan: name the threshold as a constant in cents (e.g. `PREMIUM_THRESHOLD_CENTS`) and compare `p.cents >= PREMIUM_THRESHOLD_CENTS` instead of the bit trick `(p.cents >> 4) & 0x3e8`, which a reader cannot translate into a price boundary (and which, read literally, tests bits rather than a threshold, so the shape hides what the rule really does); replace the comma-operator reduce with `||=` mutation by a loop or two `filter` calls; give the result an explicit type (`{ cheap: Price[]; premium: Price[] }`) with both keys always present, instead of `Record<string, Price[]>` with the magic keys \"hi\"/\"lo\" that the doc comment calls \"cheap\" and \"premium\"; and use descriptive names (`prices`, `price`, `groups`) instead of `ps`, `a`, `p`, and a verb such as `splitByPriceTier` instead of `bucket`.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "The return type `Record<string, Price[]>` hides its two keys and their possible absence"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [x] 1.1 `bucket`, verified by the catalogue page, where premium products are listed apart\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-5",
-        "line": 89,
-        "location": "tasks.md#1. Implementation",
-        "recommendation": "Add a test that reads as the behavior: \"a price of 999 cents is cheap\", \"a price of 1000 cents is premium\", \"a price of 16384 cents is premium\", \"an empty list gives two empty bands\". Such a test would have caught R-newcomer-1.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "No test describes the split; the only verification is looking at a page"
+        "title": "`bucket` packs its grouping rule into an unreadable one-liner"
       }
     ],
     "format": 1,

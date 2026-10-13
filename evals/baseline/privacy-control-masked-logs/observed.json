@@ -2,8 +2,8 @@
   "format": 1,
   "case": "privacy-control-masked-logs",
   "error": null,
-  "costUsd": 0.4038252,
-  "durationMs": 58248,
+  "costUsd": 0.3829526,
+  "durationMs": 42148,
   "strayed": [],
   "review": {
     "archive": {
@@ -21,7 +21,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\nexport function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
         "history": [
           {
             "by": "privacy",
@@ -33,19 +33,19 @@
         ],
         "id": "R-privacy-1",
         "line": 9,
-        "location": "src/logger.ts:6-8",
-        "recommendation": "The first letter plus the full domain is pseudonymised, not anonymised data (GDPR Art. 5(1)(c), Art. 25) — for a personal or small-company domain (jane@janedoe.com → j***@janedoe.com) it still points to one person. Mask the domain too (e.g. `***@***`), or replace the address with a keyed hash / opaque user id when correlation is needed.",
+        "location": "src/logger.ts:3",
+        "recommendation": "The character classes are ASCII-only, so the character right before `@` must be ASCII and the domain must be ASCII. `logInfo(\"signup\", { email: \"zoë@example.org\" })` or an internationalised domain such as `jean@exämple.fr` matches nothing and the full address reaches the hosting provider's logs, kept 90 days (GDPR Art. 5(1)(c), Art. 25), although the header promises the logger \"never writes a full e-mail address\". Match on the `@` with Unicode-aware classes (e.g. `[^\\s@]+@[^\\s@]+\\.[^\\s@]+` with the `u` flag) and add a test with a non-ASCII local part and domain.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Masked address still identifies the person"
+        "title": "Addresses with non-ASCII characters are logged in full"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "evidence": "export function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n}\n",
         "history": [
           {
             "by": "privacy",
@@ -56,15 +56,39 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 25,
-        "location": "src/logger.ts:3",
-        "recommendation": "The pattern needs a literal `@` and ASCII characters, so a URL-encoded address (`ada%40example.org`, common in logged request URLs and query strings), an `&#64;`/`(at)` variant, or a Unicode local part / IDN domain (`zoë@exämple.fr`) reaches the logs in full (Art. 5(1)(f), Art. 32). Decode before matching or extend the pattern, and add tests for these forms; whether callers log such strings could not be verified, as nothing calls `logInfo` yet.",
+        "line": 30,
+        "location": "src/logger.ts:6-8",
+        "recommendation": "The pattern requires a literal `@`. A logged URL or query string such as `/reset?email=ada.lovelace%40example.org` is written unchanged, so the address lands in the logs in full. No caller logs URLs yet, hence the low confidence. Also match `%40` (case-insensitive) as the separator, or decode before masking, and cover it with a test.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Encoded or non-ASCII addresses are not masked"
+        "title": "Percent-encoded addresses escape the mask"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 51,
+        "location": "src/logger.ts:5",
+        "recommendation": "For a personal or small-company domain (`j***@janedoe.com`), the first letter plus the domain can be enough to re-identify the person, so the logs still hold personal data in pseudonymised form. Whether that is acceptable depends on the domains in real traffic, which the review could not see. If the domain is not needed for debugging, mask it too, or log a keyed hash of the address instead.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Masked form keeps the first letter and the full domain"
       },
       {
         "awaiting": "author",
@@ -79,88 +103,16 @@
             "to": null
           }
         ],
-        "id": "R-privacy-3",
-        "line": 39,
-        "location": "src/logger.ts:12-13",
-        "recommendation": "Only values go through `maskEmails`; a field keyed by an address (e.g. a map of per-user counters spread into `fields`) writes the address in full. Mask the keys as well.",
-        "reported": false,
-        "role": "privacy",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Field names are written without masking"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "describe(\"maskEmails\", () => {\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
         "id": "R-privacy-4",
-        "line": 54,
-        "location": "src/logger.test.ts:4-11",
-        "recommendation": "The proposal promises masking \"in the message and the fields\", but only `maskEmails` is tested; `logInfo` — the function that actually writes to the logs — has no test. Add a test capturing `console.log` that checks a field value and the message are masked.",
-        "reported": true,
-        "role": "privacy",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Field masking is not covered by a test"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "Our logs are kept 90 days by the hosting provider and contain customers' e-mail addresses.\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-5",
-        "line": 68,
-        "location": "proposal.md#Why",
-        "recommendation": "The change stops new leaks but defines nothing for the addresses already logged (storage limitation, Art. 5(1)(e); erasure, Art. 17) — they stay at the hosting provider for up to 90 days, backups included, and an erasure request does not reach them. Decide with the team whether to purge or redact existing logs, or state that they expire naturally.",
-        "reported": true,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Addresses already in the 90-day logs are left in place"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "Our logs are kept 90 days by the hosting provider\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-6",
-        "line": 82,
-        "location": "proposal.md#Why",
-        "recommendation": "Question for the team — name the hosting provider receiving the logs, confirm the processing agreement (Art. 28) and whether logs leave the EEA (Chapter V). Not a code fix.",
+        "line": 70,
+        "location": "src/logger.ts:12-13",
+        "recommendation": "Only the values go through `maskEmails`. A caller that builds `fields` from a map keyed by address (e.g. `{ \"ada@example.org\": 3 }`) writes the address in full. No such caller exists yet. Mask the keys as well: `safe[maskEmails(key)] = …`.",
         "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Hosting provider as log processor is not identified"
+        "title": "Field keys are written unmasked"
       }
     ],
     "format": 1,

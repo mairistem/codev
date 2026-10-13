@@ -315,6 +315,23 @@ c. **Write each finding** as a heading `#### R-<role-id>-<n> <title>` —
      - `high` — The evidence shows the problem directly.
      - `low` — The problem depends on something the reviewer could not see or verify.
 
+   - **Grade with evidence.** A `medium` or `high` finding with
+     confidence `high` quotes the line it is about and states the
+     scenario that fails: the input, state or operation, and what goes
+     wrong. A concern that depends on something you could not see or
+     verify — load, data volume, a caller, a configuration, a later
+     change — and a preference with no failure are recorded with
+     confidence `low`: kept in the record, not presented.
+   - **Not a finding**: a concern another role owns, even when that role
+     is not active; code or data the change neither adds nor modifies;
+     what the plan explicitly excludes, unless excluding it breaks one of
+     the change's own requirements; a missing test, unless your role's
+     criteria ask for one; a matter of taste, or an alternative design
+     when the current one works.
+   - **One finding per defect.** The consequences of one flaw go in its
+     recommendation, not in findings of their own; two defects that need
+     two different fixes are two findings, even at the same place.
+
 d. **The author answers each finding still `open`** — the role that owns
    the cited artifact at `plan.challenge` (its `role.id` in
    `codev instructions`), the `developer` at `code.review`. Append to

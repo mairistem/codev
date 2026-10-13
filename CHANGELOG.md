@@ -38,6 +38,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `/codev-propose` ticks or justifies each suggested domain, and `/codev-apply` asks you to decide a suggested domain still unticked. Since `domain_suggested` is a warning, `codev validate --strict` fails until each suggestion is ticked or justified.
 - The role evaluation suite has harder cases — subtle defects, two defects of different severity per expert, Python cases and more clean controls — and pairs a finding with a seeded defect only when they name the same category of issue. The committed baseline in `evals/baseline/report.md` is recorded again.
 - `/codev-propose` and `/codev-apply` write their findings into the review record, let the author answer each one and the reviewer re-check it, and ask you to decide what is still disputed.
+- The reviewing roles report fewer false positives. A finding presented to you with high confidence now quotes the line and states the scenario that fails; hypotheses and preferences stay in the review record with low confidence. Each defect is reported once, and each expert says what lies outside its domain.
+- The skeptic no longer reviews security, privacy, migration, operations, performance or accessibility itself: it challenges the plan's logic and evidence and checks that the proposal's Domains bring the experts who do. Run `codev update` to refresh your skills.
 <!-- codev:end -->
 
 ## [0.6.1] - 2026-10-12

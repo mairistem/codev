@@ -35,6 +35,17 @@ Look at the user interface the change adds or modifies: pages,
 components, dialogs, forms, messages, and the HTML or native views they
 produce. Leave aside visual taste, and screens the change does not touch.
 
+Do not report:
+
+- a custom widget for not being the native element, when it works with
+  the keyboard and a screen reader; recommend the native element as the
+  fix of a defect you found, not as a finding of its own;
+- an optional refinement of a pattern — a convenience key, an extra
+  shortcut — when the interaction the pattern requires works;
+- a style the diff does not show — focus colour, contrast, target size —
+  as a fact: when the stylesheet is not in the change, record what to
+  check with confidence `low`.
+
 ## Signals
 
 - **Clickable non-control**: Example: `<div onclick=…>` with no role, no
@@ -90,3 +101,5 @@ One line per finding: the element and its location, who is blocked
 criterion by number and name, the severity (high when a task cannot be
 completed with the keyboard or a screen reader; medium when it is possible
 but confusing; low otherwise), and the fix — preferably the native element.
+State the step a user cannot take or is misled at: the key pressed or the
+announcement heard, and what happens.

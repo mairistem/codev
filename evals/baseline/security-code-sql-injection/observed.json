@@ -2,8 +2,8 @@
   "format": 1,
   "case": "security-code-sql-injection",
   "error": null,
-  "costUsd": 0.31359240000000005,
-  "durationMs": 24420,
+  "costUsd": 0.3511748,
+  "durationMs": 28004,
   "strayed": [],
   "review": {
     "archive": {
@@ -38,37 +38,13 @@
         "id": "R-security-1",
         "line": 9,
         "location": "src/users.ts:10-11",
-        "recommendation": "CWE-89. Any holder of the support role sends `GET /users/search?q=` with a term such as `x' UNION SELECT id, password_hash FROM users --` (the route only checks its length, src/server.ts:13-17) and reads or alters any table the database user can reach. Bind the term as a parameter, as `query` in src/db.ts expects: `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + term + \"%\"])`, and add a test with a term containing a quote.",
+        "recommendation": "CWE-89. Any account with the `support` role sends `GET /users/search?q=` with a term such as `x' UNION SELECT id, password_hash FROM users --` (2 to 100 characters, only trimmed at src/server.ts:13-14) and reads any table the database user can read; because `query` is called with no parameters, `pg` uses the simple query protocol, so stacked statements such as `x'; DROP TABLE users; --` run too. Bind the term as a parameter, as `src/db.ts` documents (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE '%' || $1 || '%' ORDER BY name LIMIT 50\", [term])`, escaping `%`, `_` and `\\` in the term if they must match literally, and add a test that a term containing a quote returns no extra rows and no error.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "code.review",
         "title": "SQL injection through the search term"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "WHERE name LIKE '%\" + term + \"%'\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-2",
-        "line": 31,
-        "location": "src/users.ts:10",
-        "recommendation": "Once the term is bound, `%` and `_` in it still act as wildcards, so `q=%%` matches every user instead of names containing `%`. Escape `\\`, `%` and `_` in the term before wrapping it in `%…%` (with `ESCAPE '\\'`).",
-        "reported": true,
-        "role": "security",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "LIKE wildcards in the term are not escaped"
       }
     ],
     "format": 1,

@@ -104,11 +104,12 @@ Avant de présenter le plan, la skill le relit en deux étapes :
    chaque exigence supprimée ou modifiée de façon incompatible, a son élément
    **BREAKING**. Les manques sont corrigés dans les artefacts.
 2. **Relecture contradictoire** — la skill relit le plan en relecteur
-   sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches.
-   Sécurité et confidentialité, compatibilité et migration, exploitabilité,
-   performance, accessibilité et UX ne s'ajoutent que lorsque la section
-   Impact de la proposal les touche, de même que les
-   [`rules`](reference/configuration.md#rules) de votre projet. Les
+   sceptique : besoin, périmètre, specs, décisions, hypothèses, tâches,
+   et si `## Domains` coche chaque domaine que le plan touche, ainsi que
+   les [`rules`](reference/configuration.md#rules) de votre projet. Le
+   skeptic ne relit lui-même aucun domaine : sécurité, données
+   personnelles, migration, exploitation, performance et accessibilité
+   reviennent à leurs experts. Les
    [experts](roles.md#experts-et-domaines) dont la proposal coche le
    domaine dans `## Domains` — sécurité, données personnelles,
    accessibilité, performance, exploitation, migration — rejoignent cette

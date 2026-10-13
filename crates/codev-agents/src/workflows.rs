@@ -855,6 +855,57 @@ mod tests {
         }
     }
 
+    /// The rendered `propose` and `apply` skills, whitespace collapsed.
+    fn review_skills() -> Vec<(&'static str, String)> {
+        REVIEW_RECORD_WORKFLOWS
+            .iter()
+            .map(|id| (*id, flat(&rendered(id))))
+            .collect()
+    }
+
+    #[test]
+    fn propose_and_apply_carry_the_evidence_rule() {
+        for (id, skill) in review_skills() {
+            for keyword in [
+                "**Grade with evidence.**",
+                "A `medium` or `high` finding with confidence `high` quotes the line it is about and states the scenario that fails",
+                "something you could not see or verify",
+                "a preference with no failure are recorded with confidence `low`",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` must say `{keyword}`");
+            }
+        }
+    }
+
+    #[test]
+    fn propose_and_apply_list_what_is_not_a_finding() {
+        for (id, skill) in review_skills() {
+            for keyword in [
+                "**Not a finding**",
+                "a concern another role owns",
+                "code or data the change neither adds nor modifies",
+                "what the plan explicitly excludes",
+                "a missing test, unless your role's criteria ask for one",
+                "a matter of taste",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` must say `{keyword}`");
+            }
+        }
+    }
+
+    #[test]
+    fn propose_and_apply_report_each_defect_once() {
+        for (id, skill) in review_skills() {
+            for keyword in [
+                "**One finding per defect.**",
+                "The consequences of one flaw go in its recommendation",
+                "two defects that need two different fixes are two findings, even at the same place",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` must say `{keyword}`");
+            }
+        }
+    }
+
     #[test]
     fn propose_and_apply_act_on_suggested_domains() {
         let propose = flat(&rendered("propose"));

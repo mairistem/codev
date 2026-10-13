@@ -1757,7 +1757,7 @@ apply:
         assert!(!without.contains("Knowledge:"), "{without}");
         outcome.knowledge = true;
         let with = roles(&outcome);
-        assert!(with.contains("  Knowledge:\n    ## Signals"), "{with}");
+        assert!(with.contains("  Knowledge:\n    ## Scope"), "{with}");
         assert!(
             with.contains("Stacks: none detected — `By stack` keeps every language"),
             "{with}"

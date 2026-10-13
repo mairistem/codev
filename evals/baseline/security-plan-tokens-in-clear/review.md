@@ -16,16 +16,18 @@ evidence: |
   The `api_tokens` table holds `user_id`, `token` and `created_at`; the
   middleware looks a request's token up with `WHERE token = $1`. Storing the
   token as given keeps the lookup a simple indexed equality.
-
-  **Alternatives considered**: none, the lookup must be fast.
 recommendation: >-
-  Store only a SHA-256 digest of the token (a fast hash is enough for a 32-byte
-  random value) in a `token_hash` column with a unique index, and look requests
-  up with `WHERE token_hash = $1` on the digest of the presented token. The lookup
-  stays an indexed equality, and anyone reading the table, a backup or a replica
-  (CWE-312, CWE-522) no longer gets usable bearer credentials for every account.
-  Record the alternative in the design and add a test asserting the raw token
-  is never persisted.
+  Store only a hash of the token (SHA-256 of the 32 random bytes is enough
+  for a high-entropy secret; no bcrypt needed) in a `token_hash` column, and
+  have the middleware hash the presented bearer value and look it up with
+  `WHERE token_hash = $1` — still an indexed equality, so the performance
+  argument holds. Anyone who reads the `api_tokens` table (a database
+  backup, a read replica, a support SQL console, an SQL injection elsewhere)
+  otherwise obtains every user's working bearer credential and can call the
+  API as them; since revocation is a Non-Goal, a leaked token cannot even be
+  invalidated. Update the decision, the migration task 1.1 and add a
+  scenario stating the token is not stored in recoverable form (CWE-312,
+  CWE-256).
 history:
   - status: open
     by: security
@@ -42,52 +44,20 @@ evidence: |
   method, path and headers at `info` level, including `Authorization`, so
   support can see which token an integration sent.
 recommendation: >-
-  Never log `Authorization` or `Cookie` values (CWE-532): redact them, or log a
-  non-secret token identifier (an id or a short prefix of the token's hash) so
-  support can still tell which token was used. Task 1.3's test `logs_requests`
-  should assert the secret does not appear in the log output. As written, anyone
-  with log access can replay every integration's token, and the existing session
-  cookie would be logged the same way.
+  Redact `Authorization` (and `Cookie`) before logging: log the scheme and,
+  at most, a non-secret identifier such as the token's id or the first few
+  characters of its hash. As designed, every authenticated request writes a
+  live bearer token to the logs, so anyone with access to the logs or the
+  log pipeline (support, a log aggregation vendor, a leaked log archive)
+  can replay it and act as the user — with no revocation to stop it. The
+  same line would also log Basic-auth passwords that integrations send
+  today. Change task 1.3 so `logs_requests` asserts the header value is
+  absent from the log output (CWE-532).
 history:
   - status: open
     by: security
 ```
 
-#### R-security-3 A leaked token cannot be revoked and never expires
+### skeptic
 
-```yaml
-severity: medium
-confidence: high
-location: "design.md#Goals / Non-Goals"
-evidence: |
-  **Non-Goals:** OAuth, scopes, revocation (a later change).
-recommendation: >-
-  The proposal's motivation is that "a leaked integration exposes the account",
-  yet a leaked token here grants full account access forever with no way to cut
-  it off short of a database edit. Either bring a minimal revocation (delete a
-  token by id) into this change, or give tokens an expiry, or explicitly gate the
-  release on the revocation change; at least state the exposure in Risks /
-  Trade-offs, which today only covers a lost token.
-history:
-  - status: open
-    by: security
-```
-
-#### R-security-4 Token creation is not restricted to session authentication
-
-```yaml
-severity: medium
-confidence: low
-location: "specs/api-tokens/spec.md#Requirement: A user creates an API token"
-evidence: |
-  The service SHALL let a signed-in user create an API token, shown once, and SHALL accept it in the `Authorization: Bearer` header of later requests.
-recommendation: >-
-  Tokens carry no scope (a non-goal), so a request authenticated by a bearer
-  token could itself call the token-creation endpoint: a stolen token mints new
-  tokens that survive the original's later revocation. Specify that creating a
-  token requires a session (password sign-in), not a bearer token, and add a
-  scenario refusing creation when the caller authenticated with a token.
-history:
-  - status: open
-    by: security
-```
+Disabled by configuration.

@@ -15,30 +15,64 @@ location: "src/invoices.ts:32-35"
 evidence: |
     "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
     [id],
-recommendation: Scope the lookup to the caller's organization (`WHERE id = $1 AND org_id = $2` with `currentUser(req).orgId`), answer 404 when it does not match, and add a test that a caller from another organization gets 404 (CWE-639 / CWE-862).
+recommendation: >-
+  Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of
+  organization A who sends `GET /invoices/42` receives invoice 42 of
+  organization B: the handler never reads `currentUser(req)` and the query
+  filters on the id alone, so ids can be enumerated to read every customer's
+  invoices. Scope the query to the caller's organization
+  (`WHERE id = $1 AND org_id = $2`, `[id, currentUser(req).orgId]`) so a
+  foreign invoice answers 404, and add a test asserting the org filter, as
+  the list endpoint's test does.
 history:
   - status: open
     by: security
 ```
 
-Any signed-in user can enumerate integer ids (`GET /invoices/1`, `/2`, …) and read every other organization's invoices: the detail route never calls `currentUser` and filters by `id` only, unlike the list route which filters by `org_id`. The proposal promises each organization's invoices; the only test covers the list route.
-
-#### R-security-2 Error handler sends the exception message and stack trace to the client
+#### R-security-2 Error handler returns the error message and stack trace to the client
 
 ```yaml
 severity: medium
 confidence: high
 location: "src/server.ts:15-18"
 evidence: |
-    res.status(500).json({ error: err.message, stack: err.stack });
-recommendation: |
-  Log the error server-side only and answer a generic body such as `{ error: "internal error" }`; never serialize `err.stack` or raw `err.message` into the response (CWE-209).
+  res.status(500).json({ error: err.message, stack: err.stack });
+recommendation: >-
+  Information exposure through an error message (CWE-209). Any client, even
+  unauthenticated, that sends a malformed JSON body with
+  `Content-Type: application/json` makes `express.json()` raise a parse error
+  that reaches this handler, and gets back the stack trace with server file
+  paths and dependency layout; a database error raised in the invoice
+  handlers would likewise return the driver's message (table, column or
+  constraint names). Log the error server-side only and answer a generic
+  `{ "error": "internal error" }`; honour `err.status`/`err.statusCode`
+  (e.g. 400 for body-parser errors) instead of always answering 500.
 history:
   - status: open
     by: security
 ```
 
-Any caller who triggers a failure (for example a database error from `query`) receives file paths, dependency versions and possibly SQL or connection details from the driver's message, which helps an attacker map the backend.
+#### R-security-3 Invoice id is not restricted to a positive safe integer
+
+```yaml
+severity: low
+confidence: low
+location: "src/invoices.ts:27-28"
+evidence: |
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+recommendation: >-
+  `Number()` accepts `0x10`, `1e3`, ` 5 `, negative values and integers
+  beyond 2^53 (`99999999999999999999` passes `Number.isInteger`), so the
+  path parameter is not validated against an allow-list. Whether an
+  out-of-range value makes the database raise an error (then leaked through
+  R-security-2) depends on the column type, which the change does not show.
+  Validate with `/^[1-9][0-9]{0,9}$/` (or `Number.isSafeInteger(id) && id > 0`)
+  and answer 400 otherwise.
+history:
+  - status: open
+    by: security
+```
 
 ### newcomer
 

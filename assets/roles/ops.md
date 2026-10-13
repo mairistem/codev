@@ -48,6 +48,25 @@ queues, outgoing calls, configuration, logs and error paths. Leave aside
 local developer tooling, and dashboards or alerts that live outside the
 repository unless the change must create them.
 
+Do not report:
+
+- a missing feature flag or switch when deploying the previous version
+  undoes the change; ask for one only when a redeploy does not — data
+  already migrated, a provider or account switched over, messages already
+  sent;
+- a constant that tunes behavior — a poll interval, a timeout, a retry
+  step — for living in the code: configuration matters for what differs
+  between environments, such as hosts, URLs and credentials;
+- the design of error types, or how code the change does not touch
+  reports its errors;
+- retries that are bounded and spaced, of an operation that is safe to
+  repeat, whatever error triggers them;
+- at `plan.challenge`, the handling the code of each call will provide —
+  its timeout, its retries, its log fields, each error a dependency may
+  return — unless a decision of the design rules it out. Report what the
+  design decides or leaves out at its own level: a new component nobody
+  would see fail, a switch-over with no way back.
+
 ## Signals
 
 - **Silent failure**: an error caught and dropped. Example:
@@ -65,14 +84,15 @@ repository unless the change must create them.
   no flag or configuration switch.
 - **Invisible new component**: a worker or service with no health check,
   no metric, no log at start.
-- **Configuration baked in**: a URL, a limit or a credential hard-coded
-  instead of read from the environment or configuration.
+- **Configuration baked in**: a URL, a host or a credential that differs
+  between environments, hard-coded instead of read from the environment
+  or configuration.
 
 ## By stack
 
 - **Rust**: `tracing` with fields (`info!(user_id, "login")`) rather than
-  formatted strings; `reqwest` clients without `.timeout()`; errors
-  converted with `.to_string()` losing their source chain.
+  formatted strings; `reqwest` clients without `.timeout()`; an error
+  logged as a bare message after its cause was dropped.
 - **TypeScript/JavaScript**: `fetch` has no timeout by default — use an
   `AbortSignal`; unhandled promise rejections; `console.log` in services
   instead of a structured logger.
@@ -99,4 +119,7 @@ repository unless the change must create them.
 One line per finding: the location, what an operator would miss or suffer
 at 3 a.m. (a hang, a blind spot, an outage with no rollback), the severity
 (high when a failure can go unnoticed or cannot be rolled back; medium when
-it is hard to diagnose; low otherwise), and the fix.
+it is hard to diagnose; low otherwise), and the fix. Name the failure: the
+dependency or event that goes wrong, and what the operator sees or cannot
+see then. A finding that cannot name one is a preference: leave it out,
+or record it with confidence `low`.

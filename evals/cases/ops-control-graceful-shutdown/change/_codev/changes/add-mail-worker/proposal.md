@@ -6,7 +6,7 @@ E-mails are sent inside web requests, which time out when the relay is slow.
 
 ## What Changes
 
-- Services queue e-mails; a worker sends them, retries temporary failures with a growing delay, keeps rejected ones aside, and stops cleanly on deployment.
+- Services queue e-mails; a worker sends them, retries temporary failures with a growing delay, keeps rejected ones and those still failing after half an hour aside, reports its health and counts, and stops cleanly on deployment.
 
 ## Capabilities
 

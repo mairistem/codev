@@ -13,16 +13,9 @@
     "minEvidence": 0.8
   },
   "pass": false,
-  "costUsd": 15.1836,
+  "costUsd": 14.2326,
   "failures": [
-    "accessibility: 4 false positive(s) exceed 2",
-    "migration: 5 false positive(s) exceed 2",
-    "newcomer: 6 false positive(s) exceed 2",
-    "ops: 11 false positive(s) exceed 2",
-    "performance: 5 false positive(s) exceed 2",
-    "privacy: 8 false positive(s) exceed 2",
-    "security: 4 false positive(s) exceed 2",
-    "skeptic: 9 false positive(s) exceed 2"
+    "skeptic: 5 false positive(s) exceed 2"
   ],
   "roles": [
     {
@@ -33,23 +26,21 @@
       "expected": 5,
       "truePositives": 5,
       "misses": 0,
-      "falsePositives": 4,
+      "falsePositives": 0,
       "unreported": 2,
-      "duplicates": 5,
+      "duplicates": 4,
       "crossRole": 0,
       "severityAgreement": 5,
       "evidence": {
-        "found": 16,
+        "found": 11,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.9448,
-      "failures": [
-        "accessibility: 4 false positive(s) exceed 2"
-      ]
+      "costUsd": 1.8909,
+      "failures": []
     },
     {
       "role": "migration",
@@ -59,23 +50,21 @@
       "expected": 5,
       "truePositives": 5,
       "misses": 0,
-      "falsePositives": 5,
-      "unreported": 1,
-      "duplicates": 4,
+      "falsePositives": 0,
+      "unreported": 0,
+      "duplicates": 1,
       "crossRole": 0,
-      "severityAgreement": 4,
+      "severityAgreement": 5,
       "evidence": {
-        "found": 15,
+        "found": 6,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.8437,
-      "failures": [
-        "migration: 5 false positive(s) exceed 2"
-      ]
+      "costUsd": 1.7035,
+      "failures": []
     },
     {
       "role": "newcomer",
@@ -85,23 +74,21 @@
       "expected": 2,
       "truePositives": 2,
       "misses": 0,
-      "falsePositives": 6,
-      "unreported": 1,
-      "duplicates": 2,
+      "falsePositives": 0,
+      "unreported": 0,
+      "duplicates": 0,
       "crossRole": 0,
-      "severityAgreement": 0,
+      "severityAgreement": 2,
       "evidence": {
-        "found": 11,
+        "found": 2,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.0456,
-      "failures": [
-        "newcomer: 6 false positive(s) exceed 2"
-      ]
+      "costUsd": 0.8266,
+      "failures": []
     },
     {
       "role": "ops",
@@ -111,23 +98,21 @@
       "expected": 6,
       "truePositives": 6,
       "misses": 0,
-      "falsePositives": 11,
-      "unreported": 5,
-      "duplicates": 4,
+      "falsePositives": 1,
+      "unreported": 1,
+      "duplicates": 1,
       "crossRole": 0,
       "severityAgreement": 3,
       "evidence": {
-        "found": 26,
+        "found": 9,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.883,
-      "failures": [
-        "ops: 11 false positive(s) exceed 2"
-      ]
+      "costUsd": 1.9677,
+      "failures": []
     },
     {
       "role": "performance",
@@ -137,23 +122,21 @@
       "expected": 4,
       "truePositives": 4,
       "misses": 0,
-      "falsePositives": 5,
-      "unreported": 3,
-      "duplicates": 3,
+      "falsePositives": 0,
+      "unreported": 1,
+      "duplicates": 0,
       "crossRole": 0,
-      "severityAgreement": 1,
+      "severityAgreement": 2,
       "evidence": {
-        "found": 15,
+        "found": 5,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.8379,
-      "failures": [
-        "performance: 5 false positive(s) exceed 2"
-      ]
+      "costUsd": 1.7588,
+      "failures": []
     },
     {
       "role": "privacy",
@@ -163,23 +146,21 @@
       "expected": 7,
       "truePositives": 7,
       "misses": 0,
-      "falsePositives": 8,
+      "falsePositives": 1,
       "unreported": 8,
-      "duplicates": 2,
+      "duplicates": 1,
       "crossRole": 0,
       "severityAgreement": 4,
       "evidence": {
-        "found": 25,
+        "found": 17,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 2.4793,
-      "failures": [
-        "privacy: 8 false positive(s) exceed 2"
-      ]
+      "costUsd": 2.243,
+      "failures": []
     },
     {
       "role": "security",
@@ -189,23 +170,21 @@
       "expected": 6,
       "truePositives": 6,
       "misses": 0,
-      "falsePositives": 4,
-      "unreported": 3,
-      "duplicates": 1,
+      "falsePositives": 0,
+      "unreported": 2,
+      "duplicates": 0,
       "crossRole": 0,
       "severityAgreement": 6,
       "evidence": {
-        "found": 14,
+        "found": 8,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 2.1629,
-      "failures": [
-        "security: 4 false positive(s) exceed 2"
-      ]
+      "costUsd": 2.0405,
+      "failures": []
     },
     {
       "role": "skeptic",
@@ -215,22 +194,22 @@
       "expected": 3,
       "truePositives": 3,
       "misses": 0,
-      "falsePositives": 9,
-      "unreported": 2,
-      "duplicates": 3,
+      "falsePositives": 5,
+      "unreported": 0,
+      "duplicates": 1,
       "crossRole": 0,
       "severityAgreement": 2,
       "evidence": {
-        "found": 17,
+        "found": 9,
         "moved": 0,
         "invalid": 0,
         "unchecked": 0
       },
       "recall": 1.0,
       "evidenceValidity": 1.0,
-      "costUsd": 1.4713,
+      "costUsd": 1.3108,
       "failures": [
-        "skeptic: 9 false positive(s) exceed 2"
+        "skeptic: 5 false positive(s) exceed 2"
       ]
     },
     {
@@ -254,7 +233,7 @@
       },
       "recall": 1.0,
       "evidenceValidity": null,
-      "costUsd": 0.5151,
+      "costUsd": 0.4909,
       "failures": []
     }
   ],
@@ -279,7 +258,7 @@
           "role": "accessibility",
           "severity": "medium",
           "category": "state-not-exposed",
-          "matchedBy": "R-accessibility-2",
+          "matchedBy": "R-accessibility-3",
           "severityAgrees": true
         }
       ],
@@ -287,10 +266,10 @@
         {
           "id": "R-accessibility-1",
           "role": "accessibility",
-          "title": "Open sort menu traps keyboard focus: Tab cycles inside it and Escape does not close it",
+          "title": "Tab is captured inside the open sort menu (keyboard trap)",
           "severity": "high",
           "confidence": "high",
-          "location": "src/components/SortMenu.tsx:21-30",
+          "location": "src/components/SortMenu.tsx:23-25",
           "status": "open",
           "class": "true-positive",
           "expected": "tab-keyboard-trap",
@@ -299,7 +278,19 @@
         {
           "id": "R-accessibility-2",
           "role": "accessibility",
-          "title": "Menu button always announces aria-expanded=\"false\"",
+          "title": "Escape does not close the sort menu",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/components/SortMenu.tsx:26-29",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "tab-keyboard-trap",
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-3",
+          "role": "accessibility",
+          "title": "aria-expanded is hard-coded to \"false\"",
           "severity": "medium",
           "confidence": "high",
           "location": "src/components/SortMenu.tsx:34",
@@ -307,14 +298,27 @@
           "class": "true-positive",
           "expected": "expanded-state-hard-coded",
           "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-4",
+          "role": "accessibility",
+          "title": "Focus visibility of the menu items is not shown in the change",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/components/SortMenu.tsx:33",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "near": "expanded-state-hard-coded",
+          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3667014,
-      "durationMs": 30148
+      "costUsd": 0.4588532,
+      "durationMs": 48846
     },
     {
       "id": "accessibility-code-icon-button",
@@ -344,7 +348,7 @@
         {
           "id": "R-accessibility-1",
           "role": "accessibility",
-          "title": "Delete action is a clickable div, unreachable by keyboard",
+          "title": "Delete control is a clickable div unreachable by keyboard",
           "severity": "high",
           "confidence": "high",
           "location": "src/components/Toolbar.tsx:13-15",
@@ -359,7 +363,7 @@
           "title": "Icon-only delete control has no accessible name",
           "severity": "high",
           "confidence": "high",
-          "location": "src/components/Toolbar.tsx:14",
+          "location": "src/components/Toolbar.tsx:13-15",
           "status": "open",
           "class": "duplicate",
           "expected": "div-button",
@@ -368,7 +372,7 @@
         {
           "id": "R-accessibility-3",
           "role": "accessibility",
-          "title": "Owner avatar image has no alt attribute",
+          "title": "Owner avatar image has no alt text",
           "severity": "medium",
           "confidence": "high",
           "location": "src/components/Toolbar.tsx:12",
@@ -380,7 +384,7 @@
         {
           "id": "R-accessibility-4",
           "role": "accessibility",
-          "title": "Delete target likely smaller than 24×24 CSS pixels",
+          "title": "Focus style and target size of the icon button not visible in the change",
           "severity": "low",
           "confidence": "low",
           "location": "src/components/Toolbar.tsx:13",
@@ -394,8 +398,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4263966,
-      "durationMs": 31546
+      "costUsd": 0.3587444000000001,
+      "durationMs": 32716
     },
     {
       "id": "accessibility-control-custom-listbox",
@@ -408,72 +412,12 @@
         {
           "id": "R-accessibility-1",
           "role": "accessibility",
-          "title": "Custom combobox where a native select would do",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/components/SizePicker.tsx:66",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-2",
-          "role": "accessibility",
-          "title": "Highlighted option has no visible style",
+          "title": "Highlighted option relies on an unseen style",
           "severity": "medium",
           "confidence": "low",
-          "location": "src/components/SizePicker.tsx:86",
+          "location": "src/components/SizePicker.tsx:92",
           "status": "open",
           "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-3",
-          "role": "accessibility",
-          "title": "Target size of the combobox and options is not set",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "src/components/SizePicker.tsx:79",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-4",
-          "role": "accessibility",
-          "title": "aria-selected marks the committed value, not the highlighted option",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/components/SizePicker.tsx:85",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-5",
-          "role": "accessibility",
-          "title": "Highlight is not reset to the current value when the list opens",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/components/SizePicker.tsx:11",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-6",
-          "role": "accessibility",
-          "title": "No type-ahead on the select-only combobox",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/components/SizePicker.tsx:28-58",
-          "status": "open",
-          "class": "false-positive",
           "expected": null,
           "evidence": "found"
         }
@@ -482,8 +426,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4681692,
-      "durationMs": 64204
+      "costUsd": 0.3921664,
+      "durationMs": 37299
     },
     {
       "id": "accessibility-control-labelled-form",
@@ -497,8 +441,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.29602100000000003,
-      "durationMs": 19716
+      "costUsd": 0.27390640000000005,
+      "durationMs": 15753
     },
     {
       "id": "accessibility-plan-colour-only",
@@ -520,7 +464,7 @@
         {
           "id": "R-accessibility-1",
           "role": "accessibility",
-          "title": "Errors are conveyed by colour only, with no text message",
+          "title": "Field errors are conveyed by colour only",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: Invalid fields turn red",
@@ -532,34 +476,10 @@
         {
           "id": "R-accessibility-2",
           "role": "accessibility",
-          "title": "No programmatic invalid state or field–message association",
-          "severity": "high",
-          "confidence": "high",
-          "location": "design.md#Decision: Invalid fields turn red",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "colour-only-errors",
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-3",
-          "role": "accessibility",
-          "title": "Removing the error summary leaves no feedback on submit",
+          "title": "Removing the error summary leaves a failed submit unannounced",
           "severity": "medium",
           "confidence": "high",
-          "location": "design.md#Decision: Invalid fields turn red",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "colour-only-errors",
-          "evidence": "found"
-        },
-        {
-          "id": "R-accessibility-4",
-          "role": "accessibility",
-          "title": "Acceptance scenarios check only the border colour",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "specs/checkout-validation/spec.md#Scenario: An invalid postcode",
+          "location": "proposal.md#What Changes",
           "status": "open",
           "class": "duplicate",
           "expected": "colour-only-errors",
@@ -570,8 +490,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.38756000000000007,
-      "durationMs": 39361
+      "costUsd": 0.4071972,
+      "durationMs": 34409
     },
     {
       "id": "migration-code-drop-and-rename",
@@ -585,7 +505,7 @@
           "role": "migration",
           "severity": "high",
           "category": "irreversible-migration",
-          "matchedBy": "R-migration-1",
+          "matchedBy": "R-migration-2",
           "severityAgrees": true
         },
         {
@@ -593,7 +513,7 @@
           "role": "migration",
           "severity": "high",
           "category": "breaking-api",
-          "matchedBy": "R-migration-2",
+          "matchedBy": "R-migration-1",
           "severityAgrees": true
         }
       ],
@@ -601,19 +521,7 @@
         {
           "id": "R-migration-1",
           "role": "migration",
-          "title": "Irreversible DROP COLUMN with no down migration or backup",
-          "severity": "high",
-          "confidence": "high",
-          "location": "migrations/0005_drop_legacy_email.sql:1-2",
-          "status": "open",
-          "class": "true-positive",
-          "expected": "irreversible-drop",
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-2",
-          "role": "migration",
-          "title": "Account JSON field rename is a breaking API change not marked BREAKING",
+          "title": "Account JSON field rename is an unmarked breaking change",
           "severity": "high",
           "confidence": "high",
           "location": "src/api.rs:8-9",
@@ -623,15 +531,15 @@
           "evidence": "found"
         },
         {
-          "id": "R-migration-3",
+          "id": "R-migration-2",
           "role": "migration",
-          "title": "Field removed in the same release as its replacement, no transition period",
-          "severity": "medium",
+          "title": "DROP COLUMN legacy_email is irreversible with no down migration or backup",
+          "severity": "high",
           "confidence": "high",
-          "location": "src/api.rs:8",
+          "location": "migrations/0005_drop_legacy_email.sql:2",
           "status": "open",
-          "class": "duplicate",
-          "expected": "renamed-json-field",
+          "class": "true-positive",
+          "expected": "irreversible-drop",
           "evidence": "found"
         }
       ],
@@ -639,8 +547,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3427556,
-      "durationMs": 31416
+      "costUsd": 0.3557398,
+      "durationMs": 39292
     },
     {
       "id": "migration-code-serde-rename-all",
@@ -663,17 +571,17 @@
           "severity": "medium",
           "category": "config-compat",
           "matchedBy": "R-migration-2",
-          "severityAgrees": false
+          "severityAgrees": true
         }
       ],
       "findings": [
         {
           "id": "R-migration-1",
           "role": "migration",
-          "title": "`rename_all = \"camelCase\"` renames every existing field of the public order JSON",
+          "title": "`rename_all = \"camelCase\"` renames every existing order JSON field",
           "severity": "high",
           "confidence": "high",
-          "location": "src/api.rs:5-13",
+          "location": "src/api.rs:5-12",
           "status": "open",
           "class": "true-positive",
           "expected": "public-fields-renamed",
@@ -682,49 +590,13 @@
         {
           "id": "R-migration-2",
           "role": "migration",
-          "title": "`default_currency` is a required key: existing `config.toml` files no longer load",
-          "severity": "high",
+          "title": "Existing `config.toml` files without `default_currency` no longer load",
+          "severity": "medium",
           "confidence": "high",
           "location": "src/config.rs:9-10",
           "status": "open",
           "class": "true-positive",
           "expected": "required-config-key",
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-3",
-          "role": "migration",
-          "title": "Release note announces neither the breaking changes nor the new configuration key",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "proposal.md#Release note",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "public-fields-renamed",
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-4",
-          "role": "migration",
-          "title": "No test covers the migration path for old configuration files or API consumers",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "tasks.md#1. Implementation",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-5",
-          "role": "migration",
-          "title": "Public `report::SalesRow` and its field `count` renamed with no deprecation",
-          "severity": "low",
-          "confidence": "low",
-          "location": "src/report.rs:3-7",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
           "evidence": "found"
         }
       ],
@@ -732,8 +604,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.403978,
-      "durationMs": 40533
+      "costUsd": 0.3056384,
+      "durationMs": 21983
     },
     {
       "id": "migration-control-additive-field",
@@ -747,8 +619,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3508554,
-      "durationMs": 26682
+      "costUsd": 0.3617368,
+      "durationMs": 33611
     },
     {
       "id": "migration-control-serde-alias",
@@ -757,50 +629,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-migration-1",
-          "role": "migration",
-          "title": "A file holding both `listen` and `bind_address` no longer loads",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/config.rs:10-11",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-2",
-          "role": "migration",
-          "title": "The old-key migration path has no automated test",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/config.rs:14-16",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-3",
-          "role": "migration",
-          "title": "The deprecated `listen` key is read silently, with no warning or removal plan",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/config.rs:8-10",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3597378,
-      "durationMs": 34539
+      "costUsd": 0.3393308,
+      "durationMs": 25880
     },
     {
       "id": "migration-plan-breaking-rename",
@@ -822,7 +657,7 @@
         {
           "id": "R-migration-1",
           "role": "migration",
-          "title": "Removing the public `status` field breaks partner integrations with no deprecation",
+          "title": "Public field removed with no deprecation period",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: The field is renamed in place",
@@ -834,37 +669,13 @@
         {
           "id": "R-migration-2",
           "role": "migration",
-          "title": "The breaking rename is not marked BREAKING nor tells users what to do",
-          "severity": "high",
+          "title": "Breaking rename not marked BREAKING in the release note",
+          "severity": "medium",
           "confidence": "high",
           "location": "proposal.md#Release note",
           "status": "open",
           "class": "duplicate",
           "expected": "unannounced-breaking-rename",
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-3",
-          "role": "migration",
-          "title": "No rollout order keeping old and new consumers working side by side",
-          "severity": "high",
-          "confidence": "high",
-          "location": "tasks.md#1. Rename",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "unannounced-breaking-rename",
-          "evidence": "found"
-        },
-        {
-          "id": "R-migration-4",
-          "role": "migration",
-          "title": "The API version is not bumped for a breaking change",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "openapi.yaml:4",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
           "evidence": "found"
         }
       ],
@@ -872,8 +683,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3863432,
-      "durationMs": 35469
+      "costUsd": 0.34107180000000004,
+      "durationMs": 23093
     },
     {
       "id": "newcomer-code-clever-one-liner",
@@ -888,69 +699,20 @@
           "severity": "medium",
           "category": "cleverness",
           "matchedBy": "R-newcomer-1",
-          "severityAgrees": false
+          "severityAgrees": true
         }
       ],
       "findings": [
         {
           "id": "R-newcomer-1",
           "role": "newcomer",
-          "title": "The premium test is a bit trick that does not mean \"10 euros and more\"",
-          "severity": "high",
+          "title": "`bucket` packs its grouping rule into an unreadable one-liner",
+          "severity": "medium",
           "confidence": "high",
-          "location": "src/pricing.ts:10",
+          "location": "src/pricing.ts:9-10",
           "status": "open",
           "class": "true-positive",
           "expected": "clever-one-liner",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-2",
-          "role": "newcomer",
-          "title": "`bucket` is a dense one-liner with a comma expression and `||=` inside an index",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/pricing.ts:9-10",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "clever-one-liner",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-3",
-          "role": "newcomer",
-          "title": "Names say nothing: `bucket`, `ps`, `a`, `p`, `\"hi\"` / `\"lo\"`",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/pricing.ts:9-10",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "clever-one-liner",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-4",
-          "role": "newcomer",
-          "title": "The return type `Record<string, Price[]>` hides its two keys and their possible absence",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/pricing.ts:10",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "clever-one-liner",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-5",
-          "role": "newcomer",
-          "title": "No test describes the split; the only verification is looking at a page",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "tasks.md#1. Implementation",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
           "evidence": "found"
         }
       ],
@@ -958,8 +720,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3525794,
-      "durationMs": 39815
+      "costUsd": 0.27291560000000004,
+      "durationMs": 28213
     },
     {
       "id": "newcomer-code-deep-nesting",
@@ -974,71 +736,20 @@
           "severity": "medium",
           "category": "nesting",
           "matchedBy": "R-newcomer-1",
-          "severityAgrees": false
+          "severityAgrees": true
         }
       ],
       "findings": [
         {
           "id": "R-newcomer-1",
           "role": "newcomer",
-          "title": "`import` nests six levels deep",
-          "severity": "low",
+          "title": "`import` nests six levels deep and hides its seat rules",
+          "severity": "medium",
           "confidence": "high",
-          "location": "src/import.rs:14-24",
+          "location": "src/import.rs:12-42",
           "status": "open",
           "class": "true-positive",
           "expected": "deep-nesting",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-2",
-          "role": "newcomer",
-          "title": "Seat-adding loop duplicated in both match arms",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/import.rs:31-37",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "deep-nesting",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-3",
-          "role": "newcomer",
-          "title": "Seats are only added to an existing account when its plan differs, without saying why",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "src/import.rs:18",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "near": "deep-nesting",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-4",
-          "role": "newcomer",
-          "title": "Unexplained filters: `contains('@')` and empty email skip silently",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/import.rs:15-21",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "deep-nesting",
-          "evidence": "found"
-        },
-        {
-          "id": "R-newcomer-5",
-          "role": "newcomer",
-          "title": "No test describes the import behavior",
-          "severity": "low",
-          "confidence": "high",
-          "location": "tasks.md#1. Implementation",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
           "evidence": "found"
         }
       ],
@@ -1046,8 +757,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3662712,
-      "durationMs": 36076
+      "costUsd": 0.2986782,
+      "durationMs": 22606
     },
     {
       "id": "newcomer-control-plain-code",
@@ -1056,26 +767,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-newcomer-1",
-          "role": "newcomer",
-          "title": "Docstring restates the payment term instead of naming the constant",
-          "severity": "low",
-          "confidence": "high",
-          "location": "app/invoices.py:5-10",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.32676679999999997,
-      "durationMs": 25141
+      "costUsd": 0.2550478,
+      "durationMs": 25100
     },
     {
       "id": "ops-code-no-timeout",
@@ -1117,7 +815,7 @@
         {
           "id": "R-ops-2",
           "role": "ops",
-          "title": "Unbounded retry of a non-idempotent charge, without backoff",
+          "title": "Unbounded retry of a non-idempotent charge",
           "severity": "high",
           "confidence": "high",
           "location": "app/payments.py:12-18",
@@ -1129,8 +827,8 @@
         {
           "id": "R-ops-3",
           "role": "ops",
-          "title": "Charge failures are swallowed with no log or metric",
-          "severity": "high",
+          "title": "Payment failures are swallowed without a log",
+          "severity": "medium",
           "confidence": "high",
           "location": "app/payments.py:17-18",
           "status": "open",
@@ -1141,26 +839,13 @@
         {
           "id": "R-ops-4",
           "role": "ops",
-          "title": "Provider URL is hard-coded",
-          "severity": "low",
+          "title": "Provider URL hard-coded",
+          "severity": "medium",
           "confidence": "high",
           "location": "app/payments.py:7",
           "status": "open",
           "class": "false-positive",
           "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-5",
-          "role": "ops",
-          "title": "No switch to turn automatic charging off",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "app/payments.py:10-11",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "near": "unbounded-retry",
           "evidence": "found"
         }
       ],
@@ -1168,8 +853,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.33392440000000007,
-      "durationMs": 28406
+      "costUsd": 0.3331096,
+      "durationMs": 29130
     },
     {
       "id": "ops-code-retry-without-backoff",
@@ -1191,7 +876,7 @@
           "role": "ops",
           "severity": "medium",
           "category": "observability",
-          "matchedBy": "R-ops-3",
+          "matchedBy": "R-ops-2",
           "severityAgrees": false
         }
       ],
@@ -1199,10 +884,10 @@
         {
           "id": "R-ops-1",
           "role": "ops",
-          "title": "Retries fire back to back, with no backoff",
+          "title": "Webhook retries fire back-to-back with no backoff",
           "severity": "medium",
           "confidence": "high",
-          "location": "src/webhooks.ts:9-23",
+          "location": "src/webhooks.ts:9-11",
           "status": "open",
           "class": "true-positive",
           "expected": "retries-without-backoff",
@@ -1211,19 +896,7 @@
         {
           "id": "R-ops-2",
           "role": "ops",
-          "title": "Every non-2xx response is retried and never logged",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/webhooks.ts:17-19",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "retries-without-backoff",
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-3",
-          "role": "ops",
-          "title": "Dropped deliveries are logged only at debug level, through console",
+          "title": "A dropped webhook is invisible to operators",
           "severity": "high",
           "confidence": "high",
           "location": "src/webhooks.ts:24",
@@ -1233,39 +906,15 @@
           "evidence": "found"
         },
         {
-          "id": "R-ops-4",
+          "id": "R-ops-3",
           "role": "ops",
-          "title": "Delivery runs inline in the payment event publish, blocking it for up to ~25 s",
+          "title": "Webhook delivery blocks the payment event publisher for up to 25 s",
           "severity": "medium",
-          "confidence": "high",
-          "location": "src/webhooks.ts:33-35",
+          "confidence": "low",
+          "location": "src/webhooks.ts:34",
           "status": "open",
-          "class": "false-positive",
+          "class": "unreported",
           "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-5",
-          "role": "ops",
-          "title": "No switch to turn webhooks off without a redeploy",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/webhooks.ts:28",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-6",
-          "role": "ops",
-          "title": "Timeout and attempt limit are hard-coded",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/webhooks.ts:4",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "retries-without-backoff",
           "evidence": "found"
         }
       ],
@@ -1273,8 +922,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3999366,
-      "durationMs": 43234
+      "costUsd": 0.5316097999999999,
+      "durationMs": 64897
     },
     {
       "id": "ops-control-bounded-retries",
@@ -1283,62 +932,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-ops-1",
-          "role": "ops",
-          "title": "Final fetch failure is returned but never logged or counted",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "src/rates.rs:37",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-2",
-          "role": "ops",
-          "title": "Errors flattened to String, losing their source chain",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/rates.rs:18-37",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-3",
-          "role": "ops",
-          "title": "Permanent HTTP errors (4xx) are retried like transient ones",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/rates.rs:26",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-4",
-          "role": "ops",
-          "title": "Feed URL embedded in error messages",
-          "severity": "low",
-          "confidence": "low",
-          "location": "src/rates.rs:28",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.33087760000000005,
-      "durationMs": 30940
+      "costUsd": 0.30200740000000004,
+      "durationMs": 20840
     },
     {
       "id": "ops-control-graceful-shutdown",
@@ -1347,74 +947,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-ops-1",
-          "role": "ops",
-          "title": "The worker exposes no health check, no metric and no start log",
-          "severity": "high",
-          "confidence": "high",
-          "location": "src/worker.rs:21-22",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-2",
-          "role": "ops",
-          "title": "Temporary failures are retried forever, never dead-lettered",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/worker.rs:35-38",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-3",
-          "role": "ops",
-          "title": "A send that times out after the relay accepted the message is retried and may duplicate the e-mail",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "src/worker.rs:26",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-4",
-          "role": "ops",
-          "title": "The \"relay unavailable\" warning carries no cause",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "src/worker.rs:38",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-5",
-          "role": "ops",
-          "title": "Poll, timeout and retry settings are hard-coded",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/worker.rs:11-17",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.43716,
-      "durationMs": 50237
+      "costUsd": 0.4178708,
+      "durationMs": 42843
     },
     {
       "id": "ops-plan-no-rollback",
@@ -1436,7 +975,7 @@
           "role": "ops",
           "severity": "medium",
           "category": "observability",
-          "matchedBy": "R-ops-3",
+          "matchedBy": "R-ops-2",
           "severityAgrees": false
         }
       ],
@@ -1444,7 +983,7 @@
         {
           "id": "R-ops-1",
           "role": "ops",
-          "title": "No way to turn Paylane off or fall back to Stripe",
+          "title": "The switch to Paylane has no way back",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: All traffic moves at deploy",
@@ -1456,19 +995,7 @@
         {
           "id": "R-ops-2",
           "role": "ops",
-          "title": "Closing the Stripe account removes the redeploy rollback too",
-          "severity": "high",
-          "confidence": "high",
-          "location": "design.md#Decision: All traffic moves at deploy",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "no-rollback",
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-3",
-          "role": "ops",
-          "title": "Settlement worker has no health, metrics or failure alert",
+          "title": "The nightly settlement worker can fail unseen",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: A worker settles payments nightly",
@@ -1476,50 +1003,14 @@
           "class": "true-positive",
           "expected": "invisible-worker",
           "evidence": "found"
-        },
-        {
-          "id": "R-ops-4",
-          "role": "ops",
-          "title": "No timeout or retry policy for Paylane calls",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "specs/payments/spec.md#Requirement: Card payments go through Paylane",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-5",
-          "role": "ops",
-          "title": "Paylane errors other than a decline are not specified",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "specs/payments/spec.md#Scenario: A declined card",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-ops-6",
-          "role": "ops",
-          "title": "Paylane credentials and endpoint configuration are unplanned",
-          "severity": "low",
-          "confidence": "low",
-          "location": "proposal.md#Impact",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3810554,
-      "durationMs": 37561
+      "costUsd": 0.3830636,
+      "durationMs": 30677
     },
     {
       "id": "performance-code-hidden-n-plus-one",
@@ -1534,7 +1025,7 @@
           "severity": "medium",
           "category": "query-per-item",
           "matchedBy": "R-performance-1",
-          "severityAgrees": false
+          "severityAgrees": true
         },
         {
           "id": "regex-compiled-per-invoice",
@@ -1549,8 +1040,8 @@
         {
           "id": "R-performance-1",
           "role": "performance",
-          "title": "One customer query per invoice (N+1)",
-          "severity": "high",
+          "title": "One customer query per invoice in the monthly report",
+          "severity": "medium",
           "confidence": "high",
           "location": "src/report.rs:23-26",
           "status": "open",
@@ -1564,34 +1055,10 @@
           "title": "The purchase-order regex is compiled once per invoice",
           "severity": "medium",
           "confidence": "high",
-          "location": "src/report.rs:44-45",
+          "location": "src/report.rs:44-46",
           "status": "open",
           "class": "true-positive",
           "expected": "regex-compiled-per-invoice",
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-3",
-          "role": "performance",
-          "title": "The regex crate is added for one fixed-shape pattern",
-          "severity": "low",
-          "confidence": "high",
-          "location": "Cargo.toml:8",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-4",
-          "role": "performance",
-          "title": "Invoice numbers are cloned while the invoices are dropped",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/report.rs:23-25",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "customer-query-per-invoice",
           "evidence": "found"
         }
       ],
@@ -1599,8 +1066,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4251743999999999,
-      "durationMs": 41990
+      "costUsd": 0.35900239999999994,
+      "durationMs": 28733
     },
     {
       "id": "performance-code-n-plus-one",
@@ -1622,7 +1089,7 @@
         {
           "id": "R-performance-1",
           "role": "performance",
-          "title": "N+1 query: one order_lines query per order",
+          "title": "One query per order to load its lines (N+1)",
           "severity": "high",
           "confidence": "high",
           "location": "api/src/orders.rs:14-15",
@@ -1636,8 +1103,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.30086100000000005,
-      "durationMs": 20456
+      "costUsd": 0.3130086,
+      "durationMs": 20474
     },
     {
       "id": "performance-control-batched-query",
@@ -1651,8 +1118,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3023346,
-      "durationMs": 22656
+      "costUsd": 0.31509040000000005,
+      "durationMs": 22518
     },
     {
       "id": "performance-control-preloaded-helper",
@@ -1661,74 +1128,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-performance-1",
-          "role": "performance",
-          "title": "The month total costs a second scan of the month's invoices",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/report.rs:43-46",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-2",
-          "role": "performance",
-          "title": "The `regex` crate is added for one fixed-shape pattern",
-          "severity": "low",
-          "confidence": "high",
-          "location": "Cargo.toml:8",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-3",
-          "role": "performance",
-          "title": "The customer label is formatted once per invoice, not once per customer",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/report.rs:51-55",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-4",
-          "role": "performance",
-          "title": "Invoice numbers are cloned while the invoices are dropped right after",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/report.rs:35-37",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-5",
-          "role": "performance",
-          "title": "The month's invoices are loaded without a bound, on a filter whose index is not visible",
-          "severity": "low",
-          "confidence": "low",
-          "location": "src/report.rs:25",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4219780000000001,
-      "durationMs": 54978
+      "costUsd": 0.33362520000000007,
+      "durationMs": 22875
     },
     {
       "id": "performance-plan-unbounded-export",
@@ -1750,7 +1156,7 @@
         {
           "id": "R-performance-1",
           "role": "performance",
-          "title": "The export loads the whole audit log of an organization into memory",
+          "title": "Export loads the whole audit log into memory and builds the CSV on the event loop",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: The export loads every event, then writes the CSV",
@@ -1762,45 +1168,8 @@
         {
           "id": "R-performance-2",
           "role": "performance",
-          "title": "Building the whole CSV string blocks the event loop",
-          "severity": "high",
-          "confidence": "high",
-          "location": "design.md#Decision: The export loads every event, then writes the CSV",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "unbounded-export",
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-3",
-          "role": "performance",
-          "title": "No index is planned for the filter and sort of the export query",
+          "title": "No index is shown for the export's filter and sort",
           "severity": "medium",
-          "confidence": "low",
-          "location": "design.md#Decision: The export loads every event, then writes the CSV",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "near": "unbounded-export",
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-4",
-          "role": "performance",
-          "title": "The spec requires an unbounded export with no performance criterion",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "specs/audit-export/spec.md#Requirement: Administrators export the audit log",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "unbounded-export",
-          "evidence": "found"
-        },
-        {
-          "id": "R-performance-5",
-          "role": "performance",
-          "title": "`SELECT *` reads every column for a fixed CSV",
-          "severity": "low",
           "confidence": "low",
           "location": "design.md#Decision: The export loads every event, then writes the CSV",
           "status": "open",
@@ -1814,8 +1183,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3875838,
-      "durationMs": 52129
+      "costUsd": 0.4381044,
+      "durationMs": 32981
     },
     {
       "id": "privacy-code-email-in-logs",
@@ -1829,15 +1198,15 @@
           "role": "privacy",
           "severity": "medium",
           "category": "personal-data-in-logs",
-          "matchedBy": "R-privacy-4",
-          "severityAgrees": true
+          "matchedBy": "R-privacy-1",
+          "severityAgrees": false
         },
         {
           "id": "email-to-analytics",
           "role": "privacy",
           "severity": "medium",
           "category": "personal-data-to-processor",
-          "matchedBy": "R-privacy-1",
+          "matchedBy": "R-privacy-2",
           "severityAgrees": false
         }
       ],
@@ -1845,60 +1214,36 @@
         {
           "id": "R-privacy-1",
           "role": "privacy",
-          "title": "E-mail address and display name written to the application log",
+          "title": "E-mail address and display name written to application logs",
           "severity": "high",
           "confidence": "high",
           "location": "app/signup.py:14",
-          "status": "open",
-          "class": "true-positive",
-          "expected": "email-to-analytics",
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-2",
-          "role": "privacy",
-          "title": "E-mail address sent to the Beacon analytics SaaS when the user id suffices",
-          "severity": "high",
-          "confidence": "high",
-          "location": "app/signup.py:15",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "email-to-analytics",
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-3",
-          "role": "privacy",
-          "title": "New third-party processor Beacon is not identified in the plan",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "app/analytics.py:5",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-4",
-          "role": "privacy",
-          "title": "No retention or erasure defined for the new member data and its copies",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "app/signup.py:13-15",
           "status": "open",
           "class": "true-positive",
           "expected": "email-in-logs",
           "evidence": "found"
         },
         {
-          "id": "R-privacy-5",
+          "id": "R-privacy-2",
           "role": "privacy",
-          "title": "Purpose and lawful basis of the collected data are not stated",
-          "severity": "low",
+          "title": "E-mail address sent to the Beacon analytics SaaS",
+          "severity": "high",
           "confidence": "high",
+          "location": "app/signup.py:15",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "email-to-analytics",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-3",
+          "role": "privacy",
+          "title": "No retention, erasure or lawful basis stated for the collected member data",
+          "severity": "medium",
+          "confidence": "low",
           "location": "proposal.md#Domains",
           "status": "open",
-          "class": "false-positive",
+          "class": "unreported",
           "expected": null,
           "evidence": "found"
         }
@@ -1907,8 +1252,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.45885619999999994,
-      "durationMs": 34486
+      "costUsd": 0.33149039999999996,
+      "durationMs": 31423
     },
     {
       "id": "privacy-code-error-message-pii",
@@ -1938,7 +1283,7 @@
         {
           "id": "R-privacy-1",
           "role": "privacy",
-          "title": "Looked-up e-mail address written to the logs through the error message",
+          "title": "Looked-up e-mail address written to the error log",
           "severity": "high",
           "confidence": "high",
           "location": "src/support.ts:20",
@@ -1950,10 +1295,10 @@
         {
           "id": "R-privacy-2",
           "role": "privacy",
-          "title": "Chat vendor receives phone, birth date and address when only the name is needed",
+          "title": "Chat vendor receives phone, birth date and address to greet by name",
           "severity": "high",
           "confidence": "high",
-          "location": "src/support.ts:42-47",
+          "location": "src/support.ts:41-48",
           "status": "open",
           "class": "true-positive",
           "expected": "profile-to-chat-vendor",
@@ -1962,19 +1307,7 @@
         {
           "id": "R-privacy-3",
           "role": "privacy",
-          "title": "Helply is a new processor with no transfer, retention or erasure stated",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "src/support.ts:37-40",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "profile-to-chat-vendor",
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-4",
-          "role": "privacy",
-          "title": "Support lookup returns birth date, phone and address with no stated purpose",
+          "title": "Support lookup returns the full customer record",
           "severity": "medium",
           "confidence": "low",
           "location": "src/support.ts:16",
@@ -1982,14 +1315,26 @@
           "class": "unreported",
           "expected": null,
           "evidence": "found"
+        },
+        {
+          "id": "R-privacy-4",
+          "role": "privacy",
+          "title": "Helply as a new processor is not identified",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/support.ts:40",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "profile-to-chat-vendor",
+          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.454285,
-      "durationMs": 46231
+      "costUsd": 0.3846598,
+      "durationMs": 33366
     },
     {
       "id": "privacy-code-python-soft-delete",
@@ -2011,7 +1356,7 @@
         {
           "id": "R-privacy-1",
           "role": "privacy",
-          "title": "Account deletion keeps every personal field of the member",
+          "title": "Account deletion keeps the member's email, name, phone and postal address",
           "severity": "high",
           "confidence": "high",
           "location": "app/account.py:18-21",
@@ -2023,34 +1368,10 @@
         {
           "id": "R-privacy-2",
           "role": "privacy",
-          "title": "Tests do not check that personal data is erased",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "tests/test_account.py:10-11",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-3",
-          "role": "privacy",
-          "title": "Erasure does not reach analytics data linked by analytics_id",
-          "severity": "medium",
+          "title": "New analytics identifier added with no use and outside the erasure",
+          "severity": "low",
           "confidence": "low",
           "location": "app/account.py:11-13",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-4",
-          "role": "privacy",
-          "title": "Retention of deleted accounts and backups is not defined",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "proposal.md#What Changes",
           "status": "open",
           "class": "unreported",
           "expected": null,
@@ -2061,8 +1382,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.38073580000000007,
-      "durationMs": 34529
+      "costUsd": 0.35211620000000005,
+      "durationMs": 26041
     },
     {
       "id": "privacy-control-ids-in-logs",
@@ -2076,8 +1397,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3680402,
-      "durationMs": 32746
+      "costUsd": 0.363584,
+      "durationMs": 28983
     },
     {
       "id": "privacy-control-masked-logs",
@@ -2090,10 +1411,10 @@
         {
           "id": "R-privacy-1",
           "role": "privacy",
-          "title": "Masked address still identifies the person",
+          "title": "Addresses with non-ASCII characters are logged in full",
           "severity": "medium",
           "confidence": "high",
-          "location": "src/logger.ts:6-8",
+          "location": "src/logger.ts:3",
           "status": "open",
           "class": "false-positive",
           "expected": null,
@@ -2102,10 +1423,10 @@
         {
           "id": "R-privacy-2",
           "role": "privacy",
-          "title": "Encoded or non-ASCII addresses are not masked",
+          "title": "Percent-encoded addresses escape the mask",
           "severity": "medium",
           "confidence": "low",
-          "location": "src/logger.ts:3",
+          "location": "src/logger.ts:6-8",
           "status": "open",
           "class": "unreported",
           "expected": null,
@@ -2114,10 +1435,10 @@
         {
           "id": "R-privacy-3",
           "role": "privacy",
-          "title": "Field names are written without masking",
+          "title": "Masked form keeps the first letter and the full domain",
           "severity": "low",
           "confidence": "low",
-          "location": "src/logger.ts:12-13",
+          "location": "src/logger.ts:5",
           "status": "open",
           "class": "unreported",
           "expected": null,
@@ -2126,34 +1447,10 @@
         {
           "id": "R-privacy-4",
           "role": "privacy",
-          "title": "Field masking is not covered by a test",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/logger.test.ts:4-11",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-5",
-          "role": "privacy",
-          "title": "Addresses already in the 90-day logs are left in place",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "proposal.md#Why",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-6",
-          "role": "privacy",
-          "title": "Hosting provider as log processor is not identified",
+          "title": "Field keys are written unmasked",
           "severity": "low",
           "confidence": "low",
-          "location": "proposal.md#Why",
+          "location": "src/logger.ts:12-13",
           "status": "open",
           "class": "unreported",
           "expected": null,
@@ -2164,8 +1461,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4038252,
-      "durationMs": 58248
+      "costUsd": 0.3829526,
+      "durationMs": 42148
     },
     {
       "id": "privacy-plan-birth-date-retention",
@@ -2179,7 +1476,7 @@
           "role": "privacy",
           "severity": "medium",
           "category": "retention",
-          "matchedBy": "R-privacy-2",
+          "matchedBy": "R-privacy-1",
           "severityAgrees": true
         },
         {
@@ -2187,27 +1484,15 @@
           "role": "privacy",
           "severity": "medium",
           "category": "processor-transfer",
-          "matchedBy": "R-privacy-1",
-          "severityAgrees": false
+          "matchedBy": "R-privacy-3",
+          "severityAgrees": true
         }
       ],
       "findings": [
         {
           "id": "R-privacy-1",
           "role": "privacy",
-          "title": "Phone numbers and names go to a US processor with no transfer safeguard identified",
-          "severity": "high",
-          "confidence": "high",
-          "location": "design.md#Decision: Greetings are sent by SMS through Textly",
-          "status": "open",
-          "class": "true-positive",
-          "expected": "processor-transfer",
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-2",
-          "role": "privacy",
-          "title": "Birthday and phone are kept for the profile's lifetime, including after opt-out, and in backups with no expiry",
+          "title": "Birthday and phone kept after opt-out and in backups with no expiry",
           "severity": "medium",
           "confidence": "high",
           "location": "design.md#Decision: Birth dates live on the profile",
@@ -2217,49 +1502,36 @@
           "evidence": "found"
         },
         {
-          "id": "R-privacy-3",
+          "id": "R-privacy-2",
           "role": "privacy",
-          "title": "No requirement for opting out or erasing the new data",
+          "title": "Opt-out and data-subject rights not specified for the new fields",
           "severity": "medium",
-          "confidence": "high",
+          "confidence": "low",
           "location": "specs/birthday-greetings/spec.md#Requirement: Members opt in to birthday greetings",
           "status": "open",
-          "class": "false-positive",
+          "class": "unreported",
           "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-3",
+          "role": "privacy",
+          "title": "Phone numbers and names sent to a US processor without a stated transfer safeguard",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "processor-transfer",
           "evidence": "found"
         },
         {
           "id": "R-privacy-4",
           "role": "privacy",
-          "title": "Purpose and lawful basis of the new data are not stated",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "proposal.md#Why",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-5",
-          "role": "privacy",
-          "title": "Display name is sent to Textly where the phone number alone would do",
-          "severity": "low",
-          "confidence": "high",
-          "location": "design.md#Decision: Greetings are sent by SMS through Textly",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "processor-transfer",
-          "evidence": "found"
-        },
-        {
-          "id": "R-privacy-6",
-          "role": "privacy",
-          "title": "No rule keeps phone numbers out of the job's logs and retry state",
+          "title": "Purpose and lawful basis of the new data not stated",
           "severity": "low",
           "confidence": "low",
-          "location": "design.md#Risks / Trade-offs",
+          "location": "proposal.md#Why",
           "status": "open",
           "class": "unreported",
           "expected": null,
@@ -2270,8 +1542,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.41360120000000006,
-      "durationMs": 53373
+      "costUsd": 0.4281558,
+      "durationMs": 43066
     },
     {
       "id": "security-code-detail-endpoint-authz",
@@ -2313,7 +1585,7 @@
         {
           "id": "R-security-2",
           "role": "security",
-          "title": "Error handler sends the exception message and stack trace to the client",
+          "title": "Error handler returns the error message and stack trace to the client",
           "severity": "medium",
           "confidence": "high",
           "location": "src/server.ts:15-18",
@@ -2321,14 +1593,27 @@
           "class": "true-positive",
           "expected": "stack-trace-to-client",
           "evidence": "found"
+        },
+        {
+          "id": "R-security-3",
+          "role": "security",
+          "title": "Invoice id is not restricted to a positive safe integer",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/invoices.ts:27-28",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "near": "detail-without-tenant-check",
+          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3644132,
-      "durationMs": 27949
+      "costUsd": 0.3679592,
+      "durationMs": 33858
     },
     {
       "id": "security-code-python-path-traversal",
@@ -2350,10 +1635,10 @@
         {
           "id": "R-security-1",
           "role": "security",
-          "title": "Path traversal in read_attachment bypasses the ticket authorization",
+          "title": "Path traversal in read_attachment bypasses the ticket authorization check",
           "severity": "high",
           "confidence": "high",
-          "location": "app/attachments.py:28-31",
+          "location": "app/attachments.py:30-32",
           "status": "open",
           "class": "true-positive",
           "expected": "download-path-traversal",
@@ -2362,24 +1647,12 @@
         {
           "id": "R-security-2",
           "role": "security",
-          "title": "save_attachment checks no authorization",
+          "title": "save_attachment enforces no authorization on the target ticket",
           "severity": "medium",
           "confidence": "low",
-          "location": "app/attachments.py:11-12",
+          "location": "app/attachments.py:11-17",
           "status": "open",
           "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-security-3",
-          "role": "security",
-          "title": "Uploaded file name is not allow-listed and overwrites existing attachments",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "app/attachments.py:13-17",
-          "status": "open",
-          "class": "false-positive",
           "expected": null,
           "evidence": "found"
         }
@@ -2388,8 +1661,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3647144,
-      "durationMs": 40934
+      "costUsd": 0.3546154,
+      "durationMs": 29633
     },
     {
       "id": "security-code-sql-injection",
@@ -2419,26 +1692,14 @@
           "class": "true-positive",
           "expected": "sql-injection",
           "evidence": "found"
-        },
-        {
-          "id": "R-security-2",
-          "role": "security",
-          "title": "LIKE wildcards in the term are not escaped",
-          "severity": "low",
-          "confidence": "high",
-          "location": "src/users.ts:10",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "sql-injection",
-          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.31359240000000005,
-      "durationMs": 24420
+      "costUsd": 0.3511748,
+      "durationMs": 28004
     },
     {
       "id": "security-control-docs-only",
@@ -2447,50 +1708,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-security-1",
-          "role": "security",
-          "title": "Exposed token stays valid while the new one is deployed",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "README.md:13-20",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-security-2",
-          "role": "security",
-          "title": "Non-expiring tokens documented without any routine rotation",
-          "severity": "low",
-          "confidence": "high",
-          "location": "README.md:13-14",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-security-3",
-          "role": "security",
-          "title": "Security guarantees asserted with no code in the repository backing them",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "README.md:16-20",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.42684980000000006,
-      "durationMs": 46186
+      "costUsd": 0.3002224,
+      "durationMs": 19986
     },
     {
       "id": "security-control-dynamic-query",
@@ -2504,8 +1728,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.30647060000000004,
-      "durationMs": 19194
+      "costUsd": 0.31268759999999995,
+      "durationMs": 23909
     },
     {
       "id": "security-plan-tokens-in-clear",
@@ -2555,38 +1779,14 @@
           "class": "true-positive",
           "expected": "token-in-logs",
           "evidence": "found"
-        },
-        {
-          "id": "R-security-3",
-          "role": "security",
-          "title": "A leaked token cannot be revoked and never expires",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "design.md#Goals / Non-Goals",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-security-4",
-          "role": "security",
-          "title": "Token creation is not restricted to session authentication",
-          "severity": "medium",
-          "confidence": "low",
-          "location": "specs/api-tokens/spec.md#Requirement: A user creates an API token",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
         }
       ],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3868256000000001,
-      "durationMs": 35304
+      "costUsd": 0.3538048,
+      "durationMs": 26497
     },
     {
       "id": "skeptic-control-small-flag",
@@ -2595,50 +1795,13 @@
       "kind": "control",
       "outcome": "scored",
       "expected": [],
-      "findings": [
-        {
-          "id": "R-skeptic-1",
-          "role": "skeptic",
-          "title": "Task 1.2's check passes even if `--quiet` is never declared",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "tasks.md#1. Flag",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-2",
-          "role": "skeptic",
-          "title": "The \"A quiet import\" scenario passes without `--quiet` on a small file",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "specs/cli-import/spec.md#Scenario: A quiet import",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-3",
-          "role": "skeptic",
-          "title": "The plan does not say how `--quiet` gets from the command line to `run`",
-          "severity": "low",
-          "confidence": "low",
-          "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
-          "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        }
-      ],
+      "findings": [],
       "changed": [],
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.40033160000000007,
-      "durationMs": 40929
+      "costUsd": 0.4051396,
+      "durationMs": 37474
     },
     {
       "id": "skeptic-plan-scope-creep",
@@ -2660,7 +1823,7 @@
         {
           "id": "R-skeptic-1",
           "role": "skeptic",
-          "title": "Plugin system for future formats is scope nobody asked for",
+          "title": "Plugin system for future export formats nobody asked for",
           "severity": "medium",
           "confidence": "high",
           "location": "proposal.md#What Changes",
@@ -2672,10 +1835,10 @@
         {
           "id": "R-skeptic-2",
           "role": "skeptic",
-          "title": "Per-user export format preference is scope nobody asked for",
+          "title": "Per-user export-format preference on the settings page nobody asked for",
           "severity": "medium",
           "confidence": "high",
-          "location": "proposal.md#What Changes",
+          "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
           "status": "open",
           "class": "duplicate",
           "expected": "scope-creep",
@@ -2684,75 +1847,13 @@
         {
           "id": "R-skeptic-3",
           "role": "skeptic",
-          "title": "Design rejects the simple solution only for an extensibility nobody needs",
-          "severity": "low",
-          "confidence": "high",
-          "location": "design.md#Decision: Exports go through a plugin registry",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "scope-creep",
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-4",
-          "role": "skeptic",
-          "title": "Preference scenario has no observable effect: the route hardcodes CSV",
+          "title": "New invoice endpoint exposes customer data with security and personal-data unticked",
           "severity": "medium",
           "confidence": "high",
-          "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "scope-creep",
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-5",
-          "role": "skeptic",
-          "title": "Storing a per-user preference is a hidden schema migration",
-          "severity": "medium",
-          "confidence": "high",
-          "location": "design.md#Decision: Exports go through a plugin registry",
-          "status": "open",
-          "class": "false-positive",
-          "expected": null,
-          "near": "scope-creep",
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-6",
-          "role": "skeptic",
-          "title": "No access-control case for an export of every invoice of a month",
-          "severity": "medium",
-          "confidence": "low",
           "location": "proposal.md#Domains",
           "status": "open",
-          "class": "unreported",
-          "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-7",
-          "role": "skeptic",
-          "title": "Date and total formats of the CSV are unspecified",
-          "severity": "low",
-          "confidence": "high",
-          "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
-          "status": "open",
           "class": "false-positive",
           "expected": null,
-          "evidence": "found"
-        },
-        {
-          "id": "R-skeptic-8",
-          "role": "skeptic",
-          "title": "Registry task is verified by a test no requirement defines",
-          "severity": "low",
-          "confidence": "high",
-          "location": "tasks.md#1. Export",
-          "status": "open",
-          "class": "duplicate",
-          "expected": "scope-creep",
           "evidence": "found"
         }
       ],
@@ -2760,8 +1861,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.4692128,
-      "durationMs": 40549
+      "costUsd": 0.4107424,
+      "durationMs": 35194
     },
     {
       "id": "skeptic-plan-unsupported-assumption",
@@ -2791,7 +1892,7 @@
         {
           "id": "R-skeptic-1",
           "role": "skeptic",
-          "title": "The merge rests on \"one e-mail = one person\", which the design itself refutes",
+          "title": "The merge rests on \"one e-mail = one person\", which the design's own context contradicts",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: Customers are merged by e-mail",
@@ -2803,7 +1904,7 @@
         {
           "id": "R-skeptic-2",
           "role": "skeptic",
-          "title": "Records are deleted with no rollback, dry run or audit trail",
+          "title": "Records are deleted with no way back",
           "severity": "high",
           "confidence": "high",
           "location": "design.md#Decision: Customers are merged by e-mail",
@@ -2828,33 +1929,31 @@
         {
           "id": "R-skeptic-4",
           "role": "skeptic",
-          "title": "What happens to the merged records' name and billing address is unspecified",
+          "title": "Domains the plan touches are left unticked without a reason",
           "severity": "medium",
           "confidence": "high",
-          "location": "design.md#Decision: Customers are merged by e-mail",
+          "location": "proposal.md#Domains",
           "status": "open",
           "class": "false-positive",
           "expected": null,
-          "near": "email-is-not-a-person",
           "evidence": "found"
         },
         {
           "id": "R-skeptic-5",
           "role": "skeptic",
-          "title": "The cause of the duplicates stays in place, and the simpler fix is not weighed",
+          "title": "The Why names the cause, but the plan only cleans up after it",
           "severity": "low",
           "confidence": "high",
-          "location": "design.md#Decision: Customers are merged by e-mail",
+          "location": "proposal.md#Why",
           "status": "open",
           "class": "false-positive",
           "expected": null,
-          "near": "email-is-not-a-person",
           "evidence": "found"
         },
         {
           "id": "R-skeptic-6",
           "role": "skeptic",
-          "title": "A single task with only the two happy-path tests",
+          "title": "No task makes the job run nightly",
           "severity": "low",
           "confidence": "high",
           "location": "tasks.md#1. Merge",
@@ -2868,8 +1967,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.6017648000000001,
-      "durationMs": 49542
+      "costUsd": 0.4949158,
+      "durationMs": 57232
     },
     {
       "id": "tracer-control-complete-plan",
@@ -2883,8 +1982,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.2086094,
-      "durationMs": 21562
+      "costUsd": 0.2301338,
+      "durationMs": 19771
     },
     {
       "id": "tracer-plan-scenario-without-task",
@@ -2907,8 +2006,8 @@
       "strayed": [],
       "answered": [],
       "recordErrors": [],
-      "costUsd": 0.3064624,
-      "durationMs": 24489
+      "costUsd": 0.2607594,
+      "durationMs": 22743
     }
   ]
 }

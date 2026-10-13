@@ -2,8 +2,8 @@
   "format": 1,
   "case": "security-control-docs-only",
   "error": null,
-  "costUsd": 0.42684980000000006,
-  "durationMs": 46186,
+  "costUsd": 0.3002224,
+  "durationMs": 19986,
   "strayed": [],
   "review": {
     "archive": {
@@ -17,80 +17,7 @@
     },
     "changeName": "document-token-rotation",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "API tokens do not expire. Rotate a token when a person who knew it leaves\nthe team, or when it may have been exposed:\n\n1. Create a new token from **Settings → API tokens**. It is shown once:\n   copy it into your integration's secret store, never into source code.\n2. Deploy the integration with the new token.\n3. Revoke the old token from the same page. Requests that still carry it\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-1",
-        "line": 9,
-        "location": "README.md:13-20",
-        "recommendation": "Separate the two cases. For a planned rotation (a person leaves), keep create → deploy → revoke. For a token that may have been exposed, tell the reader to revoke it first (accepting the downtime), or at least to revoke it as soon as the new one is deployed, and to check the access logs for use of the old token. As written, whoever holds a leaked, non-expiring token keeps full API access for the whole deployment window (CWE-324).",
-        "reported": true,
-        "role": "security",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Exposed token stays valid while the new one is deployed"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "API tokens do not expire. Rotate a token when a person who knew it leaves\nthe team, or when it may have been exposed:\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-2",
-        "line": 36,
-        "location": "README.md:13-14",
-        "recommendation": "Since tokens never expire, recommend a regular rotation period as well (for example every 90 days), so that a leak nobody noticed does not grant access forever. The two event-driven triggers only cover leaks someone knows about.",
-        "reported": true,
-        "role": "security",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Non-expiring tokens documented without any routine rotation"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "1. Create a new token from **Settings → API tokens**. It is shown once:\n   copy it into your integration's secret store, never into source code.\n2. Deploy the integration with the new token.\n3. Revoke the old token from the same page. Requests that still carry it\n   are refused with `401 Unauthorized`.\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-3",
-        "line": 55,
-        "location": "README.md:16-20",
-        "recommendation": "The repository holds no token issuance, storage, revocation or authentication code (src/api.rs, src/db.rs and src/lib.rs only define an Account type and a Db stub), so \"shown once\", \"do not expire\" and \"refused with 401\" after revocation cannot be checked against this change. Confirm them against the service that implements tokens — in particular that revocation takes effect immediately, with no cache or grace period — or point to where that behavior is specified. If revocation is delayed, integrators following step 3 after a leak would believe the old token is dead while it is still accepted.",
-        "reported": false,
-        "role": "security",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Security guarantees asserted with no code in the repository backing them"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/document-token-rotation/review.md",
@@ -113,7 +40,7 @@
         "roles": [
           {
             "role": "security",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "role": "newcomer",

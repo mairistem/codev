@@ -8,10 +8,10 @@
 
 No finding.
 
-### newcomer
+### ops
 
 Disabled by configuration.
 
-### ops
+### newcomer
 
 Disabled by configuration.

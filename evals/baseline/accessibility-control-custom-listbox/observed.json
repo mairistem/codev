@@ -2,8 +2,8 @@
   "format": 1,
   "case": "accessibility-control-custom-listbox",
   "error": null,
-  "costUsd": 0.4681692,
-  "durationMs": 64204,
+  "costUsd": 0.3921664,
+  "durationMs": 37299,
   "strayed": [],
   "review": {
     "archive": {
@@ -20,30 +20,6 @@
     "findings": [
       {
         "awaiting": "author",
-        "confidence": "high",
-        "evidence": "role=\"combobox\"\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-1",
-        "line": 9,
-        "location": "src/components/SizePicker.tsx:66",
-        "recommendation": "Use a native `<select>` with a `<label htmlFor>` for the size. It gives keyboard operation, type-ahead, name/role/value and, on phones, the platform's large native picker, which addresses the proposal's \"Why\" (mis-taps on tiny targets). Keep a custom ARIA combobox only if a documented need goes beyond what `<select>` offers. This is the \"native semantic elements first\" criterion; WCAG 4.1.2 Name, Role, Value.\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Custom combobox where a native select would do"
-      },
-      {
-        "awaiting": "author",
         "confidence": "low",
         "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
         "history": [
@@ -55,112 +31,16 @@
             "to": null
           }
         ],
-        "id": "R-accessibility-2",
-        "line": 29,
-        "location": "src/components/SizePicker.tsx:86",
-        "recommendation": "Focus stays on the combobox and the keyboard position is shown only by the `option--active` class. No stylesheet in the project defines that class, so sighted keyboard users cannot see which option Enter or Tab will choose (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast). Ship a style for `.option--active` with enough contrast, plus a visible focus style on the combobox.\n",
+        "id": "R-accessibility-1",
+        "line": 9,
+        "location": "src/components/SizePicker.tsx:92",
+        "recommendation": "Check that a stylesheet gives `.option--active` a highlight that keeps 3:1 contrast against the other options (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast). DOM focus stays on the combobox while ArrowUp/ArrowDown move `aria-activedescendant`, so this class is the only cue a sighted keyboard user gets about which size Enter or Tab will pick. Also check that the combobox `div` keeps a visible focus outline. The diff and the repository contain no stylesheet, so this could not be verified.\n",
         "reported": false,
         "role": "accessibility",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Highlighted option has no visible style"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "<ul role=\"listbox\" id={`${id}-list`} aria-labelledby={`${id}-label`} hidden={!open}>\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-3",
-        "line": 49,
-        "location": "src/components/SizePicker.tsx:79",
-        "recommendation": "The change exists because customers on phones mis-tap tiny controls. The diff adds no styling for the combobox or the `li` options, and the project has no stylesheet that sizes them. So nothing guarantees targets of at least 24 by 24 CSS pixels (WCAG 2.5.8 Target Size (Minimum)), and nothing makes them larger than the radio buttons they replace. Give the combobox and each option a minimum size, with 44 px as the target for touch.\n",
-        "reported": false,
-        "role": "accessibility",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Target size of the combobox and options is not set"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "aria-selected={size === value}\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-4",
-        "line": 69,
-        "location": "src/components/SizePicker.tsx:85",
-        "recommendation": "In the APG select-only combobox that the component's doc comment cites, the option that `aria-activedescendant` references carries `aria-selected=\"true\"`. Here every option the user arrows to except the current value is announced as \"not selected\", which confuses screen reader users (WCAG 4.1.2 Name, Role, Value). Set `aria-selected={index === active}`.\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "aria-selected marks the committed value, not the highlighted option"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "const [active, setActive] = useState(Math.max(0, sizes.indexOf(value)));\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-5",
-        "line": 88,
-        "location": "src/components/SizePicker.tsx:11",
-        "recommendation": "`active` is computed only on the first render. After the user arrows to an option and presses Escape, or after the parent changes `value`, reopening the list highlights and announces a stale option instead of the current size. Enter or Tab then commits that stale option. Set `active` to `sizes.indexOf(value)` each time the list opens (lines 22-24 and 74).\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Highlight is not reset to the current value when the list opens"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "switch (event.key) {\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-6",
-        "line": 108,
-        "location": "src/components/SizePicker.tsx:28-58",
-        "recommendation": "The key handler covers only arrows, Home, End, Enter, Space, Escape and Tab. The APG select-only combobox pattern that the doc comment claims to follow also moves to the next option that starts with a typed character, and a native `<select>` does this too. Add type-ahead, or use `<select>` (see R-accessibility-1).\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "No type-ahead on the select-only combobox"
+        "title": "Highlighted option relies on an unseen style"
       }
     ],
     "format": 1,

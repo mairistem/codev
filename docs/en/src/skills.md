@@ -96,10 +96,11 @@ Before presenting the plan, the skill reviews it in two steps:
    breaking modified requirement, has a **BREAKING** item. Gaps are fixed in
    the artifacts.
 2. **Contrarian pass** — the skill re-reads the plan as a skeptical reviewer:
-   need, scope, specs, decisions, assumptions, tasks. Security & privacy,
-   compatibility & migration, operability, performance and accessibility &
-   UX are added only when the proposal's Impact touches them, as are your
-   project's [`rules`](reference/configuration.md#rules). The
+   need, scope, specs, decisions, assumptions, tasks, and whether
+   `## Domains` ticks every domain the plan touches, along with your
+   project's [`rules`](reference/configuration.md#rules). The skeptic
+   reviews no domain itself — security, privacy, migration, operations,
+   performance and accessibility are their experts'. The
    [experts](roles.md#experts-and-domains) whose domain the proposal ticks
    in `## Domains` — security, privacy, accessibility, performance,
    operations, migration — join this pass with their own knowledge. Before
