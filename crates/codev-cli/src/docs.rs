@@ -420,6 +420,50 @@ mod tests {
     }
 
     #[test]
+    fn both_languages_document_the_review_record() {
+        for chapters in [CHAPTERS_EN, CHAPTERS_FR] {
+            assert!(
+                chapters
+                    .iter()
+                    .any(|(path, _)| *path == "guides/review-record.md"),
+                "guides/review-record.md must be in both tables of contents"
+            );
+        }
+    }
+
+    #[test]
+    fn roles_chapters_carry_the_review_scales() {
+        use codev_core::review::{Confidence, Severity};
+        let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+        let english = flat(roles_chapter(Lang::En));
+        for definition in Severity::ALL
+            .map(Severity::definition)
+            .into_iter()
+            .chain(Confidence::ALL.map(Confidence::definition))
+        {
+            assert!(
+                english.contains(&flat(definition)),
+                "en: roles.md must give the definition `{definition}`"
+            );
+        }
+        let french = roles_chapter(Lang::Fr);
+        for level in Severity::ALL.map(Severity::as_str) {
+            assert!(
+                french.contains(&format!("| `{level}` |")),
+                "fr: roles.md must list the severity `{level}`"
+            );
+        }
+        // `high` and `low` are both a severity and a confidence: each row
+        // appears once per table.
+        for level in Confidence::ALL.map(Confidence::as_str) {
+            assert!(
+                french.matches(&format!("| `{level}` |")).count() >= 2,
+                "fr: roles.md must list the confidence `{level}`"
+            );
+        }
+    }
+
+    #[test]
     fn every_chapter_has_exactly_one_top_level_title() {
         for (lang, chapters) in [("en", CHAPTERS_EN), ("fr", CHAPTERS_FR)] {
             for (path, source) in chapters {

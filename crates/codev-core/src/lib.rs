@@ -28,6 +28,7 @@ pub mod merge;
 pub mod outputs;
 pub mod parser;
 pub mod plan;
+pub mod review;
 pub mod roles;
 pub mod schema;
 pub mod status;

@@ -29,6 +29,7 @@ Commands:
   decision      Create, accept, inspect and supersede architecture decisions
   sources       Manage inherited sources (local paths and remote git repositories)
   sync          Merge a change's deltas into the main specs without archiving
+  review        Show a change's review record and what is left to decide
   archive       Merge, then move a change to the dated archive
   changelog     Generate release notes from the archived changes
   docs          Open the codev documentation in the browser
@@ -521,6 +522,34 @@ Validates the change, refuses if validation reports an error, then merges its
 deltas into the main specs, without moving the change. Running it again
 reports the specs as unchanged. See [Sync](../workflow.md#sync).
 
+### codev review
+
+```text
+Show a change's review record and what is left to decide
+
+Reads `_codev/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `codev validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error.
+
+Usage: codev review [OPTIONS]
+
+Options:
+      --change <CHANGE>
+          Change name (inferred when there is only one)
+
+      --json
+
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Reads the change's [review record](../guides/review-record.md) and prints
+it per step and per role, with who must act next on each finding, the
+record's defects (the `review_*` codes of
+[`codev validate`](#codev-validate)) and whether the review lets the change
+be archived. Without a record, it says so and succeeds. The archive gate
+does not change the exit status: `codev archive` enforces it. JSON:
+[`review`](json-output.md#review).
+
 ### codev archive
 
 ```text
@@ -534,8 +563,11 @@ Options:
   -h, --help             Print help
 ```
 
-Validates the change, refuses if validation reports an error, merges its
-deltas into the main specs, then moves it to
+Validates the change, refuses if validation reports an error, then checks
+its [review record](../guides/review-record.md) and refuses with
+`review_blocked` if the record is missing for a step where review roles
+were active or a high-severity finding is still open or disputed; then
+merges its deltas into the main specs and moves it, record included, to
 `_codev/changes/archive/<YYYY-MM-DD>-<name>/`. See
 [Archive](../workflow.md#archive).
 

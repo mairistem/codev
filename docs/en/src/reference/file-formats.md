@@ -278,6 +278,84 @@ The artifacts of a `schema.yaml` may declare their [role](../roles.md) as
 data under `role:` — see
 [Custom schemas](../guides/custom-schemas.md#declaring-artifact-roles).
 
+## review.md
+
+Path: `_codev/changes/<name>/review.md`. The change's
+[review record](../guides/review-record.md), written by `/codev-propose`
+(`plan.challenge`) and `/codev-apply` (`code.review`), or by hand. It is
+not a planning artifact: `codev status` ignores it, `codev sync` leaves
+it, `codev archive` moves it with the change.
+
+````markdown
+# Review record: add-sessions
+
+<!-- codev-review: 1 -->
+
+## plan.challenge
+
+### skeptic
+
+No finding.
+
+### security
+
+#### R-security-1 Session tokens are stored in clear
+
+```yaml
+severity: high
+confidence: high
+location: "design.md#Decision: Sessions live in the database"
+evidence: |
+  The session token is stored in the `sessions` table.
+recommendation: Store a SHA-256 of the token and compare digests.
+history:
+  - status: open
+    by: security
+  - status: fixed
+    by: architect
+    ref: design.md, the decision now stores a digest
+  - status: fixed
+    by: security
+    note: verified
+```
+
+## code.review
+
+### newcomer
+
+Disabled by configuration.
+````
+
+| Element | Rule |
+|---|---|
+| `<!-- codev-review: <n> -->` | Optional format marker; without it, format 1. A greater format is not checked and blocks archiving |
+| `## <step>` | `plan.challenge` or `code.review`, once each |
+| `### <role-id>` | One per role under a step, once each. Holds findings, or the line `No finding.`, or the line `Disabled by configuration.` |
+| `#### <id> <title>` | A finding: `R-<role-id>-<n>`, unique in the record, never reused, followed by one fenced `yaml` block |
+
+| Field | Type | Meaning |
+|---|---|---|
+| `severity` | `high`, `medium` or `low` | See [the scale](../roles.md#findings-severity-confidence-and-the-review-record) |
+| `confidence` | `high` or `low` | A `low` finding is not presented to the human |
+| `location` | string | `<path>:<line>` or `<path>:<start>-<end>` from the project root, or `<file>#<heading>` from the change folder. Relative, no `..`, no drive; `\` reads as `/`. Quote it when it holds `: ` |
+| `evidence` | string | The cited text, verbatim: whole lines or a fragment of each |
+| `recommendation` | string | What to do |
+| `history` | list | The answers, oldest first; the last one is the status |
+
+| `history[]` key | Meaning |
+|---|---|
+| `status` | `open`, `fixed`, `disputed`, `accepted-risk`, `deferred` or `rejected` |
+| `by` | A role id, `human`, or `human:<name>` |
+| `ref` | The commit or the file change — required by `fixed` after `open` or `disputed` |
+| `note` | The argument (`disputed`), the justification (`accepted-risk`, `by` a human), or why a fix does not hold (`open` after `fixed`) |
+| `to` | Where a `deferred` finding goes: a change or an issue. A `high` one is deferred by a human |
+
+A field this codev does not know is a warning, `review_unknown_field`, and
+is ignored: a later codev may add optional fields without changing the
+format. A new status, step or required field raises the format marker
+instead, which an older codev refuses to check. The transitions and the checks are in
+[Review record](../guides/review-record.md#what-codev-checks).
+
 ## Decision (ADR)
 
 Path: `_codev/decisions/NNNN-<slug>.md`. Every `.md` file in this folder is
@@ -413,6 +491,16 @@ may be reworded between versions; codes are not.
 | `unknown_domain` | error | The proposal's `## Domains` names a domain outside the six |
 | `domains_invalid` | error | The proposal's `## Domains` has a line that is neither an item nor `None`, or `None` next to a ticked domain |
 | `domains_missing` | warning | An active change's proposal has no `## Domains` section |
+| `review_invalid` | error | The review record's layout, a finding's field, id or location, a status or a transition is wrong |
+| `review_decision_incomplete` | error | A history entry lacks its `ref`, `note` or `to`, or a risk is accepted, or a high finding deferred, by someone other than a human |
+| `review_location_missing` | error | A finding cites a file, a line or a heading that does not exist |
+| `review_evidence_not_found` | error | A finding's evidence is nowhere in the cited file or section |
+| `review_role_missing` | error | A role active at a recorded step has no section, or one that says it is disabled |
+| `review_evidence_moved` | warning | A finding's evidence is in the file, more than 5 lines away from the cited lines |
+| `review_evidence_unchecked` | warning | The cited file is not UTF-8 text, holds NUL bytes, or is larger than 4 MiB: the evidence is not compared |
+| `review_unknown_section` | warning | A step or a role the record should not hold; it is ignored |
+| `review_unknown_field` | warning | A finding field this codev does not know; it is ignored |
+| `review_format_unsupported` | warning | The record comes from a newer codev; nothing in it is checked |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `unknown_config_key` | warning | `_codev/config.yaml` holds a top-level or `mcp` key this codev does not know — see [Unknown keys](configuration.md#unknown-keys) |

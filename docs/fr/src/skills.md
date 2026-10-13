@@ -112,14 +112,19 @@ Avant de présenter le plan, la skill le relit en deux étapes :
    [experts](roles.md#experts-et-domaines) dont la proposal coche le
    domaine dans `## Domains` — sécurité, données personnelles,
    accessibilité, performance, exploitation, migration — rejoignent cette
-   relecture avec leurs propres connaissances. Elle corrige ce qui ne fait
-   pas de doute, consigne ce qui demande votre décision dans les Open
-   Questions du design, et n'élargit jamais le périmètre.
+   relecture avec leurs propres connaissances. Chaque constat est écrit
+   dans le [compte rendu de revue](guides/review-record.md) du change, avec
+   sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
+   relecteur vérifie chaque réponse une fois, et la relecture n'élargit
+   jamais le périmètre.
 
 Le résumé se termine par les **points à challenger** : au plus cinq points
-d'une ligne, tous rôles confondus, classés par impact et marqués du rôle
-qui les a relevés — quoi, pourquoi c'est important, quel artefact — ou la
-mention qu'aucun point n'a été relevé. Commencez votre relecture par là.
+d'une ligne, tous rôles confondus, classés par gravité et marqués du rôle
+qui les a relevés — identifiant du constat, statut, quoi, pourquoi c'est
+important, quel artefact — ou la mention qu'aucun point n'a été relevé,
+puis par **À décider** : les contestations que le relecteur a maintenues et
+les constats de gravité haute encore ouverts. Commencez votre relecture par
+là.
 
 Si la demande mentionne un identifiant de ticket correspondant à
 `[A-Z]{2,}-\d+` et qu'un outil MCP Jira est configuré, la skill récupère le
@@ -182,7 +187,10 @@ code touché par le change comme le ferait un nouvel arrivant, rejointe par
 les experts qu'activent les domaines de la proposal : elle simplifie ce qui
 ne fait pas de doute, sans élargir le périmètre, et signale au plus cinq
 notes de relecture, chacune marquée de son rôle — un constat de sécurité ou
-de données personnelles de gravité haute est toujours signalé. Un expert
+de données personnelles de gravité haute est toujours signalé. Chaque
+constat va dans le [compte rendu de revue](guides/review-record.md) et suit
+la même boucle de réponse que ceux du plan, et le résumé liste ce qu'il vous
+revient de décider. Un expert
 corrige un défaut manifeste dans le périmètre du change, avec un test, et
 signale tout autre changement de comportement au lieu de le faire. Elle
 tire les critères et les connaissances de ces deux étapes de
@@ -216,7 +224,9 @@ Posture : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivante
 
 Lance `codev archive` pour un change. Si la validation signale des erreurs, la
 skill s'arrête et vous renvoie vers `codev validate` au lieu de chercher à les
-contourner.
+contourner. Si le compte rendu de revue bloque l'archivage
+(`review_blocked`), elle vous renvoie vers `codev review` et ne consigne
+jamais une décision à votre place.
 
 Posture : [mainteneur des specs vivantes](roles.md#mainteneur-des-specs-vivantes-codev-sync-codev-archive).
 

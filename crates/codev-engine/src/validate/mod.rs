@@ -53,6 +53,15 @@ pub fn validate_change(
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
     findings.extend(check_change_roles(fs, layout, &ctx));
     findings.extend(check_proposal(fs, layout, &change_dir)?);
+    // The record's defects only: an `open` finding is the normal state of
+    // a change under review, and the archive gate is `archive`'s business.
+    let review = crate::review::check(fs, layout, config, &ctx)?;
+    findings.extend(
+        review
+            .findings
+            .into_iter()
+            .map(|finding| LocatedFinding::from_finding(finding, review.path.clone())),
+    );
 
     // Each delta is read once and parsed once: the parser's findings and
     // the rules' findings come out of the same pass.
@@ -873,6 +882,105 @@ mod tests {
                 .iter()
                 .flat_map(|i| &i.findings)
                 .all(|f| !f.finding.code.contains("domain")),
+            "{:?}",
+            report.items
+        );
+    }
+
+    // ─────────────── review record ───────────────
+
+    fn review_codes(fs: &MemoryFileSystem) -> (Vec<&'static str>, ItemReport) {
+        let cfg = config(fs);
+        let report = validate_change(
+            fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        let codes = report
+            .findings
+            .iter()
+            .map(|f| f.finding.code)
+            .filter(|code| code.starts_with("review_"))
+            .collect();
+        (codes, report)
+    }
+
+    fn with_review(answers_and_fields: &str) -> MemoryFileSystem {
+        project_with_well_formed_change()
+            .with_file(
+                "/p/src/auth.rs",
+                "fn login() {\n    let token = random();\n}\n",
+            )
+            .with_file(
+                "/p/_codev/changes/add-auth/review.md",
+                crate::review::tests::record(&crate::review::tests::finding(
+                    "newcomer",
+                    "high",
+                    "src/auth.rs:2",
+                    "let token = random();",
+                    answers_and_fields,
+                )),
+            )
+    }
+
+    #[test]
+    fn validate_reports_nothing_without_a_record() {
+        let (codes, _) = review_codes(&project_with_well_formed_change());
+        assert!(codes.is_empty(), "{codes:?}");
+    }
+
+    #[test]
+    fn an_open_high_finding_is_not_a_validation_error() {
+        let (codes, report) = review_codes(&with_review(""));
+        assert!(codes.is_empty(), "{:?}", report.findings);
+        assert!(!report.has_errors());
+    }
+
+    #[test]
+    fn a_record_error_is_located_in_review_md() {
+        let fs = with_review("");
+        let broken = fs
+            .read("/p/_codev/changes/add-auth/review.md")
+            .unwrap()
+            .replace("evidence: |\n  let token = random();\n", "");
+        let fs = fs.with_file("/p/_codev/changes/add-auth/review.md", broken);
+        let (codes, report) = review_codes(&fs);
+        assert_eq!(codes, ["review_invalid"]);
+        assert!(report.has_errors());
+        let finding = report
+            .findings
+            .iter()
+            .find(|f| f.finding.code == "review_invalid")
+            .unwrap();
+        assert_eq!(
+            finding.path,
+            PathBuf::from("_codev/changes/add-auth/review.md")
+        );
+        assert!(finding.finding.line > 1);
+    }
+
+    #[test]
+    fn archived_records_are_not_checked() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/review.md",
+                "## code.review\n\n### newcomer\n\nnothing usable\n",
+            );
+        let cfg = config(&fs);
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|i| &i.findings)
+                .all(|f| !f.finding.code.starts_with("review_")),
             "{:?}",
             report.items
         );

@@ -102,14 +102,18 @@ Before presenting the plan, the skill reviews it in two steps:
    project's [`rules`](reference/configuration.md#rules). The
    [experts](roles.md#experts-and-domains) whose domain the proposal ticks
    in `## Domains` — security, privacy, accessibility, performance,
-   operations, migration — join this pass with their own knowledge. It
-   fixes what is unambiguous, records what needs your decision in the
-   design's Open Questions, and never adds scope.
+   operations, migration — join this pass with their own knowledge. Every
+   finding is written to the change's
+   [review record](guides/review-record.md) with its severity and quoted
+   evidence; the author fixes it or disputes it, the reviewer checks each
+   answer once, and the pass never adds scope.
 
 The summary ends with **Points to challenge**: at most five one-line items
-across all roles, ranked by impact and tagged with the role that raised
-them — what, why it matters, which artifact — or "No point to challenge
-found". Start your review there.
+across all roles, ranked by severity and tagged with the role that raised
+them — finding id, status, what, why it matters, which artifact — or
+"No point to challenge found", then **To decide**: the disputes the
+reviewer maintained and the high-severity findings still open. Start your
+review there.
 
 If the request mentions a ticket identifier matching `[A-Z]{2,}-\d+` and a
 Jira MCP tool is configured, it fetches the first ticket — read-only, a
@@ -166,7 +170,10 @@ it finds none. Once every task is checked, it reviews the code the change
 touched as a newcomer would, joined by the experts the proposal's domains
 activate: it simplifies what is unambiguous, without widening the scope,
 and reports up to five review notes, each tagged with its role — a
-high-severity security or privacy finding is always reported. An expert
+high-severity security or privacy finding is always reported. Every
+finding goes to the [review record](guides/review-record.md) and through
+the same answer loop as the plan's, and the summary lists what you must
+decide. An expert
 fixes a clear defect within the change's scope, with a test, and reports
 any other behavior change instead of making it. It takes the criteria and
 knowledge of both steps from `codev roles`; when no role is active at the
@@ -196,7 +203,9 @@ Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs
 ### Archive (`/codev-archive`)
 
 Runs `codev archive` for a change. If validation reports errors, it stops and
-points you to `codev validate` rather than trying to work around them.
+points you to `codev validate` rather than trying to work around them. If
+the review record blocks archiving (`review_blocked`), it points you to
+`codev review` and never records a decision in your place.
 
 Stance: [maintainer of the living specs](roles.md#maintainer-of-the-living-specs-codev-sync-codev-archive).
 

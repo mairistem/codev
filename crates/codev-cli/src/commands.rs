@@ -25,6 +25,7 @@ use codev_engine::decisions_actions as engine_actions;
 use codev_engine::instructions::Instructions;
 use codev_engine::integration::{self, IntegrationPlan, IntegrationStep};
 use codev_engine::metadata::ChangeMetadata;
+use codev_engine::review as engine_review;
 use codev_engine::roles as engine_roles;
 use codev_engine::sources as engine_sources;
 use codev_engine::sync as engine_sync;
@@ -887,6 +888,38 @@ pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
     Ok(engine_archive::execute_archive(
         ctx.fs, &layout, &config, ctx.clock, &change,
     )?)
+}
+
+// ─────────────────────────────── review ───────────────────────────────
+
+#[derive(Debug)]
+pub struct ReviewOutcome {
+    pub change: ChangeId,
+    pub check: engine_review::ReviewCheck,
+    pub warnings: Vec<Warning>,
+}
+
+impl ReviewOutcome {
+    /// 1 when the record has an error, 0 otherwise: the archive gate is a
+    /// state of the change, read from the output and enforced by
+    /// `codev archive`, not a failure of this command.
+    pub fn exit_code(&self) -> i32 {
+        i32::from(self.check.has_errors())
+    }
+}
+
+/// `codev review`: the change's review record, its defects, and whether it
+/// lets the change be archived.
+pub fn review(ctx: &Ctx, requested: Option<&str>) -> Result<ReviewOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    let change = resolve_change(ctx.fs, &layout, requested)?;
+    let change_ctx = change::load(ctx.fs, &layout, &config, change.clone())?;
+    Ok(ReviewOutcome {
+        check: engine_review::check(ctx.fs, &layout, &config, &change_ctx)?,
+        change,
+        warnings: config.warnings,
+    })
 }
 
 // ─────────────────────────────── decision ───────────────────────────────
@@ -2603,6 +2636,117 @@ edition = "2024"
         );
         // The change has not moved.
         assert!(h.fs.read("/p/_codev/changes/buggy/change.yaml").is_some());
+    }
+
+    // ─────────────── review ───────────────
+
+    const DELTA: &str = "## Purpose\n\nUser authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n";
+
+    /// A change `add-auth` with a delta, `src/auth.rs`, and `review` as its
+    /// record (none when empty).
+    fn reviewed_change(review: &str) -> Harness {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, None).unwrap();
+        write_helper(
+            &h,
+            "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
+            DELTA,
+        );
+        write_helper(
+            &h,
+            "/p/src/auth.rs",
+            "fn login() {\n    let token = random();\n}\n",
+        );
+        if !review.is_empty() {
+            write_helper(&h, "/p/_codev/changes/add-auth/review.md", review);
+        }
+        h
+    }
+
+    fn security_finding(confidence: &str, answers: &str) -> String {
+        format!(
+            "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\n### newcomer\n\n#### R-newcomer-1 A random token\n\n```yaml\nseverity: high\nconfidence: {confidence}\nlocation: src/auth.rs:2\nevidence: let token = random();\nrecommendation: Use the CSPRNG.\nhistory:\n  - status: open\n    by: newcomer\n{answers}```\n"
+        )
+    }
+
+    #[test]
+    fn review_json_lists_findings_awaiting_and_reported() {
+        let h = reviewed_change(&security_finding(
+            "low",
+            "  - status: disputed\n    by: developer\n    note: seeded by the OS\n  - status: disputed\n    by: newcomer\n    note: not for tokens\n",
+        ));
+        let outcome = review(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.exit_code(), 0);
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["changeName"], "add-auth");
+        assert_eq!(json["path"], "_codev/changes/add-auth/review.md");
+        assert_eq!(json["exists"], true);
+        let finding = &json["findings"][0];
+        assert_eq!(finding["id"], "R-newcomer-1");
+        assert_eq!(finding["status"], "disputed");
+        assert_eq!(finding["awaiting"], "human");
+        assert_eq!(finding["reported"], false);
+        assert_eq!(finding["history"][1]["note"], "seeded by the OS");
+        assert_eq!(json["archive"]["ready"], false);
+        assert_eq!(json["archive"]["blockers"][0]["code"], "review_unresolved");
+        assert_eq!(json["steps"][1]["step"], "code.review");
+        assert_eq!(json["steps"][1]["roles"][0]["state"], "findings");
+    }
+
+    #[test]
+    fn review_without_a_record_succeeds() {
+        let h = reviewed_change("");
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        assert_eq!(outcome.exit_code(), 0);
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["exists"], false);
+        assert_eq!(json["findings"], serde_json::json!([]));
+        assert_eq!(
+            json["archive"]["blockers"][0]["code"],
+            "review_record_missing"
+        );
+        let text = crate::render::review(&outcome);
+        assert!(text.contains("No review record yet"), "{text}");
+    }
+
+    #[test]
+    fn review_exits_1_on_a_record_error() {
+        let h = reviewed_change(
+            &security_finding("high", "").replace("severity: high", "severity: critical"),
+        );
+        let outcome = review(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.exit_code(), 1);
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["issues"][0]["code"], "review_invalid");
+        assert!(json["issues"][0]["line"].as_u64().unwrap() > 1);
+        let text = crate::render::review(&outcome);
+        assert!(
+            text.contains("review_invalid") && text.contains("critical"),
+            "{text}"
+        );
+    }
+
+    #[test]
+    fn archive_json_refusal_carries_review_blocked() {
+        let h = reviewed_change(&security_finding("high", ""));
+        let err = archive(&h.ctx(), None).unwrap_err();
+        assert_eq!(err.code, "review_blocked");
+        assert!(err.message.contains("R-newcomer-1"), "{}", err.message);
+        assert!(
+            h.fs.read("/p/_codev/changes/add-auth/change.yaml")
+                .is_some()
+        );
+        // Fixed, then verified: the change goes.
+        let h = reviewed_change(&security_finding(
+            "high",
+            "  - status: fixed\n    by: developer\n    ref: src/auth.rs uses the CSPRNG\n  - status: fixed\n    by: newcomer\n",
+        ));
+        let outcome = archive(&h.ctx(), None).unwrap();
+        assert!(
+            h.fs.read(outcome.moved_to.join("review.md")).is_some(),
+            "the record moves with the change"
+        );
     }
 
     #[test]

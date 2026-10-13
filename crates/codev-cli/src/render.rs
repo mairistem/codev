@@ -17,7 +17,7 @@ use codev_engine::validate::{ItemKind, ValidateReport};
 use crate::commands::{
     ChangelogOutcome, ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome,
     DecisionDeviatedOutcome, DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome,
-    DecisionShowOutcome, DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome,
+    DecisionShowOutcome, DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome, ReviewOutcome,
     SchemasOutcome, SetupOutcome, SourcesListOutcome, SourcesShowOutcome, SourcesUpdateOutcome,
     SpecsOutcome,
 };
@@ -558,6 +558,110 @@ pub fn validate(report: &ValidateReport) -> String {
 ///
 /// Groups by category — created, updated, unchanged — rather than a single
 /// mixed line. An explicit "nothing to do" when everything is unchanged.
+/// `codev review`: the record step by step, what is left to decide, its
+/// defects, and the archive gate.
+pub fn review(outcome: &ReviewOutcome) -> String {
+    let check = &outcome.check;
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "Review record of `{}` — {}",
+        outcome.change,
+        check.path.display()
+    );
+    let Some(record) = &check.record else {
+        let _ = writeln!(out, "\n  No review record yet.");
+        review_gate(&mut out, check);
+        return out;
+    };
+    for step in codev_core::review::STEPS {
+        let active = check
+            .steps
+            .iter()
+            .find(|s| s.step == *step)
+            .map(|s| s.active.clone())
+            .unwrap_or_default();
+        let Some(section) = record.step(step) else {
+            let note = if active.is_empty() {
+                "not recorded (no active role)".to_string()
+            } else {
+                format!("not recorded (active: {})", active.join(", "))
+            };
+            let _ = writeln!(out, "\n{step}  {note}");
+            continue;
+        };
+        let _ = writeln!(out, "\n{step}");
+        for role in &section.roles {
+            match role.state {
+                codev_core::review::RoleState::Findings => {
+                    let _ = writeln!(out, "  {}", role.role);
+                    for f in &role.findings {
+                        let _ = writeln!(
+                            out,
+                            "    {:<16} {:<6} {:<13} {}{}",
+                            f.id,
+                            f.severity.map_or("?", |s| s.as_str()),
+                            f.status().map_or("?", |s| s.as_str()),
+                            f.title,
+                            if f.reported() {
+                                ""
+                            } else {
+                                " (low confidence)"
+                            }
+                        );
+                        let _ = writeln!(out, "    {:<16} at {}", "", f.location_text);
+                    }
+                }
+                state => {
+                    let _ = writeln!(out, "  {:<14} {}", role.role, state.as_str());
+                }
+            }
+        }
+        for role in active.iter().filter(|r| section.role(r).is_none()) {
+            let _ = writeln!(out, "  {role:<14} missing");
+        }
+    }
+    let waiting: Vec<_> = record
+        .findings()
+        .filter(|f| f.awaiting().is_some())
+        .collect();
+    if !waiting.is_empty() {
+        let _ = writeln!(out, "\nWaiting for an answer");
+        for f in waiting {
+            let _ = writeln!(
+                out,
+                "  {:<16} {}",
+                f.id,
+                f.awaiting().map_or("", |a| a.as_str())
+            );
+        }
+    }
+    if !check.findings.is_empty() {
+        let _ = writeln!(out, "\nIssues in the record");
+        for f in &check.findings {
+            let label = if f.severity == Severity::Error {
+                "error"
+            } else {
+                "warning"
+            };
+            let _ = writeln!(out, "  {label} [{}] line {}: {}", f.code, f.line, f.message);
+        }
+    }
+    review_gate(&mut out, check);
+    out
+}
+
+fn review_gate(out: &mut String, check: &codev_engine::review::ReviewCheck) {
+    if check.blockers.is_empty() {
+        let _ = writeln!(out, "\nArchive: the review lets the change be archived.");
+        return;
+    }
+    let _ = writeln!(out, "\nArchive: blocked");
+    for blocker in &check.blockers {
+        let _ = writeln!(out, "  - {} ({})", blocker.message, blocker.code);
+    }
+}
+
 pub fn sync(outcome: &SyncOutcome) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "Synced change `{}`", outcome.change);
@@ -1445,6 +1549,46 @@ apply:
             rendered.contains("  - (schema:spec-driven) each requirement uses SHALL"),
             "{rendered}"
         );
+    }
+
+    #[test]
+    fn review_prints_steps_roles_findings_and_the_gate() {
+        let record = codev_core::review::parse(
+            "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\n### newcomer\n\n#### R-newcomer-1 Dense one-liner\n\n```yaml\nseverity: low\nconfidence: low\nlocation: src/a.rs:3\nevidence: x\nrecommendation: y\nhistory:\n  - status: open\n    by: newcomer\n```\n",
+        )
+        .value;
+        let outcome = crate::commands::ReviewOutcome {
+            change: codev_core::ChangeId::parse("add-auth").unwrap(),
+            check: codev_engine::review::ReviewCheck {
+                path: "_codev/changes/add-auth/review.md".into(),
+                record: Some(record),
+                findings: Vec::new(),
+                steps: vec![codev_core::review::StepRoles {
+                    step: "code.review".into(),
+                    active: vec!["newcomer".into(), "security".into()],
+                }],
+                blockers: vec![codev_core::review::Blocker {
+                    code: "review_unresolved",
+                    message: "R-x-1 is high and still open".into(),
+                }],
+            },
+            warnings: Vec::new(),
+        };
+        let text = review(&outcome);
+        for expected in [
+            "plan.challenge",
+            "skeptic        no-finding",
+            "R-newcomer-1",
+            "Dense one-liner (low confidence)",
+            "at src/a.rs:3",
+            "security       missing",
+            "Waiting for an answer",
+            "author",
+            "Archive: blocked",
+            "(review_unresolved)",
+        ] {
+            assert!(text.contains(expected), "missing `{expected}` in:\n{text}");
+        }
     }
 
     #[test]

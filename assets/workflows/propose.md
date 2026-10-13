@@ -217,10 +217,10 @@ criteria. Fix the gaps directly in the artifacts.
 Re-read the artifacts as reviewers who did not write them: every role
 returned — the skeptic, and the experts the proposal's `## Domains`
 activates — each along its criteria and knowledge. An expert asks whether
-the design addresses its domain.
+the design addresses its domain. Here `<step>` is `plan.challenge`.
 
-Fix what is unambiguous directly. Record what needs a human decision in the
-Open Questions of `design.md`, or in the proposal if there is no design.
+{{REVIEW_RECORD}}
+
 Ask the user only if a finding changes the scope materially.
 
 ### 8. Show the final status
@@ -238,12 +238,16 @@ Summarize:
   and why;
 - each step skipped because its role is disabled by configuration;
 - "The artifacts needed for implementation are ready.";
-- **Points to challenge** — from step 7, at most five items in total
-  across the roles, ranked by impact, one line each, tagged with the role
-  id: `[<role-id>] what — why it matters — which artifact`. If nothing is
-  worth raising, write "No point to challenge found"; never invent points.
-  When no role is active at step 7, write "The skeptic is disabled by
-  configuration" instead;
+- **Points to challenge** — from the record's `plan.challenge` findings
+  reported to the human and not rejected, at most five items in total
+  across the roles, ranked by severity, one line each, tagged with the role
+  id: `[<role-id>] <finding id> (<status>) what — why it matters — which
+  artifact`. If nothing is worth raising, write
+  "No point to challenge found"; never invent points. When no role is
+  active at step 7, write "The skeptic is disabled by configuration"
+  instead;
+- **To decide** — from step 7: what only the user can decide, or
+  "Nothing to decide";
 - "Review them. When you are ready, ask me to apply this change."
 
 ## Guardrails
@@ -260,6 +264,9 @@ Summarize:
 - Check that each written file exists before moving on to the next.
 - The contrarian pass corrects or records; it never adds scope.
 - Points to challenge are capped at five, across all roles.
+- Every finding is in `review.md` before it is fixed or reported; an
+  accepted risk or the deferral of a high finding is recorded only once
+  the user decided it.
 - **Jira MCP — strictly read-only.** Never call any Jira MCP
   tool other than
   `{{JIRA_MCP_TOOL}}`, never twice in the

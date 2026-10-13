@@ -27,6 +27,39 @@ pub const UPDATE_NOTICE: &str = include_str!("../../../assets/workflows/_update-
 
 pub const UPDATE_NOTICE_PLACEHOLDER: &str = "{{UPDATE_NOTICE}}";
 
+/// The review record procedure — writing findings, the author's answer, the
+/// reviewer's single re-check, the human's decisions — shared by the
+/// challenge of `propose` and the review of `apply`, substituted for
+/// [`REVIEW_RECORD_PLACEHOLDER`] so the two copies never drift apart.
+pub const REVIEW_RECORD: &str = include_str!("../../../assets/workflows/_review-record.md");
+
+pub const REVIEW_RECORD_PLACEHOLDER: &str = "{{REVIEW_RECORD}}";
+
+/// Inside [`REVIEW_RECORD`]: the severity and confidence scales, generated
+/// from `codev-core::review`, their single source.
+pub const REVIEW_SCALE_PLACEHOLDER: &str = "{{REVIEW_SCALE}}";
+
+/// The workflows whose body carries [`REVIEW_RECORD_PLACEHOLDER`].
+pub const REVIEW_RECORD_WORKFLOWS: &[&str] = &["propose", "apply"];
+
+/// [`REVIEW_RECORD`] with the scales in place, indented as the list item
+/// that holds them.
+pub fn review_record() -> String {
+    let scale: String = codev_core::review::scale_markdown()
+        .lines()
+        .map(|line| {
+            if line.is_empty() {
+                String::from("\n")
+            } else {
+                format!("     {line}\n")
+            }
+        })
+        .collect();
+    REVIEW_RECORD
+        .trim_end()
+        .replace(REVIEW_SCALE_PLACEHOLDER, scale.trim_end())
+}
+
 /// The workflows whose body carries [`UPDATE_NOTICE_PLACEHOLDER`]: the ones
 /// that act. `explore`, `onboard` and `configure` never offer an update.
 pub const UPDATE_NOTICE_WORKFLOWS: &[&str] = &["propose", "apply", "update", "sync", "archive"];
@@ -622,9 +655,9 @@ mod tests {
         let output = flat(section(propose, "## Output", "## Guardrails"));
         for keyword in [
             "at most five items in total across the roles",
-            "ranked by impact",
+            "ranked by severity",
             "tagged with the role id",
-            "`[<role-id>] what",
+            "`[<role-id>] <finding id> (<status>) what",
         ] {
             assert!(output.contains(keyword), "the output must cite `{keyword}`");
         }
@@ -791,6 +824,129 @@ mod tests {
             "0.6.0",
             &crate::claude::RenderCtx::default(),
         )
+    }
+
+    #[test]
+    fn propose_and_apply_carry_the_review_scales() {
+        use codev_core::review::{Confidence, Severity};
+        for id in REVIEW_RECORD_WORKFLOWS {
+            let body = find(id).unwrap().body;
+            assert_eq!(body.matches(REVIEW_RECORD_PLACEHOLDER).count(), 1, "{id}");
+            let skill = flat(&rendered(id));
+            for severity in Severity::ALL {
+                let line = format!("`{}` — {}", severity.as_str(), severity.definition());
+                assert!(skill.contains(&flat(&line)), "`{id}` lacks {line}");
+            }
+            for confidence in Confidence::ALL {
+                let line = format!("`{}` — {}", confidence.as_str(), confidence.definition());
+                assert!(skill.contains(&flat(&line)), "`{id}` lacks {line}");
+            }
+            assert!(!skill.contains("{{REVIEW"), "`{id}` keeps a placeholder");
+        }
+        for workflow in CATALOG
+            .iter()
+            .filter(|w| !REVIEW_RECORD_WORKFLOWS.contains(&w.id))
+        {
+            assert!(
+                !workflow.body.contains(REVIEW_RECORD_PLACEHOLDER),
+                "{}",
+                workflow.id
+            );
+        }
+    }
+
+    #[test]
+    fn propose_and_apply_describe_the_record_and_the_loop() {
+        let record = flat(&review_record());
+        for keyword in [
+            "_codev/changes/<name>/review.md",
+            "codev review --change \"<name>\" --json",
+            "No finding.",
+            "Disabled by configuration.",
+            "#### R-<role-id>-<n> <title>",
+            "never reused",
+            "copy the text verbatim",
+            "status: fixed",
+            "ref:",
+            "status: disputed",
+            "note:",
+            "The reviewer re-checks each answer once",
+            "status: rejected",
+            "No second round",
+            "goes to the human",
+            "Present only findings with `reported: true` that are not `rejected`",
+            "**To decide**",
+            "`awaiting` is `human`",
+            "Nothing to decide",
+            "fix every entry of `issues[]`",
+        ] {
+            assert!(
+                record.contains(keyword),
+                "the record procedure lacks `{keyword}`"
+            );
+        }
+        let propose = flat(&rendered("propose"));
+        let challenge = section(&propose, "### 7. Challenge the plan", "### 8.");
+        assert!(challenge.contains("`<step>` is `plan.challenge`"));
+        assert!(challenge.contains("**The review record.**"));
+        assert!(propose.contains("**To decide** — from step 7"));
+        let apply = flat(&rendered("apply"));
+        let review = section(&apply, "### 5. Review the change", "### 6.");
+        assert!(review.contains("`<step>` is `code.review`"));
+        assert!(review.contains("**The review record.**"));
+        assert!(apply.contains("**To decide** — from step 5"));
+    }
+
+    #[test]
+    fn skills_never_record_a_human_decision_alone() {
+        let record = flat(&review_record());
+        for keyword in [
+            "Only a person decides a risk",
+            "Never write `accepted-risk`, nor defer a `high` finding, on your own",
+            "once the user gives it",
+            "by: human:<their name>",
+            "git config user.name",
+        ] {
+            assert!(
+                record.contains(keyword),
+                "the record procedure lacks `{keyword}`"
+            );
+        }
+        for id in REVIEW_RECORD_WORKFLOWS {
+            assert!(
+                flat(find(id).unwrap().body).contains("recorded only once the user decided it"),
+                "{id}"
+            );
+        }
+    }
+
+    #[test]
+    fn skills_resume_from_the_record() {
+        let record = flat(&review_record());
+        for keyword in [
+            "Resume first",
+            "A finding already in `findings[]` is never raised again",
+            "`awaiting` is `author` or `reviewer` is answered before anything new",
+            "Never write a step or a role twice",
+        ] {
+            assert!(
+                record.contains(keyword),
+                "the record procedure lacks `{keyword}`"
+            );
+        }
+    }
+
+    #[test]
+    fn archive_explains_review_blocked() {
+        let archive = flat(find("archive").unwrap().body);
+        for keyword in [
+            "`code == \"review_blocked\"`",
+            "The review record blocks archiving. Run `codev review --change <name>` to see what is left to decide.",
+            "Do not edit `review.md`",
+            "Do not work around a review refusal",
+        ] {
+            assert!(archive.contains(keyword), "archive lacks `{keyword}`");
+        }
     }
 
     #[test]

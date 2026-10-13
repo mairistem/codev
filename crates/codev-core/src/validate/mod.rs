@@ -133,6 +133,9 @@ mod tests {
         for code in crate::domains::codes::ALL {
             assert!(seen.insert(code), "domain code duplicates: {code}");
         }
+        for code in crate::review::codes::ALL {
+            assert!(seen.insert(code), "review code duplicates: {code}");
+        }
     }
 
     fn spec(source: &str) -> Spec {

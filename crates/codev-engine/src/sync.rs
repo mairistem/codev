@@ -320,6 +320,35 @@ mod tests {
     }
 
     #[test]
+    fn sync_ignores_the_review_record() {
+        // An open high finding blocks `archive`, never `sync`, and the
+        // record stays where it is.
+        let record = crate::review::tests::record(&crate::review::tests::finding(
+            "newcomer",
+            "high",
+            "src/a.rs:1",
+            "x",
+            "",
+        ));
+        let fs = project_with_added_delta()
+            .with_file("/p/src/a.rs", "x\n")
+            .with_file("/p/_codev/changes/add-auth/review.md", record.clone());
+        let layout = Layout::new("/p");
+        let outcome = execute_sync(
+            &fs,
+            &layout,
+            &resolved(&fs),
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(outcome.created.len(), 1);
+        assert_eq!(
+            fs.read("/p/_codev/changes/add-auth/review.md").as_deref(),
+            Some(record.as_str())
+        );
+    }
+
+    #[test]
     fn second_sync_changes_nothing() {
         // The idempotency invariant: syncing twice in a row leaves the
         // second one with `changed_anything() == false`.

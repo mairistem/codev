@@ -66,9 +66,9 @@ ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
 | `plan.investigate` | `/codev-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
 | `plan.write` | `/codev-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `codev instructions` renvoie dans `role` |
 | `plan.trace` | `/codev-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/codev-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; ce qui ne fait pas de doute est corrigé, ce qui demande votre décision va dans les Open Questions du design, et au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, terminent le résumé |
+| `plan.challenge` | `/codev-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; chaque constat va dans le [compte rendu de revue](#gravité-confiance-et-compte-rendu-de-revue), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
 | `code.implement` | `/codev-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
-| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
+| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de revue ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
 La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
 garde-fous — reste dans la skill. Les critères et les connaissances
@@ -137,6 +137,42 @@ des signaux de planification fragile ; les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
 `codev roles --at code.review --change <nom> --knowledge`.
+
+## Gravité, confiance et compte rendu de revue
+
+Ce que trouvent les rôles de relecture — le contradicteur et les experts à
+`plan.challenge`, le nouvel arrivant et les experts à `code.review` — est
+écrit dans le **compte rendu de revue** du change,
+`_codev/changes/<name>/review.md`, avant d'être corrigé ou signalé. Chaque
+constat cite sa preuve mot pour mot, à un emplacement que codev peut
+vérifier, et porte une gravité et une confiance sur une échelle commune :
+
+| Gravité | Signification |
+|---|---|
+| `high` | Le change casserait une exigence, perdrait ou exposerait des données, ou ouvrirait une vulnérabilité, et ne doit pas être archivé tant qu'il n'est pas corrigé ou qu'une personne n'en accepte pas le risque. |
+| `medium` | Un défaut ou un risque réel, à l'impact limité ou contournable, à corriger dans ce change ou à reporter en connaissance de cause. |
+| `low` | Une amélioration — lisibilité, cohérence, coût mineur — qui ne décide pas de la justesse du change. |
+
+| Confiance | Signification |
+|---|---|
+| `high` | La preuve montre le problème directement. |
+| `low` | Le problème dépend de quelque chose que le relecteur n'a pas pu voir ou vérifier. |
+
+Un constat de confiance basse reste dans le compte rendu et reçoit une
+réponse comme les autres, mais il ne vous est présenté que si l'on vous
+demande de le trancher.
+
+L'équipe travaille ensuite comme une équipe : l'auteur — le rôle qui
+possède l'artefact, ou le développeur pour le code — corrige chaque constat
+ou le conteste avec un argument ; le relecteur vérifie chaque réponse une
+fois, en validant la correction, en acceptant la contestation (`rejected`)
+ou en la maintenant ; ce qui reste contesté vous revient, avec les deux
+arguments, sous **À décider**. Vous seul acceptez un risque ou reportez un
+constat de gravité haute, et le compte rendu dit qui a décidé.
+`codev archive` refuse un change dont le compte rendu manque pour une étape
+où des rôles ont relu, ou qui a encore un constat de gravité haute ouvert ou
+contesté. Le format complet, les contrôles et le verrou d'archivage sont
+dans [Compte rendu de revue](guides/review-record.md).
 
 ## Configurer les rôles
 
@@ -216,11 +252,14 @@ Une fois toutes les tâches cochées, et avant la suite de tests complète,
 relit uniquement le code que le change a ajouté ou modifié : le nouvel
 arrivant, comme un développeur qui rejoint le projet sans avoir vu ni le
 plan ni la conversation, et les experts qu'activent les domaines du change,
-chacun à l'aide de ses critères et de ses connaissances. Ce qui ne fait pas
-de doute est simplifié et les tests concernés sont relancés ; le reste
-devient au plus cinq **notes de relecture** dans le résumé final — chacune
-marquée de son rôle : quoi, où, pourquoi — ou la mention qu'aucune n'a été
-relevée. Un constat de sécurité ou de données personnelles de gravité haute
+chacun à l'aide de ses critères et de ses connaissances. Chaque constat va
+d'abord dans le [compte rendu de
+revue](#gravité-confiance-et-compte-rendu-de-revue). Ce qui ne
+fait pas de doute est simplifié et les tests concernés sont relancés ; le
+reste devient au plus cinq **notes de relecture** dans le résumé final —
+chacune marquée de son rôle et de l'identifiant du constat : quoi, où,
+pourquoi — ou la mention qu'aucune n'a été relevée, suivies de ce qu'il vous
+revient de décider. Un constat de sécurité ou de données personnelles de gravité haute
 est toujours listé, même au-delà de cinq.
 
 La relecture n'élargit jamais le périmètre du change et ne touche jamais au
@@ -341,8 +380,8 @@ L'agent s'arrête et vous passe la main à ces moments :
   questions auxquelles le code ne peut pas répondre. `/codev-apply` s'arrête
   sur une ambiguïté ou un blocage et vous laisse décider.
 - **Valider le plan.** `/codev-propose` s'arrête une fois les artefacts
-  rédigés. Commencez votre relecture par les points à challenger et les
-  Open Questions du design ; quand le plan vous convient, demandez
+  rédigés. Commencez votre relecture par les points à challenger, ce qui
+  reste à décider et les Open Questions du design ; quand le plan vous convient, demandez
   `/codev-apply`. Pour modifier d'abord un artefact, utilisez
   `/codev-update`.
 - **Accepter les décisions.** Un design suit les décisions en vigueur ou
@@ -359,5 +398,11 @@ L'agent s'arrête et vous passe la main à ces moments :
 - **Configurer les rôles.** Les rôles de relecture qui s'exécutent, et les
   critères qu'ils ajoutent, relèvent du choix de votre projet dans
   `roles:` — voir [Configurer les rôles](#configurer-les-rôles).
+- **Trancher la revue.** Une contestation que le relecteur a maintenue, ou
+  un constat de gravité haute que personne n'a pu corriger, vous revient
+  sous **À décider** : le corriger, en accepter le risque avec une
+  justification, ou le reporter vers un autre change ou un ticket. La skill
+  consigne votre décision avec votre nom ; elle n'accepte jamais un risque à
+  votre place. `codev review` montre ce qui reste.
 - **Archiver.** `/codev-apply` n'archive jamais : une fois l'implémentation
   relue, en commençant par ses notes de relecture, lancez `/codev-archive` ou `codev archive`.

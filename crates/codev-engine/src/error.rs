@@ -45,6 +45,18 @@ pub enum EngineError {
     #[error("change `{change}` has errors; run `codev validate {change}` for details")]
     ValidationFailed { change: String },
 
+    /// The review record does not let the change be archived: missing for
+    /// a step where roles were active, a `high` finding unresolved, or a
+    /// format this codev cannot read. Its own code, as `ValidationFailed`.
+    #[error(
+        "change `{change}` cannot be archived yet: {}; run `codev review --change {change}` for details",
+        reasons.join("; ")
+    )]
+    ReviewBlocked {
+        change: String,
+        reasons: Vec<String>,
+    },
+
     #[error("failed to write {path}: {source}")]
     Write {
         path: PathBuf,
@@ -88,6 +100,7 @@ impl EngineError {
             Self::Invalid { .. } => "invalid",
             Self::InvalidCodevVersion { .. } => "invalid_codev_version",
             Self::ValidationFailed { .. } => "validation_failed",
+            Self::ReviewBlocked { .. } => "review_blocked",
             Self::Write { .. } => "write_failed",
             Self::RoleSetting { code, .. } => code,
             Self::UnknownStep { .. } => "unknown_step",

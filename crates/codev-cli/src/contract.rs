@@ -980,6 +980,224 @@ impl ArchiveReportV1 {
     }
 }
 
+/// `codev review --json`: a change's review record, its defects and the
+/// archive gate.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewV1 {
+    pub change_name: String,
+    /// `review.md`, relative to the project root.
+    pub path: String,
+    pub exists: bool,
+    /// The record's format; `null` without a record.
+    pub format: Option<u32>,
+    pub steps: Vec<ReviewStepV1>,
+    pub findings: Vec<ReviewFindingV1>,
+    /// The record's defects, as `codev validate` reports them.
+    pub issues: Vec<FindingV1>,
+    pub archive: ReviewGateV1,
+    pub status: Vec<StatusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewStepV1 {
+    pub step: String,
+    /// The record has a section for this step.
+    pub recorded: bool,
+    /// The roles active at this step for the change.
+    pub active_roles: Vec<String>,
+    pub roles: Vec<ReviewRoleV1>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewRoleV1 {
+    pub role: String,
+    /// `findings`, `no-finding`, `disabled`, `empty`, or `missing` for an
+    /// active role without a section.
+    pub state: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewFindingV1 {
+    pub id: String,
+    pub title: String,
+    pub role: String,
+    pub step: String,
+    /// The line of its heading in `review.md`.
+    pub line: u32,
+    pub severity: Option<&'static str>,
+    pub confidence: Option<&'static str>,
+    /// Presented to the human: confidence `high`.
+    pub reported: bool,
+    pub location: String,
+    pub evidence: String,
+    pub recommendation: String,
+    pub status: Option<&'static str>,
+    /// `author`, `reviewer`, `human`, or `null` when settled.
+    pub awaiting: Option<&'static str>,
+    pub history: Vec<ReviewEntryV1>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewEntryV1 {
+    pub status: &'static str,
+    pub by: String,
+    pub note: Option<String>,
+    #[serde(rename = "ref")]
+    pub reference: Option<String>,
+    pub to: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewGateV1 {
+    pub ready: bool,
+    pub blockers: Vec<ReviewBlockerV1>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewBlockerV1 {
+    pub code: &'static str,
+    pub message: String,
+}
+
+impl From<&crate::commands::ReviewOutcome> for ReviewV1 {
+    fn from(outcome: &crate::commands::ReviewOutcome) -> Self {
+        let check = &outcome.check;
+        let record = check.record.as_ref();
+        Self {
+            change_name: outcome.change.to_string(),
+            path: json_path(&check.path),
+            exists: record.is_some(),
+            format: record.map(|r| r.format),
+            steps: codev_core::review::STEPS
+                .iter()
+                .map(|step| review_step(check, step))
+                .collect(),
+            findings: record
+                .map(|r| r.findings().map(review_finding).collect())
+                .unwrap_or_default(),
+            issues: check
+                .findings
+                .iter()
+                .map(|f| FindingV1 {
+                    path: json_path(&check.path),
+                    line: f.line,
+                    severity: severity_label(f.severity),
+                    code: f.code,
+                    message: f.message.clone(),
+                })
+                .collect(),
+            archive: ReviewGateV1 {
+                ready: check.blockers.is_empty(),
+                blockers: check
+                    .blockers
+                    .iter()
+                    .map(|b| ReviewBlockerV1 {
+                        code: b.code,
+                        message: b.message.clone(),
+                    })
+                    .collect(),
+            },
+            status: statuses(&outcome.warnings),
+        }
+    }
+}
+
+/// A step of the record: its role sections, plus the active roles that
+/// have none when the step is recorded.
+fn review_step(check: &codev_engine::review::ReviewCheck, step: &str) -> ReviewStepV1 {
+    let active: Vec<String> = check
+        .steps
+        .iter()
+        .find(|s| s.step == step)
+        .map(|s| s.active.clone())
+        .unwrap_or_default();
+    let section = check.record.as_ref().and_then(|r| r.step(step));
+    let mut roles: Vec<ReviewRoleV1> = section
+        .map(|s| {
+            s.roles
+                .iter()
+                .map(|r| ReviewRoleV1 {
+                    role: r.role.clone(),
+                    state: r.state.as_str(),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    if let Some(section) = section {
+        for role in active.iter().filter(|role| section.role(role).is_none()) {
+            roles.push(ReviewRoleV1 {
+                role: role.clone(),
+                state: "missing",
+            });
+        }
+    }
+    ReviewStepV1 {
+        step: step.to_string(),
+        recorded: section.is_some(),
+        active_roles: active,
+        roles,
+    }
+}
+
+fn review_finding(f: &codev_core::review::ReviewFinding) -> ReviewFindingV1 {
+    ReviewFindingV1 {
+        id: f.id.clone(),
+        title: f.title.clone(),
+        role: f.role.clone(),
+        step: f.step.clone(),
+        line: f.line,
+        severity: f.severity.map(|s| s.as_str()),
+        confidence: f.confidence.map(|c| c.as_str()),
+        reported: f.reported(),
+        location: f.location_text.clone(),
+        evidence: f.evidence.clone(),
+        recommendation: f.recommendation.clone(),
+        status: f.status().map(|s| s.as_str()),
+        awaiting: f.awaiting().map(|a| a.as_str()),
+        history: f
+            .history
+            .iter()
+            .map(|e| ReviewEntryV1 {
+                status: e.status.as_str(),
+                by: e.by.clone(),
+                note: e.note.clone(),
+                reference: e.reference.clone(),
+                to: e.to.clone(),
+            })
+            .collect(),
+    }
+}
+
+fn severity_label(severity: codev_core::parser::ast::Severity) -> &'static str {
+    use codev_core::parser::ast::Severity;
+    match severity {
+        Severity::Error => "error",
+        Severity::Warning => "warning",
+        Severity::Info => "info",
+    }
+}
+
+/// The shape of a failed `codev review --json`.
+pub fn review_shape() -> serde_json::Value {
+    serde_json::json!({
+        "changeName": null,
+        "path": null,
+        "exists": false,
+        "format": null,
+        "steps": [],
+        "findings": [],
+        "issues": [],
+        "archive": { "ready": false, "blockers": [] },
+    })
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewChangeV1 {
@@ -1276,6 +1494,69 @@ apply:
             when_origin: WhenOrigin::Project,
             activated_by: Some(ActivatedBy::Project),
         }
+    }
+
+    #[test]
+    fn review_document_exposes_the_contract_fields() {
+        let record = codev_core::review::parse(
+            "## code.review\n\n### newcomer\n\n#### R-newcomer-1 T\n\n```yaml\nseverity: low\nconfidence: high\nlocation: a.rs:1\nevidence: x\nrecommendation: y\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: abc\n```\n",
+        )
+        .value;
+        let outcome = crate::commands::ReviewOutcome {
+            change: ChangeId::parse("add-auth").unwrap(),
+            check: codev_engine::review::ReviewCheck {
+                path: "_codev/changes/add-auth/review.md".into(),
+                record: Some(record),
+                findings: Vec::new(),
+                steps: vec![codev_core::review::StepRoles {
+                    step: "code.review".into(),
+                    active: vec!["newcomer".into(), "security".into()],
+                }],
+                blockers: Vec::new(),
+            },
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(ReviewV1::from(&outcome)).unwrap();
+        for field in [
+            "changeName",
+            "path",
+            "exists",
+            "format",
+            "steps",
+            "findings",
+            "issues",
+            "archive",
+            "status",
+        ] {
+            assert!(json.get(field).is_some(), "missing `{field}`");
+        }
+        let finding = &json["findings"][0];
+        for field in [
+            "id",
+            "title",
+            "role",
+            "step",
+            "line",
+            "severity",
+            "confidence",
+            "reported",
+            "location",
+            "evidence",
+            "recommendation",
+            "status",
+            "awaiting",
+            "history",
+        ] {
+            assert!(finding.get(field).is_some(), "missing `findings[].{field}`");
+        }
+        assert_eq!(finding["history"][1]["ref"], "abc");
+        assert_eq!(finding["awaiting"], "reviewer");
+        let code_review = &json["steps"][1];
+        assert_eq!(code_review["activeRoles"][1], "security");
+        // An active role without a section is reported as missing.
+        assert_eq!(code_review["roles"][1]["role"], "security");
+        assert_eq!(code_review["roles"][1]["state"], "missing");
+        assert_eq!(json["archive"]["ready"], true);
     }
 
     #[test]

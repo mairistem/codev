@@ -61,6 +61,7 @@ Common error codes:
 | `no_artifact_ready` | `instructions` without an artifact, and none is ready |
 | `template_not_found` | A schema references a missing template |
 | `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
+| `review_blocked` | `archive` refused a change whose review record is missing for a reviewed step, holds a high-severity finding still open or disputed, or comes from a newer codev; the message names each reason |
 | `invalid` | An invalid file, or a delta that cannot be merged into its main spec |
 | `unreadable` | A file could not be read |
 | `write_failed` | A file could not be written |
@@ -452,6 +453,79 @@ not in `status`: `status` only carries a failure of the command itself. See
 
 `codev sync --json` returns the same document without `movedTo`. `deleted`
 lists main specs removed by a change that retires a capability.
+
+### review
+
+```json
+{
+  "changeName": "add-sessions",
+  "path": "_codev/changes/add-sessions/review.md",
+  "exists": true,
+  "format": 1,
+  "steps": [
+    {
+      "step": "plan.challenge",
+      "recorded": true,
+      "activeRoles": ["skeptic", "security"],
+      "roles": [
+        { "role": "skeptic", "state": "no-finding" },
+        { "role": "security", "state": "findings" }
+      ]
+    },
+    {
+      "step": "code.review",
+      "recorded": false,
+      "activeRoles": ["newcomer", "security"],
+      "roles": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "R-security-1",
+      "title": "Session tokens are stored in clear",
+      "role": "security",
+      "step": "plan.challenge",
+      "line": 13,
+      "severity": "high",
+      "confidence": "high",
+      "reported": true,
+      "location": "design.md#Decision: Sessions live in the database",
+      "evidence": "The session token is stored in the `sessions` table.\n",
+      "recommendation": "Store a SHA-256 of the token and compare digests.",
+      "status": "disputed",
+      "awaiting": "human",
+      "history": [
+        { "status": "open", "by": "security", "note": null, "ref": null, "to": null },
+        { "status": "disputed", "by": "architect", "note": "Tokens expire after 5 minutes.", "ref": null, "to": null },
+        { "status": "disputed", "by": "security", "note": "Five minutes is enough to replay a stolen token.", "ref": null, "to": null }
+      ]
+    }
+  ],
+  "issues": [],
+  "archive": {
+    "ready": false,
+    "blockers": [
+      { "code": "review_step_missing", "message": "the review record has no `## code.review` section, while roles were active at it" },
+      { "code": "review_unresolved", "message": "R-security-1 (Session tokens are stored in clear) is high and still disputed; fix it, or a human accepts the risk or defers it" }
+    ]
+  },
+  "status": []
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `exists` | `false` without `review.md`; `format`, `findings` are then empty or `null` |
+| `steps[].activeRoles` | The roles active at the step for the change, as `codev roles --at <step> --change <name>` returns them |
+| `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (a section with nothing usable), or `missing` (an active role without a section, in a recorded step) |
+| `findings[].reported` | `true` when the confidence is `high`: the skills present only those |
+| `findings[].status` | The last history entry's status |
+| `findings[].awaiting` | Who acts next: `author` (open), `reviewer` (a fix to verify, a dispute to answer), `human` (a dispute the reviewer maintained), or `null` |
+| `issues` | The record's defects, in the shape of `validate`'s findings, with the `review_*` codes |
+| `archive.blockers[].code` | `review_record_missing`, `review_step_missing`, `review_unresolved` or `review_format_unsupported` |
+
+The exit status is `1` only when `issues` holds an error. Fields the file
+leaves out or gets wrong are `null`.
 
 ### roles
 
