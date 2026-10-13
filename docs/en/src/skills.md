@@ -102,7 +102,11 @@ Before presenting the plan, the skill reviews it in two steps:
    project's [`rules`](reference/configuration.md#rules). The
    [experts](roles.md#experts-and-domains) whose domain the proposal ticks
    in `## Domains` — security, privacy, accessibility, performance,
-   operations, migration — join this pass with their own knowledge. Every
+   operations, migration — join this pass with their own knowledge. Before
+   writing `## Domains`, the skill reads the
+   [domains the change's diff suggests](roles.md#triggers-and-suggested-domains)
+   and ticks each one or keeps it unticked with a reason; the skeptic
+   records a finding for any left `unticked`. Every
    finding is written to the change's
    [review record](guides/review-record.md) with its severity and quoted
    evidence; the author fixes it or disputes it, the reviewer checks each
@@ -173,7 +177,9 @@ and reports up to five review notes, each tagged with its role — a
 high-severity security or privacy finding is always reported. Every
 finding goes to the [review record](guides/review-record.md) and through
 the same answer loop as the plan's, and the summary lists what you must
-decide. An expert
+decide — including any domain the code now suggests that the proposal
+neither ticks nor justifies: tick it and its expert reviews the code, or
+justify it. An expert
 fixes a clear defect within the change's scope, with a test, and reports
 any other behavior change instead of making it. It takes the criteria and
 knowledge of both steps from `codev roles`; when no role is active at the

@@ -207,6 +207,14 @@ only, an unknown domain (`unknown_domain`) and a line that is neither an
 item nor `None`, or `None` next to a ticked domain (`domains_invalid`), as
 errors, and a missing section (`domains_missing`) as a warning.
 
+That comment is also how you answer a
+[suggested domain](../roles.md#triggers-and-suggested-domains) the change
+does not touch: an unticked domain with a reason after its name is
+`justified` — `- [ ] security — only renames a variable`. Leading dashes,
+colons and spaces are not part of the reason; `None` justifies nothing.
+`codev validate` reports each suggested domain neither ticked nor
+justified as `domain_suggested`, a warning at the domain's line.
+
 ## design.md
 
 ```markdown
@@ -491,6 +499,8 @@ may be reworded between versions; codes are not.
 | `unknown_domain` | error | The proposal's `## Domains` names a domain outside the six |
 | `domains_invalid` | error | The proposal's `## Domains` has a line that is neither an item nor `None`, or `None` next to a ticked domain |
 | `domains_missing` | warning | An active change's proposal has no `## Domains` section |
+| `domain_suggested` | warning | The change's diff suggests a domain the proposal neither ticks nor keeps unticked with a reason |
+| `invalid_trigger` | error | A group of `triggers:` in `_codev/config.yaml` has no known domain, no trigger, or a glob or expression that does not compile (a warning for a key codev does not know) |
 | `review_invalid` | error | The review record's layout, a finding's field, id or location, a status or a transition is wrong |
 | `review_decision_incomplete` | error | A history entry lacks its `ref`, `note` or `to`, or a risk is accepted, or a high finding deferred, by someone other than a human |
 | `review_location_missing` | error | A finding cites a file, a line or a heading that does not exist |

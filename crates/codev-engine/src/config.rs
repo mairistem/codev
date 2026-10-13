@@ -28,6 +28,7 @@ pub const PROJECT_KEYS: &[&str] = &[
     "changelog",
     "codev_version",
     "roles",
+    "triggers",
 ];
 
 /// The keys of the `mcp:` section this codev knows. The section grows one
@@ -93,6 +94,12 @@ pub struct ProjectConfig {
     /// misspelled `done-when` would silently drop criteria.
     #[serde(default)]
     pub roles: BTreeMap<String, RoleSetting>,
+    /// The project's trigger groups — project only, like `roles`. Kept as
+    /// written: `codev_core::triggers::read_groups` reads them field by
+    /// field, so that a defect is a finding of `codev validate`, never a
+    /// configuration every command refuses.
+    #[serde(default)]
+    pub triggers: Option<serde_norway::Value>,
     /// Top-level and `mcp` keys this codev ignored, in file order.
     #[serde(skip)]
     pub unknown_keys: Vec<UnknownKey>,
@@ -100,6 +107,9 @@ pub struct ProjectConfig {
     /// `codev validate`.
     #[serde(skip)]
     pub role_lines: BTreeMap<String, usize>,
+    /// The 1-based line of the `triggers:` key.
+    #[serde(skip)]
+    pub triggers_line: usize,
 }
 
 /// The `changelog:` block of `_codev/config.yaml`.
@@ -182,6 +192,12 @@ pub struct ResolvedConfig {
     pub roles: BTreeMap<String, RoleSetting>,
     /// The line of each key of `roles:`.
     pub role_lines: BTreeMap<String, usize>,
+    /// The project's `triggers:`, as written; an inherited source's is not
+    /// read.
+    pub triggers: Option<serde_norway::Value>,
+    /// The 1-based line of the `triggers:` key, for the findings of
+    /// `codev validate`.
+    pub triggers_line: usize,
     /// The project's unknown keys — inherited sources' are not reported:
     /// only their context and rules are read.
     pub unknown_keys: Vec<UnknownKey>,
@@ -220,6 +236,7 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
         .keys()
         .map(|id| (id.clone(), key_line(&raw, Some("roles"), id)))
         .collect();
+    config.triggers_line = key_line(&raw, None, "triggers");
     if let Some(code) = &config.language
         && !is_valid_language_code(code)
     {
@@ -462,6 +479,8 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         codev_version: project.codev_version.clone(),
         roles: project.roles.clone(),
         role_lines: project.role_lines.clone(),
+        triggers: project.triggers.clone(),
+        triggers_line: project.triggers_line,
         unknown_keys: project.unknown_keys.clone(),
         warnings,
     })
@@ -653,12 +672,13 @@ mod tests {
             "schema: spec-driven\nlanguage: en\nworkflows: [propose]\ncontext: x\n\
              rules:\n  specs: [r]\ninherits:\n  - path: /a\n\
              mcp:\n  jira_tool: t\nchangelog:\n  exclude: []\ncodev_version: \">=0.5\"\n\
-             roles:\n  newcomer: never\n",
+             roles:\n  newcomer: never\n\
+             triggers:\n  - domain: security\n    paths: [src/auth/**]\n",
         )
         .unwrap()
         .unwrap();
         assert!(config.unknown_keys.is_empty(), "{:?}", config.unknown_keys);
-        assert_eq!(PROJECT_KEYS.len(), 10, "a new key belongs in this test too");
+        assert_eq!(PROJECT_KEYS.len(), 11, "a new key belongs in this test too");
     }
 
     #[test]
@@ -798,6 +818,33 @@ mod tests {
             );
         let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
         assert!(config.roles.is_empty());
+        assert_eq!(config.context.len(), 1);
+    }
+
+    #[test]
+    fn triggers_is_a_known_key() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "schema: spec-driven\ntriggers:\n  - domain: personal-data\n    paths: [\"src/billing/**\"]\n",
+        );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.unknown_keys.is_empty(), "{:?}", config.unknown_keys);
+        assert!(config.warnings.is_empty(), "{:?}", config.warnings);
+        assert_eq!(config.triggers_line, 2);
+        let read = codev_core::triggers::read_groups(config.triggers.as_ref());
+        assert_eq!(read.groups[0].paths, ["src/billing/**"]);
+    }
+
+    #[test]
+    fn triggers_of_an_inherited_source_are_ignored() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with_file(
+                "/shared/_codev/config.yaml",
+                "context: shared\ntriggers:\n  - domain: operations\n    paths: [\"**\"]\n",
+            );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.triggers.is_none());
         assert_eq!(config.context.len(), 1);
     }
 

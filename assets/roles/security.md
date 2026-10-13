@@ -15,6 +15,48 @@ done_when:
   - Untrusted data is never deserialized into arbitrary types
   - Every new dependency is justified, maintained, and pinned by the lock
     file
+# What suggests the change touches security: authentication and secret
+# material, the dependency manifests (every new dependency is a supply
+# chain decision), and calls that are injection or deserialization sinks.
+triggers:
+  - domain: security
+    paths:
+      - '**/auth/**'
+      - '**/authn/**'
+      - '**/authz/**'
+      - '**/security/**'
+      - '**/crypto/**'
+      - '**/*login*'
+      - '**/*password*'
+      - '**/*secret*'
+      - '**/*permission*'
+      - '**/.env'
+      - '**/.env.*'
+      - '**/*.pem'
+      - '**/*.key'
+    manifests:
+      - Cargo.toml
+      - package.json
+      - pyproject.toml
+      - requirements.txt
+      - Pipfile
+      - go.mod
+      - pom.xml
+      - build.gradle
+      - build.gradle.kts
+      - Gemfile
+      - composer.json
+    patterns:
+      - '(?i)\b(password|passwd|passphrase|secret[_-]?key|client[_-]?secret|api[_-]?key|private[_-]?key|access[_-]?token|refresh[_-]?token|auth[_-]?token|bearer)\b'
+      - '(?i)\b(md5|sha1)\s*\('
+      - '\b(eval|exec)\s*\('
+      - '\b(innerHTML|outerHTML|dangerouslySetInnerHTML)\b'
+      - '\bpickle\.loads?\s*\('
+      - '\byaml\.load\s*\('
+      - 'shell\s*=\s*True'
+      - '\bchild_process\b'
+      - '\bunsafe\s*\{'
+      - 'Command::new\(\s*"(sh|bash|cmd|powershell)"'
 ---
 
 ## Scope

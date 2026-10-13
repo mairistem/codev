@@ -1049,6 +1049,7 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
         .unwrap_or_default();
     let Some(step) = &outcome.at else {
         let _ = writeln!(out, "Roles (schema {}{change})", outcome.schema_name);
+        suggestions(&mut out, outcome);
         let _ = writeln!(out);
         roles_table(&mut out, outcome);
         return out;
@@ -1058,6 +1059,10 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
         "Roles at {step} (schema {}{change})",
         outcome.schema_name
     );
+    suggestions(&mut out, outcome);
+    if outcome.knowledge && !outcome.roles.is_empty() {
+        let _ = writeln!(out, "{}", stacks_line(&outcome.stacks));
+    }
     if outcome.roles.is_empty() {
         let _ = writeln!(out);
         let _ = writeln!(out, "No role is active at {step}: skip this step.");
@@ -1083,6 +1088,89 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
         }
     }
     out
+}
+
+/// What the `By stack` knowledge was filtered for.
+fn stacks_line(stacks: &crate::commands::Stacks) -> String {
+    use crate::commands::StackFilter;
+    match stacks.filter {
+        StackFilter::Detected => format!(
+            "Stacks: {} — `By stack` keeps these languages (`--all-stacks` for every one)",
+            stacks.detected.join(", ")
+        ),
+        StackFilter::NoneDetected => {
+            "Stacks: none detected — `By stack` keeps every language".to_string()
+        }
+        StackFilter::AllStacks => "Stacks: all, as asked with `--all-stacks`".to_string(),
+    }
+}
+
+/// With `--change`: the diff's summary, or why there is none, then one line
+/// per suggested domain with its state and its first match.
+fn suggestions(out: &mut String, outcome: &crate::commands::RolesOutcome) {
+    let Some(found) = &outcome.suggestions else {
+        return;
+    };
+    let diff = &found.diff;
+    let _ = writeln!(out);
+    if !diff.available {
+        let _ = writeln!(
+            out,
+            "No diff: {}; no domain is suggested.",
+            diff.reason.as_deref().unwrap_or("unavailable")
+        );
+        return;
+    }
+    let mut summary = format!(
+        "Diff since {}: {} file(s), {} read by the patterns",
+        diff.base.as_deref().unwrap_or("?"),
+        diff.files,
+        diff.scanned
+    );
+    if !diff.skipped.is_empty() {
+        let skipped: Vec<String> = diff
+            .skipped
+            .iter()
+            .map(|(category, count)| format!("{count} {category}"))
+            .collect();
+        summary.push_str(&format!(", skipped {}", skipped.join(", ")));
+    }
+    if diff.truncated {
+        summary.push_str(", truncated at the caps");
+    }
+    let _ = writeln!(out, "{summary}");
+    if found.suggestions.is_empty() {
+        let _ = writeln!(out, "No domain is suggested.");
+        return;
+    }
+    let width = found
+        .suggestions
+        .iter()
+        .map(|s| s.domain.len())
+        .max()
+        .unwrap_or(0);
+    for suggestion in &found.suggestions {
+        let first = &suggestion.matches[0];
+        let at = match first.line {
+            Some(line) => format!("{}:{line}", first.path),
+            None => first.path.clone(),
+        };
+        let others = suggestion.matches.len() - 1;
+        let more = if others > 0 {
+            format!(" (+{others})")
+        } else {
+            String::new()
+        };
+        let _ = writeln!(
+            out,
+            "  {domain:<width$}  {state:<9}  {kind} {trigger} ({source}) — {at}{more}",
+            domain = suggestion.domain,
+            state = suggestion.state.as_str(),
+            kind = first.kind.as_str(),
+            trigger = first.trigger,
+            source = first.source,
+        );
+    }
 }
 
 fn roles_table(out: &mut String, outcome: &crate::commands::RolesOutcome) {
@@ -1621,6 +1709,8 @@ apply:
                 builtin("newcomer", Activation::Never),
             ],
             knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: None,
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);
@@ -1658,6 +1748,8 @@ apply:
                 skeptic
             }],
             knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: None,
             warnings: Vec::new(),
         };
         let without = roles(&outcome);
@@ -1666,7 +1758,89 @@ apply:
         outcome.knowledge = true;
         let with = roles(&outcome);
         assert!(with.contains("  Knowledge:\n    ## Signals"), "{with}");
+        assert!(
+            with.contains("Stacks: none detected — `By stack` keeps every language"),
+            "{with}"
+        );
+        outcome.stacks = crate::commands::Stacks {
+            detected: vec!["Rust"],
+            filter: crate::commands::StackFilter::Detected,
+        };
+        assert!(roles(&outcome).contains("Stacks: Rust — `By stack` keeps these languages"));
         assert!(!with.lines().any(|l| l.ends_with(' ')), "{with}");
+    }
+
+    #[test]
+    fn roles_print_the_diff_and_the_suggestions() {
+        use codev_core::triggers::{Kind, Match, State, Suggestion};
+        let found =
+            |available: bool, suggestions: Vec<Suggestion>| codev_engine::suggest::Suggestions {
+                diff: codev_engine::suggest::DiffSummary {
+                    available,
+                    reason: (!available).then(|| "the project is not in a git repository".into()),
+                    base: available.then(|| "main".into()),
+                    files: 3,
+                    scanned: 2,
+                    skipped: [("lockfile", 1)].into_iter().collect(),
+                    truncated: true,
+                },
+                suggestions,
+                warnings: Vec::new(),
+            };
+        let security = Suggestion {
+            domain: "security".into(),
+            state: State::Unticked,
+            justification: None,
+            line: None,
+            matches: ["src/auth/session.rs", "src/auth/token.rs"]
+                .iter()
+                .map(|path| Match {
+                    path: path.to_string(),
+                    line: None,
+                    domain: "security".into(),
+                    source: "security".into(),
+                    kind: Kind::Paths,
+                    trigger: "**/auth/**".into(),
+                })
+                .collect(),
+        };
+        let mut outcome = crate::commands::RolesOutcome {
+            change: Some(ChangeId::parse("add-auth").unwrap()),
+            schema_name: "spec-driven".into(),
+            at: Some("plan.trace".into()),
+            language: "en".into(),
+            roles: Vec::new(),
+            knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: Some(found(true, vec![security])),
+            warnings: Vec::new(),
+        };
+        let rendered = roles(&outcome);
+        assert!(
+            rendered.contains(
+                "Diff since main: 3 file(s), 2 read by the patterns, skipped 1 lockfile, truncated at the caps"
+            ),
+            "{rendered}"
+        );
+        assert!(
+            rendered.contains(
+                "  security  unticked   paths **/auth/** (security) — src/auth/session.rs (+1)"
+            ),
+            "{rendered}"
+        );
+        outcome.suggestions = Some(found(true, Vec::new()));
+        assert!(roles(&outcome).contains("No domain is suggested."));
+        outcome.suggestions = Some(found(false, Vec::new()));
+        assert!(
+            roles(&outcome).contains(
+                "No diff: the project is not in a git repository; no domain is suggested."
+            )
+        );
+        outcome.at = None;
+        assert!(
+            roles(&outcome).contains("No diff:"),
+            "the table shows it too"
+        );
     }
 
     #[test]
@@ -1678,6 +1852,8 @@ apply:
             language: "fr".into(),
             roles: vec![spec_driven_role("architect")],
             knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: None,
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);

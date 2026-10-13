@@ -22,12 +22,15 @@ use codev_engine::changelog as engine_changelog;
 use codev_engine::config;
 use codev_engine::decisions as engine_decisions;
 use codev_engine::decisions_actions as engine_actions;
+use codev_engine::detect as engine_detect;
+use codev_engine::diff as engine_diff;
 use codev_engine::instructions::Instructions;
 use codev_engine::integration::{self, IntegrationPlan, IntegrationStep};
 use codev_engine::metadata::ChangeMetadata;
 use codev_engine::review as engine_review;
 use codev_engine::roles as engine_roles;
 use codev_engine::sources as engine_sources;
+use codev_engine::suggest as engine_suggest;
 use codev_engine::sync as engine_sync;
 use codev_engine::sync::SyncOutcome;
 use codev_engine::update as engine_update;
@@ -629,6 +632,44 @@ pub fn artifact_instructions(
 
 // ─────────────────────────────── roles ───────────────────────────────
 
+/// How the `By stack` part of the served knowledge was filtered.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StackFilter {
+    /// Kept for the detected languages only.
+    Detected,
+    /// No language detected: kept whole.
+    NoneDetected,
+    /// `--all-stacks`: kept whole.
+    AllStacks,
+}
+
+impl StackFilter {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Detected => "detected",
+            Self::NoneDetected => "none-detected",
+            Self::AllStacks => "all-stacks",
+        }
+    }
+}
+
+/// The project's languages and what was done with them.
+#[derive(Debug, Clone)]
+pub struct Stacks {
+    pub detected: Vec<&'static str>,
+    pub filter: StackFilter,
+}
+
+impl Default for Stacks {
+    /// Nothing detected: the knowledge is served whole.
+    fn default() -> Self {
+        Self {
+            detected: Vec::new(),
+            filter: StackFilter::NoneDetected,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct RolesOutcome {
     /// `None` without `--change`: the project's roles.
@@ -642,16 +683,23 @@ pub struct RolesOutcome {
     pub roles: Vec<ResolvedRole>,
     /// `--knowledge`: the human output prints each role's knowledge.
     pub knowledge: bool,
+    /// The languages the knowledge is filtered for.
+    pub stacks: Stacks,
+    /// With `--change`: the diff and the domains it suggests.
+    pub suggestions: Option<engine_suggest::Suggestions>,
     pub warnings: Vec<Warning>,
 }
 
 /// `codev roles`: the roles of a step, or every role with its activation.
-/// With `--change`, the change's schema and `change.yaml` apply.
+/// With `--change`, the change's schema and `change.yaml` apply, and the
+/// change's diff is read for the domains it suggests. The `By stack` part
+/// of the knowledge keeps the project's languages, unless `all_stacks`.
 pub fn roles(
     ctx: &Ctx,
     at: Option<&str>,
     requested_change: Option<&str>,
     knowledge: bool,
+    all_stacks: bool,
 ) -> Result<RolesOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
@@ -665,10 +713,35 @@ pub fn roles(
         None => None,
     };
     let resolved = engine_roles::resolve(ctx.fs, &layout, &config, change_ctx.as_ref())?;
-    let roles = match at {
+    let mut roles: Vec<ResolvedRole> = match at {
         Some(step) => resolved.active_at(step)?.into_iter().cloned().collect(),
         None => resolved.roles.clone(),
     };
+
+    let detected = engine_detect::stacks(ctx.fs, layout.project_root());
+    let filter = if all_stacks {
+        StackFilter::AllStacks
+    } else if detected.is_empty() {
+        StackFilter::NoneDetected
+    } else {
+        StackFilter::Detected
+    };
+    if filter == StackFilter::Detected {
+        for role in &mut roles {
+            if let Some(text) = &role.role.knowledge {
+                role.role.knowledge = Some(codev_core::roles::filter_by_stack(text, &detected));
+            }
+        }
+    }
+
+    let mut warnings = config.warnings.clone();
+    let suggestions = change_ctx.as_ref().map(|change| {
+        let diff = engine_diff::read(ctx.fs, ctx.runner, layout.project_root());
+        engine_suggest::for_change(ctx.fs, &layout, &config, change, &resolved, &diff)
+    });
+    if let Some(found) = &suggestions {
+        warnings.extend(found.warnings.iter().cloned());
+    }
     Ok(RolesOutcome {
         change: change_ctx.map(|c| c.change),
         schema_name: resolved.schema_name,
@@ -676,7 +749,9 @@ pub fn roles(
         language: config.language,
         roles,
         knowledge,
-        warnings: config.warnings,
+        stacks: Stacks { detected, filter },
+        suggestions,
+        warnings,
     })
 }
 
@@ -775,16 +850,78 @@ pub fn list_schemas(ctx: &Ctx) -> Result<SchemasOutcome> {
 pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    let mut report = validate_items(ctx, &layout, &config, scope)?;
+    add_suggested_domains(ctx, &layout, &config, &mut report);
+    Ok(report)
+}
 
+/// Adds `domain_suggested` to each active change of `report`, for the
+/// suggested domains its proposal neither ticks nor justifies. The diff is
+/// read once, and only when the report holds a change: `codev validate
+/// --specs` never runs git. Kept out of `engine::validate::validate_change`
+/// so that the pre-flights of `sync` and `archive`, and `codev doctor`,
+/// never read a diff.
+fn add_suggested_domains(
+    ctx: &Ctx,
+    layout: &Layout,
+    config: &config::ResolvedConfig,
+    report: &mut ValidateReport,
+) {
+    let mut diff = None;
+    for item in &mut report.items {
+        if item.kind != engine_validate::ItemKind::Change {
+            continue;
+        }
+        let Ok(change_id) = ChangeId::parse(&item.name) else {
+            continue;
+        };
+        let proposal_path = layout.change_dir(&change_id).join("proposal.md");
+        let Ok(proposal) = ctx.fs.read_to_string(&proposal_path) else {
+            continue;
+        };
+        // A change whose roles cannot be resolved already carries the
+        // finding that says why.
+        let Ok(change_ctx) = change::load(ctx.fs, layout, config, change_id) else {
+            continue;
+        };
+        let Ok(roles) = engine_roles::resolve(ctx.fs, layout, config, Some(&change_ctx)) else {
+            continue;
+        };
+        let diff = diff
+            .get_or_insert_with(|| engine_diff::read(ctx.fs, ctx.runner, layout.project_root()));
+        let found = engine_suggest::for_change(ctx.fs, layout, config, &change_ctx, &roles, diff);
+        let heading = codev_core::domains::heading(&proposal);
+        let relative = proposal_path
+            .strip_prefix(layout.project_root())
+            .unwrap_or(&proposal_path)
+            .to_path_buf();
+        for suggestion in &found.suggestions {
+            if suggestion.state == codev_core::triggers::State::Unticked {
+                item.findings
+                    .push(engine_validate::LocatedFinding::from_finding(
+                        codev_core::triggers::finding(suggestion, heading),
+                        relative.clone(),
+                    ));
+            }
+        }
+    }
+}
+
+fn validate_items(
+    ctx: &Ctx,
+    layout: &Layout,
+    config: &config::ResolvedConfig,
+    scope: ValidateArgs,
+) -> Result<ValidateReport> {
     match scope {
         ValidateArgs::All => Ok(engine_validate::validate_all(
-            ctx.fs, ctx.env, &layout, &config,
+            ctx.fs, ctx.env, layout, config,
         )?),
         ValidateArgs::Changes => {
             let mut items = Vec::new();
-            for change_id in change::list(ctx.fs, &layout) {
+            for change_id in change::list(ctx.fs, layout) {
                 items.push(engine_validate::validate_change(
-                    ctx.fs, &layout, &config, &change_id,
+                    ctx.fs, layout, config, &change_id,
                 )?);
             }
             Ok(ValidateReport {
@@ -794,12 +931,8 @@ pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
         }
         ValidateArgs::Specs => {
             let mut items = Vec::new();
-            for capability in specs::list(ctx.fs, &layout) {
-                items.push(engine_validate::validate_spec(
-                    ctx.fs,
-                    &layout,
-                    &capability,
-                )?);
+            for capability in specs::list(ctx.fs, layout) {
+                items.push(engine_validate::validate_spec(ctx.fs, layout, &capability)?);
             }
             Ok(ValidateReport {
                 root: layout.project_root().to_path_buf(),
@@ -807,7 +940,7 @@ pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
             })
         }
         ValidateArgs::Item(name) => {
-            let item = resolve_validate_item(ctx.fs, &layout, &config, &name)?;
+            let item = resolve_validate_item(ctx.fs, layout, config, &name)?;
             Ok(ValidateReport {
                 root: layout.project_root().to_path_buf(),
                 items: vec![item],
@@ -2254,7 +2387,7 @@ edition = "2024"
     }
 
     fn roles_json(h: &Harness, at: Option<&str>, change: Option<&str>) -> serde_json::Value {
-        let outcome = roles(&h.ctx(), at, change, false).unwrap();
+        let outcome = roles(&h.ctx(), at, change, false, false).unwrap();
         serde_json::to_value(crate::contract::RolesV1::from(&outcome)).unwrap()
     }
 
@@ -2434,7 +2567,7 @@ edition = "2024"
     #[test]
     fn roles_refuse_to_disable_the_analyst() {
         let h = roles_project("roles:\n  analyst: never\n", "schema: spec-driven\n");
-        let err = roles(&h.ctx(), Some("plan.understand"), None, false).unwrap_err();
+        let err = roles(&h.ctx(), Some("plan.understand"), None, false, false).unwrap_err();
         assert_eq!(err.code, "role_not_disableable");
         assert!(err.message.contains("analyst"), "{}", err.message);
     }
@@ -2454,10 +2587,277 @@ edition = "2024"
 
     #[test]
     fn roles_rejects_an_unknown_step() {
+        // The failure's document shape: `roles_failure_keeps_the_shape` in
+        // main.rs.
         let h = roles_project("", "schema: spec-driven\n");
-        let err = roles(&h.ctx(), Some("plan.review"), None, false).unwrap_err();
+        let err = roles(&h.ctx(), Some("plan.review"), None, false, false).unwrap_err();
         assert_eq!(err.code, "unknown_step");
         assert!(err.message.contains("code.review"), "{}", err.message);
+    }
+
+    // ─────────────── suggested domains and stacks ───────────────
+
+    const LOGIN_PATCH: &str = "diff --git a/src/auth/session.rs b/src/auth/session.rs\n\
+--- /dev/null\n\
++++ b/src/auth/session.rs\n\
+@@ -0,0 +1,2 @@\n\
++fn login() {\n\
++}\n";
+
+    /// A git repository whose branch adds `src/auth/session.rs`.
+    fn login_repository() -> MockProcessRunner {
+        use codev_engine::diff::doubles::{records, repository};
+        repository(
+            None,
+            &records(&["2\t0\tsrc/auth/session.rs"]),
+            "",
+            LOGIN_PATCH,
+        )
+    }
+
+    fn roles_change_json(h: &Harness, at: Option<&str>, all_stacks: bool) -> serde_json::Value {
+        let outcome = roles(&h.ctx(), at, Some("add-auth"), false, all_stacks).unwrap();
+        serde_json::to_value(crate::contract::RolesV1::from(&outcome)).unwrap()
+    }
+
+    fn asked_for_a_diff(runner: &MockProcessRunner) -> bool {
+        runner
+            .calls()
+            .iter()
+            .any(|(_, args)| args.iter().any(|a| a == "--numstat"))
+    }
+
+    #[test]
+    fn roles_json_suggests_security_for_an_auth_path() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [ ] performance")
+            .with_runner(login_repository());
+        let json = roles_change_json(&h, None, false);
+        assert_eq!(json["diff"]["available"], true);
+        assert_eq!(json["diff"]["base"], "main");
+        assert_eq!(json["diff"]["files"], 1);
+        assert_eq!(json["diff"]["scanned"], 1);
+        assert_eq!(json["diff"]["truncated"], false);
+        let suggestions = json["suggestions"].as_array().unwrap();
+        assert_eq!(suggestions.len(), 1, "{suggestions:?}");
+        let security = &suggestions[0];
+        assert_eq!(security["domain"], "security");
+        assert_eq!(security["state"], "unticked");
+        assert!(security["justification"].is_null());
+        assert_eq!(security["matchCount"], 1);
+        let first = &security["matches"][0];
+        assert_eq!(first["source"], "security");
+        assert_eq!(first["kind"], "paths");
+        assert_eq!(first["trigger"], "**/auth/**");
+        assert_eq!(first["path"], "src/auth/session.rs");
+        assert!(first["line"].is_null());
+    }
+
+    #[test]
+    fn roles_outside_git_report_no_diff() {
+        // The harness's runner answers nothing: no git repository.
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None");
+        let json = roles_change_json(&h, Some("plan.challenge"), false);
+        assert_eq!(json["diff"]["available"], false);
+        let reason = json["diff"]["reason"].as_str().unwrap();
+        assert!(reason.contains("not in a git repository"), "{reason}");
+        assert!(json["diff"]["base"].is_null());
+        assert_eq!(json["suggestions"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn roles_without_a_change_have_no_diff() {
+        let h = roles_project("", "schema: spec-driven\n").with_runner(login_repository());
+        let json = roles_json(&h, Some("plan.challenge"), None);
+        assert!(json["diff"].is_null());
+        assert_eq!(json["suggestions"], serde_json::json!([]));
+        assert!(!asked_for_a_diff(&h.runner), "no change, no git");
+    }
+
+    #[test]
+    fn roles_suggestions_are_stable_and_write_nothing() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None")
+            .with_runner(login_repository());
+        let before = h.fs.paths();
+        let first = roles_change_json(&h, Some("code.review"), false);
+        let second = roles_change_json(&h, Some("code.review"), false);
+        assert_eq!(first, second);
+        assert_eq!(h.fs.paths(), before);
+    }
+
+    #[test]
+    fn roles_serve_by_stack_for_the_detected_languages() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [x] security")
+            .with("/p/Cargo.toml", "[package]\nname = \"x\"\n");
+        let json = roles_change_json(&h, Some("code.review"), false);
+        assert_eq!(
+            json["stacks"],
+            serde_json::json!({ "detected": ["Rust"], "filter": "detected" })
+        );
+        let security = json["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["id"] == "security")
+            .unwrap();
+        let by_stack = security["knowledge"]
+            .as_str()
+            .unwrap()
+            .split("## By stack")
+            .nth(1)
+            .unwrap()
+            .split("\n## ")
+            .next()
+            .unwrap()
+            .to_string();
+        assert!(by_stack.contains("- **Rust**"), "{by_stack}");
+        for other in [
+            "**Python**",
+            "**Go**",
+            "**Java**",
+            "**TypeScript/JavaScript**",
+        ] {
+            assert!(!by_stack.contains(other), "{other} in {by_stack}");
+        }
+        let none = roles_project_with_domains("", "schema: spec-driven\n", "- [x] security");
+        let json = roles_change_json(&none, Some("code.review"), false);
+        assert_eq!(
+            json["stacks"],
+            serde_json::json!({ "detected": [], "filter": "none-detected" })
+        );
+        assert!(
+            json["roles"][0]["knowledge"]
+                .as_str()
+                .unwrap()
+                .contains("**Python**")
+        );
+    }
+
+    #[test]
+    fn roles_all_stacks_serve_every_language() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [x] security")
+            .with("/p/Cargo.toml", "[package]\nname = \"x\"\n");
+        let json = roles_change_json(&h, Some("code.review"), true);
+        assert_eq!(json["stacks"]["filter"], "all-stacks");
+        assert_eq!(json["stacks"]["detected"], serde_json::json!(["Rust"]));
+        let knowledge = json["roles"][0]["knowledge"].as_str().unwrap();
+        for language in [
+            "**Rust**",
+            "**Python**",
+            "**Go**",
+            "**Java**",
+            "**TypeScript/JavaScript**",
+        ] {
+            assert!(knowledge.contains(language), "{language}");
+        }
+    }
+
+    #[test]
+    fn roles_ignore_an_invalid_project_trigger_with_a_warning() {
+        let h = roles_project_with_domains(
+            "triggers:\n  - domain: secrets\n    paths: [\"src/**\"]\n",
+            "schema: spec-driven\n",
+            "None",
+        )
+        .with_runner(login_repository());
+        let json = roles_change_json(&h, None, false);
+        let codes: Vec<&str> = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["code"].as_str().unwrap())
+            .collect();
+        assert_eq!(codes, ["invalid_trigger"]);
+        let domains: Vec<&str> = json["suggestions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["domain"].as_str().unwrap())
+            .collect();
+        assert_eq!(domains, ["security"], "the built-in triggers still run");
+    }
+
+    fn suggested_findings(report: &ValidateReport) -> Vec<(String, u32, String)> {
+        report
+            .items
+            .iter()
+            .flat_map(|item| item.findings.iter())
+            .filter(|f| f.finding.code == "domain_suggested")
+            .map(|f| {
+                (
+                    codev_core::layout::slashed(&f.path),
+                    f.finding.line,
+                    f.finding.message.clone(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn validate_warns_on_an_unticked_suggested_domain() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [ ] security")
+            .with_runner(login_repository());
+        let report = validate(&h.ctx(), ValidateArgs::Item("add-auth".into())).unwrap();
+        let found = suggested_findings(&report);
+        assert_eq!(found.len(), 1, "{found:?}");
+        let (path, line, message) = &found[0];
+        assert_eq!(path, "_codev/changes/add-auth/proposal.md");
+        assert_eq!(*line, 5, "the line of `- [ ] security`");
+        for needle in ["`security`", "**/auth/**", "src/auth/session.rs"] {
+            assert!(message.contains(needle), "{needle}: {message}");
+        }
+        // A warning: `--strict` turns it into a failing exit code.
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|item| item.findings.iter())
+                .filter(|f| f.finding.code == "domain_suggested")
+                .all(|f| !f.is_error())
+        );
+        assert!(report.has_warnings());
+    }
+
+    #[test]
+    fn validate_is_silent_on_a_justified_or_ticked_suggestion() {
+        for domains in ["- [ ] security — only renames a variable", "- [x] security"] {
+            let h = roles_project_with_domains("", "schema: spec-driven\n", domains)
+                .with_runner(login_repository());
+            let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+            assert!(suggested_findings(&report).is_empty(), "{domains}");
+        }
+    }
+
+    #[test]
+    fn validate_outside_git_reports_no_suggestion() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None");
+        let report = validate(&h.ctx(), ValidateArgs::Changes).unwrap();
+        assert!(suggested_findings(&report).is_empty());
+        let specs_only = roles_project_with_domains("", "schema: spec-driven\n", "None")
+            .with_runner(login_repository());
+        validate(&specs_only.ctx(), ValidateArgs::Specs).unwrap();
+        assert!(
+            !asked_for_a_diff(&specs_only.runner),
+            "`--specs` never runs git"
+        );
+    }
+
+    #[test]
+    fn archive_does_not_ask_git_for_a_diff() {
+        let h = reviewed_change(&security_finding(
+            "high",
+            "  - status: fixed\n    by: developer\n    ref: src/auth.rs uses the CSPRNG\n  - status: fixed\n    by: newcomer\n",
+        ))
+        .with_runner(login_repository());
+        archive(&h.ctx(), None).unwrap();
+        assert!(!asked_for_a_diff(&h.runner));
+    }
+
+    #[test]
+    fn doctor_does_not_ask_git_for_a_diff() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "- [ ] security")
+            .with_runner(login_repository());
+        let _ = doctor(&h.ctx());
+        assert!(!asked_for_a_diff(&h.runner));
     }
 
     #[test]

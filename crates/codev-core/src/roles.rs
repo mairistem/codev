@@ -17,6 +17,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_norway::Value;
 
 use crate::schema::Schema;
+use crate::triggers::{self, TriggerGroup};
 
 /// The workflow steps a role can serve, in workflow order. Listing roles
 /// follows this order, so a change reads from the analyst to the newcomer.
@@ -92,6 +93,10 @@ struct RoleFrontmatter {
     domains: Vec<String>,
     #[serde(default)]
     done_when: Vec<String>,
+    /// Read by [`triggers::read_groups`], which names the group and the
+    /// field of a defect.
+    #[serde(default)]
+    triggers: Option<Value>,
 }
 
 /// `at: plan.trace` or `at: [plan.challenge, code.review]`.
@@ -129,6 +134,10 @@ pub fn parse_role_file(source: &str) -> Result<Role, String> {
     let data: RoleFrontmatter =
         serde_norway::from_str(frontmatter).map_err(|err| err.to_string())?;
     let body = body.trim();
+    let read = triggers::read_groups(data.triggers.as_ref());
+    if let Some(problem) = read.problems.first() {
+        return Err(problem.message.clone());
+    }
     Ok(Role {
         criteria: criteria(&data.done_when, BUILTIN_ORIGIN),
         id: data.id,
@@ -139,6 +148,7 @@ pub fn parse_role_file(source: &str) -> Result<Role, String> {
         disableable: !data.required,
         domains: data.domains,
         knowledge: (!body.is_empty()).then(|| body.to_string()),
+        triggers: read.groups,
     })
 }
 
@@ -175,6 +185,9 @@ pub struct Role {
     pub domains: Vec<String>,
     /// The role's knowledge, as markdown; `None` when it has none.
     pub knowledge: Option<String>,
+    /// The evidence in a change's diff that suggests a domain; empty for a
+    /// role that carries none.
+    pub triggers: Vec<TriggerGroup>,
 }
 
 impl Role {
@@ -208,13 +221,20 @@ impl Role {
 
 /// The built-in roles, in catalog order.
 pub fn builtin_step_roles() -> Vec<Role> {
-    // The files are embedded: a parse failure is a build bug, which the
-    // test `the_builtin_catalog_has_the_step_roles_and_the_experts_at_their_steps`
-    // catches before any release.
-    BUILTIN_ROLE_FILES
-        .iter()
-        .map(|source| parse_role_file(source).expect("assets/roles/*.md are valid"))
-        .collect()
+    // Parsed once per process: checking the experts' triggers compiles
+    // their expressions, which is worth doing once, not per call.
+    static ROLES: std::sync::OnceLock<Vec<Role>> = std::sync::OnceLock::new();
+    ROLES
+        .get_or_init(|| {
+            // The files are embedded: a parse failure is a build bug, which
+            // the test `the_builtin_catalog_has_the_step_roles_and_the_experts_at_their_steps`
+            // catches before any release.
+            BUILTIN_ROLE_FILES
+                .iter()
+                .map(|source| parse_role_file(source).expect("assets/roles/*.md are valid"))
+                .collect()
+        })
+        .clone()
 }
 
 /// True when `id` is the id of a built-in role.
@@ -239,6 +259,7 @@ pub fn catalog(schema: &Schema, schema_name: &str) -> Vec<Role> {
                 disableable: false,
                 domains: Vec::new(),
                 knowledge: None,
+                triggers: Vec::new(),
             });
         }
     }
@@ -576,6 +597,93 @@ fn activated_by(
                 .map(|domain| ActivatedBy::Domain(domain.clone()))
         }
     }
+}
+
+/// The heading of the knowledge section [`filter_by_stack`] filters.
+const BY_STACK: &str = "## By stack";
+
+/// `knowledge` with its `By stack` section keeping only the items for
+/// `languages` (as [`crate::detect::stack::LANGUAGES`] names them).
+///
+/// An item is a `- **Label**: …` bullet and runs to the next one. It is
+/// kept when its label names a language of `languages` — `TypeScript/
+/// JavaScript` and `Rust, Python, Go, Java` name each of theirs — or names
+/// no language codev detects. The section is left out when no item
+/// remains. Empty `languages` keep everything: nothing was detected.
+pub fn filter_by_stack(knowledge: &str, languages: &[&str]) -> String {
+    if languages.is_empty() {
+        return knowledge.to_string();
+    }
+    let lines: Vec<&str> = knowledge.lines().collect();
+    let Some(start) = lines.iter().position(|line| line.trim_end() == BY_STACK) else {
+        return knowledge.to_string();
+    };
+    let end = lines[start + 1..]
+        .iter()
+        .position(|line| line.starts_with("## "))
+        .map_or(lines.len(), |offset| start + 1 + offset);
+
+    // The lines before the first item (a blank line, an introduction), then
+    // the items, each with its continuation lines.
+    let body = &lines[start + 1..end];
+    let first_item = body
+        .iter()
+        .position(|line| line.starts_with("- **"))
+        .unwrap_or(body.len());
+    let mut items: Vec<Vec<&str>> = Vec::new();
+    for line in &body[first_item..] {
+        if line.starts_with("- **") || items.is_empty() {
+            items.push(vec![line]);
+        } else if let Some(item) = items.last_mut() {
+            item.push(line);
+        }
+    }
+    let kept: Vec<Vec<&str>> = items
+        .into_iter()
+        .filter(|item| item_is_for(item[0], languages))
+        .map(|mut item| {
+            while item.last().is_some_and(|line| line.trim().is_empty()) {
+                item.pop();
+            }
+            item
+        })
+        .collect();
+
+    let mut out: Vec<&str> = lines[..start].to_vec();
+    if !kept.is_empty() {
+        out.push(lines[start]);
+        out.extend(&body[..first_item]);
+        out.extend(kept.iter().flatten());
+    }
+    // One blank line before the next section, whatever was kept.
+    while out.last().is_some_and(|line| line.trim().is_empty()) {
+        out.pop();
+    }
+    if end < lines.len() {
+        out.push("");
+    }
+    out.extend(&lines[end..]);
+    out.join("\n").trim_end().to_string()
+}
+
+/// True when the bullet's bold label names one of `languages`, or names
+/// no language codev detects.
+fn item_is_for(bullet: &str, languages: &[&str]) -> bool {
+    let label = bullet
+        .strip_prefix("- **")
+        .and_then(|rest| rest.split("**").next())
+        .unwrap_or("");
+    let named: Vec<&str> = label
+        .split(['/', ','])
+        .map(str::trim)
+        .filter_map(|name| {
+            crate::detect::stack::LANGUAGES
+                .iter()
+                .find(|known| known.eq_ignore_ascii_case(name))
+                .copied()
+        })
+        .collect();
+    named.is_empty() || named.iter().any(|name| languages.contains(name))
 }
 
 /// The roles active at `step`, in catalog order.
@@ -1161,6 +1269,129 @@ apply:
         assert_eq!(role.first_step(), "plan.challenge");
         assert!(role.serves("code.review") && !role.serves("plan.trace"));
         assert_eq!(role.default_activation(), Activation::OnDomain);
+    }
+
+    #[test]
+    fn every_expert_carries_triggers_for_its_own_domain() {
+        let roles = builtin_step_roles();
+        for role in &roles {
+            let is_expert = EXPERTS.iter().any(|(id, _)| *id == role.id);
+            if !is_expert {
+                assert!(role.triggers.is_empty(), "`{}` carries triggers", role.id);
+                continue;
+            }
+            assert!(
+                !role.triggers.is_empty(),
+                "`{}` carries no trigger",
+                role.id
+            );
+            for group in &role.triggers {
+                assert_eq!(group.domain, role.domains[0], "`{}`", role.id);
+            }
+        }
+        // `parse_role_file` refuses a group that does not compile: the
+        // catalog parsing above is the check that every glob and pattern
+        // compiles.
+        let bad = parse_role_file(
+            "---\nid: demo\nname: { en: Demo }\nat: plan.trace\nquestion: Q?\ntriggers:\n  - domain: security\n    patterns: ['(']\n---\n",
+        );
+        assert!(bad.unwrap_err().contains("`(`"));
+    }
+
+    #[test]
+    fn security_triggers_name_the_dependency_manifests() {
+        let security = builtin_step_roles()
+            .into_iter()
+            .find(|r| r.id == "security")
+            .unwrap();
+        let manifests: Vec<&String> = security
+            .triggers
+            .iter()
+            .flat_map(|g| &g.manifests)
+            .collect();
+        for name in [
+            "Cargo.toml",
+            "package.json",
+            "pyproject.toml",
+            "requirements.txt",
+            "go.mod",
+            "pom.xml",
+            "build.gradle",
+        ] {
+            assert!(
+                manifests.iter().any(|m| *m == name),
+                "security names {name}"
+            );
+        }
+    }
+
+    const KNOWLEDGE: &str = "## Signals\n\n- one\n\n## By stack\n\n- **Rust**: rust\n  pitfall.\n- **TypeScript/JavaScript**: ts.\n- **Rust, Python, Go, Java**: templates.\n- **Python**: py.\n- **SQL**: any.\n\n## References\n\n- ref";
+
+    fn by_stack(knowledge: &str) -> Vec<&str> {
+        knowledge
+            .split("## By stack")
+            .nth(1)
+            .map(|rest| rest.split("\n## ").next().unwrap())
+            .unwrap_or("")
+            .lines()
+            .filter_map(|line| line.strip_prefix("- **"))
+            .map(|rest| rest.split("**").next().unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn filter_by_stack_keeps_detected_languages() {
+        let filtered = filter_by_stack(KNOWLEDGE, &["Rust"]);
+        assert_eq!(
+            by_stack(&filtered),
+            ["Rust", "Rust, Python, Go, Java", "SQL"]
+        );
+        assert!(
+            filtered.contains("- **Rust**: rust\n  pitfall.\n"),
+            "{filtered}"
+        );
+        assert!(filtered.starts_with("## Signals\n\n- one\n\n## By stack\n\n"));
+        assert!(
+            filtered.ends_with("\n\n## References\n\n- ref"),
+            "{filtered}"
+        );
+    }
+
+    #[test]
+    fn an_item_naming_several_languages_is_kept_for_any() {
+        let filtered = filter_by_stack(KNOWLEDGE, &["Python"]);
+        assert_eq!(
+            by_stack(&filtered),
+            ["Rust, Python, Go, Java", "Python", "SQL"]
+        );
+        let typescript = filter_by_stack(KNOWLEDGE, &["TypeScript", "JavaScript"]);
+        assert_eq!(by_stack(&typescript), ["TypeScript/JavaScript", "SQL"]);
+    }
+
+    #[test]
+    fn an_item_naming_no_known_language_is_kept() {
+        assert!(by_stack(&filter_by_stack(KNOWLEDGE, &["Go"])).contains(&"SQL"));
+    }
+
+    #[test]
+    fn the_section_is_left_out_when_nothing_remains() {
+        let knowledge =
+            "## Signals\n\n- one\n\n## By stack\n\n- **Rust**: r.\n\n## References\n\n- ref";
+        assert_eq!(
+            filter_by_stack(knowledge, &["Go"]),
+            "## Signals\n\n- one\n\n## References\n\n- ref"
+        );
+        let last = "## Signals\n\n- one\n\n## By stack\n\n- **Rust**: r.\n";
+        assert_eq!(filter_by_stack(last, &["Go"]), "## Signals\n\n- one");
+    }
+
+    #[test]
+    fn no_language_keeps_every_item() {
+        assert_eq!(filter_by_stack(KNOWLEDGE, &[]), KNOWLEDGE);
+        assert_eq!(
+            filter_by_stack("## Signals\n\n- one", &["Rust"]),
+            "## Signals\n\n- one"
+        );
     }
 
     /// The `## ` headings of a knowledge text, in order.

@@ -112,7 +112,11 @@ Avant de présenter le plan, la skill le relit en deux étapes :
    [experts](roles.md#experts-et-domaines) dont la proposal coche le
    domaine dans `## Domains` — sécurité, données personnelles,
    accessibilité, performance, exploitation, migration — rejoignent cette
-   relecture avec leurs propres connaissances. Chaque constat est écrit
+   relecture avec leurs propres connaissances. Avant d'écrire
+   `## Domains`, la skill lit les
+   [domaines que suggère le diff du change](roles.md#les-déclencheurs-et-les-domaines-suggérés)
+   et coche chacun ou le garde non coché avec une raison ; le skeptic
+   consigne un constat pour chacun resté `unticked`. Chaque constat est écrit
    dans le [compte rendu de revue](guides/review-record.md) du change, avec
    sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
    relecteur vérifie chaque réponse une fois, et la relecture n'élargit
@@ -190,7 +194,9 @@ notes de relecture, chacune marquée de son rôle — un constat de sécurité o
 de données personnelles de gravité haute est toujours signalé. Chaque
 constat va dans le [compte rendu de revue](guides/review-record.md) et suit
 la même boucle de réponse que ceux du plan, et le résumé liste ce qu'il vous
-revient de décider. Un expert
+revient de décider — y compris tout domaine que le code suggère désormais et
+que la proposal ne coche ni ne justifie : cochez-le et son expert relit le
+code, ou justifiez-le. Un expert
 corrige un défaut manifeste dans le périmètre du change, avec un test, et
 signale tout autre changement de comportement au lieu de le faire. Elle
 tire les critères et les connaissances de ces deux étapes de

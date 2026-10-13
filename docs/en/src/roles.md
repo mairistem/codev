@@ -120,7 +120,8 @@ this order:
 - **Scope** — what it looks at, and what it leaves aside to avoid noise;
 - **Signals** — concrete patterns to spot, each with a one-line example;
 - **By stack** — pitfalls in Rust, TypeScript/JavaScript, Python, Go and
-  Java; the agent applies the part for your project's languages;
+  Java; codev serves the part for your project's languages (see
+  [Stack filter](#triggers-and-suggested-domains));
 - **References** — the authoritative standards, such as the OWASP Top 10,
   WCAG 2.2, RGAA 4 or the GDPR;
 - **Reporting** — how to report a finding, with its severity.
@@ -129,6 +130,91 @@ The `newcomer` carries complexity signals per language and the `skeptic`
 planning smells; the other step roles carry none. Knowledge is served only
 to active roles: an expert that is not active costs the agent nothing.
 Read it with `codev roles --at code.review --change <name> --knowledge`.
+
+## Triggers and suggested domains
+
+Ticking domains is a judgement made while planning, before the code
+exists. So that a domain the change ends up touching is not missed
+silently, each expert carries **triggers** — evidence that a change touches
+its domain — and codev matches them against the change's diff.
+
+**Three kinds of trigger**, in groups that each name the domain they
+suggest:
+
+- `paths` — globs over the changed files, relative to the project root,
+  ignoring case: `**/auth/**`, `**/*.tsx`. `*` stays within a folder, `**`
+  crosses folders;
+- `manifests` — dependency manifest names, at any depth: `Cargo.toml`,
+  `package.json`, `go.mod`;
+- `patterns` — regular expressions over the lines the diff **adds**:
+  `(?i)\b(ALTER|DROP)\s+(TABLE|COLUMN)\b`.
+
+| Expert | Its triggers, in outline |
+|---|---|
+| `security` | `auth`, `security`, `crypto` folders, `.env` files, keys; every dependency manifest; credential names, `eval`, `innerHTML`, `pickle`, `shell=True`, `unsafe {` |
+| `privacy` | `user`, `customer`, `profile`, `account` models; e-mail, phone, birth date, street address, postcode, SSN, IBAN, IP address, geolocation |
+| `accessibility` | markup, style sheets, components, server templates; `aria-*`, `role=`, `alt=`, form and media elements |
+| `performance` | `*.sql`, query and repository folders, benchmarks; SQL statements, `Promise.all`, `tokio::spawn`, caches, pagination |
+| `ops` | Dockerfiles, compose files, CI workflows, Kubernetes, Helm, Terraform, deployment folders, logging configuration; environment variables, timeouts, retries, health checks, metrics |
+| `migration` | migrations, schemas, `*.proto`, `*.graphql`, OpenAPI, `*.d.ts`; `ALTER`/`DROP`/`RENAME`, deprecations, `serde` renames |
+
+The built-in patterns favour precision: `access_token` rather than `token`
+(a lexer has tokens), `street_address` rather than `address` (a socket
+has one). What they miss for your project, add with
+[`triggers:`](reference/configuration.md#triggers) in
+`_codev/config.yaml`.
+
+**The diff.** codev asks git, locally, for what the branch changed since it
+left the default branch — `origin/HEAD`, else `main`, else `master` —
+committed or not, plus the untracked files, limited to the project's
+folder. It never contacts a remote. Outside git, without a commit or a
+default branch — or in a shallow CI clone without the merge-base; use
+`fetch-depth: 0` there — there is no diff: codev says so and suggests
+nothing, and no command fails because of it.
+
+Some files are left out of every trigger: the planning folder `_codev/`
+and the codev skills (`planning`), vendored dependencies — `node_modules`,
+`vendor`, `third_party` (`vendored`) —, lock files such as `Cargo.lock` or
+`package-lock.json` (`lockfile`), and generated files such as `*.min.js`
+or `*.pb.go` (`generated`). Binary files, prose (`.md`, `.txt`…) and very
+large files are matched by their path only (`binary`, `prose`, `large`).
+The scan stops at 2000 files, 5000 added lines per file, 1 MiB per
+untracked file and 2 MiB of added lines in total, and ignores lines over
+2000 characters; the diff then says it was truncated.
+
+**Suggestions.** `codev roles --change <name>` reports the diff and each
+suggested domain with its state:
+
+- `ticked` — the proposal ticks it;
+- `justified` — the proposal keeps it unticked with a reason on its line;
+- `unticked` — neither: the proposal must answer it.
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data — the fields matched are test fixtures
+```
+
+`codev validate` reports each `unticked` suggestion as the warning
+`domain_suggested`, at the domain's line, naming the trigger and the file
+that matched; `codev validate --strict` fails on it. `codev archive` and
+`codev doctor` do not read the diff. The diff is the working tree's: two
+active changes on one branch share it. A role set to `never` brings no
+suggestion.
+
+`/codev-propose` reads the suggestions before writing `## Domains`, and
+the skeptic records a finding for each one left `unticked`. Before the
+code exists the diff is usually empty, so the review is where it bites:
+`/codev-apply` lists every suggestion still `unticked` under **To
+decide** — tick it, and its expert reviews the code, or justify it.
+
+**Stack filter.** codev detects your project's languages from its
+dependency manifests — at the root and up to three folders below it, so a
+monorepo gets every stack — and the `By stack` part of the knowledge it
+serves keeps those languages only. `codev roles --json` says which in
+`stacks`; with no manifest found, everything is kept. `codev roles
+--all-stacks` serves every language.
 
 ## Findings: severity, confidence and the review record
 

@@ -696,7 +696,7 @@ Each finding has a stable code. See
 ```text
 List the roles active at a workflow step, with their criteria
 
-With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts.
+With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts. With `--change`, also the change's diff since the default branch and the domains its experts' triggers suggest. The `By stack` part of the knowledge keeps the languages detected in the project.
 
 Usage: codev roles [OPTIONS]
 
@@ -709,6 +709,9 @@ Options:
 
       --knowledge
           Also print each role's knowledge (always in the JSON, for active roles)
+
+      --all-stacks
+          Serve the knowledge's `By stack` part for every language, not only the languages detected in the project
 
       --json
 
@@ -724,8 +727,21 @@ with its steps or artifact and its activation — `never (project)` when your
 configuration disables it, `on_domain: <domain>` for an expert,
 `cannot be disabled` for the artifact roles, the `analyst` and the
 `developer`. `--knowledge` also prints each role's knowledge after its
-criteria. A step whose roles are all inactive prints
+criteria, after a line naming the languages its `By stack` part is
+filtered for. A step whose roles are all inactive prints
 `No role is active at <step>: skip this step.` It writes no file.
+
+With `--change`, it first prints the change's diff — the default branch it
+starts from, the files changed and read, the files skipped per category —
+or why there is none, then one line per
+[suggested domain](../roles.md#triggers-and-suggested-domains): its state
+(`ticked`, `justified`, `unticked`), its first trigger with its source,
+and the file that matched. Reading the diff runs local git commands only;
+outside git it says so and goes on.
+
+The knowledge's `By stack` part keeps the languages detected from the
+project's dependency manifests; `--all-stacks` serves every language.
+With no manifest found, everything is served.
 
 Without `--change`, it applies the project's configured schema and
 `roles:`; unlike the other commands, it does not infer a change. With

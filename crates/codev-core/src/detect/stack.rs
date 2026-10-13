@@ -21,6 +21,40 @@ pub struct Stack {
     pub dependencies_summary: Vec<String>,
 }
 
+// ─────────────────────────────── languages ───────────────────────────────
+
+/// The languages the roles' `By stack` knowledge is filtered by, in the
+/// order they are reported.
+pub const LANGUAGES: &[&str] = &["Rust", "TypeScript", "JavaScript", "Python", "Go", "Java"];
+
+/// The languages a dependency manifest's file name stands for: presence
+/// is enough, the content is not read.
+pub fn manifest_languages(name: &str) -> &'static [&'static str] {
+    match name {
+        "Cargo.toml" => &["Rust"],
+        "package.json" => &["TypeScript", "JavaScript"],
+        "pyproject.toml" | "setup.py" | "requirements.txt" | "Pipfile" => &["Python"],
+        "go.mod" => &["Go"],
+        "pom.xml" | "build.gradle" | "build.gradle.kts" => &["Java"],
+        _ => &[],
+    }
+}
+
+/// The languages of the manifests `names`, in [`LANGUAGES`] order, each
+/// once.
+pub fn languages<'a>(names: impl IntoIterator<Item = &'a str>) -> Vec<&'static str> {
+    let found: Vec<&'static str> = names
+        .into_iter()
+        .flat_map(manifest_languages)
+        .copied()
+        .collect();
+    LANGUAGES
+        .iter()
+        .copied()
+        .filter(|language| found.contains(language))
+        .collect()
+}
+
 // ─────────────────────────────── Cargo.toml ───────────────────────────────
 
 #[allow(clippy::question_mark)] // else-if let Some — more readable than a ? that would hide the workspace branch
@@ -246,6 +280,25 @@ fn extract_tag_content(text: &str, tag: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn manifest_names_map_to_languages_in_order() {
+        assert_eq!(
+            languages([
+                "go.mod",
+                "package.json",
+                "README.md",
+                "Cargo.toml",
+                "go.mod"
+            ]),
+            ["Rust", "TypeScript", "JavaScript", "Go"]
+        );
+        assert_eq!(
+            languages(["requirements.txt", "build.gradle.kts"]),
+            ["Python", "Java"]
+        );
+        assert!(languages(["Makefile"]).is_empty());
+    }
 
     const CARGO_WORKSPACE: &str = r#"
 [workspace]

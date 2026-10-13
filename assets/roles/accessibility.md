@@ -13,6 +13,20 @@ done_when:
   - Text and meaningful graphics meet the contrast minimums
   - Native semantic elements are used first; ARIA only adds what they
     cannot express, and matches the actual behavior
+# What suggests the change touches a user interface: markup, styles,
+# components and server templates, and the attributes that make them
+# usable.
+triggers:
+  - domain: user-interface
+    paths:
+      - '**/*.{html,htm,css,scss,sass,less,jsx,tsx,vue,svelte,astro}'
+      - '**/*.{erb,hbs,handlebars,njk,jinja,jinja2,j2,twig,liquid,cshtml,razor}'
+      - '**/templates/**'
+      - '**/components/**'
+    patterns:
+      - '\baria-[a-z]+\s*='
+      - '\b(role|tabindex|alt)\s*='
+      - '(?i)<(img|button|input|select|textarea|label|form|dialog|video|audio)\b'
 ---
 
 ## Scope

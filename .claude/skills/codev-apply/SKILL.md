@@ -33,10 +33,10 @@ codev roles --at <step> --change "<name>" --json
 ```
 
 Apply every criterion of every role returned (`roles[].doneWhen`), the
-project's included, using the role's `knowledge` when it has one — of its
-`By stack` part, only the project's languages. If `roles` is empty, the
-role is disabled by configuration: skip the step, and say so in the
-summary.
+project's included, using the role's `knowledge` when it has one. Its
+`By stack` part comes already filtered to the project's languages
+(`stacks`): use it as served. If `roles` is empty, the role is disabled by
+configuration: skip the step, and say so in the summary.
 
 ## Steps
 
@@ -158,6 +158,14 @@ is a clear defect within the change's scope — then fix it, add a test that
 fails without the fix, and name the fix in the summary. Keep the rest for
 the review notes. Here `<step>` is `code.review`.
 
+Now that the code exists, the roles of this step come with the domains
+its diff suggests (`suggestions`). Every suggestion whose `state` is
+`unticked` goes under **To decide**, with its first match and the two
+choices: tick the domain — its expert then reviews this code: ask for the
+roles of the step again and run that expert's review — or keep it
+unticked with a reason on its line. Do not edit the proposal yourself:
+the user decides.
+
 **The review record.** Every finding of this step goes to
 `_codev/changes/<name>/review.md`, the change's review record, before it
 is fixed or reported.
@@ -268,9 +276,9 @@ Otherwise, summarize:
   beyond five. If nothing is worth raising, write
   "No review concern found"; never invent notes. When no role is active at
   step 5, write "The review is disabled by configuration" instead,
-- **To decide** — from step 5: what only the user can decide, or "Nothing
-  to decide". `codev archive` refuses while a `high` finding is `open` or
-  `disputed`,
+- **To decide** — from step 5: what only the user can decide, the
+  suggested domains still `unticked` included, or "Nothing to decide".
+  `codev archive` refuses while a `high` finding is `open` or `disputed`,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 

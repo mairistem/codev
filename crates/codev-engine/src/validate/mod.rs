@@ -157,7 +157,8 @@ pub fn validate_all(
 }
 
 /// The findings of `_codev/config.yaml`: one warning per key this codev
-/// ignores, one error per invalid entry of `roles:`, each at its line;
+/// ignores, one error per invalid entry of `roles:`, each at its line, and
+/// the defects of `triggers:` at its key;
 /// `None` when there is none, so a clean project's report does not change.
 pub fn validate_config(
     fs: &dyn FileSystem,
@@ -181,8 +182,29 @@ pub fn validate_config(
             let line = config.role_lines.get(&finding.role).copied().unwrap_or(1);
             Finding::error(finding.code, line_number(line), finding.message)
         });
+    let triggers_line = line_number(config.triggers_line);
+    let triggers = codev_core::triggers::read_groups(config.triggers.as_ref())
+        .problems
+        .into_iter()
+        .map(|problem| {
+            let message = format!("line {triggers_line}: {}", problem.message);
+            if problem.is_error {
+                Finding::error(
+                    codev_core::triggers::codes::INVALID_TRIGGER,
+                    triggers_line,
+                    message,
+                )
+            } else {
+                Finding::warning(
+                    codev_core::triggers::codes::INVALID_TRIGGER,
+                    triggers_line,
+                    message,
+                )
+            }
+        });
     let findings: Vec<LocatedFinding> = unknown_keys
         .chain(roles)
+        .chain(triggers)
         .map(|finding| LocatedFinding::from_finding(finding, relative.clone()))
         .collect();
     if findings.is_empty() {
@@ -582,6 +604,32 @@ mod tests {
         assert_eq!(finding.finding.line, 4);
         assert!(finding.finding.message.contains("developer"));
         assert!(finding.finding.message.contains("change.yaml"));
+    }
+
+    #[test]
+    fn invalid_project_triggers_are_errors_at_their_key() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "schema: spec-driven\ntriggers:\n  - domain: secrets\n    paths: [x]\n  - domain: security\n    patterns: ['(unclosed']\n  - domain: security\n    paths: [y]\n    exclude: [z]\n",
+        );
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
+        let item = report.items.iter().find(|i| i.name == "config").unwrap();
+        let found: Vec<(&str, bool, u32)> = item
+            .findings
+            .iter()
+            .map(|f| (f.finding.code, f.is_error(), f.finding.line))
+            .collect();
+        assert_eq!(
+            found,
+            [
+                ("invalid_trigger", true, 2),
+                ("invalid_trigger", true, 2),
+                ("invalid_trigger", false, 2),
+            ]
+        );
+        assert!(item.findings[0].finding.message.contains("secrets"));
+        assert!(item.findings[1].finding.message.contains("(unclosed"));
+        assert!(item.findings[2].finding.message.contains("exclude"));
     }
 
     #[test]

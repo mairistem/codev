@@ -13,6 +13,32 @@ done_when:
   - The change can be turned off or rolled back — a feature flag, a
     configuration switch, or a deploy of the previous version
   - Failures produce error messages an operator can act on
+# What suggests the change touches operations: how it is built, deployed
+# and configured, and what it says when it runs.
+triggers:
+  - domain: operations
+    paths:
+      - '**/Dockerfile'
+      - '**/Dockerfile.*'
+      - '**/*.dockerfile'
+      - '**/{docker-compose,compose}*.{yml,yaml}'
+      - '.github/workflows/**'
+      - '**/.gitlab-ci.yml'
+      - '**/Jenkinsfile'
+      - '.circleci/**'
+      - '**/azure-pipelines.yml'
+      - '**/{k8s,kubernetes,helm,charts,terraform,ansible,deploy,deployment,infra}/**'
+      - '**/*.{tf,tfvars}'
+      - '**/Procfile'
+      - '**/*.service'
+      - '**/{log4j,log4j2,logback}*.xml'
+      - '**/logging.{yml,yaml,json,conf,ini,toml}'
+    patterns:
+      - '\b(getenv|env::var|process\.env|os\.environ|System\.getenv)\b'
+      - '(?i)\b(timeout|retries|retry|backoff|circuit[-_ ]?breaker)\b'
+      - '(?i)\b(healthz?|readiness|liveness)\b'
+      - '\b(RUST_LOG|LOG_LEVEL|log_level)\b'
+      - '(?i)\b(prometheus|opentelemetry|statsd)\b'
 ---
 
 ## Scope

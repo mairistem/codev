@@ -13,6 +13,21 @@ done_when:
   - Every new dependency's cost — size, startup, transitive packages — is
     weighed against what it saves
   - A claim of speed is backed by a measurement, not a guess
+# What suggests the change touches performance: queries and the code that
+# runs them, concurrency, caches and pagination.
+triggers:
+  - domain: performance
+    paths:
+      - '**/*.sql'
+      - '**/queries/**'
+      - '**/repositories/**'
+      - '**/repository/**'
+      - '**/benches/**'
+    patterns:
+      - '(?i)\b(SELECT\s.+\sFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b'
+      - '\b(Promise\.all|asyncio\.gather|tokio::spawn|thread::spawn|rayon::|ThreadPoolExecutor|parallelStream|go func)\b'
+      - '(?i)\b(cache|caching|memoi[sz]e|lru)\b'
+      - '(?i)\b(paginat\w*|page[-_]?size|batch[-_]?size)\b'
 ---
 
 ## Scope

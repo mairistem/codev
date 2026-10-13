@@ -537,6 +537,37 @@ leaves out or gets wrong are `null`.
   "schemaName": "spec-driven",
   "at": "plan.challenge",
   "language": "en",
+  "stacks": { "detected": ["TypeScript", "JavaScript"], "filter": "detected" },
+  "diff": {
+    "available": true,
+    "reason": null,
+    "base": "origin/main",
+    "files": 14,
+    "scanned": 11,
+    "skipped": { "lockfile": 1, "prose": 2 },
+    "truncated": false
+  },
+  "suggestions": [
+    {
+      "domain": "user-interface",
+      "state": "ticked",
+      "justification": null,
+      "matchCount": 6,
+      "matches": [
+        { "source": "accessibility", "kind": "paths", "trigger": "**/*.{html,htm,css,scss,sass,less,jsx,tsx,vue,svelte,astro}", "path": "web/src/theme.css", "line": null },
+        "…"
+      ]
+    },
+    {
+      "domain": "performance",
+      "state": "justified",
+      "justification": "the cache is the browser's, not ours",
+      "matchCount": 1,
+      "matches": [
+        { "source": "performance", "kind": "patterns", "trigger": "(?i)\\b(cache|caching|memoi[sz]e|lru)\\b", "path": "web/src/theme.ts", "line": 12 }
+      ]
+    }
+  ],
   "roles": [
     {
       "id": "skeptic",
@@ -587,6 +618,9 @@ leaves out or gets wrong are `null`.
 | `changeName` | The change given with `--change`; `null` without it |
 | `schemaName` | The schema the artifact roles come from |
 | `at` | The step given with `--at`; `null` lists every role, active or not |
+| `stacks` | The languages detected from the project's dependency manifests (`detected`: `Rust`, `TypeScript`, `JavaScript`, `Python`, `Go`, `Java`) and the `filter` applied to the knowledge's `By stack` part: `detected`, `none-detected` (everything kept) or `all-stacks` (`--all-stacks`) |
+| `diff` | With `--change`, the change's diff: `available`, `reason` when it is not, the default branch `base`, the `files` changed, the files `scanned` by the patterns, the files `skipped` per category (`planning`, `vendored`, `lockfile`, `generated`, `binary`, `prose`, `large`), and `truncated` when a cap was reached; `null` without `--change` |
+| `suggestions` | With `--change`, the domains the diff suggests, in the order of the domains list: `state` is `ticked`, `justified` (with its `justification`) or `unticked`; `matchCount` counts the matches and `matches` lists the first five, each with its `source` (the role, or `project`), `kind` (`paths`, `manifests`, `patterns`), `trigger` as written, `path`, and `line` for a pattern; empty without `--change` |
 | `roles[].name` | The display name in the configured `language`, English when the role has none in it |
 | `roles[].kind` | `step`, or `artifact` with the artifact's id in `artifact` |
 | `roles[].at` | The step given with `--at`, otherwise the role's first step; `plan.write` for every artifact role |
@@ -595,14 +629,16 @@ leaves out or gets wrong are `null`.
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` or `on_domain`, set by `default`, `project` or `change` |
 | `roles[].activatedBy` | Why the role is active: `always`, `project`, `change`, or `domain:<name>` for an expert whose domain the proposal ticks; `null` when it is inactive |
 | `roles[].disableable` | `false` for the artifact roles, the `analyst` and the `developer` |
-| `roles[].knowledge` | The role's knowledge, as markdown in the sections Scope, Signals, By stack, References and Reporting, for an active role that has some; `null` otherwise |
+| `roles[].knowledge` | The role's knowledge, as markdown in the sections Scope, Signals, By stack, References and Reporting, for an active role that has some, its `By stack` part filtered as `stacks.filter` says; `null` otherwise |
 | `roles[].doneWhen` | The role's criteria, then the project's, each with its `origin`: `built-in`, `schema:<name>` or `project` |
 
 With `--at`, `roles` holds only the active roles, possibly none: the step is
 then skipped. Without `--change`, no proposal is read, so the experts are
 inactive. A failure — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — keeps this shape, with
-`roles` empty and `language` set as for `instructions`.
+`roles` and `suggestions` empty, `stacks` and `diff` `null`, and `language`
+set as for `instructions`. A project trigger that cannot be used is left
+out with an `invalid_trigger` warning in `status`.
 
 ### schemas
 

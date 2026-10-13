@@ -115,6 +115,51 @@ fn detect_stack_and_name(
     (None, None)
 }
 
+/// How deep [`stacks`] looks for manifests: the root and three levels of
+/// directories below it (`apps/<name>/`, `packages/<scope>/<name>/`).
+const STACK_DEPTH: usize = 3;
+/// The most directories [`stacks`] lists: a bounded cost on any repository.
+const STACK_MAX_DIRS: usize = 2000;
+/// Directories whose manifests are someone else's, or build output.
+const STACK_SKIPPED_DIRS: &[&str] = &[
+    "node_modules",
+    "vendor",
+    "third_party",
+    "target",
+    "dist",
+    "build",
+];
+
+/// The languages of the project rooted at `root`, from the names of the
+/// dependency manifests at its root and in its directories up to
+/// [`STACK_DEPTH`] levels below, breadth first, skipping hidden and
+/// [`STACK_SKIPPED_DIRS`] directories and listing at most
+/// [`STACK_MAX_DIRS`]. Every stack of a monorepo is found; the order is
+/// `codev_core::detect::stack::LANGUAGES`'.
+pub fn stacks(fs: &dyn FileSystem, root: &Path) -> Vec<&'static str> {
+    let mut names: Vec<String> = Vec::new();
+    let mut queue: std::collections::VecDeque<(PathBuf, usize)> = [(root.to_path_buf(), 0)].into();
+    let mut listed = 0;
+    while let Some((dir, depth)) = queue.pop_front() {
+        if listed >= STACK_MAX_DIRS {
+            break;
+        }
+        listed += 1;
+        // A file lists as empty: no need to ask which entries are folders.
+        for name in fs.list_dir(&dir).unwrap_or_default() {
+            if !stack::manifest_languages(&name).is_empty() {
+                names.push(name);
+            } else if depth < STACK_DEPTH
+                && !name.starts_with('.')
+                && !STACK_SKIPPED_DIRS.contains(&name.as_str())
+            {
+                queue.push_back((dir.join(&name), depth + 1));
+            }
+        }
+    }
+    stack::languages(names.iter().map(String::as_str))
+}
+
 fn detect_license(fs: &dyn FileSystem, project_root: &Path) -> Option<String> {
     for candidate in ["LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING"] {
         let path = project_root.join(candidate);
@@ -238,6 +283,38 @@ serde = "1"
         assert_eq!(d.mcps.len(), 1);
         assert_eq!(d.mcps[0].url.as_deref(), Some("https://project"));
         assert_eq!(d.mcps[0].source, ".mcp.json");
+    }
+
+    #[test]
+    fn stacks_of_a_monorepo() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/services/api/go.mod", "module x\n")
+            .with_file("/p/web/package.json", "{}")
+            .with_file("/p/README.md", "x");
+        assert_eq!(
+            stacks(&fs, Path::new("/p")),
+            ["TypeScript", "JavaScript", "Go"]
+        );
+        assert!(stacks(&MemoryFileSystem::new(), Path::new("/p")).is_empty());
+    }
+
+    #[test]
+    fn manifests_in_skipped_directories_do_not_count() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/Cargo.toml", "[package]\nname = \"x\"\n")
+            .with_file("/p/node_modules/left-pad/package.json", "{}")
+            .with_file("/p/.cache/pyproject.toml", "")
+            .with_file("/p/target/debug/build/x/go.mod", "")
+            .with_file("/p/crates/a/vendor/b/pom.xml", "");
+        assert_eq!(stacks(&fs, Path::new("/p")), ["Rust"]);
+    }
+
+    #[test]
+    fn the_walk_stops_at_three_levels() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/a/b/c/package.json", "{}")
+            .with_file("/p/a/b/c/d/go.mod", "");
+        assert_eq!(stacks(&fs, Path::new("/p")), ["TypeScript", "JavaScript"]);
     }
 
     #[test]
