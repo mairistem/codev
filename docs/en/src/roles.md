@@ -483,6 +483,10 @@ run is a noisy point, not a proof; a change to a role file is judged by
 its scores before and after, on the same model. The suite never runs in
 regular CI and is not part of the `codev` binary.
 
+[Reliability of the roles](reliability.md) shows those scores, role by
+role, with the thresholds each role meets or fails and the limits of the
+measure.
+
 ## Where you decide
 
 The agent stops and hands over at these points:

@@ -42,7 +42,7 @@ pub struct RunInfo {
 }
 
 /// Reads a JSON file carrying a format marker, refusing a newer one.
-fn check_format(text: &str, what: &str) -> Result<serde_json::Value, String> {
+pub(crate) fn check_format(text: &str, what: &str) -> Result<serde_json::Value, String> {
     let value: serde_json::Value =
         serde_json::from_str(text).map_err(|e| format!("{what}: not valid JSON ({e})"))?;
     let format = value.get("format").and_then(|f| f.as_u64()).unwrap_or(0);

@@ -11,6 +11,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use clap::{Args, Parser, Subcommand};
 
 use codev_evals::observed::{self, FORMAT, RunInfo};
+use codev_evals::reliability::{self, Baseline, Lang};
 use codev_evals::runner::{self, ClaudeSettings, RunOptions, Tools};
 use codev_evals::score::{self, SuiteScore, ThresholdFlags, Thresholds};
 use codev_evals::{case, report, suite};
@@ -36,6 +37,17 @@ enum Commands {
     Run(RunArgs),
     /// Score the observations of an output directory again, without a model
     Score(ScoreArgs),
+    /// Write the documentation's reliability chapter, in English and
+    /// French, from a baseline's report
+    Docs(DocsArgs),
+}
+
+#[derive(Args)]
+struct DocsArgs {
+    /// The baseline to read `report.json` and `run.json` from
+    /// (default: evals/baseline of the repository)
+    #[arg(long)]
+    baseline: Option<PathBuf>,
 }
 
 #[derive(Args)]
@@ -122,6 +134,9 @@ fn main() -> ExitCode {
             .expect("evals/ has a parent")
             .to_path_buf()
     });
+    if let Commands::Docs(args) = &cli.command {
+        return docs(&repo, args);
+    }
     let cases = match suite::load_cases(&repo) {
         Ok(cases) => cases,
         Err(e) => return usage(e),
@@ -155,7 +170,46 @@ fn main() -> ExitCode {
             }
         }
         Commands::Run(args) => run(&repo, &cases, args),
+        Commands::Docs(_) => unreachable!("handled before the cases are loaded"),
     }
+}
+
+/// The reliability chapter of each book, from a baseline. Both pages are
+/// built before either is written, so a bad report writes nothing.
+fn docs(repo: &Path, args: &DocsArgs) -> ExitCode {
+    let dir = args
+        .baseline
+        .clone()
+        .unwrap_or_else(|| repo.join("evals").join("baseline"));
+    let read = |name: &str| {
+        fs::read_to_string(dir.join(name)).map_err(|e| format!("{}: {e}", dir.join(name).display()))
+    };
+    let baseline = match read("report.json")
+        .and_then(|report| Ok((report, read("run.json")?)))
+        .and_then(|(report, run)| Baseline::parse(&report, &run))
+    {
+        Ok(b) => b,
+        Err(e) => return usage(e),
+    };
+    let pages: Vec<(PathBuf, String)> = Lang::ALL
+        .into_iter()
+        .map(|lang| {
+            (
+                repo.join("docs")
+                    .join(lang.tag())
+                    .join("src")
+                    .join("reliability.md"),
+                reliability::page(&baseline, lang),
+            )
+        })
+        .collect();
+    for (path, text) in &pages {
+        if let Err(e) = fs::write(path, text) {
+            return usage(format!("writing {}: {e}", path.display()));
+        }
+        println!("wrote {}", path.display());
+    }
+    ExitCode::SUCCESS
 }
 
 fn now() -> (u64, String) {

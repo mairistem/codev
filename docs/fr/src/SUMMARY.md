@@ -12,6 +12,7 @@
 - [Le workflow](workflow.md)
 - [Les skills Claude Code](skills.md)
 - [Rôles](roles.md)
+- [Fiabilité des rôles](reliability.md)
 - [Concepts](concepts.md)
 
 # Guides

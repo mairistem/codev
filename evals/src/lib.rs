@@ -10,6 +10,7 @@ pub mod case;
 pub mod checks;
 pub mod lint;
 pub mod observed;
+pub mod reliability;
 pub mod report;
 pub mod runner;
 pub mod score;

@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 use codev_evals::case::coverage_gaps;
 use codev_evals::checks::{missing_from_baseline, missing_mention};
+use codev_evals::reliability::{self, Baseline, Lang};
 use codev_evals::report;
 use codev_evals::score::Thresholds;
 use codev_evals::suite;
@@ -90,6 +91,22 @@ fn the_baseline_agrees_with_the_scoring() {
     assert_eq!(report::markdown(&score), read("evals/baseline/report.md"));
 }
 
+#[test]
+fn the_reliability_pages_follow_the_baseline() {
+    let baseline = Baseline::parse(
+        &read("evals/baseline/report.json"),
+        &read("evals/baseline/run.json"),
+    )
+    .unwrap_or_else(|e| panic!("{e}"));
+    for lang in Lang::ALL {
+        let path = format!("docs/{}/src/reliability.md", lang.tag());
+        assert!(
+            read(&path) == reliability::page(&baseline, lang),
+            "{path} differs from the baseline; run `cargo run -p codev-evals -- docs`"
+        );
+    }
+}
+
 /// The `on:` block of the workflow, up to the next top-level key.
 fn triggers(workflow: &str) -> Vec<String> {
     let mut lines = workflow.lines().skip_while(|l| !l.starts_with("on:"));
@@ -146,5 +163,6 @@ fn contributing_and_roles_chapters_name_the_baseline() {
         .collect();
     let mut gaps = missing_mention(&files, "evals/baseline");
     gaps.extend(missing_mention(&files[..2], "assets/roles/"));
+    gaps.extend(missing_mention(&files[..2], "codev-evals -- docs"));
     assert_eq!(gaps, Vec::<String>::new());
 }

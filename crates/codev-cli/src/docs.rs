@@ -596,6 +596,22 @@ mod tests {
     }
 
     #[test]
+    fn the_reliability_chapter_renders_its_charts() {
+        for lang in [Lang::En, Lang::Fr] {
+            let html = render_html(&markdown(lang), lang, "0.0.0");
+            assert_eq!(
+                html.matches("<svg class=\"rel-chart\"").count(),
+                2,
+                "both charts pass through as HTML ({lang:?})"
+            );
+            assert_eq!(html.matches("</svg>").count(), html.matches("<svg").count());
+            assert!(!html.contains("&lt;svg"), "a chart was escaped ({lang:?})");
+            assert!(html.contains("<dl class=\"rel-tiles\">"), "{lang:?}");
+            assert!(CSS.contains(".rel-chart .rel-bar"), "the charts are styled");
+        }
+    }
+
+    #[test]
     fn render_html_handles_tables_and_code() {
         let md = "\
 | A | B |\n\
