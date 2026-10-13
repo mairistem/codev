@@ -9,4 +9,4 @@ expected:
     severity: high
     category: erasure
     locations: ["app/account.py:19"]
-    alternatives: ["app/account.py:16"]
+    alternatives: ["app/account.py:16", "tests/test_account.py:6-11"]

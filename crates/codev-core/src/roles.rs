@@ -1192,8 +1192,8 @@ apply:
                     "**Decisions**",
                     "**Assumptions**",
                     "**Tasks**",
-                    "Impact touches them",
-                    "accessibility & UX",
+                    "**Domains**",
+                    "is the expert's to review",
                     "`rules`",
                 ][..],
             ),
@@ -1227,6 +1227,90 @@ apply:
                 assert!(text.contains(needle), "`{id}` must carry `{needle}`");
             }
         }
+    }
+
+    fn builtin(id: &str) -> Role {
+        builtin_step_roles()
+            .into_iter()
+            .find(|role| role.id == id)
+            .unwrap()
+    }
+
+    /// The body of a knowledge section, up to the next `## ` heading.
+    fn section_of<'a>(knowledge: &'a str, title: &str) -> &'a str {
+        let heading = format!("## {title}\n");
+        let start = knowledge
+            .find(&heading)
+            .unwrap_or_else(|| panic!("missing section `{title}`"))
+            + heading.len();
+        let rest = &knowledge[start..];
+        &rest[..rest.find("\n## ").unwrap_or(rest.len())]
+    }
+
+    #[test]
+    fn every_expert_says_what_it_does_not_report() {
+        // Each expert's Reporting names what a confident finding must show.
+        for (id, shows) in [
+            ("security", "a finding names who sends what"),
+            ("privacy", "Name the data and\nwhere it ends up"),
+            ("accessibility", "State the step a user cannot take"),
+            (
+                "performance",
+                "A cost you cannot state as a function of growth",
+            ),
+            ("ops", "Name the failure"),
+            ("migration", "Name the\nexisting thing that breaks"),
+        ] {
+            let knowledge = builtin(id).knowledge.unwrap();
+            assert!(
+                section_of(&knowledge, "Scope").contains("Do not report:"),
+                "`{id}`: Scope lists what it does not report"
+            );
+            assert!(
+                section_of(&knowledge, "Reporting").contains(shows),
+                "`{id}`: Reporting says what a finding shows: `{shows}`"
+            );
+        }
+    }
+
+    #[test]
+    fn the_skeptic_leaves_domains_to_the_experts() {
+        let criteria = criteria_text("skeptic");
+        assert!(criteria.contains("**Domains**"), "{criteria}");
+        assert!(!criteria.contains("lenses"), "{criteria}");
+        let knowledge = builtin("skeptic").knowledge.unwrap();
+        let scope = section_of(&knowledge, "Scope");
+        for domain in [
+            "security",
+            "privacy",
+            "migration",
+            "operations",
+            "performance",
+            "accessibility",
+        ] {
+            assert!(
+                scope.contains(domain),
+                "the skeptic's Scope names `{domain}`"
+            );
+        }
+        assert!(scope.contains("`proposal.md#Domains`"));
+        assert!(scope.contains("irreversible step"));
+        assert!(!knowledge.contains("Hidden migration"));
+        assert!(section_of(&knowledge, "Signals").contains("**Domain left to nobody**"));
+        assert!(section_of(&knowledge, "Reporting").contains("confidence `low`"));
+    }
+
+    #[test]
+    fn the_newcomer_groups_findings_by_function() {
+        let knowledge = builtin("newcomer").knowledge.unwrap();
+        let scope = section_of(&knowledge, "Scope");
+        assert!(scope.contains("missing tests"), "{scope}");
+        assert!(scope.contains("Do not report:"), "{scope}");
+        let reporting = section_of(&knowledge, "Reporting");
+        assert!(
+            reporting.contains("One finding per function"),
+            "{reporting}"
+        );
     }
 
     #[test]

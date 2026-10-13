@@ -24,7 +24,7 @@ None.
 
 ## Impact
 
-- `src/cli/import.rs`, `src/cli/progress.rs`, `docs/cli.md`.
+- `src/main.rs`, `src/cli/import.rs`, `src/cli/progress.rs`, `docs/cli.md`.
 
 ## Domains
 

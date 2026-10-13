@@ -2,8 +2,8 @@
   "format": 1,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.4692128,
-  "durationMs": 40549,
+  "costUsd": 0.4107424,
+  "durationMs": 35194,
   "strayed": [],
   "review": {
     "archive": {
@@ -34,18 +34,18 @@
         "id": "R-skeptic-1",
         "line": 9,
         "location": "proposal.md#What Changes",
-        "recommendation": "Drop the plugin system from this change; the Why (accountants copying invoices into a spreadsheet) is met by a single CSV export. Propose a registry in its own change once a second format is actually requested.",
+        "recommendation": "The Why only asks to stop copying invoices one by one into a spreadsheet (\"Accountants copy invoices one by one into their spreadsheet at the end of each month.\"); a CSV export answers it. No PDF, XLSX, XML or JSON export is requested. Drop the plugin system from What Changes and Impact (`src/export/` can shrink to one CSV module), replace the design's \"Decision: Exports go through a plugin registry\" with a single CSV function — the alternative it rejected only as \"not extensible\" — and remove task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"). Add the registry in the change that brings a second format.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Plugin system for future formats is scope nobody asked for"
+        "title": "Plugin system for future export formats nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- A settings page where each user picks their preferred export format.\n",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
         "history": [
           {
             "by": "skeptic",
@@ -56,91 +56,19 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 23,
-        "location": "proposal.md#What Changes",
-        "recommendation": "Remove the settings page, its requirement \"Users choose their export format\" and task 2.1; with a single format there is nothing to choose.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Per-user export format preference is scope nobody asked for"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "**Alternatives considered**: a single CSV function (not extensible).\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-3",
-        "line": 37,
-        "location": "design.md#Decision: Exports go through a plugin registry",
-        "recommendation": "Choose the single CSV function, which fully answers the Why; extensibility is not a stated need, so it cannot be the reason to reject the simpler option.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Design rejects the simple solution only for an extensibility nobody needs"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- **WHEN** a user picks CSV\n- **THEN** exports use CSV\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-4",
-        "line": 51,
+        "line": 32,
         "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
-        "recommendation": "If the requirement stays, say which endpoint honours the preference — `GET /invoices.csv` names its format in the path, so \"exports use CSV\" holds whatever the user picks and cannot fail; otherwise drop the requirement (see R-skeptic-2).",
+        "recommendation": "With CSV as the only format, a choice of format has nothing to choose between, and the Why says nothing about preferences. Remove this requirement and its scenarios, the What Changes bullet \"A settings page where each user picks their preferred export format.\", `web/src/settings/` from Impact, the last sentence of the design decision (\"A settings page stores each user's preferred format.\") and task 2.1. As written the requirement is also unverifiable: \"exports use CSV\" cannot be told apart from the default when CSV is the only format, and it needs a stored per-user preference the plan never places anywhere.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Preference scenario has no observable effect: the route hardcodes CSV"
+        "title": "Per-user export-format preference on the settings page nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "A settings page stores each user's preferred format.\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-5",
-        "line": 66,
-        "location": "design.md#Decision: Exports go through a plugin registry",
-        "recommendation": "Either drop the preference (R-skeptic-2), or state where it is stored, the schema change it needs, the default for existing users, and tick `migration` in the Domains.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Storing a per-user preference is a hidden schema migration"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
         "evidence": "- [ ] security\n- [ ] personal-data\n",
         "history": [
           {
@@ -151,64 +79,16 @@
             "to": null
           }
         ],
-        "id": "R-skeptic-6",
-        "line": 80,
+        "id": "R-skeptic-3",
+        "line": 55,
         "location": "proposal.md#Domains",
-        "recommendation": "Say who may call `GET /invoices.csv` and add a scenario for an unauthenticated or unauthorized caller; the export returns customer names and totals in bulk, so tick `security` and `personal-data` or give the reason they do not apply.",
-        "reported": false,
+        "recommendation": "`GET /invoices.csv?month=YYYY-MM` is a new input-taking route that returns every invoice of a month with its customer, yet no domain is ticked, so no expert reviews who may call it or what customer data leaves the system; the spec has no unauthorized-caller scenario. Tick `security` and `personal-data` (or write the reason on each line if they do not apply). If the settings page stays despite R-skeptic-2, tick `user-interface` too.",
+        "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No access-control case for an export of every invoice of a month"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "`GET /invoices.csv?month=YYYY-MM` SHALL return the month's invoices, one per line after a header line, with number, date, customer and total; a field holding a comma, a quote or a line break SHALL be quoted as RFC 4180 says.\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-7",
-        "line": 95,
-        "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
-        "recommendation": "Fix the header names, the date format and whether the total is in cents (`totalCents` in `src/invoices.ts`) or a decimal amount, so a test can check a line exactly and the spreadsheet reads the numbers.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Date and total formats of the CSV are unspecified"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [ ] 1.2 Plugin registry discovering `src/export/plugins/`, verified by `npm test -- registry`\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-8",
-        "line": 109,
-        "location": "tasks.md#1. Export",
-        "recommendation": "Drop the task with the plugin system (R-skeptic-1); if kept, back it with a requirement and scenarios so `npm test -- registry` checks a specified behavior.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Registry task is verified by a test no requirement defines"
+        "title": "New invoice endpoint exposes customer data with security and personal-data unticked"
       }
     ],
     "format": 1,

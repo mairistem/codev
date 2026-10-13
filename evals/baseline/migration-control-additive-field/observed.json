@@ -2,8 +2,8 @@
   "format": 1,
   "case": "migration-control-additive-field",
   "error": null,
-  "costUsd": 0.3508554,
-  "durationMs": 26682,
+  "costUsd": 0.3617368,
+  "durationMs": 33611,
   "strayed": [],
   "review": {
     "archive": {
@@ -30,12 +30,12 @@
         "recorded": true,
         "roles": [
           {
-            "role": "skeptic",
-            "state": "disabled"
-          },
-          {
             "role": "migration",
             "state": "no-finding"
+          },
+          {
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge"

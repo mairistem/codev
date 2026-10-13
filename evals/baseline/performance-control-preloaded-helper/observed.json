@@ -2,8 +2,8 @@
   "format": 1,
   "case": "performance-control-preloaded-helper",
   "error": null,
-  "costUsd": 0.4219780000000001,
-  "durationMs": 54978,
+  "costUsd": 0.33362520000000007,
+  "durationMs": 22875,
   "strayed": [],
   "review": {
     "archive": {
@@ -17,128 +17,7 @@
     },
     "changeName": "add-monthly-report",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "Ok(Report {\n    lines,\n    total_cents: db.month_total(month)?,\n})\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-1",
-        "line": 9,
-        "location": "src/report.rs:43-46",
-        "recommendation": "Sum `total_cents` over the invoices already loaded by `invoices_of_month` instead of running `month_total`, which re-reads every invoice of the month (one extra aggregate query per report, growing with the month's invoices). This also makes the total consistent with the listed lines; confirm finance expects the total of the listed lines before changing it.",
-        "reported": true,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "The month total costs a second scan of the month's invoices"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "regex = \"1\"\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-2",
-        "line": 26,
-        "location": "Cargo.toml:8",
-        "recommendation": "Weigh the dependency's cost (compile time, binary size, transitive `regex-syntax`/`aho-corasick`/`memchr`) against matching `PO-\\d{4}-\\d{4}` by hand — scan for `PO-` and check the 4 + `-` + 4 ASCII digits that follow — or record in the proposal why the crate is worth it.",
-        "reported": true,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "The `regex` crate is added for one fixed-shape pattern"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "fn customer_label(customers: &HashMap<i64, Customer>, invoice: &Invoice) -> String {\n    match customers.get(&invoice.customer_id) {\n        Some(c) => format!(\"{} ({})\", c.name, c.country),\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-3",
-        "line": 40,
-        "location": "src/report.rs:51-55",
-        "recommendation": "Build the \"Name (country)\" label once per customer when filling the map (about 800 per month) and clone it per line, instead of a `format!` per invoice (about 3 000 per month); or keep as is given the small volumes.",
-        "reported": true,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "The customer label is formatted once per invoice, not once per customer"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "for invoice in &invoices {\n    lines.push(ReportLine {\n        number: invoice.number.clone(),\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-4",
-        "line": 56,
-        "location": "src/report.rs:35-37",
-        "recommendation": "Iterate `invoices` by value (`into_iter()`) and move `number` into the line, avoiding one `String` copy per invoice.",
-        "reported": true,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Invoice numbers are cloned while the invoices are dropped right after"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "let invoices = db.invoices_of_month(month)?;\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-5",
-        "line": 72,
-        "location": "src/report.rs:25",
-        "recommendation": "The report reads every invoice of the month (about 3 000 today, growing with sales) in one result, with no `LIMIT` or streaming, through `SELECT … FROM invoices WHERE month = $1 ORDER BY number` (src/db.rs:21), which filters and sorts on `invoices.month`/`number`; the schema is not in the repository, so check with `EXPLAIN` that an index on `(month, number)` serves both, and decide whether a bound or streaming is needed as volumes grow.",
-        "reported": false,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "The month's invoices are loaded without a bound, on a filter whose index is not visible"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-monthly-report/review.md",
@@ -161,7 +40,7 @@
         "roles": [
           {
             "role": "performance",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "role": "newcomer",

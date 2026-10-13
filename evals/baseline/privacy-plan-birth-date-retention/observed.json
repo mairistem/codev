@@ -2,8 +2,8 @@
   "format": 1,
   "case": "privacy-plan-birth-date-retention",
   "error": null,
-  "costUsd": 0.41360120000000006,
-  "durationMs": 53373,
+  "costUsd": 0.4281558,
+  "durationMs": 43066,
   "strayed": [],
   "review": {
     "archive": {
@@ -11,10 +11,6 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## code.review` section, while roles were active at it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-privacy-1 (Phone numbers and names go to a US processor with no transfer safeguard identified) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -25,7 +21,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are\nkept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
         "history": [
           {
             "by": "privacy",
@@ -36,43 +32,19 @@
           }
         ],
         "id": "R-privacy-1",
-        "line": 13,
-        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
-        "recommendation": "Identify Textly as a processor (Art. 28 data processing agreement) and state the Chapter V transfer mechanism (adequacy decision / EU-US Data Privacy Framework certification, or standard contractual clauses), or choose an EEA-hosted SMS provider; record the processing in the Art. 30 register.",
-        "reported": true,
-        "role": "privacy",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Phone numbers and names go to a US processor with no transfer safeguard identified"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-2",
-        "line": 29,
+        "line": 9,
         "location": "design.md#Decision: Birth dates live on the profile",
-        "recommendation": "Tie retention to the opt-in — clear `birthday` and `phone` when the member opts out or the profile is deleted — and state the backup retention period after which erased values are gone from backups (Art. 5(1)(e) storage limitation).",
+        "recommendation": "Tie retention to the purpose (GDPR Art. 5(1)(e), storage limitation): clear `birthday` and `phone` when the member opts out, and state how long the nightly backups keep them (backup rotation period) so a purged value disappears from backups within a defined delay. Add a spec scenario \"A member opts out → birthday and phone are erased from the profile\" and a matching task. Scenario that fails today: a member opts in, later turns greetings off; their birth date and mobile number stay in `profiles` for the life of the account and in every backup indefinitely, with no purpose left.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Birthday and phone are kept for the profile's lifetime, including after opt-out, and in backups with no expiry"
+        "title": "Birthday and phone kept after opt-out and in backups with no expiry"
       },
       {
         "awaiting": "author",
-        "confidence": "high",
+        "confidence": "low",
         "evidence": "The profile form SHALL offer birthday greetings as an option, off by default; a member who opts in SHALL give their birthday (day and month) and a mobile phone number.\n",
         "history": [
           {
@@ -83,20 +55,44 @@
             "to": null
           }
         ],
-        "id": "R-privacy-3",
-        "line": 44,
+        "id": "R-privacy-2",
+        "line": 33,
         "location": "specs/birthday-greetings/spec.md#Requirement: Members opt in to birthday greetings",
-        "recommendation": "Add a requirement and scenarios for withdrawing consent (opting out stops greetings and erases `birthday` and `phone`, Art. 7(3) and Art. 17), and state that access and export of the profile include the two new fields (Art. 15, Art. 20); add matching tasks.",
-        "reported": true,
+        "recommendation": "Add a requirement that a member can withdraw (opt out) at any time and that withdrawal stops the messages (Art. 7(3), Art. 21 for direct marketing), and confirm that access, rectification, erasure and portability (Art. 15–20) cover `birthday` and `phone`. Confidence low: the repository shows no existing export or account-deletion path to check whether it would reach the new columns.",
+        "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No requirement for opting out or erasing the new data"
+        "title": "Opt-out and data-subject rights not specified for the new fields"
       },
       {
         "awaiting": "author",
-        "confidence": "high",
+        "confidence": "low",
+        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 53,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "recommendation": "Question for the team: Textly is a new processor receiving mobile numbers and display names, and the transfer goes outside the EEA (GDPR Art. 28, Chapter V). State in the design the processor agreement and the transfer mechanism (adequacy decision / Data Privacy Framework certification, or SCCs), Textly's retention of the numbers and message content, and record it in the records of processing (Art. 30). Confidence low: only the controller knows whether a DPA and safeguards are in place.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Phone numbers and names sent to a US processor without a stated transfer safeguard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
         "evidence": "Members enjoy being remembered; marketing wants birthday messages.\n",
         "history": [
           {
@@ -108,63 +104,15 @@
           }
         ],
         "id": "R-privacy-4",
-        "line": 58,
+        "line": 76,
         "location": "proposal.md#Why",
-        "recommendation": "Question for the team — state the purpose (sending the birthday greeting only, or also marketing) and the lawful basis (consent via the opt-in, Art. 6(1)(a)); if marketing messages are intended, the SMS needs ePrivacy-compliant consent for direct marketing and the purpose must be disclosed at opt-in.",
-        "reported": true,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Purpose and lawful basis of the new data are not stated"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "phone number and display name to Textly's API (hosted in the United\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-5",
-        "line": 72,
-        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
-        "recommendation": "Send only the phone number and a generic message, or state why the personalised name is needed (Art. 5(1)(c) data minimisation).",
-        "reported": true,
-        "role": "privacy",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Display name is sent to Textly where the phone number alone would do"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "- [Textly is down] → the job retries the next day.\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-6",
-        "line": 86,
-        "location": "design.md#Risks / Trade-offs",
-        "recommendation": "State that the job and its retry logic log only the profile id, never the phone number, birthday or name, nor Textly's request body.",
+        "recommendation": "Question for the team: state the purpose (member greeting vs. marketing) and the lawful basis (consent via the opt-in, presumably) for `birthday` and `phone` (Art. 5(1)(b), Art. 6). If the messages are marketing, the SMS channel also needs prior consent under the ePrivacy rules, and the opt-in wording must say so; the phone number must not be reused for other campaigns without a new basis.",
         "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No rule keeps phone numbers out of the job's logs and retry state"
+        "title": "Purpose and lawful basis of the new data not stated"
       }
     ],
     "format": 1,
@@ -178,10 +126,6 @@
         ],
         "recorded": true,
         "roles": [
-          {
-            "role": "skeptic",
-            "state": "disabled"
-          },
           {
             "role": "privacy",
             "state": "findings"

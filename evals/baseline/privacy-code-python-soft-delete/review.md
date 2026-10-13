@@ -6,57 +6,37 @@
 
 ### privacy
 
-#### R-privacy-1 Account deletion keeps every personal field of the member
+#### R-privacy-1 Account deletion keeps the member's email, name, phone and postal address
 
 ```yaml
 severity: high
 confidence: high
 location: "app/account.py:18-21"
 evidence: |
-  _conn.execute(
-      "UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?",
-      (user_id,),
-  )
+  "UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?",
 recommendation: >-
-  Erase the personal data on deletion, as the proposal promises: delete the users row,
-  or overwrite email, display_name, phone and postal_address (email needs a unique
-  non-identifying placeholder because of its UNIQUE NOT NULL constraint) so that the
-  orders kept for accounting point to a row with no personal data. GDPR Art. 17 (erasure)
-  and Art. 5(1)(e) (storage limitation).
+  The proposal promises that the button "erases the member's personal data",
+  yet delete_account only sets deleted_at and clears password_hash: after a
+  member deletes their account, the users row still holds email,
+  display_name, phone and postal_address (app/schema.sql:3-6) indefinitely,
+  with no purge. A member exercising their right to erasure (GDPR Art. 17)
+  keeps all their contact data in the users table, and the orders kept for
+  accounting still point at it through orders.user_id, so they are not
+  "without personal data" either. Overwrite or null the personal columns in
+  the same UPDATE (e.g. email replaced by a non-identifying tombstone such as
+  'deleted-<id>' to satisfy NOT NULL UNIQUE, display_name by a placeholder,
+  phone and postal_address set to NULL), and add a test asserting those
+  columns no longer hold the member's data. State how long backups keep the
+  erased data before it expires.
 history:
   - status: open
     by: privacy
 ```
 
-The change only soft-deletes: `email`, `display_name`, `phone` and `postal_address`
-(`app/schema.sql:3-6`) stay in `users` forever, and the orders "kept for accounting,
-without personal data" still join to them through `orders.user_id`. The proposal says the
-button "erases the member's personal data"; the code does not.
-
-#### R-privacy-2 Tests do not check that personal data is erased
+#### R-privacy-2 New analytics identifier added with no use and outside the erasure
 
 ```yaml
-severity: medium
-confidence: high
-location: "tests/test_account.py:10-11"
-evidence: |
-  delete_account(1)
-  assert not can_sign_in("ada@example.org")
-recommendation: >-
-  Add a test asserting that after delete_account no row of users still holds the member's
-  email, display name, phone or postal address, while their orders remain.
-history:
-  - status: open
-    by: privacy
-```
-
-The tests cover sign-in and sessions only, so the erasure requirement of the proposal is
-unverified — which is how R-privacy-1 passes the suite.
-
-#### R-privacy-3 Erasure does not reach analytics data linked by analytics_id
-
-```yaml
-severity: medium
+severity: low
 confidence: low
 location: "app/account.py:11-13"
 evidence: |
@@ -64,36 +44,14 @@ evidence: |
       """The pseudonymous id analytics events carry instead of the user id."""
       return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()
 recommendation: >-
-  State what happens to analytics events on deletion: delete them at the analytics
-  processor by analytics_id, or make the id unlinkable (per-user random id deleted with the
-  account). Identify the analytics processor (GDPR Art. 28) if it is a third party.
+  The change adds a per-member analytics identifier that nothing in the
+  change calls and that the proposal does not mention, and delete_account
+  does nothing about analytics events already keyed by it: with a fixed salt
+  the id stays linkable to the member after deletion. Either drop it from
+  this change, or state its purpose and processor and make account deletion
+  reach the analytics data. Confidence is low because the callers and the
+  analytics pipeline are not visible in this diff.
 history:
   - status: open
     by: privacy
 ```
-
-The id is deterministic from a fixed salt and the user id, so the member's events stay
-pseudonymous personal data (re-linkable while the salt exists) after the account is deleted;
-`delete_account` does nothing about them. Where those events go could not be seen in the
-repository.
-
-#### R-privacy-4 Retention of deleted accounts and backups is not defined
-
-```yaml
-severity: medium
-confidence: low
-location: "proposal.md#What Changes"
-evidence: |
-  - A "Delete my account" button erases the member's personal data and signs them out everywhere; their orders are kept for accounting, without personal data.
-recommendation: >-
-  State the retention of the soft-deleted row (if any is kept) and of the orders, and how
-  erasure reaches backups of members.db (expiry window or re-applying deletions on restore).
-  GDPR Art. 5(1)(e).
-history:
-  - status: open
-    by: privacy
-```
-
-### newcomer
-
-Disabled by configuration.

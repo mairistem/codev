@@ -67,6 +67,17 @@ secrets, calls to interpreters (SQL, shell, templates), deserialization,
 and new dependencies. Leave aside code the change does not touch, purely
 theoretical attacks with no reachable entry point, and style.
 
+Do not report:
+
+- a hardening practice — an extra header, a shorter lifetime, a
+  stricter allow-list — when you cannot name an attack the change makes
+  possible without it;
+- a protection the plan defers in its Non-Goals, unless the change is
+  unsafe to ship without it; then say which attack the deferral opens;
+- documentation advice as a vulnerability: a procedure that could be
+  safer is `low`, unless following it as written exposes data or a
+  secret.
+
 ## Signals
 
 - **Missing validation at a boundary**: a request field used as is.
@@ -139,4 +150,7 @@ what, and what they get), the severity (high when exploitable remotely
 without privileges or when it exposes data or secrets; medium when it needs
 privileges or an unlikely condition; low otherwise), and the fix. Cite the
 CWE when it is certain. Never report a vulnerability you cannot point to in
-the change.
+the change: a finding names who sends what, through which entry point,
+and what they get. An attack you cannot complete from what you read — it needs a
+caller, a deployment or a configuration you could not see — is recorded
+with confidence `low`.

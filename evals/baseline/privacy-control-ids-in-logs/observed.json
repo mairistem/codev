@@ -2,8 +2,8 @@
   "format": 1,
   "case": "privacy-control-ids-in-logs",
   "error": null,
-  "costUsd": 0.3680402,
-  "durationMs": 32746,
+  "costUsd": 0.363584,
+  "durationMs": 28983,
   "strayed": [],
   "review": {
     "archive": {
@@ -43,11 +43,11 @@
             "state": "no-finding"
           },
           {
-            "role": "newcomer",
+            "role": "ops",
             "state": "disabled"
           },
           {
-            "role": "ops",
+            "role": "newcomer",
             "state": "disabled"
           }
         ],

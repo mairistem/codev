@@ -42,6 +42,16 @@ schemas, configuration files, file formats, public APIs, CLI flags,
 environment variables and the consumers of each. Leave aside internal code
 that no consumer sees, and greenfield features with no predecessor.
 
+Do not report:
+
+- an improvement to a compatibility path that works — a deprecation
+  warning, a removal date, a log line — when old data, files and
+  consumers keep working;
+- an input no existing file, row or consumer can hold — a combination
+  that only someone writing for the new version could produce;
+- a version number not bumped, unless the project states that it follows
+  semantic versioning for what broke.
+
 ## Signals
 
 - **Unmarked breaking change**: a renamed field, flag or endpoint, a
@@ -95,4 +105,7 @@ One line per finding: what existing thing breaks (data, configuration,
 consumer), who notices and when, the severity (high when data can be lost
 or consumers break without warning; medium when a manual step is needed and
 documented; low otherwise), and the fix — a migration step, a
-compatibility shim, a deprecation, or a release note item.
+compatibility shim, a deprecation, or a release note item. Name the
+existing thing that breaks: the file, row, call or consumer as it is
+today, and the error or wrong result it meets after the change. When
+nothing existing breaks, it is not a finding.

@@ -17,11 +17,17 @@ export function SizePicker({ sizes, value, onChange }: { sizes: string[]; value:
     combo.current?.focus();
   }
 
+  /** Opens the list with the current size highlighted. */
+  function show() {
+    setActive(Math.max(0, sizes.indexOf(value)));
+    setOpen(true);
+  }
+
   function onKeyDown(event: React.KeyboardEvent) {
     if (!open) {
       if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
         event.preventDefault();
-        setOpen(true);
+        show();
       }
       return;
     }
@@ -71,7 +77,7 @@ export function SizePicker({ sizes, value, onChange }: { sizes: string[]; value:
         aria-expanded={open}
         aria-activedescendant={open ? `${id}-option-${active}` : undefined}
         onKeyDown={onKeyDown}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? setOpen(false) : show())}
         onBlur={() => setOpen(false)}
       >
         {value}
@@ -82,7 +88,7 @@ export function SizePicker({ sizes, value, onChange }: { sizes: string[]; value:
             key={size}
             id={`${id}-option-${index}`}
             role="option"
-            aria-selected={size === value}
+            aria-selected={index === active}
             className={index === active ? "option option--active" : "option"}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => choose(index)}

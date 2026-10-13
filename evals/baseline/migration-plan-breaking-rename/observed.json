@@ -2,8 +2,8 @@
   "format": 1,
   "case": "migration-plan-breaking-rename",
   "error": null,
-  "costUsd": 0.3863432,
-  "durationMs": 35469,
+  "costUsd": 0.34107180000000004,
+  "durationMs": 23093,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,15 +14,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Removing the public `status` field breaks partner integrations with no deprecation) is high and still open; fix it, or a human accepts the risk or defers it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-migration-2 (The breaking rename is not marked BREAKING nor tells users what to do) is high and still open; fix it, or a human accepts the risk or defers it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-migration-3 (No rollout order keeping old and new consumers working side by side) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Public field removed with no deprecation period) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -46,13 +38,13 @@
         "id": "R-migration-1",
         "line": 9,
         "location": "design.md#Decision: The field is renamed in place",
-        "recommendation": "Apply expand and contract — return both `status` and `state` for a deprecation period, mark `status` deprecated in openapi.yaml, and remove it only in a later change once partners have moved; record the dated removal plan in the design.",
+        "recommendation": "Use expand and contract: return both `status` and `state` (same value) and mark `status` deprecated in openapi.yaml with a removal date, then remove `status` in a later change once partners have moved. Add a scenario saying the response still holds `status` during the deprecation period, and a task with a test for it.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Removing the public `status` field breaks partner integrations with no deprecation"
+        "title": "Public field removed with no deprecation period"
       },
       {
         "awaiting": "author",
@@ -68,63 +60,15 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 31,
+        "line": 36,
         "location": "proposal.md#Release note",
-        "recommendation": "Mark the item **BREAKING** in the release note and in What Changes, and say what consumers must do (read `state` instead of `status`, by which date the old field disappears).",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "The breaking rename is not marked BREAKING nor tells users what to do"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [ ] 1.1 Rename the field and regenerate `openapi.yaml`, verified by tests \"A paid order\" and \"An unknown order\"\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-3",
-        "line": 48,
-        "location": "tasks.md#1. Rename",
-        "recommendation": "Split the work into ordered tasks — add `state` alongside `status` and deprecate `status` (with a test that both fields are returned), announce to partners, then a separate later task or change that removes `status`.",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "No rollout order keeping old and new consumers working side by side"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "version: 1.4.0\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-4",
-        "line": 67,
-        "location": "openapi.yaml:4",
-        "recommendation": "Plan a major version bump (2.0.0) of the OpenAPI `info.version` and `package.json` when `status` is removed, or keep the release minor by only adding `state` and deprecating `status`.",
+        "recommendation": "Mark the item **BREAKING** and say what partners must do: read `state` instead of `status` on `GET /orders/{id}`, and by when if a deprecation period is kept.",
         "reported": true,
         "role": "migration",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The API version is not bumped for a breaking change"
+        "title": "Breaking rename not marked BREAKING in the release note"
       }
     ],
     "format": 1,
@@ -141,10 +85,6 @@
           {
             "role": "migration",
             "state": "findings"
-          },
-          {
-            "role": "skeptic",
-            "state": "disabled"
           }
         ],
         "step": "plan.challenge"

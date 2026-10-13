@@ -2,8 +2,8 @@
   "format": 1,
   "case": "newcomer-code-deep-nesting",
   "error": null,
-  "costUsd": 0.3662712,
-  "durationMs": 36076,
+  "costUsd": 0.2986782,
+  "durationMs": 22606,
   "strayed": [],
   "review": {
     "archive": {
@@ -21,7 +21,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "for row in rows {\n    if !row.email.is_empty() {\n        match db.find_account(&row.email)? {\n            Some(account) => {\n                if account.plan != row.plan {\n                    for seat in &row.seats {\n                        if !account.seats.contains(seat) {\n                            if seat.contains('@') {\n                                db.add_seat(account.id, seat)?;\n",
+        "evidence": "for row in rows {\n    if !row.email.is_empty() {\n        match db.find_account(&row.email)? {\n            Some(account) => {\n                if account.plan != row.plan {\n                    for seat in &row.seats {\n                        if !account.seats.contains(seat) {\n                            if seat.contains('@') {\n",
         "history": [
           {
             "by": "newcomer",
@@ -33,110 +33,14 @@
         ],
         "id": "R-newcomer-1",
         "line": 9,
-        "location": "src/import.rs:14-24",
-        "recommendation": "Flatten without changing behavior: `continue` early on an empty email and on an unchanged plan, merge the two seat conditions into one filter, and move the seat loop into a helper so `import` reads as \"find or create the account, then add its new seats\".",
+        "location": "src/import.rs:12-42",
+        "recommendation": "Flatten and name the rules so the function reads without the plan. Skip rows with an empty email with an early `continue` (and say why they are skipped). Extract the duplicated seat loop — it appears once under `Some(account)` and once under `None` — into a helper such as `add_new_seats(db, account_id, seats, existing) -> Result<usize, DbError>`, and replace the bare `seat.contains('@')` by a named predicate (`is_valid_seat_email`) so the reader knows seats that are not emails are dropped on purpose. The condition `account.plan != row.plan` is where a newcomer stumbles: read at this depth, it says that seats are added to an existing account only when its plan differs from the CSV row, and that the plan itself is never updated — nothing tells whether that is the intended rule or an inverted test; give it a name or a comment stating the why (or, if unintended, raise it to the developer). Then the body is one match of two arms, each a call, at most two levels deep.",
         "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "`import` nests six levels deep"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "for seat in &row.seats {\n    if seat.contains('@') {\n        db.add_seat(id, seat)?;\n        created += 1;\n    }\n}\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-2",
-        "line": 35,
-        "location": "src/import.rs:31-37",
-        "recommendation": "Extract one helper, e.g. `add_new_seats(db, account_id, existing, seats) -> Result<usize, DbError>`, used by both the `Some` and `None` arms, so the seat filter lives in a single place.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Seat-adding loop duplicated in both match arms"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "if account.plan != row.plan {\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-3",
-        "line": 57,
-        "location": "src/import.rs:18",
-        "recommendation": "A reader without the plan cannot tell whether skipping new seats on an account whose plan is unchanged is intended or a bug; the proposal only says \"creates missing accounts and their seats\". State the rule in a comment (or confirm it is a defect), and note that the account's plan itself is never updated here either.",
-        "reported": false,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Seats are only added to an existing account when its plan differs, without saying why"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "if !row.email.is_empty() {\n    match db.find_account(&row.email)? {\n        Some(account) => {\n            if account.plan != row.plan {\n                for seat in &row.seats {\n                    if !account.seats.contains(seat) {\n                        if seat.contains('@') {\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-4",
-        "line": 76,
-        "location": "src/import.rs:15-21",
-        "recommendation": "Name the checks (e.g. `fn looks_like_email(seat: &str) -> bool`) and say in a comment why rows without an email and seats without '@' are dropped silently rather than reported; `seats: Vec<String>` could also document that a seat is an email address.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Unexplained filters: `contains('@')` and empty email skip silently"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [x] 1.1 `import`, verified by importing last month's CSV export on staging\n",
-        "history": [
-          {
-            "by": "newcomer",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-newcomer-5",
-        "line": 100,
-        "location": "tasks.md#1. Implementation",
-        "recommendation": "Add tests named after the behavior (creates a missing account with its seats, adds only new seats to an existing account, skips rows without an email, ignores seats without '@') so a newcomer can learn the rules from them; today the only verification is a manual staging run.",
-        "reported": true,
-        "role": "newcomer",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "No test describes the import behavior"
+        "title": "`import` nests six levels deep and hides its seat rules"
       }
     ],
     "format": 1,

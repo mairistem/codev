@@ -117,17 +117,29 @@ still force an expert on or off, for the project or for one change — see
 **Knowledge.** An expert's knowledge comes in five sections, always in
 this order:
 
-- **Scope** — what it looks at, and what it leaves aside to avoid noise;
+- **Scope** — what it looks at, what it leaves aside, and what it does
+  not report — for instance, the ops expert asks for no feature flag
+  when deploying the previous version undoes the change, and the
+  performance expert reports no constant-factor saving;
 - **Signals** — concrete patterns to spot, each with a one-line example;
 - **By stack** — pitfalls in Rust, TypeScript/JavaScript, Python, Go and
   Java; codev serves the part for your project's languages (see
   [Stack filter](#triggers-and-suggested-domains));
 - **References** — the authoritative standards, such as the OWASP Top 10,
   WCAG 2.2, RGAA 4 or the GDPR;
-- **Reporting** — how to report a finding, with its severity.
+- **Reporting** — how to report a finding, with its severity, and what
+  it must name: the failure an operator meets, the attack, the data and
+  who receives it, the existing file or consumer that breaks.
 
-The `newcomer` carries complexity signals per language and the `skeptic`
-planning smells; the other step roles carry none. Knowledge is served only
+The `newcomer` carries complexity signals per language, and groups what
+makes one function hard to follow into one finding; it judges
+readability, not correctness, and the tests the change has, not those it
+lacks. The `skeptic` carries planning smells: it challenges the plan's
+logic and evidence — need, scope, specs, decisions, assumptions, tasks,
+and steps with no way back — and leaves each domain to its expert,
+checking only that the proposal's `## Domains` ticks every domain the
+plan touches, so that its expert reviews it. The other step roles carry
+none. Knowledge is served only
 to active roles: an expert that is not active costs the agent nothing.
 Read it with `codev roles --at code.review --change <name> --knowledge`.
 
@@ -238,6 +250,17 @@ confidence on one shared scale:
 
 A low-confidence finding stays in the record and is answered like any
 other, but it is not shown to you unless you are asked to decide it.
+
+Every reviewing role grades the same way. A `medium` or `high` finding
+shown to you with confidence `high` quotes the line it is about and
+states the scenario that fails; a concern that depends on what the
+reviewer could not see — load, a caller, a configuration — and a
+preference with no failure are recorded with confidence `low`. A role
+does not report a concern another role owns, code or data the change
+does not touch, what the plan explicitly excludes, a missing test its
+criteria do not ask for, or a matter of taste. Each defect is reported
+once, its consequences in its recommendation; two defects that need two
+fixes stay two findings.
 
 Then the team works like a team: the author — the role that owns the
 artifact, or the developer for code — fixes each finding or disputes it

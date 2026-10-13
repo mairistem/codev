@@ -37,6 +37,20 @@ loops over collections that grow with users or data, queries, caches,
 startup, and bundle or binary size. Leave aside micro-optimizations on
 cold paths, and code that runs once per process.
 
+Do not report:
+
+- a constant-factor saving — a copy, a clone, a string formatted per item,
+  one more query per request — whose cost does not grow faster than the
+  work the code already does for each item;
+- a back-end dependency's build time or binary size: only a front-end
+  bundle's size reaches users;
+- a missing index you cannot see: when the schema is not in the
+  repository, say what to check with confidence `low`.
+
+Work repeated for each item stays a finding when that work is expensive
+compared with the item: a query, a remote call, compiling a pattern,
+parsing a file, opening a connection.
+
 ## Signals
 
 - **N+1 queries**: one query for the list, one per item. Example:
@@ -92,5 +106,7 @@ cold paths, and code that runs once per process.
 One line per finding: the location, the cost as a function of growth (per
 item, per request, per row), the severity (high when cost grows with data
 or traffic on a user-facing path; medium on a background path; low
-otherwise), and the fix. Never change ordering, results or error behavior
+otherwise), and the fix. A cost you cannot state as a function of growth,
+or that depends on volumes you could not see, is recorded with confidence
+`low`. Never change ordering, results or error behavior
 in the name of speed; report it instead.

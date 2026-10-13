@@ -6,68 +6,51 @@
 
 ### security
 
-#### R-security-1 Path traversal in read_attachment bypasses the ticket authorization
+#### R-security-1 Path traversal in read_attachment bypasses the ticket authorization check
 
 ```yaml
 severity: high
 confidence: high
-location: "app/attachments.py:28-31"
+location: "app/attachments.py:30-32"
 evidence: |
-  if not may_read_ticket(agent_id, ticket_id):
-      raise PermissionError(f"agent {agent_id} may not read ticket {ticket_id}")
   path = os.path.join(UPLOAD_DIR, str(ticket_id), name)
   with open(path, "rb") as f:
-recommendation: >-
-  CWE-22. `name` comes from the client and is joined as is: an agent allowed on
-  ticket 1 asks for `../42/contract.pdf` and reads another team's attachment, or
-  `/etc/passwd` (an absolute path makes os.path.join discard the base) and reads
-  any file the service can read. Look the attachment up in the `attachments`
-  table by (ticket_id, name) and serve only a recorded name, or reject any name
-  that differs from os.path.basename(name) and check that the resolved path
-  (os.path.realpath) stays under the ticket's directory.
+      return f.read()
+recommendation: >
+  CWE-22. `name` is the name the client asks for and is joined to the ticket
+  directory as is. An agent authorized on their own ticket 7 asks for
+  `name="../42/contract.pdf"` and reads an attachment of ticket 42 owned by
+  another team, defeating `may_read_ticket`; `name="../../../../../etc/passwd"`
+  or an absolute `name="/etc/passwd"` (which makes `os.path.join` discard the
+  base) reads any file the service can open, including `helpdesk.db` with the
+  API key hashes. Validate `name` where it enters: look it up in the
+  `attachments` table for that `ticket_id` (allow-list of stored names) and
+  reject anything else; additionally resolve the path with `os.path.realpath`
+  and refuse it unless it stays inside `UPLOAD_DIR/<ticket_id>`.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 save_attachment checks no authorization
+#### R-security-2 save_attachment enforces no authorization on the target ticket
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/attachments.py:11-12"
+location: "app/attachments.py:11-17"
 evidence: |
   def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:
       """Stores an uploaded file under the ticket's directory; returns its name."""
-recommendation: >-
-  CWE-862. Unlike read_attachment, the upload takes no agent and calls no
-  may_read_ticket: unless every caller checks it (no caller is in the change),
-  any authenticated agent can attach files to any team's ticket. Take the
-  agent_id and enforce the same ownership check on the server before writing.
-history:
-  - status: open
-    by: security
-```
-
-#### R-security-3 Uploaded file name is not allow-listed and overwrites existing attachments
-
-```yaml
-severity: medium
-confidence: high
-location: "app/attachments.py:13-17"
-evidence: |
-  name = os.path.basename(filename)
-  directory = os.path.join(UPLOAD_DIR, str(ticket_id))
-  os.makedirs(directory, exist_ok=True)
-  with open(os.path.join(directory, name), "wb") as f:
-      f.write(data)
-recommendation: >-
-  basename strips directories but accepts `..`, `.`, an empty name, control
-  characters and any extension, and an upload under an existing name silently
-  replaces the stored file (with a second row in `attachments`), so one uploader
-  can swap a file another agent will open. Validate the name against an
-  allow-list (characters, length, extensions), reject collisions or store under
-  a generated id, and bound the size of `data`.
+      name = os.path.basename(filename)
+      directory = os.path.join(UPLOAD_DIR, str(ticket_id))
+recommendation: >
+  CWE-862. Unlike `read_attachment`, the upload takes no `agent_id` and checks
+  nothing: if the handler that calls it (not part of this change) does not
+  check ownership, any agent can write files into another team's ticket, and
+  because the file is opened with "wb" under the client-chosen name, can
+  silently overwrite an existing attachment of that ticket (e.g. replace
+  `invoice.pdf`). Take the `agent_id` and call `may_read_ticket` (or a write
+  permission) before writing, and refuse or rename on a name collision.
 history:
   - status: open
     by: security

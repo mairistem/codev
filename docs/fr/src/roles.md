@@ -121,8 +121,10 @@ pouvez toujours forcer un expert, pour le projet ou pour un change — voir
 **Connaissances.** Les connaissances d'un expert se répartissent en cinq
 sections, toujours dans cet ordre :
 
-- **Scope** — ce qu'il examine, et ce qu'il laisse de côté pour éviter le
-  bruit ;
+- **Scope** — ce qu'il examine, ce qu'il laisse de côté, et ce qu'il ne
+  signale pas — par exemple, l'expert exploitation ne réclame pas
+  d'interrupteur quand redéployer la version précédente annule le change,
+  et l'expert performance ne signale pas un gain d'un facteur constant ;
 - **Signals** — des motifs concrets à repérer, chacun avec un exemple
   d'une ligne ;
 - **By stack** — les pièges en Rust, TypeScript/JavaScript, Python, Go et
@@ -130,10 +132,20 @@ sections, toujours dans cet ordre :
   (voir [Filtre par stack](#les-déclencheurs-et-les-domaines-suggérés)) ;
 - **References** — les référentiels qui font autorité, comme l'OWASP
   Top 10, les WCAG 2.2, le RGAA 4 ou le RGPD ;
-- **Reporting** — comment signaler un constat, avec sa gravité.
+- **Reporting** — comment signaler un constat, avec sa gravité, et ce
+  qu'il doit nommer : la panne que subit l'exploitant, l'attaque, la
+  donnée et qui la reçoit, le fichier ou le consommateur existant qui
+  casse.
 
-Le `newcomer` porte des signaux de complexité par langage, et le `skeptic`
-des signaux de planification fragile ; les autres rôles d'étape n'en
+Le `newcomer` porte des signaux de complexité par langage, et regroupe en
+un seul constat ce qui rend une fonction difficile à suivre ; il juge la
+lisibilité, non la justesse, et les tests que le change contient, non
+ceux qui lui manquent. Le `skeptic` porte des signaux de planification
+fragile : il conteste la logique et les preuves du plan — besoin,
+périmètre, specs, décisions, hypothèses, tâches, et étapes sans retour
+possible — et laisse chaque domaine à son expert, en vérifiant seulement
+que la section `## Domains` de la proposal coche chaque domaine que le
+plan touche, pour que son expert le relise. Les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
 `codev roles --at code.review --change <nom> --knowledge`.
@@ -250,6 +262,18 @@ vérifier, et porte une gravité et une confiance sur une échelle commune :
 Un constat de confiance basse reste dans le compte rendu et reçoit une
 réponse comme les autres, mais il ne vous est présenté que si l'on vous
 demande de le trancher.
+
+Tous les rôles de relecture notent de la même façon. Un constat `medium`
+ou `high` qui vous est présenté avec une confiance `high` cite la ligne
+qu'il vise et décrit le scénario qui échoue ; une inquiétude qui dépend
+de ce que le relecteur n'a pas pu voir — la charge, un appelant, une
+configuration — et une préférence sans défaillance sont notées avec une
+confiance `low`. Un rôle ne signale pas une question qui relève d'un
+autre rôle, du code ou des données que le change ne touche pas, ce que le
+plan exclut explicitement, un test manquant que ses critères ne demandent
+pas, ni une affaire de goût. Chaque défaut est signalé une fois, ses
+conséquences dans sa recommandation ; deux défauts qui demandent deux
+corrections restent deux constats.
 
 L'équipe travaille ensuite comme une équipe : l'auteur — le rôle qui
 possède l'artefact, ou le développeur pour le code — corrige chaque constat

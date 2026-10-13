@@ -16,30 +16,16 @@ evidence: |
   const sql = "SELECT id, name FROM users WHERE name LIKE '%" + term + "%' ORDER BY name LIMIT 50";
   return query<UserRow>(sql);
 recommendation: >-
-  CWE-89. Any holder of the support role sends `GET /users/search?q=` with a
-  term such as `x' UNION SELECT id, password_hash FROM users --` (the route
-  only checks its length, src/server.ts:13-17) and reads or alters any table
-  the database user can reach. Bind the term as a parameter, as `query` in
-  src/db.ts expects: `query<UserRow>("SELECT id, name FROM users WHERE name
-  LIKE $1 ORDER BY name LIMIT 50", ["%" + term + "%"])`, and add a test with
-  a term containing a quote.
-history:
-  - status: open
-    by: security
-```
-
-#### R-security-2 LIKE wildcards in the term are not escaped
-
-```yaml
-severity: low
-confidence: high
-location: "src/users.ts:10"
-evidence: |
-  WHERE name LIKE '%" + term + "%'
-recommendation: >-
-  Once the term is bound, `%` and `_` in it still act as wildcards, so
-  `q=%%` matches every user instead of names containing `%`. Escape `\`,
-  `%` and `_` in the term before wrapping it in `%…%` (with `ESCAPE '\'`).
+  CWE-89. Any account with the `support` role sends `GET /users/search?q=` with
+  a term such as `x' UNION SELECT id, password_hash FROM users --` (2 to 100
+  characters, only trimmed at src/server.ts:13-14) and reads any table the
+  database user can read; because `query` is called with no parameters, `pg`
+  uses the simple query protocol, so stacked statements such as
+  `x'; DROP TABLE users; --` run too. Bind the term as a parameter, as
+  `src/db.ts` documents ("values go in `params`, never in `sql`"):
+  `query<UserRow>("SELECT id, name FROM users WHERE name LIKE '%' || $1 || '%' ORDER BY name LIMIT 50", [term])`,
+  escaping `%`, `_` and `\` in the term if they must match literally, and add
+  a test that a term containing a quote returns no extra rows and no error.
 history:
   - status: open
     by: security

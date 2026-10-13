@@ -10,7 +10,7 @@ Lets scripts silence the CLI's progress output.
 
 #### Scenario: A quiet import
 
-- **WHEN** the user runs `ledger import --quiet data.csv` and the import succeeds
+- **WHEN** the user runs `ledger import --quiet data.csv` on a file of 2 500 rows, and the import succeeds
 - **THEN** no progress line is printed and the exit code is 0
 
 #### Scenario: A quiet import that fails

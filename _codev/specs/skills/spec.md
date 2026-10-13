@@ -745,11 +745,13 @@ code), the scope (anything nobody asked for, an obvious case missing), the
 specs (error and edge cases, each requirement verifiable), the decisions
 (a silent contradiction with a decision in effect), the assumptions (the
 one that would bring the plan down if wrong) and the tasks (each one
-verifiable). It MUST also apply, only when the proposal's Impact touches
-them, the lenses security & privacy, compatibility & migration,
-operability, performance, and accessibility & UX, as well as the project's
-`rules:` received through `codev instructions`. An expert asks whether
-the design addresses its domain.
+verifiable), the domains (every domain the plan touches is ticked in the
+proposal's `## Domains`, so that its expert reviews it), as well as the
+project's `rules:` received through `codev instructions`. The `skeptic`
+challenges the plan's logic and evidence; it MUST NOT review a domain
+itself — security, privacy, compatibility and migration, operations,
+performance, accessibility — which belongs to the expert that domain
+activates. An expert asks whether the design addresses its domain.
 
 Each finding MUST be written to the change's review record under
 `## plan.challenge`, then answered as the review record's answer loop
@@ -803,11 +805,21 @@ by configuration instead of listing points.
 - **AND** lists no invented point
 - **AND** each role's section of the record says `No finding.`
 
-#### Scenario: A conditional lens outside the Impact is not applied
+#### Scenario: The skeptic leaves a domain to its expert
 
-- **GIVEN** a plan whose Impact touches no user interface
+- **GIVEN** a plan whose proposal ticks `operations`, and whose design
+  calls a new provider without stating a timeout
 - **WHEN** the contrarian pass runs
-- **THEN** no accessibility & UX point is raised
+- **THEN** the missing timeout is not a finding of the `skeptic`
+- **AND** the `skeptic`'s criteria name the domains as the experts' own
+
+#### Scenario: A touched domain left unticked
+
+- **GIVEN** a plan whose design stores a new e-mail field, and whose
+  proposal leaves `personal-data` unticked with no reason
+- **WHEN** the contrarian pass runs
+- **THEN** the `skeptic` records a finding at `proposal.md#Domains`
+  saying that the privacy expert will not review the plan
 
 #### Scenario: The pass does not add scope
 

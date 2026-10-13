@@ -2,8 +2,8 @@
   "format": 1,
   "case": "privacy-code-email-in-logs",
   "error": null,
-  "costUsd": 0.45885619999999994,
-  "durationMs": 34486,
+  "costUsd": 0.33149039999999996,
+  "durationMs": 31423,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,11 +14,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (E-mail address and display name written to the application log) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (E-mail address and display name written to application logs) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS when the user id suffices) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -42,13 +42,13 @@
         "id": "R-privacy-1",
         "line": 9,
         "location": "app/signup.py:14",
-        "recommendation": "Log only the opaque user id (`log.info(\"new signup id=%s\", user_id)`); logs are copied to aggregators and kept outside any erasure path (GDPR Art. 5(1)(c) data minimisation, Art. 32).",
+        "recommendation": "Log only the opaque id (`log.info(\"new signup id=%s\", user_id)`). As written, every sign-up copies the member's e-mail address and display name into the application logs, which have their own retention and access and are not reached by account erasure (GDPR Art. 5(1)(c) data minimisation, 5(1)(e) storage limitation, Art. 32).",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "E-mail address and display name written to the application log"
+        "title": "E-mail address and display name written to application logs"
       },
       {
         "awaiting": "author",
@@ -64,67 +64,19 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 23,
+        "line": 28,
         "location": "app/signup.py:15",
-        "recommendation": "Drop `email` from the event properties and send only `user_id` (or a pseudonymous id); counting sign-ups needs no e-mail address (GDPR Art. 5(1)(c), Art. 25).",
+        "recommendation": "Drop `email` from the event properties: the stated purpose (\"Sign-ups are counted in product analytics\") needs no e-mail address, and `user_id` already identifies the event. As written, each sign-up ships the member's e-mail address to the third-party processor at beacon.example.com, where account erasure does not reach it (GDPR Art. 5(1)(c), Art. 25, Art. 28). Also identify Beacon as a processor in the plan and state whether it transfers data outside the EEA (Chapter V).",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "E-mail address sent to the Beacon analytics SaaS when the user id suffices"
+        "title": "E-mail address sent to the Beacon analytics SaaS"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "BEACON_URL = \"https://beacon.example.com/v1/events\"\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-3",
-        "line": 37,
-        "location": "app/analytics.py:5",
-        "recommendation": "State in the proposal that Beacon is a new processor, confirm a data processing agreement exists and where it stores data (GDPR Art. 28, Chapter V if outside the EEA); a question for the team, not a code fix.",
-        "reported": false,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "New third-party processor Beacon is not identified in the plan"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "user_id = insert_user(email=email, display_name=display_name)\nlog.info(\"new signup email=%s name=%s id=%s\", email, display_name, user_id)\ntrack(\"signup\", {\"user_id\": user_id, \"email\": email})\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-4",
-        "line": 51,
-        "location": "app/signup.py:13-15",
-        "recommendation": "Define how long the member record is kept and how account deletion reaches it, the log lines and the Beacon events, backups included (GDPR Art. 5(1)(e), Art. 17).",
-        "reported": true,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "No retention or erasure defined for the new member data and its copies"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
         "evidence": "- [x] personal-data — collects e-mail addresses and display names\n",
         "history": [
           {
@@ -135,16 +87,16 @@
             "to": null
           }
         ],
-        "id": "R-privacy-5",
-        "line": 67,
+        "id": "R-privacy-3",
+        "line": 49,
         "location": "proposal.md#Domains",
-        "recommendation": "Ask the team to state in the proposal the purpose and lawful basis for the e-mail address, the display name and the analytics event (GDPR Art. 5(1)(b), Art. 6), and whether the display name is needed at sign-up.",
-        "reported": true,
+        "recommendation": "Question for the team: state the purpose and lawful basis for collecting the e-mail address and display name, their retention period (backups included), and how erasure and access reach the member row and the copies this change creates (logs, Beacon events). Only the controller can decide this; the proposal is silent (GDPR Art. 5(1)(e), Art. 6, Art. 15–20).",
+        "reported": false,
         "role": "privacy",
-        "severity": "low",
+        "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Purpose and lawful basis of the collected data are not stated"
+        "title": "No retention, erasure or lawful basis stated for the collected member data"
       }
     ],
     "format": 1,

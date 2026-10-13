@@ -6,7 +6,7 @@
 
 ### skeptic
 
-#### R-skeptic-1 The merge rests on "one e-mail = one person", which the design itself refutes
+#### R-skeptic-1 The merge rests on "one e-mail = one person", which the design's own context contradicts
 
 ```yaml
 severity: high
@@ -15,13 +15,22 @@ location: "design.md#Decision: Customers are merged by e-mail"
 evidence: |
   Since an e-mail address identifies exactly one person, the job groups
   customers by lower-cased e-mail, keeps the oldest record of each group,
-recommendation: Drop or qualify the assumption. The Context of the same design states that several business buyers share `orders@acme.example`, each with their own customer record and billing address; grouping on e-mail alone would fold those distinct buyers into one record and attach their orders to the wrong person. Choose a key that separates them (e.g. e-mail plus name/billing address, or guest-only records), or restrict the job to guest records, and add a spec scenario for the shared mailbox.
+  moves the others' orders to it and deletes the others.
+recommendation: >-
+  The Context of the same design states the opposite: "Business customers often
+  share a purchasing mailbox (`orders@acme.example`) between several buyers, each
+  with their own customer record and billing address." Run as written, the job
+  folds every buyer of such a company into the oldest one: their orders move to
+  another person's record and their own name and billing address are deleted.
+  Drop or qualify the assumption — e.g. merge only records whose e-mail AND
+  name/billing address match, or exclude shared mailboxes — and add a spec
+  scenario for "same e-mail, different buyers" stating that they are NOT merged.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 Records are deleted with no rollback, dry run or audit trail
+#### R-skeptic-2 Records are deleted with no way back
 
 ```yaml
 severity: high
@@ -29,7 +38,12 @@ confidence: high
 location: "design.md#Decision: Customers are merged by e-mail"
 evidence: |
   moves the others' orders to it and deletes the others.
-recommendation: The nightly job is a one-way door on customer data. Plan a way back before it runs unattended — a dry-run mode or report, a log of every merge (kept id, removed ids, moved order ids, removed field values), soft deletion or a backup — and a staged rollout, with a task and test for each.
+recommendation: >-
+  Deleting the duplicates is irreversible, and the plan gives no rollback,
+  backup, audit trail of which order belonged to which record, or staged
+  rollout (e.g. a dry-run report first). A wrong merge — see R-skeptic-1 — cannot
+  be undone. Keep a mapping (old id → kept id, with the deleted row's data) or
+  soft-delete, and add a dry-run task before the first real run.
 history:
   - status: open
     by: skeptic
@@ -43,42 +57,58 @@ confidence: high
 location: "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged"
 evidence: |
   A nightly job SHALL merge customer records that share an e-mail address into the oldest one, moving their orders to it.
-recommendation: Add scenarios for the cases that decide correctness — a shared business mailbox with different names and billing addresses, e-mails differing only by case or surrounding whitespace (the design lower-cases, the spec says nothing), records with equal `created_at`, and a checkout inserting a customer while the job runs — and state the expected outcome of each.
+recommendation: >-
+  The only scenarios are "Two records, one e-mail" and "No duplicate". Nothing
+  says whether `Ada@Example.org` and `ada@example.org` "share an e-mail address"
+  (the design lower-cases, the spec does not say), which record wins on equal
+  `created_at`, or what happens to a guest checkout inserting a customer or an
+  order for a record while the job is merging it. Add scenarios for case
+  differences, ties and a concurrent checkout.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-4 What happens to the merged records' name and billing address is unspecified
+#### R-skeptic-4 Domains the plan touches are left unticked without a reason
 
 ```yaml
 severity: medium
 confidence: high
-location: "design.md#Decision: Customers are merged by e-mail"
+location: "proposal.md#Domains"
 evidence: |
-  customers by lower-cased e-mail, keeps the oldest record of each group,
-  moves the others' orders to it and deletes the others.
-recommendation: Only orders are moved; each `customers` row also holds `name` and `billing_address` (app/schema.sql:4-5), so keeping the oldest record discards the most recent billing details, and every order is then attached to an old address. Say which values survive (oldest, newest, kept as history) and how this personal data is handled; with the personal-data domain ticked and the privacy role disabled by `change.yaml`, no other reviewer checks this.
+  - [ ] operations
+  - [ ] migration
+recommendation: >-
+  The plan adds a scheduled nightly job ("A nightly job merges customers that
+  share an e-mail address.") and rewrites existing production data
+  (`orders.customer_id`, deletions in `customers`), yet operations and migration
+  are unticked with no reason, so neither expert reviews it. Tick them, or give
+  the reason on each line.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-5 The cause of the duplicates stays in place, and the simpler fix is not weighed
+#### R-skeptic-5 The Why names the cause, but the plan only cleans up after it
 
 ```yaml
 severity: low
 confidence: high
-location: "design.md#Decision: Customers are merged by e-mail"
+location: "proposal.md#Why"
 evidence: |
-  **Alternatives considered**: matching on name and address (fuzzy).
-recommendation: "guest_checkout inserts a new customer on every order (app/checkout.py:7-11), so duplicates keep reappearing between runs. Consider, or explicitly reject with a reason, reusing an existing guest record at checkout; the only alternative listed also gives no reason for its rejection."
+  Guest checkouts create a new customer each time; support sees five records for one person.
+recommendation: >-
+  `app/checkout.py` `guest_checkout` inserts a new customer on every call. The
+  plan leaves that untouched, so duplicates keep appearing and support still sees
+  them until the next nightly run. Weigh reusing an existing record at checkout
+  (with the same identity rule as R-skeptic-1), or state why the nightly job alone
+  is preferred.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-6 A single task with only the two happy-path tests
+#### R-skeptic-6 No task makes the job run nightly
 
 ```yaml
 severity: low
@@ -86,7 +116,10 @@ confidence: high
 location: "tasks.md#1. Merge"
 evidence: |
   - [ ] 1.1 Nightly merge job, verified by tests "Two records, one e-mail" and "No duplicate"
-recommendation: Split the job (grouping, order move, deletion, scheduling) into tasks that each fit one session, and verify each edge case and the rollback path with its own test once the spec gains those scenarios.
+recommendation: >-
+  The tests verify the merge logic, not that the job is scheduled; the Impact
+  lists only `jobs/merge_customers.py (new)`. Add a task, with an observable done
+  state, that wires the job to the scheduler.
 history:
   - status: open
     by: skeptic

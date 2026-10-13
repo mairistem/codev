@@ -2,8 +2,8 @@
   "format": 1,
   "case": "migration-code-serde-rename-all",
   "error": null,
-  "costUsd": 0.403978,
-  "durationMs": 40533,
+  "costUsd": 0.3056384,
+  "durationMs": 21983,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,11 +14,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (`rename_all = \"camelCase\"` renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-migration-2 (`default_currency` is a required key: existing `config.toml` files no longer load) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (`rename_all = \"camelCase\"` renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,14 +37,14 @@
         ],
         "id": "R-migration-1",
         "line": 9,
-        "location": "src/api.rs:5-13",
-        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so the existing keys stay `order_id`, `customer_id` and `total_cents`; only `currency` is added. If camelCase is wanted, ship it as a separate change marked BREAKING, emitting both spellings for the two releases of deprecation that docs/api.md promises.",
+        "location": "src/api.rs:5-12",
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `GET /orders/{id}` keeps emitting `order_id`, `customer_id` and `total_cents` (the new `currency` field is unaffected either way). Today a partner integration reading `order_id` gets no such field after the deploy and breaks without warning; docs/api.md promises a field is never renamed without two releases of deprecation, and the proposal's release note announces only an addition, with no BREAKING item. If camelCase is really wanted, it needs its own change: emit both names during the deprecation window, mark it BREAKING and announce it.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "`rename_all = \"camelCase\"` renames every existing field of the public order JSON"
+        "title": "`rename_all = \"camelCase\"` renames every existing order JSON field"
       },
       {
         "awaiting": "author",
@@ -64,87 +60,15 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 30,
+        "line": 37,
         "location": "src/config.rs:9-10",
-        "recommendation": "Add `#[serde(default = \"...\")]` returning \"EUR\" (the currency used until now) so existing deployments keep starting, and add a test that loads a config without the key. Otherwise mark the change BREAKING and tell operators in the release note to add the key before upgrading.",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "`default_currency` is a required key: existing `config.toml` files no longer load"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- Added: Orders carry their `currency`.\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-3",
-        "line": 47,
-        "location": "proposal.md#Release note",
-        "recommendation": "Once R-migration-1 and R-migration-2 are settled, list each remaining breaking change as **BREAKING** with what partners and operators must do. Also add a line for the new `default_currency` configuration key and its default.",
+        "recommendation": "Add `#[serde(default = ...)]` returning \"EUR\" (the currency the shop sold in before this change) so a deployed `config.toml` holding only `database_url` and `listen` keeps loading; today `load` returns a `missing field default_currency` error and the service fails at start-up after the upgrade. Otherwise document the required new key as a manual upgrade step in the release note. Add a test loading the old two-key config.",
         "reported": true,
         "role": "migration",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Release note announces neither the breaking changes nor the new configuration key"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [x] 1.2 `default_currency` in `src/config.rs` and `config.example.toml`, verified by starting the service on staging\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-4",
-        "line": 61,
-        "location": "tasks.md#1. Implementation",
-        "recommendation": "Add tests that (a) load a config.toml without `default_currency`, and (b) serialize an `OrderResponse` and assert the exact JSON keys (`order_id`, `customer_id`, `total_cents`, `currency`, `status`), so a rename is caught.",
-        "reported": true,
-        "role": "migration",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "No test covers the migration path for old configuration files or API consumers"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "pub struct DailySales {\n    pub day: String,\n    pub order_count: u32,\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-5",
-        "line": 77,
-        "location": "src/report.rs:3-7",
-        "recommendation": "If any crate depends on `orders` as a library, keep `#[deprecated] pub type SalesRow = DailySales;` for one release and note the rename. Otherwise no action is needed.",
-        "reported": false,
-        "role": "migration",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Public `report::SalesRow` and its field `count` renamed with no deprecation"
+        "title": "Existing `config.toml` files without `default_currency` no longer load"
       }
     ],
     "format": 1,
@@ -170,10 +94,6 @@
           {
             "role": "migration",
             "state": "findings"
-          },
-          {
-            "role": "newcomer",
-            "state": "disabled"
           }
         ],
         "step": "code.review"

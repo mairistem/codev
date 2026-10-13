@@ -3,4 +3,4 @@ step: code.review
 change: add-mail-worker
 stacks: ["rust"]
 kind: control
-summary: "A worker with a send timeout, growing retry delays, a dead-letter queue, structured logs and a clean stop on SIGTERM; nothing to find."
+summary: "A worker with a send timeout, growing retry delays bounded by a dead-letter queue, a heartbeat and counters for the health endpoint, structured logs and a clean stop on SIGTERM; nothing to find."
