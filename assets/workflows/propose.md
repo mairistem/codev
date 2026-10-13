@@ -23,10 +23,10 @@ codev roles --at <step> --change "<name>" --json
 
 Without `--change` for `plan.understand`: the change does not exist yet.
 Apply every criterion of every role returned (`roles[].doneWhen`), the
-project's included, using the role's `knowledge` when it has one — of its
-`By stack` part, only the project's languages. If `roles` is empty, the
-role is disabled by configuration: skip the step, and say so in the
-summary.
+project's included, using the role's `knowledge` when it has one. Its
+`By stack` part comes already filtered to the project's languages
+(`stacks`): use it as served. If `roles` is empty, the role is disabled by
+configuration: skip the step, and say so in the summary.
 
 ## Steps
 
@@ -180,6 +180,17 @@ And for multiple tickets, add a second line right after:
 > other ticket(s) mentioned: <ID2>, <ID3>
 ```
 
+**Special case: the proposal's `## Domains`.** Before writing it, run
+`codev roles --change "<name>" --json` and read `diff` and `suggestions`:
+each suggestion is a domain a trigger of the change's diff points to —
+a path, a dependency manifest or an added line, listed in its `matches`.
+For each one, either tick the domain, or, when the match does not mean
+the change touches it, keep it unticked with the reason on its line:
+`- [ ] <domain> — <reason>`. Never leave a suggestion `unticked`
+silently. When `diff.available` is `false`, or the diff holds only
+planning files, say there is no diff to go by and tick by judgement
+alone; the review, once the code exists, checks again.
+
 **e. Announce briefly**: "Created: `<artifact-id>`".
 
 ### 5. Loop until the required set is complete
@@ -218,6 +229,11 @@ Re-read the artifacts as reviewers who did not write them: every role
 returned — the skeptic, and the experts the proposal's `## Domains`
 activates — each along its criteria and knowledge. An expert asks whether
 the design addresses its domain. Here `<step>` is `plan.challenge`.
+
+The skeptic also reads `suggestions` from the roles of this step: every
+suggestion whose `state` is `unticked` is a finding located at
+`proposal.md#Domains`, and every `justified` one is checked — does its
+reason answer the files and lines in its `matches`?
 
 {{REVIEW_RECORD}}
 

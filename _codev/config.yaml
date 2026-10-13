@@ -78,6 +78,14 @@ rules:
       cargo clippy --workspace --all-targets -- -D warnings, and
       cargo test --workspace, all passing.
 
+# Paths only this repository knows to be sensitive: the JSON contract is a
+# public API consumed by already installed skills, so a change to it
+# suggests the migration expert.
+triggers:
+  - domain: migration
+    paths:
+      - crates/codev-cli/src/contract.rs
+
 # `codev changelog`: archived changes already described by hand in
 # CHANGELOG.md's [Unreleased] section, written before release notes
 # existed. Once v0.5.0 is tagged they fall out of range and this list can be

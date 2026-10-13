@@ -19,6 +19,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - A schema artifact may declare its role as data (`role:` with id, name, question and "done when" criteria).
 - `codev doctor` lists the active and disabled roles.
 - `/codev-apply` reviews the code a change touched as a newcomer would, simplifies what is unambiguous without changing behavior, and reports up to three readability notes in its summary.
+- Experts carry triggers — file paths, dependency manifests and code patterns — and `codev roles --change` reports the domains the change's diff suggests; `codev validate` warns (`domain_suggested`) when a suggested domain is neither ticked nor kept unticked with a reason on its line (`- [ ] security — reason`).
+- A `triggers:` key in `_codev/config.yaml` adds the project's own sensitive paths and patterns. An earlier codev ignores it with an `unknown_config_key` warning, which fails its `codev validate --strict`: raise `codev_version` to this release when you add it.
 - Each change keeps a review record, `review.md`, where the roles write their findings with a severity, a confidence, a location and the quoted evidence, and where every answer — fixed, disputed, accepted risk, deferred, rejected — is recorded with who decided it. `codev review` shows it and what is left to decide.
 - `codev validate` checks the review record: its format, that each cited file and line exists and that the quoted evidence is really there.
 
@@ -30,6 +32,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `codev doctor` names the roles activated by domain.
 - The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `codev instructions`, and `/codev-propose` and `/codev-apply` take their review criteria from `codev roles`.
 - The architect's criteria of the default schema require the simplest approach that satisfies the specs, and a design a newcomer can follow without knowing its history.
+- The `By stack` part of a role's knowledge keeps only the languages detected in the project; `codev roles --all-stacks` serves every language.
+- `/codev-propose` ticks or justifies each suggested domain, and `/codev-apply` asks you to decide a suggested domain still unticked. Since `domain_suggested` is a warning, `codev validate --strict` fails until each suggestion is ticked or justified.
 - `/codev-propose` and `/codev-apply` write their findings into the review record, let the author answer each one and the reviewer re-check it, and ask you to decide what is still disputed.
 <!-- codev:end -->
 

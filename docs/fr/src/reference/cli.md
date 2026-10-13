@@ -725,7 +725,7 @@ Chaque constat porte un code stable. Voir
 ```text
 List the roles active at a workflow step, with their criteria
 
-With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts.
+With `--at`, the roles active at that step and their "done when" criteria, each with its origin (`built-in`, `schema:<name>`, `project`). Without it, every role with its activation. The roles come from codev's built-in catalog and the schema in use, with the project's `roles:` applied, and, with `--change`, the change's `change.yaml` and the domains its proposal ticks, which activate the experts. With `--change`, also the change's diff since the default branch and the domains its experts' triggers suggest. The `By stack` part of the knowledge keeps the languages detected in the project.
 
 Usage: codev roles [OPTIONS]
 
@@ -738,6 +738,9 @@ Options:
 
       --knowledge
           Also print each role's knowledge (always in the JSON, for active roles)
+
+      --all-stacks
+          Serve the knowledge's `By stack` part for every language, not only the languages detected in the project
 
       --json
 
@@ -753,9 +756,22 @@ question et ses critères « Done when » précédés de leur origine ; sans
 activation — `never (project)` lorsque votre configuration le désactive,
 `on_domain: <domaine>` pour un expert, `cannot be disabled` pour les rôles
 d'artefact, l'`analyst` et le `developer`. `--knowledge` affiche aussi les
-connaissances de chaque rôle après ses critères. Une étape dont tous les
-rôles sont inactifs affiche `No role is active at <step>: skip this step.`
-Elle n'écrit aucun fichier.
+connaissances de chaque rôle après ses critères, précédées d'une ligne qui
+nomme les langages pour lesquels leur partie `By stack` est filtrée. Une
+étape dont tous les rôles sont inactifs affiche
+`No role is active at <step>: skip this step.` Elle n'écrit aucun fichier.
+
+Avec `--change`, elle affiche d'abord le diff du change — la branche par
+défaut dont il part, les fichiers modifiés et lus, les fichiers écartés par
+catégorie — ou la raison de son absence, puis une ligne par
+[domaine suggéré](../roles.md#les-déclencheurs-et-les-domaines-suggérés) :
+son état (`ticked`, `justified`, `unticked`), son premier déclencheur avec
+sa source, et le fichier concerné. La lecture du diff n'exécute que des
+commandes git locales ; hors de git, elle le signale et poursuit.
+
+La partie `By stack` des connaissances garde les langages détectés à partir
+des manifestes de dépendances du projet ; `--all-stacks` sert tous les
+langages. Sans aucun manifeste, tout est servi.
 
 Sans `--change`, elle applique le schéma configuré du projet et son
 `roles:` ; contrairement aux autres commandes, elle ne déduit pas de change.

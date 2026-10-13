@@ -59,6 +59,10 @@ roles:
   skeptic:
     done_when:
       - The rollback plan is stated
+
+triggers:
+  - domain: personal-data
+    paths: ["src/billing/**"]
 ```
 
 ## schema
@@ -247,6 +251,45 @@ that cannot be disabled as `role_not_disableable` — errors of the
 key inside a role's mapping, such as a misspelled `done-when`, fails every
 command with `invalid`: ignoring it would drop criteria silently.
 
+## triggers
+
+Your project's own [triggers](../roles.md#triggers-and-suggested-domains):
+the paths and patterns only your team knows to be sensitive. Project only,
+never inherited. A list of groups, each naming the domain it suggests and
+holding at least one of `paths`, `manifests` or `patterns`:
+
+| Key | Meaning |
+|---|---|
+| `domain` | `security`, `personal-data`, `user-interface`, `performance`, `operations` or `migration` |
+| `paths` | Globs over the changed files, relative to the project root, ignoring case; `*` stays within a folder, `**` crosses folders |
+| `manifests` | File names of dependency manifests, matched at any depth |
+| `patterns` | Regular expressions over the lines the diff adds |
+
+```yaml
+triggers:
+  - domain: personal-data
+    paths: ["src/billing/**", "src/crm/**"]
+    patterns: ['\bcustomer_id\b']
+  - domain: migration
+    paths: [api/public.yaml]
+```
+
+Quote a glob that starts with `*`: in YAML, `*` starts an alias. Their
+matches have the source `project`, and they are evaluated whatever your
+`roles:` settings. Expressions run in linear time, whatever their shape,
+and their compiled size is capped.
+
+`codev validate` reports, at the line of `triggers:`, an `invalid_trigger`
+error for a group without a known `domain`, without any trigger, or with
+a glob or an expression that does not compile — the group is then ignored
+by every command, which says so in its `status` — and an `invalid_trigger`
+warning for a key it does not know, which is ignored while the rest of the
+group is used.
+
+codev 0.6 and earlier do not know this key: they warn
+`unknown_config_key`, which fails their `codev validate --strict`. When you
+add it, raise `codev_version` to the release that introduced it.
+
 ## Unknown keys
 
 A newer codev may add keys an older one does not know. So that an older codev
@@ -260,6 +303,7 @@ keys are treated according to what ignoring them would do:
 | an `inherits` entry | error `invalid` | ignoring it would read another source than the one you described |
 | `changelog` | error `invalid` | ignoring it would make `codev changelog --write` write another file |
 | a `roles` entry | error `invalid` | ignoring it would drop criteria or an activation |
+| a `triggers` group | warning `invalid_trigger` from `codev validate`, key ignored | the rest of the group still suggests its domain |
 
 The warning names the key, says the project may need a newer codev, quotes
 `codev_version` when the file sets it, and points to `codev self-update`; the

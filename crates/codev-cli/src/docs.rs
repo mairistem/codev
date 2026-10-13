@@ -431,6 +431,49 @@ mod tests {
         }
     }
 
+    /// What a language's `roles.md` and `reference/configuration.md` fail
+    /// to document about triggers and the stack filter.
+    fn missing_trigger_docs(roles: &str, configuration: &str) -> Vec<String> {
+        let mut missing: Vec<String> = [
+            "`paths`",
+            "`manifests`",
+            "`patterns`",
+            "`domain_suggested`",
+            "--all-stacks",
+        ]
+        .into_iter()
+        .filter(|needle| !roles.contains(needle))
+        .map(|needle| format!("roles.md: {needle}"))
+        .collect();
+        if !configuration
+            .lines()
+            .any(|line| line.trim_end() == "## triggers")
+        {
+            missing.push("reference/configuration.md: a `## triggers` section".into());
+        }
+        missing
+    }
+
+    #[test]
+    fn roles_chapters_document_triggers_and_the_stack_filter() {
+        for lang in [Lang::En, Lang::Fr] {
+            let configuration = lang
+                .chapters()
+                .iter()
+                .find(|(path, _)| *path == "reference/configuration.md")
+                .map(|(_, source)| *source)
+                .expect("a configuration chapter");
+            let missing = missing_trigger_docs(roles_chapter(lang), configuration);
+            assert!(missing.is_empty(), "{lang:?}: missing {missing:?}");
+        }
+        // A chapter that forgets the flag is caught, and named.
+        let french = roles_chapter(Lang::Fr).replace("--all-stacks", "--toutes");
+        assert_eq!(
+            missing_trigger_docs(&french, "## triggers\n"),
+            ["roles.md: --all-stacks"]
+        );
+    }
+
     #[test]
     fn roles_chapters_carry_the_review_scales() {
         use codev_core::review::{Confidence, Severity};

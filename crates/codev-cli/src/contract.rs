@@ -638,8 +638,118 @@ pub struct RolesV1 {
     /// The step asked with `--at`; `null` lists every role.
     pub at: Option<String>,
     pub language: String,
+    /// The languages the knowledge is filtered for. Additive in v1;
+    /// `null` only in a failure's document.
+    pub stacks: Option<StacksV1>,
+    /// With `--change`, the change's diff; `null` otherwise. Additive in
+    /// v1.
+    pub diff: Option<DiffV1>,
+    /// With `--change`, the domains the diff suggests, in the order of the
+    /// domains list; empty otherwise. Additive in v1.
+    pub suggestions: Vec<SuggestionV1>,
     pub roles: Vec<RoleV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// The project's languages, as `codev roles` filters the knowledge for
+/// them.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StacksV1 {
+    /// `Rust`, `TypeScript`, `JavaScript`, `Python`, `Go`, `Java`, in that
+    /// order.
+    pub detected: Vec<&'static str>,
+    /// `detected`, `none-detected` or `all-stacks`.
+    pub filter: &'static str,
+}
+
+/// The change's diff, as the triggers read it.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiffV1 {
+    pub available: bool,
+    /// Why there is no diff; `null` when there is one.
+    pub reason: Option<String>,
+    /// The default branch the diff starts from; `null` without a diff.
+    pub base: Option<String>,
+    /// Every changed file in the project directory.
+    pub files: usize,
+    /// The files whose added lines the patterns read.
+    pub scanned: usize,
+    /// The files skipped per category (`planning`, `vendored`, `lockfile`,
+    /// `generated`, `binary`, `prose`, `large`), only those met.
+    pub skipped: std::collections::BTreeMap<&'static str, usize>,
+    /// A cap on files or bytes was reached.
+    pub truncated: bool,
+}
+
+/// A domain the change's diff suggests.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuggestionV1 {
+    pub domain: String,
+    /// `ticked`, `justified` or `unticked`.
+    pub state: &'static str,
+    /// The reason on the unticked line; `null` unless `justified`.
+    pub justification: Option<String>,
+    pub match_count: usize,
+    /// At most five, in path then line order.
+    pub matches: Vec<TriggerMatchV1>,
+}
+
+/// A trigger that matched the diff.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TriggerMatchV1 {
+    /// The role whose trigger it is, or `project`.
+    pub source: String,
+    /// `paths`, `manifests` or `patterns`.
+    pub kind: &'static str,
+    /// The glob, file name or expression, as written.
+    pub trigger: String,
+    pub path: String,
+    /// The added line, for a pattern; `null` otherwise.
+    pub line: Option<u32>,
+}
+
+/// The most matches a suggestion lists.
+const SUGGESTION_MATCHES: usize = 5;
+
+impl From<&codev_engine::suggest::DiffSummary> for DiffV1 {
+    fn from(diff: &codev_engine::suggest::DiffSummary) -> Self {
+        Self {
+            available: diff.available,
+            reason: diff.reason.clone(),
+            base: diff.base.clone(),
+            files: diff.files,
+            scanned: diff.scanned,
+            skipped: diff.skipped.clone(),
+            truncated: diff.truncated,
+        }
+    }
+}
+
+impl From<&codev_core::triggers::Suggestion> for SuggestionV1 {
+    fn from(suggestion: &codev_core::triggers::Suggestion) -> Self {
+        Self {
+            domain: suggestion.domain.clone(),
+            state: suggestion.state.as_str(),
+            justification: suggestion.justification.clone(),
+            match_count: suggestion.matches.len(),
+            matches: suggestion
+                .matches
+                .iter()
+                .take(SUGGESTION_MATCHES)
+                .map(|m| TriggerMatchV1 {
+                    source: m.source.clone(),
+                    kind: m.kind.as_str(),
+                    trigger: m.trigger.clone(),
+                    path: m.path.clone(),
+                    line: m.line,
+                })
+                .collect(),
+        }
+    }
 }
 
 impl From<&crate::commands::RolesOutcome> for RolesV1 {
@@ -649,6 +759,19 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
             schema_name: Some(outcome.schema_name.clone()),
             at: outcome.at.clone(),
             language: outcome.language.clone(),
+            stacks: Some(StacksV1 {
+                detected: outcome.stacks.detected.clone(),
+                filter: outcome.stacks.filter.as_str(),
+            }),
+            diff: outcome
+                .suggestions
+                .as_ref()
+                .map(|found| DiffV1::from(&found.diff)),
+            suggestions: outcome
+                .suggestions
+                .iter()
+                .flat_map(|found| found.suggestions.iter().map(SuggestionV1::from))
+                .collect(),
             roles: outcome
                 .roles
                 .iter()
@@ -1559,6 +1682,87 @@ apply:
         assert_eq!(json["archive"]["ready"], true);
     }
 
+    /// A suggestion for `security` with `count` path matches.
+    fn security_suggestions(count: usize) -> codev_engine::suggest::Suggestions {
+        use codev_core::triggers::{Kind, Match, State, Suggestion};
+        codev_engine::suggest::Suggestions {
+            diff: codev_engine::suggest::DiffSummary {
+                available: true,
+                reason: None,
+                base: Some("origin/main".into()),
+                files: 9,
+                scanned: 7,
+                skipped: [("lockfile", 1), ("binary", 1)].into_iter().collect(),
+                truncated: false,
+            },
+            suggestions: vec![Suggestion {
+                domain: "security".into(),
+                state: State::Justified,
+                justification: Some("only renames a variable".into()),
+                line: Some(12),
+                matches: (0..count)
+                    .map(|n| Match {
+                        path: format!("src/auth/f{n}.rs"),
+                        line: None,
+                        domain: "security".into(),
+                        source: "security".into(),
+                        kind: Kind::Paths,
+                        trigger: "**/auth/**".into(),
+                    })
+                    .collect(),
+            }],
+            warnings: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn roles_document_exposes_stacks_diff_and_suggestions() {
+        let outcome = crate::commands::RolesOutcome {
+            change: Some(ChangeId::parse("add-auth").unwrap()),
+            schema_name: "spec-driven".into(),
+            at: None,
+            language: "en".into(),
+            roles: Vec::new(),
+            knowledge: false,
+            stacks: crate::commands::Stacks {
+                detected: vec!["Rust", "Go"],
+                filter: crate::commands::StackFilter::Detected,
+            },
+            suggestions: Some(security_suggestions(7)),
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
+        assert_eq!(
+            json["stacks"],
+            serde_json::json!({ "detected": ["Rust", "Go"], "filter": "detected" })
+        );
+        assert_eq!(
+            json["diff"],
+            serde_json::json!({
+                "available": true, "reason": null, "base": "origin/main",
+                "files": 9, "scanned": 7,
+                "skipped": { "binary": 1, "lockfile": 1 }, "truncated": false
+            })
+        );
+        let suggestion = &json["suggestions"][0];
+        assert_eq!(suggestion["domain"], "security");
+        assert_eq!(suggestion["state"], "justified");
+        assert_eq!(suggestion["justification"], "only renames a variable");
+        assert_eq!(suggestion["matchCount"], 7);
+        assert_eq!(
+            suggestion["matches"].as_array().unwrap().len(),
+            5,
+            "at most five"
+        );
+        assert_eq!(
+            suggestion["matches"][0],
+            serde_json::json!({
+                "source": "security", "kind": "paths", "trigger": "**/auth/**",
+                "path": "src/auth/f0.rs", "line": null
+            })
+        );
+    }
+
     #[test]
     fn roles_document_exposes_the_contract_fields() {
         let outcome = crate::commands::RolesOutcome {
@@ -1568,6 +1772,8 @@ apply:
             language: "fr".into(),
             roles: vec![skeptic_with_a_project_criterion()],
             knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: None,
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
@@ -1576,11 +1782,15 @@ apply:
             "schemaName",
             "at",
             "language",
+            "stacks",
+            "diff",
+            "suggestions",
             "roles",
             "status",
         ] {
             assert!(json.get(field).is_some(), "missing `{field}`");
         }
+        assert!(json["diff"].is_null(), "no suggestions computed, no diff");
         let role = &json["roles"][0];
         for field in [
             "id",

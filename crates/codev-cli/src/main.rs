@@ -251,7 +251,9 @@ enum Command {
     /// come from codev's built-in catalog and the schema in use, with the
     /// project's `roles:` applied, and, with `--change`, the change's
     /// `change.yaml` and the domains its proposal ticks, which activate the
-    /// experts.
+    /// experts. With `--change`, also the change's diff since the default
+    /// branch and the domains its experts' triggers suggest. The `By stack`
+    /// part of the knowledge keeps the languages detected in the project.
     Roles {
         /// The workflow step: plan.understand, plan.investigate,
         /// plan.write, plan.trace, plan.challenge, code.implement or
@@ -265,6 +267,10 @@ enum Command {
         /// roles)
         #[arg(long)]
         knowledge: bool,
+        /// Serve the knowledge's `By stack` part for every language, not
+        /// only the languages detected in the project
+        #[arg(long)]
+        all_stacks: bool,
         #[arg(long)]
         json: bool,
     },
@@ -826,8 +832,15 @@ fn run(cli: Cli) -> i32 {
             at,
             change,
             knowledge,
+            all_stacks,
             json,
-        } => match commands::roles(&ctx, at.as_deref(), change.as_deref(), knowledge) {
+        } => match commands::roles(
+            &ctx,
+            at.as_deref(),
+            change.as_deref(),
+            knowledge,
+            all_stacks,
+        ) {
             Ok(outcome) => {
                 emit(json, RolesV1::from(&outcome), || render::roles(&outcome));
                 if !json {
@@ -1447,6 +1460,9 @@ fn roles_shape(language: &str) -> serde_json::Value {
         "schemaName": null,
         "at": null,
         "language": language,
+        "stacks": null,
+        "diff": null,
+        "suggestions": [],
         "roles": [],
     })
 }
@@ -1569,6 +1585,31 @@ mod parsing_tests {
             Cli::try_parse_from(["codev", "self-update", "--snooze", "--version", "1.0.0"])
                 .is_err()
         );
+    }
+}
+
+#[cfg(test)]
+mod roles_tests {
+    #[test]
+    fn roles_failure_keeps_the_shape() {
+        let json = crate::contract::failure(super::roles_shape("en"), "unknown_step", "no step");
+        assert_eq!(json["roles"], serde_json::json!([]));
+        assert_eq!(json["suggestions"], serde_json::json!([]));
+        assert!(json["stacks"].is_null() && json["diff"].is_null());
+        assert_eq!(json["status"][0]["code"], "unknown_step");
+    }
+
+    #[test]
+    fn roles_all_stacks_parses() {
+        use clap::Parser;
+        let cli = super::Cli::try_parse_from(["codev", "roles", "--all-stacks", "--json"]).unwrap();
+        let super::Command::Roles {
+            all_stacks, json, ..
+        } = cli.command
+        else {
+            panic!("expected `roles`");
+        };
+        assert!(all_stacks && json);
     }
 }
 

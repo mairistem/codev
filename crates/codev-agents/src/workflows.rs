@@ -642,7 +642,7 @@ mod tests {
         let propose = find("propose").unwrap().body;
         let roles = flat(section(propose, "## Roles", "## Steps"));
         assert!(roles.contains("using the role's `knowledge` when it has one"));
-        assert!(roles.contains("only the project's languages"));
+        assert!(roles.contains("comes already filtered to the project's languages"));
         let challenge = flat(section(propose, "### 7. Challenge the plan", "### 8."));
         for keyword in [
             "every role returned",
@@ -852,6 +852,57 @@ mod tests {
                 "{}",
                 workflow.id
             );
+        }
+    }
+
+    #[test]
+    fn propose_and_apply_act_on_suggested_domains() {
+        let propose = flat(&rendered("propose"));
+        let write = section(&propose, "### 4. Create each artifact", "### 5.");
+        for keyword in [
+            "**Special case: the proposal's `## Domains`.**",
+            "`codev roles --change \"<name>\" --json`",
+            "`suggestions`",
+            "`- [ ] <domain> — <reason>`",
+            "Never leave a suggestion `unticked` silently",
+            "`diff.available` is `false`",
+            "tick by judgement alone",
+        ] {
+            assert!(
+                write.contains(keyword),
+                "the proposal step lacks `{keyword}`"
+            );
+        }
+        let challenge = section(&propose, "### 7. Challenge the plan", "### 8.");
+        for keyword in [
+            "`unticked` is a finding",
+            "`proposal.md#Domains`",
+            "every `justified` one is checked",
+        ] {
+            assert!(
+                challenge.contains(keyword),
+                "the skeptic's check lacks `{keyword}`"
+            );
+        }
+        let apply = flat(&rendered("apply"));
+        let review = section(&apply, "### 5. Review the change", "### 6.");
+        for keyword in [
+            "`suggestions`",
+            "`unticked` goes under **To decide**",
+            "ask for the roles of the step again",
+            "Do not edit the proposal yourself",
+        ] {
+            assert!(review.contains(keyword), "the review lacks `{keyword}`");
+        }
+        assert!(apply.contains("the suggested domains still `unticked` included"));
+    }
+
+    #[test]
+    fn skills_do_not_filter_by_stack_themselves() {
+        for id in ["propose", "apply"] {
+            let body = flat(&rendered(id));
+            assert!(!body.contains("only the project's languages"), "{id}");
+            assert!(body.contains("use it as served"), "{id}");
         }
     }
 

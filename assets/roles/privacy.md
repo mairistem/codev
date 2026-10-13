@@ -12,6 +12,24 @@ done_when:
     and portability reach the new data
   - No personal data goes to logs, analytics, error trackers or URLs
   - Every new processor or transfer outside the EEA is identified
+# What suggests the change touches personal data: the models that usually
+# hold it, and the field names that name it. `address` alone is left out
+# (a socket has one); the qualified forms are kept.
+triggers:
+  - domain: personal-data
+    paths:
+      - '**/{user,users,customer,customers,profile,profiles,account,accounts,patient,patients,member,members}/**'
+      - '**/{user,customer,profile,account,patient,member,person}.*'
+      - '**/{user,customer,profile,account,patient,member,person}_model.*'
+    patterns:
+      - '(?i)\b(e[-_]?mail|email[-_]?address|phone|phone[-_]?number|mobile[-_]?number)\b'
+      - '(?i)\b(birth[-_]?date|date[-_]?of[-_]?birth|dob|birthday)\b'
+      - '(?i)\b(street|postal|home|billing|shipping)[-_ ]?address\b'
+      - '(?i)\b(postcode|post[-_]?code|zip[-_]?code)\b'
+      - '(?i)\b(ssn|social[-_]?security|national[-_]?id|passport[-_]?(number|no)?|iban|bic|tax[-_]?id)\b'
+      - '(?i)\b(first|last|full|given|family)[-_]?name\b'
+      - '(?i)\b(ip[-_]?address|remote[-_]?addr|geolocation|latitude|longitude|gps)\b'
+      - '(?i)\b(gender|ethnicity|religion|health|diagnosis)\b'
 ---
 
 ## Scope

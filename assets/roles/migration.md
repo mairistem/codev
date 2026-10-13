@@ -14,6 +14,25 @@ done_when:
   - Schema migrations are reversible, or the plan says why not and how to
     recover
   - What is removed is deprecated first when consumers need time
+# What suggests the change touches existing data, formats or consumers:
+# migrations, schemas, published API definitions, and the code that
+# renames or drops what others rely on.
+triggers:
+  - domain: migration
+    paths:
+      - '**/migrations/**'
+      - '**/migrate/**'
+      - '**/schemas/**'
+      - '**/schema.{rb,prisma,sql,graphql,json}'
+      - '**/*.{proto,graphql,gql,prisma,avsc}'
+      - '**/{openapi,swagger}*.{yml,yaml,json}'
+      - '**/*.d.ts'
+    patterns:
+      - '(?i)\b(ALTER|DROP)\s+(TABLE|COLUMN|INDEX)\b'
+      - '(?i)\bRENAME\s+(TABLE|COLUMN|TO)\b'
+      - '#\[serde\([^)]*\b(rename|alias|deny_unknown_fields)\b'
+      - '#\[deprecated\b|@Deprecated\b|DeprecationWarning|// Deprecated:'
+      - '\bBREAKING\b'
 ---
 
 ## Scope

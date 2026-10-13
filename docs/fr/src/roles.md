@@ -126,8 +126,8 @@ sections, toujours dans cet ordre :
 - **Signals** — des motifs concrets à repérer, chacun avec un exemple
   d'une ligne ;
 - **By stack** — les pièges en Rust, TypeScript/JavaScript, Python, Go et
-  Java ; l'agent applique la partie qui concerne les langages de votre
-  projet ;
+  Java ; codev sert la partie qui concerne les langages de votre projet
+  (voir [Filtre par stack](#les-déclencheurs-et-les-domaines-suggérés)) ;
 - **References** — les référentiels qui font autorité, comme l'OWASP
   Top 10, les WCAG 2.2, le RGAA 4 ou le RGPD ;
 - **Reporting** — comment signaler un constat, avec sa gravité.
@@ -137,6 +137,95 @@ des signaux de planification fragile ; les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
 `codev roles --at code.review --change <nom> --knowledge`.
+
+## Les déclencheurs et les domaines suggérés
+
+Cocher les domaines est un jugement porté pendant la planification, avant
+que le code existe. Pour qu'un domaine que le change finit par toucher ne
+soit pas oublié en silence, chaque expert porte des **déclencheurs** — des
+indices qu'un change touche son domaine — et codev les confronte au diff du
+change.
+
+**Trois sortes de déclencheurs**, en groupes qui nomment chacun le domaine
+qu'ils suggèrent :
+
+- `paths` — des globs sur les fichiers modifiés, relatifs à la racine du
+  projet, sans tenir compte de la casse : `**/auth/**`, `**/*.tsx`. `*`
+  reste dans un dossier, `**` traverse les dossiers ;
+- `manifests` — des noms de manifestes de dépendances, à toute
+  profondeur : `Cargo.toml`, `package.json`, `go.mod` ;
+- `patterns` — des expressions régulières sur les lignes que le diff
+  **ajoute** : `(?i)\b(ALTER|DROP)\s+(TABLE|COLUMN)\b`.
+
+| Expert | Ses déclencheurs, en résumé |
+|---|---|
+| `security` | dossiers `auth`, `security`, `crypto`, fichiers `.env`, clés ; chaque manifeste de dépendances ; noms d'identifiants secrets, `eval`, `innerHTML`, `pickle`, `shell=True`, `unsafe {` |
+| `privacy` | modèles `user`, `customer`, `profile`, `account` ; e-mail, téléphone, date de naissance, adresse postale, code postal, numéro de sécurité sociale, IBAN, adresse IP, géolocalisation |
+| `accessibility` | balisage, feuilles de style, composants, gabarits serveur ; `aria-*`, `role=`, `alt=`, éléments de formulaire et de média |
+| `performance` | `*.sql`, dossiers de requêtes et de dépôts, benchmarks ; requêtes SQL, `Promise.all`, `tokio::spawn`, caches, pagination |
+| `ops` | Dockerfiles, fichiers compose, workflows de CI, Kubernetes, Helm, Terraform, dossiers de déploiement, configuration des logs ; variables d'environnement, délais, nouvelles tentatives, sondes de santé, métriques |
+| `migration` | migrations, schémas, `*.proto`, `*.graphql`, OpenAPI, `*.d.ts` ; `ALTER`/`DROP`/`RENAME`, dépréciations, renommages `serde` |
+
+Les motifs intégrés privilégient la précision : `access_token` plutôt que
+`token` (un analyseur lexical a des tokens), `street_address` plutôt
+qu'`address` (une socket en a une). Ce qu'ils manquent pour votre projet,
+ajoutez-le avec [`triggers:`](reference/configuration.md#triggers) dans
+`_codev/config.yaml`.
+
+**Le diff.** codev demande à git, localement, ce que la branche a changé
+depuis qu'elle a quitté la branche par défaut — `origin/HEAD`, sinon
+`main`, sinon `master` —, commité ou non, plus les fichiers non suivis,
+dans le seul dossier du projet. Il ne contacte jamais de dépôt distant.
+Hors de git, sans commit ou sans branche par défaut — ou dans un clone
+superficiel de CI sans la base commune ; utilisez-y `fetch-depth: 0` —, il
+n'y a pas de diff : codev le dit et ne suggère rien, et aucune commande
+n'échoue pour autant.
+
+Certains fichiers échappent à tout déclencheur : le dossier de
+planification `_codev/` et les skills codev (`planning`), les dépendances
+embarquées — `node_modules`, `vendor`, `third_party` (`vendored`) —, les
+fichiers de verrouillage comme `Cargo.lock` ou `package-lock.json`
+(`lockfile`), et les fichiers générés comme `*.min.js` ou `*.pb.go`
+(`generated`). Les fichiers binaires, la prose (`.md`, `.txt`…) et les
+très gros fichiers ne sont confrontés que par leur chemin (`binary`,
+`prose`, `large`). L'analyse s'arrête à 2000 fichiers, 5000 lignes
+ajoutées par fichier, 1 Mio par fichier non suivi et 2 Mio de lignes
+ajoutées au total, et ignore les lignes de plus de 2000 caractères ; le
+diff indique alors qu'il a été tronqué.
+
+**Les suggestions.** `codev roles --change <nom>` présente le diff et
+chaque domaine suggéré avec son état :
+
+- `ticked` — la proposal le coche ;
+- `justified` — la proposal le laisse décoché avec une raison sur sa ligne ;
+- `unticked` — ni l'un ni l'autre : la proposal doit y répondre.
+
+```markdown
+## Domains
+
+- [x] security
+- [ ] personal-data — the fields matched are test fixtures
+```
+
+`codev validate` signale chaque suggestion `unticked` par l'avertissement
+`domain_suggested`, à la ligne du domaine, en nommant le déclencheur et le
+fichier concernés ; `codev validate --strict` échoue alors. `codev
+archive` et `codev doctor` ne lisent pas le diff. Le diff est celui de
+l'arbre de travail : deux changes actifs sur une même branche le
+partagent. Un rôle réglé sur `never` n'apporte aucune suggestion.
+
+`/codev-propose` lit les suggestions avant d'écrire `## Domains`, et le
+skeptic consigne un constat pour chacune restée `unticked`. Avant que le
+code existe, le diff est en général vide : c'est la revue qui tranche.
+`/codev-apply` liste chaque suggestion encore `unticked` sous **To
+decide** — cochez-la, et son expert relit le code, ou justifiez-la.
+
+**Filtre par stack.** codev détecte les langages de votre projet à partir
+de ses manifestes de dépendances — à la racine et jusqu'à trois dossiers
+en dessous, si bien qu'un monorepo obtient toutes ses stacks — et la
+partie `By stack` des connaissances qu'il sert ne garde que ces langages.
+`codev roles --json` les indique dans `stacks` ; sans aucun manifeste,
+tout est conservé. `codev roles --all-stacks` sert tous les langages.
 
 ## Gravité, confiance et compte rendu de revue
 

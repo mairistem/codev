@@ -436,6 +436,9 @@ pub(crate) mod tests {
         fn len(&self, path: &Path) -> std::io::Result<u64> {
             self.inner.len(path)
         }
+        fn is_regular_file(&self, path: &Path) -> bool {
+            self.inner.is_regular_file(path)
+        }
         fn write(&self, path: &Path, contents: &str) -> std::io::Result<()> {
             self.inner.write(path, contents)
         }

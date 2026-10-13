@@ -60,6 +60,10 @@ roles:
   skeptic:
     done_when:
       - Le plan de retour arrière est indiqué
+
+triggers:
+  - domain: personal-data
+    paths: ["src/billing/**"]
 ```
 
 ## schema
@@ -261,6 +265,48 @@ le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
 mal orthographié, fait échouer chaque commande avec `invalid` : l'ignorer
 ferait disparaître des critères sans bruit.
 
+## triggers
+
+Les [déclencheurs](../roles.md#les-déclencheurs-et-les-domaines-suggérés)
+propres à votre projet : les chemins et les motifs que seule votre équipe
+sait sensibles. Propre au projet, jamais hérité. Une liste de groupes, qui
+nomment chacun le domaine qu'ils suggèrent et contiennent au moins l'une
+des clés `paths`, `manifests` ou `patterns` :
+
+| Clé | Signification |
+|---|---|
+| `domain` | `security`, `personal-data`, `user-interface`, `performance`, `operations` ou `migration` |
+| `paths` | Globs sur les fichiers modifiés, relatifs à la racine du projet, sans tenir compte de la casse ; `*` reste dans un dossier, `**` traverse les dossiers |
+| `manifests` | Noms de fichiers de manifestes de dépendances, reconnus à toute profondeur |
+| `patterns` | Expressions régulières sur les lignes que le diff ajoute |
+
+```yaml
+triggers:
+  - domain: personal-data
+    paths: ["src/billing/**", "src/crm/**"]
+    patterns: ['\bcustomer_id\b']
+  - domain: migration
+    paths: [api/public.yaml]
+```
+
+Mettez entre guillemets un glob qui commence par `*` : en YAML, `*` ouvre
+un alias. Leurs correspondances ont la source `project`, et ils sont
+évalués quels que soient vos réglages `roles:`. Les expressions s'exécutent
+en temps linéaire, quelle que soit leur forme, et leur taille compilée est
+plafonnée.
+
+`codev validate` signale, à la ligne de `triggers:`, une erreur
+`invalid_trigger` pour un groupe sans `domain` connu, sans aucun
+déclencheur, ou avec un glob ou une expression qui ne compile pas — le
+groupe est alors ignoré par toutes les commandes, qui le signalent dans
+leur `status` —, et un avertissement `invalid_trigger` pour une clé
+qu'il ne connaît pas, ignorée tandis que le reste du groupe s'applique.
+
+codev 0.6 et les versions antérieures ne connaissent pas cette clé : elles
+émettent l'avertissement `unknown_config_key`, qui fait échouer leur
+`codev validate --strict`. Lorsque vous l'ajoutez, relevez
+`codev_version` jusqu'à la version qui l'a introduite.
+
 ## Clés inconnues
 
 Une version plus récente de codev peut ajouter des clés qu'une version plus
@@ -275,6 +321,7 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
 | `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
 | une entrée de `roles` | erreur `invalid` | l'ignorer ferait disparaître des critères ou une activation |
+| un groupe de `triggers` | avertissement `invalid_trigger` de `codev validate`, clé ignorée | le reste du groupe suggère toujours son domaine |
 
 L'avertissement nomme la clé, indique que le projet demande peut-être une
 version plus récente de codev, cite `codev_version` quand le fichier la

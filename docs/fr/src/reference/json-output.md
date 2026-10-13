@@ -544,6 +544,37 @@ champs que le fichier omet ou rend invalides valent `null`.
   "schemaName": "spec-driven",
   "at": "plan.challenge",
   "language": "en",
+  "stacks": { "detected": ["TypeScript", "JavaScript"], "filter": "detected" },
+  "diff": {
+    "available": true,
+    "reason": null,
+    "base": "origin/main",
+    "files": 14,
+    "scanned": 11,
+    "skipped": { "lockfile": 1, "prose": 2 },
+    "truncated": false
+  },
+  "suggestions": [
+    {
+      "domain": "user-interface",
+      "state": "ticked",
+      "justification": null,
+      "matchCount": 6,
+      "matches": [
+        { "source": "accessibility", "kind": "paths", "trigger": "**/*.{html,htm,css,scss,sass,less,jsx,tsx,vue,svelte,astro}", "path": "web/src/theme.css", "line": null },
+        "…"
+      ]
+    },
+    {
+      "domain": "performance",
+      "state": "justified",
+      "justification": "the cache is the browser's, not ours",
+      "matchCount": 1,
+      "matches": [
+        { "source": "performance", "kind": "patterns", "trigger": "(?i)\\b(cache|caching|memoi[sz]e|lru)\\b", "path": "web/src/theme.ts", "line": 12 }
+      ]
+    }
+  ],
   "roles": [
     {
       "id": "skeptic",
@@ -594,6 +625,9 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `changeName` | Le change donné avec `--change` ; `null` sans lui |
 | `schemaName` | Le schéma d'où viennent les rôles d'artefact |
 | `at` | L'étape donnée avec `--at` ; `null` liste tous les rôles, actifs ou non |
+| `stacks` | Les langages détectés à partir des manifestes de dépendances du projet (`detected` : `Rust`, `TypeScript`, `JavaScript`, `Python`, `Go`, `Java`) et le filtre (`filter`) appliqué à la partie `By stack` des connaissances : `detected`, `none-detected` (tout est conservé) ou `all-stacks` (`--all-stacks`) |
+| `diff` | Avec `--change`, le diff du change : `available`, `reason` lorsqu'il n'y en a pas, la branche par défaut `base`, les fichiers modifiés (`files`), les fichiers lus par les motifs (`scanned`), les fichiers écartés par catégorie (`skipped` : `planning`, `vendored`, `lockfile`, `generated`, `binary`, `prose`, `large`), et `truncated` lorsqu'un plafond a été atteint ; `null` sans `--change` |
+| `suggestions` | Avec `--change`, les domaines que suggère le diff, dans l'ordre de la liste des domaines : `state` vaut `ticked`, `justified` (avec sa `justification`) ou `unticked` ; `matchCount` compte les correspondances et `matches` liste les cinq premières, chacune avec sa `source` (le rôle, ou `project`), son `kind` (`paths`, `manifests`, `patterns`), le `trigger` tel qu'écrit, le `path`, et la `line` pour un motif ; vide sans `--change` |
 | `roles[].name` | Le nom affiché dans la `language` configurée, en anglais lorsque le rôle n'en a pas dans cette langue |
 | `roles[].kind` | `step`, ou `artifact` avec l'identifiant de l'artefact dans `artifact` |
 | `roles[].at` | L'étape donnée avec `--at`, sinon la première étape du rôle ; `plan.write` pour tous les rôles d'artefact |
@@ -602,14 +636,17 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` ou `on_domain`, fixé par `default`, `project` ou `change` |
 | `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposal coche le domaine ; `null` lorsqu'il est inactif |
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
-| `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a ; `null` sinon |
+| `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
 
 Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
 aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
 lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
-avec `roles` vide et `language` renseigné comme pour `instructions`.
+avec `roles` et `suggestions` vides, `stacks` et `diff` à `null`, et
+`language` renseigné comme pour `instructions`. Un déclencheur du projet
+inutilisable est écarté, avec un avertissement `invalid_trigger` dans
+`status`.
 
 ### schemas
 

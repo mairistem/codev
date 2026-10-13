@@ -32,6 +32,7 @@ pub mod review;
 pub mod roles;
 pub mod schema;
 pub mod status;
+pub mod triggers;
 pub mod update;
 pub mod validate;
 

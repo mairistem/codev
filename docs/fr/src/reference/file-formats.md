@@ -215,6 +215,14 @@ ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coch
 (`domains_invalid`), par une erreur, et une section absente
 (`domains_missing`) par un avertissement.
 
+Ce commentaire est aussi la façon de répondre à un
+[domaine suggéré](../roles.md#les-déclencheurs-et-les-domaines-suggérés)
+que le change ne touche pas : un domaine non coché suivi d'une raison est
+`justified` — `- [ ] security — only renames a variable`. Les tirets,
+deux-points et espaces de tête ne font pas partie de la raison ; `None` ne
+justifie rien. `codev validate` signale chaque domaine suggéré ni coché ni
+justifié par `domain_suggested`, un avertissement à la ligne du domaine.
+
 ## design.md
 
 ```markdown
@@ -509,6 +517,8 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `unknown_domain` | erreur | La section `## Domains` de la proposal nomme un domaine hors des six |
 | `domains_invalid` | erreur | La section `## Domains` de la proposal a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
 | `domains_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Domains` |
+| `domain_suggested` | avertissement | Le diff du change suggère un domaine que la proposal ne coche pas et ne garde pas non coché avec une raison |
+| `invalid_trigger` | erreur | Un groupe de `triggers:` dans `_codev/config.yaml` n'a pas de domaine connu, pas de déclencheur, ou un glob ou une expression qui ne compile pas (un avertissement pour une clé que codev ne connaît pas) |
 | `review_invalid` | erreur | La structure du compte rendu de revue, un champ, un identifiant ou un emplacement de constat, un statut ou une transition est incorrect |
 | `review_decision_incomplete` | erreur | Une entrée d'historique n'a pas son `ref`, sa `note` ou son `to`, ou un risque est accepté, ou un constat haut reporté, par quelqu'un d'autre qu'une personne |
 | `review_location_missing` | erreur | Un constat cite un fichier, une ligne ou un titre qui n'existe pas |

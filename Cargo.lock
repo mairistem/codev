@@ -178,6 +178,7 @@ name = "codev-core"
 version = "0.6.1"
 dependencies = [
  "globset",
+ "regex-automata",
  "semver",
  "serde",
  "serde_json",

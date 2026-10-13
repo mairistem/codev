@@ -21,6 +21,11 @@ pub trait FileSystem {
     /// caps what it reads asks first.
     fn len(&self, path: &Path) -> io::Result<u64>;
 
+    /// True when `path` is a regular file itself — not a directory, not a
+    /// symbolic link (whatever it points to), not a device. A caller about
+    /// to read a file it did not choose asks first.
+    fn is_regular_file(&self, path: &Path) -> bool;
+
     /// Writes the file, creating its parent directories if needed.
     fn write(&self, path: &Path, contents: &str) -> io::Result<()>;
 
@@ -523,6 +528,12 @@ impl FileSystem for RealFileSystem {
         Ok(std::fs::metadata(path)?.len())
     }
 
+    fn is_regular_file(&self, path: &Path) -> bool {
+        // `symlink_metadata` does not follow a link: a link to a regular
+        // file is not one.
+        std::fs::symlink_metadata(path).is_ok_and(|meta| meta.file_type().is_file())
+    }
+
     fn write(&self, path: &Path, contents: &str) -> io::Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -684,6 +695,10 @@ impl Env for SystemEnv {
 pub struct MemoryFileSystem {
     files: RefCell<BTreeMap<PathBuf, String>>,
     dirs: RefCell<Vec<PathBuf>>,
+    /// Entries that exist but are not regular files: symbolic links.
+    links: RefCell<Vec<PathBuf>>,
+    /// Every path `read_to_string` was asked for, in order.
+    reads: RefCell<Vec<PathBuf>>,
 }
 
 impl MemoryFileSystem {
@@ -695,6 +710,18 @@ impl MemoryFileSystem {
     pub fn with_file(self, path: impl Into<PathBuf>, contents: impl Into<String>) -> Self {
         self.files.borrow_mut().insert(path.into(), contents.into());
         self
+    }
+
+    /// Seeds a symbolic link: it exists, is not a regular file, and
+    /// reading it fails.
+    pub fn with_symlink(self, path: impl Into<PathBuf>) -> Self {
+        self.links.borrow_mut().push(path.into());
+        self
+    }
+
+    /// The paths read so far, in order: a test proves a file was not read.
+    pub fn reads(&self) -> Vec<PathBuf> {
+        self.reads.borrow().clone()
     }
 
     pub fn read(&self, path: impl AsRef<Path>) -> Option<String> {
@@ -711,7 +738,9 @@ impl FileSystem for MemoryFileSystem {
         if self.files.borrow().contains_key(path) {
             return true;
         }
-        if self.dirs.borrow().iter().any(|d| d == path) {
+        if self.dirs.borrow().iter().any(|d| d == path)
+            || self.links.borrow().iter().any(|l| l == path)
+        {
             return true;
         }
         // A directory exists as soon as a file lives under it, just like on a
@@ -723,6 +752,7 @@ impl FileSystem for MemoryFileSystem {
     }
 
     fn read_to_string(&self, path: &Path) -> io::Result<String> {
+        self.reads.borrow_mut().push(path.to_path_buf());
         self.files.borrow().get(path).cloned().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::NotFound,
@@ -732,7 +762,21 @@ impl FileSystem for MemoryFileSystem {
     }
 
     fn len(&self, path: &Path) -> io::Result<u64> {
-        self.read_to_string(path).map(|text| text.len() as u64)
+        // Not through `read_to_string`: asking the size is not a read.
+        self.files
+            .borrow()
+            .get(path)
+            .map(|text| text.len() as u64)
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::NotFound,
+                    format!("{} is missing", path.display()),
+                )
+            })
+    }
+
+    fn is_regular_file(&self, path: &Path) -> bool {
+        self.files.borrow().contains_key(path) && !self.links.borrow().iter().any(|l| l == path)
     }
 
     fn write(&self, path: &Path, contents: &str) -> io::Result<()> {
@@ -881,6 +925,20 @@ mod tests {
     fn walk_files_on_a_missing_directory_yields_nothing() {
         let fs = MemoryFileSystem::new();
         assert!(fs.walk_files(Path::new("/nowhere")).unwrap().is_empty());
+    }
+
+    #[test]
+    fn is_regular_file_is_false_for_a_directory_and_a_missing_path() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/src/main.rs", "fn main() {}")
+            .with_symlink("/p/notes");
+        assert!(fs.is_regular_file(Path::new("/p/src/main.rs")));
+        assert!(!fs.is_regular_file(Path::new("/p/src")));
+        assert!(!fs.is_regular_file(Path::new("/p/missing.rs")));
+        assert!(fs.exists(Path::new("/p/notes")));
+        assert!(!fs.is_regular_file(Path::new("/p/notes")));
+        assert!(fs.read_to_string(Path::new("/p/notes")).is_err());
+        assert_eq!(fs.reads(), [PathBuf::from("/p/notes")]);
     }
 
     #[test]

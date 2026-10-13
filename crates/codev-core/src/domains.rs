@@ -125,6 +125,60 @@ pub fn parse(proposal: &str) -> Parsed<Domains> {
     }
 }
 
+/// A domain listed in the section, ticked or not.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Entry {
+    pub domain: String,
+    pub ticked: bool,
+    /// The text after the domain name, as written; empty when none.
+    pub comment: String,
+    /// The 1-based line of the bullet.
+    pub line: u32,
+}
+
+impl Entry {
+    /// The reason an unticked domain gives: its comment without the
+    /// leading dashes, colons and spaces. `None` when nothing is left.
+    pub fn justification(&self) -> Option<String> {
+        let reason = self
+            .comment
+            .trim_start_matches(|c: char| {
+                c.is_whitespace() || matches!(c, '—' | '–' | '-' | ':' | ',')
+            })
+            .trim();
+        (!reason.is_empty()).then(|| reason.to_string())
+    }
+}
+
+/// The known domains the section lists, ticked or not, in the order
+/// written, each with its comment and its line. Empty without a section.
+pub fn entries(proposal: &str) -> Vec<Entry> {
+    let Some(lines) = section(proposal, HEADING) else {
+        return Vec::new();
+    };
+    let mut entries: Vec<Entry> = Vec::new();
+    for (line, raw) in lines {
+        let text = raw.trim();
+        let Some(item) = text.strip_prefix("- ").or_else(|| text.strip_prefix("* ")) else {
+            continue;
+        };
+        let (ticked, rest) = checkbox(item.trim_start());
+        let rest = rest.trim_start();
+        let domain = first_word(rest);
+        if !DOMAINS.contains(&domain) || entries.iter().any(|e| e.domain == domain) {
+            continue;
+        }
+        let word_end = rest.split_whitespace().next().map_or(0, str::len);
+        entries.push(Entry {
+            domain: domain.to_string(),
+            ticked,
+            comment: rest[word_end..].trim().to_string(),
+            line,
+        });
+    }
+    entries
+}
+
 /// The 1-based line of the section, for a finding about it.
 pub fn heading(proposal: &str) -> Option<u32> {
     heading_line(proposal, HEADING)
@@ -238,6 +292,29 @@ mod tests {
     fn a_stray_line_is_invalid() {
         let parsed = parse(&proposal("Security mostly.\n- [ ]"));
         assert_eq!(codes_of(&parsed), ["domains_invalid", "domains_invalid"]);
+    }
+
+    #[test]
+    fn listed_entries_carry_their_comment_and_line() {
+        let source = proposal(
+            "- [x] security — new endpoint\n- [ ] performance — no hot path\n- [ ] migration\n- [ ] securty — typo",
+        );
+        let found = entries(&source);
+        let summary: Vec<(&str, bool, &str, u32)> = found
+            .iter()
+            .map(|e| (e.domain.as_str(), e.ticked, e.comment.as_str(), e.line))
+            .collect();
+        assert_eq!(
+            summary,
+            [
+                ("security", true, "— new endpoint", 9),
+                ("performance", false, "— no hot path", 10),
+                ("migration", false, "", 11),
+            ]
+        );
+        assert_eq!(found[1].justification().as_deref(), Some("no hot path"));
+        assert_eq!(found[2].justification(), None);
+        assert!(entries("# Proposal: X\n").is_empty());
     }
 
     #[test]
