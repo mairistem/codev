@@ -1,0 +1,121 @@
+# The categories an expected finding may name, and the terms that name
+# them in a finding's title or recommendation.
+#
+# A finding names a category when its title or recommendation contains one
+# of the category's terms at the start of a word, ignoring case: `alt`
+# names "alt text" and "alternative", not "default". A finding pairs with
+# an expected finding only when its role, its location and its category
+# agree, so that a finding about one defect cannot stand for its
+# neighbour.
+#
+# Two categories expected in the same case must share no term (checked by
+# the tests). Changing a term changes the scores: score the baseline again
+# (`cargo run -p codev-evals -- score evals/baseline`) and say why in the
+# pull request.
+
+categories:
+  # security
+  injection:
+    description: Untrusted input reaches a query, a command or an interpreter.
+    terms: [injection, inject, sql, parameter, parametri, bind, bound, concatenat, escap, sanitiz, cwe-89, cwe-78]
+  access-control:
+    description: An operation does not check that the caller may act on the resource.
+    terms: [authoriz, authoris, access control, ownership, owner, tenant, organization, organisation, idor, cwe-639, cwe-862, cwe-285, permission, any invoice, other customers, another customer]
+  information-disclosure:
+    description: Internal details reach a caller who should not see them.
+    terms: [stack, disclos, internal detail, internal error, cwe-209, leak]
+  path-traversal:
+    description: A path built from input escapes the directory it is meant for.
+    terms: [traversal, path, directory, "..", cwe-22, filename, file name]
+  credential-storage:
+    description: A secret is stored so that whoever reads the store can use it.
+    terms: [clear, plaintext, plain text, hash, unhashed, encrypt, stored as given, at rest]
+  secret-in-logs:
+    description: A secret is written where operators or tools read it.
+    terms: [log, header, authorization]
+
+  # privacy
+  personal-data-in-logs:
+    description: Personal data is written to logs.
+    terms: [log]
+  personal-data-to-processor:
+    description: Personal data is sent to a third party that does not need it.
+    terms: [third, processor, vendor, analytics, widget, provider, share, sent, send, transfer, minimi, disclos]
+  processor-transfer:
+    description: Personal data goes to a processor or a country without a stated basis.
+    terms: [transfer, processor, third, outside, abroad, united states, us processor, safeguard, contract, dpa]
+  retention:
+    description: Personal data is kept with no retention period or purge.
+    terms: [retention, retain, purge, kept, keep, period, forever, indefinite]
+  erasure:
+    description: A deletion leaves the personal data in place.
+    terms: [erasure, erase, delet, soft, retain, kept, remain, anonymi, right to be forgotten]
+
+  # accessibility
+  text-alternative:
+    description: An image or an icon has no text alternative.
+    terms: [alt, alternative, image, img, avatar]
+  keyboard-and-name:
+    description: A control cannot be reached or named by assistive technology.
+    terms: [keyboard, focus, button, clickable, div, accessible name, tab]
+  use-of-colour:
+    description: Information is conveyed by colour alone.
+    terms: [colour, color, red, visual, error summary, announce, no text, message]
+  keyboard-trap:
+    description: Keyboard focus cannot leave a component.
+    terms: [trap, tab, focus, keyboard, escape]
+  state-not-exposed:
+    description: A widget's state is not exposed to assistive technology.
+    terms: [aria-expanded, expanded, state, collapsed, screen reader, announce]
+
+  # performance
+  query-per-item:
+    description: One query per item of a collection where one query would do.
+    terms: [n+1, n + 1, query per, queries per, one query, round trip, round-trip, per invoice, per order, per item, per row, batch, join]
+  repeated-work:
+    description: Work that gives the same result is redone on every iteration.
+    terms: [regex, compil, recompil, hoist, once, every line, each line, every iteration, each iteration]
+  unbounded-result:
+    description: A result grows with the data and is loaded whole.
+    terms: [unbounded, memory, whole, paginat, stream, limit, every event, all events, entire]
+
+  # operations
+  timeout:
+    description: A call to a dependency can wait forever.
+    terms: [timeout, time out, time-out, hang, deadline]
+  retry:
+    description: Retries that amplify a failure or repeat a non-idempotent call.
+    terms: [retry, retries, retried, backoff, back-off, back off, back to back, back-to-back, jitter, idempot, delay, attempt, hammer, unbounded retry, infinite]
+  observability:
+    description: A failure goes unnoticed by the people who run the service.
+    terms: [alert, monitor, metric, unnoticed, silent, visib, observ, debug, log level, invisible, noone, nobody]
+  rollback:
+    description: A deployment has no way back.
+    terms: [rollback, roll back, revert, way back, switch back, feature flag, kill switch, fallback, fall back, irreversib]
+
+  # migration
+  irreversible-migration:
+    description: A schema change destroys data with no way back.
+    terms: [irreversib, drop, down migration, rollback, backup, restore, data loss, lose]
+  breaking-api:
+    description: A published name or shape changes under its consumers.
+    terms: [breaking, rename, renamed, consumer, client, compat, deprecat, field name, camelcase, contract]
+  config-compat:
+    description: Existing configuration or data no longer loads.
+    terms: [config, default, existing file, missing field, older, deserializ, deserialis, required field]
+
+  # newcomer
+  cleverness:
+    description: Code that hides a simple intent behind a trick.
+    terms: [clever, bit, bitmask, obscure, cryptic, dense, readab, hard to read, hard to follow, one-liner, trick, name]
+  nesting:
+    description: Logic buried under deep nesting.
+    terms: [nest, indent, level, deep, early return, guard, flatten]
+
+  # skeptic
+  assumption:
+    description: The plan rests on an unverified or contradicted assumption.
+    terms: [assum, unverified, premise, contradict, unsupported, rests on, not unique, shared address, same e-mail, same email]
+  scope:
+    description: The plan adds what nobody asked for.
+    terms: [scope, creep, nobody asked, not asked, beyond, speculative, yagni, plugin, extensib, gold]

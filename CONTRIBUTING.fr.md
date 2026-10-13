@@ -91,7 +91,7 @@ ligne de base versionnée, `evals/baseline/report.md`.
 
 La suite demande [Claude Code](https://claude.com/claude-code) installé et
 connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
-exécution complète des 26 cas coûte quelques dollars américains, chaque
+exécution complète des 40 cas coûte une quinzaine de dollars américains, chaque
 cas étant plafonné à 3 par défaut.
 
 ```bash
@@ -112,6 +112,30 @@ cas. Comparez avec le même modèle que la ligne de base. Les mainteneurs
 peuvent aussi lancer à la main le workflow **Role evaluations** ; il
 demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
 sinon.
+
+### Écrire un cas
+
+Un cas est un répertoire de `evals/cases/` : `case.yaml`, le projet sur sa
+branche par défaut (`base/`) et les fichiers que le change ajoute ou
+modifie, artefacts de planification compris (`change/`). Chaque constat
+attendu donne sa gravité (`severity`), ses emplacements (`locations`) et
+une catégorie (`category`) tirée de `evals/categories.yaml`, le
+vocabulaire commun dont les termes reconnaissent une catégorie dans le
+titre ou la recommandation d'un constat ; `alternatives` liste d'autres
+endroits où un relecteur peut à bon droit citer le même défaut. Deux
+catégories attendues dans un même cas ne partagent aucun terme.
+
+Un cas est refusé quand son plan cite, entre accents graves, un fichier ou
+un test que son projet ne contient pas : un relecteur signalerait à juste
+titre la lacune, et le rôle se verrait compter un faux positif. Une étape
+de plan peut nommer ce qu'elle va créer sous `planned` ; un cas
+`code.review`, dont les tâches sont faites, ne planifie rien.
+`cargo run -p codev-evals -- list` charge tous les cas et nomme ce qui ne
+va pas.
+
+Changer un terme du vocabulaire change les scores : renotez la ligne de
+base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
+constats il reclasse.
 
 N'ajustez pas un rôle et ses cas dans la même pull request : un cas dit
 ce qu'un relecteur devrait trouver, indépendamment de la formulation du

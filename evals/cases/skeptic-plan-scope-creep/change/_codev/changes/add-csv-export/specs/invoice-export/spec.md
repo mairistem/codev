@@ -6,7 +6,7 @@ Lets accountants export a month's invoices.
 
 ### Requirement: Invoices are exported as CSV
 
-`GET /invoices.csv?month=YYYY-MM` SHALL return the month's invoices, one per line, with number, date, customer and total.
+`GET /invoices.csv?month=YYYY-MM` SHALL return the month's invoices, one per line after a header line, with number, date, customer and total; a field holding a comma, a quote or a line break SHALL be quoted as RFC 4180 says.
 
 #### Scenario: A month
 
@@ -15,8 +15,18 @@ Lets accountants export a month's invoices.
 
 #### Scenario: An invalid month
 
-- **WHEN** the month is `2026-13`
+- **WHEN** the month is `2026-13`, or missing
 - **THEN** the service answers 400
+
+#### Scenario: A month without invoice
+
+- **WHEN** an accountant exports a month without invoice
+- **THEN** the CSV holds the header line only
+
+#### Scenario: A customer name with a comma
+
+- **WHEN** an invoice's customer is `Smith, Jones & Co`
+- **THEN** the field is quoted in the CSV
 
 ### Requirement: Users choose their export format
 

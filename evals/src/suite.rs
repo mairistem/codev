@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
-use crate::case::{self, Case, Fixture, RoleSteps};
+use crate::case::{self, Case, Catalog, Fixture, RoleSteps, Vocabulary};
 use crate::observed::{self, Observed, RunInfo};
 use crate::runner::read_tree;
 use crate::score::{self, SuiteScore, Thresholds};
@@ -29,10 +29,20 @@ pub fn role_steps(repo: &Path) -> Result<RoleSteps, String> {
     Ok(roles)
 }
 
+/// The category vocabulary, `evals/categories.yaml`.
+pub fn vocabulary(repo: &Path) -> Result<Vocabulary, String> {
+    let path = repo.join("evals").join("categories.yaml");
+    let text = fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    case::parse_vocabulary(&text)
+}
+
 /// Every case of `evals/cases/`, sorted by id; the first invalid one is an
 /// error naming it.
 pub fn load_cases(repo: &Path) -> Result<Vec<Case>, String> {
-    let roles = role_steps(repo)?;
+    let catalog = Catalog {
+        roles: role_steps(repo)?,
+        vocabulary: vocabulary(repo)?,
+    };
     let dir = repo.join("evals").join("cases");
     let mut ids: Vec<String> = fs::read_dir(&dir)
         .map_err(|e| format!("{}: {e}", dir.display()))?
@@ -50,7 +60,7 @@ pub fn load_cases(repo: &Path) -> Result<Vec<Case>, String> {
             base: read_tree(&root.join("base")).map_err(|e| format!("case `{id}`: {e}"))?,
             change: read_tree(&root.join("change")).map_err(|e| format!("case `{id}`: {e}"))?,
         };
-        cases.push(case::load(&id, &yaml, &fixture, &roles).map_err(|e| e.to_string())?);
+        cases.push(case::load(&id, &yaml, &fixture, &catalog).map_err(|e| e.to_string())?);
     }
     Ok(cases)
 }

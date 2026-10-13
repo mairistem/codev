@@ -1,0 +1,184 @@
+{
+  "format": 1,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.403978,
+  "durationMs": 40533,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (`rename_all = \"camelCase\"` renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (`default_currency` is a required key: existing `config.toml` files no longer load) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[derive(Serialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct OrderResponse {\n    pub order_id: i64,\n    pub customer_id: i64,\n    pub total_cents: i64,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 9,
+        "location": "src/api.rs:5-13",
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so the existing keys stay `order_id`, `customer_id` and `total_cents`; only `currency` is added. If camelCase is wanted, ship it as a separate change marked BREAKING, emitting both spellings for the two releases of deprecation that docs/api.md promises.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "`rename_all = \"camelCase\"` renames every existing field of the public order JSON"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 30,
+        "location": "src/config.rs:9-10",
+        "recommendation": "Add `#[serde(default = \"...\")]` returning \"EUR\" (the currency used until now) so existing deployments keep starting, and add a test that loads a config without the key. Otherwise mark the change BREAKING and tell operators in the release note to add the key before upgrading.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "`default_currency` is a required key: existing `config.toml` files no longer load"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Added: Orders carry their `currency`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-3",
+        "line": 47,
+        "location": "proposal.md#Release note",
+        "recommendation": "Once R-migration-1 and R-migration-2 are settled, list each remaining breaking change as **BREAKING** with what partners and operators must do. Also add a line for the new `default_currency` configuration key and its default.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Release note announces neither the breaking changes nor the new configuration key"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [x] 1.2 `default_currency` in `src/config.rs` and `config.example.toml`, verified by starting the service on staging\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-4",
+        "line": 61,
+        "location": "tasks.md#1. Implementation",
+        "recommendation": "Add tests that (a) load a config.toml without `default_currency`, and (b) serialize an `OrderResponse` and assert the exact JSON keys (`order_id`, `customer_id`, `total_cents`, `currency`, `status`), so a rename is caught.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No test covers the migration path for old configuration files or API consumers"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "pub struct DailySales {\n    pub day: String,\n    pub order_count: u32,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-5",
+        "line": 77,
+        "location": "src/report.rs:3-7",
+        "recommendation": "If any crate depends on `orders` as a library, keep `#[deprecated] pub type SalesRow = DailySales;` for one release and note the rename. Otherwise no action is needed.",
+        "reported": false,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Public `report::SalesRow` and its field `count` renamed with no deprecation"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

@@ -6,7 +6,7 @@ Members enjoy being remembered; marketing wants birthday messages.
 
 ## What Changes
 
-- The profile asks for a birth date and a mobile phone number, both required.
+- Members can opt in to birthday greetings; they then give their birthday (day and month) and a mobile phone number.
 - A daily job sends a birthday text message.
 
 ## Capabilities

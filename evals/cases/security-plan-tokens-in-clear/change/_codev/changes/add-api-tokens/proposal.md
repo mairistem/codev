@@ -6,7 +6,7 @@ Integrations use a person's password today; a leaked integration exposes the acc
 
 ## What Changes
 
-- Users create and revoke personal API tokens.
+- Users create personal API tokens.
 - The API accepts `Authorization: Bearer <token>`.
 
 ## Capabilities

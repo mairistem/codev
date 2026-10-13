@@ -1,0 +1,17 @@
+role: ops
+step: code.review
+change: add-merchant-webhooks
+stacks: ["typescript"]
+kind: seeded
+summary: "Webhook retries fire back to back, so a merchant outage of a few seconds loses the event, and failed or dropped deliveries are logged at debug level only; the request timeout and idempotency header are right."
+expected:
+  - id: retries-without-backoff
+    severity: high
+    category: retry
+    locations: ["src/webhooks.ts:9"]
+    alternatives: ["src/webhooks.ts:4", "src/webhooks.ts:9-23"]
+  - id: dropped-delivery-invisible
+    severity: medium
+    category: observability
+    locations: ["src/webhooks.ts:24"]
+    alternatives: ["src/webhooks.ts:21"]

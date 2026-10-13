@@ -1,0 +1,128 @@
+{
+  "format": 1,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.3597378,
+  "durationMs": 34539,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 9,
+        "location": "src/config.rs:10-11",
+        "recommendation": "Decide and document the behavior when both keys are present (serde's derive rejects it with \"duplicate field `bind_address`\"); either say in the release note to replace `listen` rather than add `bind_address` beside it, or read both keys explicitly and prefer `bind_address` with a warning. Cover the case with a test.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A file holding both `listen` and `bind_address` no longer loads"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "pub fn load(text: &str) -> Result<Config, toml::de::Error> {\n    toml::from_str(text)\n}\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 26,
+        "location": "src/config.rs:14-16",
+        "recommendation": "Add unit tests calling `load` with a pre-4.2 file using `listen`, a new file using `bind_address`, and a file with both keys; and a test asserting `OrderResponse` still serializes `customer_id`.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The old-key migration path has no automated test"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The address the HTTP server binds to. Files written before 4.2 call\n/// it `listen`, which is still read.\n#[serde(alias = \"listen\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-3",
+        "line": 44,
+        "location": "src/config.rs:8-10",
+        "recommendation": "Log a deprecation warning at start-up when the file uses `listen`, and state in the release note in which version the alias will be removed.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The deprecated `listen` key is read silently, with no warning or removal plan"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

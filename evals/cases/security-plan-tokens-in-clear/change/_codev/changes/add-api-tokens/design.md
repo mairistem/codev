@@ -8,9 +8,9 @@ Rust; requests go through one middleware, `src/http/middleware.rs`.
 
 ## Goals / Non-Goals
 
-**Goals:** personal tokens an integration can use; revocation.
+**Goals:** personal tokens an integration can use.
 
-**Non-Goals:** OAuth, scopes.
+**Non-Goals:** OAuth, scopes, revocation (a later change).
 
 ## Decisions
 
@@ -38,4 +38,4 @@ support can see which token an integration sent.
 
 ## Risks / Trade-offs
 
-- [A user loses a token] → they create another one and revoke the old one.
+- [A user loses a token] → they create another one; revoking the old one comes with the later revocation change.

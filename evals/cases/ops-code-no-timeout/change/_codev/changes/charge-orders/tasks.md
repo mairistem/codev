@@ -2,4 +2,4 @@
 
 ## 1. Implementation
 
-- [x] 1.1 `charge()`, verified by `pytest tests/test_payments.py`
+- [x] 1.1 `charge()`, verified by a charge against the provider's sandbox

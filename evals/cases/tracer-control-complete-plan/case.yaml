@@ -3,6 +3,7 @@ step: plan.trace
 change: add-session-timeout
 stacks: ["rust"]
 kind: control
+planned: [an_active_session_is_served, an_idle_session_is_refused]
 summary: "Every capability, scenario, test and document is traced; nothing to fix."
 checks:
   fixed: []

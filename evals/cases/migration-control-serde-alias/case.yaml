@@ -1,0 +1,6 @@
+role: migration
+step: code.review
+change: rename-listen-setting
+stacks: ["rust"]
+kind: control
+summary: "A configuration key renamed with an alias that still reads the old name, and an API field renamed in code with its JSON name kept; nothing to find."

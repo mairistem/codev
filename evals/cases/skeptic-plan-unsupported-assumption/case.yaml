@@ -3,9 +3,15 @@ step: plan.challenge
 change: merge-duplicate-customers
 stacks: ["python"]
 kind: seeded
-summary: "A merge job assumes one e-mail is one person, which the plan's own context contradicts."
+planned: [jobs/merge_customers.py]
+summary: "A merge job assumes one e-mail is one person, which the plan's own context contradicts, and deletes the merged records with no way back."
 expected:
   - id: email-is-not-a-person
     severity: high
     category: assumption
-    locations: ["design.md#Decision: Customers are merged by e-mail", "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged"]
+    locations: ["design.md#Decision: Customers are merged by e-mail"]
+    alternatives: ["specs/customer-merge/spec.md#Requirement: Duplicate customers are merged"]
+  - id: irreversible-merge
+    severity: medium
+    category: rollback
+    locations: ["design.md#Decision: Customers are merged by e-mail"]

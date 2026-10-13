@@ -12,4 +12,5 @@ expected:
   - id: renamed-json-field
     severity: high
     category: breaking-api
-    locations: ["src/api.rs:8-9", "proposal.md#Release note"]
+    locations: ["src/api.rs:8-9"]
+    alternatives: ["proposal.md#Release note"]

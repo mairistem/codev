@@ -1,0 +1,6 @@
+role: accessibility
+step: code.review
+change: add-size-picker
+stacks: ["typescript"]
+kind: control
+summary: "A custom select-only combobox with label, expanded state, active descendant, arrows, Home and End, Escape and a Tab that leaves; nothing to find."

@@ -470,12 +470,18 @@ sur chaque cas, avec le rôle évalué seul, puis note le compte rendu de
 revue qu'il a écrit :
 
 - **vrais positifs** et **manqués** — les défauts ensemencés trouvés ou
-  non, par rôle et par emplacement (deux lignes de tolérance, ou le même
-  titre du plan) ;
+  non. Un constat compte pour un défaut quand son rôle, son emplacement
+  (deux lignes de tolérance, le même titre du plan, ou un autre endroit
+  que le cas admet) et sa catégorie concordent : chaque défaut ensemencé
+  nomme une catégorie de problème, comme `access-control` ou
+  `keyboard-trap`, reconnue à ses termes dans le titre ou la
+  recommandation du constat. Un constat sur un problème voisin, deux
+  lignes plus loin, ne tient pas lieu du défaut ;
 - **faux positifs** — les constats de confiance haute qui ne correspondent
-  à aucun défaut ensemencé, dans un témoin ou à côté du défaut ; les
-  constats de confiance basse, qui ne vous sont jamais présentés, sont
-  comptés à part ;
+  à aucun défaut ensemencé, dans un témoin ou à côté du défaut ; le
+  rapport signale ceux qui se trouvent à l'endroit d'un défaut mais
+  nomment un autre problème. Les constats de confiance basse, qui ne vous
+  sont jamais présentés, sont comptés à part ;
 - **validité des preuves** — la part des constats dont la citation est
   retrouvée par `codev review` aux lignes indiquées ;
 - **accord de gravité** — la gravité trouvée est celle attendue.
@@ -483,6 +489,17 @@ revue qu'il a écrit :
 Le traceur, qui corrige le plan au lieu d'enregistrer des constats, est
 noté sur le plan qu'il laisse : la tâche manquante ajoutée, un plan
 complet laissé intact.
+
+Les cas sont écrits pour qu'un relecteur inattentif passe à côté : des
+défauts subtils à côté d'un code qui fait la même chose correctement (une
+autorisation vérifiée sur la liste mais pas sur le détail, des données
+personnelles qui atteignent les journaux par un message d'erreur), des
+cas à deux défauts de gravités différentes, et des témoins dont le code
+paraît suspect mais est juste (une requête assemblée à partir d'une liste
+autorisée, aux valeurs liées ; des journaux d'identifiants qui ne sont pas
+des données personnelles). Le plan d'un cas ne cite que des fichiers et
+des tests que son projet contient, pour qu'une lacune du cas ne soit
+jamais comptée contre le rôle.
 
 Les scores de référence sont la ligne de base versionnée,
 [`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md) :

@@ -2,8 +2,8 @@
   "format": 1,
   "case": "ops-plan-no-rollback",
   "error": null,
-  "costUsd": 0.3697804,
-  "durationMs": 44225,
+  "costUsd": 0.3810554,
+  "durationMs": 37561,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,11 +14,15 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-1 (No way back from the switch to Paylane) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-1 (No way to turn Paylane off or fall back to Stripe) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (A failed or missed nightly settlement goes unnoticed) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (Closing the Stripe account removes the redeploy rollback too) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Settlement worker has no health, metrics or failure alert) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -29,7 +33,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "The Stripe client is deleted and replaced by the Paylane client in the same\nrelease. There is no switch between the two: keeping both would double the\ncode to maintain. The Stripe account is closed the day after the release.\n",
+        "evidence": "The Stripe client is deleted and replaced by the Paylane client in the same\nrelease. There is no switch between the two: keeping both would double the\ncode to maintain.\n",
         "history": [
           {
             "by": "ops",
@@ -40,15 +44,39 @@
           }
         ],
         "id": "R-ops-1",
-        "line": 13,
+        "line": 9,
         "location": "design.md#Decision: All traffic moves at deploy",
-        "recommendation": "Keep the Stripe client behind a configuration switch (or feature flag) that selects the provider, so card payments can go back to Stripe without a release; keep the Stripe account open until Paylane has run in production for an agreed period, and write the rollback procedure in the design.",
+        "recommendation": "Keep the Stripe client behind a configuration switch (or a percentage flag) selecting the provider, so an operator can send traffic back to Stripe without a release; remove it in a later change once Paylane is proven.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No way back from the switch to Paylane"
+        "title": "No way to turn Paylane off or fall back to Stripe"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The Stripe account is closed the day after the release.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 27,
+        "location": "design.md#Decision: All traffic moves at deploy",
+        "recommendation": "Keep the Stripe account open until Paylane has run through a defined observation period (for example several settlement cycles without incident), and state that exit criterion in the design.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Closing the Stripe account removes the redeploy rollback too"
       },
       {
         "awaiting": "author",
@@ -63,20 +91,20 @@
             "to": null
           }
         ],
-        "id": "R-ops-2",
-        "line": 33,
+        "id": "R-ops-3",
+        "line": 43,
         "location": "design.md#Decision: A worker settles payments nightly",
-        "recommendation": "Give the worker structured start/end logs, metrics (payments fetched, matched, unmatched, duration, last success time) and an alert when the job fails or has not succeeded in 24 hours; state how a missed night is re-run without settling a payment twice.",
+        "recommendation": "Specify how a failed or missed run is detected and alerted (job failure / last-success timestamp metric, counts of payments fetched, matched and unmatched, a start/end log with run id), and add a scenario for \"the worker fails\".",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A failed or missed nightly settlement goes unnoticed"
+        "title": "Settlement worker has no health, metrics or failure alert"
       },
       {
         "awaiting": "author",
-        "confidence": "low",
+        "confidence": "high",
         "evidence": "Every card payment SHALL be authorized and captured through Paylane once the change is deployed.\n",
         "history": [
           {
@@ -87,21 +115,21 @@
             "to": null
           }
         ],
-        "id": "R-ops-3",
-        "line": 53,
+        "id": "R-ops-4",
+        "line": 61,
         "location": "specs/payments/spec.md#Requirement: Card payments go through Paylane",
-        "recommendation": "Specify in the design a timeout on every Paylane call from `services/checkout` and from the worker, bounded retries with backoff, and an idempotency key on authorize/capture so a retry cannot charge a card twice; define what the customer sees when Paylane does not answer.",
-        "reported": false,
+        "recommendation": "State a timeout on every Paylane call (checkout and worker), bounded retries with backoff only on idempotent operations, and an idempotency key on capture so a retry cannot charge twice.",
+        "reported": true,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No timeout, retry or idempotency policy for Paylane calls"
+        "title": "No timeout or retry policy for Paylane calls"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- **THEN** it is written to the `unmatched_payments` table\n",
+        "evidence": "- **WHEN** Paylane declines the card\n- **THEN** the customer sees that the payment was declined\n",
         "history": [
           {
             "by": "ops",
@@ -111,16 +139,16 @@
             "to": null
           }
         ],
-        "id": "R-ops-4",
-        "line": 71,
-        "location": "specs/payments/spec.md#Scenario: A payment without order",
-        "recommendation": "Emit a metric and an alert (or a report to the team that handles payments) when `unmatched_payments` receives rows, with the payment identifier and amount, so captured money without an order is acted on.",
+        "id": "R-ops-5",
+        "line": 77,
+        "location": "specs/payments/spec.md#Scenario: A declined card",
+        "recommendation": "Add a scenario for Paylane being unavailable or returning an error (timeout, 5xx, auth failure) — what the customer sees and what is logged, as structured fields with the order id and Paylane reference and no card data or API key.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Unmatched payments are written to a table nobody watches"
+        "title": "Paylane errors other than a decline are not specified"
       },
       {
         "awaiting": "author",
@@ -135,16 +163,16 @@
             "to": null
           }
         ],
-        "id": "R-ops-5",
-        "line": 88,
+        "id": "R-ops-6",
+        "line": 94,
         "location": "proposal.md#Impact",
-        "recommendation": "State that the Paylane endpoint, API key and the worker schedule are read from the environment (Kubernetes secrets/config), never hard-coded or logged.",
+        "recommendation": "State that the Paylane URL and API key are read from environment / Kubernetes secrets for both checkout and the worker, and add the secret to the manifests task.",
         "reported": false,
         "role": "ops",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Paylane configuration and credentials are not specified"
+        "title": "Paylane credentials and endpoint configuration are unplanned"
       }
     ],
     "format": 1,
@@ -159,12 +187,12 @@
         "recorded": true,
         "roles": [
           {
-            "role": "skeptic",
-            "state": "disabled"
-          },
-          {
             "role": "ops",
             "state": "findings"
+          },
+          {
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge"

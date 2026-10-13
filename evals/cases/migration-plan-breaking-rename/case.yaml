@@ -8,4 +8,5 @@ expected:
   - id: unannounced-breaking-rename
     severity: high
     category: breaking-api
-    locations: ["design.md#Decision: The field is renamed in place", "proposal.md#What Changes", "proposal.md#Release note"]
+    locations: ["design.md#Decision: The field is renamed in place"]
+    alternatives: ["proposal.md#What Changes", "proposal.md#Release note", "tasks.md#1. Rename"]

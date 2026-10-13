@@ -1,0 +1,6 @@
+role: security
+step: code.review
+change: add-ticket-filters
+stacks: ["python"]
+kind: control
+summary: "A query assembled with an f-string from allow-listed conditions and orders, every value bound; nothing to find."

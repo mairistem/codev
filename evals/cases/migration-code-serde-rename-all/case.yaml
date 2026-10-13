@@ -1,0 +1,16 @@
+role: migration
+step: code.review
+change: add-order-currency
+stacks: ["rust"]
+kind: seeded
+summary: "Adding a field, the change also renames every public JSON field to camelCase through one attribute, and makes a new configuration key required so existing files no longer load; the internal type's rename is harmless."
+expected:
+  - id: public-fields-renamed
+    severity: high
+    category: breaking-api
+    locations: ["src/api.rs:6"]
+    alternatives: ["proposal.md#Release note", "proposal.md#What Changes"]
+  - id: required-config-key
+    severity: medium
+    category: config-compat
+    locations: ["src/config.rs:10"]

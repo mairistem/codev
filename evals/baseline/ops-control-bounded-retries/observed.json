@@ -2,8 +2,8 @@
   "format": 1,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.3727482,
-  "durationMs": 38082,
+  "costUsd": 0.33087760000000005,
+  "durationMs": 30940,
   "strayed": [],
   "review": {
     "archive": {
@@ -34,37 +34,13 @@
         "id": "R-ops-1",
         "line": 9,
         "location": "src/rates.rs:37",
-        "recommendation": "Emit a structured `error!` (fields: attempts, error) or a failure metric when the last attempt fails, and expose the age of the rates in use; the proposal says the caller keeps the previous day's rates on failure, and no caller exists in the diff to surface the error, so days of stale rates would leave only per-retry `warn!` lines.",
+        "recommendation": "Emit a `warn!`/`error!` with fields (attempts, error) on the final failure, or confirm the caller logs it, so that stale rates kept by the caller do not go unnoticed for days.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Final fetch failure is neither logged nor counted, so stale rates can go unnoticed"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "match client.get(&url).send().and_then(|r| r.error_for_status()) {\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-2",
-        "line": 27,
-        "location": "src/rates.rs:26",
-        "recommendation": "Retry only transient failures (connect/timeout errors and 5xx/429); return at once on a 4xx such as a wrong `RATES_FEED_URL` (404) or a rejected request, with a message naming the status.",
-        "reported": true,
-        "role": "ops",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Every error is retried, including permanent HTTP 4xx responses"
+        "title": "Final fetch failure is returned but never logged or counted"
       },
       {
         "awaiting": "author",
@@ -79,16 +55,40 @@
             "to": null
           }
         ],
-        "id": "R-ops-3",
-        "line": 44,
-        "location": "src/rates.rs:18",
-        "recommendation": "Return a typed error (an enum wrapping `reqwest::Error` and the missing variable) so the caller can log the full source chain and tell a configuration error from a transient network failure.",
+        "id": "R-ops-2",
+        "line": 25,
+        "location": "src/rates.rs:18-37",
+        "recommendation": "Return a typed error (e.g. an enum wrapping `reqwest::Error`, or `anyhow::Error` with context) so the caller can distinguish a missing variable, a transport failure and an invalid body, and keep the source chain.",
         "reported": true,
         "role": "ops",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Errors flattened to String lose their source chain"
+        "title": "Errors flattened to String, losing their source chain"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "match client.get(&url).send().and_then(|r| r.error_for_status()) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 41,
+        "location": "src/rates.rs:26",
+        "recommendation": "Retry only on transport errors, timeouts, 429 and 5xx; fail at once on other 4xx (e.g. a wrong `RATES_FEED_URL` returning 404) so the misconfiguration surfaces without the backoff delay.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Permanent HTTP errors (4xx) are retried like transient ones"
       },
       {
         "awaiting": "author",
@@ -104,39 +104,15 @@
           }
         ],
         "id": "R-ops-4",
-        "line": 61,
+        "line": 55,
         "location": "src/rates.rs:28",
-        "recommendation": "If `RATES_FEED_URL` may ever carry an access key in its query string, log only the host (or redact the query) in the errors at lines 28 and 37; a public feed URL is harmless.",
+        "recommendation": "Keep the URL out of error strings (or log only its host), in case `RATES_FEED_URL` ever carries an API key in its query string; line 37 does the same.",
         "reported": false,
         "role": "ops",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Feed URL copied verbatim into error messages"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": ".timeout(Duration::from_secs(10))\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-5",
-        "line": 77,
-        "location": "src/rates.rs:21",
-        "recommendation": "Read the timeout (and optionally `ATTEMPTS` and the initial pause) from the environment with these values as defaults, so an operator can tune a slow feed without a release.",
-        "reported": true,
-        "role": "ops",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Timeout, attempt count and initial pause are hard-coded"
+        "title": "Feed URL embedded in error messages"
       }
     ],
     "format": 1,

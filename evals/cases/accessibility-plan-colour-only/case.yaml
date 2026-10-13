@@ -8,4 +8,5 @@ expected:
   - id: colour-only-errors
     severity: high
     category: use-of-colour
-    locations: ["design.md#Decision: Invalid fields turn red", "specs/checkout-validation/spec.md#Scenario: An invalid postcode"]
+    locations: ["design.md#Decision: Invalid fields turn red"]
+    alternatives: ["specs/checkout-validation/spec.md#Scenario: An invalid postcode", "proposal.md#What Changes"]

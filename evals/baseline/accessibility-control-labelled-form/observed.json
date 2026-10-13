@@ -2,8 +2,8 @@
   "format": 1,
   "case": "accessibility-control-labelled-form",
   "error": null,
-  "costUsd": 0.4104917999999999,
-  "durationMs": 43881,
+  "costUsd": 0.29602100000000003,
+  "durationMs": 19716,
   "strayed": [],
   "review": {
     "archive": {
@@ -17,80 +17,7 @@
     },
     "changeName": "add-newsletter-form",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "    aria-describedby=\"newsletter-hint newsletter-error\"\n  />\n  <p id=\"newsletter-hint\" class=\"hint\">One e-mail a month. Unsubscribe from any issue.</p>\n  <p id=\"newsletter-error\" class=\"error\" role=\"alert\" hidden>\n    Enter an e-mail address such as name@example.org.\n  </p>\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-1",
-        "line": 9,
-        "location": "templates/newsletter.html:10-15",
-        "recommendation": "Reference newsletter-error from aria-describedby only while the error is shown (add it together with aria-invalid=\"true\" when the error is revealed, remove both when it is fixed). The accessible-description computation includes hidden content when it is referenced directly, so screen reader users hear \"Enter an e-mail address such as name@example.org.\" on every focus of the field, before any error occurred (WCAG 1.3.1 Info and Relationships, 3.3.1 Error Identification).\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Hidden error message is always read as the field's description"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "<form class=\"newsletter\" action=\"/newsletter\" method=\"post\" novalidate>\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-2",
-        "line": 35,
-        "location": "templates/newsletter.html:1",
-        "recommendation": "novalidate turns off the browser's own required/type=\"email\" messages, and the diff adds no script that removes `hidden` from #newsletter-error or sets aria-invalid on the field (nothing in src/ references the newsletter). As written, an empty or malformed address is submitted with no error identified in text next to the field (WCAG 3.3.1 Error Identification). Either drop novalidate, or add the client or server handling that shows #newsletter-error and sets aria-invalid=\"true\", with a test. Confidence is low because such handling may exist outside what the reviewer could see.\n",
-        "reported": false,
-        "role": "accessibility",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Native validation disabled with nothing in the change to reveal the error"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "<form class=\"newsletter\" action=\"/newsletter\" method=\"post\" novalidate>\n  <h2 id=\"newsletter-title\">Get the monthly newsletter</h2>\n",
-        "history": [
-          {
-            "by": "accessibility",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-accessibility-3",
-        "line": 57,
-        "location": "templates/newsletter.html:1-2",
-        "recommendation": "Add aria-labelledby=\"newsletter-title\" to the form: a form element is only exposed as a landmark when it has an accessible name, and the id on the heading is otherwise unused (WCAG 1.3.1 Info and Relationships, 2.4.1 Bypass Blocks).\n",
-        "reported": true,
-        "role": "accessibility",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Form landmark has no accessible name although its heading has an id"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-newsletter-form/review.md",
@@ -113,7 +40,7 @@
         "roles": [
           {
             "role": "accessibility",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "role": "newcomer",

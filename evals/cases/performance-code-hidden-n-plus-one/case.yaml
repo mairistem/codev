@@ -1,0 +1,16 @@
+role: performance
+step: code.review
+change: add-monthly-report
+stacks: ["rust"]
+kind: seeded
+summary: "A helper called once per invoice queries its customer, and the purchase-order pattern is compiled for every invoice; the month's total is one aggregate query."
+expected:
+  - id: customer-query-per-invoice
+    severity: medium
+    category: query-per-item
+    locations: ["src/report.rs:39"]
+    alternatives: ["src/report.rs:26", "src/report.rs:23"]
+  - id: regex-compiled-per-invoice
+    severity: low
+    category: repeated-work
+    locations: ["src/report.rs:45"]

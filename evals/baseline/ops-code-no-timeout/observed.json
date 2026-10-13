@@ -2,8 +2,8 @@
   "format": 1,
   "case": "ops-code-no-timeout",
   "error": null,
-  "costUsd": 0.3642048,
-  "durationMs": 33076,
+  "costUsd": 0.33392440000000007,
+  "durationMs": 28406,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,15 +14,15 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-1 (Payment call has no timeout and can hang the checkout forever) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-1 (Payment call has no timeout) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge can duplicate payments) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge, without backoff) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-3 (Failures are swallowed silently and never surface to the caller or the logs) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-3 (Charge failures are swallowed with no log or metric) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -46,13 +46,13 @@
         "id": "R-ops-1",
         "line": 9,
         "location": "app/payments.py:14",
-        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`, read from configuration, so a stalled provider fails fast instead of blocking the checkout worker indefinitely.",
+        "recommendation": "Pass an explicit `timeout=` (connect and read, read from configuration) to `requests.post`, so a provider that stops answering fails the call instead of hanging the checkout worker forever.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Payment call has no timeout and can hang the checkout forever"
+        "title": "Payment call has no timeout"
       },
       {
         "awaiting": "author",
@@ -70,13 +70,13 @@
         "id": "R-ops-2",
         "line": 23,
         "location": "app/payments.py:12-18",
-        "recommendation": "Bound the retries (a small maximum count) with exponential backoff and jitter, retry only transient errors (timeouts, connection errors, 5xx/429), and send an idempotency key derived from `order_id` so a retry after a lost response cannot charge the order twice; raise once retries are exhausted.",
+        "recommendation": "Bound the retries (a small maximum, exponential backoff with jitter), retry only transient failures (connection errors, timeouts, 5xx/429, never a 4xx such as a declined card), and send an idempotency key derived from the order id so a retry after a lost response cannot charge the customer twice; raise once the attempts are exhausted.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Unbounded retry of a non-idempotent charge can duplicate payments"
+        "title": "Unbounded retry of a non-idempotent charge, without backoff"
       },
       {
         "awaiting": "author",
@@ -94,13 +94,13 @@
         "id": "R-ops-3",
         "line": 43,
         "location": "app/payments.py:17-18",
-        "recommendation": "Log each failed attempt as a structured event (order_id, attempt, HTTP status, provider error code — no card or credential data), and raise an actionable exception after the last attempt. Permanent errors such as a 4xx decline must not be retried at all: today a declined card loops forever with no trace.",
+        "recommendation": "Log each failed attempt as structured fields (order_id, attempt, HTTP status, error type — never the payload's secrets), count attempts and failures in a metric, and surface a final actionable error naming the order when retries are exhausted, so an operator can see a stuck or failing charge.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Failures are swallowed silently and never surface to the caller or the logs"
+        "title": "Charge failures are swallowed with no log or metric"
       },
       {
         "awaiting": "author",
@@ -118,13 +118,37 @@
         "id": "R-ops-4",
         "line": 58,
         "location": "app/payments.py:7",
-        "recommendation": "Read the endpoint from the environment or configuration so it can be pointed at a sandbox or switched without a release.",
+        "recommendation": "Read the provider URL from the environment or configuration, so sandbox and production can be switched, and the endpoint changed, without a new release.",
         "reported": true,
         "role": "ops",
         "severity": "low",
         "status": "open",
         "step": "code.review",
         "title": "Provider URL is hard-coded"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def charge(order_id: str, amount_cents: int) -> dict:\n    \"\"\"Charges the order and returns the provider's receipt.\"\"\"\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-5",
+        "line": 72,
+        "location": "app/payments.py:10-11",
+        "recommendation": "Guard automatic charging behind a configuration flag so operators can fall back to manual charging in the provider's dashboard without redeploying; if a redeploy of the previous version is the accepted rollback, record it in the plan.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No switch to turn automatic charging off"
       }
     ],
     "format": 1,

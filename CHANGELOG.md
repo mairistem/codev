@@ -35,6 +35,7 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The architect's criteria of the default schema require the simplest approach that satisfies the specs, and a design a newcomer can follow without knowing its history.
 - The `By stack` part of a role's knowledge keeps only the languages detected in the project; `codev roles --all-stacks` serves every language.
 - `/codev-propose` ticks or justifies each suggested domain, and `/codev-apply` asks you to decide a suggested domain still unticked. Since `domain_suggested` is a warning, `codev validate --strict` fails until each suggestion is ticked or justified.
+- The role evaluation suite has harder cases — subtle defects, two defects of different severity per expert, Python cases and more clean controls — and pairs a finding with a seeded defect only when they name the same category of issue. The committed baseline in `evals/baseline/report.md` is recorded again.
 - `/codev-propose` and `/codev-apply` write their findings into the review record, let the author answer each one and the reviewer re-check it, and ask you to decide what is still disputed.
 <!-- codev:end -->
 

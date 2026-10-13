@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
-use crate::case::{Case, Kind, Location, Step};
+use crate::case::{Case, Expected, Kind, Location, Step};
 use crate::observed::{Observed, Review, ReviewFinding, RunInfo};
 
 /// Evidence and location codes of `codev review`, by their effect here.
@@ -75,6 +75,10 @@ pub struct FindingScore {
     /// The expected finding it matched, for true positives, duplicates and
     /// cross-role findings.
     pub expected: Option<String>,
+    /// For a false positive or an unreported finding: the expected finding
+    /// of its role at the same place, whose category it does not name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub near: Option<String>,
     pub evidence: Evidence,
 }
 
@@ -232,29 +236,46 @@ fn review(case: &Case, observed: &Observed, score: &mut CaseScore) {
         .iter()
         .map(|f| Location::parse(&f.location))
         .collect();
-    let mut taken = vec![None::<usize>; findings.len()];
-
-    for (e_index, expected) in case.expected.iter().enumerate() {
-        let hit = (0..findings.len()).find(|&i| {
-            taken[i].is_none()
-                && findings[i].role == expected.role
-                && expected
-                    .locations
-                    .iter()
-                    .any(|l| l.matched_by(&locations[i]))
-        });
-        if let Some(i) = hit {
-            taken[i] = Some(e_index);
+    let texts: Vec<String> = findings
+        .iter()
+        .map(|f| format!("{}\n{}", f.title, f.recommendation))
+        .collect();
+    let matches = |e: &Expected, i: usize| e.located_at(&locations[i]) && e.named_by(&texts[i]);
+    let edges: Vec<Vec<bool>> = case
+        .expected
+        .iter()
+        .map(|e| {
+            (0..findings.len())
+                .map(|i| findings[i].role == e.role && matches(e, i))
+                .collect()
+        })
+        .collect();
+    let taken = maximum_matching(&edges, findings.len());
+    for (i, pair) in taken.iter().enumerate() {
+        if let Some(e_index) = *pair {
             let slot = &mut score.expected[e_index];
             slot.matched_by = Some(findings[i].id.clone());
-            slot.severity_agrees = findings[i].severity == expected.severity;
+            slot.severity_agrees = findings[i].severity == case.expected[e_index].severity;
         }
     }
 
     for (i, finding) in findings.iter().enumerate() {
-        let (class, matched) = match taken[i] {
-            Some(e) => (Class::TruePositive, Some(case.expected[e].id.clone())),
-            None => classify_unmatched(case, finding, &locations[i]),
+        let Unpaired {
+            class,
+            expected: matched,
+            near,
+        } = match taken[i] {
+            Some(e) => Unpaired {
+                class: Class::TruePositive,
+                expected: Some(case.expected[e].id.clone()),
+                near: None,
+            },
+            None => classify_unmatched(
+                case,
+                finding,
+                |e| matches(e, i),
+                |e| e.located_at(&locations[i]),
+            ),
         };
         if finding.status != "open" {
             score
@@ -271,32 +292,96 @@ fn review(case: &Case, observed: &Observed, score: &mut CaseScore) {
             status: finding.status.clone(),
             class,
             expected: matched,
+            near,
             evidence: evidence(&review, &finding.id),
         });
     }
 }
 
+/// A maximum one-to-one pairing of expected findings (rows of `edges`)
+/// with findings (columns), by augmenting paths: expected findings in case
+/// order, each trying findings in record order; an earlier pair gives way
+/// only when that lets one more expected finding be paired. Returns, per
+/// finding, the expected finding it is paired with.
+fn maximum_matching(edges: &[Vec<bool>], findings: usize) -> Vec<Option<usize>> {
+    fn augment(
+        e: usize,
+        edges: &[Vec<bool>],
+        owner: &mut [Option<usize>],
+        seen: &mut [bool],
+    ) -> bool {
+        for i in 0..owner.len() {
+            if !edges[e][i] || seen[i] {
+                continue;
+            }
+            seen[i] = true;
+            let free = match owner[i] {
+                None => true,
+                Some(other) => augment(other, edges, owner, seen),
+            };
+            if free {
+                owner[i] = Some(e);
+                return true;
+            }
+        }
+        false
+    }
+    let mut owner = vec![None; findings];
+    for e in 0..edges.len() {
+        let mut seen = vec![false; findings];
+        augment(e, edges, &mut owner, &mut seen);
+    }
+    owner
+}
+
+/// How a finding is classified, and the expected findings it relates to.
+struct Unpaired {
+    class: Class,
+    /// The expected finding it matches (duplicate, cross-role).
+    expected: Option<String>,
+    /// The expected finding of its role at the same place, whose category
+    /// it does not name (false positive, unreported).
+    near: Option<String>,
+}
+
+/// An unpaired finding: a duplicate or a cross-role finding when it matches
+/// an expected finding (location and category), otherwise unreported or a
+/// false positive.
 fn classify_unmatched(
     case: &Case,
     finding: &ReviewFinding,
-    location: &Location,
-) -> (Class, Option<String>) {
-    let matching = |same_role: bool| {
-        case.expected.iter().find(|e| {
-            (e.role == finding.role) == same_role
-                && e.locations.iter().any(|l| l.matched_by(location))
-        })
+    matches: impl Fn(&Expected) -> bool,
+    located: impl Fn(&Expected) -> bool,
+) -> Unpaired {
+    let find = |same_role: bool, test: &dyn Fn(&Expected) -> bool| {
+        case.expected
+            .iter()
+            .find(|e| (e.role == finding.role) == same_role && test(e))
     };
-    if let Some(e) = matching(true) {
-        return (Class::Duplicate, Some(e.id.clone()));
+    if let Some(e) = find(true, &matches) {
+        return Unpaired {
+            class: Class::Duplicate,
+            expected: Some(e.id.clone()),
+            near: None,
+        };
     }
-    if let Some(e) = matching(false) {
-        return (Class::CrossRole, Some(e.id.clone()));
+    if let Some(e) = find(false, &matches) {
+        return Unpaired {
+            class: Class::CrossRole,
+            expected: Some(e.id.clone()),
+            near: None,
+        };
     }
-    if finding.confidence == "low" {
-        (Class::Unreported, None)
+    let near = find(true, &located).map(|e| e.id.clone());
+    let class = if finding.confidence == "low" {
+        Class::Unreported
     } else {
-        (Class::FalsePositive, None)
+        Class::FalsePositive
+    };
+    Unpaired {
+        class,
+        expected: None,
+        near,
     }
 }
 
@@ -602,26 +687,46 @@ pub(crate) mod tests {
                     role: role.into(),
                     severity: "high".into(),
                     category: "c".into(),
+                    terms: vec!["defect".into()],
                     locations: locations.iter().map(|l| Location::parse(l)).collect(),
+                    alternatives: vec![],
                 })
                 .collect(),
             fixed: vec![],
             unchanged: vec![],
+            planned: vec![],
         }
     }
 
-    /// A finding: (id, role, location, confidence).
+    /// A finding: (id, role, location, confidence), titled after the
+    /// test cases' category term, `defect`.
     pub(crate) fn observed(
         state: &str,
         findings: &[(&str, &str, &str, &str)],
         issues: serde_json::Value,
     ) -> Observed {
-        let findings: Vec<_> = findings
+        let titled: Vec<_> = findings
             .iter()
             .map(|(id, role, location, confidence)| {
-                json!({"id": id, "title": "t", "role": role, "step": "code.review",
+                (*id, *role, *location, *confidence, "A defect")
+            })
+            .collect();
+        observed_titled(state, &titled, issues)
+    }
+
+    /// A finding: (id, role, location, confidence, title).
+    pub(crate) fn observed_titled(
+        state: &str,
+        findings: &[(&str, &str, &str, &str, &str)],
+        issues: serde_json::Value,
+    ) -> Observed {
+        let findings: Vec<_> = findings
+            .iter()
+            .map(|(id, role, location, confidence, title)| {
+                json!({"id": id, "title": title, "role": role, "step": "code.review",
                        "severity": "high", "confidence": confidence,
-                       "location": location, "status": "open"})
+                       "location": location, "status": "open",
+                       "recommendation": "Fix it."})
             })
             .collect();
         let roles: Vec<_> = ["security", "privacy"]
@@ -886,6 +991,205 @@ pub(crate) mod tests {
         );
         o.review.as_mut().unwrap()["findings"] = json!([]);
         assert_eq!(case(&c, &o).outcome.label(), "record-invalid");
+    }
+
+    /// A case with expected findings (id, category terms, locations,
+    /// alternatives).
+    /// (id, category terms, locations, alternatives).
+    type Seeded<'a> = (&'a str, &'a [&'a str], &'a [&'a str], &'a [&'a str]);
+
+    fn categorized(role: &str, expected: &[Seeded]) -> Case {
+        let mut c = a_case(role, Kind::Seeded, &[]);
+        c.expected = expected
+            .iter()
+            .map(|(id, terms, locations, alternatives)| Expected {
+                id: (*id).into(),
+                role: role.into(),
+                severity: "high".into(),
+                category: (*id).into(),
+                terms: terms.iter().map(|t| (*t).into()).collect(),
+                locations: locations.iter().map(|l| Location::parse(l)).collect(),
+                alternatives: alternatives.iter().map(|l| Location::parse(l)).collect(),
+            })
+            .collect();
+        c
+    }
+
+    fn with_role(mut o: Observed, role: &str) -> Observed {
+        o.review.as_mut().unwrap()["steps"][0]["roles"] =
+            json!([{"role": role, "state": "findings"}]);
+        o
+    }
+
+    #[test]
+    fn the_right_place_with_another_issue_is_a_miss() {
+        let c = categorized(
+            "accessibility",
+            &[(
+                "image-without-alt",
+                &["alt", "image"],
+                &["src/Toolbar.tsx:12"],
+                &[],
+            )],
+        );
+        let o = with_role(
+            observed_titled(
+                "findings",
+                &[(
+                    "R-accessibility-1",
+                    "accessibility",
+                    "src/Toolbar.tsx:13",
+                    "high",
+                    "Clickable div unreachable by keyboard",
+                )],
+                json!([]),
+            ),
+            "accessibility",
+        );
+        let s = case(&c, &o);
+        assert_eq!(s.expected[0].matched_by, None);
+        assert_eq!(
+            classes(&s),
+            [("R-accessibility-1".into(), Class::FalsePositive)]
+        );
+    }
+
+    #[test]
+    fn two_close_defects_cited_in_reverse_order_both_pair() {
+        let c = categorized(
+            "accessibility",
+            &[
+                (
+                    "div-button",
+                    &["keyboard", "button"],
+                    &["src/Toolbar.tsx:13-15"],
+                    &[],
+                ),
+                (
+                    "image-without-alt",
+                    &["alt", "image"],
+                    &["src/Toolbar.tsx:12"],
+                    &[],
+                ),
+            ],
+        );
+        let o = with_role(
+            observed_titled(
+                "findings",
+                &[
+                    (
+                        "R-accessibility-1",
+                        "accessibility",
+                        "src/Toolbar.tsx:13",
+                        "high",
+                        "Avatar image has no alt text; the keyboard order is fine",
+                    ),
+                    (
+                        "R-accessibility-2",
+                        "accessibility",
+                        "src/Toolbar.tsx:14",
+                        "high",
+                        "Delete is a div, unreachable by keyboard",
+                    ),
+                ],
+                json!([]),
+            ),
+            "accessibility",
+        );
+        let s = case(&c, &o);
+        assert_eq!(
+            s.expected[0].matched_by.as_deref(),
+            Some("R-accessibility-2")
+        );
+        assert_eq!(
+            s.expected[1].matched_by.as_deref(),
+            Some("R-accessibility-1")
+        );
+        assert_eq!(
+            classes(&s),
+            [
+                ("R-accessibility-1".into(), Class::TruePositive),
+                ("R-accessibility-2".into(), Class::TruePositive)
+            ],
+            "the first finding names both categories, yet gives way so both pair"
+        );
+        assert_eq!(case(&c, &o), s, "the same inputs give the same pairs");
+    }
+
+    #[test]
+    fn an_alternative_location_matches() {
+        let c = categorized(
+            "privacy",
+            &[(
+                "email-in-logs",
+                &["log"],
+                &["src/customers.ts:21"],
+                &["src/errors.ts:8"],
+            )],
+        );
+        let o = observed_titled(
+            "findings",
+            &[(
+                "R-privacy-1",
+                "privacy",
+                "src/errors.ts:8",
+                "high",
+                "The e-mail address reaches the logs",
+            )],
+            json!([]),
+        );
+        assert_eq!(
+            case(&c, &o).expected[0].matched_by.as_deref(),
+            Some("R-privacy-1")
+        );
+    }
+
+    #[test]
+    fn another_issue_at_the_defects_place_names_it_in_the_report() {
+        let c = categorized(
+            "ops",
+            &[(
+                "unbounded-retry",
+                &["retry", "retries"],
+                &["app/payments.py:12-18"],
+                &[],
+            )],
+        );
+        let o = with_role(
+            observed_titled(
+                "findings",
+                &[(
+                    "R-ops-1",
+                    "ops",
+                    "app/payments.py:17",
+                    "high",
+                    "Provider URL is hard-coded",
+                )],
+                json!([]),
+            ),
+            "ops",
+        );
+        let s = case(&c, &o);
+        assert_eq!(classes(&s), [("R-ops-1".into(), Class::FalsePositive)]);
+        assert_eq!(s.findings[0].near.as_deref(), Some("unbounded-retry"));
+        let report = suite(run(), vec![s], Thresholds::default());
+        let md = crate::report::markdown(&report);
+        assert!(
+            md.contains(
+                "**false positive** (at the location of `unbounded-retry`, another category)"
+            ),
+            "{md}"
+        );
+        assert!(crate::report::json(&report).contains("\"near\": \"unbounded-retry\""));
+    }
+
+    #[test]
+    fn a_term_counts_only_at_the_start_of_a_word() {
+        let terms = ["alt".to_string()];
+        assert!(crate::case::names_any("No ALT text", &terms));
+        assert!(crate::case::names_any("text alternative", &terms));
+        assert!(crate::case::names_any("missing `alt`", &terms));
+        assert!(!crate::case::names_any("the default health check", &terms));
     }
 
     fn trace_case(kind: Kind) -> Case {

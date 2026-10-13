@@ -2,7 +2,7 @@
 
 ## 1. Schema
 
-- [ ] 1.1 Migration `0012_order_note.sql` and its down migration, verified by `npm run migrate:test` running up, down and up again
+- [ ] 1.1 Migration `migrations/0012_order_note.sql` and its down migration `migrations/0012_order_note.down.sql`, verified by `npm run migrate:test` running up, down and up again
 
 ## 2. API
 

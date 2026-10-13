@@ -447,12 +447,17 @@ severity and location, or a **clean control** holding none. The suite has
 Claude Code run one skill step on each case with the evaluated role alone,
 then scores the review record it wrote:
 
-- **true positives** and **misses** — the seeded defects found or not, by
-  role and location (two lines of tolerance, or the same heading of the
-  plan);
+- **true positives** and **misses** — the seeded defects found or not. A
+  finding counts for a defect when its role, its location (two lines of
+  tolerance, the same heading of the plan, or another place the case
+  allows) and its category agree: each seeded defect names a category of
+  issue, such as `access-control` or `keyboard-trap`, recognised by its
+  terms in the finding's title or recommendation. A finding about a
+  neighbouring issue two lines away does not stand for the defect;
 - **false positives** — high-confidence findings that match no seeded
-  defect, in a control or next to the defect; low-confidence findings,
-  which are never shown to you, are counted apart;
+  defect, in a control or next to the defect; the report marks those
+  found at a defect's place but naming another issue. Low-confidence
+  findings, which are never shown to you, are counted apart;
 - **evidence validity** — the share of findings whose quoted evidence
   `codev review` finds at the cited lines;
 - **severity agreement** — the found severity equals the expected one.
@@ -460,6 +465,16 @@ then scores the review record it wrote:
 The tracer, which fixes the plan instead of recording findings, is scored
 on the plan it leaves: the missing task added, a complete plan left
 unchanged.
+
+The cases are written to make a careless reviewer miss: subtle defects
+next to code that does the same thing correctly (an authorization checked
+on the list endpoint but not on the detail one, personal data reaching the
+logs through an error message), cases with two defects of different
+severity, and controls holding code that looks suspicious but is right (a
+query assembled from an allow-list with bound values, logs of identifiers
+that are not personal data). A case's plan cites only files and tests its
+project contains, so that a gap in the case is never counted against the
+role.
 
 The reference scores are the committed baseline,
 [`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md):

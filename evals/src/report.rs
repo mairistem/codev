@@ -152,9 +152,14 @@ pub fn markdown(score: &SuiteScore) -> String {
                 crate::score::Evidence::Invalid => ", **evidence invalid**",
                 crate::score::Evidence::Unchecked => ", evidence unchecked",
             };
+            let near = f
+                .near
+                .as_ref()
+                .map(|id| format!(" (at the location of `{id}`, another category)"))
+                .unwrap_or_default();
             let _ = writeln!(
                 out,
-                "- Finding {} [{} / {}] `{}` {}: {class}{evidence}",
+                "- Finding {} [{} / {}] `{}` {}: {class}{near}{evidence}",
                 f.id, f.severity, f.confidence, f.location, f.title
             );
         }

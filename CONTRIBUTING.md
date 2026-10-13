@@ -80,7 +80,7 @@ its description. The reference is the committed baseline,
 
 The suite needs [Claude Code](https://claude.com/claude-code) installed and
 signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a full run of the
-26 cases costs a few US dollars, each case capped at 3 by default.
+40 cases costs about fifteen US dollars, each case capped at 3 by default.
 
 ```bash
 cargo build --bin codev
@@ -99,6 +99,28 @@ model (default: Claude Code's), `CODEV_EVAL_BUDGET_USD` and
 baseline. Maintainers can also start the **Role evaluations** workflow by
 hand; it needs the `ANTHROPIC_API_KEY` repository secret and skips
 otherwise.
+
+### Writing a case
+
+A case is a directory of `evals/cases/`: `case.yaml`, the project on its
+default branch (`base/`) and the files the change adds or modifies,
+planning artifacts included (`change/`). Each expected finding gives its
+`severity`, its `locations` and a `category` from
+`evals/categories.yaml`, the shared vocabulary whose terms recognise a
+category in a finding's title or recommendation; `alternatives` lists other
+places a reviewer may rightly cite the same defect. Two categories
+expected in the same case must share no term.
+
+A case is refused when its plan cites, between backquotes, a file or a
+test its fixture does not contain: a reviewer would rightly report the
+gap, and the role would be charged with a false positive. A plan step
+may name what it will create under `planned`; a `code.review` case, whose
+tasks are done, plans nothing. `cargo run -p codev-evals -- list` loads
+every case and names what is wrong.
+
+Changing a term of the vocabulary changes the scores: score the baseline
+again (`cargo run -p codev-evals -- score evals/baseline`) and say which
+findings it re-classifies.
 
 Do not tune a role and its cases in the same pull request: a case states
 what a reviewer should find, independently of the role's wording. When the

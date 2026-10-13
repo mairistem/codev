@@ -1,0 +1,180 @@
+{
+  "format": 1,
+  "case": "ops-control-graceful-shutdown",
+  "error": null,
+  "costUsd": 0.43716,
+  "durationMs": 50237,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (The worker exposes no health check, no metric and no start log) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-mail-worker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "pub fn run(queue: &dyn Queue, mailer: &dyn Mailer, stop: &AtomicBool) {\n    while !stop.load(Ordering::SeqCst) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 9,
+        "location": "src/worker.rs:21-22",
+        "recommendation": "Log a structured \"worker started\" event with its settings, and expose a liveness signal (a heartbeat updated each loop turn, or a health endpoint) plus counters for sent, rejected and released jobs and the queue depth or oldest job age, so a stuck or dead worker is noticed before e-mails pile up.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "The worker exposes no health check, no metric and no start log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts.clamp(1, MAX_STEPS);\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 24,
+        "location": "src/worker.rs:35-38",
+        "recommendation": "Bound the retries — after a maximum number of attempts (or a maximum age), dead-letter the job with a reason such as \"relay unavailable after N attempts\" — and add jitter to the delay so that every released job does not hit the relay at the same moment when it comes back.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Temporary failures are retried forever, never dead-lettered"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "match mailer.send(&job.message, SEND_TIMEOUT) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 40,
+        "location": "src/worker.rs:26",
+        "recommendation": "Confirm how the mailer classifies a timeout after DATA; if it maps to `Unavailable`, make the retry idempotent (a stable Message-ID per job, checked or deduplicated by the relay) or treat an ambiguous timeout separately from a refused connection.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay accepted the message is retried and may duplicate the e-mail"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "tracing::warn!(job_id = job.id, attempts = job.attempts, delay_s = delay.as_secs(), \"relay unavailable, job released\");\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 54,
+        "location": "src/worker.rs:38",
+        "recommendation": "Carry the cause in `SendError::Unavailable` (connection refused, DNS, timeout, SMTP 4xx code and text) and log it as a field, so an operator can tell a relay outage from a network or credential problem.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The \"relay unavailable\" warning carries no cause"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const POLL: Duration = Duration::from_secs(2);\n/// How long one message may take to send.\nconst SEND_TIMEOUT: Duration = Duration::from_secs(10);\n/// Delay before a job is handed out again, per attempt already made.\nconst RETRY_STEP: Duration = Duration::from_secs(30);\n/// The delay stops growing after this many attempts (five minutes).\nconst MAX_STEPS: u32 = 10;\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-5",
+        "line": 68,
+        "location": "src/worker.rs:11-17",
+        "recommendation": "Read these values from the environment or configuration with the current values as defaults, so the send timeout or retry pace can be tuned during an incident without a release.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Poll, timeout and retry settings are hard-coded"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-mail-worker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

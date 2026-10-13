@@ -27,13 +27,35 @@ fn read(relative: &str) -> String {
 #[test]
 fn every_case_of_the_suite_loads() {
     let cases = suite::load_cases(&repo()).unwrap_or_else(|e| panic!("{e}"));
-    assert!(cases.len() >= 26, "{} cases", cases.len());
+    assert!(cases.len() >= 40, "{} cases", cases.len());
 }
 
 #[test]
 fn the_suite_covers_every_reviewing_role() {
     let cases = suite::load_cases(&repo()).unwrap();
     assert_eq!(coverage_gaps(&cases), Vec::<String>::new());
+}
+
+#[test]
+fn categories_of_one_case_share_no_term() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    let mut overlaps = Vec::new();
+    for case in &cases {
+        for (n, a) in case.expected.iter().enumerate() {
+            for b in &case.expected[n + 1..] {
+                if a.category == b.category {
+                    continue;
+                }
+                for term in a.terms.iter().filter(|t| b.terms.contains(t)) {
+                    overlaps.push(format!(
+                        "{}: `{}` and `{}` share `{term}`",
+                        case.id, a.category, b.category
+                    ));
+                }
+            }
+        }
+    }
+    assert_eq!(overlaps, Vec::<String>::new());
 }
 
 #[test]

@@ -115,6 +115,8 @@ pub struct ReviewFinding {
     #[serde(default)]
     pub location: String,
     #[serde(default)]
+    pub recommendation: String,
+    #[serde(default)]
     pub status: String,
 }
 

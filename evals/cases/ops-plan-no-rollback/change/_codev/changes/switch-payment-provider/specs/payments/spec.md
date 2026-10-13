@@ -30,4 +30,4 @@ A worker SHALL reconcile the day's Paylane payments with the orders every night.
 #### Scenario: A payment without order
 
 - **WHEN** a payment matches no order
-- **THEN** it is written to the `unmatched_payments` table
+- **THEN** it is written to the `unmatched_payments` table and the finance channel is alerted with its Paylane reference
