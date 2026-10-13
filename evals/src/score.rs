@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::case::{Case, Expected, Kind, Location, Step};
 use crate::observed::{Observed, Review, ReviewFinding, RunInfo};
@@ -411,7 +411,7 @@ fn evidence(review: &Review, id: &str) -> Evidence {
 }
 
 /// The thresholds a role must meet.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Thresholds {
     pub min_recall: f64,
@@ -493,7 +493,7 @@ impl Thresholds {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvidenceCounts {
     pub found: u32,

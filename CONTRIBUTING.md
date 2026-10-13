@@ -100,6 +100,13 @@ baseline. Maintainers can also start the **Role evaluations** workflow by
 hand; it needs the `ANTHROPIC_API_KEY` repository secret and skips
 otherwise.
 
+The documentation's [reliability chapter](docs/en/src/reliability.md)
+shows the baseline to readers. It is generated, never edited by hand:
+each time `evals/baseline/` changes — recorded or scored again — run
+`cargo run -p codev-evals -- docs`, which rewrites
+`docs/en/src/reliability.md` and `docs/fr/src/reliability.md`. The tests
+fail while the pages differ from the baseline.
+
 ### Writing a case
 
 A case is a directory of `evals/cases/`: `case.yaml`, the project on its

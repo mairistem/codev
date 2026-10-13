@@ -113,6 +113,14 @@ peuvent aussi lancer à la main le workflow **Role evaluations** ; il
 demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
 sinon.
 
+Le [chapitre sur la fiabilité](docs/fr/src/reliability.md) de la
+documentation présente la ligne de base aux lecteurs. Il est généré,
+jamais modifié à la main : chaque fois que `evals/baseline/` change —
+enregistrée ou notée de nouveau —, lancez
+`cargo run -p codev-evals -- docs`, qui réécrit
+`docs/en/src/reliability.md` et `docs/fr/src/reliability.md`. Les tests
+échouent tant que les pages diffèrent de la ligne de base.
+
 ### Écrire un cas
 
 Un cas est un répertoire de `evals/cases/` : `case.yaml`, le projet sur sa

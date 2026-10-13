@@ -509,6 +509,10 @@ modification d'un fichier de rôle se juge sur ses scores avant et après,
 avec le même modèle. La suite ne tourne jamais dans la CI habituelle et ne
 fait pas partie du binaire `codev`.
 
+[Fiabilité des rôles](reliability.md) présente ces scores, rôle par rôle,
+avec les seuils que chaque rôle respecte ou dépasse et les limites de la
+mesure.
+
 ## Là où vous décidez
 
 L'agent s'arrête et vous passe la main à ces moments :
