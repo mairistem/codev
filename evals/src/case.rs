@@ -371,7 +371,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, roles: &RoleSteps) -> Resul
         }
     };
 
-    check_fixture_files(fixture).map_err(&fail)?;
+    check_fixture_files(fixture).map_err(fail)?;
     let files = fixture.merged();
     let change_dir = format!("_codev/changes/{}", file.change);
     if !files.contains_key(format!("{change_dir}/proposal.md").as_str()) {
