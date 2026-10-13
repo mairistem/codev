@@ -1,0 +1,6 @@
+role: privacy
+step: code.review
+change: mask-emails-in-logs
+stacks: ["typescript"]
+kind: control
+summary: "A logger masks e-mail addresses before writing; nothing to find."

@@ -1,0 +1,164 @@
+{
+  "format": 1,
+  "case": "ops-code-no-timeout",
+  "error": null,
+  "costUsd": 0.3642048,
+  "durationMs": 33076,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (Payment call has no timeout and can hang the checkout forever) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge can duplicate payments) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Failures are swallowed silently and never surface to the caller or the logs) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "charge-orders",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 9,
+        "location": "app/payments.py:14",
+        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`, read from configuration, so a stalled provider fails fast instead of blocking the checkout worker indefinitely.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Payment call has no timeout and can hang the checkout forever"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "while True:\n    try:\n        response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException:\n        time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 23,
+        "location": "app/payments.py:12-18",
+        "recommendation": "Bound the retries (a small maximum count) with exponential backoff and jitter, retry only transient errors (timeouts, connection errors, 5xx/429), and send an idempotency key derived from `order_id` so a retry after a lost response cannot charge the order twice; raise once retries are exhausted.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded retry of a non-idempotent charge can duplicate payments"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "except requests.RequestException:\n    time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 43,
+        "location": "app/payments.py:17-18",
+        "recommendation": "Log each failed attempt as a structured event (order_id, attempt, HTTP status, provider error code — no card or credential data), and raise an actionable exception after the last attempt. Permanent errors such as a 4xx decline must not be retried at all: today a declined card loops forever with no trace.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Failures are swallowed silently and never surface to the caller or the logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "PAYMENT_URL = \"https://payments.example.com/v2/charges\"\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 58,
+        "location": "app/payments.py:7",
+        "recommendation": "Read the endpoint from the environment or configuration so it can be pointed at a sandbox or switched without a release.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Provider URL is hard-coded"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/charge-orders/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

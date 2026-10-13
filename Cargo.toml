@@ -1,5 +1,8 @@
 [workspace]
-members = ["crates/*"]
+# `evals` is the role evaluation suite: a workspace member so that its
+# scoring tests run with the others, never built into the released binary
+# (release.yml builds `--bin codev` only).
+members = ["crates/*", "evals"]
 resolver = "3"
 
 [workspace.package]

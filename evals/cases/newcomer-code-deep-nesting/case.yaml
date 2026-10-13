@@ -1,0 +1,11 @@
+role: newcomer
+step: code.review
+change: import-accounts
+stacks: ["rust"]
+kind: seeded
+summary: "An import function nests seven levels deep and duplicates its seat loop."
+expected:
+  - id: deep-nesting
+    severity: medium
+    category: nesting
+    locations: ["src/import.rs:12-42"]

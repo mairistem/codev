@@ -1,0 +1,9 @@
+role: tracer
+step: plan.trace
+change: add-session-timeout
+stacks: ["rust"]
+kind: control
+summary: "Every capability, scenario, test and document is traced; nothing to fix."
+checks:
+  fixed: []
+  unchanged: ["_codev/changes/add-session-timeout/tasks.md", "_codev/changes/add-session-timeout/specs/session-timeout/spec.md", "_codev/changes/add-session-timeout/proposal.md"]

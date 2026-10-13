@@ -1,0 +1,6 @@
+role: skeptic
+step: plan.challenge
+change: add-quiet-flag
+stacks: ["rust"]
+kind: control
+summary: "A small, well-scoped CLI flag with error cases and verifiable tasks; nothing to find."

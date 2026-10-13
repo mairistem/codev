@@ -1,0 +1,15 @@
+role: ops
+step: plan.challenge
+change: switch-payment-provider
+stacks: ["python"]
+kind: seeded
+summary: "A plan switches payment providers with no way back and adds an unobservable worker."
+expected:
+  - id: no-rollback
+    severity: high
+    category: rollback
+    locations: ["design.md#Decision: All traffic moves at deploy"]
+  - id: invisible-worker
+    severity: medium
+    category: observability
+    locations: ["design.md#Decision: A worker settles payments nightly"]

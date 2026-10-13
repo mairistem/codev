@@ -1,0 +1,9 @@
+{
+  "name": "shop-web",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "vitest run", "build": "tsc -p ." },
+  "dependencies": { "express": "4.19.2", "pg": "8.11.5" },
+  "devDependencies": { "typescript": "5.4.5", "vitest": "1.6.0" }
+}

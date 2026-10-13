@@ -23,6 +23,7 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - A `triggers:` key in `_codev/config.yaml` adds the project's own sensitive paths and patterns. An earlier codev ignores it with an `unknown_config_key` warning, which fails its `codev validate --strict`: raise `codev_version` to this release when you add it.
 - Each change keeps a review record, `review.md`, where the roles write their findings with a severity, a confidence, a location and the quoted evidence, and where every answer — fixed, disputed, accepted risk, deferred, rejected — is recorded with who decided it. `codev review` shows it and what is left to decide.
 - `codev validate` checks the review record: its format, that each cited file and line exists and that the quoted evidence is really there.
+- The built-in roles are measured by an evaluation suite in the repository: seeded defects and clean controls score what each role finds, misses and invents, and whether its evidence is real. The baseline is published in `evals/baseline/report.md`, and the Roles chapter explains it.
 
 ### Changed
 

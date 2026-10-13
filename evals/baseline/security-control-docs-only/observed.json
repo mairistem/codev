@@ -1,0 +1,104 @@
+{
+  "format": 1,
+  "case": "security-control-docs-only",
+  "error": null,
+  "costUsd": 0.3765722,
+  "durationMs": 33696,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "document-token-rotation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "3. Revoke the old token from the same page. Requests that still carry it\n   are refused with `401 Unauthorized`.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 9,
+        "location": "README.md:19-20",
+        "recommendation": "Point the section at the code that enforces token revocation (or the service that owns it), or drop the guarantee until it is backed by an implementation and a test; an integrator relying on revocation after an exposure must not be told it works if it does not.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Documented revocation guarantee has no implementation in this repository"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "API tokens do not expire. Rotate a token when a person who knew it leaves\nthe team, or when it may have been exposed:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 31,
+        "location": "README.md:13-14",
+        "recommendation": "Recommend a periodic rotation as well (for example every 90 days), since a leak that goes unnoticed is otherwise valid forever; consider tracking token expiry as a follow-up for the service itself.",
+        "reported": true,
+        "role": "security",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Non-expiring tokens documented without a periodic rotation recommendation"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/document-token-rotation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

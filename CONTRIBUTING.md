@@ -69,6 +69,43 @@ dependencies with `cargo audit`. Warnings are treated as errors.
 The last command validates codev's own `_codev/` tree: specs, active changes
 and decision seals must stay valid.
 
+## Changing a role
+
+The built-in roles (`assets/roles/`) are prompts: their effect is measured,
+not guessed. A pull request that modifies a file of `assets/roles/` runs
+the role evaluations before and after the change and pastes both scores —
+recall, false positives and evidence validity of the roles concerned — in
+its description. The reference is the committed baseline,
+`evals/baseline/report.md`.
+
+The suite needs [Claude Code](https://claude.com/claude-code) installed and
+signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a full run of the
+26 cases costs a few US dollars, each case capped at 3 by default.
+
+```bash
+cargo build --bin codev
+cargo run -p codev-evals -- list                       # the cases
+cargo run -p codev-evals -- run --role security        # the cases of one role
+cargo run -p codev-evals -- run --out target/evals/mine  # all of them
+cargo run -p codev-evals -- score target/evals/mine    # score again, no model
+```
+
+`run` writes `report.md` and `report.json` in its output directory and
+exits with 1 when a role is under a threshold (`--min-recall`,
+`--max-false-positives`, `--min-evidence`) or a case stopped; a directory
+that already holds observations is resumed. `CODEV_EVAL_MODEL` picks the
+model (default: Claude Code's), `CODEV_EVAL_BUDGET_USD` and
+`CODEV_EVAL_TIMEOUT_SECS` bound each case. Compare on the same model as the
+baseline. Maintainers can also start the **Role evaluations** workflow by
+hand; it needs the `ANTHROPIC_API_KEY` repository secret and skips
+otherwise.
+
+Do not tune a role and its cases in the same pull request: a case states
+what a reviewer should find, independently of the role's wording. When the
+scoring rules or the cases change, record the baseline again — remove `evals/baseline/`, then
+`cargo run -p codev-evals -- run --out evals/baseline` — which the tests
+check.
+
 ## Commits
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/),

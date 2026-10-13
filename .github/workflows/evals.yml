@@ -1,0 +1,85 @@
+# Role evaluation suite: has Claude Code review seeded defects and clean
+# controls with each role, and scores what it finds, misses and invents.
+#
+# Started by hand only: every run calls a model and costs money. It needs the
+# ANTHROPIC_API_KEY repository secret, and ends successfully, saying why,
+# when the secret is absent. See CONTRIBUTING.md, "Changing a role".
+name: Role evaluations
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Model (empty: Claude Code's default)"
+        required: false
+        default: ""
+      roles:
+        description: "Roles to evaluate, space-separated (empty: all)"
+        required: false
+        default: ""
+      min_recall:
+        description: "Minimum recall per role"
+        required: false
+        default: "0.5"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  evals:
+    name: Evaluate the roles
+    runs-on: ubuntu-24.04
+    # 26 cases, at most 10 minutes each, two at a time: at most 130 minutes.
+    timeout-minutes: 240
+    steps:
+      - name: Check the API key
+        id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "Evaluations skipped: the ANTHROPIC_API_KEY secret is not set in this repository."
+            echo "Add it under Settings > Secrets and variables > Actions to run the role evaluations."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.key.outputs.present == 'true'
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.key.outputs.present == 'true'
+      - uses: Swatinem/rust-cache@v2
+        if: steps.key.outputs.present == 'true'
+      - name: Install Claude Code
+        if: steps.key.outputs.present == 'true'
+        # Pinned: the job holds the API key and runs what it installs, and
+        # scores compare with the baseline's version. Raise it deliberately.
+        run: npm install -g @anthropic-ai/claude-code@2.1.289
+      - name: Build codev
+        if: steps.key.outputs.present == 'true'
+        run: cargo build --locked --bin codev
+      - name: Run the evaluations
+        if: steps.key.outputs.present == 'true'
+        # Inputs reach the script through the environment, quoted, never
+        # interpolated into it: a dispatcher cannot inject commands into a
+        # job that holds the key.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CODEV_EVAL_MODEL: ${{ inputs.model }}
+          CODEV_EVAL_MIN_RECALL: ${{ inputs.min_recall }}
+          EVAL_ROLES: ${{ inputs.roles }}
+        run: |
+          read -ra roles <<< "$EVAL_ROLES"
+          args=()
+          for role in "${roles[@]}"; do args+=(--role "$role"); done
+          cargo run --locked -p codev-evals -- run --out evals-output "${args[@]}"
+      - name: Keep the output
+        if: always() && steps.key.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: role-evaluations
+          path: evals-output
+          if-no-files-found: ignore

@@ -1,0 +1,203 @@
+{
+  "format": 1,
+  "case": "skeptic-plan-unsupported-assumption",
+  "error": null,
+  "costUsd": 0.4784532,
+  "durationMs": 66146,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-skeptic-1 (The merge key rests on an assumption the design itself contradicts) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-skeptic-2 (Losing records are deleted outright, with no way back) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "merge-duplicate-customers",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Since an e-mail address identifies exactly one person, the job groups\ncustomers by lower-cased e-mail, keeps the oldest record of each group,\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 9,
+        "location": "design.md#Decision: Customers are merged by e-mail",
+        "recommendation": "Drop the assumption that one e-mail means one person. The design's own Context says business buyers share a purchasing mailbox (`orders@acme.example`), each with their own record and billing address, so a pure e-mail merge would fold several real customers into one. Narrow the merge key, for example to guest records only, or e-mail plus name or billing address, or exclude shared mailboxes, and add a spec scenario for the shared-mailbox case.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The merge key rests on an assumption the design itself contradicts"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "moves the others' orders to it and deletes the others.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 24,
+        "location": "design.md#Decision: Customers are merged by e-mail",
+        "recommendation": "Make the merge reversible. Soft-delete the merged records or keep a mapping of merged id to surviving id with the original data, and add a dry-run or report mode before the first destructive run. Say what happens to the deleted records' own data (billing addresses, names) and to anything else that references their ids besides orders.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Losing records are deleted outright, with no way back"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "A nightly job SHALL merge customer records that share an e-mail address into the oldest one, moving their orders to it.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 38,
+        "location": "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged",
+        "recommendation": "Add scenarios for: e-mails that differ only in case (the design lower-cases them, the requirement does not say so); a missing or empty e-mail; a shared business mailbox (see R-skeptic-1); conflicting data between records (which billing address and name survive); and a job that fails half-way or overlaps a checkout in progress.\n",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The specs only cover the happy path"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [ ] migration\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-4",
+        "line": 53,
+        "location": "proposal.md#Domains",
+        "recommendation": "Tick personal-data (the job merges and deletes customer records holding e-mails, names and billing addresses) and migration (it rewrites existing orders and removes existing rows), and consider operations for a nightly job (logging, monitoring, rollback). Otherwise give the reason on each unticked line. As written, no expert reviews the change.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No domain is ticked although the job deletes customers' personal data"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- `jobs/merge_customers.py` (new).\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-5",
+        "line": 71,
+        "location": "proposal.md#Impact",
+        "recommendation": "Check the data model the job will run against. The only database code in the repository (`app/db.py`) is for a \"members service\" with a `users` table (`INSERT INTO users (email, display_name)`). It has no customer, order or billing-address table and no job runner. Name the real tables, their foreign keys and the nightly scheduler in the design, or plan the work to create them.",
+        "reported": false,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The plan assumes customer and order tables the code does not show"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] 1.1 Nightly merge job, verified by tests \"Two records, one e-mail\" and \"No duplicate\"\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-6",
+        "line": 85,
+        "location": "tasks.md#1. Merge",
+        "recommendation": "Split it into observable tasks: the merge logic, the nightly scheduling, and a way to undo or audit a run. Tie each one to the scenarios R-skeptic-3 asks for.\n",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The task is verified only by the two happy-path tests"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/merge-duplicate-customers/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

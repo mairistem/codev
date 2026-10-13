@@ -1,0 +1,11 @@
+role: tracer
+step: plan.trace
+change: add-magic-links
+stacks: ["rust"]
+kind: seeded
+summary: "The spec's expired-link scenario has no task or test."
+checks:
+  fixed:
+    - path: _codev/changes/add-magic-links/tasks.md
+      contains: "expired"
+  unchanged: []

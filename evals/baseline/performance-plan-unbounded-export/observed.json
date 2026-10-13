@@ -1,0 +1,188 @@
+{
+  "format": 1,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.4228084,
+  "durationMs": 39269,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export loads the organization's whole audit log into memory) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-2 (Building the CSV with map/join blocks the single event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 17,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "recommendation": "Stream the rows instead of buffering them: read with a server-side cursor (for example `pg-cursor` or `pg-query-stream`) or keyset pages on `(created_at, id)` of a few thousand rows, and write each CSV line to the response as it is read, honouring back-pressure. Memory then stays constant per request instead of growing with the log.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export loads the organization's whole audit log into memory"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 44,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "recommendation": "Produce the CSV incrementally from the row stream (a Transform stream piped to `res`), so serialization work is spread across ticks and other requests keep being served during an export.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Building the CSV with map/join blocks the single event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`GET /admin/audit-events.csv` SHALL return every audit event of the organization as CSV, oldest first.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 67,
+        "location": "specs/audit-export/spec.md#Requirement: Administrators export the audit log",
+        "recommendation": "Either state that the response is streamed (so \"every event\" is delivered without buffering) or add an optional date range (`from`, `to`) and a scenario covering a large log; leave the choice to the author, since a range changes observable behaviour.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The requirement mandates an unbounded result with no range"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-4",
+        "line": 89,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "recommendation": "Check with `EXPLAIN` that an index on `audit_events (org_id, created_at)` exists, and add it to the plan (a migration task) if it does not; without it the query scans and sorts the whole table, all organizations included.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is named for the export's filter and sort"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Alternatives considered**: none; the code is the simplest.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-5",
+        "line": 110,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "recommendation": "Record the streaming alternative and the reason for the choice, and back it with a measurement of memory and latency on a realistic volume (for example one organization with seven years of events).",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The approach is chosen without weighing alternatives or measuring"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "role": "security",
+            "state": "disabled"
+          },
+          {
+            "role": "performance",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

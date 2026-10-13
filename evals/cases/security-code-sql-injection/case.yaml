@@ -1,0 +1,11 @@
+role: security
+step: code.review
+change: add-user-search
+stacks: ["typescript"]
+kind: seeded
+summary: "A search endpoint concatenates the query string into SQL."
+expected:
+  - id: sql-injection
+    severity: high
+    category: injection
+    locations: ["src/users.ts:10-11"]

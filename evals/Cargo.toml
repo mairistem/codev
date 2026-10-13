@@ -1,0 +1,25 @@
+[package]
+name = "codev-evals"
+description = "Evaluation suite of codev's reviewing roles: seeded defects, clean controls, scores"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+# Never published nor shipped: it calls a model through Claude Code, which
+# the codev binary must never do.
+publish = false
+
+[[bin]]
+name = "codev-evals"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_norway = { workspace = true }
+
+[lints]
+workspace = true

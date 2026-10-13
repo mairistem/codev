@@ -1,0 +1,6 @@
+role: security
+step: code.review
+change: document-token-rotation
+stacks: ["rust"]
+kind: control
+summary: "A docs-only change explains how to rotate API tokens; nothing to find."

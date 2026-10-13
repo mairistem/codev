@@ -1,0 +1,104 @@
+{
+  "format": 1,
+  "case": "performance-control-batched-query",
+  "error": null,
+  "costUsd": 0.3190468,
+  "durationMs": 33570,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "batch-cart-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Changed: Large carts load faster.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 9,
+        "location": "proposal.md#Release note",
+        "recommendation": "Measure cartTotal before and after on a large cart (e.g. 100 items, with EXPLAIN on the ANY($1) query) and record the figures, or soften the release note; the task's only verification is `npm test -- cart` and no test or benchmark for cart exists in the repository.",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The speed claim is not backed by a measurement"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "const ids = [...new Set(items.map((item) => item.productId))];\nconst rows = await query<PriceRow>(\"SELECT id, price_cents FROM products WHERE id = ANY($1)\", [ids]);\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 23,
+        "location": "src/cart.ts:18-19",
+        "recommendation": "The batched query is sized by the cart (one row per distinct product), which is bounded only if carts are capped; the proposal cites \"Carts are limited to 100 items by the existing validation\", but no such validation is in src/ (server.ts only serves /health). Point to the validation, or cap items in cartTotal's caller.",
+        "reported": false,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The 100-item cart bound the query relies on is not found in the code"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/batch-cart-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

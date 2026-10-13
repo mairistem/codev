@@ -1,0 +1,6 @@
+role: accessibility
+step: code.review
+change: add-newsletter-form
+stacks: ["typescript"]
+kind: control
+summary: "A newsletter form with a label, a hint and a text error; nothing to find."

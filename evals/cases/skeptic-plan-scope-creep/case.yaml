@@ -1,0 +1,11 @@
+role: skeptic
+step: plan.challenge
+change: add-csv-export
+stacks: ["typescript"]
+kind: seeded
+summary: "A CSV export request grows a plugin system and a settings page nobody asked for."
+expected:
+  - id: scope-creep
+    severity: medium
+    category: scope
+    locations: ["proposal.md#What Changes", "design.md#Decision: Exports go through a plugin registry", "specs/invoice-export/spec.md#Requirement: Users choose their export format", "tasks.md"]

@@ -1,0 +1,15 @@
+role: migration
+step: code.review
+change: drop-legacy-email
+stacks: ["rust"]
+kind: seeded
+summary: "A migration drops a column with no way back, and a public JSON field is renamed."
+expected:
+  - id: irreversible-drop
+    severity: high
+    category: irreversible-migration
+    locations: ["migrations/0005_drop_legacy_email.sql:2"]
+  - id: renamed-json-field
+    severity: high
+    category: breaking-api
+    locations: ["src/api.rs:8-9", "proposal.md#Release note"]

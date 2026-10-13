@@ -1,0 +1,6 @@
+role: performance
+step: code.review
+change: batch-cart-prices
+stacks: ["typescript"]
+kind: control
+summary: "A cart total reads every price in one query; nothing to find."

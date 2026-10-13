@@ -1,0 +1,50 @@
+{
+  "format": 1,
+  "case": "newcomer-control-plain-code",
+  "error": null,
+  "costUsd": 0.2712482,
+  "durationMs": 16332,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoice-due-dates",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoice-due-dates/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "newcomer",
+            "state": "no-finding"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

@@ -80,6 +80,46 @@ comme des erreurs.
 La dernière commande valide l'arborescence `_codev/` de codev lui-même : les
 specs, les changes actifs et les sceaux des décisions doivent rester valides.
 
+## Modifier un rôle
+
+Les rôles intégrés (`assets/roles/`) sont des prompts : leur effet se
+mesure, il ne se devine pas. Une pull request qui modifie un fichier de
+`assets/roles/` exécute les évaluations des rôles avant et après la
+modification et colle les deux scores — rappel, faux positifs et validité
+des preuves des rôles concernés — dans sa description. La référence est la
+ligne de base versionnée, `evals/baseline/report.md`.
+
+La suite demande [Claude Code](https://claude.com/claude-code) installé et
+connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
+exécution complète des 26 cas coûte quelques dollars américains, chaque
+cas étant plafonné à 3 par défaut.
+
+```bash
+cargo build --bin codev
+cargo run -p codev-evals -- list                       # les cas
+cargo run -p codev-evals -- run --role security        # les cas d'un rôle
+cargo run -p codev-evals -- run --out target/evals/mine  # tous les cas
+cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
+```
+
+`run` écrit `report.md` et `report.json` dans son répertoire de sortie et
+se termine avec le code 1 quand un rôle passe sous un seuil
+(`--min-recall`, `--max-false-positives`, `--min-evidence`) ou qu'un cas
+s'est arrêté ; un répertoire qui contient déjà des observations est
+repris. `CODEV_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
+Code), `CODEV_EVAL_BUDGET_USD` et `CODEV_EVAL_TIMEOUT_SECS` bornent chaque
+cas. Comparez avec le même modèle que la ligne de base. Les mainteneurs
+peuvent aussi lancer à la main le workflow **Role evaluations** ; il
+demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
+sinon.
+
+N'ajustez pas un rôle et ses cas dans la même pull request : un cas dit
+ce qu'un relecteur devrait trouver, indépendamment de la formulation du
+rôle. Quand les règles de notation ou les cas changent, enregistrez de
+nouveau la ligne de base — supprimez `evals/baseline/`, puis
+`cargo run -p codev-evals -- run --out evals/baseline` —, ce que les tests
+vérifient.
+
 ## Commits
 
 Les messages de commit suivent la convention

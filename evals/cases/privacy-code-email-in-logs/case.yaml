@@ -1,0 +1,15 @@
+role: privacy
+step: code.review
+change: add-signup
+stacks: ["python"]
+kind: seeded
+summary: "Sign-up logs the e-mail address and sends it to a third-party analytics service."
+expected:
+  - id: email-in-logs
+    severity: medium
+    category: personal-data-in-logs
+    locations: ["app/signup.py:14"]
+  - id: email-to-analytics
+    severity: medium
+    category: personal-data-to-processor
+    locations: ["app/signup.py:15"]
