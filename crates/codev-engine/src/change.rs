@@ -160,6 +160,36 @@ mod tests {
     }
 
     #[test]
+    fn status_ignores_the_review_record() {
+        let without = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let with = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file(
+                "/p/_codev/changes/add-auth/review.md",
+                "## plan.challenge\n\n### skeptic\n\nNo finding.\n",
+            );
+        let layout = Layout::new("/p");
+        let states = |fs: &MemoryFileSystem| {
+            status(fs, &layout, &context(fs, "add-auth"))
+                .unwrap()
+                .artifacts
+                .iter()
+                .map(|a| (a.id.clone(), a.state))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(states(&with), states(&without));
+    }
+
+    #[test]
     fn a_nested_spec_satisfies_the_artifact_pattern() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")

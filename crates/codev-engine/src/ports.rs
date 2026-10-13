@@ -17,6 +17,10 @@ pub trait FileSystem {
 
     fn read_to_string(&self, path: &Path) -> io::Result<String>;
 
+    /// The size of the file in bytes, without reading it: a caller that
+    /// caps what it reads asks first.
+    fn len(&self, path: &Path) -> io::Result<u64>;
+
     /// Writes the file, creating its parent directories if needed.
     fn write(&self, path: &Path, contents: &str) -> io::Result<()>;
 
@@ -515,6 +519,10 @@ impl FileSystem for RealFileSystem {
         std::fs::read_to_string(path)
     }
 
+    fn len(&self, path: &Path) -> io::Result<u64> {
+        Ok(std::fs::metadata(path)?.len())
+    }
+
     fn write(&self, path: &Path, contents: &str) -> io::Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -721,6 +729,10 @@ impl FileSystem for MemoryFileSystem {
                 format!("{} is missing", path.display()),
             )
         })
+    }
+
+    fn len(&self, path: &Path) -> io::Result<u64> {
+        self.read_to_string(path).map(|text| text.len() as u64)
     }
 
     fn write(&self, path: &Path, contents: &str) -> io::Result<()> {

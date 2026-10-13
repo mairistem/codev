@@ -65,6 +65,7 @@ Codes d'erreur courants :
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
+| `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un codev plus récent ; le message nomme chaque raison |
 | `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
 | `unreadable` | Un fichier n'a pas pu être lu |
 | `write_failed` | Un fichier n'a pas pu être écrit |
@@ -459,6 +460,79 @@ elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
 
 `codev sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
 les specs principales supprimées par un change qui retire une capacité.
+
+### review
+
+```json
+{
+  "changeName": "add-sessions",
+  "path": "_codev/changes/add-sessions/review.md",
+  "exists": true,
+  "format": 1,
+  "steps": [
+    {
+      "step": "plan.challenge",
+      "recorded": true,
+      "activeRoles": ["skeptic", "security"],
+      "roles": [
+        { "role": "skeptic", "state": "no-finding" },
+        { "role": "security", "state": "findings" }
+      ]
+    },
+    {
+      "step": "code.review",
+      "recorded": false,
+      "activeRoles": ["newcomer", "security"],
+      "roles": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "R-security-1",
+      "title": "Session tokens are stored in clear",
+      "role": "security",
+      "step": "plan.challenge",
+      "line": 13,
+      "severity": "high",
+      "confidence": "high",
+      "reported": true,
+      "location": "design.md#Decision: Sessions live in the database",
+      "evidence": "The session token is stored in the `sessions` table.\n",
+      "recommendation": "Store a SHA-256 of the token and compare digests.",
+      "status": "disputed",
+      "awaiting": "human",
+      "history": [
+        { "status": "open", "by": "security", "note": null, "ref": null, "to": null },
+        { "status": "disputed", "by": "architect", "note": "Tokens expire after 5 minutes.", "ref": null, "to": null },
+        { "status": "disputed", "by": "security", "note": "Five minutes is enough to replay a stolen token.", "ref": null, "to": null }
+      ]
+    }
+  ],
+  "issues": [],
+  "archive": {
+    "ready": false,
+    "blockers": [
+      { "code": "review_step_missing", "message": "the review record has no `## code.review` section, while roles were active at it" },
+      { "code": "review_unresolved", "message": "R-security-1 (Session tokens are stored in clear) is high and still disputed; fix it, or a human accepts the risk or defers it" }
+    ]
+  },
+  "status": []
+}
+```
+
+| Champ | Signification |
+|---|---|
+| `exists` | `false` sans `review.md` ; `format` et `findings` sont alors `null` ou vides |
+| `steps[].activeRoles` | Les rôles actifs à l'étape pour le change, tels que `codev roles --at <step> --change <name>` les renvoie |
+| `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (une section sans rien d'exploitable), ou `missing` (un rôle actif sans section, dans une étape consignée) |
+| `findings[].reported` | `true` quand la confiance est `high` : les skills ne présentent que ceux-là |
+| `findings[].status` | Le statut de la dernière entrée d'historique |
+| `findings[].awaiting` | Qui agit ensuite : `author` (ouvert), `reviewer` (une correction à vérifier, une contestation à laquelle répondre), `human` (une contestation que le relecteur a maintenue), ou `null` |
+| `issues` | Les défauts du compte rendu, sous la forme des constats de `validate`, avec les codes `review_*` |
+| `archive.blockers[].code` | `review_record_missing`, `review_step_missing`, `review_unresolved` ou `review_format_unsupported` |
+
+Le code de sortie vaut `1` seulement quand `issues` contient une erreur. Les
+champs que le fichier omet ou rend invalides valent `null`.
 
 ### roles
 

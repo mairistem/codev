@@ -156,7 +156,99 @@ modify. The newcomer never changes behavior. An expert never changes
 behavior silently: a behavior-changing fix becomes a review note, unless it
 is a clear defect within the change's scope — then fix it, add a test that
 fails without the fix, and name the fix in the summary. Keep the rest for
-the review notes.
+the review notes. Here `<step>` is `code.review`.
+
+**The review record.** Every finding of this step goes to
+`_codev/changes/<name>/review.md`, the change's review record, before it
+is fixed or reported.
+
+a. **Resume first.** Run `codev review --change "<name>" --json`. A
+   finding already in `findings[]` is never raised again, and a finding
+   whose `awaiting` is `author` or `reviewer` is answered before anything
+   new. The record is the state: a session that stopped half-way picks up
+   from it.
+
+b. **Write a section per role.** Under `## <step>` (create the file with
+   `# Review record: <name>` and `<!-- codev-review: 1 -->` if it does not
+   exist), one `### <role-id>` per role returned, holding its findings, or
+   the line `No finding.` when it found nothing. For each role that serves
+   this step but that `codev roles --change "<name>" --json` shows with
+   `when: never`, write `Disabled by configuration.` instead. Never write
+   a step or a role twice: add to the existing section.
+
+c. **Write each finding** as a heading `#### R-<role-id>-<n> <title>` —
+   `<n>` the next number free for that role in the whole record, never
+   reused — followed by one fenced `yaml` block:
+
+   ```yaml
+   severity: high
+   confidence: high
+   location: "src/auth/session.rs:42-44"
+   evidence: |
+     let query = format!("SELECT * FROM sessions WHERE token = '{}'", token);
+   recommendation: Bind the token as a parameter.
+   history:
+     - status: open
+       by: security
+   ```
+
+   - `location`: `path:line` or `path:start-end` relative to the project
+     root for code; `<file>#<heading>` relative to the change folder for
+     the plan (`"design.md#Decision: Sessions live in the database"`).
+     Quote it: a heading often holds `: `.
+   - `evidence`: re-read the cited lines and copy the text verbatim —
+     whole lines or the fragment that matters, never a paraphrase.
+     `codev validate` checks it is there.
+   - `severity` and `confidence`, on these scales:
+
+     Severity:
+
+     - `high` — The change would break a requirement, lose or expose data, or open a vulnerability, and must not be archived until it is fixed or a human accepts the risk.
+     - `medium` — A real defect or risk with a limited impact or a workaround, to fix in this change or to defer deliberately.
+     - `low` — An improvement, such as readability, consistency or a minor cost, that does not decide whether the change is correct.
+
+     Confidence:
+
+     - `high` — The evidence shows the problem directly.
+     - `low` — The problem depends on something the reviewer could not see or verify.
+
+d. **The author answers each finding still `open`** — the role that owns
+   the cited artifact at `plan.challenge` (its `role.id` in
+   `codev instructions`), the `developer` at `code.review`. Append to
+   `history`, never rewrite it:
+   - fix it when the fix is unambiguous and within the change's scope —
+     `status: fixed`, `by: <author>`, `ref:` the commit or the file
+     change;
+   - or dispute it — `status: disputed`, `by: <author>`, `note:` the
+     argument, pointing at the material that supports it;
+   - or leave it `open` when only a person can decide.
+
+e. **The reviewer re-checks each answer once**, as the finding's role: a
+   fix is verified (`status: fixed`, `by: <role-id>`) or reopened
+   (`status: open`, `by: <role-id>`, `note:` why it does not hold); a
+   dispute is accepted (`status: rejected`, `by: <role-id>`) or maintained
+   (`status: disputed`, `by: <role-id>`, `note:` why). No second round:
+   what is still `open` or `disputed` goes to the human.
+
+f. **Only a person decides a risk.** Never write `accepted-risk`, nor
+   defer a `high` finding, on your own: list them under **To decide** and
+   record the decision once the user gives it — `status: accepted-risk`
+   with `note:` the justification, or `status: deferred` with `to:` the
+   change or the issue it goes to, `by: human:<their name>` (from
+   `git config user.name`, else `by: human`). A `medium` or `low` finding
+   may be deferred by the author, with `to:`.
+
+g. **Check the record.** Run `codev review --change "<name>" --json` and
+   fix every entry of `issues[]` in the record itself — format, location,
+   evidence — never by changing what a finding says.
+
+h. **Report from the record.** Present only findings with `reported:
+   true` that are not `rejected`. The **To decide** block lists every
+   finding whose `awaiting` is `human` and every `high` finding still
+   `open`, each with its id, what it is, the author's argument and the
+   reviewer's answer, and the choices: fix it, accept the risk (with a
+   justification), or defer it (to a change or an issue). If there is
+   none, write "Nothing to decide".
 
 ### 6. Finish — suggest archiving as an explicit next step
 
@@ -168,13 +260,17 @@ Otherwise, summarize:
 - number of tasks done,
 - main files touched (one line),
 - the defects the experts fixed in step 5, one line each,
-- **Review notes** — from step 5, at most five items in total across the
+- **Review notes** — from the record's `code.review` findings reported to
+  the human and not rejected, at most five items in total across the
   roles, ranked by severity, one line each, tagged with the role id:
-  `[<role-id>] what — where — why`. A high-severity `security` or
-  `privacy` finding is always listed, even beyond five. If nothing is
-  worth raising, write "No review concern found"; never invent notes. When
-  no role is active at step 5, write "The review is disabled by
-  configuration" instead,
+  `[<role-id>] <finding id> (<status>) what — where — why`. A
+  high-severity `security` or `privacy` finding is always listed, even
+  beyond five. If nothing is worth raising, write
+  "No review concern found"; never invent notes. When no role is active at
+  step 5, write "The review is disabled by configuration" instead,
+- **To decide** — from step 5: what only the user can decide, or "Nothing
+  to decide". `codev archive` refuses while a `high` finding is `open` or
+  `disputed`,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 
@@ -197,6 +293,9 @@ A final summary, as described in step 6.
 - **Verify before checking off**: checking a box without having run the
   verification the task cites = a regression waiting to happen. Always
   verify.
+- **The review record is the truth**: every finding is in `review.md`
+  before it is fixed or reported; an accepted risk or the deferral of a
+  high finding is recorded only once the user decided it.
 - **Targeted editing of tasks.md**: the changed line is identified by its
   full text, never by a bare `- [ ]`. Otherwise, another box would be
   checked by accident.

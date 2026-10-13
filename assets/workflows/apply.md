@@ -130,7 +130,9 @@ modify. The newcomer never changes behavior. An expert never changes
 behavior silently: a behavior-changing fix becomes a review note, unless it
 is a clear defect within the change's scope — then fix it, add a test that
 fails without the fix, and name the fix in the summary. Keep the rest for
-the review notes.
+the review notes. Here `<step>` is `code.review`.
+
+{{REVIEW_RECORD}}
 
 ### 6. Finish — suggest archiving as an explicit next step
 
@@ -142,13 +144,17 @@ Otherwise, summarize:
 - number of tasks done,
 - main files touched (one line),
 - the defects the experts fixed in step 5, one line each,
-- **Review notes** — from step 5, at most five items in total across the
+- **Review notes** — from the record's `code.review` findings reported to
+  the human and not rejected, at most five items in total across the
   roles, ranked by severity, one line each, tagged with the role id:
-  `[<role-id>] what — where — why`. A high-severity `security` or
-  `privacy` finding is always listed, even beyond five. If nothing is
-  worth raising, write "No review concern found"; never invent notes. When
-  no role is active at step 5, write "The review is disabled by
-  configuration" instead,
+  `[<role-id>] <finding id> (<status>) what — where — why`. A
+  high-severity `security` or `privacy` finding is always listed, even
+  beyond five. If nothing is worth raising, write
+  "No review concern found"; never invent notes. When no role is active at
+  step 5, write "The review is disabled by configuration" instead,
+- **To decide** — from step 5: what only the user can decide, or "Nothing
+  to decide". `codev archive` refuses while a `high` finding is `open` or
+  `disputed`,
 - "The change is ready to be archived. Run `/codev-archive` or
   `codev archive` as the next step."
 
@@ -171,6 +177,9 @@ A final summary, as described in step 6.
 - **Verify before checking off**: checking a box without having run the
   verification the task cites = a regression waiting to happen. Always
   verify.
+- **The review record is the truth**: every finding is in `review.md`
+  before it is fixed or reported; an accepted risk or the deferral of a
+  high finding is recorded only once the user decided it.
 - **Targeted editing of tasks.md**: the changed line is identified by its
   full text, never by a bare `- [ ]`. Otherwise, another box would be
   checked by accident.

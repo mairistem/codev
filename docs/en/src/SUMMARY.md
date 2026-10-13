@@ -19,6 +19,7 @@
 - [Inherited sources](guides/inherited-sources.md)
 - [Repository integration and codev doctor](guides/repository-integration.md)
 - [Release notes and CHANGELOG](guides/release-notes.md)
+- [Review record](guides/review-record.md)
 - [Jira and other MCP servers](guides/mcp.md)
 - [Artifact language](guides/artifact-language.md)
 - [Custom schemas](guides/custom-schemas.md)

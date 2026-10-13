@@ -58,8 +58,9 @@ Dans Claude Code, `/codev-propose` fait tout en une seule passe :
    `codev instructions <artifact> --change <name> --json`, étudie le code
    concerné et rédige le fichier en suivant le template.
 4. Elle vérifie la traçabilité entre proposal, specs et tâches, puis relit le
-   plan en relecteur sceptique : elle corrige ce qui ne fait pas de doute et
-   liste jusqu'à cinq points à challenger. Voir
+   plan en relecteur sceptique : elle écrit chaque constat dans le
+   [compte rendu de revue](guides/review-record.md) du change, corrige ce
+   qui ne fait pas de doute et liste jusqu'à cinq points à challenger. Voir
    [Propose](skills.md#propose-codev-propose).
 5. Elle s'arrête lorsque la planification est complète et présente le plan.
    Elle ne commence jamais l'implémentation dans le même tour.
@@ -85,8 +86,11 @@ tâches cochées, la skill relit le code touché par le change comme le ferait
 un nouvel arrivant sur le projet, rejointe par les
 [experts](roles.md#experts-et-domaines) qu'activent les domaines de la
 proposal, simplifie ce qui ne fait pas de doute sans élargir le périmètre,
-et liste au plus cinq notes de relecture dans son résumé. Elle lance ensuite une fois la suite de tests
-complète.
+et liste au plus cinq notes de relecture dans son résumé. Chaque constat est
+conservé dans le [compte rendu de revue](guides/review-record.md) du change,
+avec la réponse de l'auteur et la vérification du relecteur ; ce que vous
+seul pouvez trancher est listé à la fin. Elle lance ensuite une fois la
+suite de tests complète.
 
 Elle s'arrête au premier blocage ou à la première ambiguïté pour vous
 consulter plutôt que de deviner. Elle ne modifie que le change désigné,
@@ -126,8 +130,13 @@ L'archivage clôt un change :
 
 1. Il valide le change et **refuse** de continuer si la validation signale une
    erreur, en vous renvoyant vers `codev validate <name>` pour le détail.
-2. Il fusionne les deltas dans les specs principales, exactement comme `sync`.
-3. Il déplace le dossier du change dans
+2. Il vérifie le [compte rendu de revue](guides/review-record.md) et
+   **refuse** de continuer (`review_blocked`) s'il manque pour une étape où
+   des rôles de relecture étaient actifs, ou si un constat de gravité haute
+   est encore ouvert ou contesté ; `codev review --change <name>` montre ce
+   qui reste.
+3. Il fusionne les deltas dans les specs principales, exactement comme `sync`.
+4. Il déplace le dossier du change, compte rendu compris, dans
    `_codev/changes/archive/<YYYY-MM-DD>-<name>/`.
 
 La fusion complète est calculée et vérifiée avant l'écriture du premier

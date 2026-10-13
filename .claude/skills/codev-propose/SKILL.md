@@ -243,10 +243,100 @@ criteria. Fix the gaps directly in the artifacts.
 Re-read the artifacts as reviewers who did not write them: every role
 returned — the skeptic, and the experts the proposal's `## Domains`
 activates — each along its criteria and knowledge. An expert asks whether
-the design addresses its domain.
+the design addresses its domain. Here `<step>` is `plan.challenge`.
 
-Fix what is unambiguous directly. Record what needs a human decision in the
-Open Questions of `design.md`, or in the proposal if there is no design.
+**The review record.** Every finding of this step goes to
+`_codev/changes/<name>/review.md`, the change's review record, before it
+is fixed or reported.
+
+a. **Resume first.** Run `codev review --change "<name>" --json`. A
+   finding already in `findings[]` is never raised again, and a finding
+   whose `awaiting` is `author` or `reviewer` is answered before anything
+   new. The record is the state: a session that stopped half-way picks up
+   from it.
+
+b. **Write a section per role.** Under `## <step>` (create the file with
+   `# Review record: <name>` and `<!-- codev-review: 1 -->` if it does not
+   exist), one `### <role-id>` per role returned, holding its findings, or
+   the line `No finding.` when it found nothing. For each role that serves
+   this step but that `codev roles --change "<name>" --json` shows with
+   `when: never`, write `Disabled by configuration.` instead. Never write
+   a step or a role twice: add to the existing section.
+
+c. **Write each finding** as a heading `#### R-<role-id>-<n> <title>` —
+   `<n>` the next number free for that role in the whole record, never
+   reused — followed by one fenced `yaml` block:
+
+   ```yaml
+   severity: high
+   confidence: high
+   location: "src/auth/session.rs:42-44"
+   evidence: |
+     let query = format!("SELECT * FROM sessions WHERE token = '{}'", token);
+   recommendation: Bind the token as a parameter.
+   history:
+     - status: open
+       by: security
+   ```
+
+   - `location`: `path:line` or `path:start-end` relative to the project
+     root for code; `<file>#<heading>` relative to the change folder for
+     the plan (`"design.md#Decision: Sessions live in the database"`).
+     Quote it: a heading often holds `: `.
+   - `evidence`: re-read the cited lines and copy the text verbatim —
+     whole lines or the fragment that matters, never a paraphrase.
+     `codev validate` checks it is there.
+   - `severity` and `confidence`, on these scales:
+
+     Severity:
+
+     - `high` — The change would break a requirement, lose or expose data, or open a vulnerability, and must not be archived until it is fixed or a human accepts the risk.
+     - `medium` — A real defect or risk with a limited impact or a workaround, to fix in this change or to defer deliberately.
+     - `low` — An improvement, such as readability, consistency or a minor cost, that does not decide whether the change is correct.
+
+     Confidence:
+
+     - `high` — The evidence shows the problem directly.
+     - `low` — The problem depends on something the reviewer could not see or verify.
+
+d. **The author answers each finding still `open`** — the role that owns
+   the cited artifact at `plan.challenge` (its `role.id` in
+   `codev instructions`), the `developer` at `code.review`. Append to
+   `history`, never rewrite it:
+   - fix it when the fix is unambiguous and within the change's scope —
+     `status: fixed`, `by: <author>`, `ref:` the commit or the file
+     change;
+   - or dispute it — `status: disputed`, `by: <author>`, `note:` the
+     argument, pointing at the material that supports it;
+   - or leave it `open` when only a person can decide.
+
+e. **The reviewer re-checks each answer once**, as the finding's role: a
+   fix is verified (`status: fixed`, `by: <role-id>`) or reopened
+   (`status: open`, `by: <role-id>`, `note:` why it does not hold); a
+   dispute is accepted (`status: rejected`, `by: <role-id>`) or maintained
+   (`status: disputed`, `by: <role-id>`, `note:` why). No second round:
+   what is still `open` or `disputed` goes to the human.
+
+f. **Only a person decides a risk.** Never write `accepted-risk`, nor
+   defer a `high` finding, on your own: list them under **To decide** and
+   record the decision once the user gives it — `status: accepted-risk`
+   with `note:` the justification, or `status: deferred` with `to:` the
+   change or the issue it goes to, `by: human:<their name>` (from
+   `git config user.name`, else `by: human`). A `medium` or `low` finding
+   may be deferred by the author, with `to:`.
+
+g. **Check the record.** Run `codev review --change "<name>" --json` and
+   fix every entry of `issues[]` in the record itself — format, location,
+   evidence — never by changing what a finding says.
+
+h. **Report from the record.** Present only findings with `reported:
+   true` that are not `rejected`. The **To decide** block lists every
+   finding whose `awaiting` is `human` and every `high` finding still
+   `open`, each with its id, what it is, the author's argument and the
+   reviewer's answer, and the choices: fix it, accept the risk (with a
+   justification), or defer it (to a change or an issue). If there is
+   none, write "Nothing to decide".
+
 Ask the user only if a finding changes the scope materially.
 
 ### 8. Show the final status
@@ -264,12 +354,16 @@ Summarize:
   and why;
 - each step skipped because its role is disabled by configuration;
 - "The artifacts needed for implementation are ready.";
-- **Points to challenge** — from step 7, at most five items in total
-  across the roles, ranked by impact, one line each, tagged with the role
-  id: `[<role-id>] what — why it matters — which artifact`. If nothing is
-  worth raising, write "No point to challenge found"; never invent points.
-  When no role is active at step 7, write "The skeptic is disabled by
-  configuration" instead;
+- **Points to challenge** — from the record's `plan.challenge` findings
+  reported to the human and not rejected, at most five items in total
+  across the roles, ranked by severity, one line each, tagged with the role
+  id: `[<role-id>] <finding id> (<status>) what — why it matters — which
+  artifact`. If nothing is worth raising, write
+  "No point to challenge found"; never invent points. When no role is
+  active at step 7, write "The skeptic is disabled by configuration"
+  instead;
+- **To decide** — from step 7: what only the user can decide, or
+  "Nothing to decide";
 - "Review them. When you are ready, ask me to apply this change."
 
 ## Guardrails
@@ -286,6 +380,9 @@ Summarize:
 - Check that each written file exists before moving on to the next.
 - The contrarian pass corrects or records; it never adds scope.
 - Points to challenge are capped at five, across all roles.
+- Every finding is in `review.md` before it is fixed or reported; an
+  accepted risk or the deferral of a high finding is recorded only once
+  the user decided it.
 - **Jira MCP — strictly read-only.** Never call any Jira MCP
   tool other than
   `mcp__claude_ai_Atlassian_Rovo__getJiraIssue`, never twice in the

@@ -296,6 +296,21 @@ enum Command {
         json: bool,
     },
 
+    /// Show a change's review record and what is left to decide
+    ///
+    /// Reads `_codev/changes/<name>/review.md`: per step and per role, the
+    /// findings with their severity, status and location, and who must act
+    /// next (author, reviewer or human). Lists the record's defects, as
+    /// `codev validate` does, and whether the review lets the change be
+    /// archived. Exits with 1 when the record has an error.
+    Review {
+        /// Change name (inferred when there is only one)
+        #[arg(long)]
+        change: Option<String>,
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Merge, then move a change to the dated archive
     Archive {
         /// Change name (inferred when there is only one)
@@ -835,6 +850,19 @@ fn run(cli: Cli) -> i32 {
                 0
             }
             Err(err) => fail(json, sync_shape(), &err),
+        },
+
+        Command::Review { change, json } => match commands::review(&ctx, change.as_deref()) {
+            Ok(outcome) => {
+                emit(json, contract::ReviewV1::from(&outcome), || {
+                    render::review(&outcome)
+                });
+                if !json {
+                    render::warnings(&outcome.warnings);
+                }
+                outcome.exit_code()
+            }
+            Err(err) => fail(json, contract::review_shape(), &err),
         },
 
         Command::Archive { change, json } => match commands::archive(&ctx, change.as_deref()) {

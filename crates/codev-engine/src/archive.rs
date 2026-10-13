@@ -4,16 +4,19 @@
 //! `archive` delegates all rule logic to the validator
 //! (`codev-engine::validate::validate_change`). No error code is
 //! duplicated here; on an error finding, pointing to `codev validate`
-//! is enough.
+//! is enough. Then the review gate (`codev-engine::review`): a settled
+//! review is a condition of archiving, not of validity.
 
 use std::path::PathBuf;
 
 use codev_core::{ChangeId, Layout, Plan};
 
 use crate::apply;
+use crate::change;
 use crate::config::ResolvedConfig;
 use crate::error::{EngineError, Result};
 use crate::ports::{Clock, FileSystem};
+use crate::review;
 use crate::sync::{self, SyncPlan};
 
 /// Full plan of an `archive`: the sync and the final move.
@@ -51,6 +54,20 @@ pub fn plan_archive(
     // Preflight: `plan_sync` runs the validator first — an error finding
     // is a refusal before the plan is even prepared.
     let sync_plan = sync::plan_sync(fs, layout, config, change_id)?;
+
+    // The review gate comes after the validation pre-flight: a broken
+    // record is a validation error first, pointing to `codev validate`.
+    let ctx = change::load(fs, layout, config, change_id.clone())?;
+    let blockers = review::check(fs, layout, config, &ctx)?.blockers;
+    if !blockers.is_empty() {
+        return Err(EngineError::ReviewBlocked {
+            change: change_id.to_string(),
+            reasons: blockers
+                .into_iter()
+                .map(|b| format!("{} ({})", b.message, b.code))
+                .collect(),
+        });
+    }
 
     // Move target: `changes/archive/<date>-<name>/`. The date prefix
     // gives a chronological ordering on disk.
@@ -116,6 +133,7 @@ mod tests {
     use super::*;
     use crate::config;
     use crate::ports::{FixedClock, FixedEnv, MemoryFileSystem};
+    use crate::review::tests::{NEWCOMER_NO_FINDING, finding, record};
 
     fn env() -> FixedEnv {
         let mut env = FixedEnv::at("/p");
@@ -138,6 +156,116 @@ mod tests {
                 "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
                 "## Purpose\n\nHandles authentication.\n\n## ADDED Requirements\n\n### Requirement: Login\nThe system SHALL emit a token.\n\n#### Scenario: OK\n- **WHEN** login\n- **THEN** token\n",
             )
+            .with_file(
+                "/p/_codev/changes/add-auth/review.md",
+                record(NEWCOMER_NO_FINDING),
+            )
+    }
+
+    fn archive(fs: &MemoryFileSystem) -> Result<ArchiveOutcome> {
+        let layout = Layout::new("/p");
+        let cfg = resolved(fs);
+        execute_archive(
+            fs,
+            &layout,
+            &cfg,
+            &FixedClock("2026-09-08".into()),
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+    }
+
+    fn still_active(fs: &MemoryFileSystem) -> bool {
+        fs.read("/p/_codev/changes/add-auth/change.yaml").is_some()
+    }
+
+    #[test]
+    fn archive_refuses_an_open_high_finding() {
+        let fs = well_formed_project()
+            .with_file("/p/src/auth.rs", "let token = random();\n")
+            .with_file(
+                "/p/_codev/changes/add-auth/review.md",
+                record(&finding(
+                    "newcomer",
+                    "high",
+                    "src/auth.rs:1",
+                    "random()",
+                    "",
+                )),
+            );
+        let err = archive(&fs).unwrap_err();
+        assert_eq!(err.code(), "review_blocked");
+        let message = err.to_string();
+        assert!(message.contains("R-newcomer-1"), "{message}");
+        assert!(
+            message.contains("codev review --change add-auth"),
+            "{message}"
+        );
+        assert!(still_active(&fs));
+        assert!(fs.read("/p/_codev/specs/user-auth/spec.md").is_none());
+    }
+
+    #[test]
+    fn archive_accepts_an_accepted_risk() {
+        let fs = well_formed_project()
+            .with_file("/p/src/auth.rs", "let token = random();\n")
+            .with_file(
+                "/p/_codev/changes/add-auth/review.md",
+                record(&finding(
+                    "newcomer",
+                    "high",
+                    "src/auth.rs:1",
+                    "random()",
+                    "  - status: accepted-risk\n    by: human:Ludovic\n    note: a test fixture, never deployed\n",
+                )),
+            );
+        let outcome = archive(&fs).unwrap();
+        assert!(
+            fs.read(outcome.moved_to.join("review.md"))
+                .is_some_and(|r| r.contains("accepted-risk"))
+        );
+    }
+
+    #[test]
+    fn archive_refuses_without_a_record() {
+        let fs = well_formed_project();
+        fs.remove_file(std::path::Path::new("/p/_codev/changes/add-auth/review.md"))
+            .unwrap();
+        let err = archive(&fs).unwrap_err();
+        assert_eq!(err.code(), "review_blocked");
+        assert!(err.to_string().contains("review_record_missing"), "{err}");
+        assert!(still_active(&fs));
+        // A record without the code review step.
+        let plan_only = record("")
+            .split("## code.review")
+            .next()
+            .unwrap()
+            .to_string();
+        let fs = well_formed_project().with_file("/p/_codev/changes/add-auth/review.md", plan_only);
+        let err = archive(&fs).unwrap_err();
+        assert!(err.to_string().contains("review_step_missing"), "{err}");
+    }
+
+    #[test]
+    fn archive_without_active_review_roles_needs_no_record() {
+        let fs = well_formed_project().with_file(
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven\nroles:\n  skeptic: never\n  newcomer: never\n",
+        );
+        fs.remove_file(std::path::Path::new("/p/_codev/changes/add-auth/review.md"))
+            .unwrap();
+        archive(&fs).unwrap();
+        assert!(!still_active(&fs));
+    }
+
+    #[test]
+    fn archive_refuses_a_newer_format() {
+        let fs = well_formed_project().with_file(
+            "/p/_codev/changes/add-auth/review.md",
+            "<!-- codev-review: 2 -->\n",
+        );
+        let err = archive(&fs).unwrap_err();
+        assert_eq!(err.code(), "review_blocked");
+        assert!(err.to_string().contains("update codev"), "{err}");
     }
 
     #[test]

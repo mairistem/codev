@@ -19,14 +19,18 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - A schema artifact may declare its role as data (`role:` with id, name, question and "done when" criteria).
 - `codev doctor` lists the active and disabled roles.
 - `/codev-apply` reviews the code a change touched as a newcomer would, simplifies what is unambiguous without changing behavior, and reports up to three readability notes in its summary.
+- Each change keeps a review record, `review.md`, where the roles write their findings with a severity, a confidence, a location and the quoted evidence, and where every answer — fixed, disputed, accepted risk, deferred, rejected — is recorded with who decided it. `codev review` shows it and what is left to decide.
+- `codev validate` checks the review record: its format, that each cited file and line exists and that the quoted evidence is really there.
 
 ### Changed
 
 - **BREAKING** The `analyst` role can no longer be disabled: remove `analyst: never` from `roles:` in `_codev/config.yaml` or a change's `change.yaml`.
+- **BREAKING** `codev archive` refuses (`review_blocked`) a change whose review record is missing for a step where roles were active, or that still has a high-severity finding open or disputed. For a change started with an earlier codev, run the review again or turn its review roles off in its `change.yaml`; a team that does not use the skills turns `skeptic` and `newcomer` off in `_codev/config.yaml`.
 - `/codev-propose` caps its Points to challenge at five across the skeptic and the experts, and `/codev-apply` ends with up to five Review notes (formerly Readability notes), each tagged with its role; a high-severity security or privacy finding is never dropped.
 - `codev doctor` names the roles activated by domain.
 - The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `codev instructions`, and `/codev-propose` and `/codev-apply` take their review criteria from `codev roles`.
 - The architect's criteria of the default schema require the simplest approach that satisfies the specs, and a design a newcomer can follow without knowing its history.
+- `/codev-propose` and `/codev-apply` write their findings into the review record, let the author answer each one and the reviewer re-check it, and ask you to decide what is still disputed.
 <!-- codev:end -->
 
 ## [0.6.1] - 2026-10-12

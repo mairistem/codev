@@ -63,9 +63,9 @@ codev roles --at plan.challenge
 | `plan.investigate` | `/codev-propose` | The code, tests, configuration and documentation are studied before each artifact is written |
 | `plan.write` | `/codev-propose` | Each artifact is written, then checked against its role, which `codev instructions` returns in `role` |
 | `plan.trace` | `/codev-propose` | The artifacts are checked against each other; gaps are fixed in the artifacts |
-| `plan.challenge` | `/codev-propose` | The plan is re-read by the skeptic and the experts the change's domains activate; what is unambiguous is fixed, what needs you goes to the design's Open Questions, and at most five **Points to challenge**, across all roles and each tagged with its role, end the summary |
+| `plan.challenge` | `/codev-propose` | The plan is re-read by the skeptic and the experts the change's domains activate; every finding goes to the [review record](#findings-severity-confidence-and-the-review-record), the author fixes or disputes it and the reviewer checks the answer; at most five **Points to challenge**, across all roles and each tagged with its role, and what you must decide end the summary |
 | `code.implement` | `/codev-apply` | Each task is implemented, verified, then checked off |
-| `code.review` | `/codev-apply` | Once every task is checked, the change's code is re-read by the newcomer and the active experts; what is unambiguous is simplified, and at most five **Review notes**, each tagged with its role, end the summary — a high-severity security or privacy finding is never dropped |
+| `code.review` | `/codev-apply` | Once every task is checked, the change's code is re-read by the newcomer and the active experts; every finding goes to the review record; what is unambiguous is simplified, and at most five **Review notes**, each tagged with its role, and what you must decide end the summary — a high-severity security or privacy finding is never dropped |
 
 The procedure of each step — what to write, the caps, the guardrails —
 stays in the skill. The criteria and the knowledge come from the role.
@@ -129,6 +129,40 @@ The `newcomer` carries complexity signals per language and the `skeptic`
 planning smells; the other step roles carry none. Knowledge is served only
 to active roles: an expert that is not active costs the agent nothing.
 Read it with `codev roles --at code.review --change <name> --knowledge`.
+
+## Findings: severity, confidence and the review record
+
+What the reviewing roles find — the skeptic and the experts at
+`plan.challenge`, the newcomer and the experts at `code.review` — is
+written to the change's **review record**, `_codev/changes/<name>/review.md`,
+before anything is fixed or reported. Each finding quotes its evidence
+verbatim at a location codev can check, and carries a severity and a
+confidence on one shared scale:
+
+| Severity | Meaning |
+|---|---|
+| `high` | The change would break a requirement, lose or expose data, or open a vulnerability, and must not be archived until it is fixed or a human accepts the risk. |
+| `medium` | A real defect or risk with a limited impact or a workaround, to fix in this change or to defer deliberately. |
+| `low` | An improvement, such as readability, consistency or a minor cost, that does not decide whether the change is correct. |
+
+| Confidence | Meaning |
+|---|---|
+| `high` | The evidence shows the problem directly. |
+| `low` | The problem depends on something the reviewer could not see or verify. |
+
+A low-confidence finding stays in the record and is answered like any
+other, but it is not shown to you unless you are asked to decide it.
+
+Then the team works like a team: the author — the role that owns the
+artifact, or the developer for code — fixes each finding or disputes it
+with an argument; the reviewer checks each answer once, verifying the fix
+or accepting the dispute (`rejected`) or maintaining it; what is still
+disputed comes to you, with both arguments, under **To decide**. Only you
+accept a risk or defer a high-severity finding, and the record says who
+decided. `codev archive` refuses a change whose record is missing for a
+step where roles ran, or that still has a high-severity finding open or
+disputed. The full format, the checks and the gate are in
+[Review record](guides/review-record.md).
 
 ## Configuring roles
 
@@ -207,11 +241,13 @@ Once every task is checked, and before the full test suite runs, re-reads
 only the code the change added or modified: the newcomer, as a developer
 joining the project who has seen neither the plan nor the conversation,
 and the experts the change's domains activate, each along its criteria and
-knowledge. What is unambiguous is simplified and the affected tests are
-run again; the rest becomes at most five **Review notes** in the final
-summary — each tagged with its role: what, where, why — or "No review
-concern found". A high-severity security or privacy finding is always
-listed, even beyond five.
+knowledge. Every finding goes to the [review
+record](#findings-severity-confidence-and-the-review-record) first. What
+is unambiguous is simplified and the affected tests are run again; the
+rest becomes at most five **Review notes** in the final summary — each
+tagged with its role and its finding id: what, where, why — or "No review
+concern found", followed by what you must decide. A high-severity security
+or privacy finding is always listed, even beyond five.
 
 The review never widens the change's scope and never touches code the
 change did not add or modify. The newcomer never changes behavior. An
@@ -325,8 +361,8 @@ The agent stops and hands over at these points:
   built. `/codev-explore` asks the questions the code cannot answer.
   `/codev-apply` stops at an ambiguity or a blocker and lets you decide.
 - **Approving the plan.** `/codev-propose` stops once the artifacts are
-  written. Start your review with the Points to challenge and the design's
-  Open Questions; when you are satisfied, ask for `/codev-apply`. To change
+  written. Start your review with the Points to challenge, what is left to
+  decide and the design's Open Questions; when you are satisfied, ask for `/codev-apply`. To change
   an artifact first, use `/codev-update`.
 - **Accepting decisions.** A design follows the decisions in effect or
   explicitly proposes to supersede one. A decision takes effect only when
@@ -341,5 +377,10 @@ The agent stops and hands over at these points:
 - **Configuring the roles.** Which review roles run, and which criteria
   they add, is your project's choice in `roles:` — see
   [Configuring roles](#configuring-roles).
+- **Settling the review.** A dispute the reviewer maintained, or a
+  high-severity finding nobody could fix, comes to you under **To decide**:
+  fix it, accept the risk with a justification, or defer it to another
+  change or an issue. The skill records your decision with your name; it
+  never accepts a risk for you. `codev review` shows what is left.
 - **Archiving.** `/codev-apply` never archives: once you have reviewed the
   implementation, starting with its Review notes, run `/codev-archive` or `codev archive`.

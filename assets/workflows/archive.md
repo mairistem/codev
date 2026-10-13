@@ -62,6 +62,10 @@ On a **non-zero exit**, read `status[0].code`:
   > The change has errors. Run `codev validate <name>` to see the details.
   Nothing more. Do not retry. Do not guess. Do not quote the human
   message (it may be reworded).
+- If `code == "review_blocked"` → reply **exactly**:
+  > The review record blocks archiving. Run `codev review --change <name>` to see what is left to decide.
+  Nothing more. Do not retry. Do not edit `review.md`: what blocks is a
+  decision for the user, or a review step to run again.
 - For **any other code** → relay `status[0].message` as is, and stop.
   The skill does not interpret.
 
@@ -81,16 +85,20 @@ Finally, on its own line:
 ## Output
 
 The success report from step 3, or the short refusal on a validation
-error, or the raw CLI message on any other error.
+error or a blocked review, or the raw CLI message on any other error.
 
 ## Guardrails
 
 - **Write nothing yourself** — everything goes through `codev archive`. The
   skill never modifies specs or folders directly.
+- **Do not work around a review refusal** — a `review_blocked` stops the
+  skill; it never writes an accepted risk or a deferral in the user's
+  place.
 - **Do not work around a validation refusal** — a `validation_failed`
   stops the skill. Fixing is the user's job, guided by `codev validate`,
   not the skill's.
 - **Do not parse any JSON other than `archive`'s** — the skill knows the
   shape of no other contract.
 - **Do not reinvent the CLI's messages** — for any error code other than
-  `validation_failed`, the JSON `message` is relayed as is.
+  `validation_failed` and `review_blocked`, the JSON `message` is relayed
+  as is.

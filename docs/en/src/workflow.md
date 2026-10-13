@@ -55,8 +55,9 @@ In Claude Code, `/codev-propose` does everything in one pass:
    `codev instructions <artifact> --change <name> --json`, studies the
    relevant code, and writes the file following the template.
 4. It checks traceability between proposal, specs and tasks, then challenges
-   the plan as a skeptical reviewer, fixing what is unambiguous and listing
-   up to five points to challenge. See
+   the plan as a skeptical reviewer, writing each finding to the change's
+   [review record](guides/review-record.md), fixing what is unambiguous and
+   listing up to five points to challenge. See
    [Propose](skills.md#propose-codev-propose).
 5. It stops when planning is complete and presents the plan. It never starts
    implementing in the same turn.
@@ -80,7 +81,10 @@ Once every task is checked, it re-reads the code the change touched as a
 newcomer to the project would, joined by the
 [experts](roles.md#experts-and-domains) the proposal's domains activate,
 simplifies what is unambiguous without widening the scope, and lists up to
-five review notes in its summary. Then it runs the full test suite once.
+five review notes in its summary. Every finding is kept in the change's
+[review record](guides/review-record.md), with the author's answer and the
+reviewer's check; what only you can decide is listed at the end. Then it
+runs the full test suite once.
 
 It stops at the first blocker or ambiguity and asks you rather than
 guessing. It modifies only the named change, never archives and never syncs:
@@ -118,8 +122,13 @@ Archiving closes a change:
 
 1. It validates the change and **refuses** if validation reports an error,
    pointing you to `codev validate <name>` for the details.
-2. It merges the deltas into the main specs, exactly as `sync` does.
-3. It moves the change folder to `_codev/changes/archive/<YYYY-MM-DD>-<name>/`.
+2. It checks the [review record](guides/review-record.md) and **refuses**
+   (`review_blocked`) if it is missing for a step where review roles were
+   active, or if a high-severity finding is still open or disputed;
+   `codev review --change <name>` shows what is left.
+3. It merges the deltas into the main specs, exactly as `sync` does.
+4. It moves the change folder, review record included, to
+   `_codev/changes/archive/<YYYY-MM-DD>-<name>/`.
 
 The whole merge is computed and checked before the first file is written, so
 an invalid change or a delta that does not apply — for example a `MODIFIED`

@@ -307,6 +307,21 @@ mod tests {
     }
 
     #[test]
+    fn changelog_ignores_the_review_record() {
+        let runner = MockProcessRunner::new()
+            .with_response("git", &["rev-parse"], ok("true\n"))
+            .with_response("git", &["tag"], ok(""));
+        let with_record = project().with_file(
+            "/p/_codev/changes/archive/2026-03-01-c/review.md",
+            "## Release note\n\n- Removed: everything.\n",
+        );
+        let plain = gather(&project(), &runner, &Layout::new("/p"), None, None).unwrap();
+        let gathered = gather(&with_record, &runner, &Layout::new("/p"), None, None).unwrap();
+        assert_eq!(gathered.changes, plain.changes);
+        assert!(gathered.warnings.is_empty());
+    }
+
+    #[test]
     fn gather_between_two_tags() {
         let gathered = gather(
             &project(),

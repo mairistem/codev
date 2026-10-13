@@ -286,6 +286,89 @@ Les artefacts d'un `schema.yaml` peuvent déclarer leur [rôle](../roles.md)
 comme une donnée, sous `role:` — voir
 [Schémas personnalisés](../guides/custom-schemas.md#déclarer-les-rôles-des-artefacts).
 
+## review.md
+
+Chemin : `_codev/changes/<name>/review.md`. Le
+[compte rendu de revue](../guides/review-record.md) du change, écrit par
+`/codev-propose` (`plan.challenge`) et `/codev-apply` (`code.review`), ou à
+la main. Ce n'est pas un artefact de planification : `codev status`
+l'ignore, `codev sync` le laisse en place, `codev archive` le déplace avec
+le change.
+
+````markdown
+# Review record: add-sessions
+
+<!-- codev-review: 1 -->
+
+## plan.challenge
+
+### skeptic
+
+No finding.
+
+### security
+
+#### R-security-1 Session tokens are stored in clear
+
+```yaml
+severity: high
+confidence: high
+location: "design.md#Decision: Sessions live in the database"
+evidence: |
+  The session token is stored in the `sessions` table.
+recommendation: Store a SHA-256 of the token and compare digests.
+history:
+  - status: open
+    by: security
+  - status: fixed
+    by: architect
+    ref: design.md, the decision now stores a digest
+  - status: fixed
+    by: security
+    note: verified
+```
+
+## code.review
+
+### newcomer
+
+Disabled by configuration.
+````
+
+Les titres et les lignes `No finding.` et `Disabled by configuration.`
+restent en anglais : codev les lit.
+
+| Élément | Règle |
+|---|---|
+| `<!-- codev-review: <n> -->` | Marqueur de format facultatif ; sans lui, format 1. Un format supérieur n'est pas vérifié et bloque l'archivage |
+| `## <step>` | `plan.challenge` ou `code.review`, une fois chacun |
+| `### <role-id>` | Un par rôle sous une étape, une fois chacun. Contient des constats, ou la ligne `No finding.`, ou la ligne `Disabled by configuration.` |
+| `#### <id> <title>` | Un constat : `R-<role-id>-<n>`, unique dans le compte rendu, jamais réutilisé, suivi d'un unique bloc `yaml` |
+
+| Champ | Type | Signification |
+|---|---|---|
+| `severity` | `high`, `medium` ou `low` | Voir [l'échelle](../roles.md#gravité-confiance-et-compte-rendu-de-revue) |
+| `confidence` | `high` ou `low` | Un constat `low` n'est pas présenté à la personne |
+| `location` | chaîne | `<path>:<line>` ou `<path>:<start>-<end>` depuis la racine du projet, ou `<file>#<heading>` depuis le dossier du change. Relatif, sans `..`, sans lecteur ; `\` se lit `/`. Mettez-le entre guillemets s'il contient `: ` |
+| `evidence` | chaîne | Le texte cité, mot pour mot : des lignes entières ou un fragment de chacune |
+| `recommendation` | chaîne | Ce qu'il faut faire |
+| `history` | liste | Les réponses, de la plus ancienne à la plus récente ; la dernière donne le statut |
+
+| Clé de `history[]` | Signification |
+|---|---|
+| `status` | `open`, `fixed`, `disputed`, `accepted-risk`, `deferred` ou `rejected` |
+| `by` | Un identifiant de rôle, `human` ou `human:<name>` |
+| `ref` | Le commit ou la modification de fichier — exigé par `fixed` après `open` ou `disputed` |
+| `note` | L'argument (`disputed`), la justification (`accepted-risk`, `by` une personne), ou pourquoi une correction ne tient pas (`open` après `fixed`) |
+| `to` | Où va un constat `deferred` : un change ou un ticket. Un constat `high` est reporté par une personne |
+
+Un champ que ce codev ne connaît pas est un avertissement,
+`review_unknown_field`, et il est ignoré : un codev ultérieur peut ajouter
+des champs facultatifs sans changer de format. Un nouveau statut, une
+nouvelle étape ou un nouveau champ obligatoire relève au contraire le
+marqueur de format, qu'un codev plus ancien refuse de vérifier. Les transitions et les contrôles
+sont dans [Compte rendu de revue](../guides/review-record.md#ce-que-codev-vérifie).
+
 ## Décision (ADR)
 
 Chemin : `_codev/decisions/NNNN-<slug>.md`. Chaque fichier `.md` de ce
@@ -426,6 +509,16 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `unknown_domain` | erreur | La section `## Domains` de la proposal nomme un domaine hors des six |
 | `domains_invalid` | erreur | La section `## Domains` de la proposal a une ligne qui n'est ni un élément ni `None`, ou `None` à côté d'un domaine coché |
 | `domains_missing` | avertissement | La proposal d'un change actif n'a pas de section `## Domains` |
+| `review_invalid` | erreur | La structure du compte rendu de revue, un champ, un identifiant ou un emplacement de constat, un statut ou une transition est incorrect |
+| `review_decision_incomplete` | erreur | Une entrée d'historique n'a pas son `ref`, sa `note` ou son `to`, ou un risque est accepté, ou un constat haut reporté, par quelqu'un d'autre qu'une personne |
+| `review_location_missing` | erreur | Un constat cite un fichier, une ligne ou un titre qui n'existe pas |
+| `review_evidence_not_found` | erreur | La preuve d'un constat ne figure nulle part dans le fichier ou la section cités |
+| `review_role_missing` | erreur | Un rôle actif à une étape consignée n'a pas de section, ou en a une qui le dit désactivé |
+| `review_evidence_moved` | avertissement | La preuve d'un constat est dans le fichier, à plus de 5 lignes des lignes citées |
+| `review_evidence_unchecked` | avertissement | Le fichier cité n'est pas du texte UTF-8, contient des octets NUL, ou dépasse 4 Mio : la preuve n'est pas comparée |
+| `review_unknown_section` | avertissement | Une étape ou un rôle que le compte rendu ne devrait pas contenir ; il est ignoré |
+| `review_unknown_field` | avertissement | Un champ de constat que ce codev ne connaît pas ; il est ignoré |
+| `review_format_unsupported` | avertissement | Le compte rendu vient d'un codev plus récent ; rien n'y est vérifié |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
 | `unknown_config_key` | avertissement | `_codev/config.yaml` contient une clé de premier niveau ou de `mcp` que ce codev ne connaît pas — voir [Clés inconnues](configuration.md#clés-inconnues) |

@@ -29,6 +29,7 @@ Commands:
   decision      Create, accept, inspect and supersede architecture decisions
   sources       Manage inherited sources (local paths and remote git repositories)
   sync          Merge a change's deltas into the main specs without archiving
+  review        Show a change's review record and what is left to decide
   archive       Merge, then move a change to the dated archive
   changelog     Generate release notes from the archived changes
   docs          Open the codev documentation in the browser
@@ -546,6 +547,34 @@ puis fusionne ses deltas dans les specs principales, sans déplacer le change.
 Relancée, la commande indique que les specs sont inchangées. Voir
 [Sync](../workflow.md#sync).
 
+### codev review
+
+```text
+Show a change's review record and what is left to decide
+
+Reads `_codev/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `codev validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error.
+
+Usage: codev review [OPTIONS]
+
+Options:
+      --change <CHANGE>
+          Change name (inferred when there is only one)
+
+      --json
+
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+
+Lit le [compte rendu de revue](../guides/review-record.md) du change et
+l'affiche par étape et par rôle, avec, pour chaque constat, qui doit agir,
+les défauts du compte rendu (les codes `review_*` de
+[`codev validate`](#codev-validate)) et si la revue permet d'archiver le
+change. Sans compte rendu, la commande le dit et réussit. Le verrou
+d'archivage ne change pas le code de sortie : c'est `codev archive` qui
+l'applique. JSON : [`review`](json-output.md#review).
+
 ### codev archive
 
 ```text
@@ -560,7 +589,11 @@ Options:
 ```
 
 Valide le change, refuse de continuer si la validation signale une erreur,
-fusionne ses deltas dans les specs principales, puis le déplace dans
+puis vérifie son [compte rendu de revue](../guides/review-record.md) et
+refuse avec `review_blocked` s'il manque pour une étape où des rôles de
+relecture étaient actifs ou si un constat de gravité haute est encore ouvert
+ou contesté ; fusionne ensuite ses deltas dans les specs principales et le
+déplace, compte rendu compris, dans
 `_codev/changes/archive/<YYYY-MM-DD>-<name>/`. Voir
 [Archive](../workflow.md#archive).
 

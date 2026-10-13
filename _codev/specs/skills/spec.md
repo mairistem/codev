@@ -751,16 +751,19 @@ operability, performance, and accessibility & UX, as well as the project's
 `rules:` received through `codev instructions`. An expert asks whether
 the design addresses its domain.
 
-The pass MUST fix what is unambiguous directly in the artifacts and record
-what needs a human decision in the Open Questions of `design.md`, or in the
-proposal when there is no design. It MUST NOT add scope.
+Each finding MUST be written to the change's review record under
+`## plan.challenge`, then answered as the review record's answer loop
+describes: the author fixes what is unambiguous directly in the artifacts
+or disputes it, the reviewer re-checks once, and what remains is for the
+human. The pass MUST NOT add scope.
 
 The final summary of the skill MUST end with a "Points to challenge" block:
-at most five items in total across the roles, ranked by impact, each on one
-line tagged with the id of the role that raised it and giving what, why it
-matters and the artifact concerned. When the pass finds nothing worth
-raising, the block MUST say "No point to challenge found" instead of
-inventing points.
+at most five items in total across the roles, taken from the findings the
+record reports to the human (confidence `high`) that were not rejected,
+ranked by severity, each on one line tagged with the id of the role that
+raised it and giving its finding id, its status, what, why it matters and
+the artifact concerned. When the pass finds nothing worth raising, the
+block MUST say "No point to challenge found" instead of inventing points.
 
 When no role is active at `plan.challenge`, the skill MUST skip the pass,
 and the "Points to challenge" block MUST say that the skeptic is disabled
@@ -772,7 +775,8 @@ by configuration instead of listing points.
 - **WHEN** `/codev-propose` presents the plan
 - **THEN** the summary contains a "Points to challenge" block naming the
   assumption, why it matters and the artifact concerned, tagged `skeptic`
-- **AND** the same point is recorded in the Open Questions of `design.md`
+- **AND** the same point is a finding of `review.md` under
+  `## plan.challenge`, with its status
 
 #### Scenario: At most five points
 
@@ -780,16 +784,16 @@ by configuration instead of listing points.
   `security` expert four more
 - **WHEN** `/codev-propose` presents the plan
 - **THEN** the "Points to challenge" block lists at most five items in
-  total, the ones with the highest impact first, each tagged with its role
-  id
+  total, the most severe first, each tagged with its role id
+- **AND** all eight are findings of the record
 
 #### Scenario: An active expert challenges the design
 
 - **GIVEN** a change whose proposal ticks `personal-data` and whose design
   stores a new e-mail field with no retention rule
 - **WHEN** `/codev-propose` challenges the plan
-- **THEN** the missing retention rule is fixed or raised as a point to
-  challenge tagged `privacy`
+- **THEN** the missing retention rule is a finding of the record under
+  `### privacy`, fixed in the design or raised as a point to challenge
 
 #### Scenario: Nothing to challenge
 
@@ -797,6 +801,7 @@ by configuration instead of listing points.
 - **WHEN** `/codev-propose` presents the plan
 - **THEN** the summary says "No point to challenge found"
 - **AND** lists no invented point
+- **AND** each role's section of the record says `No finding.`
 
 #### Scenario: A conditional lens outside the Impact is not applied
 
@@ -1083,19 +1088,24 @@ description of the behavior. It MUST also apply the project's `rules`
 received through `codev instructions`. An expert asks whether the
 implementation respects its domain.
 
-The skill MUST simplify directly what is unambiguous and re-run the affected
-tests. The review MUST NOT widen the change's scope and MUST NOT modify code
-the change did not add or modify. The `newcomer` MUST NOT change behavior.
-An expert MUST NOT change behavior silently: a fix that changes behavior is
-reported as a note, unless it is a clear defect within the change's scope,
-which is then fixed with a test and named in the summary.
+Each finding MUST be written to the change's review record under
+`## code.review`, then answered as the review record's answer loop
+describes. The skill MUST simplify directly what is unambiguous and
+re-run the affected tests. The review MUST NOT widen the change's scope
+and MUST NOT modify code the change did not add or modify. The `newcomer`
+MUST NOT change behavior. An expert MUST NOT change behavior silently: a
+fix that changes behavior is left for the human, unless it is a clear
+defect within the change's scope, which is then fixed with a test and
+named in the summary.
 
-The final summary MUST carry a "Review notes" block listing what the
-review did not fix alone: at most five items in total across the roles,
-each tagged with the id of the role that raised it and giving what, where
-and why. A high-severity `security` or `privacy` finding MUST always be
-listed, even beyond five. When the review finds nothing worth raising, the
-block MUST say "No review concern found" instead of inventing notes.
+The final summary MUST carry a "Review notes" block: at most five items in
+total across the roles, taken from the findings the record reports to the
+human (confidence `high`) that were not rejected, ranked by severity,
+each tagged with the id of the role that raised it and giving its finding
+id, its status, what, where and why. A high-severity `security` or
+`privacy` finding MUST always be listed, even beyond five. When the review
+finds nothing worth raising, the block MUST say "No review concern found"
+instead of inventing notes.
 
 When no role is active at `code.review`, the skill MUST skip the review,
 and the "Review notes" block MUST say that the review is disabled by
@@ -1124,6 +1134,7 @@ configuration.
 - **WHEN** `/codev-apply` presents its final summary
 - **THEN** the "Review notes" block lists at most five items, each tagged
   with its role id and giving what, where and why
+- **AND** all seven are findings of the record
 
 #### Scenario: A high-severity security finding is never dropped
 
@@ -1138,7 +1149,8 @@ configuration.
   could be made faster by changing the order of its results
 - **WHEN** `/codev-apply` reviews the change
 - **THEN** the order of results is unchanged
-- **AND** the suggestion appears as a review note tagged `performance`
+- **AND** the suggestion is a finding of the record under
+  `### performance`, listed as a review note
 
 #### Scenario: An expert fixes a clear defect within scope
 
@@ -1147,6 +1159,7 @@ configuration.
 - **WHEN** `/codev-apply` reviews the change
 - **THEN** the query is parameterized, a test covers the hostile input,
   and the summary names the fix
+- **AND** the record's finding is `fixed` with a reference to the change
 
 #### Scenario: Nothing to note
 
@@ -1201,3 +1214,81 @@ unchanged.
 - **WHEN** `/codev-propose` writes the artifacts
 - **THEN** it does not run the code study before each artifact
 - **AND** its summary says the investigation is disabled by configuration
+
+### Requirement: The `propose` and `apply` skills keep the review record and run the answer loop
+
+At `plan.challenge` and `code.review`, the skill SHALL first read the
+record with `codev review --change <name> --json` and resume from it: a
+finding already recorded is not raised again, and a finding still waiting
+for an answer is answered before anything else. It SHALL write, under the
+step's section of `review.md`, one section per role returned — its
+findings, or `No finding.` — and `Disabled by configuration.` for each
+role of the step that the project or the change sets to `never`. Each
+finding gets the next free id of its role, a severity and a confidence
+from the shared scales, a location, the cited text copied verbatim after
+re-reading it, a recommendation, and a first history entry `open` by its
+role.
+
+Then the answer loop: as the author — the role owning the cited artifact
+at `plan.challenge`, the `developer` at `code.review` — the skill fixes
+each finding (`fixed`, with the reference of the change) or disputes it
+with an argument grounded in the material (`disputed`). Then, as the
+finding's role, it re-checks each answer once: a fix is verified
+(`fixed` again by the role) or reopened (`open`, with why); a dispute is
+accepted (`rejected`) or maintained (`disputed`, with why). There is no
+second round. The skill MUST NOT record `accepted-risk`, nor defer a
+`high` finding: those are the human's decisions, recorded with `by:
+human` (or `human:<name>`) only once the human has given them.
+
+The skill SHALL then run `codev review --change <name> --json` and fix
+the defects it reports in the record itself, never by changing a
+finding's substance. Its summary MUST carry a "To decide" block listing
+every finding the record says awaits a human and every `high` finding
+still `open`, with the choices: fix, accept the risk (with a
+justification) or defer (with where it goes); or "Nothing to decide".
+
+#### Scenario: The skills describe the record and the loop
+
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `propose` and `apply` workflows are rendered
+- **THEN** each names `review.md`, `codev review --change`, the statuses,
+  the author's answer, the single re-check and the "To decide" block
+
+#### Scenario: A maintained dispute goes to the human
+
+- **GIVEN** a finding the author disputes and the reviewer maintains
+- **WHEN** the skill presents its summary
+- **THEN** the "To decide" block lists the finding with its argument and
+  the reviewer's answer
+
+#### Scenario: The agent never accepts a risk
+
+- **GIVEN** a `high` finding the author cannot fix within the change
+- **WHEN** the skill runs the answer loop
+- **THEN** the finding stays `open` or `disputed` and is listed under "To
+  decide"
+- **AND** no `accepted-risk` entry is written without the human's answer
+
+#### Scenario: A resumed session
+
+- **GIVEN** a record whose `## code.review` holds a finding `disputed` by
+  `developer` that the reviewer has not answered
+- **WHEN** `/codev-apply` runs the review again in a new session
+- **THEN** the reviewer answers that dispute
+- **AND** no finding already in the record is written twice
+
+### Requirement: The `archive` skill explains a review that blocks archiving
+
+When `codev archive --json` fails with the code `review_blocked`, the
+`archive` skill SHALL reply that the review record blocks archiving and
+invite the user to run `codev review --change <name>` to see what is left
+to decide, without retrying and without editing the record.
+
+#### Scenario: Archive blocked by the review
+
+- **GIVEN** a change for which `codev archive --json` refuses with
+  `review_blocked`
+- **WHEN** the user types `/codev-archive`
+- **THEN** the skill says the review record blocks archiving and names
+  `codev review --change <name>`
+- **AND** does not retry
