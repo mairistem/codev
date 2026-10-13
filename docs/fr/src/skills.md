@@ -26,11 +26,11 @@ reçoit pas les outils pour le faire.
 
 | Skill | `allowed-tools` |
 |---|---|
-| `codev-propose` | `Bash(codev:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré |
+| `codev-propose` | `Bash(codev:*), Read, Write, Edit, Glob, Grep`, plus l'outil MCP Jira s'il est configuré, plus `Agent` en mode de revue isolé |
 | `codev-explore` | `Bash(codev:*), Read, Glob, Grep` |
 | `codev-onboard` | `Bash(codev:*), Read, Glob` |
 | `codev-configure` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
-| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash` |
+| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de revue isolé |
 | `codev-update` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
 | `codev-sync` | `Bash(codev:*), Read` |
 | `codev-archive` | `Bash(codev:*), Read` |
@@ -40,6 +40,18 @@ d'autre. Seule `codev-apply` obtient un accès général à `Bash`, parce qu'ell
 doit lancer vos tests et vos commandes de build. `codev-sync` et
 `codev-archive` ne peuvent écrire aucun fichier : toutes leurs modifications
 passent par la CLI.
+
+`Agent` est l'outil de sous-agent de Claude Code. `codev-propose` et
+`codev-apply` ne le demandent que lorsque `_codev/config.yaml` définit
+`review: { mode: isolated }`
+([Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée)) : chaque
+rôle relecteur travaille alors comme sous-agent. Aucune autre skill ne le
+demande jamais. Après avoir changé de mode, lancez `codev update` ;
+`codev doctor` signale `skills_review_mode` tant que vous ne l'avez pas
+fait. Les deux skills décrivent la revue isolée dans les deux modes, car
+le `change.yaml` d'un change peut remplacer le mode du projet : sans
+l'outil pré-autorisé, Claude Code demande avant de lancer un sous-agent,
+et s'il ne peut pas en lancer, les rôles relisent en ligne.
 
 ## Annonce des mises à jour
 
@@ -121,7 +133,10 @@ Avant de présenter le plan, la skill le relit en deux étapes :
    dans le [compte rendu de revue](guides/review-record.md) du change, avec
    sa gravité et sa preuve citée ; l'auteur le corrige ou le conteste, le
    relecteur vérifie chaque réponse une fois, et la relecture n'élargit
-   jamais le périmètre.
+   jamais le périmètre. En [mode isolé](roles.md#revue-en-ligne-ou-isolée),
+   le contrôleur de traçabilité et chaque relecteur travaillent comme des
+   sous-agents distincts qui ne voient jamais la conversation, et la skill
+   fusionne leurs constats avant de les consigner.
 
 Le résumé se termine par les **points à challenger** : au plus cinq points
 d'une ligne, tous rôles confondus, classés par gravité et marqués du rôle
@@ -194,7 +209,9 @@ ne fait pas de doute, sans élargir le périmètre, et signale au plus cinq
 notes de relecture, chacune marquée de son rôle — un constat de sécurité ou
 de données personnelles de gravité haute est toujours signalé. Chaque
 constat va dans le [compte rendu de revue](guides/review-record.md) et suit
-la même boucle de réponse que ceux du plan, et le résumé liste ce qu'il vous
+la même boucle de réponse que ceux du plan — en mode isolé, après que
+chaque relecteur a travaillé seul comme sous-agent et que la skill a
+fusionné leurs constats —, et le résumé liste ce qu'il vous
 revient de décider — y compris tout domaine que le code suggère désormais et
 que la proposal ne coche ni ne justifie : cochez-le et son expert relit le
 code, ou justifiez-le. Un expert

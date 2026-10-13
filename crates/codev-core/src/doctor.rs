@@ -69,6 +69,10 @@ pub enum SkillState {
     Current,
     /// Present, stamped with another version (or none).
     Outdated(Option<String>),
+    /// Present and current, but rendered for the other review mode: it
+    /// lists the sub-agent tool in inline mode, or lacks it in isolated
+    /// mode.
+    OtherReviewMode,
     Missing,
 }
 
@@ -133,6 +137,9 @@ pub struct DoctorFacts {
     pub roles: RolesFacts,
     /// `(skill name, state)` for every configured workflow.
     pub skills: Vec<(String, SkillState)>,
+    /// The project's review mode, for the message of
+    /// `skills_review_mode`.
+    pub review_mode: crate::review::ReviewMode,
     pub main_specs: usize,
     /// Accepted decisions, local and inherited.
     pub accepted_decisions: usize,
@@ -295,6 +302,12 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
         .filter(|(_, s)| matches!(s, SkillState::Outdated(_)))
         .map(|(n, _)| n.as_str())
         .collect();
+    let other_mode: Vec<&str> = facts
+        .skills
+        .iter()
+        .filter(|(_, s)| *s == SkillState::OtherReviewMode)
+        .map(|(n, _)| n.as_str())
+        .collect();
     checks.push(if !missing.is_empty() {
         not_ok(
             "skills",
@@ -315,6 +328,19 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
                 outdated.join(", ")
             ),
             "codev update",
+        )
+    } else if !other_mode.is_empty() {
+        not_ok(
+            "skills",
+            Configuration,
+            Missing,
+            "skills_review_mode",
+            format!(
+                "skill(s) rendered for another review mode than the project's (`{}`): {}",
+                facts.review_mode.as_str(),
+                other_mode.join(", ")
+            ),
+            "codev update (codev update --force for a skill it preserves as edited by hand)",
         )
     } else {
         ok(
@@ -598,6 +624,7 @@ mod tests {
             rules_present: true,
             language_set: true,
             skills: vec![("codev-propose".into(), SkillState::Current)],
+            review_mode: crate::review::ReviewMode::Inline,
             main_specs: 3,
             accepted_decisions: 2,
             git_sources: vec![GitSourceFact {
@@ -708,6 +735,44 @@ mod tests {
             ..complete()
         };
         assert_eq!(check(&evaluate(&facts), "skills").code, "skills_missing");
+    }
+
+    #[test]
+    fn skills_rendered_for_another_mode_are_missing() {
+        let facts = DoctorFacts {
+            skills: vec![
+                ("codev-propose".into(), SkillState::OtherReviewMode),
+                ("codev-apply".into(), SkillState::OtherReviewMode),
+                ("codev-explore".into(), SkillState::Current),
+            ],
+            review_mode: crate::review::ReviewMode::Isolated,
+            ..complete()
+        };
+        let skills = check(&evaluate(&facts), "skills").clone();
+        assert_eq!(skills.status, CheckStatus::Missing);
+        assert_eq!(skills.code, "skills_review_mode");
+        for word in ["codev-propose", "codev-apply", "`isolated`"] {
+            assert!(skills.message.contains(word), "{}", skills.message);
+        }
+        assert!(!skills.message.contains("codev-explore"));
+        let fix = skills.fix.unwrap();
+        assert!(fix.starts_with("codev update"), "{fix}");
+        assert!(fix.contains("codev update --force"), "{fix}");
+    }
+
+    #[test]
+    fn an_outdated_skill_takes_precedence_over_the_mode() {
+        let facts = DoctorFacts {
+            skills: vec![
+                (
+                    "codev-propose".into(),
+                    SkillState::Outdated(Some("0.5.0".into())),
+                ),
+                ("codev-apply".into(), SkillState::OtherReviewMode),
+            ],
+            ..complete()
+        };
+        assert_eq!(check(&evaluate(&facts), "skills").code, "skills_outdated");
     }
 
     #[test]

@@ -474,6 +474,50 @@ mod tests {
         );
     }
 
+    /// What a language's chapters fail to say about the review modes.
+    fn missing_review_mode_docs(lang: Lang) -> Vec<String> {
+        let chapter = |name: &str| {
+            lang.chapters()
+                .iter()
+                .find(|(path, _)| *path == name)
+                .map(|(_, source)| *source)
+                .unwrap_or_default()
+        };
+        let mut missing = Vec::new();
+        for name in ["roles.md", "reference/configuration.md"] {
+            let text = chapter(name);
+            for needle in ["review", "mode", "`inline`", "`isolated`"] {
+                if !text.contains(needle) {
+                    missing.push(format!("{name}: {needle}"));
+                }
+            }
+        }
+        let configuration = chapter("reference/configuration.md");
+        let review = configuration
+            .split("\n## review\n")
+            .nth(1)
+            .and_then(|rest| rest.split("\n## ").next())
+            .unwrap_or_default();
+        if !review.contains("review:\n  mode:") {
+            missing.push("reference/configuration.md: `review.mode` in `## review`".into());
+        }
+        if !review.contains("codev_version") {
+            missing.push("reference/configuration.md: `codev_version` in `## review`".into());
+        }
+        if !chapter("skills.md").contains("`Agent`") {
+            missing.push("skills.md: `Agent`".into());
+        }
+        missing
+    }
+
+    #[test]
+    fn both_languages_document_the_review_modes() {
+        for lang in [Lang::En, Lang::Fr] {
+            let missing = missing_review_mode_docs(lang);
+            assert!(missing.is_empty(), "{lang:?}: missing {missing:?}");
+        }
+    }
+
     #[test]
     fn roles_chapters_carry_the_review_scales() {
         use codev_core::review::{Confidence, Severity};

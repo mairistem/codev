@@ -50,6 +50,60 @@ Le format complet est dans [Formats de fichiers](../reference/file-formats.md#re
 Les titres, les clés et les valeurs du bloc restent en anglais : codev les
 lit.
 
+## Les revues isolées
+
+En [mode isolé](../roles.md#revue-en-ligne-ou-isolée), le compte rendu dit
+aussi comment l'étape s'est déroulée, et qui a relevé quoi :
+
+````markdown
+## code.review
+
+Mode: isolated.
+Summarized: src/generated/schema.rs — over the material limit.
+
+### security
+
+#### R-security-1 The session lookup concatenates the token
+
+```yaml
+severity: high
+confidence: high
+location: "src/auth/session.rs:42-44"
+evidence: |
+  let query = format!("SELECT * FROM sessions WHERE token = '{}'", token);
+recommendation: Bind the token as a query parameter.
+raised_by: [security, newcomer]
+history:
+  - status: open
+    by: security
+```
+
+### newcomer
+
+Fallback: the sub-agent was stopped twice by its time limit.
+
+No finding.
+````
+
+- **`Mode:`** — `inline` ou `isolated`, sous le titre de l'étape.
+- **`Summarized:`** — une ligne par fichier que les relecteurs ont reçu
+  sous forme de résumé plutôt qu'en entier, parce que la matière
+  dépassait sa limite.
+- **`raised_by`** — lorsque plusieurs relecteurs ont trouvé le même
+  défaut, le constat est écrit une seule fois, sous le rôle qui l'a jugé
+  le plus grave, et liste chaque rôle qui l'a relevé, le sien en premier.
+  C'est ce rôle qui revérifie les réponses. Un rôle dont tous les constats
+  ont été fusionnés indique `No finding.` ; `codev review` le montre
+  crédité sur le constat partagé.
+- **`Fallback:`** — le sous-agent du rôle a échoué deux fois et le rôle a
+  relu en ligne, dans la conversation.
+
+`codev validate` signale un `Mode:` autre que `inline` ou `isolated`, une
+deuxième ligne `Mode:` ou `Fallback:`, et un `raised_by` qui n'est pas une
+liste d'identifiants de rôles distincts commençant par le rôle du constat
+(`review_invalid`). Un codev antérieur à ces lignes les ignore, et signale
+`raised_by` comme champ inconnu (`review_unknown_field`).
+
 ## La boucle de réponse
 
 Un constat commence `open`. Ensuite :

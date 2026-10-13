@@ -66,6 +66,7 @@ Codes d'erreur courants :
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
 | `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un codev plus récent ; le message nomme chaque raison |
+| `invalid_review_mode` | `review.mode`, dans `_codev/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
 | `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
 | `unreadable` | Un fichier n'a pas pu être lu |
 | `write_failed` | Un fichier n'a pas pu être écrit |
@@ -175,7 +176,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `config.language` | `configuration` | `language_missing` |
 | `config.keys` | `configuration` | `unknown_config_key` (avertissement) |
 | `config.roles` | `configuration` | `roles_invalid` (avertissement) ; lorsqu'il est `ok`, `message` liste les rôles actifs, les rôles actifs selon le domaine avec leurs domaines, et les rôles désactivés |
-| `skills` | `configuration` | `skills_missing`, `skills_outdated` |
+| `skills` | `configuration` | `skills_missing`, `skills_outdated`, `skills_review_mode` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
 | `specs` | `planning` | `no_main_spec` |
@@ -475,15 +476,19 @@ les specs principales supprimées par un change qui retire une capacité.
       "recorded": true,
       "activeRoles": ["skeptic", "security"],
       "roles": [
-        { "role": "skeptic", "state": "no-finding" },
-        { "role": "security", "state": "findings" }
-      ]
+        { "role": "skeptic", "state": "no-finding", "fallback": null, "credited": ["R-security-1"] },
+        { "role": "security", "state": "findings", "fallback": null, "credited": [] }
+      ],
+      "mode": "isolated",
+      "summarized": []
     },
     {
       "step": "code.review",
       "recorded": false,
       "activeRoles": ["newcomer", "security"],
-      "roles": []
+      "roles": [],
+      "mode": null,
+      "summarized": []
     }
   ],
   "findings": [
@@ -505,7 +510,8 @@ les specs principales supprimées par un change qui retire une capacité.
         { "status": "open", "by": "security", "note": null, "ref": null, "to": null },
         { "status": "disputed", "by": "architect", "note": "Tokens expire after 5 minutes.", "ref": null, "to": null },
         { "status": "disputed", "by": "security", "note": "Five minutes is enough to replay a stolen token.", "ref": null, "to": null }
-      ]
+      ],
+      "raisedBy": ["security", "skeptic"]
     }
   ],
   "issues": [],
@@ -525,6 +531,11 @@ les specs principales supprimées par un change qui retire une capacité.
 | `exists` | `false` sans `review.md` ; `format` et `findings` sont alors `null` ou vides |
 | `steps[].activeRoles` | Les rôles actifs à l'étape pour le change, tels que `codev roles --at <step> --change <name>` les renvoie |
 | `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (une section sans rien d'exploitable), ou `missing` (un rôle actif sans section, dans une étape consignée) |
+| `steps[].roles[].fallback` | La ligne `Fallback:` du rôle — pourquoi il a relu en ligne lors d'une revue isolée — ou `null` |
+| `steps[].roles[].credited` | Les identifiants des constats d'autres rôles de l'étape dont le `raised_by` nomme ce rôle |
+| `steps[].mode` | La ligne `Mode:` de l'étape, `inline` ou `isolated`, ou `null` lorsqu'elle n'est pas écrite |
+| `steps[].summarized` | Les lignes `Summarized:` de l'étape, dans l'ordre du fichier |
+| `findings[].raisedBy` | Chaque rôle qui a relevé le constat, le sien en premier : son `raised_by`, ou son rôle seul |
 | `findings[].reported` | `true` quand la confiance est `high` : les skills ne présentent que ceux-là |
 | `findings[].status` | Le statut de la dernière entrée d'historique |
 | `findings[].awaiting` | Qui agit ensuite : `author` (ouvert), `reviewer` (une correction à vérifier, une contestation à laquelle répondre), `human` (une contestation que le relecteur a maintenue), ou `null` |
@@ -616,6 +627,19 @@ champs que le fichier omet ou rend invalides valent `null`.
       ]
     }
   ],
+  "review": {
+    "mode": "isolated",
+    "origin": "project",
+    "material": {
+      "limitBytes": 163840,
+      "totalBytes": 18342,
+      "summarized": false,
+      "files": [
+        { "path": "_codev/changes/add-dark-mode/design.md", "bytes": 6120, "treatment": "full" },
+        "…"
+      ]
+    }
+  },
   "status": []
 }
 ```
@@ -638,13 +662,16 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
 | `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
+| `review.mode`, `review.origin` | Le [mode de revue](configuration.md#review) en vigueur, `inline` ou `isolated`, fixé par `default`, `project` ou `change` |
+| `review.material` | Avec `--change` à `plan.trace`, `plan.challenge` ou `code.review`, ce que lisent les relecteurs : les fichiers de planification du change sauf `change.yaml` et `review.md` aux étapes du plan, les fichiers du diff à `code.review` — aucun fichier de planification, vendorisé, généré, de verrouillage ou binaire, aucun lien symbolique ; un fichier supprimé compte 0 octet. Chaque fichier a ses `bytes` et son `treatment` : `full`, ou `summarize` dès que les fichiers pris du plus petit au plus gros ne tiennent plus dans `limitBytes` (160 Kio). `null` sinon, et à `code.review` sans diff. Un fichier écarté parce que sa taille ne peut pas être lue ou que son nom contient un caractère de contrôle est nommé par un avertissement `review_material_incomplete` dans `status` |
 
 Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
 aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
 lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
-avec `roles` et `suggestions` vides, `stacks` et `diff` à `null`, et
-`language` renseigné comme pour `instructions`. Un déclencheur du projet
+avec `roles` et `suggestions` vides, `stacks`, `diff` et `review` à `null`,
+et `language` renseigné comme pour `instructions` ; un mode de revue
+invalide échoue avec `invalid_review_mode`. Un déclencheur du projet
 inutilisable est écarté, avec un avertissement `invalid_trigger` dans
 `status`.
 

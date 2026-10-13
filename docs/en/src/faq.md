@@ -52,6 +52,19 @@ codev then leaves the file alone. To remove codev's text from `CLAUDE.md` or
 the template, delete the block between the `codev:begin` and `codev:end`
 markers. See [Repository integration and codev doctor](guides/repository-integration.md).
 
+### Should my reviewers work in isolation?
+
+By default (`inline`), the skill that wrote the plan or the code also
+reviews it, one role after the other, in the same conversation. With
+`review: { mode: isolated }` in `_codev/config.yaml`, each reviewing role
+works alone as a Claude Code sub-agent that never sees the conversation,
+and the skill then merges what they found. It costs more — each reviewer
+reads the material — and its benefit is not measured yet, so start with
+the changes where a fresh look matters most: set `review: { mode:
+isolated }` in those changes' `change.yaml`, or project-wide once you
+have seen the difference. Run `codev update` after changing the project's
+mode. See [Inline or isolated review](roles.md#inline-or-isolated-review).
+
 ### How do I share this documentation?
 
 ```bash
@@ -87,6 +100,17 @@ Claude Code discovers skills when a session starts. After `codev init` or
 That skill was edited by hand, and codev does not discard your work. Keep the
 edit and ignore the message, or run `codev update --force` to regenerate it
 (check `git diff` first).
+
+### A reviewer's sub-agent fails
+
+In isolated review, a sub-agent that fails or is stopped is run once
+more; if it fails again, that role reviews inline and the record says
+why on a `Fallback:` line under the role. Nothing is lost: the review is
+done, only not in isolation for that role. If every role falls back,
+check that Claude Code can start sub-agents (the `Agent` tool) and that
+`codev doctor` reports the skills current for the review mode —
+`skills_review_mode` means `codev update` has not run since the mode
+changed.
 
 ### `codev validate` reports `zero_delta_without_marker`
 

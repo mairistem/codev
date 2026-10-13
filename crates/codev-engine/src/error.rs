@@ -39,6 +39,12 @@ pub enum EngineError {
     #[error("{path} is invalid: {reason}")]
     InvalidCodevVersion { path: PathBuf, reason: String },
 
+    /// `review.mode` is not a review mode, in `_codev/config.yaml` or a
+    /// change's `change.yaml`. A code of its own, like
+    /// `InvalidCodevVersion`: a skill tests the code, not the message.
+    #[error("{path} is invalid: {reason}")]
+    InvalidReviewMode { path: PathBuf, reason: String },
+
     /// The validation preflight of `sync` or `archive` found errors. A
     /// variant of its own, not an `Invalid`, so that the stable code a
     /// consumer tests is the code itself, not a word inside the message.
@@ -99,6 +105,7 @@ impl EngineError {
             Self::Unreadable { .. } => "unreadable",
             Self::Invalid { .. } => "invalid",
             Self::InvalidCodevVersion { .. } => "invalid_codev_version",
+            Self::InvalidReviewMode { .. } => "invalid_review_mode",
             Self::ValidationFailed { .. } => "validation_failed",
             Self::ReviewBlocked { .. } => "review_blocked",
             Self::Write { .. } => "write_failed",

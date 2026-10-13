@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use codev_core::ArtifactGraph;
+use codev_core::review::ReviewMode;
 use codev_core::roles::RoleActivation;
 use serde::{Deserialize, Serialize};
 
@@ -48,6 +49,12 @@ pub struct ChangeMetadata {
     /// project.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub roles: BTreeMap<String, RoleActivation>,
+
+    /// `review: { mode: inline | isolated }` for this change only, over
+    /// the project's. Kept as written and checked by [`load`], so that an
+    /// invalid mode fails with `invalid_review_mode` like the project's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub review: Option<serde_norway::Value>,
 }
 
 fn is_false(value: &bool) -> bool {
@@ -63,7 +70,16 @@ impl ChangeMetadata {
             skip_specs: false,
             retire_capabilities: false,
             roles: BTreeMap::new(),
+            review: None,
         }
+    }
+
+    /// The change's review mode, when it sets one. `load` has already
+    /// refused an invalid one.
+    pub fn review_mode(&self) -> Option<ReviewMode> {
+        crate::config::read_review_mode(self.review.as_ref())
+            .ok()
+            .flatten()
     }
 
     pub fn with_goal(mut self, goal: Option<String>) -> Self {
@@ -108,12 +124,41 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ChangeMetadata>> 
             path: path.to_path_buf(),
             reason: e.to_string(),
         })?;
-    serde_norway::from_str(&raw)
-        .map(Some)
-        .map_err(|e| EngineError::Invalid {
+    let metadata: ChangeMetadata =
+        serde_norway::from_str(&raw).map_err(|e| EngineError::Invalid {
             path: path.to_path_buf(),
             reason: e.to_string(),
-        })
+        })?;
+    if let Some(review) = metadata.review.as_ref().and_then(|r| r.as_mapping()) {
+        // Strict like the rest of the file: a misspelled `mode` would
+        // silently review the change the other way.
+        if let Some(key) = review
+            .keys()
+            // A key that is not text cannot be a known one: show it as
+            // YAML rather than as a placeholder.
+            .map(|k| {
+                k.as_str().map(str::to_string).unwrap_or_else(|| {
+                    serde_norway::to_string(k)
+                        .unwrap_or_default()
+                        .trim()
+                        .to_string()
+                })
+            })
+            .find(|k| !crate::config::REVIEW_KEYS.contains(&k.as_str()))
+        {
+            return Err(EngineError::Invalid {
+                path: path.to_path_buf(),
+                reason: format!("review: unknown field `{key}`, expected `mode`"),
+            });
+        }
+    }
+    crate::config::read_review_mode(metadata.review.as_ref()).map_err(|reason| {
+        EngineError::InvalidReviewMode {
+            path: path.to_path_buf(),
+            reason,
+        }
+    })?;
+    Ok(Some(metadata))
 }
 
 #[cfg(test)]
@@ -205,6 +250,46 @@ apply:
         assert!(!metadata.to_yaml().is_empty());
         let fresh = ChangeMetadata::new("spec-driven", "2026-09-08").to_yaml();
         assert!(!fresh.contains("roles"), "{fresh}");
+    }
+
+    #[test]
+    fn change_review_mode_is_read() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nreview:\n  mode: isolated\n",
+        );
+        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        assert_eq!(metadata.review_mode(), Some(ReviewMode::Isolated));
+        assert!(metadata.to_yaml().contains("mode: isolated"));
+        let fresh = ChangeMetadata::new("spec-driven", "2026-09-08");
+        assert_eq!(fresh.review_mode(), None);
+        assert!(!fresh.to_yaml().contains("review"));
+    }
+
+    #[test]
+    fn an_unknown_change_review_mode_fails() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nreview:\n  mode: alone\n",
+        );
+        let err = load(&fs, Path::new("/c/change.yaml")).unwrap_err();
+        assert_eq!(err.code(), "invalid_review_mode");
+        let message = err.to_string();
+        assert!(message.contains("change.yaml"), "{message}");
+        assert!(message.contains("`alone`"), "{message}");
+        assert!(message.contains("inline or isolated"), "{message}");
+
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nreview:\n  mdoe: isolated\n",
+        );
+        let err = load(&fs, Path::new("/c/change.yaml")).unwrap_err();
+        assert_eq!(
+            err.code(),
+            "invalid",
+            "an unknown key is refused like any in this file"
+        );
+        assert!(err.to_string().contains("mdoe"), "{err}");
     }
 
     #[test]

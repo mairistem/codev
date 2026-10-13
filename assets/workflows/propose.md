@@ -223,6 +223,13 @@ If an artifact needs a decision from the user, ask for it, then resume.
 Re-read every artifact from disk and check it against the tracer's
 criteria. Fix the gaps directly in the artifacts.
 
+When `review.mode` is `isolated`, the tracer checks alone: run it as a
+sub-agent as step 7's **Review mode** describes — the brief, the
+summaries, the retry and the fallback (steps i to iv) — with the
+artifacts as material. Then fix each gap it returns in the artifacts
+yourself. This step writes no review record: name a fallback, if any, in
+the summary.
+
 ### 7. Challenge the plan — `plan.challenge`
 
 Re-read the artifacts as reviewers who did not write them: every role

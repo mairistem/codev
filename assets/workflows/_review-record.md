@@ -8,9 +8,13 @@ a. **Resume first.** Run `codev review --change "<name>" --json`. A
    new. The record is the state: a session that stopped half-way picks up
    from it.
 
+{{ISOLATED_REVIEW}}
+
 b. **Write a section per role.** Under `## <step>` (create the file with
    `# Review record: <name>` and `<!-- codev-review: 1 -->` if it does not
-   exist), one `### <role-id>` per role returned, holding its findings, or
+   exist) — first the line `Mode: inline.` or `Mode: isolated.` and any
+   `Summarized:` lines — one `### <role-id>` per role returned, holding
+   its `Fallback:` line if it fell back, then its findings, or
    the line `No finding.` when it found nothing. For each role that serves
    this step but that `codev roles --change "<name>" --json` shows with
    `when: never`, write `Disabled by configuration.` instead. Never write

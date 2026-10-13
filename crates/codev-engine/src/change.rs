@@ -43,6 +43,7 @@ pub fn load(
             skip_specs: false,
             retire_capabilities: false,
             roles: Default::default(),
+            review: None,
         });
 
     let schema = schemas::resolve(fs, layout, &metadata.schema)?;

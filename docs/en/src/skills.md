@@ -24,11 +24,11 @@ must not write files is not given the tools to do so.
 
 | Skill | `allowed-tools` |
 |---|---|
-| `codev-propose` | `Bash(codev:*), Read, Write, Edit, Glob, Grep`, plus the Jira MCP tool when configured |
+| `codev-propose` | `Bash(codev:*), Read, Write, Edit, Glob, Grep`, plus the Jira MCP tool when configured, plus `Agent` in isolated review mode |
 | `codev-explore` | `Bash(codev:*), Read, Glob, Grep` |
 | `codev-onboard` | `Bash(codev:*), Read, Glob` |
 | `codev-configure` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
-| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash` |
+| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` in isolated review mode |
 | `codev-update` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
 | `codev-sync` | `Bash(codev:*), Read` |
 | `codev-archive` | `Bash(codev:*), Read` |
@@ -37,6 +37,17 @@ must not write files is not given the tools to do so.
 `codev-apply` gets general `Bash`, because it must run your tests and build
 commands. `codev-sync` and `codev-archive` cannot write files at all: every
 change they make goes through the CLI.
+
+`Agent` is Claude Code's sub-agent tool. `codev-propose` and `codev-apply`
+request it only when `_codev/config.yaml` sets `review: { mode: isolated }`
+([Inline or isolated review](roles.md#inline-or-isolated-review)): each
+reviewing role then runs as a sub-agent. No other skill ever requests it.
+After changing the mode, run `codev update`; `codev doctor` reports
+`skills_review_mode` until you do. Both skills describe the isolated
+review in either mode, because a change's `change.yaml` may override the
+project's mode: without the tool pre-approved, Claude Code asks before
+starting a sub-agent, and if it cannot start one, the roles review
+inline.
 
 ## Update notice
 
@@ -111,7 +122,11 @@ Before presenting the plan, the skill reviews it in two steps:
    finding is written to the change's
    [review record](guides/review-record.md) with its severity and quoted
    evidence; the author fixes it or disputes it, the reviewer checks each
-   answer once, and the pass never adds scope.
+   answer once, and the pass never adds scope. In
+   [isolated mode](roles.md#inline-or-isolated-review), the tracer and
+   each reviewer run as separate sub-agents that never see the
+   conversation, and the skill merges their findings before recording
+   them.
 
 The summary ends with **Points to challenge**: at most five one-line items
 across all roles, ranked by severity and tagged with the role that raised
@@ -177,7 +192,9 @@ activate: it simplifies what is unambiguous, without widening the scope,
 and reports up to five review notes, each tagged with its role — a
 high-severity security or privacy finding is always reported. Every
 finding goes to the [review record](guides/review-record.md) and through
-the same answer loop as the plan's, and the summary lists what you must
+the same answer loop as the plan's — in isolated mode, after each
+reviewer has worked alone as a sub-agent and the skill has merged their
+findings — and the summary lists what you must
 decide — including any domain the code now suggests that the proposal
 neither ticks nor justifies: tick it and its expert reviews the code, or
 justify it. An expert

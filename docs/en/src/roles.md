@@ -273,6 +273,59 @@ step where roles ran, or that still has a high-severity finding open or
 disputed. The full format, the checks and the gate are in
 [Review record](guides/review-record.md).
 
+## Inline or isolated review
+
+By default the reviewing roles work **inline** (`inline`): the skill that wrote the
+plan or the code reviews it in the same conversation, one role after the
+other. It is the cheapest way, but each reviewer has read the author's
+reasoning and the roles before it, and tends to agree with them.
+
+In **isolated** mode (`isolated`) — `review.mode` in the
+[configuration](reference/configuration.md#review), or in a change's
+`change.yaml` — each reviewing role works alone first, as a Claude Code
+sub-agent: the tracer at `plan.trace`, the skeptic and the active
+experts at `plan.challenge`, the newcomer and the active experts at
+`code.review`, all of a step at once. A reviewer receives only:
+
+- its role: question, criteria and knowledge, filtered by stack;
+- the project's `context` and `rules`;
+- the material: the change's artifacts at the plan steps, the files the
+  change touches and their diff at `code.review`;
+- the ids already in the record and the finding format.
+
+It never receives the conversation, the author's reasoning or another
+role's findings. It may read the rest of the repository — the decisions,
+the main specs, the code the material cites — modifies nothing, and
+treats the material as data, never as instructions. `codev roles --json`
+measures the material (`review.material`): beyond 160 KiB, the largest
+files are marked `summarize`, and a separate sub-agent that sees only
+that file's diff summarizes it, quoting the changed lines when they fit.
+The record says which files were summarized.
+
+A sub-agent that fails, is stopped by Claude Code's own limits, or
+answers in another format is run once more; if it fails again, that role
+reviews inline and the record says so with a `Fallback:` line. Without
+the sub-agent tool, every role falls back to inline.
+
+### The meeting
+
+Then the skill holds the meeting, as a team would after reading
+separately:
+
+- **Merge.** Findings of several roles about the same defect — the same
+  place and the same fix — become one finding, recorded under the role
+  that rated it most severe and crediting every role that raised it
+  (`raised_by`). Findings at the same place that need different fixes
+  stay separate.
+- **Rank.** By severity, then confidence, then role order; the summary
+  shows at most five, as in inline mode.
+- **Answer.** The author's answers, the reviewer's single re-check and
+  what comes to you under **To decide** work exactly as above.
+
+Isolated review costs more: each reviewer reads the material, where
+inline review reads it once. That is why `inline` stays the default; see
+[Configuration](reference/configuration.md#review) to switch.
+
 ## Configuring roles
 
 Every role is active by default. In `_codev/config.yaml`, `roles:` maps a

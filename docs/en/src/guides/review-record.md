@@ -47,6 +47,58 @@ history:
 
 The full format is in [File formats](../reference/file-formats.md#reviewmd).
 
+## Isolated reviews
+
+In [isolated mode](../roles.md#inline-or-isolated-review) the record also
+says how the step ran, and who found what:
+
+````markdown
+## code.review
+
+Mode: isolated.
+Summarized: src/generated/schema.rs — over the material limit.
+
+### security
+
+#### R-security-1 The session lookup concatenates the token
+
+```yaml
+severity: high
+confidence: high
+location: "src/auth/session.rs:42-44"
+evidence: |
+  let query = format!("SELECT * FROM sessions WHERE token = '{}'", token);
+recommendation: Bind the token as a query parameter.
+raised_by: [security, newcomer]
+history:
+  - status: open
+    by: security
+```
+
+### newcomer
+
+Fallback: the sub-agent was stopped twice by its time limit.
+
+No finding.
+````
+
+- **`Mode:`** — `inline` or `isolated`, under the step's heading.
+- **`Summarized:`** — one line per file the reviewers received as a
+  summary rather than whole, because the material was over its limit.
+- **`raised_by`** — when several reviewers found the same defect, the
+  finding is written once, under the role that rated it most severe, and
+  lists every role that raised it, its own first. That role re-checks
+  the answers. A role whose findings were all merged says `No finding.`;
+  `codev review` shows it as credited on the shared finding.
+- **`Fallback:`** — the role's sub-agent failed twice and it reviewed
+  inline, in the conversation.
+
+`codev validate` reports a `Mode:` other than `inline` or `isolated`, a
+second `Mode:` or `Fallback:` line, and a `raised_by` that is not a list
+of distinct role ids starting with the finding's own role
+(`review_invalid`). A codev that predates these lines ignores them, and
+warns about `raised_by` as an unknown field (`review_unknown_field`).
+
 ## The answer loop
 
 A finding starts `open`. Then:

@@ -15,8 +15,8 @@ use super::codes::{
     REVIEW_FORMAT_UNSUPPORTED, REVIEW_INVALID, REVIEW_UNKNOWN_FIELD, REVIEW_UNKNOWN_SECTION,
 };
 use super::{
-    Confidence, Entry, FORMAT, Location, Record, ReviewFinding, RoleSection, RoleState, STEPS,
-    Severity, Status, StepSection, history,
+    Confidence, Entry, FORMAT, Location, Record, ReviewFinding, ReviewMode, RoleSection, RoleState,
+    STEPS, Severity, Status, StepSection, history,
 };
 
 const FINDING_FIELDS: &[&str] = &[
@@ -26,6 +26,7 @@ const FINDING_FIELDS: &[&str] = &[
     "evidence",
     "recommendation",
     "history",
+    "raised_by",
 ];
 const ENTRY_FIELDS: &[&str] = &["status", "by", "note", "ref", "to"];
 
@@ -61,6 +62,7 @@ pub fn parse(source: &str) -> Parsed<Record> {
         skipping: false,
         role: None,
         finding: None,
+        mode_line: None,
     };
     parser.run(&lines);
     Parsed {
@@ -83,6 +85,13 @@ fn format_marker(lines: &[&str]) -> Option<u32> {
     })
 }
 
+/// The text after a `Mode:`, `Summarized:` or `Fallback:` prefix, without
+/// the final period.
+fn sentence_text(value: &str) -> &str {
+    let value = value.trim();
+    value.strip_suffix('.').unwrap_or(value).trim_end()
+}
+
 fn line_no(index: usize) -> u32 {
     u32::try_from(index + 1).unwrap_or(u32::MAX)
 }
@@ -96,6 +105,7 @@ struct OpenRole {
     /// Finding headings seen, even those whose block could not be read.
     headings: usize,
     findings: Vec<ReviewFinding>,
+    fallback: Option<String>,
 }
 
 /// A finding heading whose block has not been read yet.
@@ -114,6 +124,8 @@ struct Parser {
     skipping: bool,
     role: Option<OpenRole>,
     finding: Option<OpenFinding>,
+    /// The line of the current step's `Mode:` line, once read.
+    mode_line: Option<u32>,
 }
 
 impl Parser {
@@ -154,7 +166,7 @@ impl Parser {
             } else if line.starts_with("# ") {
                 // The title: free text.
             } else if !self.skipping {
-                self.body_line(trimmed);
+                self.body_line(trimmed, index);
             }
             index += 1;
         }
@@ -187,7 +199,10 @@ impl Parser {
                 step: step.to_string(),
                 line,
                 roles: Vec::new(),
+                mode: None,
+                summarized: Vec::new(),
             });
+            self.mode_line = None;
         }
     }
 
@@ -228,6 +243,7 @@ impl Parser {
             disabled: false,
             headings: 0,
             findings: Vec::new(),
+            fallback: None,
         });
     }
 
@@ -289,15 +305,78 @@ impl Parser {
         });
     }
 
-    fn body_line(&mut self, trimmed: &str) {
+    fn body_line(&mut self, trimmed: &str, index: usize) {
+        let line = line_no(index);
+        if let Some(value) = trimmed.strip_prefix("Mode:") {
+            self.mode(sentence_text(value), line);
+            return;
+        }
+        if let Some(value) = trimmed.strip_prefix("Summarized:") {
+            let text = sentence_text(value);
+            if let Some(step) = self.record.steps.last_mut()
+                && !text.is_empty()
+            {
+                step.summarized.push(text.to_string());
+            }
+            return;
+        }
         let Some(role) = &mut self.role else {
             return;
         };
+        if let Some(value) = trimmed.strip_prefix("Fallback:") {
+            let reason = sentence_text(value);
+            let problem = if role.fallback.is_some() {
+                Some(format!(
+                    "`### {}` has a second `Fallback:` line; keep one",
+                    role.role
+                ))
+            } else if reason.is_empty() {
+                Some(format!(
+                    "`### {}`: `Fallback:` needs the reason the role ran inline",
+                    role.role
+                ))
+            } else {
+                role.fallback = Some(reason.to_string());
+                None
+            };
+            if let Some(message) = problem {
+                self.findings
+                    .push(Finding::error(REVIEW_INVALID, line, message));
+            }
+            return;
+        }
         let sentence = trimmed.trim_end_matches('.').to_ascii_lowercase();
         if sentence == "no finding" {
             role.no_finding = true;
         } else if sentence == "disabled by configuration" {
             role.disabled = true;
+        }
+    }
+
+    /// A step's `Mode:` line.
+    fn mode(&mut self, value: &str, line: u32) {
+        let Some(step) = self.record.steps.last_mut() else {
+            return;
+        };
+        if let Some(first) = self.mode_line {
+            self.findings.push(Finding::error(
+                REVIEW_INVALID,
+                line,
+                format!(
+                    "`## {}` has a second `Mode:` line (the first is at line {first}); keep one",
+                    step.step
+                ),
+            ));
+            return;
+        }
+        self.mode_line = Some(line);
+        match ReviewMode::parse(value) {
+            Ok(mode) => step.mode = Some(mode),
+            Err(reason) => self.findings.push(Finding::error(
+                REVIEW_INVALID,
+                line,
+                format!("`Mode: {value}`: {reason}"),
+            )),
         }
     }
 
@@ -426,6 +505,7 @@ impl Parser {
                 line: open.line,
                 state,
                 findings: open.findings,
+                fallback: open.fallback,
             });
         }
     }
@@ -486,6 +566,7 @@ impl Fields<'_> {
         let evidence = self.required(mapping, "evidence").unwrap_or_default();
         let recommendation = self.required(mapping, "recommendation").unwrap_or_default();
         let history = self.history(mapping);
+        let raised_by = self.raised_by(mapping, &heading.role);
         ReviewFinding {
             id: heading.id,
             title: heading.title,
@@ -499,7 +580,47 @@ impl Fields<'_> {
             evidence,
             recommendation,
             history,
+            raised_by,
         }
+    }
+
+    /// The optional `raised_by`: role ids, each once, the finding's own
+    /// role first. Empty when absent or unreadable — the defect is
+    /// reported.
+    fn raised_by(&mut self, mapping: &Mapping, role: &str) -> Vec<String> {
+        let Some(value) = mapping.get("raised_by") else {
+            return Vec::new();
+        };
+        let ids: Option<Vec<String>> = match value {
+            Value::Sequence(items) => items
+                .iter()
+                .map(|item| {
+                    item.as_str()
+                        .map(str::trim)
+                        .filter(|id| !id.is_empty() && !id.contains(char::is_whitespace))
+                        .map(str::to_string)
+                })
+                .collect(),
+            _ => None,
+        };
+        let Some(ids) = ids.filter(|ids| !ids.is_empty()) else {
+            self.invalid(format!(
+                "`raised_by` must be a list of role ids, such as `[{role}, skeptic]`"
+            ));
+            return Vec::new();
+        };
+        let mut seen = BTreeSet::new();
+        if let Some(twice) = ids.iter().find(|id| !seen.insert(id.as_str())) {
+            self.invalid(format!("`raised_by` names `{twice}` twice"));
+            return Vec::new();
+        }
+        if ids[0] != role {
+            self.invalid(format!(
+                "`raised_by` must start with the finding's own role, `{role}`"
+            ));
+            return Vec::new();
+        }
+        ids
     }
 
     fn invalid(&mut self, message: String) {
@@ -695,6 +816,131 @@ mod tests {
         format!(
             "severity: {severity}\nconfidence: high\nlocation: {location}\nevidence: x\nrecommendation: y\n{history}"
         )
+    }
+
+    fn shared(raised_by: &str) -> String {
+        record(&format!(
+            "## plan.challenge\n\n### security\n\n#### R-security-1 Tokens in clear\n\n```yaml\n{}raised_by: {raised_by}\n```\n\n### skeptic\n\nNo finding.\n",
+            fields("high", "src/db.rs:12", HISTORY_OPEN)
+        ))
+    }
+
+    #[test]
+    fn raised_by_credits_the_other_roles() {
+        let source = shared("[security, skeptic]");
+        let parsed = parse(&source);
+        assert!(parsed.findings.is_empty(), "{}", messages(&source));
+        let step = parsed.value.step("plan.challenge").unwrap();
+        let finding = &step.role("security").unwrap().findings[0];
+        assert_eq!(finding.raisers(), ["security", "skeptic"]);
+        let credited: Vec<&str> = step
+            .credited("skeptic")
+            .iter()
+            .map(|f| f.id.as_str())
+            .collect();
+        assert_eq!(credited, ["R-security-1"]);
+        assert!(
+            step.credited("security").is_empty(),
+            "its own role is not credited"
+        );
+        assert_eq!(step.role("skeptic").unwrap().state, RoleState::NoFinding);
+    }
+
+    #[test]
+    fn a_finding_without_raised_by_is_raised_by_its_role() {
+        let parsed = parse(&with_block(&fields("high", "src/db.rs:12", HISTORY_OPEN)));
+        let finding = parsed.value.findings().next().unwrap();
+        assert!(finding.raised_by.is_empty());
+        assert_eq!(finding.raisers(), ["security"]);
+    }
+
+    #[test]
+    fn raised_by_must_start_with_the_finding_role() {
+        let source = shared("[skeptic, security]");
+        assert_eq!(codes(&source), [REVIEW_INVALID]);
+        assert!(
+            messages(&source).contains("must start with the finding's own role, `security`"),
+            "{}",
+            messages(&source)
+        );
+        assert_eq!(codes(&shared("security")), [REVIEW_INVALID], "not a list");
+        assert_eq!(codes(&shared("[]")), [REVIEW_INVALID], "empty");
+        assert_eq!(
+            codes(&shared("[security, \"two words\"]")),
+            [REVIEW_INVALID]
+        );
+    }
+
+    #[test]
+    fn raised_by_names_each_role_once() {
+        let source = shared("[security, skeptic, skeptic]");
+        assert_eq!(codes(&source), [REVIEW_INVALID]);
+        assert!(messages(&source).contains("names `skeptic` twice"));
+    }
+
+    #[test]
+    fn mode_summarized_and_fallback_lines_are_read() {
+        let source = record(
+            "## code.review\n\nMode: isolated.\nSummarized: src/big.rs, diff over the limit.\nSummarized: src/other.rs\n\n### newcomer\n\nFallback: the sub-agent timed out twice.\n\nNo finding.\n",
+        );
+        let parsed = parse(&source);
+        assert!(parsed.findings.is_empty(), "{}", messages(&source));
+        let step = parsed.value.step("code.review").unwrap();
+        assert_eq!(step.mode, Some(ReviewMode::Isolated));
+        assert_eq!(
+            step.summarized,
+            ["src/big.rs, diff over the limit", "src/other.rs"]
+        );
+        let newcomer = step.role("newcomer").unwrap();
+        assert_eq!(
+            newcomer.fallback.as_deref(),
+            Some("the sub-agent timed out twice")
+        );
+        assert_eq!(newcomer.state, RoleState::NoFinding);
+    }
+
+    #[test]
+    fn a_record_without_mode_lines_reads_as_before() {
+        let parsed = parse(&record("## code.review\n\n### newcomer\n\nNo finding.\n"));
+        assert!(parsed.findings.is_empty());
+        let step = parsed.value.step("code.review").unwrap();
+        assert_eq!(step.mode, None);
+        assert!(step.summarized.is_empty());
+        assert_eq!(step.role("newcomer").unwrap().fallback, None);
+    }
+
+    #[test]
+    fn an_unknown_mode_line_is_invalid() {
+        let source = record("## plan.challenge\n\nMode: parallel.\n\n### skeptic\n\nNo finding.\n");
+        let parsed = parse(&source);
+        assert_eq!(codes(&source), [REVIEW_INVALID]);
+        assert_eq!(parsed.findings[0].line, 7);
+        assert!(
+            parsed.findings[0].message.contains("inline or isolated"),
+            "{}",
+            parsed.findings[0].message
+        );
+    }
+
+    #[test]
+    fn a_second_mode_line_is_invalid() {
+        let source = record(
+            "## plan.challenge\n\nMode: inline.\nMode: isolated.\n\n### skeptic\n\nNo finding.\n\n## code.review\n\nMode: isolated.\n\n### newcomer\n\nFallback: x.\nFallback: y.\nNo finding.\n",
+        );
+        let parsed = parse(&source);
+        assert_eq!(
+            codes(&source),
+            [REVIEW_INVALID, REVIEW_INVALID],
+            "{}",
+            messages(&source)
+        );
+        assert!(messages(&source).contains("second `Mode:`"));
+        assert!(messages(&source).contains("second `Fallback:`"));
+        assert_eq!(
+            parsed.value.step("code.review").unwrap().mode,
+            Some(ReviewMode::Isolated),
+            "each step has its own mode line"
+        );
     }
 
     #[test]

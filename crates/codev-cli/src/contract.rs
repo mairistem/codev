@@ -648,7 +648,68 @@ pub struct RolesV1 {
     /// domains list; empty otherwise. Additive in v1.
     pub suggestions: Vec<SuggestionV1>,
     pub roles: Vec<RoleV1>,
+    /// The review mode in effect and the material of a reviewing step.
+    /// Additive in v1; `null` only in a failure's document.
+    pub review: Option<ReviewModeV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// How the reviewing roles run, and what they read.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewModeV1 {
+    /// `inline` or `isolated`.
+    pub mode: &'static str,
+    /// `default`, `project` or `change`.
+    pub origin: &'static str,
+    /// With `--change` at `plan.trace`, `plan.challenge` or `code.review`;
+    /// `null` otherwise, and at `code.review` without a diff.
+    pub material: Option<MaterialV1>,
+}
+
+/// The material of a reviewing step, measured, never read.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaterialV1 {
+    pub limit_bytes: u64,
+    pub total_bytes: u64,
+    /// At least one file is to be summarized.
+    pub summarized: bool,
+    /// In path order.
+    pub files: Vec<MaterialFileV1>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaterialFileV1 {
+    /// Relative to the project root, `/`-separated.
+    pub path: String,
+    pub bytes: u64,
+    /// `full` or `summarize`.
+    pub treatment: &'static str,
+}
+
+impl From<&crate::commands::ReviewInfo> for ReviewModeV1 {
+    fn from(info: &crate::commands::ReviewInfo) -> Self {
+        Self {
+            mode: info.mode.as_str(),
+            origin: info.origin.as_str(),
+            material: info.material.as_ref().map(|material| MaterialV1 {
+                limit_bytes: material.limit_bytes,
+                total_bytes: material.total_bytes,
+                summarized: material.summarized(),
+                files: material
+                    .files
+                    .iter()
+                    .map(|file| MaterialFileV1 {
+                        path: file.path.clone(),
+                        bytes: file.bytes,
+                        treatment: file.treatment.as_str(),
+                    })
+                    .collect(),
+            }),
+        }
+    }
 }
 
 /// The project's languages, as `codev roles` filters the knowledge for
@@ -777,6 +838,7 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
                 .iter()
                 .map(|role| RoleV1::from(role, &outcome.language, outcome.at.as_deref()))
                 .collect(),
+            review: Some(ReviewModeV1::from(&outcome.review)),
             status: statuses(&outcome.warnings),
         }
     }
@@ -1131,6 +1193,11 @@ pub struct ReviewStepV1 {
     /// The roles active at this step for the change.
     pub active_roles: Vec<String>,
     pub roles: Vec<ReviewRoleV1>,
+    /// Its `Mode:` line, `inline` or `isolated`; `null` when not written.
+    /// Additive in v1.
+    pub mode: Option<&'static str>,
+    /// Its `Summarized:` lines, in file order. Additive in v1.
+    pub summarized: Vec<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1140,6 +1207,11 @@ pub struct ReviewRoleV1 {
     /// `findings`, `no-finding`, `disabled`, `empty`, or `missing` for an
     /// active role without a section.
     pub state: &'static str,
+    /// Its `Fallback:` line: why it ran inline. Additive in v1.
+    pub fallback: Option<String>,
+    /// The findings of other roles of the step that credit it in their
+    /// `raised_by`. Additive in v1.
+    pub credited: Vec<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1162,6 +1234,8 @@ pub struct ReviewFindingV1 {
     /// `author`, `reviewer`, `human`, or `null` when settled.
     pub awaiting: Option<&'static str>,
     pub history: Vec<ReviewEntryV1>,
+    /// Every role that raised it, its own first. Additive in v1.
+    pub raised_by: Vec<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1249,6 +1323,8 @@ fn review_step(check: &codev_engine::review::ReviewCheck, step: &str) -> ReviewS
                 .map(|r| ReviewRoleV1 {
                     role: r.role.clone(),
                     state: r.state.as_str(),
+                    fallback: r.fallback.clone(),
+                    credited: s.credited(&r.role).iter().map(|f| f.id.clone()).collect(),
                 })
                 .collect()
         })
@@ -1258,6 +1334,12 @@ fn review_step(check: &codev_engine::review::ReviewCheck, step: &str) -> ReviewS
             roles.push(ReviewRoleV1 {
                 role: role.clone(),
                 state: "missing",
+                fallback: None,
+                credited: section
+                    .credited(role)
+                    .iter()
+                    .map(|f| f.id.clone())
+                    .collect(),
             });
         }
     }
@@ -1266,6 +1348,8 @@ fn review_step(check: &codev_engine::review::ReviewCheck, step: &str) -> ReviewS
         recorded: section.is_some(),
         active_roles: active,
         roles,
+        mode: section.and_then(|s| s.mode).map(|m| m.as_str()),
+        summarized: section.map(|s| s.summarized.clone()).unwrap_or_default(),
     }
 }
 
@@ -1295,6 +1379,7 @@ fn review_finding(f: &codev_core::review::ReviewFinding) -> ReviewFindingV1 {
                 to: e.to.clone(),
             })
             .collect(),
+        raised_by: f.raisers(),
     }
 }
 
@@ -1669,8 +1754,22 @@ apply:
             "status",
             "awaiting",
             "history",
+            "raisedBy",
         ] {
             assert!(finding.get(field).is_some(), "missing `findings[].{field}`");
+        }
+        assert_eq!(finding["raisedBy"], serde_json::json!(["newcomer"]));
+        for field in ["mode", "summarized"] {
+            assert!(
+                json["steps"][1].get(field).is_some(),
+                "missing `steps[].{field}`"
+            );
+        }
+        for field in ["fallback", "credited"] {
+            assert!(
+                json["steps"][1]["roles"][0].get(field).is_some(),
+                "missing `steps[].roles[].{field}`"
+            );
         }
         assert_eq!(finding["history"][1]["ref"], "abc");
         assert_eq!(finding["awaiting"], "reviewer");
@@ -1729,6 +1828,7 @@ apply:
                 filter: crate::commands::StackFilter::Detected,
             },
             suggestions: Some(security_suggestions(7)),
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
@@ -1764,6 +1864,43 @@ apply:
     }
 
     #[test]
+    fn roles_document_exposes_the_review_mode() {
+        let outcome = crate::commands::RolesOutcome {
+            change: Some(ChangeId::parse("add-auth").unwrap()),
+            schema_name: "spec-driven".into(),
+            at: Some("code.review".into()),
+            language: "en".into(),
+            roles: Vec::new(),
+            knowledge: false,
+            stacks: crate::commands::Stacks::default(),
+            suggestions: None,
+            review: crate::commands::ReviewInfo {
+                mode: codev_core::review::ReviewMode::Isolated,
+                origin: codev_core::review::ModeOrigin::Change,
+                material: Some(codev_core::review::material::budget(
+                    &[("src/a.rs".into(), 10), ("src/big.rs".into(), 200_000)],
+                    codev_core::review::material::LIMIT_BYTES,
+                )),
+            },
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
+        assert_eq!(
+            json["review"],
+            serde_json::json!({
+                "mode": "isolated", "origin": "change",
+                "material": {
+                    "limitBytes": 163840, "totalBytes": 200010, "summarized": true,
+                    "files": [
+                        { "path": "src/a.rs", "bytes": 10, "treatment": "full" },
+                        { "path": "src/big.rs", "bytes": 200000, "treatment": "summarize" }
+                    ]
+                }
+            })
+        );
+    }
+
+    #[test]
     fn roles_document_exposes_the_contract_fields() {
         let outcome = crate::commands::RolesOutcome {
             change: Some(ChangeId::parse("add-auth").unwrap()),
@@ -1774,6 +1911,7 @@ apply:
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(RolesV1::from(&outcome)).unwrap();
@@ -1786,11 +1924,16 @@ apply:
             "diff",
             "suggestions",
             "roles",
+            "review",
             "status",
         ] {
             assert!(json.get(field).is_some(), "missing `{field}`");
         }
         assert!(json["diff"].is_null(), "no suggestions computed, no diff");
+        assert_eq!(
+            json["review"],
+            serde_json::json!({ "mode": "inline", "origin": "default", "material": null })
+        );
         let role = &json["roles"][0];
         for field in [
             "id",

@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use codev_core::Layout;
 use codev_core::config::DEFAULT_LANGUAGE;
 use codev_core::detect::locale::is_valid_language_code;
+use codev_core::review::ReviewMode;
 use codev_core::roles::RoleSetting;
 use serde::Deserialize;
 
@@ -29,7 +30,19 @@ pub const PROJECT_KEYS: &[&str] = &[
     "codev_version",
     "roles",
     "triggers",
+    "review",
 ];
+
+/// The keys of the `review:` section this codev knows. Each file applies
+/// its own policy to the others: `_codev/config.yaml` warns, like `mcp` —
+/// a newer codev may add a review setting, and an older one should say so
+/// rather than refuse the project — while a change's `change.yaml` refuses
+/// them, like any unknown key of that file.
+pub const REVIEW_KEYS: &[&str] = &["mode"];
+
+/// The sections of `_codev/config.yaml` whose unknown keys warn, with the
+/// keys this codev knows in each.
+const SECTION_KEYS: &[(&str, &[&str])] = &[("mcp", MCP_KEYS), ("review", REVIEW_KEYS)];
 
 /// The keys of the `mcp:` section this codev knows. The section grows one
 /// tool per integration, and ignoring an unknown tool only leaves that
@@ -100,7 +113,16 @@ pub struct ProjectConfig {
     /// configuration every command refuses.
     #[serde(default)]
     pub triggers: Option<serde_norway::Value>,
-    /// Top-level and `mcp` keys this codev ignored, in file order.
+    /// `review:` as written; read by [`load`] into `review_mode`, so that
+    /// an invalid mode fails with our message and code.
+    #[serde(default)]
+    pub review: Option<serde_norway::Value>,
+    /// `review.mode`, validated — project only: an inherited source's is
+    /// not read.
+    #[serde(skip)]
+    pub review_mode: Option<ReviewMode>,
+    /// Top-level, `mcp` and `review` keys this codev ignored, in file
+    /// order.
     #[serde(skip)]
     pub unknown_keys: Vec<UnknownKey>,
     /// The 1-based line of each key of `roles:`, for the findings of
@@ -198,6 +220,9 @@ pub struct ResolvedConfig {
     /// The 1-based line of the `triggers:` key, for the findings of
     /// `codev validate`.
     pub triggers_line: usize,
+    /// The project's `review.mode`; `None` when not set. An inherited
+    /// source's is not read: the way the team reviews is its own.
+    pub review_mode: Option<ReviewMode>,
     /// The project's unknown keys — inherited sources' are not reported:
     /// only their context and rules are read.
     pub unknown_keys: Vec<UnknownKey>,
@@ -213,9 +238,26 @@ impl ResolvedConfig {
     }
 }
 
-/// Reads a `config.yaml`. A missing file is not an error: a project can live
-/// without configuration.
+/// Reads the project's `config.yaml`. A missing file is not an error: a
+/// project can live without configuration.
 pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
+    let Some(mut config) = load_source(fs, path)? else {
+        return Ok(None);
+    };
+    config.review_mode = read_review_mode(config.review.as_ref()).map_err(|reason| {
+        EngineError::InvalidReviewMode {
+            path: path.to_path_buf(),
+            reason,
+        }
+    })?;
+    Ok(Some(config))
+}
+
+/// Reads an inherited source's `config.yaml` — or the project's, before
+/// its own checks. The review mode is never read from a source, so it is
+/// not checked either: a source written for a newer codev, with a mode
+/// this one does not know, still gives its context and rules.
+fn load_source(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
     if !fs.exists(path) {
         return Ok(None);
     }
@@ -258,6 +300,36 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
     Ok(Some(config))
 }
 
+/// `review.mode` from the `review:` value as written: `None` when the key
+/// or the mode is absent, an error naming the allowed values otherwise.
+/// Shared with `change.yaml`, so both files say the same thing.
+pub fn read_review_mode(
+    review: Option<&serde_norway::Value>,
+) -> std::result::Result<Option<ReviewMode>, String> {
+    let Some(review) = review else {
+        return Ok(None);
+    };
+    if review.is_null() {
+        return Ok(None);
+    }
+    let Some(mapping) = review.as_mapping() else {
+        return Err(format!(
+            "`review` must be a mapping, such as `review: {{ mode: isolated }}`; its `mode` is {}",
+            ReviewMode::allowed()
+        ));
+    };
+    match mapping.get("mode") {
+        None | Some(serde_norway::Value::Null) => Ok(None),
+        Some(serde_norway::Value::String(text)) => ReviewMode::parse(text)
+            .map(Some)
+            .map_err(|reason| format!("`review.mode`: {reason}")),
+        Some(_) => Err(format!(
+            "`review.mode` must be text: {}",
+            ReviewMode::allowed()
+        )),
+    }
+}
+
 /// The top-level and `mcp` keys of `raw` that this codev does not know, in
 /// file order. Read from a generic YAML mapping: the typed parse has
 /// already ignored them.
@@ -273,14 +345,14 @@ fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
                 key: key.to_string(),
                 line: key_line(raw, None, key),
             });
-        } else if key == "mcp"
-            && let Some(mcp) = value.as_mapping()
+        } else if let Some((_, known)) = SECTION_KEYS.iter().find(|(name, _)| *name == key)
+            && let Some(mapping) = value.as_mapping()
         {
-            for sub in mcp.keys().filter_map(serde_norway::Value::as_str) {
-                if !MCP_KEYS.contains(&sub) {
+            for sub in mapping.keys().filter_map(serde_norway::Value::as_str) {
+                if !known.contains(&sub) {
                     unknown.push(UnknownKey {
-                        key: format!("mcp.{sub}"),
-                        line: key_line(raw, Some("mcp"), sub),
+                        key: format!("{key}.{sub}"),
+                        line: key_line(raw, Some(key), sub),
                     });
                 }
             }
@@ -383,7 +455,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                 let source_layout = Layout::new(&root);
                 let source_config_path = source_layout.config_file();
 
-                match load(fs, &source_config_path) {
+                match load_source(fs, &source_config_path) {
                     Ok(Some(inherited)) => {
                         if !inherited.inherits.is_empty() {
                             warnings.push(Warning::new(
@@ -426,7 +498,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
                         ))
                         .config_file();
                         let origin = format!("git:{url}");
-                        if let Ok(Some(inherited)) = load(fs, &source_config_path) {
+                        if let Ok(Some(inherited)) = load_source(fs, &source_config_path) {
                             if !inherited.inherits.is_empty() {
                                 warnings.push(Warning::new(
                                     "inherit_not_transitive",
@@ -481,6 +553,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         role_lines: project.role_lines.clone(),
         triggers: project.triggers.clone(),
         triggers_line: project.triggers_line,
+        review_mode: project.review_mode,
         unknown_keys: project.unknown_keys.clone(),
         warnings,
     })
@@ -673,12 +746,13 @@ mod tests {
              rules:\n  specs: [r]\ninherits:\n  - path: /a\n\
              mcp:\n  jira_tool: t\nchangelog:\n  exclude: []\ncodev_version: \">=0.5\"\n\
              roles:\n  newcomer: never\n\
-             triggers:\n  - domain: security\n    paths: [src/auth/**]\n",
+             triggers:\n  - domain: security\n    paths: [src/auth/**]\n\
+             review:\n  mode: isolated\n",
         )
         .unwrap()
         .unwrap();
         assert!(config.unknown_keys.is_empty(), "{:?}", config.unknown_keys);
-        assert_eq!(PROJECT_KEYS.len(), 11, "a new key belongs in this test too");
+        assert_eq!(PROJECT_KEYS.len(), 12, "a new key belongs in this test too");
     }
 
     #[test]
@@ -819,6 +893,87 @@ mod tests {
         let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
         assert!(config.roles.is_empty());
         assert_eq!(config.context.len(), 1);
+    }
+
+    #[test]
+    fn review_mode_is_read_from_the_project() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "review:\n  mode: isolated\n");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.review_mode, Some(ReviewMode::Isolated));
+        assert!(config.warnings.is_empty(), "{:?}", config.warnings);
+
+        let none = load_str("schema: spec-driven\n").unwrap().unwrap();
+        assert_eq!(none.review_mode, None);
+        let empty = load_str("review:\n").unwrap().unwrap();
+        assert_eq!(empty.review_mode, None, "an empty `review:` sets nothing");
+    }
+
+    #[test]
+    fn an_unknown_review_mode_fails_with_its_code() {
+        for yaml in [
+            "review:\n  mode: parallel\n",
+            "review: isolated\n",
+            "review:\n  mode: [isolated]\n",
+        ] {
+            let err = load_str(yaml).unwrap_err();
+            assert_eq!(err.code(), "invalid_review_mode", "{yaml}");
+            let message = err.to_string();
+            assert!(message.contains("inline or isolated"), "{message}");
+            assert!(message.contains("config.yaml"), "{message}");
+        }
+        let message = load_str("review:\n  mode: parallel\n")
+            .unwrap_err()
+            .to_string();
+        assert!(message.contains("`parallel`"), "{message}");
+    }
+
+    #[test]
+    fn an_unknown_review_key_warns() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "codev_version: \">=0.6\"\nreview:\n  mode: inline\n  budget: 3\n",
+        );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.review_mode, Some(ReviewMode::Inline));
+        assert_eq!(
+            config.unknown_keys,
+            [UnknownKey {
+                key: "review.budget".into(),
+                line: 4
+            }]
+        );
+        assert_eq!(config.warnings.len(), 1);
+        assert_eq!(config.warnings[0].code, UNKNOWN_CONFIG_KEY);
+        assert!(config.warnings[0].message.contains("`review.budget`"));
+    }
+
+    #[test]
+    fn inherited_review_mode_is_ignored() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with_file(
+                "/shared/_codev/config.yaml",
+                "context: shared\nreview:\n  mode: isolated\n",
+            );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.review_mode, None);
+        assert_eq!(config.context.len(), 1);
+    }
+
+    #[test]
+    fn an_inherited_source_with_an_unknown_mode_still_gives_its_rules() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with_file(
+                "/shared/_codev/config.yaml",
+                "context: shared\nrules:\n  specs: [r]\nreview:\n  mode: panel\n",
+            );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.review_mode, None);
+        assert_eq!(config.context.len(), 1);
+        assert_eq!(config.rules_for("specs").len(), 1);
+        assert!(config.warnings.is_empty(), "{:?}", config.warnings);
     }
 
     #[test]

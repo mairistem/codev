@@ -284,8 +284,12 @@ goal: Let users switch the UI to a dark theme
 | `skip_specs` | booléen | Le change n'a volontairement aucun delta de spec : les artefacts qui écrivent sous `specs/` sont ignorés, et la validation accepte l'absence de deltas |
 | `retire_capabilities` | booléen | Autorise la synchronisation et l'archivage à supprimer une spec principale dont le change retire la dernière exigence |
 | `roles` | table | Activations de rôles pour ce change seulement, par-dessus le [`roles:`](configuration.md#roles) du projet : `newcomer: always`. Activations uniquement — les critères relèvent du projet |
+| `review` | table | `mode: inline` ou `mode: isolated` pour ce change seulement, par-dessus le [`review:`](configuration.md#review) du projet. Une autre valeur échoue avec `invalid_review_mode` |
 
-Les clés inconnues sont rejetées. Un dossier de change dépourvu de
+Les clés inconnues sont rejetées — dans `review` aussi. Un codev antérieur à
+`review` refuse un `change.yaml` qui la définit : relevez le
+[`codev_version`](configuration.md#codev_version) du projet jusqu'à la
+version qui l'a introduite avant de l'utiliser. Un dossier de change dépourvu de
 `change.yaml` utilise le schéma du projet. Une entrée invalide de `roles` est
 signalée par `codev validate` comme une erreur du change (`unknown_role`,
 `invalid_role_activation`, `role_not_disableable`).
@@ -352,6 +356,9 @@ restent en anglais : codev les lit.
 | `## <step>` | `plan.challenge` ou `code.review`, une fois chacun |
 | `### <role-id>` | Un par rôle sous une étape, une fois chacun. Contient des constats, ou la ligne `No finding.`, ou la ligne `Disabled by configuration.` |
 | `#### <id> <title>` | Un constat : `R-<role-id>-<n>`, unique dans le compte rendu, jamais réutilisé, suivi d'un unique bloc `yaml` |
+| `Mode: <mode>.` | Facultatif, sous une étape : `inline` ou `isolated`, la manière dont l'étape a été relue. Une fois par étape |
+| `Summarized: <texte>.` | Facultatif, sous une étape, en nombre quelconque : un fichier de la matière que les relecteurs ont reçu sous forme de résumé |
+| `Fallback: <raison>.` | Facultatif, sous un rôle, une fois : pourquoi le rôle a relu en ligne lors d'une revue isolée |
 
 | Champ | Type | Signification |
 |---|---|---|
@@ -361,6 +368,7 @@ restent en anglais : codev les lit.
 | `evidence` | chaîne | Le texte cité, mot pour mot : des lignes entières ou un fragment de chacune |
 | `recommendation` | chaîne | Ce qu'il faut faire |
 | `history` | liste | Les réponses, de la plus ancienne à la plus récente ; la dernière donne le statut |
+| `raised_by` | liste, facultative | Chaque rôle qui a relevé le constat, son propre rôle en premier, chacun une fois : un constat fusionné à partir de plusieurs relecteurs lors d'une [revue isolée](../guides/review-record.md#les-revues-isolées) |
 
 | Clé de `history[]` | Signification |
 |---|---|
@@ -482,7 +490,9 @@ metadata:
 
 C'est grâce à `metadata.version` que `codev update` distingue une skill issue
 d'une version antérieure (régénérée) d'une skill modifiée à la main
-(préservée, sauf avec `--force`).
+(préservée, sauf avec `--force`). Une skill que cette version a rendue pour
+l'autre [mode de revue](configuration.md#review) — avec ou sans `Agent`
+dans `allowed-tools` — est également régénérée.
 
 ## Codes de validation
 

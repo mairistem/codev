@@ -1464,6 +1464,7 @@ fn roles_shape(language: &str) -> serde_json::Value {
         "diff": null,
         "suggestions": [],
         "roles": [],
+        "review": null,
     })
 }
 
@@ -1597,6 +1598,12 @@ mod roles_tests {
         assert_eq!(json["suggestions"], serde_json::json!([]));
         assert!(json["stacks"].is_null() && json["diff"].is_null());
         assert_eq!(json["status"][0]["code"], "unknown_step");
+    }
+
+    #[test]
+    fn roles_failure_has_no_review() {
+        let json = crate::contract::failure(super::roles_shape("en"), "unknown_step", "no step");
+        assert!(json["review"].is_null(), "a failure carries no review");
     }
 
     #[test]
