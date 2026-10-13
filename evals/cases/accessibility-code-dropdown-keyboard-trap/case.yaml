@@ -1,0 +1,16 @@
+role: accessibility
+step: code.review
+change: add-sort-menu
+stacks: ["typescript"]
+kind: seeded
+summary: "Once the sort menu is open, Tab cycles through its items and nothing closes it but a choice, and the button always says it is collapsed; arrows, roles and focus return on choice are right."
+expected:
+  - id: tab-keyboard-trap
+    severity: high
+    category: keyboard-trap
+    locations: ["src/components/SortMenu.tsx:23-25"]
+    alternatives: ["src/components/SortMenu.tsx:21"]
+  - id: expanded-state-hard-coded
+    severity: medium
+    category: state-not-exposed
+    locations: ["src/components/SortMenu.tsx:34"]

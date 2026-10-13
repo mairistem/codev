@@ -1,0 +1,12 @@
+role: privacy
+step: code.review
+change: add-account-deletion
+stacks: ["python"]
+kind: seeded
+summary: "Deleting an account stamps `deleted_at` and removes the password and sessions, but keeps the e-mail, name, phone and postal address the proposal promises to erase."
+expected:
+  - id: soft-delete-keeps-personal-data
+    severity: high
+    category: erasure
+    locations: ["app/account.py:19"]
+    alternatives: ["app/account.py:16"]

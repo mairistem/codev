@@ -2,8 +2,8 @@
   "format": 1,
   "case": "performance-plan-unbounded-export",
   "error": null,
-  "costUsd": 0.4228084,
-  "durationMs": 39269,
+  "costUsd": 0.3875838,
+  "durationMs": 52129,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,11 +14,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (The export loads the organization's whole audit log into memory) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (The export loads the whole audit log of an organization into memory) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-2 (Building the CSV with map/join blocks the single event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-2 (Building the whole CSV string blocks the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -29,7 +29,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n",
         "history": [
           {
             "by": "performance",
@@ -40,20 +40,20 @@
           }
         ],
         "id": "R-performance-1",
-        "line": 17,
+        "line": 9,
         "location": "design.md#Decision: The export loads every event, then writes the CSV",
-        "recommendation": "Stream the rows instead of buffering them: read with a server-side cursor (for example `pg-cursor` or `pg-query-stream`) or keyset pages on `(created_at, id)` of a few thousand rows, and write each CSV line to the response as it is read, honouring back-pressure. Memory then stays constant per request instead of growing with the log.",
+        "recommendation": "Do not materialize the result: read the rows through a database cursor (or keyset pages on created_at, id) and stream each CSV line to the response, honouring backpressure. Cost is then constant in memory instead of linear in the organization's history. If a bound is preferred (e.g. a date range per request), that changes the spec and must be decided there.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The export loads the organization's whole audit log into memory"
+        "title": "The export loads the whole audit log of an organization into memory"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "evidence": "`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
         "history": [
           {
             "by": "performance",
@@ -64,15 +64,39 @@
           }
         ],
         "id": "R-performance-2",
-        "line": 44,
+        "line": 35,
         "location": "design.md#Decision: The export loads every event, then writes the CSV",
-        "recommendation": "Produce the CSV incrementally from the row stream (a Transform stream piped to `res`), so serialization work is spread across ticks and other requests keep being served during an export.",
+        "recommendation": "Write the CSV line by line to a stream (e.g. a Transform from the cursor to the response) so the work is split across event-loop turns, and no second copy of the data (lines array plus joined string) is allocated.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Building the CSV with map/join blocks the single event loop"
+        "title": "Building the whole CSV string blocks the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 58,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "recommendation": "Check with EXPLAIN that an index on (org_id, created_at) exists, or add it to the plan; otherwise the database sorts the organization's rows on every export.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is planned for the filter and sort of the export query"
       },
       {
         "awaiting": "author",
@@ -87,45 +111,21 @@
             "to": null
           }
         ],
-        "id": "R-performance-3",
-        "line": 67,
+        "id": "R-performance-4",
+        "line": 80,
         "location": "specs/audit-export/spec.md#Requirement: Administrators export the audit log",
-        "recommendation": "Either state that the response is streamed (so \"every event\" is delivered without buffering) or add an optional date range (`from`, `to`) and a scenario covering a large log; leave the choice to the author, since a range changes observable behaviour.",
+        "recommendation": "State how the export stays bounded in resources: either a streamed response (memory independent of the number of events) with a scenario covering a large organization, or an explicit range or page parameter. Add a task that measures the export on a realistic volume (millions of rows).",
         "reported": true,
         "role": "performance",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The requirement mandates an unbounded result with no range"
+        "title": "The spec requires an unbounded export with no performance criterion"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-4",
-        "line": 89,
-        "location": "design.md#Decision: The export loads every event, then writes the CSV",
-        "recommendation": "Check with `EXPLAIN` that an index on `audit_events (org_id, created_at)` exists, and add it to the plan (a migration task) if it does not; without it the query scans and sorts the whole table, all organizations included.",
-        "reported": false,
-        "role": "performance",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "No index is named for the export's filter and sort"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "**Alternatives considered**: none; the code is the simplest.\n",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\n",
         "history": [
           {
             "by": "performance",
@@ -136,15 +136,15 @@
           }
         ],
         "id": "R-performance-5",
-        "line": 110,
+        "line": 102,
         "location": "design.md#Decision: The export loads every event, then writes the CSV",
-        "recommendation": "Record the streaming alternative and the reason for the choice, and back it with a measurement of memory and latency on a realistic volume (for example one organization with seven years of events).",
-        "reported": true,
+        "recommendation": "Select only the columns the CSV writes, so wide or future columns (payloads, JSON blobs) are not read and transferred for millions of rows.",
+        "reported": false,
         "role": "performance",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The approach is chosen without weighing alternatives or measuring"
+        "title": "`SELECT *` reads every column for a fixed CSV"
       }
     ],
     "format": 1,
@@ -159,16 +159,16 @@
         "recorded": true,
         "roles": [
           {
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "performance",
+            "state": "findings"
           },
           {
             "role": "security",
             "state": "disabled"
           },
           {
-            "role": "performance",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge"

@@ -9,7 +9,7 @@ front-end is a React application; a daily job runner already exists.
 
 ### Decision: Birth dates live on the profile
 
-Two columns, `birth_date` and `phone`, are added to `profiles`. They are
+Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are
 kept as long as the profile exists, and copied with the rest of the
 database into the nightly backups.
 

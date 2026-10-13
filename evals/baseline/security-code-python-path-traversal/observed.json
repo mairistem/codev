@@ -1,0 +1,132 @@
+{
+  "format": 1,
+  "case": "security-code-python-path-traversal",
+  "error": null,
+  "costUsd": 0.3647144,
+  "durationMs": 40934,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (Path traversal in read_attachment bypasses the ticket authorization) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-ticket-attachments",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if not may_read_ticket(agent_id, ticket_id):\n    raise PermissionError(f\"agent {agent_id} may not read ticket {ticket_id}\")\npath = os.path.join(UPLOAD_DIR, str(ticket_id), name)\nwith open(path, \"rb\") as f:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 9,
+        "location": "app/attachments.py:28-31",
+        "recommendation": "CWE-22. `name` comes from the client and is joined as is: an agent allowed on ticket 1 asks for `../42/contract.pdf` and reads another team's attachment, or `/etc/passwd` (an absolute path makes os.path.join discard the base) and reads any file the service can read. Look the attachment up in the `attachments` table by (ticket_id, name) and serve only a recorded name, or reject any name that differs from os.path.basename(name) and check that the resolved path (os.path.realpath) stays under the ticket's directory.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Path traversal in read_attachment bypasses the ticket authorization"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:\n    \"\"\"Stores an uploaded file under the ticket's directory; returns its name.\"\"\"\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 33,
+        "location": "app/attachments.py:11-12",
+        "recommendation": "CWE-862. Unlike read_attachment, the upload takes no agent and calls no may_read_ticket: unless every caller checks it (no caller is in the change), any authenticated agent can attach files to any team's ticket. Take the agent_id and enforce the same ownership check on the server before writing.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "save_attachment checks no authorization"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "name = os.path.basename(filename)\ndirectory = os.path.join(UPLOAD_DIR, str(ticket_id))\nos.makedirs(directory, exist_ok=True)\nwith open(os.path.join(directory, name), \"wb\") as f:\n    f.write(data)\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 52,
+        "location": "app/attachments.py:13-17",
+        "recommendation": "basename strips directories but accepts `..`, `.`, an empty name, control characters and any extension, and an upload under an existing name silently replaces the stored file (with a second row in `attachments`), so one uploader can swap a file another agent will open. Validate the name against an allow-list (characters, length, extensions), reject collisions or store under a generated id, and bound the size of `data`.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Uploaded file name is not allow-listed and overwrites existing attachments"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-ticket-attachments/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

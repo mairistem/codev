@@ -4,18 +4,18 @@ Greets members on their birthday.
 
 ## ADDED Requirements
 
-### Requirement: Members give their birth date and phone number
+### Requirement: Members opt in to birthday greetings
 
-The profile form SHALL ask for the member's birth date and mobile phone number, both required.
+The profile form SHALL offer birthday greetings as an option, off by default; a member who opts in SHALL give their birthday (day and month) and a mobile phone number.
 
-#### Scenario: A complete profile
+#### Scenario: A member opts in
 
-- **WHEN** a member saves a birth date and a phone number
+- **WHEN** a member opts in with a birthday and a phone number
 - **THEN** both are stored on their profile
 
-#### Scenario: A missing birth date
+#### Scenario: A birthday without phone
 
-- **WHEN** a member saves the form without a birth date
+- **WHEN** a member opts in without a phone number
 - **THEN** the form is refused
 
 ### Requirement: Members receive a greeting on their birthday

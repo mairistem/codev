@@ -1,0 +1,17 @@
+role: privacy
+step: code.review
+change: add-support-lookup
+stacks: ["typescript"]
+kind: seeded
+summary: "The chat vendor receives the phone, birth date and address it does not need to greet a customer, and a lookup that misses puts the typed e-mail in an error message the base's handler logs."
+expected:
+  - id: profile-to-chat-vendor
+    severity: high
+    category: personal-data-to-processor
+    locations: ["src/support.ts:45-47"]
+    alternatives: ["src/support.ts:38"]
+  - id: email-in-error-message
+    severity: medium
+    category: personal-data-in-logs
+    locations: ["src/support.ts:20"]
+    alternatives: ["src/server.ts:14"]

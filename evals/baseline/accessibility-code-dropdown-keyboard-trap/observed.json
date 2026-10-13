@@ -1,0 +1,108 @@
+{
+  "format": 1,
+  "case": "accessibility-code-dropdown-keyboard-trap",
+  "error": null,
+  "costUsd": 0.3667014,
+  "durationMs": 30148,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Open sort menu traps keyboard focus: Tab cycles inside it and Escape does not close it) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-sort-menu",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n  const index = items.current.findIndex((item) => item === document.activeElement);\n  if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n    event.preventDefault();\n    items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n  } else if (event.key === \"ArrowUp\") {\n    event.preventDefault();\n    items.current[(index - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length]?.focus();\n  }\n}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 9,
+        "location": "src/components/SortMenu.tsx:21-30",
+        "recommendation": "Keyboard users cannot leave the open menu without picking a sort order — WCAG 2.1.2 No Keyboard Trap (Level A), 2.1.1 Keyboard. Stop intercepting Tab (let it close the menu and move focus on, per the APG menu button pattern), and handle Escape: close the menu and return focus to the trigger button. Alternatively use a native <select>, which needs none of it.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Open sort menu traps keyboard focus: Tab cycles inside it and Escape does not close it"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<button ref={button} type=\"button\" aria-haspopup=\"menu\" aria-expanded=\"false\" onClick={() => setOpen(!open)}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 37,
+        "location": "src/components/SortMenu.tsx:34",
+        "recommendation": "Screen reader users are told the menu is collapsed while it is open — WCAG 4.1.2 Name, Role, Value. Bind the state: aria-expanded={open}.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Menu button always announces aria-expanded=\"false\""
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-sort-menu/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

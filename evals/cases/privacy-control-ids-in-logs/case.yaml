@@ -1,0 +1,6 @@
+role: privacy
+step: code.review
+change: log-fulfilment-batches
+stacks: ["python"]
+kind: control
+summary: "Logs carry order ids, counts and durations, and the carrier receives an order reference only; nothing to find."

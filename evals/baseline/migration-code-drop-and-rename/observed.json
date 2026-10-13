@@ -2,8 +2,8 @@
   "format": 1,
   "case": "migration-code-drop-and-rename",
   "error": null,
-  "costUsd": 0.33190339999999996,
-  "durationMs": 28668,
+  "costUsd": 0.3427556,
+  "durationMs": 31416,
   "strayed": [],
   "review": {
     "archive": {
@@ -18,7 +18,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Public JSON field renamed with no BREAKING mark) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Account JSON field rename is a breaking API change not marked BREAKING) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -42,7 +42,7 @@
         "id": "R-migration-1",
         "line": 9,
         "location": "migrations/0005_drop_legacy_email.sql:1-2",
-        "recommendation": "Add `migrations/0005_drop_legacy_email.down.sql` (re-adding `legacy_email TEXT`, as 0004 has its own `.down.sql`) and, since the down cannot restore the values, copy the column's data to a backup table or export before dropping it — or state in the plan why the data is disposable and how to recover. \"Not written since 2023\" does not mean empty: existing rows still hold the imported emails.",
+        "recommendation": "Add `migrations/0005_drop_legacy_email.down.sql` (re-adding `legacy_email TEXT`), as 0004 has a down file, and add a backup step (e.g. copy `id, legacy_email` to an archive table or a dump) before the drop; or state in the plan why the data can be lost and how to recover it.",
         "reported": true,
         "role": "migration",
         "severity": "high",
@@ -64,39 +64,15 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 29,
+        "line": 26,
         "location": "src/api.rs:8-9",
-        "recommendation": "`Account` is a public HTTP API type: its `user_name` field becomes `userName`, so every API consumer reading `user_name` breaks silently. Mark the item **BREAKING** in the proposal's release note, with what consumers must do (read `userName` instead), and treat it as a major version change.",
+        "recommendation": "Mark the rename **BREAKING** in the release note with what consumers must do (read `userName` instead of `user_name`), and treat it as a major version bump of the public API.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Public JSON field renamed with no BREAKING mark"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- Changed: Account JSON uses camelCase.\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-3",
-        "line": 48,
-        "location": "proposal.md#Release note",
-        "recommendation": "Write it as a **BREAKING** item naming the field (`user_name` → `userName`) and the consumer action; also add an item for the dropped `users.legacy_email` column, which the release note does not mention.",
-        "reported": true,
-        "role": "migration",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Release note announces the rename as a plain change"
+        "title": "Account JSON field rename is a breaking API change not marked BREAKING"
       },
       {
         "awaiting": "author",
@@ -111,40 +87,16 @@
             "to": null
           }
         ],
-        "id": "R-migration-4",
-        "line": 65,
+        "id": "R-migration-3",
+        "line": 43,
         "location": "src/api.rs:8",
-        "recommendation": "Consumers get no time to move: the old key disappears in the same release that introduces the new one. Expand then contract — serialize both `user_name` and `userName` for a deprecation period (e.g. a second field or a custom `Serialize`), announce the removal of `user_name`, then drop it in a later release. Add a test asserting the serialized keys.",
+        "recommendation": "Expand then contract — emit both `user_name` (deprecated) and `userName` for at least one release (e.g. a second serialized field or a custom `Serialize`), announce the removal date, then drop `user_name` in a later change.",
         "reported": true,
         "role": "migration",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Rename shipped without a deprecation or side-by-side period"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "- [x] 1.1 Migration 0005, verified by `sqlx migrate run` on a copy of production\n- [x] 1.2 camelCase account field, verified by `cargo test api`\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-5",
-        "line": 84,
-        "location": "tasks.md#1. Implementation",
-        "recommendation": "The diff adds no test: nothing checks that 0005 can be rolled back, nor the serialized key names of `Account`. Add a serialization test for `Account` and exercise the down migration once it exists.",
-        "reported": false,
-        "role": "migration",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "No test covers the migration path"
+        "title": "Field removed in the same release as its replacement, no transition period"
       }
     ],
     "format": 1,

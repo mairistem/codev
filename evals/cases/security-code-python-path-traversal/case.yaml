@@ -1,0 +1,11 @@
+role: security
+step: code.review
+change: add-ticket-attachments
+stacks: ["python"]
+kind: seeded
+summary: "Downloads join the requested name to the ticket's directory unchecked, while uploads keep only the base name; the API key check and the queries are sound."
+expected:
+  - id: download-path-traversal
+    severity: high
+    category: path-traversal
+    locations: ["app/attachments.py:30-32"]

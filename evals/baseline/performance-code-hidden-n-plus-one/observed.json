@@ -1,0 +1,156 @@
+{
+  "format": 1,
+  "case": "performance-code-hidden-n-plus-one",
+  "error": null,
+  "costUsd": 0.4251743999999999,
+  "durationMs": 41990,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (One customer query per invoice (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-monthly-report",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for invoice in &invoices {\n    lines.push(ReportLine {\n        number: invoice.number.clone(),\n        customer: customer_label(db, invoice)?,\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 9,
+        "location": "src/report.rs:23-26",
+        "recommendation": "`customer_label` runs `db.customer(invoice.customer_id)?` (src/report.rs:39), one `SELECT … FROM customers WHERE id = $1` per invoice. Collect the distinct `customer_id`s of the month's invoices, load them in one query with the existing `Db::customers(&[i64])` (`WHERE id = ANY($1)`), index them in a `HashMap<i64, Customer>`, and build each label from that map. The report then runs 3 queries instead of N + 2 (about 3 000 customer queries a month for 800 distinct customers, per the proposal), with the same lines and the same error when a customer is missing.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "One customer query per invoice (N+1)"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "fn purchase_order(notes: &str) -> Option<String> {\n    let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 34,
+        "location": "src/report.rs:44-45",
+        "recommendation": "Compile the pattern once — a `static PO: LazyLock<Regex>` (or `OnceLock`), or build it in `monthly_report` before the loop and pass it in. Regex compilation costs far more than the match, and here it runs once per invoice of the month (about 3 000 times per report).",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The purchase-order regex is compiled once per invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "regex = \"1\"\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 53,
+        "location": "Cargo.toml:8",
+        "recommendation": "Weigh the dependency against its use: `PO-` followed by `\\d{4}-\\d{4}` can be matched by a short scan over `notes` (find `PO-`, then check 4 ASCII digits, `-`, 4 ASCII digits), avoiding `regex` and its transitive crates (`regex-automata`, `regex-syntax`, `aho-corasick`, `memchr`) in build time and binary size. Keep `regex` only if more patterns are expected.",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The regex crate is added for one fixed-shape pattern"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for invoice in &invoices {\n    lines.push(ReportLine {\n        number: invoice.number.clone(),\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-4",
+        "line": 72,
+        "location": "src/report.rs:23-25",
+        "recommendation": "`invoices` is owned and not used after the loop: iterate it by value (`for invoice in invoices`) and move `invoice.number` into the line, saving one `String` allocation and copy per invoice.",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Invoice numbers are cloned while the invoices are dropped"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-monthly-report/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

@@ -29,7 +29,7 @@ None.
 ## Domains
 
 - [ ] security
-- [ ] personal-data
+- [x] personal-data — the job merges and deletes customer records
 - [ ] user-interface
 - [ ] performance
 - [ ] operations

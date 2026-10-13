@@ -37,4 +37,4 @@ None.
 
 ## Release note
 
-- Changed: Large carts load faster.
+- Changed: The cart reads its prices in one request to the database.

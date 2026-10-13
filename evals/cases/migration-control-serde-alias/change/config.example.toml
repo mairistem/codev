@@ -1,0 +1,2 @@
+database_url = "postgres://orders@localhost/orders"
+bind_address = "0.0.0.0:8080"

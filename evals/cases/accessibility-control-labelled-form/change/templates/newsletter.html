@@ -1,4 +1,4 @@
-<form class="newsletter" action="/newsletter" method="post" novalidate>
+<form class="newsletter" action="/newsletter" method="post" aria-labelledby="newsletter-title">
   <h2 id="newsletter-title">Get the monthly newsletter</h2>
   <label for="newsletter-email">E-mail address</label>
   <input
@@ -7,11 +7,8 @@
     type="email"
     autocomplete="email"
     required
-    aria-describedby="newsletter-hint newsletter-error"
+    aria-describedby="newsletter-hint"
   />
   <p id="newsletter-hint" class="hint">One e-mail a month. Unsubscribe from any issue.</p>
-  <p id="newsletter-error" class="error" role="alert" hidden>
-    Enter an e-mail address such as name@example.org.
-  </p>
   <button type="submit">Subscribe</button>
 </form>

@@ -3,6 +3,7 @@ step: plan.trace
 change: add-magic-links
 stacks: ["rust"]
 kind: seeded
+planned: [src/auth/links.rs, a_link_is_emailed, a_valid_link_signs_in]
 summary: "The spec's expired-link scenario has no task or test."
 checks:
   fixed:

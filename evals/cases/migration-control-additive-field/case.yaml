@@ -3,4 +3,5 @@ step: plan.challenge
 change: add-order-note
 stacks: ["typescript"]
 kind: control
+planned: [migrations/0012_order_note.sql, migrations/0012_order_note.down.sql]
 summary: "A plan adds an optional field and a nullable column, reversible and deployed in two steps; nothing to find."

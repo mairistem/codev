@@ -1,0 +1,16 @@
+role: security
+step: code.review
+change: add-invoices-api
+stacks: ["typescript"]
+kind: seeded
+summary: "The list endpoint filters by the caller's organization; the detail endpoint returns any invoice by id, and the error handler sends the stack trace to the client."
+expected:
+  - id: detail-without-tenant-check
+    severity: high
+    category: access-control
+    locations: ["src/invoices.ts:33"]
+    alternatives: ["src/invoices.ts:26", "src/invoices.ts:40"]
+  - id: stack-trace-to-client
+    severity: medium
+    category: information-disclosure
+    locations: ["src/server.ts:17"]

@@ -1,0 +1,6 @@
+role: performance
+step: code.review
+change: add-monthly-report
+stacks: ["rust"]
+kind: control
+summary: "A helper called in a loop reads a map loaded by one query, and the pattern is compiled once; nothing to find."

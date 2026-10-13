@@ -3,6 +3,7 @@ step: plan.challenge
 change: add-api-tokens
 stacks: ["rust"]
 kind: seeded
+planned: [tokens_table, a_token_is_created, an_unknown_token_is_refused, logs_requests]
 summary: "A plan stores API tokens in clear and logs the Authorization header."
 expected:
   - id: token-stored-in-clear

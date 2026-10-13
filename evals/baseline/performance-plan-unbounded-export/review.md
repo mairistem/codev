@@ -4,17 +4,9 @@
 
 ## plan.challenge
 
-### skeptic
-
-Disabled by configuration.
-
-### security
-
-Disabled by configuration.
-
 ### performance
 
-#### R-performance-1 The export loads the organization's whole audit log into memory
+#### R-performance-1 The export loads the whole audit log of an organization into memory
 
 ```yaml
 severity: high
@@ -23,48 +15,69 @@ location: "design.md#Decision: The export loads every event, then writes the CSV
 evidence: |
   The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
   created_at`, loads the rows into an array, builds the whole CSV string with
-  `rows.map(toCsvLine).join("\n")`, and sends it.
 recommendation: >-
-  Stream the rows instead of buffering them: read with a server-side cursor
-  (for example `pg-cursor` or `pg-query-stream`) or keyset pages on
-  `(created_at, id)` of a few thousand rows, and write each CSV line to the
-  response as it is read, honouring back-pressure. Memory then stays
-  constant per request instead of growing with the log.
+  Do not materialize the result: read the rows through a database cursor (or
+  keyset pages on created_at, id) and stream each CSV line to the response,
+  honouring backpressure. Cost is then constant in memory instead of linear
+  in the organization's history. If a bound is preferred (e.g. a date range
+  per request), that changes the spec and must be decided there.
 history:
   - status: open
     by: performance
 ```
 
-The design's own context gives the size: about 40 000 events per
-organization per month, kept seven years, so up to about 3.4 million rows
-held in one array, then again as one CSV string, per request. Cost grows
-linearly with the retained history on a user-facing endpoint; a few
-concurrent exports can exhaust the instance's heap.
+The query has no `LIMIT` and no range, and the spec requires every event.
+With the design's own figures (about 40 000 events per organization per month,
+kept seven years) one request reads up to about 3.4 million rows, all held in
+one array per request, on a user-facing endpoint: memory grows per row and per
+concurrent export, and can exhaust the instance.
 
-#### R-performance-2 Building the CSV with map/join blocks the single event loop
+#### R-performance-2 Building the whole CSV string blocks the event loop
 
 ```yaml
 severity: high
 confidence: high
 location: "design.md#Decision: The export loads every event, then writes the CSV"
 evidence: |
-  builds the whole CSV string with
   `rows.map(toCsvLine).join("\n")`, and sends it.
 recommendation: >-
-  Produce the CSV incrementally from the row stream (a Transform stream
-  piped to `res`), so serialization work is spread across ticks and other
-  requests keep being served during an export.
+  Write the CSV line by line to a stream (e.g. a Transform from the cursor to
+  the response) so the work is split across event-loop turns, and no second
+  copy of the data (lines array plus joined string) is allocated.
 history:
   - status: open
     by: performance
 ```
 
-The design states "The API is a Node.js service with one event loop per
-instance." Mapping and joining millions of rows is synchronous CPU work and
-string allocation proportional to the log size; while it runs, every other
-request on the instance, `/health` included, waits.
+`map` then `join` over millions of rows is synchronous CPU work and allocates
+an intermediate array of lines plus the final string, on top of the rows array.
+The design states "one event loop per instance": while one export is built,
+every other request served by that instance waits. Cost grows per row of the
+organization's history.
 
-#### R-performance-3 The requirement mandates an unbounded result with no range
+#### R-performance-3 No index is planned for the filter and sort of the export query
+
+```yaml
+severity: medium
+confidence: low
+location: "design.md#Decision: The export loads every event, then writes the CSV"
+evidence: |
+  The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
+recommendation: >-
+  Check with EXPLAIN that an index on (org_id, created_at) exists, or add it
+  to the plan; otherwise the database sorts the organization's rows on every
+  export.
+history:
+  - status: open
+    by: performance
+```
+
+The query filters on `org_id` and sorts on `created_at` of a table that grows
+with every organization's activity. Neither the design nor the tasks mention an
+index or a query plan; the schema of `audit_events` was not visible to the
+reviewer, hence the low confidence.
+
+#### R-performance-4 The spec requires an unbounded export with no performance criterion
 
 ```yaml
 severity: medium
@@ -73,53 +86,39 @@ location: "specs/audit-export/spec.md#Requirement: Administrators export the aud
 evidence: |
   `GET /admin/audit-events.csv` SHALL return every audit event of the organization as CSV, oldest first.
 recommendation: >-
-  Either state that the response is streamed (so "every event" is
-  delivered without buffering) or add an optional date range (`from`,
-  `to`) and a scenario covering a large log; leave the choice to the
-  author, since a range changes observable behaviour.
+  State how the export stays bounded in resources: either a streamed response
+  (memory independent of the number of events) with a scenario covering a
+  large organization, or an explicit range or page parameter. Add a task
+  that measures the export on a realistic volume (millions of rows).
 history:
   - status: open
     by: performance
 ```
 
-"Every audit event" over a seven-year retention is a result set that grows
-without bound, and no scenario covers its size, so the tests in task 1.1
-("An export", "Not an administrator") would pass with the buffering design.
+The only scenarios are "An export" and "Not an administrator"; nothing checks
+behaviour at the volumes the design announces, and the task list has no
+measurement, so the unbounded cost would pass the tests on a small fixture.
 
-#### R-performance-4 No index is named for the export's filter and sort
+#### R-performance-5 `SELECT *` reads every column for a fixed CSV
 
 ```yaml
-severity: medium
+severity: low
 confidence: low
 location: "design.md#Decision: The export loads every event, then writes the CSV"
 evidence: |
   The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
-  created_at`
 recommendation: >-
-  Check with `EXPLAIN` that an index on `audit_events (org_id, created_at)`
-  exists, and add it to the plan (a migration task) if it does not; without
-  it the query scans and sorts the whole table, all organizations included.
+  Select only the columns the CSV writes, so wide or future columns (payloads,
+  JSON blobs) are not read and transferred for millions of rows.
 history:
   - status: open
     by: performance
 ```
 
-The repository holds no schema or migration for `audit_events`, so whether
-the index exists could not be verified; the design does not mention it.
+### security
 
-#### R-performance-5 The approach is chosen without weighing alternatives or measuring
+Disabled by configuration.
 
-```yaml
-severity: low
-confidence: high
-location: "design.md#Decision: The export loads every event, then writes the CSV"
-evidence: |
-  **Alternatives considered**: none; the code is the simplest.
-recommendation: >-
-  Record the streaming alternative and the reason for the choice, and back
-  it with a measurement of memory and latency on a realistic volume (for
-  example one organization with seven years of events).
-history:
-  - status: open
-    by: performance
-```
+### skeptic
+
+Disabled by configuration.

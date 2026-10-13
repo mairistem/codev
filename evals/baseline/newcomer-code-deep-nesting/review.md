@@ -11,7 +11,7 @@
 ```yaml
 severity: low
 confidence: high
-location: "src/import.rs:14-41"
+location: "src/import.rs:14-24"
 evidence: |
     for row in rows {
         if !row.email.is_empty() {
@@ -22,68 +22,76 @@ evidence: |
                             if !account.seats.contains(seat) {
                                 if seat.contains('@') {
                                     db.add_seat(account.id, seat)?;
-                                    created += 1;
 recommendation: >-
   Flatten without changing behavior: `continue` early on an empty email and
-  on an unchanged plan, merge the two seat conditions with `&&` (or a
-  `filter`), and extract the per-row work into a helper (e.g.
-  `import_row(db, row) -> Result<usize, DbError>`) so the loop reads as a
-  sum over rows.
+  on an unchanged plan, merge the two seat conditions into one filter, and
+  move the seat loop into a helper so `import` reads as "find or create the
+  account, then add its new seats".
 history:
   - status: open
     by: newcomer
 ```
 
-#### R-newcomer-2 Seat filtering on `'@'` is duplicated and unexplained
+#### R-newcomer-2 Seat-adding loop duplicated in both match arms
 
 ```yaml
 severity: low
 confidence: high
-location: "src/import.rs:21-32"
+location: "src/import.rs:31-37"
 evidence: |
-  if seat.contains('@') {
+                    for seat in &row.seats {
+                        if seat.contains('@') {
+                            db.add_seat(id, seat)?;
+                            created += 1;
+                        }
+                    }
 recommendation: >-
-  The same unexplained check appears at line 21 (existing account) and line
-  32 (new account). Name the rule once, e.g. `fn is_valid_seat(seat: &str) -> bool`, with a
-  comment saying why seats without '@' are silently skipped (they are
-  expected to be e-mail addresses?), and use it in both branches.
+  Extract one helper, e.g. `add_new_seats(db, account_id, existing, seats) ->
+  Result<usize, DbError>`, used by both the `Some` and `None` arms, so the
+  seat filter lives in a single place.
 history:
   - status: open
     by: newcomer
 ```
 
-#### R-newcomer-3 Seats are added to an existing account only when its plan differs, with no explanation
+#### R-newcomer-3 Seats are only added to an existing account when its plan differs, without saying why
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/import.rs:17-18"
+location: "src/import.rs:18"
 evidence: |
-                Some(account) => {
                     if account.plan != row.plan {
 recommendation: >-
-  A reader cannot tell whether this is intended: an existing account whose
-  plan is unchanged never receives the new seats of the CSV, and when the
-  plan differs the plan itself is not updated. Either document the business
-  rule in a comment or confirm with the author whether the condition is a
-  defect (the proposal only says "creates missing accounts and their
-  seats").
+  A reader without the plan cannot tell whether skipping new seats on an
+  account whose plan is unchanged is intended or a bug; the proposal only
+  says "creates missing accounts and their seats". State the rule in a
+  comment (or confirm it is a defect), and note that the account's plan
+  itself is never updated here either.
 history:
   - status: open
     by: newcomer
 ```
 
-#### R-newcomer-4 Rows with an empty email are skipped silently
+#### R-newcomer-4 Unexplained filters: `contains('@')` and empty email skip silently
 
 ```yaml
 severity: low
 confidence: high
-location: "src/import.rs:15"
+location: "src/import.rs:15-21"
 evidence: |
         if !row.email.is_empty() {
+            match db.find_account(&row.email)? {
+                Some(account) => {
+                    if account.plan != row.plan {
+                        for seat in &row.seats {
+                            if !account.seats.contains(seat) {
+                                if seat.contains('@') {
 recommendation: >-
-  Turn it into an early `continue` with a one-line comment saying why such
-  rows are ignored (and that they are not counted or reported).
+  Name the checks (e.g. `fn looks_like_email(seat: &str) -> bool`) and say in
+  a comment why rows without an email and seats without '@' are dropped
+  silently rather than reported; `seats: Vec<String>` could also document
+  that a seat is an email address.
 history:
   - status: open
     by: newcomer
@@ -92,18 +100,16 @@ history:
 #### R-newcomer-5 No test describes the import behavior
 
 ```yaml
-severity: medium
+severity: low
 confidence: high
-location: "src/import.rs:11-12"
+location: "tasks.md#1. Implementation"
 evidence: |
-  /// Imports the rows and returns how many seats were created.
-  pub fn import(db: &Db, rows: &[Row]) -> Result<usize, DbError> {
+  - [x] 1.1 `import`, verified by importing last month's CSV export on staging
 recommendation: >-
-  The task is "verified by `cargo test import`", yet the change adds no test
-  (no `#[cfg(test)] mod tests` anywhere in `src/`). Add tests named after the
-  behavior: creates a missing account with its seats, skips rows without an
-  email, skips seats without '@', does not duplicate an existing seat, and
-  the plan-unchanged case of R-newcomer-3 once decided.
+  Add tests named after the behavior (creates a missing account with its
+  seats, adds only new seats to an existing account, skips rows without an
+  email, ignores seats without '@') so a newcomer can learn the rules from
+  them; today the only verification is a manual staging run.
 history:
   - status: open
     by: newcomer

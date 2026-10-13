@@ -1,0 +1,156 @@
+{
+  "format": 1,
+  "case": "privacy-code-python-soft-delete",
+  "error": null,
+  "costUsd": 0.38073580000000007,
+  "durationMs": 34529,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Account deletion keeps every personal field of the member) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-account-deletion",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "_conn.execute(\n    \"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n    (user_id,),\n)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 9,
+        "location": "app/account.py:18-21",
+        "recommendation": "Erase the personal data on deletion, as the proposal promises: delete the users row, or overwrite email, display_name, phone and postal_address (email needs a unique non-identifying placeholder because of its UNIQUE NOT NULL constraint) so that the orders kept for accounting point to a row with no personal data. GDPR Art. 17 (erasure) and Art. 5(1)(e) (storage limitation).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Account deletion keeps every personal field of the member"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "delete_account(1)\nassert not can_sign_in(\"ada@example.org\")\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 36,
+        "location": "tests/test_account.py:10-11",
+        "recommendation": "Add a test asserting that after delete_account no row of users still holds the member's email, display name, phone or postal address, while their orders remain.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Tests do not check that personal data is erased"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def analytics_id(user_id: int) -> str:\n    \"\"\"The pseudonymous id analytics events carry instead of the user id.\"\"\"\n    return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 56,
+        "location": "app/account.py:11-13",
+        "recommendation": "State what happens to analytics events on deletion: delete them at the analytics processor by analytics_id, or make the id unlinkable (per-user random id deleted with the account). Identify the analytics processor (GDPR Art. 28) if it is a third party.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Erasure does not reach analytics data linked by analytics_id"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- A \"Delete my account\" button erases the member's personal data and signs them out everywhere; their orders are kept for accounting, without personal data.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 80,
+        "location": "proposal.md#What Changes",
+        "recommendation": "State the retention of the soft-deleted row (if any is kept) and of the orders, and how erasure reaches backups of members.db (expiry window or re-applying deletions on restore). GDPR Art. 5(1)(e).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Retention of deleted accounts and backups is not defined"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-account-deletion/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

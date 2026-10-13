@@ -187,7 +187,85 @@ pub struct Expected {
     pub role: String,
     pub severity: String,
     pub category: String,
+    /// The category's terms, lowercased, from the vocabulary.
+    pub terms: Vec<String>,
+    /// Where the defect is.
     pub locations: Vec<Location>,
+    /// Other places a reviewer may rightly cite it.
+    pub alternatives: Vec<Location>,
+}
+
+impl Expected {
+    /// Whether `found` points at this defect: one of its locations or
+    /// alternatives.
+    pub fn located_at(&self, found: &Location) -> bool {
+        self.locations
+            .iter()
+            .chain(&self.alternatives)
+            .any(|l| l.matched_by(found))
+    }
+
+    /// Whether a finding's text names this defect's category.
+    pub fn named_by(&self, text: &str) -> bool {
+        names_any(text, &self.terms)
+    }
+}
+
+/// Whether `text` holds one of `terms` (lowercased) at the start of a
+/// word, ignoring case: `alt` is in "alt text" and "alternative", not in
+/// "default".
+pub fn names_any(text: &str, terms: &[String]) -> bool {
+    let text = text.to_lowercase();
+    terms.iter().any(|term| {
+        text.match_indices(term.as_str()).any(|(at, _)| {
+            text[..at]
+                .chars()
+                .next_back()
+                .is_none_or(|c| !c.is_alphanumeric())
+        })
+    })
+}
+
+/// The category vocabulary: each category's terms, lowercased.
+pub type Vocabulary = BTreeMap<String, Vec<String>>;
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct VocabularyFile {
+    categories: BTreeMap<String, CategoryFile>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CategoryFile {
+    /// Required, so that the file explains every category to case
+    /// authors; the scoring reads only the terms.
+    #[allow(dead_code)]
+    description: String,
+    terms: Vec<String>,
+}
+
+/// Reads `evals/categories.yaml`; a category without term or an unknown
+/// key is refused, naming it.
+pub fn parse_vocabulary(text: &str) -> Result<Vocabulary, String> {
+    let file: VocabularyFile =
+        serde_norway::from_str(text).map_err(|e| format!("evals/categories.yaml: {e}"))?;
+    let mut vocabulary = Vocabulary::new();
+    for (name, category) in file.categories {
+        let terms: Vec<String> = category
+            .terms
+            .iter()
+            .map(|t| t.trim().to_lowercase())
+            .filter(|t| !t.is_empty())
+            .collect();
+        if terms.is_empty() {
+            return Err(format!(
+                "evals/categories.yaml: category `{name}` has no term"
+            ));
+        }
+        vocabulary.insert(name, terms);
+    }
+    Ok(vocabulary)
 }
 
 /// A `plan.trace` check: the file must contain the text after the run.
@@ -216,6 +294,8 @@ pub struct Case {
     pub expected: Vec<Expected>,
     pub fixed: Vec<FixedCheck>,
     pub unchanged: Vec<UnchangedCheck>,
+    /// Files and tests the plan introduces, absent from the fixture.
+    pub planned: Vec<String>,
 }
 
 impl Case {
@@ -305,6 +385,8 @@ struct CaseFile {
     expected: Vec<ExpectedFile>,
     #[serde(default)]
     checks: Option<ChecksFile>,
+    #[serde(default)]
+    planned: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -314,6 +396,8 @@ struct ExpectedFile {
     severity: String,
     category: String,
     locations: Vec<String>,
+    #[serde(default)]
+    alternatives: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -334,9 +418,19 @@ struct FixedFile {
 
 const SEVERITIES: [&str; 3] = ["high", "medium", "low"];
 
+/// What a case is checked against: the roles' steps and the category
+/// vocabulary.
+#[derive(Debug, Clone, Default)]
+pub struct Catalog {
+    pub roles: RoleSteps,
+    pub vocabulary: Vocabulary,
+}
+
 /// Loads and checks a case: `id` is its directory name, `yaml` its
-/// `case.yaml`, `fixture` its files, `roles` the catalog's steps.
-pub fn load(id: &str, yaml: &str, fixture: &Fixture, roles: &RoleSteps) -> Result<Case, CaseError> {
+/// `case.yaml`, `fixture` its files, `catalog` the roles' steps and the
+/// category vocabulary.
+pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Result<Case, CaseError> {
+    let roles = &catalog.roles;
     let fail = |message: String| CaseError {
         case: id.to_string(),
         message,
@@ -391,19 +485,31 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, roles: &RoleSteps) -> Resul
         if e.locations.is_empty() {
             return Err(fail(format!("expected `{}` has no location", e.id)));
         }
-        let mut locations = Vec::new();
-        for text in &e.locations {
-            let location = Location::parse(text);
-            check_location(&location, &files, &change_dir)
-                .map_err(|m| fail(format!("expected `{}`: {m}", e.id)))?;
-            locations.push(location);
-        }
+        let terms = catalog.vocabulary.get(&e.category).ok_or_else(|| {
+            fail(format!(
+                "expected `{}`: category `{}` is not in evals/categories.yaml",
+                e.id, e.category
+            ))
+        })?;
+        let parse = |texts: &[String]| -> Result<Vec<Location>, CaseError> {
+            texts
+                .iter()
+                .map(|text| {
+                    let location = Location::parse(text);
+                    check_location(&location, &files, &change_dir)
+                        .map_err(|m| fail(format!("expected `{}`: {m}", e.id)))?;
+                    Ok(location)
+                })
+                .collect()
+        };
         expected.push(Expected {
             id: e.id.clone(),
             role: file.role.clone(),
             severity: e.severity.clone(),
             category: e.category.clone(),
-            locations,
+            terms: terms.clone(),
+            locations: parse(&e.locations)?,
+            alternatives: parse(&e.alternatives)?,
         });
     }
 
@@ -463,6 +569,18 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, roles: &RoleSteps) -> Resul
         _ => {}
     }
 
+    let planned: Vec<String> = file.planned.iter().map(|p| normalize_path(p)).collect();
+    if step == Step::CodeReview && !planned.is_empty() {
+        return Err(fail(
+            "`planned` is for plan steps: a code.review case has its tasks done, so a code case plans nothing"
+                .into(),
+        ));
+    }
+    let problems = crate::lint::lint(&change_dir, &files, &planned);
+    if !problems.is_empty() {
+        return Err(fail(problems.join("; ")));
+    }
+
     Ok(Case {
         id: id.to_string(),
         role: file.role,
@@ -474,6 +592,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, roles: &RoleSteps) -> Resul
         expected,
         fixed,
         unchanged,
+        planned,
     })
 }
 
@@ -539,22 +658,36 @@ fn check_location(
 
 /// The minimum the suite holds per role: (seeded, controls).
 pub const COVERAGE: [(&str, usize, usize); 9] = [
-    ("security", 2, 1),
-    ("privacy", 2, 1),
-    ("accessibility", 2, 1),
-    ("performance", 2, 1),
-    ("ops", 2, 1),
-    ("migration", 2, 1),
+    ("security", 3, 2),
+    ("privacy", 3, 2),
+    ("accessibility", 3, 2),
+    ("performance", 3, 2),
+    ("ops", 3, 2),
+    ("migration", 3, 2),
     ("newcomer", 2, 1),
     ("skeptic", 2, 1),
     ("tracer", 1, 1),
 ];
 
+/// The experts: each needs a seeded case expecting two findings of
+/// different severity.
+pub const EXPERTS: [&str; 6] = [
+    "security",
+    "privacy",
+    "accessibility",
+    "performance",
+    "ops",
+    "migration",
+];
+
 /// The stacks the suite's fixtures must include, together.
 pub const STACKS: [&str; 3] = ["rust", "typescript", "python"];
 
-/// What the suite lacks against [`COVERAGE`] and [`STACKS`], one message
-/// per gap; empty when it is complete.
+/// The roles that need a case in a given stack: (role, stack).
+pub const ROLE_STACKS: [(&str, &str); 2] = [("security", "python"), ("privacy", "python")];
+
+/// What the suite lacks against [`COVERAGE`], [`EXPERTS`], [`STACKS`] and
+/// [`ROLE_STACKS`], one message per gap; empty when it is complete.
 pub fn coverage_gaps(cases: &[Case]) -> Vec<String> {
     let mut gaps = Vec::new();
     for (role, seeded, controls) in COVERAGE {
@@ -576,9 +709,33 @@ pub fn coverage_gaps(cases: &[Case]) -> Vec<String> {
             ));
         }
     }
+    for role in EXPERTS {
+        let two_severities = cases.iter().any(|c| {
+            c.role == role && {
+                let mut severities: Vec<&str> =
+                    c.expected.iter().map(|e| e.severity.as_str()).collect();
+                severities.sort();
+                severities.dedup();
+                severities.len() >= 2
+            }
+        });
+        if !two_severities {
+            gaps.push(format!(
+                "{role}: no seeded case expects two findings of different severity"
+            ));
+        }
+    }
     for stack in STACKS {
         if !cases.iter().any(|c| c.stacks.iter().any(|s| s == stack)) {
             gaps.push(format!("no case uses the `{stack}` stack"));
+        }
+    }
+    for (role, stack) in ROLE_STACKS {
+        if !cases
+            .iter()
+            .any(|c| c.role == role && c.stacks.iter().any(|s| s == stack))
+        {
+            gaps.push(format!("{role}: no `{stack}` case"));
         }
     }
     gaps
@@ -603,6 +760,15 @@ pub(crate) mod tests {
         roles
     }
 
+    pub(crate) fn catalog() -> Catalog {
+        let mut vocabulary = Vocabulary::new();
+        vocabulary.insert("injection".into(), vec!["injection".into(), "sql".into()]);
+        Catalog {
+            roles: roles(),
+            vocabulary,
+        }
+    }
+
     pub(crate) fn fixture() -> Fixture {
         let mut f = Fixture::default();
         f.base.insert("README.md".into(), b"# Shop\n".to_vec());
@@ -623,7 +789,7 @@ pub(crate) mod tests {
 
     #[test]
     fn a_well_formed_case_loads() {
-        let case = load("security-sqli", SEEDED, &fixture(), &roles()).unwrap();
+        let case = load("security-sqli", SEEDED, &fixture(), &catalog()).unwrap();
         assert_eq!(case.step, Step::CodeReview);
         assert_eq!(
             case.expected[0].locations,
@@ -638,7 +804,7 @@ pub(crate) mod tests {
     #[test]
     fn a_case_with_an_unknown_key_is_refused() {
         let yaml = SEEDED.replace("expected:", "expect:");
-        let err = load("c", &yaml, &fixture(), &roles()).unwrap_err();
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
         assert!(err.message.contains("expect"), "{err}");
         assert_eq!(err.case, "c");
     }
@@ -646,7 +812,7 @@ pub(crate) mod tests {
     #[test]
     fn a_location_beyond_the_end_is_refused() {
         let yaml = SEEDED.replace("src/users.ts:9-11", "src/users.ts:120");
-        let err = load("c", &yaml, &fixture(), &roles()).unwrap_err();
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
         assert!(
             err.message.contains("src/users.ts") && err.message.contains("120"),
             "{err}"
@@ -658,7 +824,7 @@ pub(crate) mod tests {
         let mut f = fixture();
         f.change
             .insert("logo.png".into(), vec![0x89, 0x50, 0xff, 0xfe]);
-        let err = load("c", SEEDED, &f, &roles()).unwrap_err();
+        let err = load("c", SEEDED, &f, &catalog()).unwrap_err();
         assert!(err.message.contains("change/logo.png"), "{err}");
     }
 
@@ -667,14 +833,14 @@ pub(crate) mod tests {
         let mut f = fixture();
         f.base
             .insert("big.txt".into(), vec![b'a'; MAX_FIXTURE_FILE_BYTES + 1]);
-        let err = load("c", SEEDED, &f, &roles()).unwrap_err();
+        let err = load("c", SEEDED, &f, &catalog()).unwrap_err();
         assert!(err.message.contains("base/big.txt"), "{err}");
     }
 
     #[test]
     fn a_role_that_does_not_serve_the_step_is_refused() {
         let yaml = SEEDED.replace("role: security", "role: skeptic");
-        let err = load("c", &yaml, &fixture(), &roles()).unwrap_err();
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
         assert!(
             err.message.contains("does not serve `code.review`"),
             "{err}"
@@ -684,10 +850,10 @@ pub(crate) mod tests {
     #[test]
     fn a_control_with_an_expectation_is_refused() {
         let yaml = SEEDED.replace("kind: seeded", "kind: control");
-        let err = load("c", &yaml, &fixture(), &roles()).unwrap_err();
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
         assert!(err.message.contains("control"), "{err}");
         let seeded_empty = SEEDED.split("expected:").next().unwrap();
-        let err = load("c", seeded_empty, &fixture(), &roles()).unwrap_err();
+        let err = load("c", seeded_empty, &fixture(), &catalog()).unwrap_err();
         assert!(err.message.contains("seeded"), "{err}");
     }
 
@@ -696,10 +862,10 @@ pub(crate) mod tests {
         let yaml = SEEDED
             .replace("step: code.review", "step: plan.challenge")
             .replace("src/users.ts:9-11", "design.md#Decision: Other");
-        let err = load("c", &yaml, &fixture(), &roles()).unwrap_err();
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
         assert!(err.message.contains("Decision: Other"), "{err}");
         let yaml = yaml.replace("Decision: Other", "decision:  tokens are STORED as given");
-        assert!(load("c", &yaml, &fixture(), &roles()).is_ok());
+        assert!(load("c", &yaml, &fixture(), &catalog()).is_ok());
     }
 
     #[test]
@@ -744,6 +910,123 @@ pub(crate) mod tests {
         );
     }
 
+    #[test]
+    fn a_vocabulary_category_without_term_is_refused() {
+        let ok = "categories:\n  injection:\n    description: Input reaches SQL.\n    terms: [SQL, ' Inject ']\n";
+        assert_eq!(
+            parse_vocabulary(ok).unwrap()["injection"],
+            ["sql", "inject"],
+            "terms are lowercased and trimmed"
+        );
+        let empty =
+            "categories:\n  injection:\n    description: Input reaches SQL.\n    terms: []\n";
+        let err = parse_vocabulary(empty).unwrap_err();
+        assert!(err.contains("`injection` has no term"), "{err}");
+        let unknown = ok.replace("terms:", "words:");
+        let err = parse_vocabulary(&unknown).unwrap_err();
+        assert!(err.contains("words"), "{err}");
+    }
+
+    #[test]
+    fn a_category_outside_the_vocabulary_is_refused() {
+        let yaml = SEEDED.replace("category: injection", "category: sqli");
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
+        assert!(err.message.contains("`sqli`"), "{err}");
+        let case = load("c", SEEDED, &fixture(), &catalog()).unwrap();
+        assert_eq!(case.expected[0].terms, ["injection", "sql"]);
+    }
+
+    #[test]
+    fn an_alternative_beyond_the_end_is_refused() {
+        let with = |alt: &str| {
+            SEEDED.replace(
+                "    locations: [\"src/users.ts:9-11\"]\n",
+                &format!("    locations: [\"src/users.ts:9-11\"]\n    alternatives: [\"{alt}\"]\n"),
+            )
+        };
+        let case = load("c", &with("src/users.ts:30"), &fixture(), &catalog()).unwrap();
+        assert_eq!(case.expected[0].alternatives.len(), 1);
+        let err = load("c", &with("src/users.ts:41"), &fixture(), &catalog()).unwrap_err();
+        assert!(err.message.contains("src/users.ts:41"), "{err}");
+    }
+
+    fn plan_case(tasks: &str, planned: &str) -> Result<Case, CaseError> {
+        let mut f = fixture();
+        f.change.insert(
+            "_codev/changes/add-search/tasks.md".into(),
+            tasks.as_bytes().to_vec(),
+        );
+        let yaml = SEEDED
+            .replace("step: code.review", "step: plan.challenge")
+            .replace(
+                "src/users.ts:9-11",
+                "design.md#Decision: Tokens are stored as given",
+            )
+            + planned;
+        load("c", &yaml, &f, &catalog())
+    }
+
+    #[test]
+    fn a_plan_citing_a_missing_file_is_refused() {
+        let mut f = fixture();
+        f.change.insert(
+            "_codev/changes/add-search/proposal.md".into(),
+            b"# Proposal: Search\n\n## Impact\n\n- `src/cli/progress.rs`, `src/users.ts`.\n"
+                .to_vec(),
+        );
+        let err = load("c", SEEDED, &f, &catalog()).unwrap_err();
+        assert!(
+            err.message
+                .contains("`proposal.md` cites `src/cli/progress.rs`"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_file_the_plan_creates_is_accepted_when_planned() {
+        let tasks = "- [ ] 1.1 Write `src/export/csv.rs`\n";
+        assert!(
+            plan_case(tasks, "")
+                .unwrap_err()
+                .message
+                .contains("src/export/csv.rs")
+        );
+        let case = plan_case(tasks, "planned: [src/export/csv.rs]\n").unwrap();
+        assert_eq!(case.planned, ["src/export/csv.rs"]);
+    }
+
+    #[test]
+    fn a_task_verified_by_a_missing_test_is_refused() {
+        let mut f = fixture();
+        f.change.insert(
+            "_codev/changes/add-search/tasks.md".into(),
+            b"- [x] 1.2 Docs, verified by `cargo test docs_mention_every_flag`\n".to_vec(),
+        );
+        let err = load("c", SEEDED, &f, &catalog()).unwrap_err();
+        assert!(err.message.contains("docs_mention_every_flag"), "{err}");
+        f.base.insert(
+            "tests/docs.rs".into(),
+            b"#[test]\nfn docs_mention_every_flag() {}\n".to_vec(),
+        );
+        assert!(load("c", SEEDED, &f, &catalog()).is_ok());
+    }
+
+    #[test]
+    fn a_code_case_that_plans_is_refused() {
+        let yaml = format!("{SEEDED}planned: [src/new.ts]\n");
+        let err = load("c", &yaml, &fixture(), &catalog()).unwrap_err();
+        assert!(err.message.contains("a code case plans nothing"), "{err}");
+    }
+
+    #[test]
+    fn a_stale_or_unused_planned_entry_is_refused() {
+        let tasks = "- [ ] 1.1 Change `src/users.ts`\n";
+        let err = plan_case(tasks, "planned: [src/users.ts]\n").unwrap_err();
+        assert!(err.message.contains("already has"), "{err}");
+        let err = plan_case(tasks, "planned: [src/other.ts]\n").unwrap_err();
+        assert!(err.message.contains("no artifact cites"), "{err}");
+    }
+
     fn case(role: &str, kind: Kind, stack: &str) -> Case {
         Case {
             id: format!("{role}-{}", kind.as_str()),
@@ -756,25 +1039,92 @@ pub(crate) mod tests {
             expected: vec![],
             fixed: vec![],
             unchanged: vec![],
+            planned: vec![],
         }
+    }
+
+    fn expecting(mut c: Case, severities: &[&str]) -> Case {
+        c.expected = severities
+            .iter()
+            .enumerate()
+            .map(|(n, severity)| Expected {
+                id: format!("e{n}"),
+                role: c.role.clone(),
+                severity: (*severity).into(),
+                category: "c".into(),
+                terms: vec!["c".into()],
+                locations: vec![],
+                alternatives: vec![],
+            })
+            .collect();
+        c
+    }
+
+    /// A suite meeting every minimum.
+    fn complete_suite() -> Vec<Case> {
+        let mut cases = Vec::new();
+        for (role, seeded, controls) in COVERAGE {
+            for n in 0..seeded {
+                let severities: &[&str] = if n == 0 {
+                    &["high", "medium"]
+                } else {
+                    &["high"]
+                };
+                cases.push(expecting(case(role, Kind::Seeded, "rust"), severities));
+            }
+            for _ in 0..controls {
+                cases.push(case(role, Kind::Control, "python"));
+            }
+        }
+        cases.push(case("newcomer", Kind::Seeded, "typescript"));
+        cases
     }
 
     #[test]
     fn coverage_names_a_role_without_control() {
-        let mut cases = Vec::new();
-        for (role, seeded, controls) in COVERAGE {
-            for _ in 0..seeded {
-                cases.push(case(role, Kind::Seeded, "rust"));
-            }
-            for _ in 0..controls {
-                cases.push(case(role, Kind::Control, "rust"));
-            }
-        }
-        cases.push(case("newcomer", Kind::Seeded, "typescript"));
-        cases.push(case("newcomer", Kind::Seeded, "python"));
+        let mut cases = complete_suite();
         assert_eq!(coverage_gaps(&cases), Vec::<String>::new());
-        cases.retain(|c| !(c.role == "ops" && c.kind == Kind::Control));
-        let gaps = coverage_gaps(&cases);
-        assert_eq!(gaps, ["ops: 0 control(s), at least 1 needed"]);
+        let mut dropped = false;
+        cases.retain(|c| {
+            let drop = !dropped && c.role == "ops" && c.kind == Kind::Control;
+            dropped |= drop;
+            !drop
+        });
+        assert_eq!(
+            coverage_gaps(&cases),
+            ["ops: 1 control(s), at least 2 needed"]
+        );
+    }
+
+    #[test]
+    fn coverage_names_an_expert_without_two_severities() {
+        let cases: Vec<Case> = complete_suite()
+            .into_iter()
+            .map(|c| {
+                if c.role == "migration" && c.kind == Kind::Seeded {
+                    expecting(c, &["high", "high"])
+                } else {
+                    c
+                }
+            })
+            .collect();
+        assert_eq!(
+            coverage_gaps(&cases),
+            ["migration: no seeded case expects two findings of different severity"]
+        );
+    }
+
+    #[test]
+    fn coverage_names_security_without_python() {
+        let cases: Vec<Case> = complete_suite()
+            .into_iter()
+            .map(|mut c| {
+                if c.role == "security" {
+                    c.stacks = vec!["rust".into()];
+                }
+                c
+            })
+            .collect();
+        assert_eq!(coverage_gaps(&cases), ["security: no `python` case"]);
     }
 }

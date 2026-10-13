@@ -2,8 +2,8 @@
   "format": 1,
   "case": "performance-code-n-plus-one",
   "error": null,
-  "costUsd": 0.32796179999999997,
-  "durationMs": 26336,
+  "costUsd": 0.30086100000000005,
+  "durationMs": 20456,
   "strayed": [],
   "review": {
     "archive": {
@@ -14,7 +14,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (N+1 query: one `lines_of_order` query per order) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (N+1 query: one order_lines query per order) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -38,13 +38,13 @@
         "id": "R-performance-1",
         "line": 9,
         "location": "api/src/orders.rs:14-15",
-        "recommendation": "Collect the order ids and fetch every line in one query with the existing `Db::lines_of_orders(&ids)` (api/src/db.rs:31, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (e.g. a `HashMap<i64, i64>` of totals) while keeping the orders' `id DESC` order and an order with no line at 0. Cost today: 1 + N queries per customer page view (up to 101), growing with the customer's order count on a user-facing path; after the fix, 2.",
+        "recommendation": "Collect the order ids and fetch every line in one query with the existing `Db::lines_of_orders(&ids)` (`WHERE order_id = ANY($1)`), then sum the totals per order id (e.g. a HashMap<i64, i64>), keeping the order of `orders` and a 0 total for orders without lines. This turns up to 101 queries per customer page view into 2.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "N+1 query: one `lines_of_order` query per order"
+        "title": "N+1 query: one order_lines query per order"
       }
     ],
     "format": 1,

@@ -10,8 +10,8 @@ clients to ignore unknown fields.
 
 ### Decision: A nullable column and an optional field
 
-Migration `0012_order_note.sql` adds `orders.note TEXT NULL` — no default,
-no rewrite of existing rows — and `0012_order_note.down.sql` drops it. The
+Migration `migrations/0012_order_note.sql` adds `orders.note TEXT NULL` — no default,
+no rewrite of existing rows — and `migrations/0012_order_note.down.sql` drops it. The
 field is optional in `openapi.yaml` and omitted when null, so the
 responses of existing orders are byte-for-byte unchanged.
 

@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Shop API
+  version: 1.4.0
+paths:
+  /orders/{id}:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+components:
+  schemas:
+    Order:
+      type: object
+      required: [id, totalCents]
+      properties:
+        id:
+          type: integer
+        totalCents:
+          type: integer
+        shippedAt:
+          type: string
+          format: date-time

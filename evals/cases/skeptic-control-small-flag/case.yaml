@@ -3,4 +3,5 @@ step: plan.challenge
 change: add-quiet-flag
 stacks: ["rust"]
 kind: control
+planned: [a_quiet_import_prints_nothing, a_quiet_import_still_prints_errors]
 summary: "A small, well-scoped CLI flag with error cases and verifiable tasks; nothing to find."

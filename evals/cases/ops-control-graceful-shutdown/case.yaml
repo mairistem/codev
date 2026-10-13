@@ -1,0 +1,6 @@
+role: ops
+step: code.review
+change: add-mail-worker
+stacks: ["rust"]
+kind: control
+summary: "A worker with a send timeout, growing retry delays, a dead-letter queue, structured logs and a clean stop on SIGTERM; nothing to find."

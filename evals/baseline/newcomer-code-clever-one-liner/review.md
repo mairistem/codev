@@ -6,30 +6,29 @@
 
 ### newcomer
 
-#### R-newcomer-1 bucket hides the premium threshold in a bitmask one-liner that does not compute it
+#### R-newcomer-1 The premium test is a bit trick that does not mean "10 euros and more"
 
 ```yaml
 severity: high
 confidence: high
-location: "src/pricing.ts:9-10"
+location: "src/pricing.ts:10"
 evidence: |
-  export const bucket = (ps: Price[]) =>
-    ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
+  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
 recommendation: >-
-  Replace the one-liner with a plain loop or two filters on a named constant,
-  e.g. `const PREMIUM_THRESHOLD_CENTS = 1000;` and `p.cents >= PREMIUM_THRESHOLD_CENTS`,
-  so that the rule from the proposal ("10 euros and more") reads in the code.
-  The bitmask `(cents >> 4) & 0x3e8` is not a comparison with 1000 cents: 500 cents
-  (5 euros) gives 31 & 1000 = 8, so "hi"; 16384 cents (163.84 euros) gives
-  1024 & 1000 = 0, so "lo". A newcomer cannot see that the expression is wrong
-  without decoding it bit by bit; the author must fix the behavior (the newcomer
-  does not change it).
+  Replace the bit trick with the rule the proposal states, behind a named
+  constant: `const PREMIUM_THRESHOLD_CENTS = 1000;` and
+  `p.cents >= PREMIUM_THRESHOLD_CENTS`. As written, `(cents >> 4) & 0x3e8`
+  only tests some bits of `cents / 16` against the bit pattern of 1000:
+  128 cents (1.28 €) gives 8 & 1000 = 8 and lands in "hi", 999 cents gives
+  62 & 1000 = 40 and lands in "hi", while 16384 cents (163.84 €) gives
+  1024 & 1000 = 0 and lands in "lo". A reader cannot see the threshold, and
+  the proposal's "premium products (10 euros and more)" is not what runs.
 history:
   - status: open
     by: newcomer
 ```
 
-#### R-newcomer-2 Obscure names and untyped string keys in bucket
+#### R-newcomer-2 `bucket` is a dense one-liner with a comma expression and `||=` inside an index
 
 ```yaml
 severity: low
@@ -39,51 +38,67 @@ evidence: |
   export const bucket = (ps: Price[]) =>
     ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
 recommendation: >-
-  Name the function after what it does (e.g. `splitByPriceBand`), use readable
-  parameter names (`prices`, `groups`, `price`), and return a typed shape such as
-  `{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with
-  magic keys "hi"/"lo"; today a caller cannot know the keys without reading the
-  body, and a band with no price is absent instead of empty.
+  Write it as a plain function: compute `isPremium(p)` once, then push into
+  one of two arrays (or use two `filter` calls) and return them. A reduce
+  whose callback mutates the accumulator through `||=` and returns it via a
+  comma operator has to be decoded token by token; the simple version wins
+  and costs nothing here.
 history:
   - status: open
     by: newcomer
 ```
 
-#### R-newcomer-3 The verification test cited by the task does not exist
+#### R-newcomer-3 Names say nothing: `bucket`, `ps`, `a`, `p`, `"hi"` / `"lo"`
+
+```yaml
+severity: low
+confidence: high
+location: "src/pricing.ts:9-10"
+evidence: |
+  export const bucket = (ps: Price[]) =>
+    ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
+recommendation: >-
+  Name the function after what it does (`splitByPriceBand`, or
+  `partitionPremium`), the parameter `prices`, and use keys that match the
+  doc comment and the domain (`cheap` / `premium`) instead of the magic
+  strings "hi" / "lo".
+history:
+  - status: open
+    by: newcomer
+```
+
+#### R-newcomer-4 The return type `Record<string, Price[]>` hides its two keys and their possible absence
+
+```yaml
+severity: medium
+confidence: high
+location: "src/pricing.ts:10"
+evidence: |
+  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
+recommendation: >-
+  Declare the result as `{ cheap: Price[]; premium: Price[] }` and always
+  initialise both arrays. Today a caller reading the signature cannot know
+  the keys are "hi" and "lo", and when no price falls in a band the key is
+  missing, so `bucket(prices).hi` is `undefined` while the type claims
+  `Price[]`.
+history:
+  - status: open
+    by: newcomer
+```
+
+#### R-newcomer-5 No test describes the split; the only verification is looking at a page
 
 ```yaml
 severity: medium
 confidence: high
 location: "tasks.md#1. Implementation"
 evidence: |
-  - [x] 1.1 `bucket`, verified by `npm test -- pricing`
+  - [x] 1.1 `bucket`, verified by the catalogue page, where premium products are listed apart
 recommendation: >-
-  Add a `pricing` test that describes the behavior at the boundary (999 cents is
-  cheap, 1000 cents is premium, a large price is premium). No test file is in the
-  repository, so the task was checked off without a test that documents — or
-  would have caught — the behavior of `bucket`.
-history:
-  - status: open
-    by: newcomer
-```
-
-#### R-newcomer-4 Module comment reads as a comment on the interface
-
-```yaml
-severity: low
-confidence: high
-location: "src/pricing.ts:1-6"
-evidence: |
-  /** Prices of the catalogue, in cents. */
-
-  export interface Price {
-    sku: string;
-    cents: number;
-  }
-recommendation: >-
-  Put the unit where it applies: a doc comment on the `cents` field
-  (`/** Amount in cents. */`) instead of a detached JSDoc block above the
-  interface.
+  Add a test that reads as the behavior: "a price of 999 cents is cheap",
+  "a price of 1000 cents is premium", "a price of 16384 cents is premium",
+  "an empty list gives two empty bands". Such a test would have caught
+  R-newcomer-1.
 history:
   - status: open
     by: newcomer

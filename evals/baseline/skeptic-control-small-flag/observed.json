@@ -2,8 +2,8 @@
   "format": 1,
   "case": "skeptic-control-small-flag",
   "error": null,
-  "costUsd": 0.42743459999999994,
-  "durationMs": 54900,
+  "costUsd": 0.40033160000000007,
+  "durationMs": 40929,
   "strayed": [],
   "review": {
     "archive": {
@@ -11,10 +11,6 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## code.review` section, while roles were active at it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-skeptic-1 (The plan targets CLI files that do not exist in this repository) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -22,54 +18,6 @@
     "changeName": "add-quiet-flag",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- `src/cli/import.rs`, `src/cli/progress.rs`, `docs/cli.md`.\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-1",
-        "line": 9,
-        "location": "proposal.md#Impact",
-        "recommendation": "Verify where `ledger import` and its progress output actually live (the crate holds only `src/lib.rs`, `src/api.rs` and `src/db.rs`, a library with no CLI and no `docs/` folder) and re-anchor the Impact, the design's Context and the tasks on the real files, or state that the CLI must be created first.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "The plan targets CLI files that do not exist in this repository"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "`ledger import` prints one progress line per 1 000 rows on standard error\nthrough `src/cli/progress.rs`; errors go through `src/cli/errors.rs`, a\nseparate path.\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-2",
-        "line": 23,
-        "location": "design.md#Context",
-        "recommendation": "Confirm that progress and errors really take separate paths in the code (neither `src/cli/progress.rs` nor `src/cli/errors.rs` exists); the decision that errors \"cannot be silenced by mistake\" holds only if this is true.",
-        "reported": true,
-        "role": "skeptic",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "The design rests on an unverified description of the progress and error paths"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -83,21 +31,21 @@
             "to": null
           }
         ],
-        "id": "R-skeptic-3",
-        "line": 39,
+        "id": "R-skeptic-1",
+        "line": 9,
         "location": "tasks.md#1. Flag",
-        "recommendation": "Add a task that writes `docs_mention_every_flag`, or name an observable check that exists today; as written the task cannot be verified.",
+        "recommendation": "Make task 1.1 add \"--quiet\" to `FLAGS` in `src/cli/import.rs` (today `pub const FLAGS: &[&str] = &[];`). `tests/docs.rs` only loops over `ledger::cli::import::FLAGS`, so while that list stays empty the test passes whether or not `docs/cli.md` mentions `--quiet`.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Task 1.2 is verified by a test that does not exist and that no task creates"
+        "title": "Task 1.2's check passes even if `--quiet` is never declared"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- **THEN** nothing is printed and the exit code is 0\n",
+        "evidence": "- **WHEN** the user runs `ledger import --quiet data.csv` and the import succeeds\n- **THEN** no progress line is printed and the exit code is 0\n",
         "history": [
           {
             "by": "skeptic",
@@ -107,21 +55,21 @@
             "to": null
           }
         ],
-        "id": "R-skeptic-4",
-        "line": 53,
+        "id": "R-skeptic-2",
+        "line": 27,
         "location": "specs/cli-import/spec.md#Scenario: A quiet import",
-        "recommendation": "Align the scenario with the requirement (\"no progress line on standard error\"), or state that standard output is also silent; otherwise a summary line on stdout, or a warning, would make the test fail or the requirement ambiguous.",
+        "recommendation": "Say in the scenario that `data.csv` has at least 1 000 data rows. `Progress::row` only prints every 1 000 rows (`every: 1000`), so with a smaller file the test `a_quiet_import_prints_nothing` passes even when `--quiet` does nothing.",
         "reported": true,
         "role": "skeptic",
-        "severity": "low",
+        "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The scenario \"nothing is printed\" is broader than the requirement"
+        "title": "The \"A quiet import\" scenario passes without `--quiet` on a small file"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "`ledger import --quiet` SHALL print no progress line on standard error; errors SHALL still be printed, and the exit code SHALL be unchanged.\n",
+        "evidence": "`Progress::new(quiet)` does nothing when `quiet` is set; errors keep their\n",
         "history": [
           {
             "by": "skeptic",
@@ -131,16 +79,16 @@
             "to": null
           }
         ],
-        "id": "R-skeptic-5",
-        "line": 67,
-        "location": "specs/cli-import/spec.md#Requirement: `--quiet` silences progress",
-        "recommendation": "Say whether non-fatal messages (skipped rows, warnings) are silenced by `--quiet`; nightly scripts likely still want them, and the spec covers only success and a fatal error.",
+        "id": "R-skeptic-3",
+        "line": 46,
+        "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
+        "recommendation": "Say how `quiet` reaches `import::run`. Its signature today is `pub fn run(path: &str) -> i32`, and the crate has no argument parser or binary (no `src/main.rs`). Either change the signature or name the caller that parses argv, and add that file to Impact if it is in this repository.",
         "reported": false,
         "role": "skeptic",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Warnings are classified neither as progress nor as errors"
+        "title": "The plan does not say how `--quiet` gets from the command line to `run`"
       }
     ],
     "format": 1,

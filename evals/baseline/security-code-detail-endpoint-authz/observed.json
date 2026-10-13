@@ -1,0 +1,108 @@
+{
+  "format": 1,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.3644132,
+  "durationMs": 27949,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "\"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n[id],\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 9,
+        "location": "src/invoices.ts:32-35",
+        "recommendation": "Scope the lookup to the caller's organization (`WHERE id = $1 AND org_id = $2` with `currentUser(req).orgId`), answer 404 when it does not match, and add a test that a caller from another organization gets 404 (CWE-639 / CWE-862).",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "GET /invoices/:id returns any organization's invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 26,
+        "location": "src/server.ts:15-18",
+        "recommendation": "Log the error server-side only and answer a generic body such as `{ error: \"internal error\" }`; never serialize `err.stack` or raw `err.message` into the response (CWE-209).\n",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Error handler sends the exception message and stack trace to the client"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}
