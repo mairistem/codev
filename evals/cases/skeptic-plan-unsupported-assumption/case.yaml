@@ -1,0 +1,11 @@
+role: skeptic
+step: plan.challenge
+change: merge-duplicate-customers
+stacks: ["python"]
+kind: seeded
+summary: "A merge job assumes one e-mail is one person, which the plan's own context contradicts."
+expected:
+  - id: email-is-not-a-person
+    severity: high
+    category: assumption
+    locations: ["design.md#Decision: Customers are merged by e-mail", "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged"]

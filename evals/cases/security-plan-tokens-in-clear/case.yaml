@@ -1,0 +1,15 @@
+role: security
+step: plan.challenge
+change: add-api-tokens
+stacks: ["rust"]
+kind: seeded
+summary: "A plan stores API tokens in clear and logs the Authorization header."
+expected:
+  - id: token-stored-in-clear
+    severity: high
+    category: credential-storage
+    locations: ["design.md#Decision: Tokens are stored as given"]
+  - id: token-in-logs
+    severity: high
+    category: secret-in-logs
+    locations: ["design.md#Decision: Every request is logged with its headers"]

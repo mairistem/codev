@@ -1,0 +1,84 @@
+{
+  "format": 1,
+  "case": "security-code-sql-injection",
+  "error": null,
+  "costUsd": 0.2967948,
+  "durationMs": 21177,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (SQL injection through the search term (CWE-89)) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-user-search",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 9,
+        "location": "src/users.ts:10",
+        "recommendation": "Pass the term as a bound parameter instead of concatenating it (e.g. \"... WHERE name LIKE ? ESCAPE '\\\\' ...\" with [\"%\" + escaped + \"%\"]), escaping the LIKE wildcards % and _ in the term. Any authenticated \"support\" user can send GET /users/search?q=x' UNION SELECT id, password FROM users -- (only trimmed and length-checked in src/server.ts:13-14) and read or alter any table the database account can reach.\n",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "SQL injection through the search term (CWE-89)"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-user-search/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

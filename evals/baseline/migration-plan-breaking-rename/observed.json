@@ -1,0 +1,132 @@
+{
+  "format": 1,
+  "case": "migration-plan-breaking-rename",
+  "error": null,
+  "costUsd": 0.3605438,
+  "durationMs": 31911,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (The breaking rename of a public field is not marked BREAKING) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (The field is removed in the same release that introduces its replacement, with no deprecation) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-order-status",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Changed: The order's `status` field is now called `state`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 9,
+        "location": "proposal.md#Release note",
+        "recommendation": "Mark the item **BREAKING** in the release note and say what partners must do (read `state` instead of `status`, by which date or version), so the change is announced as a breaking API change rather than a plain \"Changed\" item.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The breaking rename of a public field is not marked BREAKING"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`OrderResponse.status` becomes `OrderResponse.state`; the old name is not\nkept. The OpenAPI file is regenerated.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 23,
+        "location": "design.md#Decision: The field is renamed in place",
+        "recommendation": "Use expand and contract — return both `status` (marked deprecated in `openapi.yaml`) and `state` for a stated deprecation window, then remove `status` in a later change. The design's own context says partners read `status` to know when to ship, so removing it at once breaks their integrations without warning; \"duplication\" alone does not justify rejecting the side-by-side alternative.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The field is removed in the same release that introduces its replacement, with no deprecation"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] 1.1 Rename the field and regenerate `openapi.yaml`, verified by tests \"A paid order\" and \"An unknown order\"\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-3",
+        "line": 38,
+        "location": "tasks.md#1. Rename",
+        "recommendation": "Add a task and a spec scenario covering existing consumers — e.g. a response still carries `status` with the same value as `state` during the deprecation window — and a task to notify partners; the only tests planned check the new field name.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No migration path for existing consumers is planned or tested"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-order-status/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

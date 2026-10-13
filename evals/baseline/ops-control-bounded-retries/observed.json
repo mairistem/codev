@@ -1,0 +1,176 @@
+{
+  "format": 1,
+  "case": "ops-control-bounded-retries",
+  "error": null,
+  "costUsd": 0.3727482,
+  "durationMs": 38082,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "fetch-exchange-rates",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(error) => return Err(format!(\"rates feed {url}: {error} after {ATTEMPTS} attempts\")),\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 9,
+        "location": "src/rates.rs:37",
+        "recommendation": "Emit a structured `error!` (fields: attempts, error) or a failure metric when the last attempt fails, and expose the age of the rates in use; the proposal says the caller keeps the previous day's rates on failure, and no caller exists in the diff to surface the error, so days of stale rates would leave only per-retry `warn!` lines.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Final fetch failure is neither logged nor counted, so stale rates can go unnoticed"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "match client.get(&url).send().and_then(|r| r.error_for_status()) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 27,
+        "location": "src/rates.rs:26",
+        "recommendation": "Retry only transient failures (connect/timeout errors and 5xx/429); return at once on a 4xx such as a wrong `RATES_FEED_URL` (404) or a rejected request, with a message naming the status.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Every error is retried, including permanent HTTP 4xx responses"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "pub fn fetch_rates() -> Result<Rates, String> {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 44,
+        "location": "src/rates.rs:18",
+        "recommendation": "Return a typed error (an enum wrapping `reqwest::Error` and the missing variable) so the caller can log the full source chain and tell a configuration error from a transient network failure.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Errors flattened to String lose their source chain"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "let rates: Rates = response.json().map_err(|e| format!(\"rates feed {url}: invalid body: {e}\"))?;\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 61,
+        "location": "src/rates.rs:28",
+        "recommendation": "If `RATES_FEED_URL` may ever carry an access key in its query string, log only the host (or redact the query) in the errors at lines 28 and 37; a public feed URL is harmless.",
+        "reported": false,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Feed URL copied verbatim into error messages"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": ".timeout(Duration::from_secs(10))\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-5",
+        "line": 77,
+        "location": "src/rates.rs:21",
+        "recommendation": "Read the timeout (and optionally `ATTEMPTS` and the initial pause) from the environment with these values as defaults, so an operator can tune a slow feed without a release.",
+        "reported": true,
+        "role": "ops",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Timeout, attempt count and initial pause are hard-coded"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/fetch-exchange-rates/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

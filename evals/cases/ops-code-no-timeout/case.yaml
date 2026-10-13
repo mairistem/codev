@@ -1,0 +1,15 @@
+role: ops
+step: code.review
+change: charge-orders
+stacks: ["python"]
+kind: seeded
+summary: "A payment call has no timeout and retries a non-idempotent charge forever."
+expected:
+  - id: no-timeout
+    severity: high
+    category: timeout
+    locations: ["app/payments.py:14"]
+  - id: unbounded-retry
+    severity: high
+    category: retry
+    locations: ["app/payments.py:12", "app/payments.py:17-18"]

@@ -1,0 +1,171 @@
+{
+  "format": 1,
+  "case": "newcomer-code-deep-nesting",
+  "error": null,
+  "costUsd": 0.4602566,
+  "durationMs": 46824,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "import-accounts",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for row in rows {\n    if !row.email.is_empty() {\n        match db.find_account(&row.email)? {\n            Some(account) => {\n                if account.plan != row.plan {\n                    for seat in &row.seats {\n                        if !account.seats.contains(seat) {\n                            if seat.contains('@') {\n                                db.add_seat(account.id, seat)?;\n                                created += 1;\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 9,
+        "location": "src/import.rs:14-41",
+        "recommendation": "Flatten without changing behavior: `continue` early on an empty email and on an unchanged plan, merge the two seat conditions with `&&` (or a `filter`), and extract the per-row work into a helper (e.g. `import_row(db, row) -> Result<usize, DbError>`) so the loop reads as a sum over rows.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "`import` nests six levels deep"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if seat.contains('@') {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-2",
+        "line": 37,
+        "location": "src/import.rs:21-32",
+        "recommendation": "The same unexplained check appears at line 21 (existing account) and line 32 (new account). Name the rule once, e.g. `fn is_valid_seat(seat: &str) -> bool`, with a comment saying why seats without '@' are silently skipped (they are expected to be e-mail addresses?), and use it in both branches.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Seat filtering on `'@'` is duplicated and unexplained"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Some(account) => {\n    if account.plan != row.plan {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-3",
+        "line": 55,
+        "location": "src/import.rs:17-18",
+        "recommendation": "A reader cannot tell whether this is intended: an existing account whose plan is unchanged never receives the new seats of the CSV, and when the plan differs the plan itself is not updated. Either document the business rule in a comment or confirm with the author whether the condition is a defect (the proposal only says \"creates missing accounts and their seats\").",
+        "reported": false,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Seats are added to an existing account only when its plan differs, with no explanation"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if !row.email.is_empty() {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-4",
+        "line": 76,
+        "location": "src/import.rs:15",
+        "recommendation": "Turn it into an early `continue` with a one-line comment saying why such rows are ignored (and that they are not counted or reported).",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Rows with an empty email are skipped silently"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// Imports the rows and returns how many seats were created.\npub fn import(db: &Db, rows: &[Row]) -> Result<usize, DbError> {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-5",
+        "line": 92,
+        "location": "src/import.rs:11-12",
+        "recommendation": "The task is \"verified by `cargo test import`\", yet the change adds no test (no `#[cfg(test)] mod tests` anywhere in `src/`). Add tests named after the behavior: creates a missing account with its seats, skips rows without an email, skips seats without '@', does not duplicate an existing seat, and the plan-unchanged case of R-newcomer-3 once decided.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No test describes the import behavior"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/import-accounts/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

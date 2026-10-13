@@ -1,0 +1,55 @@
+{
+  "format": 1,
+  "case": "migration-control-additive-field",
+  "error": null,
+  "costUsd": 0.4102624,
+  "durationMs": 25322,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-note",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-note/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "migration",
+            "state": "no-finding"
+          },
+          {
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

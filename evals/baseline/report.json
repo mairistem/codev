@@ -1,0 +1,1952 @@
+{
+  "format": 1,
+  "run": {
+    "format": 1,
+    "model": null,
+    "date": "2026-10-13",
+    "claudeVersion": "2.1.289 (Claude Code)",
+    "codevVersion": "codev 0.6.1"
+  },
+  "thresholds": {
+    "minRecall": 0.5,
+    "maxFalsePositives": 2,
+    "minEvidence": 0.8
+  },
+  "pass": false,
+  "costUsd": 9.6187,
+  "failures": [
+    "accessibility: 3 false positive(s) exceed 2",
+    "ops: 5 false positive(s) exceed 2",
+    "privacy: 6 false positive(s) exceed 2",
+    "skeptic: 8 false positive(s) exceed 2"
+  ],
+  "roles": [
+    {
+      "role": "accessibility",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 3,
+      "truePositives": 3,
+      "misses": 0,
+      "falsePositives": 3,
+      "unreported": 1,
+      "duplicates": 3,
+      "crossRole": 0,
+      "severityAgreement": 2,
+      "evidence": {
+        "found": 10,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.1009,
+      "failures": [
+        "accessibility: 3 false positive(s) exceed 2"
+      ]
+    },
+    {
+      "role": "migration",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 3,
+      "truePositives": 3,
+      "misses": 0,
+      "falsePositives": 1,
+      "unreported": 1,
+      "duplicates": 3,
+      "crossRole": 0,
+      "severityAgreement": 3,
+      "evidence": {
+        "found": 8,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.1027,
+      "failures": []
+    },
+    {
+      "role": "newcomer",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 2,
+      "truePositives": 2,
+      "misses": 0,
+      "falsePositives": 2,
+      "unreported": 0,
+      "duplicates": 5,
+      "crossRole": 0,
+      "severityAgreement": 0,
+      "evidence": {
+        "found": 9,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.0881,
+      "failures": []
+    },
+    {
+      "role": "ops",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 4,
+      "truePositives": 4,
+      "misses": 0,
+      "falsePositives": 5,
+      "unreported": 4,
+      "duplicates": 1,
+      "crossRole": 0,
+      "severityAgreement": 3,
+      "evidence": {
+        "found": 14,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.1067,
+      "failures": [
+        "ops: 5 false positive(s) exceed 2"
+      ]
+    },
+    {
+      "role": "performance",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 2,
+      "truePositives": 2,
+      "misses": 0,
+      "falsePositives": 1,
+      "unreported": 1,
+      "duplicates": 4,
+      "crossRole": 0,
+      "severityAgreement": 1,
+      "evidence": {
+        "found": 8,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.0698,
+      "failures": []
+    },
+    {
+      "role": "privacy",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 4,
+      "truePositives": 4,
+      "misses": 0,
+      "falsePositives": 6,
+      "unreported": 4,
+      "duplicates": 2,
+      "crossRole": 0,
+      "severityAgreement": 1,
+      "evidence": {
+        "found": 16,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.3026,
+      "failures": [
+        "privacy: 6 false positive(s) exceed 2"
+      ]
+    },
+    {
+      "role": "security",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 3,
+      "truePositives": 3,
+      "misses": 0,
+      "falsePositives": 2,
+      "unreported": 1,
+      "duplicates": 0,
+      "crossRole": 0,
+      "severityAgreement": 3,
+      "evidence": {
+        "found": 6,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.0165,
+      "failures": []
+    },
+    {
+      "role": "skeptic",
+      "cases": 3,
+      "seeded": 2,
+      "controls": 1,
+      "expected": 2,
+      "truePositives": 2,
+      "misses": 0,
+      "falsePositives": 8,
+      "unreported": 3,
+      "duplicates": 6,
+      "crossRole": 0,
+      "severityAgreement": 2,
+      "evidence": {
+        "found": 19,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": 1.0,
+      "costUsd": 1.3342,
+      "failures": [
+        "skeptic: 8 false positive(s) exceed 2"
+      ]
+    },
+    {
+      "role": "tracer",
+      "cases": 2,
+      "seeded": 1,
+      "controls": 1,
+      "expected": 1,
+      "truePositives": 1,
+      "misses": 0,
+      "falsePositives": 0,
+      "unreported": 0,
+      "duplicates": 0,
+      "crossRole": 0,
+      "severityAgreement": 1,
+      "evidence": {
+        "found": 0,
+        "moved": 0,
+        "invalid": 0,
+        "unchecked": 0
+      },
+      "recall": 1.0,
+      "evidenceValidity": null,
+      "costUsd": 0.4973,
+      "failures": []
+    }
+  ],
+  "cases": [
+    {
+      "id": "accessibility-code-icon-button",
+      "role": "accessibility",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "image-without-alt",
+          "role": "accessibility",
+          "severity": "medium",
+          "category": "text-alternative",
+          "matchedBy": "R-accessibility-1",
+          "severityAgrees": false
+        },
+        {
+          "id": "div-button",
+          "role": "accessibility",
+          "severity": "high",
+          "category": "keyboard-and-name",
+          "matchedBy": "R-accessibility-2",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-accessibility-1",
+          "role": "accessibility",
+          "title": "Delete action is a clickable div, unreachable by keyboard",
+          "severity": "high",
+          "confidence": "high",
+          "location": "src/components/Toolbar.tsx:13-15",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "image-without-alt",
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-2",
+          "role": "accessibility",
+          "title": "Icon-only delete control has no accessible name",
+          "severity": "high",
+          "confidence": "high",
+          "location": "src/components/Toolbar.tsx:14",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "div-button",
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-3",
+          "role": "accessibility",
+          "title": "Owner's avatar image has no alt attribute",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/components/Toolbar.tsx:12",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "image-without-alt",
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-4",
+          "role": "accessibility",
+          "title": "Delete target may be smaller than 24 by 24 CSS pixels",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/components/Toolbar.tsx:13-14",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "image-without-alt",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.34766539999999996,
+      "durationMs": 29870
+    },
+    {
+      "id": "accessibility-control-labelled-form",
+      "role": "accessibility",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-accessibility-1",
+          "role": "accessibility",
+          "title": "Hidden error message is always read as the field's description",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "templates/newsletter.html:10-15",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-2",
+          "role": "accessibility",
+          "title": "Native validation disabled with nothing in the change to reveal the error",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "templates/newsletter.html:1",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-3",
+          "role": "accessibility",
+          "title": "Form landmark has no accessible name although its heading has an id",
+          "severity": "low",
+          "confidence": "high",
+          "location": "templates/newsletter.html:1-2",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4104917999999999,
+      "durationMs": 43881
+    },
+    {
+      "id": "accessibility-plan-colour-only",
+      "role": "accessibility",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "colour-only-errors",
+          "role": "accessibility",
+          "severity": "high",
+          "category": "use-of-colour",
+          "matchedBy": "R-accessibility-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-accessibility-1",
+          "role": "accessibility",
+          "title": "Field errors are conveyed by colour only",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Invalid fields turn red",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "colour-only-errors",
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-2",
+          "role": "accessibility",
+          "title": "Removing the error summary leaves no announced feedback on submit",
+          "severity": "high",
+          "confidence": "high",
+          "location": "proposal.md#What Changes",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-accessibility-3",
+          "role": "accessibility",
+          "title": "Spec scenarios only verify the border colour",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/checkout-validation/spec.md#Scenario: An invalid postcode",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "colour-only-errors",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.34272260000000004,
+      "durationMs": 28681
+    },
+    {
+      "id": "migration-code-drop-and-rename",
+      "role": "migration",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "irreversible-drop",
+          "role": "migration",
+          "severity": "high",
+          "category": "irreversible-migration",
+          "matchedBy": "R-migration-1",
+          "severityAgrees": true
+        },
+        {
+          "id": "renamed-json-field",
+          "role": "migration",
+          "severity": "high",
+          "category": "breaking-api",
+          "matchedBy": "R-migration-2",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-migration-1",
+          "role": "migration",
+          "title": "Irreversible DROP COLUMN with no down migration or backup",
+          "severity": "high",
+          "confidence": "high",
+          "location": "migrations/0005_drop_legacy_email.sql:1-2",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "irreversible-drop",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-2",
+          "role": "migration",
+          "title": "Public JSON field renamed with no BREAKING mark",
+          "severity": "high",
+          "confidence": "high",
+          "location": "src/api.rs:8-9",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "renamed-json-field",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-3",
+          "role": "migration",
+          "title": "Release note announces the rename as a plain change",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#Release note",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "renamed-json-field",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-4",
+          "role": "migration",
+          "title": "Rename shipped without a deprecation or side-by-side period",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/api.rs:8",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "renamed-json-field",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-5",
+          "role": "migration",
+          "title": "No test covers the migration path",
+          "severity": "low",
+          "confidence": "low",
+          "location": "tasks.md#1. Implementation",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.33190339999999996,
+      "durationMs": 28668
+    },
+    {
+      "id": "migration-control-additive-field",
+      "role": "migration",
+      "step": "plan.challenge",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4102624,
+      "durationMs": 25322
+    },
+    {
+      "id": "migration-plan-breaking-rename",
+      "role": "migration",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "unannounced-breaking-rename",
+          "role": "migration",
+          "severity": "high",
+          "category": "breaking-api",
+          "matchedBy": "R-migration-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-migration-1",
+          "role": "migration",
+          "title": "The breaking rename of a public field is not marked BREAKING",
+          "severity": "high",
+          "confidence": "high",
+          "location": "proposal.md#Release note",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "unannounced-breaking-rename",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-2",
+          "role": "migration",
+          "title": "The field is removed in the same release that introduces its replacement, with no deprecation",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: The field is renamed in place",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unannounced-breaking-rename",
+          "evidence": "found"
+        },
+        {
+          "id": "R-migration-3",
+          "role": "migration",
+          "title": "No migration path for existing consumers is planned or tested",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "tasks.md#1. Rename",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3605438,
+      "durationMs": 31911
+    },
+    {
+      "id": "newcomer-code-clever-one-liner",
+      "role": "newcomer",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "clever-one-liner",
+          "role": "newcomer",
+          "severity": "medium",
+          "category": "cleverness",
+          "matchedBy": "R-newcomer-1",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-newcomer-1",
+          "role": "newcomer",
+          "title": "bucket hides the premium threshold in a bitmask one-liner that does not compute it",
+          "severity": "high",
+          "confidence": "high",
+          "location": "src/pricing.ts:9-10",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "clever-one-liner",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-2",
+          "role": "newcomer",
+          "title": "Obscure names and untyped string keys in bucket",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/pricing.ts:9-10",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "clever-one-liner",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-3",
+          "role": "newcomer",
+          "title": "The verification test cited by the task does not exist",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "tasks.md#1. Implementation",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-4",
+          "role": "newcomer",
+          "title": "Module comment reads as a comment on the interface",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/pricing.ts:1-6",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.35659860000000004,
+      "durationMs": 34913
+    },
+    {
+      "id": "newcomer-code-deep-nesting",
+      "role": "newcomer",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "deep-nesting",
+          "role": "newcomer",
+          "severity": "medium",
+          "category": "nesting",
+          "matchedBy": "R-newcomer-1",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-newcomer-1",
+          "role": "newcomer",
+          "title": "`import` nests six levels deep",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/import.rs:14-41",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "deep-nesting",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-2",
+          "role": "newcomer",
+          "title": "Seat filtering on `'@'` is duplicated and unexplained",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/import.rs:21-32",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "deep-nesting",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-3",
+          "role": "newcomer",
+          "title": "Seats are added to an existing account only when its plan differs, with no explanation",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "src/import.rs:17-18",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "deep-nesting",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-4",
+          "role": "newcomer",
+          "title": "Rows with an empty email are skipped silently",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/import.rs:15",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "deep-nesting",
+          "evidence": "found"
+        },
+        {
+          "id": "R-newcomer-5",
+          "role": "newcomer",
+          "title": "No test describes the import behavior",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/import.rs:11-12",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "deep-nesting",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4602566,
+      "durationMs": 46824
+    },
+    {
+      "id": "newcomer-control-plain-code",
+      "role": "newcomer",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2712482,
+      "durationMs": 16332
+    },
+    {
+      "id": "ops-code-no-timeout",
+      "role": "ops",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "no-timeout",
+          "role": "ops",
+          "severity": "high",
+          "category": "timeout",
+          "matchedBy": "R-ops-1",
+          "severityAgrees": true
+        },
+        {
+          "id": "unbounded-retry",
+          "role": "ops",
+          "severity": "high",
+          "category": "retry",
+          "matchedBy": "R-ops-2",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-ops-1",
+          "role": "ops",
+          "title": "Payment call has no timeout and can hang the checkout forever",
+          "severity": "high",
+          "confidence": "high",
+          "location": "app/payments.py:14",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "no-timeout",
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-2",
+          "role": "ops",
+          "title": "Unbounded retry of a non-idempotent charge can duplicate payments",
+          "severity": "high",
+          "confidence": "high",
+          "location": "app/payments.py:12-18",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "unbounded-retry",
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-3",
+          "role": "ops",
+          "title": "Failures are swallowed silently and never surface to the caller or the logs",
+          "severity": "high",
+          "confidence": "high",
+          "location": "app/payments.py:17-18",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unbounded-retry",
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-4",
+          "role": "ops",
+          "title": "Provider URL is hard-coded",
+          "severity": "low",
+          "confidence": "high",
+          "location": "app/payments.py:7",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3642048,
+      "durationMs": 33076
+    },
+    {
+      "id": "ops-control-bounded-retries",
+      "role": "ops",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-ops-1",
+          "role": "ops",
+          "title": "Final fetch failure is neither logged nor counted, so stale rates can go unnoticed",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "src/rates.rs:37",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-2",
+          "role": "ops",
+          "title": "Every error is retried, including permanent HTTP 4xx responses",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/rates.rs:26",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-3",
+          "role": "ops",
+          "title": "Errors flattened to String lose their source chain",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/rates.rs:18",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-4",
+          "role": "ops",
+          "title": "Feed URL copied verbatim into error messages",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/rates.rs:28",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-5",
+          "role": "ops",
+          "title": "Timeout, attempt count and initial pause are hard-coded",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/rates.rs:21",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3727482,
+      "durationMs": 38082
+    },
+    {
+      "id": "ops-plan-no-rollback",
+      "role": "ops",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "no-rollback",
+          "role": "ops",
+          "severity": "high",
+          "category": "rollback",
+          "matchedBy": "R-ops-1",
+          "severityAgrees": true
+        },
+        {
+          "id": "invisible-worker",
+          "role": "ops",
+          "severity": "medium",
+          "category": "observability",
+          "matchedBy": "R-ops-2",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-ops-1",
+          "role": "ops",
+          "title": "No way back from the switch to Paylane",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: All traffic moves at deploy",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "no-rollback",
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-2",
+          "role": "ops",
+          "title": "A failed or missed nightly settlement goes unnoticed",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: A worker settles payments nightly",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "invisible-worker",
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-3",
+          "role": "ops",
+          "title": "No timeout, retry or idempotency policy for Paylane calls",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "specs/payments/spec.md#Requirement: Card payments go through Paylane",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-4",
+          "role": "ops",
+          "title": "Unmatched payments are written to a table nobody watches",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/payments/spec.md#Scenario: A payment without order",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-ops-5",
+          "role": "ops",
+          "title": "Paylane configuration and credentials are not specified",
+          "severity": "low",
+          "confidence": "low",
+          "location": "proposal.md#Impact",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3697804,
+      "durationMs": 44225
+    },
+    {
+      "id": "performance-code-n-plus-one",
+      "role": "performance",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "n-plus-one",
+          "role": "performance",
+          "severity": "medium",
+          "category": "query-per-item",
+          "matchedBy": "R-performance-1",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-performance-1",
+          "role": "performance",
+          "title": "N+1 query: one `lines_of_order` query per order",
+          "severity": "high",
+          "confidence": "high",
+          "location": "api/src/orders.rs:14-15",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "n-plus-one",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.32796179999999997,
+      "durationMs": 26336
+    },
+    {
+      "id": "performance-control-batched-query",
+      "role": "performance",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-performance-1",
+          "role": "performance",
+          "title": "The speed claim is not backed by a measurement",
+          "severity": "low",
+          "confidence": "high",
+          "location": "proposal.md#Release note",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-performance-2",
+          "role": "performance",
+          "title": "The 100-item cart bound the query relies on is not found in the code",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/cart.ts:18-19",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3190468,
+      "durationMs": 33570
+    },
+    {
+      "id": "performance-plan-unbounded-export",
+      "role": "performance",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "unbounded-export",
+          "role": "performance",
+          "severity": "high",
+          "category": "unbounded-result",
+          "matchedBy": "R-performance-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-performance-1",
+          "role": "performance",
+          "title": "The export loads the organization's whole audit log into memory",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: The export loads every event, then writes the CSV",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "unbounded-export",
+          "evidence": "found"
+        },
+        {
+          "id": "R-performance-2",
+          "role": "performance",
+          "title": "Building the CSV with map/join blocks the single event loop",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: The export loads every event, then writes the CSV",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unbounded-export",
+          "evidence": "found"
+        },
+        {
+          "id": "R-performance-3",
+          "role": "performance",
+          "title": "The requirement mandates an unbounded result with no range",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/audit-export/spec.md#Requirement: Administrators export the audit log",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unbounded-export",
+          "evidence": "found"
+        },
+        {
+          "id": "R-performance-4",
+          "role": "performance",
+          "title": "No index is named for the export's filter and sort",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "design.md#Decision: The export loads every event, then writes the CSV",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unbounded-export",
+          "evidence": "found"
+        },
+        {
+          "id": "R-performance-5",
+          "role": "performance",
+          "title": "The approach is chosen without weighing alternatives or measuring",
+          "severity": "low",
+          "confidence": "high",
+          "location": "design.md#Decision: The export loads every event, then writes the CSV",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "unbounded-export",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4228084,
+      "durationMs": 39269
+    },
+    {
+      "id": "privacy-code-email-in-logs",
+      "role": "privacy",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "email-in-logs",
+          "role": "privacy",
+          "severity": "medium",
+          "category": "personal-data-in-logs",
+          "matchedBy": "R-privacy-1",
+          "severityAgrees": false
+        },
+        {
+          "id": "email-to-analytics",
+          "role": "privacy",
+          "severity": "medium",
+          "category": "personal-data-to-processor",
+          "matchedBy": "R-privacy-2",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-privacy-1",
+          "role": "privacy",
+          "title": "E-mail address and display name written to application logs",
+          "severity": "high",
+          "confidence": "high",
+          "location": "app/signup.py:14",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "email-in-logs",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-2",
+          "role": "privacy",
+          "title": "E-mail address sent to the third-party analytics vendor Beacon",
+          "severity": "high",
+          "confidence": "high",
+          "location": "app/signup.py:15",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "email-to-analytics",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-3",
+          "role": "privacy",
+          "title": "New processor Beacon not identified, nor its location or contract",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "app/analytics.py:1-5",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-4",
+          "role": "privacy",
+          "title": "No retention period nor erasure path for the stored e-mail and display name",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "app/signup.py:13",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "email-in-logs",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-5",
+          "role": "privacy",
+          "title": "Purpose and lawful basis of the collected data not stated",
+          "severity": "low",
+          "confidence": "high",
+          "location": "proposal.md#Domains",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4756718,
+      "durationMs": 45757
+    },
+    {
+      "id": "privacy-control-masked-logs",
+      "role": "privacy",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-privacy-1",
+          "role": "privacy",
+          "title": "Masked address keeps the full domain and first letter",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/logger.ts:6-8",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-2",
+          "role": "privacy",
+          "title": "Addresses the pattern misses still reach the logs in full or in part",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "src/logger.ts:3",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-3",
+          "role": "privacy",
+          "title": "Field keys are written unmasked",
+          "severity": "low",
+          "confidence": "low",
+          "location": "src/logger.ts:12-15",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-4",
+          "role": "privacy",
+          "title": "No test proves that log fields are masked",
+          "severity": "low",
+          "confidence": "high",
+          "location": "src/logger.test.ts:4-11",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-5",
+          "role": "privacy",
+          "title": "Logs already written keep full addresses for 90 days",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "proposal.md#Why",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4047092000000001,
+      "durationMs": 43060
+    },
+    {
+      "id": "privacy-plan-birth-date-retention",
+      "role": "privacy",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "no-retention",
+          "role": "privacy",
+          "severity": "medium",
+          "category": "retention",
+          "matchedBy": "R-privacy-2",
+          "severityAgrees": true
+        },
+        {
+          "id": "processor-transfer",
+          "role": "privacy",
+          "severity": "medium",
+          "category": "processor-transfer",
+          "matchedBy": "R-privacy-1",
+          "severityAgrees": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-privacy-1",
+          "role": "privacy",
+          "title": "Phone and display name sent to a US processor with no transfer basis",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "processor-transfer",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-2",
+          "role": "privacy",
+          "title": "No retention period or purge for birth date and phone, backups included",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "design.md#Decision: Birth dates live on the profile",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "no-retention",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-3",
+          "role": "privacy",
+          "title": "Birth date and phone made mandatory for a marketing purpose, no lawful basis stated",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/birthday-greetings/spec.md#Requirement: Members give their birth date and phone number",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-4",
+          "role": "privacy",
+          "title": "Full birth date collected when only day and month are needed",
+          "severity": "low",
+          "confidence": "high",
+          "location": "proposal.md#What Changes",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-5",
+          "role": "privacy",
+          "title": "Data subject rights not addressed for the new data and its copies",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "design.md#Decision: Birth dates live on the profile",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "no-retention",
+          "evidence": "found"
+        },
+        {
+          "id": "R-privacy-6",
+          "role": "privacy",
+          "title": "No rule keeping phone numbers out of the job's logs and retries",
+          "severity": "low",
+          "confidence": "low",
+          "location": "design.md#Risks / Trade-offs",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4221804,
+      "durationMs": 40828
+    },
+    {
+      "id": "security-code-sql-injection",
+      "role": "security",
+      "step": "code.review",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "sql-injection",
+          "role": "security",
+          "severity": "high",
+          "category": "injection",
+          "matchedBy": "R-security-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-security-1",
+          "role": "security",
+          "title": "SQL injection through the search term (CWE-89)",
+          "severity": "high",
+          "confidence": "high",
+          "location": "src/users.ts:10",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "sql-injection",
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2967948,
+      "durationMs": 21177
+    },
+    {
+      "id": "security-control-docs-only",
+      "role": "security",
+      "step": "code.review",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-security-1",
+          "role": "security",
+          "title": "Documented revocation guarantee has no implementation in this repository",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "README.md:19-20",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-security-2",
+          "role": "security",
+          "title": "Non-expiring tokens documented without a periodic rotation recommendation",
+          "severity": "low",
+          "confidence": "high",
+          "location": "README.md:13-14",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3765722,
+      "durationMs": 33696
+    },
+    {
+      "id": "security-plan-tokens-in-clear",
+      "role": "security",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "token-stored-in-clear",
+          "role": "security",
+          "severity": "high",
+          "category": "credential-storage",
+          "matchedBy": "R-security-1",
+          "severityAgrees": true
+        },
+        {
+          "id": "token-in-logs",
+          "role": "security",
+          "severity": "high",
+          "category": "secret-in-logs",
+          "matchedBy": "R-security-2",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-security-1",
+          "role": "security",
+          "title": "API tokens are stored in clear in the database",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Tokens are stored as given",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "token-stored-in-clear",
+          "evidence": "found"
+        },
+        {
+          "id": "R-security-2",
+          "role": "security",
+          "title": "The Authorization header, and so every bearer token, is written to the logs",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Every request is logged with its headers",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "token-in-logs",
+          "evidence": "found"
+        },
+        {
+          "id": "R-security-3",
+          "role": "security",
+          "title": "Revocation is announced but neither specified nor planned",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#What Changes",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3430934,
+      "durationMs": 25456
+    },
+    {
+      "id": "skeptic-control-small-flag",
+      "role": "skeptic",
+      "step": "plan.challenge",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [
+        {
+          "id": "R-skeptic-1",
+          "role": "skeptic",
+          "title": "The plan targets CLI files that do not exist in this repository",
+          "severity": "high",
+          "confidence": "high",
+          "location": "proposal.md#Impact",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-2",
+          "role": "skeptic",
+          "title": "The design rests on an unverified description of the progress and error paths",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "design.md#Context",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-3",
+          "role": "skeptic",
+          "title": "Task 1.2 is verified by a test that does not exist and that no task creates",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "tasks.md#1. Flag",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-4",
+          "role": "skeptic",
+          "title": "The scenario \"nothing is printed\" is broader than the requirement",
+          "severity": "low",
+          "confidence": "high",
+          "location": "specs/cli-import/spec.md#Scenario: A quiet import",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-5",
+          "role": "skeptic",
+          "title": "Warnings are classified neither as progress nor as errors",
+          "severity": "low",
+          "confidence": "low",
+          "location": "specs/cli-import/spec.md#Requirement: `--quiet` silences progress",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.42743459999999994,
+      "durationMs": 54900
+    },
+    {
+      "id": "skeptic-plan-scope-creep",
+      "role": "skeptic",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "scope-creep",
+          "role": "skeptic",
+          "severity": "medium",
+          "category": "scope",
+          "matchedBy": "R-skeptic-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-skeptic-1",
+          "role": "skeptic",
+          "title": "Plugin system for future export formats is scope creep",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#What Changes",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "scope-creep",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-2",
+          "role": "skeptic",
+          "title": "The simpler solution was dismissed only because of speculative extensibility",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "design.md#Decision: Exports go through a plugin registry",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "scope-creep",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-3",
+          "role": "skeptic",
+          "title": "Per-user export-format settings page is scope creep",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#What Changes",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "scope-creep",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-4",
+          "role": "skeptic",
+          "title": "The impacted frontend `web/src/settings/` does not exist in the project",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#Impact",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-5",
+          "role": "skeptic",
+          "title": "Storing each user's preferred format is a hidden migration",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "design.md#Decision: Exports go through a plugin registry",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "scope-creep",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-6",
+          "role": "skeptic",
+          "title": "The preference requirement is not verifiable against any route",
+          "severity": "low",
+          "confidence": "high",
+          "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "scope-creep",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-7",
+          "role": "skeptic",
+          "title": "No access control on an endpoint that exposes every invoice and customer",
+          "severity": "high",
+          "confidence": "low",
+          "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-8",
+          "role": "skeptic",
+          "title": "Happy path only: CSV escaping, missing month and empty month are unspecified",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4282648,
+      "durationMs": 49820
+    },
+    {
+      "id": "skeptic-plan-unsupported-assumption",
+      "role": "skeptic",
+      "step": "plan.challenge",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "email-is-not-a-person",
+          "role": "skeptic",
+          "severity": "high",
+          "category": "assumption",
+          "matchedBy": "R-skeptic-1",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "R-skeptic-1",
+          "role": "skeptic",
+          "title": "The merge key rests on an assumption the design itself contradicts",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Customers are merged by e-mail",
+          "status": "open",
+          "class": "true-positive",
+          "expected": "email-is-not-a-person",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-2",
+          "role": "skeptic",
+          "title": "Losing records are deleted outright, with no way back",
+          "severity": "high",
+          "confidence": "high",
+          "location": "design.md#Decision: Customers are merged by e-mail",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "email-is-not-a-person",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-3",
+          "role": "skeptic",
+          "title": "The specs only cover the happy path",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged",
+          "status": "open",
+          "class": "duplicate",
+          "expected": "email-is-not-a-person",
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-4",
+          "role": "skeptic",
+          "title": "No domain is ticked although the job deletes customers' personal data",
+          "severity": "medium",
+          "confidence": "high",
+          "location": "proposal.md#Domains",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-5",
+          "role": "skeptic",
+          "title": "The plan assumes customer and order tables the code does not show",
+          "severity": "medium",
+          "confidence": "low",
+          "location": "proposal.md#Impact",
+          "status": "open",
+          "class": "unreported",
+          "expected": null,
+          "evidence": "found"
+        },
+        {
+          "id": "R-skeptic-6",
+          "role": "skeptic",
+          "title": "The task is verified only by the two happy-path tests",
+          "severity": "low",
+          "confidence": "high",
+          "location": "tasks.md#1. Merge",
+          "status": "open",
+          "class": "false-positive",
+          "expected": null,
+          "evidence": "found"
+        }
+      ],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4784532,
+      "durationMs": 66146
+    },
+    {
+      "id": "tracer-control-complete-plan",
+      "role": "tracer",
+      "step": "plan.trace",
+      "kind": "control",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2392376,
+      "durationMs": 21469
+    },
+    {
+      "id": "tracer-plan-scenario-without-task",
+      "role": "tracer",
+      "step": "plan.trace",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [
+        {
+          "id": "_codev/changes/add-magic-links/tasks.md contains \"expired\"",
+          "role": "tracer",
+          "severity": "",
+          "category": "traceability",
+          "matchedBy": "_codev/changes/add-magic-links/tasks.md",
+          "severityAgrees": true
+        }
+      ],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.25808380000000003,
+      "durationMs": 23092
+    }
+  ]
+}

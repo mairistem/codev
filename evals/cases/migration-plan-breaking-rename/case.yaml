@@ -1,0 +1,11 @@
+role: migration
+step: plan.challenge
+change: rename-order-status
+stacks: ["typescript"]
+kind: seeded
+summary: "A plan renames a public JSON field without marking it breaking or giving consumers a path."
+expected:
+  - id: unannounced-breaking-rename
+    severity: high
+    category: breaking-api
+    locations: ["design.md#Decision: The field is renamed in place", "proposal.md#What Changes", "proposal.md#Release note"]

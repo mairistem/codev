@@ -458,6 +458,40 @@ Elle n'écrit qu'après votre oui, ne modifie que `context:` et `rules:`,
 préserve tous les autres champs et commentaires, et refuse d'agir si
 `_codev/config.yaml` n'existe pas.
 
+## Mesurer les rôles
+
+Le dépôt de codev mesure ses rôles de revue intégrés — le sceptique, le
+traceur, le nouvel arrivant et les six experts — avec une suite
+d'évaluation, `evals/`. Chaque cas est un petit projet avec un change
+planifié : soit **ensemencé** de défauts que le rôle devrait trouver,
+chacun avec sa gravité et son emplacement attendus, soit **témoin propre**,
+sans aucun défaut. La suite fait exécuter à Claude Code une étape de skill
+sur chaque cas, avec le rôle évalué seul, puis note le compte rendu de
+revue qu'il a écrit :
+
+- **vrais positifs** et **manqués** — les défauts ensemencés trouvés ou
+  non, par rôle et par emplacement (deux lignes de tolérance, ou le même
+  titre du plan) ;
+- **faux positifs** — les constats de confiance haute qui ne correspondent
+  à aucun défaut ensemencé, dans un témoin ou à côté du défaut ; les
+  constats de confiance basse, qui ne vous sont jamais présentés, sont
+  comptés à part ;
+- **validité des preuves** — la part des constats dont la citation est
+  retrouvée par `codev review` aux lignes indiquées ;
+- **accord de gravité** — la gravité trouvée est celle attendue.
+
+Le traceur, qui corrige le plan au lieu d'enregistrer des constats, est
+noté sur le plan qu'il laisse : la tâche manquante ajoutée, un plan
+complet laissé intact.
+
+Les scores de référence sont la ligne de base versionnée,
+[`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md) :
+une exécution par cas, avec le modèle par défaut de Claude Code à la date
+qu'elle indique. Une exécution est un point bruité, pas une preuve ; une
+modification d'un fichier de rôle se juge sur ses scores avant et après,
+avec le même modèle. La suite ne tourne jamais dans la CI habituelle et ne
+fait pas partie du binaire `codev`.
+
 ## Là où vous décidez
 
 L'agent s'arrête et vous passe la main à ces moments :

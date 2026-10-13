@@ -1,0 +1,6 @@
+role: newcomer
+step: code.review
+change: add-invoice-due-dates
+stacks: ["python"]
+kind: control
+summary: "Two small, well-named functions with tests that read as the rule; nothing to find."

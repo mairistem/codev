@@ -1,0 +1,151 @@
+{
+  "format": 1,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.35659860000000004,
+  "durationMs": 34913,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-newcomer-1 (bucket hides the premium threshold in a bitmask one-liner that does not compute it) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 9,
+        "location": "src/pricing.ts:9-10",
+        "recommendation": "Replace the one-liner with a plain loop or two filters on a named constant, e.g. `const PREMIUM_THRESHOLD_CENTS = 1000;` and `p.cents >= PREMIUM_THRESHOLD_CENTS`, so that the rule from the proposal (\"10 euros and more\") reads in the code. The bitmask `(cents >> 4) & 0x3e8` is not a comparison with 1000 cents: 500 cents (5 euros) gives 31 & 1000 = 8, so \"hi\"; 16384 cents (163.84 euros) gives 1024 & 1000 = 0, so \"lo\". A newcomer cannot see that the expression is wrong without decoding it bit by bit; the author must fix the behavior (the newcomer does not change it).",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "bucket hides the premium threshold in a bitmask one-liner that does not compute it"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-2",
+        "line": 32,
+        "location": "src/pricing.ts:9-10",
+        "recommendation": "Name the function after what it does (e.g. `splitByPriceBand`), use readable parameter names (`prices`, `groups`, `price`), and return a typed shape such as `{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with magic keys \"hi\"/\"lo\"; today a caller cannot know the keys without reading the body, and a band with no price is absent instead of empty.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Obscure names and untyped string keys in bucket"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [x] 1.1 `bucket`, verified by `npm test -- pricing`\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-3",
+        "line": 52,
+        "location": "tasks.md#1. Implementation",
+        "recommendation": "Add a `pricing` test that describes the behavior at the boundary (999 cents is cheap, 1000 cents is premium, a large price is premium). No test file is in the repository, so the task was checked off without a test that documents — or would have caught — the behavior of `bucket`.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The verification test cited by the task does not exist"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/** Prices of the catalogue, in cents. */\n\nexport interface Price {\n  sku: string;\n  cents: number;\n}\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-4",
+        "line": 70,
+        "location": "src/pricing.ts:1-6",
+        "recommendation": "Put the unit where it applies: a doc comment on the `cents` field (`/** Amount in cents. */`) instead of a detached JSDoc block above the interface.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Module comment reads as a comment on the interface"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

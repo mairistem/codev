@@ -1,0 +1,6 @@
+role: ops
+step: code.review
+change: fetch-exchange-rates
+stacks: ["rust"]
+kind: control
+summary: "A rates fetch with a timeout, three bounded retries and structured logs; nothing to find."

@@ -1,0 +1,11 @@
+role: accessibility
+step: plan.challenge
+change: inline-form-validation
+stacks: ["typescript"]
+kind: seeded
+summary: "A plan signals form errors by a red border only, with no text."
+expected:
+  - id: colour-only-errors
+    severity: high
+    category: use-of-colour
+    locations: ["design.md#Decision: Invalid fields turn red", "specs/checkout-validation/spec.md#Scenario: An invalid postcode"]

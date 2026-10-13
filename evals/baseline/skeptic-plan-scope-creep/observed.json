@@ -1,0 +1,247 @@
+{
+  "format": 1,
+  "case": "skeptic-plan-scope-creep",
+  "error": null,
+  "costUsd": 0.4282648,
+  "durationMs": 49820,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-skeptic-7 (No access control on an endpoint that exposes every invoice and customer) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-csv-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 9,
+        "location": "proposal.md#What Changes",
+        "recommendation": "Drop the plugin system and the registry task (1.2); ship the CSV export as a single function, and propose a registry in its own change once a second format is actually requested.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Plugin system for future export formats is scope creep"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Alternatives considered**: a single CSV function (not extensible).\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 25,
+        "location": "design.md#Decision: Exports go through a plugin registry",
+        "recommendation": "Choose the single CSV function, which fully answers the Why; extensibility is not a requirement of any spec scenario.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The simpler solution was dismissed only because of speculative extensibility"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- A settings page where each user picks their preferred export format.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 41,
+        "location": "proposal.md#What Changes",
+        "recommendation": "Remove the settings page, the requirement \"Users choose their export format\" and task 2.1; with a single CSV format there is nothing to choose.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Per-user export-format settings page is scope creep"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- `src/export/` (new), `src/server.ts`, `web/src/settings/`.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-4",
+        "line": 57,
+        "location": "proposal.md#Impact",
+        "recommendation": "If the settings page is kept, say where the frontend lives or that it must be created; otherwise remove `web/src/settings/` from the Impact.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The impacted frontend `web/src/settings/` does not exist in the project"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "first plugin. A settings page stores each user's preferred format.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-5",
+        "line": 73,
+        "location": "design.md#Decision: Exports go through a plugin registry",
+        "recommendation": "If the preference is kept, state where it is stored (table, column, default value for existing users) and add the migration as a task; otherwise drop it with R-skeptic-3.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Storing each user's preferred format is a hidden migration"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- **WHEN** a user picks CSV\n- **THEN** exports use CSV\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-6",
+        "line": 89,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
+        "recommendation": "If kept, name the route that honours the preference and the observable output; the only export route, `/invoices.csv`, is CSV whatever the preference.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The preference requirement is not verifiable against any route"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "`GET /invoices.csv?month=YYYY-MM` SHALL return the month's invoices, one per line, with number, date, customer and total.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-7",
+        "line": 104,
+        "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
+        "recommendation": "Add a requirement and scenario for unauthenticated (401) and non-accountant (403) requests, and reconsider the unticked `security` and `personal-data` domains.",
+        "reported": false,
+        "role": "skeptic",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No access control on an endpoint that exposes every invoice and customer"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#### Scenario: A month\n\n- **WHEN** an accountant exports 2026-09\n- **THEN** the CSV holds every invoice of September 2026\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-8",
+        "line": 120,
+        "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
+        "recommendation": "Add scenarios for a customer name containing a comma, quote or newline (and a leading `=`, `+`, `-`, `@` for spreadsheet formula injection), a missing `month` parameter, and a month with no invoice; specify header row, separator, encoding and number/date formats.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Happy path only: CSV escaping, missing month and empty month are unspecified"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-csv-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

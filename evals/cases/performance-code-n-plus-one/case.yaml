@@ -1,0 +1,11 @@
+role: performance
+step: code.review
+change: add-order-summaries
+stacks: ["rust", "typescript"]
+kind: seeded
+summary: "In a Rust and TypeScript monorepo, order totals query the lines once per order."
+expected:
+  - id: n-plus-one
+    severity: medium
+    category: query-per-item
+    locations: ["api/src/orders.rs:14-16"]

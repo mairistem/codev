@@ -1,0 +1,11 @@
+role: performance
+step: plan.challenge
+change: add-audit-export
+stacks: ["typescript"]
+kind: seeded
+summary: "A plan loads every audit event of an organization in memory to build one CSV."
+expected:
+  - id: unbounded-export
+    severity: high
+    category: unbounded-result
+    locations: ["design.md#Decision: The export loads every event, then writes the CSV", "specs/audit-export/spec.md#Requirement: Administrators export the audit log"]

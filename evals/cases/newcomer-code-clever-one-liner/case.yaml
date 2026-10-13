@@ -1,0 +1,11 @@
+role: newcomer
+step: code.review
+change: group-prices
+stacks: ["typescript"]
+kind: seeded
+summary: "A dense reduce with bit tricks and one-letter names does the job of an if."
+expected:
+  - id: clever-one-liner
+    severity: medium
+    category: cleverness
+    locations: ["src/pricing.ts:9-10"]

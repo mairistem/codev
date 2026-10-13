@@ -203,6 +203,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "codev-evals"
+version = "0.6.1"
+dependencies = [
+ "clap",
+ "serde",
+ "serde_json",
+ "serde_norway",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

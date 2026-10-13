@@ -1,0 +1,176 @@
+{
+  "format": 1,
+  "case": "privacy-control-masked-logs",
+  "error": null,
+  "costUsd": 0.4047092000000001,
+  "durationMs": 43060,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "mask-emails-in-logs",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n}\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 9,
+        "location": "src/logger.ts:6-8",
+        "recommendation": "Mask the domain too (or replace the address with a keyed hash or opaque user id); a personal or small-company domain plus an initial still identifies the person, so the logs keep personal data for 90 days (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Masked address keeps the full domain and first letter"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 25,
+        "location": "src/logger.ts:3",
+        "recommendation": "Also mask URL-encoded addresses (`ada%40example.org`, common in logged URLs and query strings), internationalised domains, and local parts with RFC 5322 characters such as `'` (`o'brien@example.com` becomes `o'b***@example.com`, leaking the prefix); add a test per case. GDPR Art. 5(1)(f), Art. 25.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Addresses the pattern misses still reach the logs in full or in part"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "for (const [key, value] of Object.entries(fields)) {\n  safe[key] = typeof value === \"string\" ? maskEmails(value) : value;\n}\nconsole.log(JSON.stringify({ level: \"info\", message: maskEmails(message), ...safe }));\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 39,
+        "location": "src/logger.ts:12-15",
+        "recommendation": "Mask the keys as well (`safe[maskEmails(key)]`), since a caller building fields keyed by address (e.g. `{ [user.email]: attempts }`) would log the address in full.\n",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Field keys are written unmasked"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "describe(\"maskEmails\", () => {\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 57,
+        "location": "src/logger.test.ts:4-11",
+        "recommendation": "Add a test on `logInfo` capturing `console.log` and checking that an address in `message` and in a string field never appears in full — the guarantee the proposal promises (\"masks every e-mail address in the message and the fields\").",
+        "reported": true,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No test proves that log fields are masked"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Our logs are kept 90 days by the hosting provider and contain customers' e-mail addresses.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-5",
+        "line": 71,
+        "location": "proposal.md#Why",
+        "recommendation": "Decide with the team whether existing logs at the hosting provider (a processor, GDPR Art. 28) must be purged or left to expire, and state it in the change; the masking only protects future lines (Art. 5(1)(e)).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Logs already written keep full addresses for 90 days"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/mask-emails-in-logs/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

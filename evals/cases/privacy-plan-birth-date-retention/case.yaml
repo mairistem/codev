@@ -1,0 +1,15 @@
+role: privacy
+step: plan.challenge
+change: add-birthday-greetings
+stacks: ["typescript"]
+kind: seeded
+summary: "A plan collects birth dates and phone numbers with no purpose limits, retention or processor review."
+expected:
+  - id: no-retention
+    severity: medium
+    category: retention
+    locations: ["design.md#Decision: Birth dates live on the profile"]
+  - id: processor-transfer
+    severity: medium
+    category: processor-transfer
+    locations: ["design.md#Decision: Greetings are sent by SMS through Textly"]

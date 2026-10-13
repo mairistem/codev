@@ -1,0 +1,84 @@
+{
+  "format": 1,
+  "case": "performance-code-n-plus-one",
+  "error": null,
+  "costUsd": 0.32796179999999997,
+  "durationMs": 26336,
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (N+1 query: one `lines_of_order` query per order) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-summaries",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for order in orders {\n    let lines = db.lines_of_order(order.id)?;\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 9,
+        "location": "api/src/orders.rs:14-15",
+        "recommendation": "Collect the order ids and fetch every line in one query with the existing `Db::lines_of_orders(&ids)` (api/src/db.rs:31, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (e.g. a `HashMap<i64, i64>` of totals) while keeping the orders' `id DESC` order and an order with no line at 0. Cost today: 1 + N queries per customer page view (up to 101), growing with the customer's order count on a user-facing path; after the fix, 2.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "N+1 query: one `lines_of_order` query per order"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-summaries/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge"
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "recorded": true,
+        "roles": [
+          {
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review"
+      }
+    ]
+  },
+  "files": {}
+}

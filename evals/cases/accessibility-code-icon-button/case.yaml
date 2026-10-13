@@ -1,0 +1,15 @@
+role: accessibility
+step: code.review
+change: add-toolbar
+stacks: ["typescript"]
+kind: seeded
+summary: "A clickable div with an icon only, and an image without a text alternative."
+expected:
+  - id: image-without-alt
+    severity: medium
+    category: text-alternative
+    locations: ["src/components/Toolbar.tsx:12"]
+  - id: div-button
+    severity: high
+    category: keyboard-and-name
+    locations: ["src/components/Toolbar.tsx:13-15"]

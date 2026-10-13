@@ -437,6 +437,37 @@ It writes only on your yes, changes only `context:` and `rules:`, keeps
 every other field and comment, and refuses if `_codev/config.yaml` does not
 exist.
 
+## Measuring the roles
+
+codev's own repository measures the built-in reviewing roles — the
+skeptic, the tracer, the newcomer and the six experts — with an evaluation
+suite, `evals/`. Each case is a small project with a planned change: either
+**seeded** with defects the role should find, each with its expected
+severity and location, or a **clean control** holding none. The suite has
+Claude Code run one skill step on each case with the evaluated role alone,
+then scores the review record it wrote:
+
+- **true positives** and **misses** — the seeded defects found or not, by
+  role and location (two lines of tolerance, or the same heading of the
+  plan);
+- **false positives** — high-confidence findings that match no seeded
+  defect, in a control or next to the defect; low-confidence findings,
+  which are never shown to you, are counted apart;
+- **evidence validity** — the share of findings whose quoted evidence
+  `codev review` finds at the cited lines;
+- **severity agreement** — the found severity equals the expected one.
+
+The tracer, which fixes the plan instead of recording findings, is scored
+on the plan it leaves: the missing task added, a complete plan left
+unchanged.
+
+The reference scores are the committed baseline,
+[`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md):
+one run per case, on Claude Code's default model at the date it names. One
+run is a noisy point, not a proof; a change to a role file is judged by
+its scores before and after, on the same model. The suite never runs in
+regular CI and is not part of the `codev` binary.
+
 ## Where you decide
 
 The agent stops and hands over at these points:
