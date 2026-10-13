@@ -2,14 +2,14 @@
 
 Un projet codev se configure dans `_codev/config.yaml`. Toutes les clés sont
 facultatives : un projet peut même fonctionner sans ce fichier. Une clé que
-codev ne connaît pas est signalée, par un avertissement au premier niveau et
-dans `mcp`, par une erreur ailleurs : une faute de frappe ne passe donc
+codev ne connaît pas est signalée, par un avertissement au premier niveau,
+dans `mcp` et dans `review`, par une erreur ailleurs : une faute de frappe ne passe donc
 jamais inaperçue. Voir [Clés inconnues](#clés-inconnues).
 
 `codev init` génère le fichier avec les valeurs qu'il a détectées, chacune
 précédée d'un commentaire indiquant sa provenance. Vous pouvez le modifier à la
-main à tout moment. Après avoir modifié `workflows` ou `mcp`, lancez
-`codev update` pour que les skills reflètent la modification.
+main à tout moment. Après avoir modifié `workflows`, `mcp` ou `review`,
+lancez `codev update` pour que les skills reflètent la modification.
 
 ## Exemple complet
 
@@ -64,6 +64,9 @@ roles:
 triggers:
   - domain: personal-data
     paths: ["src/billing/**"]
+
+review:
+  mode: isolated
 ```
 
 ## schema
@@ -307,6 +310,50 @@ codev 0.6 et les versions antérieures ne connaissent pas cette clé : elles
 `codev validate --strict`. Lorsque vous l'ajoutez, relevez
 `codev_version` jusqu'à la version qui l'a introduite.
 
+## review
+
+La manière dont les rôles relecteurs travaillent. Propre au projet, jamais
+héritée.
+
+| Clé | Signification |
+|---|---|
+| `mode` | `inline` (par défaut) : la skill relit dans sa propre conversation, un rôle après l'autre. `isolated` : chaque rôle relecteur travaille seul, comme sous-agent de Claude Code qui ne voit jamais la conversation, puis la skill fusionne leurs constats |
+
+```yaml
+review:
+  mode: isolated
+```
+
+Un change peut la remplacer dans son `change.yaml`, avec la même clé :
+`review: { mode: inline }` pour corriger une coquille dans un projet
+isolé, ou `isolated` pour un change sensible dans un projet en ligne.
+`codev roles --json` donne le mode en vigueur et son origine
+(`review.mode`, `review.origin`). Toute autre valeur fait échouer chaque
+commande avec `invalid_review_mode`, qui nomme `inline` et `isolated` ;
+une clé inconnue sous `review` est un avertissement `unknown_config_key`
+(`review.<clé>`).
+
+**Changer de mode.** Définissez la clé, puis lancez `codev update` : en
+mode isolé, les skills `/codev-propose` et `/codev-apply` demandent
+l'outil `Agent` de Claude Code, en mode en ligne elles ne le demandent
+pas, et `codev doctor` signale `skills_review_mode` tant qu'elles n'ont
+pas été régénérées. Une skill que vous avez modifiée à la main est
+conservée ; `codev update --force` la réécrit.
+
+**Pourquoi `inline` par défaut.** La revue isolée multiplie la lecture de
+la matière par le nombre de rôles, et son bénéfice n'est pas encore
+mesuré : les évaluations des rôles de codev font travailler un rôle à la
+fois, sans conversation d'écriture, et ne peuvent donc pas comparer les
+deux modes. Voir
+[Revue en ligne ou isolée](../roles.md#revue-en-ligne-ou-isolée).
+
+codev 0.6 et les versions antérieures ne connaissent pas cette clé :
+elles émettent l'avertissement `unknown_config_key` — qui fait échouer
+leur `codev validate --strict` — et refusent un `change.yaml` qui la
+définit. Lorsque vous la définissez, relevez `codev_version` jusqu'à la
+version qui l'a introduite, pour que chaque codev qui lit le dépôt, CI
+comprise, la comprenne.
+
 ## Clés inconnues
 
 Une version plus récente de codev peut ajouter des clés qu'une version plus
@@ -318,6 +365,7 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 |---|---|---|
 | premier niveau | avertissement `unknown_config_key`, clé ignorée | chaque clé est une fonctionnalité indépendante : le reste de la configuration s'applique |
 | `mcp` | avertissement `unknown_config_key` (`mcp.<clé>`), clé ignorée | un outil inconnu laisse seulement cette intégration non configurée |
+| `review` | avertissement `unknown_config_key` (`review.<clé>`), clé ignorée | un réglage de revue inconnu laisse la revue telle qu'elle était |
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
 | `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
 | une entrée de `roles` | erreur `invalid` | l'ignorer ferait disparaître des critères ou une activation |

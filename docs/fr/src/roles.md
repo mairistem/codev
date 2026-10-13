@@ -287,6 +287,66 @@ où des rôles ont relu, ou qui a encore un constat de gravité haute ouvert ou
 contesté. Le format complet, les contrôles et le verrou d'archivage sont
 dans [Compte rendu de revue](guides/review-record.md).
 
+## Revue en ligne ou isolée
+
+Par défaut, les rôles relecteurs travaillent **en ligne** (`inline`) : la
+skill qui a écrit le plan ou le code le relit dans la même conversation,
+un rôle après l'autre. C'est le moyen le moins coûteux, mais chaque
+relecteur a lu le raisonnement de l'auteur et les rôles passés avant lui,
+et tend à leur donner raison.
+
+En mode **isolé** (`isolated`) — `review.mode` dans la
+[configuration](reference/configuration.md#review), ou dans le
+`change.yaml` d'un change — chaque rôle relecteur travaille d'abord seul,
+comme sous-agent de Claude Code : le contrôleur de traçabilité à
+`plan.trace`, le
+contradicteur et les experts actifs à `plan.challenge`, le nouvel arrivant
+et les experts actifs à `code.review`, tous ceux d'une étape en même
+temps. Un relecteur reçoit seulement :
+
+- son rôle : question, critères et connaissances, filtrées par stack ;
+- le `context` et les `rules` du projet ;
+- la matière : les artefacts du change aux étapes du plan, les fichiers
+  que le change touche et leur diff à `code.review` ;
+- les identifiants déjà présents dans le compte rendu et le format d'un
+  constat.
+
+Il ne reçoit jamais la conversation, le raisonnement de l'auteur ni les
+constats d'un autre rôle. Il peut lire le reste du dépôt — les décisions,
+les specs principales, le code que la matière cite —, ne modifie rien, et
+traite la matière comme des données, jamais comme des instructions.
+`codev roles --json` mesure la matière (`review.material`) : au-delà de
+160 Kio, les fichiers les plus gros sont marqués `summarize`, et un
+sous-agent distinct, qui ne voit que le diff de ce fichier, le résume en
+citant les lignes modifiées quand elles tiennent. Le compte rendu dit
+quels fichiers ont été résumés.
+
+Un sous-agent qui échoue, que les limites de Claude Code arrêtent, ou qui
+répond dans un autre format est relancé une fois ; s'il échoue encore, ce
+rôle relit en ligne et le compte rendu le dit par une ligne `Fallback:`.
+Sans l'outil de sous-agent, tous les rôles relisent en ligne.
+
+### La réunion
+
+La skill tient ensuite la réunion, comme une équipe après avoir lu chacun
+de son côté :
+
+- **Fusionner.** Les constats de plusieurs rôles sur le même défaut — au
+  même endroit, avec la même correction — deviennent un seul constat,
+  inscrit sous le rôle qui l'a jugé le plus grave et qui crédite chaque
+  rôle qui l'a relevé (`raised_by`). Des constats au même endroit qui
+  demandent des corrections différentes restent distincts.
+- **Classer.** Par gravité, puis confiance, puis ordre des rôles ; le
+  résumé en montre cinq au plus, comme en ligne.
+- **Répondre.** Les réponses de l'auteur, l'unique revérification du
+  relecteur et ce qui vous revient sous **À décider** fonctionnent
+  exactement comme plus haut.
+
+La revue isolée coûte plus cher : chaque relecteur lit la matière, que la
+revue en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
+par défaut ; voyez la [configuration](reference/configuration.md#review)
+pour en changer.
+
 ## Configurer les rôles
 
 Tous les rôles sont actifs par défaut. Dans `_codev/config.yaml`, `roles:`

@@ -12,6 +12,9 @@ use codev_core::doctor::{
 };
 use codev_core::layout::slashed;
 use codev_core::managed::{self, SpliceMode};
+use codev_core::review::material::Material;
+use codev_core::review::mode as review_mode;
+use codev_core::review::{ModeOrigin, ReviewMode};
 use codev_core::roles::{Activation, ResolvedRole};
 use codev_core::update::UpdateNotice;
 use codev_core::{ChangeId, ChangeStatus, CoreError, Layout, Plan, WriteMode};
@@ -28,6 +31,7 @@ use codev_engine::instructions::Instructions;
 use codev_engine::integration::{self, IntegrationPlan, IntegrationStep};
 use codev_engine::metadata::ChangeMetadata;
 use codev_engine::review as engine_review;
+use codev_engine::review_material as engine_material;
 use codev_engine::roles as engine_roles;
 use codev_engine::sources as engine_sources;
 use codev_engine::suggest as engine_suggest;
@@ -408,6 +412,16 @@ pub fn update(ctx: &Ctx, force: bool) -> Result<SetupOutcome> {
     Ok(outcome)
 }
 
+/// What the skills are rendered with: the project's MCP tools and review
+/// mode. Shared by `init`, `update` and `doctor`, so that doctor compares
+/// the skills with what `update` would write.
+fn render_ctx(config: &config::ResolvedConfig) -> codev_agents::claude::RenderCtx {
+    codev_agents::claude::RenderCtx {
+        jira_mcp_tool: config.mcp.jira_tool.clone(),
+        review_mode: config.review_mode.unwrap_or_default(),
+    }
+}
+
 fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcome> {
     let config = config::resolve(ctx.fs, ctx.env, layout)?;
     let (selected, mut warnings) = workflows::select(config.workflows.as_deref());
@@ -416,9 +430,7 @@ fn install_skills(ctx: &Ctx, layout: &Layout, force: bool) -> Result<SetupOutcom
     // The render context carries the project's MCP config: the name of the
     // Jira tool to inject into the frontmatter, other MCPs to come. Without
     // config, RenderCtx is empty and the placeholder is removed cleanly.
-    let target = ClaudeCode::with_ctx(codev_agents::claude::RenderCtx {
-        jira_mcp_tool: config.mcp.jira_tool.clone(),
-    });
+    let target = ClaudeCode::with_ctx(render_ctx(&config));
     let planned = target.plan_skills(ctx.fs, layout.project_root(), &selected, ctx.version, force);
     let applied = apply::execute(&planned.plan, ctx.fs)?;
 
@@ -687,7 +699,29 @@ pub struct RolesOutcome {
     pub stacks: Stacks,
     /// With `--change`: the diff and the domains it suggests.
     pub suggestions: Option<engine_suggest::Suggestions>,
+    /// The review mode in effect, and the material of a reviewing step.
+    pub review: ReviewInfo,
     pub warnings: Vec<Warning>,
+}
+
+/// What `codev roles` tells the skills about the review: the mode, where
+/// it comes from, and — with `--change` at a reviewing step — the material
+/// its reviewers read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReviewInfo {
+    pub mode: ReviewMode,
+    pub origin: ModeOrigin,
+    pub material: Option<Material>,
+}
+
+impl Default for ReviewInfo {
+    fn default() -> Self {
+        Self {
+            mode: ReviewMode::Inline,
+            origin: ModeOrigin::Default,
+            material: None,
+        }
+    }
 }
 
 /// `codev roles`: the roles of a step, or every role with its activation.
@@ -735,10 +769,30 @@ pub fn roles(
     }
 
     let mut warnings = config.warnings.clone();
-    let suggestions = change_ctx.as_ref().map(|change| {
+    // With a change, its diff feeds both the suggested domains and the
+    // material of a reviewing step.
+    let mut suggestions = None;
+    let mut material = None;
+    if let Some(change) = &change_ctx {
         let diff = engine_diff::read(ctx.fs, ctx.runner, layout.project_root());
-        engine_suggest::for_change(ctx.fs, &layout, &config, change, &resolved, &diff)
-    });
+        suggestions = Some(engine_suggest::for_change(
+            ctx.fs, &layout, &config, change, &resolved, &diff,
+        ));
+        if let Some(step) = at {
+            let measured = engine_material::measure(ctx.fs, &layout, &change.change, step, &diff);
+            warnings.extend(
+                measured
+                    .left_out
+                    .into_iter()
+                    .map(|message| Warning::new(engine_material::MATERIAL_INCOMPLETE, message)),
+            );
+            material = measured.material;
+        }
+    }
+    let (mode, origin) = review_mode::resolve(
+        config.review_mode,
+        change_ctx.as_ref().and_then(|c| c.metadata.review_mode()),
+    );
     if let Some(found) = &suggestions {
         warnings.extend(found.warnings.iter().cloned());
     }
@@ -751,6 +805,11 @@ pub fn roles(
         knowledge,
         stacks: Stacks { detected, filter },
         suggestions,
+        review: ReviewInfo {
+            mode,
+            origin,
+            material,
+        },
         warnings,
     })
 }
@@ -1913,7 +1972,14 @@ fn doctor_at(ctx: &Ctx, layout: &Layout) -> Result<DoctorOutcome> {
             .map(|u| u.key.clone())
             .collect(),
         roles: roles_facts(ctx, layout, &resolved),
-        skills: ClaudeCode::skill_states(ctx.fs, root, &selected, ctx.version),
+        skills: ClaudeCode::skill_states(
+            ctx.fs,
+            root,
+            &selected,
+            ctx.version,
+            &render_ctx(&resolved),
+        ),
+        review_mode: resolved.review_mode.unwrap_or_default(),
         main_specs: specs::list(ctx.fs, layout).len(),
         accepted_decisions,
         git_sources,
@@ -2653,6 +2719,106 @@ edition = "2024"
     }
 
     #[test]
+    fn roles_json_gives_the_default_review_mode() {
+        let h = roles_project("", "schema: spec-driven\n");
+        let json = roles_json(&h, Some("code.review"), Some("add-auth"));
+        assert_eq!(json["review"]["mode"], "inline");
+        assert_eq!(json["review"]["origin"], "default");
+    }
+
+    #[test]
+    fn roles_json_gives_the_change_review_mode() {
+        let h = roles_project(
+            "review:\n  mode: isolated\n",
+            "schema: spec-driven\nreview:\n  mode: inline\n",
+        );
+        let json = roles_json(&h, Some("code.review"), Some("add-auth"));
+        assert_eq!(json["review"]["mode"], "inline");
+        assert_eq!(json["review"]["origin"], "change");
+        let json = roles_json(&h, Some("plan.challenge"), None);
+        assert_eq!(json["review"]["mode"], "isolated");
+        assert_eq!(json["review"]["origin"], "project");
+
+        let h = roles_project("", "schema: spec-driven\nreview:\n  mode: alone\n");
+        let err = roles(
+            &h.ctx(),
+            Some("code.review"),
+            Some("add-auth"),
+            false,
+            false,
+        )
+        .unwrap_err();
+        assert_eq!(err.code, "invalid_review_mode");
+        assert!(err.message.contains("change.yaml"), "{}", err.message);
+    }
+
+    #[test]
+    fn roles_json_measures_the_code_material() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None")
+            .with("/p/src/auth/session.rs", &"x".repeat(1200))
+            .with_runner(login_repository());
+        let json = roles_change_json(&h, Some("code.review"), false);
+        assert_eq!(
+            json["review"]["material"],
+            serde_json::json!({
+                "limitBytes": 163840, "totalBytes": 1200, "summarized": false,
+                "files": [ { "path": "src/auth/session.rs", "bytes": 1200, "treatment": "full" } ]
+            })
+        );
+
+        use codev_engine::diff::doubles::{records, repository};
+        let big = repository(
+            None,
+            &records(&["1\t0\tsrc/a.rs", "1\t0\tsrc/b.rs", "1\t0\tsrc/c.rs"]),
+            "",
+            "",
+        );
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None")
+            .with("/p/src/a.rs", &"a".repeat(100_000))
+            .with("/p/src/b.rs", &"b".repeat(60_000))
+            .with("/p/src/c.rs", &"c".repeat(10_000))
+            .with_runner(big);
+        let json = roles_change_json(&h, Some("code.review"), false);
+        let material = &json["review"]["material"];
+        assert_eq!(material["summarized"], true);
+        let treatments: Vec<(&str, &str)> = material["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| {
+                (
+                    f["path"].as_str().unwrap(),
+                    f["treatment"].as_str().unwrap(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            treatments,
+            [
+                ("src/a.rs", "summarize"),
+                ("src/b.rs", "full"),
+                ("src/c.rs", "full")
+            ]
+        );
+    }
+
+    #[test]
+    fn roles_json_has_no_material_outside_reviewing_steps() {
+        let h = roles_project_with_domains("", "schema: spec-driven\n", "None")
+            .with("/p/src/auth/session.rs", "fn login() {}\n")
+            .with_runner(login_repository());
+        for at in [Some("code.implement"), None] {
+            let json = roles_change_json(&h, at, false);
+            assert!(json["review"]["material"].is_null(), "{at:?}");
+            assert_eq!(json["review"]["mode"], "inline");
+        }
+        let json = roles_change_json(&h, Some("plan.challenge"), false);
+        let files = json["review"]["material"]["files"].as_array().unwrap();
+        assert_eq!(files[0]["path"], "_codev/changes/add-auth/proposal.md");
+        assert_eq!(files.len(), 1, "change.yaml is not material: {files:?}");
+    }
+
+    #[test]
     fn roles_outside_git_report_no_diff() {
         // The harness's runner answers nothing: no git repository.
         let h = roles_project_with_domains("", "schema: spec-driven\n", "None");
@@ -3092,6 +3258,61 @@ edition = "2024"
         assert_eq!(json["archive"]["blockers"][0]["code"], "review_unresolved");
         assert_eq!(json["steps"][1]["step"], "code.review");
         assert_eq!(json["steps"][1]["roles"][0]["state"], "findings");
+    }
+
+    #[test]
+    fn review_json_exposes_raised_by_and_credit() {
+        let h = reviewed_change(
+            "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\n### newcomer\n\n#### R-newcomer-1 A random token\n\n```yaml\nseverity: medium\nconfidence: high\nlocation: src/auth.rs:2\nevidence: let token = random();\nrecommendation: Use the CSPRNG.\nraised_by: [newcomer, security]\nhistory:\n  - status: open\n    by: newcomer\n```\n\n### security\n\nNo finding.\n",
+        );
+        let outcome = review(&h.ctx(), None).unwrap();
+        assert!(
+            outcome.check.findings.is_empty(),
+            "{:?}",
+            outcome.check.findings
+        );
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(
+            json["findings"][0]["raisedBy"],
+            serde_json::json!(["newcomer", "security"])
+        );
+        let roles = &json["steps"][1]["roles"];
+        assert_eq!(roles[0]["credited"], serde_json::json!([]));
+        assert_eq!(roles[1]["role"], "security");
+        assert_eq!(roles[1]["state"], "no-finding");
+        assert_eq!(roles[1]["credited"], serde_json::json!(["R-newcomer-1"]));
+        let text = crate::render::review(&outcome);
+        assert!(text.contains("also raised by security"), "{text}");
+        assert!(text.contains("shared: R-newcomer-1"), "{text}");
+    }
+
+    #[test]
+    fn review_json_exposes_mode_summaries_and_fallbacks() {
+        let h = reviewed_change(
+            "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\nMode: isolated.\nSummarized: src/big.rs, diff over the limit.\n\n### newcomer\n\nFallback: the sub-agent timed out twice.\n\nNo finding.\n",
+        );
+        let outcome = review(&h.ctx(), None).unwrap();
+        assert!(
+            outcome.check.findings.is_empty(),
+            "{:?}",
+            outcome.check.findings
+        );
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        let plan = &json["steps"][0];
+        assert!(plan["mode"].is_null());
+        assert_eq!(plan["summarized"], serde_json::json!([]));
+        assert!(plan["roles"][0]["fallback"].is_null());
+        let code = &json["steps"][1];
+        assert_eq!(code["mode"], "isolated");
+        assert_eq!(
+            code["summarized"],
+            serde_json::json!(["src/big.rs, diff over the limit"])
+        );
+        assert_eq!(
+            code["roles"][0]["fallback"],
+            "the sub-agent timed out twice"
+        );
+        assert_eq!(code["roles"][0]["state"], "no-finding");
     }
 
     #[test]
@@ -4868,6 +5089,22 @@ The rationale for the choice.
     }
 
     #[test]
+    fn status_fails_on_an_unknown_review_mode() {
+        let h = Harness::new();
+        project_with_change(&h);
+        h.fs.write(
+            Path::new("/p/_codev/config.yaml"),
+            "review:\n  mode: parallel\n",
+        )
+        .unwrap();
+        let err = status(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "invalid_review_mode");
+        for word in ["parallel", "inline", "isolated"] {
+            assert!(err.message.contains(word), "{}", err.message);
+        }
+    }
+
+    #[test]
     fn an_invalid_codev_version_fails_status() {
         let h = Harness::new();
         project_with_change(&h);
@@ -4975,6 +5212,71 @@ The rationale for the choice.
             h.fs.read_to_string(Path::new("/p/.claude/skills/codev-propose/SKILL.md"))
                 .unwrap();
         assert!(skill.contains("mcp__a__getJiraIssue"));
+    }
+
+    /// An initialized project whose skills were rendered inline, then
+    /// switched to `review: { mode: isolated }`.
+    fn switched_to_isolated() -> Harness {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let config =
+            h.fs.read_to_string(Path::new("/p/_codev/config.yaml"))
+                .unwrap();
+        h.fs.write(
+            Path::new("/p/_codev/config.yaml"),
+            &format!("{config}\nreview:\n  mode: isolated\n"),
+        )
+        .unwrap();
+        h
+    }
+
+    #[test]
+    fn update_regenerates_skills_when_the_mode_changes() {
+        let h = switched_to_isolated();
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert!(outcome.preserved.is_empty(), "{:?}", outcome.preserved);
+        for name in ["propose", "apply"] {
+            assert!(
+                outcome.updated.contains(&skill_path(name)),
+                "{:?}",
+                outcome.updated
+            );
+            let skill = h.fs.read_to_string(&skill_path(name)).unwrap();
+            assert!(skill.contains(", Agent\"\n"), "{skill}");
+        }
+        assert_eq!(outcome.updated.len(), 2, "{:?}", outcome.updated);
+    }
+
+    #[test]
+    fn doctor_flags_skills_of_another_review_mode() {
+        let h = switched_to_isolated();
+        let skills = check(&doctor(&h.ctx()).unwrap(), "skills").clone();
+        assert_eq!(skills.code, "skills_review_mode");
+        assert_eq!(skills.status, CheckStatus::Missing);
+        for word in ["codev-propose", "codev-apply", "isolated"] {
+            assert!(skills.message.contains(word), "{}", skills.message);
+        }
+        assert!(skills.fix.unwrap().starts_with("codev update"));
+
+        // Edited by hand after its rendering: update keeps it, doctor
+        // still names it and points to `--force`.
+        let apply = h.fs.read_to_string(&skill_path("apply")).unwrap();
+        h.fs.write(&skill_path("apply"), &format!("{apply}\nMine.\n"))
+            .unwrap();
+        let outcome = update(&h.ctx(), false).unwrap();
+        assert_eq!(outcome.preserved, [skill_path("apply")]);
+        let skills = check(&doctor(&h.ctx()).unwrap(), "skills").clone();
+        assert_eq!(skills.code, "skills_review_mode");
+        assert!(skills.message.contains("codev-apply"), "{}", skills.message);
+        assert!(skills.fix.unwrap().contains("codev update --force"));
+    }
+
+    #[test]
+    fn doctor_is_ok_after_update_in_isolated_mode() {
+        let h = switched_to_isolated();
+        update(&h.ctx(), false).unwrap();
+        let skills = check(&doctor(&h.ctx()).unwrap(), "skills").clone();
+        assert_eq!(skills.status, CheckStatus::Ok, "{}", skills.message);
     }
 
     #[test]

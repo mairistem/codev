@@ -13,10 +13,13 @@
 mod evidence;
 mod gate;
 mod history;
+pub mod material;
+pub mod mode;
 mod parse;
 
 pub use evidence::{EvidenceMatch, line_count, match_code, match_plan};
 pub use gate::{Blocker, StepRoles, check_roles, gate};
+pub use mode::{ModeOrigin, ReviewMode};
 pub use parse::parse;
 
 /// The record's file name, in the change's directory.
@@ -300,9 +303,21 @@ pub struct ReviewFinding {
     pub evidence: String,
     pub recommendation: String,
     pub history: Vec<Entry>,
+    /// `raised_by` as written: the roles that raised it, its own first.
+    /// Empty when the field is absent — raised by its role alone.
+    pub raised_by: Vec<String>,
 }
 
 impl ReviewFinding {
+    /// Every role that raised it, its own first.
+    pub fn raisers(&self) -> Vec<String> {
+        if self.raised_by.is_empty() {
+            vec![self.role.clone()]
+        } else {
+            self.raised_by.clone()
+        }
+    }
+
     /// The status of its last answer; `None` with an empty history.
     pub fn status(&self) -> Option<Status> {
         self.history.last().map(|entry| entry.status)
@@ -360,6 +375,9 @@ pub struct RoleSection {
     pub line: u32,
     pub state: RoleState,
     pub findings: Vec<ReviewFinding>,
+    /// Its `Fallback:` line: why the role ran inline in an isolated
+    /// review.
+    pub fallback: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -367,11 +385,26 @@ pub struct StepSection {
     pub step: String,
     pub line: u32,
     pub roles: Vec<RoleSection>,
+    /// Its `Mode:` line, when written.
+    pub mode: Option<ReviewMode>,
+    /// Its `Summarized:` lines, in file order.
+    pub summarized: Vec<String>,
 }
 
 impl StepSection {
     pub fn role(&self, id: &str) -> Option<&RoleSection> {
         self.roles.iter().find(|r| r.role == id)
+    }
+
+    /// The findings of other roles of this step that credit `role` in
+    /// their `raised_by`.
+    pub fn credited(&self, role: &str) -> Vec<&ReviewFinding> {
+        self.roles
+            .iter()
+            .filter(|section| section.role != role)
+            .flat_map(|section| section.findings.iter())
+            .filter(|finding| finding.raised_by.iter().any(|r| r == role))
+            .collect()
     }
 }
 

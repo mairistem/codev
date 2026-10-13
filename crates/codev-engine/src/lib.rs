@@ -26,6 +26,7 @@ pub mod integration;
 pub mod metadata;
 pub mod ports;
 pub mod review;
+pub mod review_material;
 pub mod roles;
 pub mod root;
 pub mod scaffold;

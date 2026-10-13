@@ -62,6 +62,7 @@ Common error codes:
 | `template_not_found` | A schema references a missing template |
 | `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
 | `review_blocked` | `archive` refused a change whose review record is missing for a reviewed step, holds a high-severity finding still open or disputed, or comes from a newer codev; the message names each reason |
+| `invalid_review_mode` | `review.mode` in `_codev/config.yaml` or a change's `change.yaml` is neither `inline` nor `isolated`; the message names the file and the allowed values |
 | `invalid` | An invalid file, or a delta that cannot be merged into its main spec |
 | `unreadable` | A file could not be read |
 | `write_failed` | A file could not be written |
@@ -169,7 +170,7 @@ repositories. `summary.missing` drives the exit status of `--strict`.
 | `config.language` | `configuration` | `language_missing` |
 | `config.keys` | `configuration` | `unknown_config_key` (warning) |
 | `config.roles` | `configuration` | `roles_invalid` (warning); when `ok`, `message` lists the active roles, the roles active on domain with their domains, and the disabled ones |
-| `skills` | `configuration` | `skills_missing`, `skills_outdated` |
+| `skills` | `configuration` | `skills_missing`, `skills_outdated`, `skills_review_mode` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (warning) |
 | `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (warning) |
 | `specs` | `planning` | `no_main_spec` |
@@ -468,15 +469,19 @@ lists main specs removed by a change that retires a capability.
       "recorded": true,
       "activeRoles": ["skeptic", "security"],
       "roles": [
-        { "role": "skeptic", "state": "no-finding" },
-        { "role": "security", "state": "findings" }
-      ]
+        { "role": "skeptic", "state": "no-finding", "fallback": null, "credited": ["R-security-1"] },
+        { "role": "security", "state": "findings", "fallback": null, "credited": [] }
+      ],
+      "mode": "isolated",
+      "summarized": []
     },
     {
       "step": "code.review",
       "recorded": false,
       "activeRoles": ["newcomer", "security"],
-      "roles": []
+      "roles": [],
+      "mode": null,
+      "summarized": []
     }
   ],
   "findings": [
@@ -498,7 +503,8 @@ lists main specs removed by a change that retires a capability.
         { "status": "open", "by": "security", "note": null, "ref": null, "to": null },
         { "status": "disputed", "by": "architect", "note": "Tokens expire after 5 minutes.", "ref": null, "to": null },
         { "status": "disputed", "by": "security", "note": "Five minutes is enough to replay a stolen token.", "ref": null, "to": null }
-      ]
+      ],
+      "raisedBy": ["security", "skeptic"]
     }
   ],
   "issues": [],
@@ -518,6 +524,11 @@ lists main specs removed by a change that retires a capability.
 | `exists` | `false` without `review.md`; `format`, `findings` are then empty or `null` |
 | `steps[].activeRoles` | The roles active at the step for the change, as `codev roles --at <step> --change <name>` returns them |
 | `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (a section with nothing usable), or `missing` (an active role without a section, in a recorded step) |
+| `steps[].roles[].fallback` | The role's `Fallback:` line — why it reviewed inline in an isolated review — or `null` |
+| `steps[].roles[].credited` | The ids of other roles' findings of the step whose `raised_by` names this role |
+| `steps[].mode` | The step's `Mode:` line, `inline` or `isolated`, or `null` when not written |
+| `steps[].summarized` | The step's `Summarized:` lines, in file order |
+| `findings[].raisedBy` | Every role that raised the finding, its own first: its `raised_by`, or its role alone |
 | `findings[].reported` | `true` when the confidence is `high`: the skills present only those |
 | `findings[].status` | The last history entry's status |
 | `findings[].awaiting` | Who acts next: `author` (open), `reviewer` (a fix to verify, a dispute to answer), `human` (a dispute the reviewer maintained), or `null` |
@@ -609,6 +620,19 @@ leaves out or gets wrong are `null`.
       ]
     }
   ],
+  "review": {
+    "mode": "isolated",
+    "origin": "project",
+    "material": {
+      "limitBytes": 163840,
+      "totalBytes": 18342,
+      "summarized": false,
+      "files": [
+        { "path": "_codev/changes/add-dark-mode/design.md", "bytes": 6120, "treatment": "full" },
+        "…"
+      ]
+    }
+  },
   "status": []
 }
 ```
@@ -631,13 +655,16 @@ leaves out or gets wrong are `null`.
 | `roles[].disableable` | `false` for the artifact roles, the `analyst` and the `developer` |
 | `roles[].knowledge` | The role's knowledge, as markdown in the sections Scope, Signals, By stack, References and Reporting, for an active role that has some, its `By stack` part filtered as `stacks.filter` says; `null` otherwise |
 | `roles[].doneWhen` | The role's criteria, then the project's, each with its `origin`: `built-in`, `schema:<name>` or `project` |
+| `review.mode`, `review.origin` | The [review mode](configuration.md#review) in effect, `inline` or `isolated`, set by `default`, `project` or `change` |
+| `review.material` | With `--change` at `plan.trace`, `plan.challenge` or `code.review`, what the reviewers read: the change's planning files but `change.yaml` and `review.md` at the plan steps, the diff's files at `code.review` — no planning, vendored, generated, lock or binary file, no symbolic link; a deleted file counts 0 bytes. Each file has its `bytes` and its `treatment`: `full`, or `summarize` once the files taken from the smallest stop fitting in `limitBytes` (160 KiB). `null` otherwise, and at `code.review` without a diff. A file left out because its size cannot be read or its name holds a control character is named by a `review_material_incomplete` warning in `status` |
 
 With `--at`, `roles` holds only the active roles, possibly none: the step is
 then skipped. Without `--change`, no proposal is read, so the experts are
 inactive. A failure — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — keeps this shape, with
-`roles` and `suggestions` empty, `stacks` and `diff` `null`, and `language`
-set as for `instructions`. A project trigger that cannot be used is left
+`roles` and `suggestions` empty, `stacks`, `diff` and `review` `null`, and
+`language` set as for `instructions`; an invalid review mode fails with
+`invalid_review_mode`. A project trigger that cannot be used is left
 out with an `invalid_trigger` warning in `status`.
 
 ### schemas

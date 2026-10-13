@@ -590,8 +590,23 @@ pub fn review(outcome: &ReviewOutcome) -> String {
             let _ = writeln!(out, "\n{step}  {note}");
             continue;
         };
-        let _ = writeln!(out, "\n{step}");
+        match section.mode {
+            Some(mode) => {
+                let _ = writeln!(out, "\n{step}  ({} review)", mode.as_str());
+            }
+            None => {
+                let _ = writeln!(out, "\n{step}");
+            }
+        }
+        for summary in &section.summarized {
+            let _ = writeln!(out, "  summarized: {summary}");
+        }
         for role in &section.roles {
+            let credited: Vec<String> = section
+                .credited(&role.role)
+                .iter()
+                .map(|f| f.id.clone())
+                .collect();
             match role.state {
                 codev_core::review::RoleState::Findings => {
                     let _ = writeln!(out, "  {}", role.role);
@@ -610,11 +625,27 @@ pub fn review(outcome: &ReviewOutcome) -> String {
                             }
                         );
                         let _ = writeln!(out, "    {:<16} at {}", "", f.location_text);
+                        // The first raiser is the finding's own role.
+                        let others: Vec<String> = f.raisers().into_iter().skip(1).collect();
+                        if !others.is_empty() {
+                            let _ = writeln!(
+                                out,
+                                "    {:<16} also raised by {}",
+                                "",
+                                others.join(", ")
+                            );
+                        }
                     }
                 }
                 state => {
                     let _ = writeln!(out, "  {:<14} {}", role.role, state.as_str());
                 }
+            }
+            if !credited.is_empty() {
+                let _ = writeln!(out, "    shared: {}", credited.join(", "));
+            }
+            if let Some(reason) = &role.fallback {
+                let _ = writeln!(out, "    ran inline: {reason}");
             }
         }
         for role in active.iter().filter(|r| section.role(r).is_none()) {
@@ -1059,6 +1090,7 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
         "Roles at {step} (schema {}{change})",
         outcome.schema_name
     );
+    review_line(&mut out, &outcome.review);
     suggestions(&mut out, outcome);
     if outcome.knowledge && !outcome.roles.is_empty() {
         let _ = writeln!(out, "{}", stacks_line(&outcome.stacks));
@@ -1088,6 +1120,32 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
         }
     }
     out
+}
+
+/// The review mode, and the material of a reviewing step when measured.
+fn review_line(out: &mut String, review: &crate::commands::ReviewInfo) {
+    let _ = writeln!(
+        out,
+        "Review mode: {} ({})",
+        review.mode.as_str(),
+        review.origin.as_str()
+    );
+    if let Some(material) = &review.material {
+        let _ = writeln!(
+            out,
+            "Material: {} file(s), {} of {} bytes",
+            material.files.len(),
+            material.total_bytes,
+            material.limit_bytes
+        );
+        for file in material
+            .files
+            .iter()
+            .filter(|f| f.treatment == codev_core::review::material::Treatment::Summarize)
+        {
+            let _ = writeln!(out, "  to summarize: {} ({} bytes)", file.path, file.bytes);
+        }
+    }
 }
 
 /// What the `By stack` knowledge was filtered for.
@@ -1680,6 +1738,35 @@ apply:
     }
 
     #[test]
+    fn review_prints_mode_summaries_fallbacks_and_shared_findings() {
+        let record = codev_core::review::parse(
+            "## code.review\n\nMode: isolated.\nSummarized: src/big.rs\n\n### newcomer\n\nFallback: timed out twice\n\n#### R-newcomer-1 Dense one-liner\n\n```yaml\nseverity: low\nconfidence: high\nlocation: src/a.rs:3\nevidence: x\nrecommendation: y\nraised_by: [newcomer, security]\nhistory:\n  - status: open\n    by: newcomer\n```\n\n### security\n\nNo finding.\n",
+        )
+        .value;
+        let outcome = crate::commands::ReviewOutcome {
+            change: codev_core::ChangeId::parse("add-auth").unwrap(),
+            check: codev_engine::review::ReviewCheck {
+                path: "_codev/changes/add-auth/review.md".into(),
+                record: Some(record),
+                findings: Vec::new(),
+                steps: Vec::new(),
+                blockers: Vec::new(),
+            },
+            warnings: Vec::new(),
+        };
+        let text = review(&outcome);
+        for expected in [
+            "code.review  (isolated review)",
+            "summarized: src/big.rs",
+            "ran inline: timed out twice",
+            "also raised by security",
+            "shared: R-newcomer-1",
+        ] {
+            assert!(text.contains(expected), "missing `{expected}` in:\n{text}");
+        }
+    }
+
+    #[test]
     fn roles_lists_every_role_with_its_activation() {
         use codev_core::roles::{Activation, WhenOrigin};
         let builtin = |id: &str, when| {
@@ -1711,6 +1798,7 @@ apply:
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);
@@ -1750,6 +1838,7 @@ apply:
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let without = roles(&outcome);
@@ -1813,6 +1902,7 @@ apply:
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: Some(found(true, vec![security])),
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);
@@ -1854,6 +1944,7 @@ apply:
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
+            review: Default::default(),
             warnings: Vec::new(),
         };
         let rendered = roles(&outcome);

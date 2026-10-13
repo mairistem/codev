@@ -56,6 +56,20 @@ Pour retirer le texte de codev de `CLAUDE.md` ou du modèle, supprimez le bloc
 compris entre les marqueurs `codev:begin` et `codev:end`. Voir
 [Intégration au dépôt et codev doctor](guides/repository-integration.md).
 
+### Mes relecteurs doivent-ils travailler isolément ?
+
+Par défaut (`inline`), la skill qui a écrit le plan ou le code le relit
+aussi, un rôle après l'autre, dans la même conversation. Avec
+`review: { mode: isolated }` dans `_codev/config.yaml`, chaque rôle
+relecteur travaille seul, comme sous-agent de Claude Code qui ne voit
+jamais la conversation, puis la skill fusionne ce qu'ils ont trouvé. Cela
+coûte plus cher — chaque relecteur lit la matière — et le bénéfice n'est
+pas encore mesuré : commencez par les changes où un regard neuf compte le
+plus, en définissant `review: { mode: isolated }` dans leur
+`change.yaml`, ou pour tout le projet une fois la différence constatée.
+Lancez `codev update` après avoir changé le mode du projet. Voir
+[Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée).
+
 ### Comment partager cette documentation ?
 
 ```bash
@@ -92,6 +106,18 @@ la racine du projet que vous avez ouvert.
 Cette skill a été modifiée à la main, et codev ne supprime pas votre travail.
 Conservez la modification et ignorez le message, ou lancez
 `codev update --force` pour la régénérer (vérifiez d'abord `git diff`).
+
+### Le sous-agent d'un relecteur échoue
+
+Lors d'une revue isolée, un sous-agent qui échoue ou qui est arrêté est
+relancé une fois ; s'il échoue encore, ce rôle relit en ligne et le
+compte rendu dit pourquoi, par une ligne `Fallback:` sous le rôle. Rien
+n'est perdu : la revue est faite, simplement pas isolément pour ce rôle.
+Si tous les rôles se rabattent sur la revue en ligne, vérifiez que Claude
+Code peut lancer des sous-agents (l'outil `Agent`) et que `codev doctor`
+indique des skills à jour pour le mode de revue : `skills_review_mode`
+signifie que `codev update` n'a pas été lancé depuis le changement de
+mode.
 
 ### `codev validate` signale `zero_delta_without_marker`
 

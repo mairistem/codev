@@ -23,6 +23,15 @@ workflows:
   - onboard
   - configure
 
+# Isolated review: each reviewing role runs as a sub-agent that never sees
+# the conversation, then the skill merges their findings. codev's own
+# changes usually bring several reviewers (the skeptic or the newcomer,
+# `migration` for the JSON contract), which is where isolation and the
+# merge matter; we try the mode here before anyone else pays for it. The
+# default is `inline` (see the isolated-review design).
+review:
+  mode: isolated
+
 # The Jira MCP available in our Claude Code environment. Injected into the
 # skills' frontmatter at install time (see `mcp__claude_ai_Atlassian_Rovo__*`
 # in the tool listing of a recent session).

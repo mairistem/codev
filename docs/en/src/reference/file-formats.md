@@ -276,8 +276,12 @@ goal: Let users switch the UI to a dark theme
 | `skip_specs` | boolean | The change intentionally has no spec delta: the artifacts writing under `specs/` are skipped, and validation accepts zero deltas |
 | `retire_capabilities` | boolean | Allows sync and archive to delete a main spec whose last requirement the change removes |
 | `roles` | mapping | Role activations for this change only, over the project's [`roles:`](configuration.md#roles): `newcomer: always`. Activations only — criteria belong to the project |
+| `review` | mapping | `mode: inline` or `mode: isolated` for this change only, over the project's [`review:`](configuration.md#review). Another value fails with `invalid_review_mode` |
 
-Unknown keys are rejected. A change folder without `change.yaml` uses the
+Unknown keys are rejected — inside `review` too. A codev that predates
+`review` refuses a `change.yaml` that sets it: raise the project's
+[`codev_version`](configuration.md#codev_version) to the release that
+introduced it before using it. A change folder without `change.yaml` uses the
 project's schema. An invalid entry of `roles` is reported by
 `codev validate` as an error of the change (`unknown_role`,
 `invalid_role_activation`, `role_not_disableable`).
@@ -340,6 +344,9 @@ Disabled by configuration.
 | `## <step>` | `plan.challenge` or `code.review`, once each |
 | `### <role-id>` | One per role under a step, once each. Holds findings, or the line `No finding.`, or the line `Disabled by configuration.` |
 | `#### <id> <title>` | A finding: `R-<role-id>-<n>`, unique in the record, never reused, followed by one fenced `yaml` block |
+| `Mode: <mode>.` | Optional, under a step: `inline` or `isolated`, how the step was reviewed. Once per step |
+| `Summarized: <text>.` | Optional, under a step, any number: a file of the material the reviewers received as a summary |
+| `Fallback: <reason>.` | Optional, under a role, once: why the role reviewed inline in an isolated review |
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -349,6 +356,7 @@ Disabled by configuration.
 | `evidence` | string | The cited text, verbatim: whole lines or a fragment of each |
 | `recommendation` | string | What to do |
 | `history` | list | The answers, oldest first; the last one is the status |
+| `raised_by` | list, optional | Every role that raised the finding, its own role first, each once: a finding merged from several reviewers in an [isolated review](../guides/review-record.md#isolated-reviews) |
 
 | `history[]` key | Meaning |
 |---|---|
@@ -464,7 +472,9 @@ metadata:
 ```
 
 `metadata.version` is how `codev update` tells a skill from an older version
-(regenerated) from a skill edited by hand (preserved unless `--force`).
+(regenerated) from a skill edited by hand (preserved unless `--force`). A
+skill this version rendered for the other [review mode](configuration.md#review)
+— with or without `Agent` in `allowed-tools` — is regenerated too.
 
 ## Validation codes
 

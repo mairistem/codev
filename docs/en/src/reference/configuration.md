@@ -2,13 +2,14 @@
 
 A codev project is configured by `_codev/config.yaml`. Every key is optional:
 a project can even run without the file. A key codev does not know is
-reported — as a warning at the top level and in `mcp`, as an error elsewhere —
+reported — as a warning at the top level, in `mcp` and in `review`, as an
+error elsewhere —
 so a typo never goes unnoticed; see [Unknown keys](#unknown-keys).
 
 `codev init` generates the file with the values it detected, each preceded by
 a comment giving its source. You can edit it by hand at any time. After
-changing `workflows` or `mcp`, run `codev update` so the skills reflect the
-change.
+changing `workflows`, `mcp` or `review`, run `codev update` so the skills
+reflect the change.
 
 ## Complete example
 
@@ -63,6 +64,9 @@ roles:
 triggers:
   - domain: personal-data
     paths: ["src/billing/**"]
+
+review:
+  mode: isolated
 ```
 
 ## schema
@@ -290,6 +294,45 @@ codev 0.6 and earlier do not know this key: they warn
 `unknown_config_key`, which fails their `codev validate --strict`. When you
 add it, raise `codev_version` to the release that introduced it.
 
+## review
+
+How the reviewing roles run. Project only, never inherited.
+
+| Key | Meaning |
+|---|---|
+| `mode` | `inline` (default): the skill reviews in its own conversation, one role after the other. `isolated`: each reviewing role runs alone as a Claude Code sub-agent that never sees the conversation, then the skill merges their findings |
+
+```yaml
+review:
+  mode: isolated
+```
+
+A change can override it in its `change.yaml`, with the same key:
+`review: { mode: inline }` for a typo fix in an isolated project, or
+`isolated` for one sensitive change in an inline project.
+`codev roles --json` gives the mode in effect and where it comes from
+(`review.mode`, `review.origin`). Any other value fails every command
+with `invalid_review_mode`, naming `inline` and `isolated`; an unknown
+key under `review` is an `unknown_config_key` warning (`review.<key>`).
+
+**Switching.** Set the key, then run `codev update`: in isolated mode the
+`/codev-propose` and `/codev-apply` skills request Claude Code's `Agent`
+tool, in inline mode they do not, and `codev doctor` reports
+`skills_review_mode` until they are regenerated. A skill you edited by
+hand is kept; `codev update --force` rewrites it.
+
+**Why inline is the default.** Isolated review multiplies the reading of
+the material by the number of roles, and its benefit has not been
+measured yet: codev's role evaluations run one role at a time, with no
+authoring conversation, so they cannot compare the two modes. See
+[Inline or isolated review](../roles.md#inline-or-isolated-review).
+
+codev 0.6 and earlier do not know this key: they warn
+`unknown_config_key` — which fails their `codev validate --strict` — and
+refuse a `change.yaml` that sets it. When you set it, raise
+`codev_version` to the release that introduced it, so every codev that
+reads the repository, CI included, understands it.
+
 ## Unknown keys
 
 A newer codev may add keys an older one does not know. So that an older codev
@@ -300,6 +343,7 @@ keys are treated according to what ignoring them would do:
 |---|---|---|
 | top level | warning `unknown_config_key`, key ignored | each key is an independent feature: the rest of the configuration still applies |
 | `mcp` | warning `unknown_config_key` (`mcp.<key>`), key ignored | an unknown tool only leaves that integration unconfigured |
+| `review` | warning `unknown_config_key` (`review.<key>`), key ignored | an unknown review setting leaves the review as it was |
 | an `inherits` entry | error `invalid` | ignoring it would read another source than the one you described |
 | `changelog` | error `invalid` | ignoring it would make `codev changelog --write` write another file |
 | a `roles` entry | error `invalid` | ignoring it would drop criteria or an activation |
