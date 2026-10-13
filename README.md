@@ -156,6 +156,22 @@ _codev/
 - **Your language.** Artifacts are written in the language your team sets;
   their structure stays machine-readable.
 
+## Built with codev
+
+codev is developed with codev. Every change to this repository — including
+the roles, experts and review records described above — was planned,
+reviewed and archived with the tool itself, and every pull request runs
+`codev validate --strict`. Browse it as a real-world example:
+
+- [`_codev/specs/`](_codev/specs/) — the living specs describing what codev
+  does today;
+- [`_codev/changes/archive/`](_codev/changes/archive/) — every change, with
+  its proposal, spec deltas, design and tasks;
+- [a review record](_codev/changes/archive/2026-10-13-review-record/review.md) — findings with their evidence, the author's answers
+  and how each was settled;
+- [`_codev/decisions/`](_codev/decisions/) — the sealed architecture
+  decisions.
+
 ## Comparison
 
 codev is one of several spec-driven tools for coding agents. A summary of

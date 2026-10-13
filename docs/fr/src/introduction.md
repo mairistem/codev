@@ -101,6 +101,20 @@ Rust et fait ses propres choix par-dessus.
 - Une documentation embarquée dans le binaire (`codev docs`), consultable hors
   ligne.
 
+## Développé avec codev
+
+codev est développé avec codev : chaque évolution de son dépôt est planifiée,
+relue et archivée avec l'outil lui-même. Son dossier `_codev/` est un exemple
+réel que vous pouvez parcourir :
+
+- [les specs vivantes](https://github.com/mairistem/codev/tree/main/_codev/specs), qui décrivent ce que fait codev
+  aujourd'hui ;
+- [les changes archivés](https://github.com/mairistem/codev/tree/main/_codev/changes/archive), chacun avec son proposal,
+  ses deltas de spec, son design et ses tâches ;
+- [un compte rendu de revue](https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
+  réponses de l'auteur et la façon dont chacune a été tranchée ;
+- [les décisions d'architecture](https://github.com/mairistem/codev/tree/main/_codev/decisions), scellées.
+
 ## Pour aller plus loin
 
 - Vous découvrez codev ? Commencez par l'[Installation](installation.md), puis

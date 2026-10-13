@@ -95,6 +95,19 @@ own choices on top.
   output shape.
 - Documentation embedded in the binary (`codev docs`), readable offline.
 
+## Built with codev
+
+codev is developed with codev: every change to its repository is planned,
+reviewed and archived with the tool itself. Its `_codev/` folder is a
+real-world example you can browse:
+
+- [the living specs](https://github.com/mairistem/codev/tree/main/_codev/specs) describing what codev does today;
+- [the archived changes](https://github.com/mairistem/codev/tree/main/_codev/changes/archive), each with its proposal,
+  spec deltas, design and tasks;
+- [a review record](https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md), with findings, evidence, the author's answers and
+  how each was settled;
+- [the architecture decisions](https://github.com/mairistem/codev/tree/main/_codev/decisions), sealed.
+
 ## Where to go next
 
 - New to codev? Start with [Installation](installation.md), then the
