@@ -22,6 +22,7 @@ pub mod domains;
 pub mod error;
 pub mod graph;
 pub mod id;
+pub mod keywords;
 pub mod layout;
 pub mod managed;
 pub mod merge;

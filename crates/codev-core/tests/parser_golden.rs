@@ -158,3 +158,72 @@ fn spans_expose_1_indexed_lines() {
         "line pointed to: {line_content:?}"
     );
 }
+
+const SPEC_FR_SOURCE: &str = include_str!("fixtures/spec.fr.md");
+const DELTA_FR_SOURCE: &str = include_str!("fixtures/delta.fr.md");
+
+#[test]
+fn a_french_spec_is_fully_parsed() {
+    let parsed = parse_spec(SPEC_FR_SOURCE);
+    assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+    assert_eq!(parsed.value.lang.code(), "fr");
+    assert!(
+        parsed
+            .value
+            .purpose
+            .unwrap()
+            .text
+            .contains("Authentification")
+    );
+    let names: Vec<&str> = parsed
+        .value
+        .requirements
+        .iter()
+        .map(|r| r.name.as_str())
+        .collect();
+    assert_eq!(
+        names,
+        ["Authentification des agents", "Expiration de session"]
+    );
+    assert_eq!(parsed.value.requirements[0].scenarios.len(), 2);
+    assert_eq!(parsed.value.requirements[1].scenarios[0].name, "Inactivité");
+}
+
+#[test]
+fn a_french_delta_exposes_the_four_sections_in_order() {
+    let parsed = parse_delta(DELTA_FR_SOURCE);
+    assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+    assert_eq!(parsed.value.lang.code(), "fr");
+    assert!(parsed.value.purpose.is_some());
+    assert_eq!(parsed.value.sections.len(), 4);
+    match &parsed.value.sections[0] {
+        DeltaSection::Added { requirements, .. } => {
+            assert_eq!(requirements[0].name, "Double authentification");
+            assert_eq!(requirements[0].scenarios[0].name, "Activation");
+        }
+        other => panic!("expected Added, got {other:?}"),
+    }
+    match &parsed.value.sections[1] {
+        DeltaSection::Modified { requirements, .. } => {
+            assert_eq!(requirements[0].name, "Expiration de session");
+        }
+        other => panic!("expected Modified, got {other:?}"),
+    }
+    match &parsed.value.sections[2] {
+        DeltaSection::Removed { removals, .. } => {
+            assert_eq!(removals[0].name, "Se souvenir de moi");
+            assert_eq!(
+                removals[0].migration.as_deref(),
+                Some("les agents se reconnectent à chaque session")
+            );
+        }
+        other => panic!("expected Removed, got {other:?}"),
+    }
+    match &parsed.value.sections[3] {
+        DeltaSection::Renamed { renames, .. } => {
+            assert_eq!(renames[0].from, "Expiration de session");
+            assert_eq!(renames[0].to, "Durée de session");
+        }
+        other => panic!("expected Renamed, got {other:?}"),
+    }
+}

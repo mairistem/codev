@@ -1,0 +1,32 @@
+# Structural keywords of codev documents, in English.
+#
+# Each key names one keyword; its value is the text, or a list of texts
+# whose first one is the form codev writes. The keys are the same in every
+# language file: see `codev-core/src/keywords.rs`. `{title}` in `spec.title`
+# is replaced by the capability's title.
+spec.title: "# {title} Specification"
+spec.purpose: "## Purpose"
+spec.requirements: "## Requirements"
+requirement: "### Requirement:"
+scenario: "#### Scenario:"
+delta.added: "## ADDED Requirements"
+delta.modified: "## MODIFIED Requirements"
+delta.removed: "## REMOVED Requirements"
+delta.renamed: "## RENAMED Requirements"
+removed.reason: "**Reason**"
+removed.migration: "**Migration**"
+renamed.from: "FROM:"
+renamed.to: "TO:"
+normative: [SHALL, MUST]
+proposal.what_changes: "## What Changes"
+proposal.domains: "## Domains"
+proposal.release_note: "## Release note"
+none: None
+category.added: Added
+category.changed: Changed
+category.deprecated: Deprecated
+category.removed: Removed
+category.fixed: Fixed
+category.security: Security
+design.decisions: "## Decisions"
+design.decision: "### Decision:"

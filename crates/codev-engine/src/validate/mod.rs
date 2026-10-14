@@ -681,6 +681,34 @@ mod tests {
     }
 
     #[test]
+    fn validate_reads_a_french_change_in_an_english_project() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "language: en\n")
+            .with_file("/p/_codev/changes/conges/change.yaml", "schema: spec-driven")
+            .with_file(
+                "/p/_codev/changes/conges/proposal.md",
+                "# Proposition : annulation\n\n## Pourquoi\n\nx\n\n## Domaines\n\n- [x] migration\n\n## Note de version\n\n- Ajouté : l'annulation d'une demande.\n",
+            )
+            .with_file(
+                "/p/_codev/changes/conges/specs/conges/spec.md",
+                "## Objet\n\nGérer les congés.\n\n## Exigences AJOUTÉES\n\n### Exigence : Annulation\nLe portail DOIT permettre d'annuler une demande en attente.\n\n#### Scénario : Dans les temps\n- **WHEN** l'agent annule\n- **THEN** la demande est annulée\n",
+            );
+        let cfg = config(&fs);
+        let report = validate_change(
+            &fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("conges").unwrap(),
+        )
+        .unwrap();
+        assert!(
+            report.findings.is_empty(),
+            "unexpected findings: {:?}",
+            report.findings
+        );
+    }
+
+    #[test]
     fn change_report_flags_a_rename_of_an_unknown_requirement() {
         let fs = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")

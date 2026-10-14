@@ -5,6 +5,7 @@
 //! — without trying to mimic the spacing of a neighboring existing spec,
 //! which would be a source of silent drift.
 
+use crate::keywords::{self, Key, Lang};
 use crate::parser::ast::{Requirement, Scenario};
 
 /// Rendering of a complete requirement.
@@ -28,9 +29,13 @@ use crate::parser::ast::{Requirement, Scenario};
 /// The last line ends without an extra blank line — it is the caller
 /// (typically `merge::edits`) that adjusts the separating space with the
 /// next block.
-pub fn requirement(req: &Requirement) -> String {
+///
+/// The headings are written in `lang`, the language of the spec the block
+/// goes into: `### Exigence : <name>` in French.
+pub fn requirement(req: &Requirement, lang: Lang) -> String {
     let mut out = String::new();
-    out.push_str("### Requirement: ");
+    out.push_str(keywords::text(Key::Requirement, lang));
+    out.push(' ');
     out.push_str(&req.name);
     out.push('\n');
 
@@ -42,15 +47,16 @@ pub fn requirement(req: &Requirement) -> String {
 
     for scenario in &req.scenarios {
         out.push('\n');
-        out.push_str(&scenario_str(scenario));
+        out.push_str(&scenario_str(scenario, lang));
     }
 
     out
 }
 
-fn scenario_str(scenario: &Scenario) -> String {
+fn scenario_str(scenario: &Scenario, lang: Lang) -> String {
     let mut out = String::new();
-    out.push_str("#### Scenario: ");
+    out.push_str(keywords::text(Key::Scenario, lang));
+    out.push(' ');
     out.push_str(&scenario.name);
     out.push('\n');
     if !scenario.body.trim().is_empty() {
@@ -112,7 +118,7 @@ mod tests {
                        #### Scenario: OK\n\n\
                        - **WHEN** login\n\
                        - **THEN** token\n";
-        assert_eq!(requirement(&req), expected);
+        assert_eq!(requirement(&req, Lang::EN), expected);
     }
 
     #[test]
@@ -134,7 +140,7 @@ mod tests {
             ],
             span: span(),
         };
-        let rendered = requirement(&req);
+        let rendered = requirement(&req, Lang::EN);
         assert!(rendered.contains("#### Scenario: OK"));
         assert!(rendered.contains("#### Scenario: KO"));
         // One blank line between the two scenarios.

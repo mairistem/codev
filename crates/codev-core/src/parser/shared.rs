@@ -5,6 +5,7 @@
 //! machinery, not contract.
 
 use super::ast::{Finding, Requirement, Scenario, Span};
+use crate::keywords::{self, Key, Lang};
 
 /// A source line, augmented with what needs to be known about it without
 /// recomputing.
@@ -50,22 +51,24 @@ pub(super) fn section_header(line: &str) -> Option<String> {
     Some(after.trim().to_string())
 }
 
-/// Recognizes `## ADDED Requirements`, `## MODIFIED Requirements`, etc.
+/// Recognizes `## ADDED Requirements`, `## Exigences AJOUTÉES`, etc.
 pub(super) fn is_delta_header(line: &str) -> bool {
-    delta_section_kind(line).is_some()
+    delta_section(line).is_some()
 }
 
-pub(super) fn delta_section_kind(line: &str) -> Option<DeltaKind> {
+/// The operation of a delta section heading, in any catalog language, and
+/// the language it is written in.
+pub(super) fn delta_section(line: &str) -> Option<(DeltaKind, Lang)> {
     let title = section_header(line)?;
-    let upper = title.to_ascii_uppercase();
-    let stripped = upper.strip_suffix("REQUIREMENTS")?.trim_end();
-    match stripped {
-        "ADDED" => Some(DeltaKind::Added),
-        "MODIFIED" => Some(DeltaKind::Modified),
-        "REMOVED" => Some(DeltaKind::Removed),
-        "RENAMED" => Some(DeltaKind::Renamed),
-        _ => None,
-    }
+    let (key, lang) = keywords::delta_title(&title)?;
+    let kind = match key {
+        Key::DeltaAdded => DeltaKind::Added,
+        Key::DeltaModified => DeltaKind::Modified,
+        Key::DeltaRemoved => DeltaKind::Removed,
+        Key::DeltaRenamed => DeltaKind::Renamed,
+        _ => unreachable!("delta_title only returns the keys of Key::DELTA"),
+    };
+    Some((kind, lang))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -106,31 +109,20 @@ pub(super) fn find_requirement_positions_in_range(
         .collect()
 }
 
-fn requirement_header(line: &str) -> Option<String> {
-    let trimmed = line.trim_start();
-    let after = trimmed.strip_prefix("### Requirement:")?;
-    if after.starts_with('#') {
-        return None; // this is a `####`: not our heading
-    }
-    Some(after.trim().to_string())
+/// The name of a `### Requirement:` heading, in any catalog language.
+pub(super) fn requirement_header(line: &str) -> Option<String> {
+    keywords::named_heading(line, Key::Requirement).map(|(_, name)| name)
 }
 
 /// Extracts a `#### Scenario:` — exactly four hashes. Three hashes is the
 /// trap we must detect and report, not silently handle.
 fn scenario_header(line: &str) -> Option<String> {
-    let trimmed = line.trim_start();
-    let after = trimmed.strip_prefix("#### Scenario:")?;
-    if after.starts_with('#') {
-        return None;
-    }
-    Some(after.trim().to_string())
+    keywords::named_heading(line, Key::Scenario).map(|(_, name)| name)
 }
 
 /// Detects the trap: `### Scenario:` instead of `#### Scenario:`.
 fn wrong_level_scenario(line: &str) -> Option<String> {
-    let trimmed = line.trim_start();
-    let after = trimmed.strip_prefix("### Scenario:")?;
-    Some(after.trim().to_string())
+    keywords::named_heading_at(line, Key::Scenario, 3).map(|(_, name)| name)
 }
 
 /// Signature of a requirement body extractor. Naming the type keeps the
@@ -297,21 +289,21 @@ mod tests {
     #[test]
     fn delta_headers_are_recognized_case_insensitively() {
         assert_eq!(
-            delta_section_kind("## ADDED Requirements"),
+            delta_section("## ADDED Requirements").map(|(kind, _)| kind),
             Some(DeltaKind::Added)
         );
         assert_eq!(
-            delta_section_kind("## modified requirements"),
+            delta_section("## modified requirements").map(|(kind, _)| kind),
             Some(DeltaKind::Modified)
         );
         assert_eq!(
-            delta_section_kind("## REMOVED Requirements"),
+            delta_section("## REMOVED Requirements").map(|(kind, _)| kind),
             Some(DeltaKind::Removed)
         );
         assert_eq!(
-            delta_section_kind("## RENAMED Requirements"),
+            delta_section("## RENAMED Requirements").map(|(kind, _)| kind),
             Some(DeltaKind::Renamed)
         );
-        assert_eq!(delta_section_kind("## Removed"), None);
+        assert_eq!(delta_section("## Removed").map(|(kind, _)| kind), None);
     }
 }

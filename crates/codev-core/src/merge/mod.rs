@@ -18,6 +18,7 @@ pub use edits::{Edit, apply_edits};
 
 use std::collections::BTreeMap;
 
+use crate::keywords::{self, Key};
 use crate::parser::ast::{Delta, DeltaSection, Spec};
 
 /// The merge plan for **one** existing main spec.
@@ -185,7 +186,9 @@ pub fn merge_into_existing(
                     // `### Requirement:` ends up glued to this one.
                     let original = &spec_source[target.span.byte_range.clone()];
                     let separation = &original[original.trim_end().len()..];
-                    let mut replacement = render::requirement(new_req).trim_end().to_string();
+                    let mut replacement = render::requirement(new_req, spec.lang)
+                        .trim_end()
+                        .to_string();
                     replacement.push_str(separation);
                     edits.push(Edit::new(target.span.byte_range.clone(), replacement));
                 }
@@ -228,7 +231,11 @@ pub fn merge_into_existing(
                         .find('\n')
                         .map(|off| start + off)
                         .unwrap_or(target.span.byte_range.end);
-                    let new_header = format!("### Requirement: {}", rename.to);
+                    let new_header = format!(
+                        "{} {}",
+                        keywords::text(Key::Requirement, spec.lang),
+                        rename.to
+                    );
                     edits.push(Edit::new(start..header_end, new_header));
                 }
             }
@@ -270,7 +277,7 @@ pub fn merge_into_existing(
                     if i > 0 {
                         inserted.push('\n');
                     }
-                    inserted.push_str(&render::requirement(new_req));
+                    inserted.push_str(&render::requirement(new_req, spec.lang));
                 }
                 edits.push(Edit::new(end..end, inserted));
             }
@@ -303,22 +310,25 @@ pub fn merge_into_existing(
 /// delta.
 ///
 /// Requires a `## Purpose` — without it, we would refuse to write a file
-/// with a placeholder nobody has approved.
+/// with a placeholder nobody has approved. The spec is written in the
+/// language of the delta's keywords.
 pub fn build_new_spec(capability_path: &str, delta: &Delta) -> Result<String, MergeError> {
     let purpose = delta
         .purpose
         .as_ref()
         .ok_or(MergeError::NewCapabilityWithoutPurpose)?;
 
+    let lang = delta.lang;
     let title = render::spec_title_from_capability(capability_path);
     let mut out = String::new();
-    out.push_str("# ");
-    out.push_str(&title);
-    out.push_str(" Specification\n\n");
-    out.push_str("## Purpose\n\n");
+    out.push_str(&keywords::text(Key::SpecTitle, lang).replace("{title}", &title));
+    out.push_str("\n\n");
+    out.push_str(keywords::text(Key::SpecPurpose, lang));
+    out.push_str("\n\n");
     out.push_str(purpose.text.trim());
     out.push_str("\n\n");
-    out.push_str("## Requirements\n");
+    out.push_str(keywords::text(Key::SpecRequirements, lang));
+    out.push('\n');
 
     // The ADDED entries (and only those) make up the initial body: REMOVED,
     // MODIFIED and RENAMED make no sense for a blank capability, and are
@@ -327,7 +337,7 @@ pub fn build_new_spec(capability_path: &str, delta: &Delta) -> Result<String, Me
         if let DeltaSection::Added { requirements, .. } = section {
             for req in requirements {
                 out.push('\n');
-                out.push_str(&render::requirement(req));
+                out.push_str(&render::requirement(req, lang));
             }
         }
     }
@@ -583,5 +593,67 @@ mod tests {
         let edit = Edit::new(0..5, "abc");
         assert_eq!(edit.byte_range, 0..5);
         assert_eq!(edit.replacement, "abc");
+    }
+
+    // ─────────────── languages ───────────────
+
+    const FR_SPEC: &str = "## Objet\n\nCongés.\n\n## Exigences\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+
+    #[test]
+    fn a_french_requirement_merged_into_a_french_spec_stays_french() {
+        let delta = "## Exigences MODIFIÉES\n\n### Exigence : Annulation\nLe portail DOIT annuler jusqu'à la veille.\n\n#### Scénario : Trop tard\n- **WHEN** c\n- **THEN** d\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(
+            out.contains("### Exigence : Annulation\n\nLe portail DOIT annuler jusqu'à la veille."),
+            "{out}"
+        );
+        assert!(out.contains("#### Scénario : Trop tard\n"), "{out}");
+        assert!(
+            !out.contains("Requirement:") && !out.contains("Scenario:"),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn a_french_rename_retitles_in_french() {
+        let delta =
+            "## Exigences RENOMMÉES\n\n- DE : Annulation\n- VERS : Annulation d'une demande\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(
+            out.contains("### Exigence : Annulation d'une demande\n"),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn an_english_delta_merged_into_a_french_spec_is_written_in_french() {
+        let delta = "## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL export.\n\n#### Scenario: Monthly\n- **WHEN** a\n- **THEN** b\n";
+        let out = merged(FR_SPEC, delta);
+        assert!(out.contains("### Exigence : Export\n"), "{out}");
+        assert!(out.contains("#### Scénario : Monthly\n"), "{out}");
+        assert!(!out.contains("### Requirement:"), "{out}");
+    }
+
+    #[test]
+    fn a_new_capability_from_a_french_delta_is_written_in_french() {
+        let delta_source = "## Objet\n\nGérer les congés.\n\n## Exigences AJOUTÉES\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+        let delta = parse_delta(delta_source).value;
+        let content = build_new_spec("conges", &delta).unwrap();
+        assert_eq!(
+            content,
+            "# Spécification Conges\n\n## Objet\n\nGérer les congés.\n\n## Exigences\n\n### Exigence : Annulation\n\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n\n- **WHEN** a\n- **THEN** b\n"
+        );
+        assert!(parse_spec(&content).findings.is_empty());
+    }
+
+    #[test]
+    fn an_english_merge_is_byte_identical() {
+        // Expected output produced by codev before the keyword catalog.
+        let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Logout\nThe system SHALL w.\n\n#### Scenario: U\n- **WHEN** e\n- **THEN** f\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system MUST y.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL z.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n\n## RENAMED Requirements\n\n- FROM: Logout\n- TO: Sign out\n";
+        assert_eq!(
+            merged(spec_source, delta_source),
+            "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\n\nThe system MUST y.\n\n#### Scenario: S\n\n- **WHEN** a\n- **THEN** b\n\n### Requirement: Sign out\nThe system SHALL w.\n\n#### Scenario: U\n- **WHEN** e\n- **THEN** f\n\n### Requirement: Export\n\nThe system SHALL z.\n\n#### Scenario: T\n\n- **WHEN** c\n- **THEN** d\n"
+        );
     }
 }

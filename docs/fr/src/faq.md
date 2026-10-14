@@ -191,10 +191,10 @@ graves :
 
 ### `codev validate` signale `delta_unexpected_heading`
 
-Un titre `###` d'une section de delta n'est pas un `### Requirement:` — le
-plus souvent, un mot-clé traduit comme `### Exigence :`. Les mots-clés restent
-en anglais quelle que soit la langue des artefacts ; voir
-[Langue des artefacts](guides/artifact-language.md).
+Un titre `###` d'une section de delta n'est pas un titre d'exigence — par
+exemple `### Notes`, ou un mot-clé dans une langue que codev ne connaît pas.
+codev lit `### Requirement:` et son équivalent français `### Exigence :` ;
+voir [Langue des artefacts](guides/artifact-language.md).
 
 ### `/codev-propose` ignore mon ticket
 

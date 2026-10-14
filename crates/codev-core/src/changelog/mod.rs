@@ -327,4 +327,52 @@ mod tests {
         );
         assert_eq!(render(&[], &Heading::None), "");
     }
+
+    fn french_change(name: &str, note: Option<&str>) -> ChangeInput {
+        let mut proposal = String::from(
+            "# Proposition : X\n\n## Pourquoi\n\nx\n\n## Changements\n\n- Un export mensuel.\n",
+        );
+        if let Some(note) = note {
+            proposal.push_str(&format!("\n## Note de version\n\n{note}\n"));
+        }
+        ChangeInput {
+            proposal,
+            ..change(name, None)
+        }
+    }
+
+    #[test]
+    fn french_items_are_grouped_under_the_english_category() {
+        let changes = [
+            change("2026-01-01-en", Some("- Added: a flag.")),
+            french_change("2026-01-02-fr", Some("- Ajouté : un export.")),
+        ];
+        let collected = collect(&changes, &[]);
+        assert!(collected.notices.is_empty(), "{:?}", collected.notices);
+        assert!(
+            collected
+                .entries
+                .iter()
+                .all(|e| e.category == Category::Added)
+        );
+        assert_eq!(collected.entries.len(), 2);
+        let rendered = render(&collected.entries, &Heading::Unreleased);
+        assert_eq!(rendered.matches("### Added").count(), 1, "{rendered}");
+        assert!(!rendered.contains("Ajouté"), "{rendered}");
+    }
+
+    #[test]
+    fn a_french_internal_change_is_omitted() {
+        let collected = collect(&[french_change("2026-01-01-fr", Some("Aucune"))], &[]);
+        assert!(collected.entries.is_empty());
+        assert!(collected.notices.is_empty(), "{:?}", collected.notices);
+    }
+
+    #[test]
+    fn a_french_change_without_release_note_lists_its_changements_under_changed() {
+        let collected = collect(&[french_change("2026-01-01-fr", None)], &[]);
+        assert_eq!(texts(&collected), ["Un export mensuel."]);
+        assert_eq!(collected.entries[0].category, Category::Changed);
+        assert_eq!(collected.notices[0].code, codes::RELEASE_NOTE_MISSING);
+    }
 }

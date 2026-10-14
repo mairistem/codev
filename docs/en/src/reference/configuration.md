@@ -81,7 +81,8 @@ changing this key does not affect changes in progress. See
 
 The language skills write artifact prose in, as an ISO 639 code: two or three
 lowercase letters, optionally followed by one subtag (`en`, `fr`, `pt-BR`,
-`zh-Hant`). Default: `en`. Structural keywords always stay in English. See
+`zh-Hant`). Default: `en`. The skills write the structural keywords in
+English; codev reads them in English or French whatever this setting. See
 [Artifact language](../guides/artifact-language.md).
 
 ## workflows

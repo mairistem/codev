@@ -180,9 +180,9 @@ you write the bare name or the full heading in backticks:
 
 ### `codev validate` reports `delta_unexpected_heading`
 
-A `###` heading in a delta section is not `### Requirement:` — usually a
-translated keyword such as `### Exigence :`. The keywords stay in English
-whatever the artifact language; see
+A `###` heading in a delta section is not a requirement heading — for
+example `### Notes`, or a keyword in a language codev does not know. codev
+reads `### Requirement:` and its French equivalent `### Exigence :`; see
 [Artifact language](guides/artifact-language.md).
 
 ### `/codev-propose` ignores my ticket

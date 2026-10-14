@@ -7,9 +7,10 @@ use super::ast::{
 };
 use super::fence;
 use super::shared::{
-    DeltaKind, ScannedLine, block_span, collect_scenarios, delta_section_kind, line_starts,
-    requirement_from_lines, section_header, trim_body,
+    DeltaKind, ScannedLine, block_span, collect_scenarios, delta_section, line_starts,
+    requirement_from_lines, requirement_header, section_header, trim_body,
 };
+use crate::keywords::{self, Key, Lang};
 
 pub fn parse_delta(source: &str) -> Parsed<Delta> {
     let lines: Vec<&str> = source.split('\n').collect();
@@ -41,11 +42,13 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
     }
 
     let mut h2: Vec<H2> = Vec::new();
+    let mut lang: Option<Lang> = None;
     for (i, entry) in scanned.iter().enumerate() {
         if entry.literal {
             continue;
         }
-        if let Some(kind) = delta_section_kind(entry.text) {
+        if let Some((kind, section_lang)) = delta_section(entry.text) {
+            lang.get_or_insert(section_lang);
             h2.push(H2 {
                 kind: SectionKind::Delta(kind),
                 header_index: i,
@@ -53,7 +56,7 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
             continue;
         }
         if let Some(title) = section_header(entry.text) {
-            let kind = if title.eq_ignore_ascii_case("Purpose") {
+            let kind = if keywords::section_title(&title, Key::SpecPurpose).is_some() {
                 SectionKind::Purpose
             } else {
                 SectionKind::Other
@@ -144,7 +147,11 @@ pub fn parse_delta(source: &str) -> Parsed<Delta> {
     }
 
     Parsed {
-        value: Delta { purpose, sections },
+        value: Delta {
+            purpose,
+            sections,
+            lang: lang.unwrap_or(Lang::EN),
+        },
         findings,
     }
 }
@@ -161,10 +168,11 @@ fn section_kind(section: &DeltaSection) -> DeltaKind {
 /// Reports every `###` heading of a delta section that the merge would not
 /// understand.
 ///
-/// The keywords are English whatever the artifact language: a
-/// `### Exigence :` would otherwise be skipped silently, leaving the
-/// section empty and the validation green. `### Scenario:` is left to
-/// `scenario_wrong_heading_level`, which already names the fix.
+/// A heading that is no requirement in any catalog language — `### Notes`,
+/// or a keyword of a language codev does not know — would otherwise be
+/// skipped silently, leaving the section empty and the validation green.
+/// `### Scenario:` is left to `scenario_wrong_heading_level`, which already
+/// names the fix.
 fn unexpected_headings(
     scanned: &[ScannedLine],
     start: usize,
@@ -181,17 +189,22 @@ fn unexpected_headings(
             continue;
         };
         let title = title.trim();
-        let is_requirement = title.starts_with("Requirement:");
+        // The literal prefixes keep the tolerance this check had before the
+        // catalog (`###  Requirement:x`, `### Requirement:#x`), which the
+        // stricter heading readers reject; the readers add the other
+        // languages.
+        let is_requirement =
+            title.starts_with("Requirement:") || requirement_header(entry.text).is_some();
+        let is_scenario = title.starts_with("Scenario:")
+            || keywords::named_heading_at(entry.text, Key::Scenario, 3).is_some();
         let expected = match kind {
             DeltaKind::Renamed => {
                 // RENAMED takes `FROM:` / `TO:` lines, no heading at all.
-                "`- FROM:` / `- TO:` lines, not headings"
+                "`- FROM:` / `- TO:` lines, not headings".to_string()
             }
             _ if is_requirement => continue,
-            _ if title.starts_with("Scenario:") => continue,
-            _ => {
-                "`### Requirement: <name>` — the keyword stays in English whatever the artifact language"
-            }
+            _ if is_scenario => continue,
+            _ => keywords::requirement_headings(),
         };
         findings.push(Finding::error(
             super::codes::DELTA_UNEXPECTED_HEADING,
@@ -263,8 +276,8 @@ fn parse_removals(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Remo
             .map(|p| p.header_index)
             .unwrap_or(end);
         let body = &scanned[pos.header_index + 1..next_start];
-        let reason = find_labelled_line(body, "Reason");
-        let migration = find_labelled_line(body, "Migration");
+        let reason = find_labelled_line(body, Key::RemovedReason);
+        let migration = find_labelled_line(body, Key::RemovedMigration);
         let span = block_span(scanned, pos.header_index, next_start);
         removals.push(Removal {
             name: pos.name.clone(),
@@ -276,22 +289,12 @@ fn parse_removals(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Remo
     removals
 }
 
-/// Looks for a "**Label**: …" line in a block, tolerant of whitespace.
-fn find_labelled_line(lines: &[ScannedLine], label: &str) -> Option<String> {
-    let needle_star = format!("**{label}**:");
-    let needle_bare = format!("{label}:");
-    for entry in lines {
-        if entry.literal {
-            continue;
-        }
-        let trimmed = entry.text.trim_start();
-        for needle in [&needle_star, &needle_bare] {
-            if let Some(rest) = trimmed.strip_prefix(needle) {
-                return Some(rest.trim().to_string());
-            }
-        }
-    }
-    None
+/// Looks for a "**Label**: …" line in a block, in any catalog language.
+fn find_labelled_line(lines: &[ScannedLine], label: Key) -> Option<String> {
+    lines
+        .iter()
+        .filter(|entry| !entry.literal)
+        .find_map(|entry| keywords::label(entry.text, label).map(|(_, rest)| rest))
 }
 
 fn parse_renames(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Rename> {
@@ -311,15 +314,15 @@ fn parse_renames(scanned: &[ScannedLine], start: usize, end: usize) -> Vec<Renam
             .or_else(|| trimmed.strip_prefix("* "))
             .unwrap_or(trimmed);
 
-        if let Some(rest) = payload.strip_prefix("FROM:") {
-            current_from = Some((rename_target(rest), i));
-        } else if let Some(rest) = payload.strip_prefix("TO:")
+        if let Some((_, rest)) = keywords::label(payload, Key::RenamedFrom) {
+            current_from = Some((rename_target(&rest), i));
+        } else if let Some((_, rest)) = keywords::label(payload, Key::RenamedTo)
             && let Some((from, from_line)) = current_from.take()
         {
             let span = span_across(scanned, from_line, i + 1);
             renames.push(Rename {
                 from,
-                to: rename_target(rest),
+                to: rename_target(&rest),
                 span,
             });
         }
@@ -340,11 +343,7 @@ fn rename_target(raw: &str) -> String {
         .and_then(|rest| rest.strip_suffix('`'))
         .unwrap_or(trimmed)
         .trim();
-    unquoted
-        .strip_prefix("### Requirement:")
-        .unwrap_or(unquoted)
-        .trim()
-        .to_string()
+    requirement_header(unquoted).unwrap_or_else(|| unquoted.to_string())
 }
 
 fn span_across(scanned: &[ScannedLine], start_line: usize, end_line: usize) -> Span {
@@ -437,18 +436,19 @@ mod tests {
     }
 
     #[test]
-    fn translated_requirement_heading_is_reported() {
-        let source = "## ADDED Requirements\n\n### Exigence : Connexion\nLe système DOIT x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+    fn an_unexpected_heading_is_reported() {
+        let source = "## ADDED Requirements\n\n### Notes\nLe système DOIT x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
         let parsed = parse_delta(source);
         let heading = parsed
             .findings
             .iter()
             .find(|f| f.code == "delta_unexpected_heading")
-            .expect("the translated heading must be reported");
+            .expect("the unexpected heading must be reported");
         assert_eq!(heading.severity, crate::parser::ast::Severity::Error);
         assert_eq!(heading.line, 3);
         assert!(
-            heading.message.contains("### Exigence : Connexion"),
+            heading.message.contains("### Notes")
+                && heading.message.contains("`### Exigence : <name>`"),
             "{}",
             heading.message
         );
@@ -529,5 +529,93 @@ mod tests {
         };
         assert_eq!(requirements.len(), 1);
         assert_eq!(requirements[0].name, "Real");
+    }
+
+    #[test]
+    fn french_removed_block_carries_reason_and_migration() {
+        let source = "## Exigences SUPPRIMÉES\n\n### Exigence : Se souvenir de moi\n**Raison** : obsolète\n**Migration** : utiliser la 2FA\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Removed { removals, .. } = &parsed.value.sections[0] else {
+            panic!("expected Removed: {:?}", parsed.value.sections);
+        };
+        assert_eq!(removals[0].name, "Se souvenir de moi");
+        assert_eq!(removals[0].reason.as_deref(), Some("obsolète"));
+        assert_eq!(removals[0].migration.as_deref(), Some("utiliser la 2FA"));
+        assert_eq!(parsed.value.lang.code(), "fr");
+    }
+
+    #[test]
+    fn french_renamed_block_in_heading_form() {
+        let source = "## Exigences RENOMMÉES\n\n- DE : `### Exigence : Ancien nom`\n- VERS : `### Exigence : Nouveau nom`\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Renamed { renames, .. } = &parsed.value.sections[0] else {
+            panic!("expected Renamed");
+        };
+        assert_eq!(renames[0].from, "Ancien nom");
+        assert_eq!(renames[0].to, "Nouveau nom");
+    }
+
+    #[test]
+    fn french_delta_for_a_new_capability_carries_its_purpose() {
+        let source = "## Objet\n\nGérer les congés.\n\n## Exigences AJOUTÉES\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scénario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        assert!(!parsed.has_errors(), "{:?}", parsed.findings);
+        assert_eq!(parsed.value.purpose.unwrap().text, "Gérer les congés.");
+        assert_eq!(parsed.value.sections[0].op(), DeltaOp::Added);
+    }
+
+    #[test]
+    fn a_mixed_document_is_read() {
+        let source = "## ADDED Requirements\n\n### Exigence : Annulation\nLe portail DOIT annuler.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        assert!(!parsed.has_errors(), "{:?}", parsed.findings);
+        let DeltaSection::Added { requirements, .. } = &parsed.value.sections[0] else {
+            panic!("expected Added");
+        };
+        assert_eq!(requirements[0].name, "Annulation");
+        assert_eq!(parsed.value.lang, Lang::EN);
+    }
+
+    #[test]
+    fn a_heading_with_extra_words_is_not_a_delta_section() {
+        let source = "## Exigences AJOUTEES PLUS TARD\n\n### Exigence : X\nLe portail DOIT x.\n";
+        assert!(parse_delta(source).value.sections.is_empty());
+    }
+
+    #[test]
+    fn french_headings_tolerate_accents_case_and_colon_spacing() {
+        let source = "## exigences ajoutees\n\n### Exigence: Annulation\nLe portail DOIT annuler.\n\n#### Scenario : Dans les temps\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Added { requirements, .. } = &parsed.value.sections[0] else {
+            panic!("expected Added: {:?}", parsed.findings);
+        };
+        assert_eq!(requirements[0].name, "Annulation");
+        assert_eq!(requirements[0].scenarios[0].name, "Dans les temps");
+    }
+
+    #[test]
+    fn english_edge_cases_are_read_as_today() {
+        // Extra spaces in the operation title, and a lower-case
+        // `### requirement:` that is no heading: as before the catalog.
+        let source = "## ADDED   Requirements\n\n### Requirement: A\nThe system SHALL a.\n### requirement: x\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        let DeltaSection::Added { requirements, .. } = &parsed.value.sections[0] else {
+            panic!("expected Added");
+        };
+        assert_eq!(requirements.len(), 1);
+        assert!(requirements[0].description.contains("### requirement: x"));
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "delta_unexpected_heading" && f.line == 5)
+        );
+    }
+
+    #[test]
+    fn a_french_requirement_heading_is_not_unexpected() {
+        let source = "## ADDED Requirements\n\n### Exigence : Connexion\nLe portail DOIT x.\n\n#### Scénario : S\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_delta(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
     }
 }

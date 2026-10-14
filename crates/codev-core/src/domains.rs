@@ -4,6 +4,7 @@
 //!
 //! Pure: a `&str` in, the ticked domains and their located defects out.
 
+use crate::keywords::{self, Key};
 use crate::parser::ast::{Finding, Parsed};
 use crate::parser::section::{heading_line, section};
 
@@ -17,8 +18,8 @@ pub const DOMAINS: &[&str] = &[
     "migration",
 ];
 
-/// The heading of the section, matched case-insensitively.
-pub const HEADING: &str = "## Domains";
+/// The heading of the section, in any language of the keyword catalog.
+pub const HEADING: Key = Key::Domains;
 
 /// Stable codes of the domain findings.
 pub mod codes {
@@ -209,8 +210,9 @@ fn first_word(text: &str) -> &str {
         .trim_matches('`')
 }
 
+/// `None`, or its translation in a catalog language (`Aucun`).
 fn is_none(text: &str) -> bool {
-    matches!(text.trim_end_matches('.'), "None" | "none" | "NONE")
+    keywords::word(text.trim_end_matches('.'), Key::None).is_some()
 }
 
 fn known() -> String {
@@ -329,5 +331,40 @@ mod tests {
     fn a_heading_inside_a_fence_is_not_the_section() {
         let parsed = parse("# Proposal: X\n\n```\n## Domains\n- [x] securty\n```\n");
         assert_eq!(parsed.value, Domains::Absent);
+    }
+
+    #[test]
+    fn french_domains_section_is_checked() {
+        let parsed = parse(
+            "# Proposition\n\n## Domaines\n\n- [x] migration — un champ renommé\n- [ ] security\n",
+        );
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert_eq!(parsed.value, Domains::Listed(vec!["migration".to_string()]));
+    }
+
+    #[test]
+    fn aucun_means_no_domain() {
+        for none in ["Aucun", "Aucune."] {
+            let parsed = parse(&format!("# Proposition\n\n## Domaines\n\n{none}\n"));
+            assert!(parsed.findings.is_empty(), "{none}: {:?}", parsed.findings);
+            assert_eq!(parsed.value, Domains::Listed(Vec::new()));
+        }
+    }
+
+    #[test]
+    fn a_translated_domain_name_is_unknown() {
+        let parsed = parse("# Proposition\n\n## Domaines\n\n- [x] sécurité\n");
+        let f = &parsed.findings[0];
+        assert_eq!(f.code, codes::UNKNOWN_DOMAIN);
+        assert_eq!(f.line, 5);
+        assert!(f.message.contains("`sécurité`"), "{}", f.message);
+    }
+
+    #[test]
+    fn the_first_domains_section_is_read_when_both_languages_are_present() {
+        let parsed =
+            parse("# P\n\n## Domains\n\n- [x] migration\n\n## Domaines\n\n- [x] sécurité\n");
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert_eq!(parsed.value, Domains::Listed(vec!["migration".to_string()]));
     }
 }

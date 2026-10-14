@@ -55,38 +55,77 @@ Les skills rédigent chaque phrase dans la langue configurée, quelle que soit l
 langue dans laquelle vous échangez avec Claude : les fichiers constituent la
 mémoire de l'équipe, et la langue est le choix de l'équipe.
 
-La **structure** des fichiers reste toujours en anglais, car codev l'analyse :
+Les skills écrivent la **structure** des fichiers en anglais : titres des
+templates (`# Proposal:`, `## Why`, `## What Changes`, `## Context`,
+`# Tasks`…), structure des specs et des deltas (`## Purpose`,
+`### Requirement:`, `#### Scenario:`…), mots-clés des scénarios et mots-clés
+normatifs (`**WHEN**`, `**THEN**`, `SHALL`, `MUST`).
 
-- les titres des templates : `# Proposal:`, `## Why`, `## What Changes`,
-  `## Capabilities`, `## Impact`, `## Context`, `## Decisions`, `# Tasks`… ;
-- la structure des specs et des deltas : `## Purpose`, `## Requirements`,
-  `## ADDED Requirements` et les autres sections de delta,
-  `### Requirement:`, `#### Scenario:`, `**Reason**`, `**Migration**`,
-  `FROM:` / `TO:` ;
-- les mots-clés des scénarios et les mots-clés normatifs : `**GIVEN**`,
-  `**WHEN**`, `**THEN**`, `**AND**`, `SHALL`, `MUST`.
+codev **lit** cette structure en anglais comme en français, quelle que soit la
+valeur de `language:` : une équipe peut donc aussi rédiger ses specs
+entièrement en français. Chaque mot-clé a son texte dans chaque langue du
+catalogue de mots-clés de codev :
 
-Une exigence rédigée en français se présente donc ainsi — la prose en
-français, les mots-clés en anglais :
+| Anglais | Français |
+|---|---|
+| `## Purpose` | `## Objet` |
+| `## Requirements` | `## Exigences` |
+| `### Requirement:` | `### Exigence :` |
+| `#### Scenario:` | `#### Scénario :` |
+| `## ADDED Requirements` | `## Exigences AJOUTÉES` |
+| `## MODIFIED Requirements` | `## Exigences MODIFIÉES` |
+| `## REMOVED Requirements` | `## Exigences SUPPRIMÉES` |
+| `## RENAMED Requirements` | `## Exigences RENOMMÉES` |
+| `**Reason**`, `**Migration**` | `**Raison**`, `**Migration**` |
+| `FROM:` / `TO:` | `DE :` / `VERS :` |
+| `SHALL`, `MUST` | `DOIT`, `DOIVENT` |
+| `## What Changes` | `## Changements` |
+| `## Domains`, `None` | `## Domaines`, `Aucun` |
+| `## Release note`, `None` | `## Note de version`, `Aucune` |
+| `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` | `Ajouté`, `Modifié`, `Obsolète`, `Supprimé`, `Corrigé`, `Sécurité` |
+| `## Decisions`, `### Decision:` | `## Décisions`, `### Décision :` |
+
+Une exigence rédigée entièrement en français se présente donc ainsi :
 
 ```markdown
-### Requirement: Le thème suit la préférence du système
+### Exigence : Le thème suit la préférence du système
 
-L'application SHALL s'afficher avec le thème du système tant que l'utilisateur n'en a pas choisi.
+L'application DOIT s'afficher avec le thème du système tant que l'utilisateur n'en a pas choisi.
 
-#### Scenario: Aucun thème choisi
+#### Scénario : Aucun thème choisi
 
 - **GIVEN** un utilisateur qui n'a jamais modifié le thème
 - **WHEN** son système est en mode sombre
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
+Comment codev les lit et les écrit :
+
+- Les mots-clés français tolèrent la casse, les accents et l'espace —
+  ordinaire ou insécable — avant les deux-points : `### Exigence: X` et
+  `#### Scenario : Y` sont lus eux aussi. Les mots-clés anglais sont lus
+  exactement comme avant.
+- Les mots-clés normatifs ne comptent qu'en majuscules, dans les deux
+  langues : `doit` en minuscules est de la prose ordinaire, et l'exigence
+  échoue à la validation.
+- Un document peut mélanger les deux langues.
+- Quand `codev sync` ou `codev archive` modifie une spec, il en écrit les
+  mots-clés dans la langue de cette spec ; une nouvelle spec prend la langue
+  du delta qui la crée.
+- Le changelog affiche les catégories de la note de version en anglais,
+  quelle que soit la langue dans laquelle elles ont été écrites.
+- Les noms de domaines (`security`, `migration`…) et les marqueurs du
+  registre de revue restent en anglais. codev ne lit pas les lignes
+  `**GIVEN**` / `**WHEN**` / `**THEN**`, que les skills écrivent en anglais.
+
 > **Attention**
-> Un mot-clé traduit, c'est un artefact cassé. codev ne reconnaît pas
-> `### Exigence :` comme une exigence : dans une section de delta, la
-> validation le signale (`delta_unexpected_heading`), et la synchronisation
-> comme l'archivage refusent le change. Une exigence dépourvue de `SHALL` ou de
-> `MUST` échoue elle aussi à la validation.
+> Une version de codev antérieure à ce catalogue refuse les mots-clés
+> français. Avant que votre équipe ne les écrive, relevez `codev_version`
+> dans `_codev/config.yaml` jusqu'à la première version dont le changelog
+> les annonce : chaque contributeur utilisera ainsi un codev qui les lit. Un
+> titre dans une langue que codev ne connaît pas, comme `### Requisito:`, est
+> signalé dans une section de delta (`delta_unexpected_heading`), et la
+> synchronisation comme l'archivage refusent le change.
 
 ## Quelles skills l'utilisent
 

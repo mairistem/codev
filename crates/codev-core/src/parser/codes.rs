@@ -25,9 +25,9 @@ pub const SCENARIO_WRONG_HEADING_LEVEL: &str = "scenario_wrong_heading_level";
 /// Two requirements with the same name in the same section of a delta.
 pub const DUPLICATE_REQUIREMENT: &str = "duplicate_requirement";
 
-/// A `###` heading inside a delta section that is not `### Requirement:` —
-/// typically a translated keyword (`### Exigence :`). The parser would
-/// otherwise skip the block without a word.
+/// A `###` heading inside a delta section that is no requirement heading in
+/// any catalog language — `### Notes`, or a keyword of a language codev
+/// does not know. The parser would otherwise skip the block without a word.
 pub const DELTA_UNEXPECTED_HEADING: &str = "delta_unexpected_heading";
 
 /// A delta section (`## ADDED Requirements`…) with no entry: nothing of
