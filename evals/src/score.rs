@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::case::{Case, Expected, Kind, Location, Step};
-use crate::observed::{Observed, Review, ReviewFinding, RunInfo};
+use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
 
 /// Evidence and location codes of `codev review`, by their effect here.
 const EVIDENCE_INVALID: [&str; 2] = ["review_evidence_not_found", "review_location_missing"];
@@ -116,9 +116,20 @@ pub struct CaseScore {
     pub record_errors: Vec<String>,
     pub cost_usd: Option<f64>,
     pub duration_ms: Option<u64>,
+    /// The repetition this run is, from 1.
+    pub repetition: u32,
+    pub consumption: Option<Consumption>,
 }
 
-/// Scores one case from its observation.
+impl CaseScore {
+    /// The same score, as repetition `n`.
+    pub fn at(mut self, n: u32) -> CaseScore {
+        self.repetition = n;
+        self
+    }
+}
+
+/// Scores one run of a case from its observation, as repetition 1.
 pub fn case(case: &Case, observed: &Observed) -> CaseScore {
     let mut score = CaseScore {
         id: case.id.clone(),
@@ -134,6 +145,8 @@ pub fn case(case: &Case, observed: &Observed) -> CaseScore {
         record_errors: Vec::new(),
         cost_usd: observed.cost_usd,
         duration_ms: observed.duration_ms,
+        repetition: 1,
+        consumption: observed.consumption.clone(),
     };
     if case.step == Step::PlanTrace {
         trace(case, observed, &mut score);
@@ -493,37 +506,276 @@ impl Thresholds {
     }
 }
 
+/// Evidence states counted for a role: in one repetition, whole numbers;
+/// in a report, their medians over the repetitions.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvidenceCounts {
-    pub found: u32,
-    pub moved: u32,
-    pub invalid: u32,
-    pub unchecked: u32,
+    pub found: f64,
+    pub moved: f64,
+    pub invalid: f64,
+    pub unchecked: f64,
 }
 
+/// A measure over the repetitions: its median, minimum and maximum.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Spread {
+    pub median: f64,
+    pub min: f64,
+    pub max: f64,
+}
+
+/// The median of `values` — of an even count, the mean of the two middle
+/// ones — rounded to four decimals; `None` without a value.
+pub fn median(values: &[f64]) -> Option<f64> {
+    let mut sorted = values.to_vec();
+    sorted.sort_by(|a, b| a.total_cmp(b));
+    let n = sorted.len();
+    if n == 0 {
+        return None;
+    }
+    let middle = if n % 2 == 1 {
+        sorted[n / 2]
+    } else {
+        (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
+    };
+    Some(round4(middle))
+}
+
+/// The spread of `values`; `None` without a value.
+pub fn spread(values: &[f64]) -> Option<Spread> {
+    Some(Spread {
+        median: median(values)?,
+        min: round4(values.iter().copied().fold(f64::INFINITY, f64::min)),
+        max: round4(values.iter().copied().fold(f64::NEG_INFINITY, f64::max)),
+    })
+}
+
+/// The ranges over the repetitions of the measures a threshold applies to.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RoleRanges {
+    pub recall: Option<Spread>,
+    pub false_positives: Option<Spread>,
+    pub evidence_validity: Option<Spread>,
+}
+
+/// A role's measures: each the median over the repetitions of what the
+/// role scored in that repetition.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleScore {
     pub role: String,
+    /// The distinct cases of the role, and how many are seeded or controls.
     pub cases: u32,
     pub seeded: u32,
     pub controls: u32,
-    pub expected: u32,
-    pub true_positives: u32,
-    pub misses: u32,
-    pub false_positives: u32,
-    pub unreported: u32,
-    pub duplicates: u32,
-    pub cross_role: u32,
-    pub severity_agreement: u32,
+    /// The repetitions in which the role has a case.
+    pub repetitions: u32,
+    pub expected: f64,
+    pub true_positives: f64,
+    pub misses: f64,
+    pub false_positives: f64,
+    pub unreported: f64,
+    pub duplicates: f64,
+    pub cross_role: f64,
+    pub severity_agreement: f64,
     pub evidence: EvidenceCounts,
     /// True positives over expected; `None` without expectation.
     pub recall: Option<f64>,
     /// (found + moved) over checked findings; `None` without one.
     pub evidence_validity: Option<f64>,
+    pub ranges: RoleRanges,
+    /// The sum of its cases' median costs.
     pub cost_usd: f64,
+    /// The sums of its cases' median consumption.
+    pub consumption: Measures,
     pub failures: Vec<String>,
+}
+
+/// The suite-level figures, each computed for a repetition over all its
+/// cases, then given as a median with its range.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiteFigures {
+    pub expected: f64,
+    pub true_positives: Option<Spread>,
+    pub recall: Option<Spread>,
+    pub checked: f64,
+    pub valid: f64,
+    pub evidence_validity: Option<Spread>,
+    pub false_positives: Option<Spread>,
+    pub false_positives_per_case: Option<Spread>,
+}
+
+/// What runs consumed: per case, the medians over its repetitions; per
+/// role and for the suite, the sums of those medians. `None` when no run
+/// reported the measure.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Measures {
+    pub cost_usd: Option<f64>,
+    pub duration_ms: Option<f64>,
+    pub duration_api_ms: Option<f64>,
+    pub turns: Option<f64>,
+    pub permission_denials: Option<f64>,
+    pub input_tokens: Option<f64>,
+    pub cache_creation_tokens: Option<f64>,
+    pub cache_read_tokens: Option<f64>,
+    pub output_tokens: Option<f64>,
+}
+
+/// One consumption measure: what it is called in the reports and how its
+/// value reads. The order of [`Measure::ALL`] is the reports' order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Measure {
+    Cost,
+    Duration,
+    ApiDuration,
+    Turns,
+    PermissionDenials,
+    InputTokens,
+    CacheWrites,
+    CacheReads,
+    OutputTokens,
+}
+
+impl Measure {
+    pub const ALL: [Measure; 9] = [
+        Measure::Cost,
+        Measure::Duration,
+        Measure::ApiDuration,
+        Measure::Turns,
+        Measure::PermissionDenials,
+        Measure::InputTokens,
+        Measure::CacheWrites,
+        Measure::CacheReads,
+        Measure::OutputTokens,
+    ];
+
+    /// Its name in a row of the comparison.
+    pub fn label(self) -> &'static str {
+        match self {
+            Measure::Cost => "Cost (USD)",
+            Measure::Duration => "Duration (s)",
+            Measure::ApiDuration => "API duration (s)",
+            Measure::Turns => "Turns",
+            Measure::PermissionDenials => "Permission denials",
+            Measure::InputTokens => "Input tokens, uncached",
+            Measure::CacheWrites => "Tokens written to the cache",
+            Measure::CacheReads => "Tokens read from the cache",
+            Measure::OutputTokens => "Output tokens",
+        }
+    }
+
+    /// Its name in a column of the report.
+    pub fn column(self) -> &'static str {
+        match self {
+            Measure::Cost => "Cost (USD)",
+            Measure::Duration => "Duration (s)",
+            Measure::ApiDuration => "API duration (s)",
+            Measure::Turns => "Turns",
+            Measure::PermissionDenials => "Denials",
+            Measure::InputTokens => "Input, uncached",
+            Measure::CacheWrites => "Cache writes",
+            Measure::CacheReads => "Cache reads",
+            Measure::OutputTokens => "Output",
+        }
+    }
+
+    /// A value of the measure: `—` when absent, seconds for a duration,
+    /// dollars with `cost_decimals` decimals, whole counts otherwise.
+    pub fn show(self, value: Option<f64>, cost_decimals: usize) -> String {
+        match (self, value) {
+            (_, None) => "—".into(),
+            (Measure::Cost, Some(v)) => format!("{v:.cost_decimals$}"),
+            (Measure::Duration | Measure::ApiDuration, Some(v)) => format!("{:.0}", v / 1000.0),
+            (_, Some(v)) => number(v.round()),
+        }
+    }
+}
+
+impl Measures {
+    pub fn get(&self, m: Measure) -> Option<f64> {
+        match m {
+            Measure::Cost => self.cost_usd,
+            Measure::Duration => self.duration_ms,
+            Measure::ApiDuration => self.duration_api_ms,
+            Measure::Turns => self.turns,
+            Measure::PermissionDenials => self.permission_denials,
+            Measure::InputTokens => self.input_tokens,
+            Measure::CacheWrites => self.cache_creation_tokens,
+            Measure::CacheReads => self.cache_read_tokens,
+            Measure::OutputTokens => self.output_tokens,
+        }
+    }
+
+    fn slot(&mut self, m: Measure) -> &mut Option<f64> {
+        match m {
+            Measure::Cost => &mut self.cost_usd,
+            Measure::Duration => &mut self.duration_ms,
+            Measure::ApiDuration => &mut self.duration_api_ms,
+            Measure::Turns => &mut self.turns,
+            Measure::PermissionDenials => &mut self.permission_denials,
+            Measure::InputTokens => &mut self.input_tokens,
+            Measure::CacheWrites => &mut self.cache_creation_tokens,
+            Measure::CacheReads => &mut self.cache_read_tokens,
+            Measure::OutputTokens => &mut self.output_tokens,
+        }
+    }
+
+    /// One run's measures.
+    fn of(c: &CaseScore) -> Measures {
+        let consumption = c.consumption.as_ref();
+        let tokens = consumption.and_then(|c| c.tokens);
+        let f = |v: Option<u64>| v.map(|v| v as f64);
+        Measures {
+            cost_usd: c.cost_usd,
+            duration_ms: f(c.duration_ms),
+            duration_api_ms: f(consumption.and_then(|c| c.duration_api_ms)),
+            turns: f(consumption.and_then(|c| c.turns)),
+            permission_denials: f(consumption.and_then(|c| c.permission_denials)),
+            input_tokens: f(tokens.map(|t| t.input)),
+            cache_creation_tokens: f(tokens.map(|t| t.cache_creation)),
+            cache_read_tokens: f(tokens.map(|t| t.cache_read)),
+            output_tokens: f(tokens.map(|t| t.output)),
+        }
+    }
+
+    /// The median of each measure over the runs that report it.
+    pub fn median_of(runs: &[Measures]) -> Measures {
+        let mut out = Measures::default();
+        for m in Measure::ALL {
+            let present: Vec<f64> = runs.iter().filter_map(|r| r.get(m)).collect();
+            *out.slot(m) = median(&present);
+        }
+        out
+    }
+
+    /// The sum of each measure over the items that report it.
+    pub fn sum_of<'a>(items: impl IntoIterator<Item = &'a Measures>) -> Measures {
+        let mut out = Measures::default();
+        for item in items {
+            for m in Measure::ALL {
+                if let Some(v) = item.get(m) {
+                    let slot = out.slot(m);
+                    *slot = Some(round4(slot.unwrap_or(0.0) + v));
+                }
+            }
+        }
+        out
+    }
+}
+
+/// A case's consumption: the medians over its repetitions not in error.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CaseConsumption {
+    pub id: String,
+    pub role: String,
+    pub repetitions: u32,
+    pub measures: Measures,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -533,12 +785,24 @@ pub struct SuiteScore {
     pub run: RunInfo,
     pub thresholds: Thresholds,
     pub pass: bool,
+    /// The highest repetition number scored.
+    pub repetitions: u32,
+    /// The sum of every case's median cost: what one run of the suite
+    /// costs.
     pub cost_usd: f64,
+    /// What every run cost, every repetition included.
+    pub total_cost_usd: f64,
+    pub figures: SuiteFigures,
+    /// The sums of every case's median consumption.
+    pub consumption: Measures,
     /// Every reason the suite fails: role measures under their threshold,
-    /// cases that stopped.
+    /// runs that stopped.
     pub failures: Vec<String>,
     pub roles: Vec<RoleScore>,
+    /// Every run, by case then repetition.
     pub cases: Vec<CaseScore>,
+    /// Every case's consumption, by case.
+    pub case_consumption: Vec<CaseConsumption>,
 }
 
 /// Rounded to three decimals: the report shows ratios, not float noise.
@@ -547,48 +811,48 @@ fn ratio(numerator: u32, denominator: u32) -> Option<f64> {
         .then(|| (f64::from(numerator) / f64::from(denominator) * 1000.0).round() / 1000.0)
 }
 
-fn cents(value: f64) -> f64 {
+fn round4(value: f64) -> f64 {
     (value * 10000.0).round() / 10000.0
 }
 
-fn role_score<'a>(roles: &'a mut BTreeMap<String, RoleScore>, role: &str) -> &'a mut RoleScore {
-    roles.entry(role.to_string()).or_insert_with(|| RoleScore {
-        role: role.to_string(),
-        cases: 0,
-        seeded: 0,
-        controls: 0,
-        expected: 0,
-        true_positives: 0,
-        misses: 0,
-        false_positives: 0,
-        unreported: 0,
-        duplicates: 0,
-        cross_role: 0,
-        severity_agreement: 0,
-        evidence: EvidenceCounts::default(),
-        recall: None,
-        evidence_validity: None,
-        cost_usd: 0.0,
-        failures: Vec::new(),
-    })
+/// What a role scored in one repetition.
+#[derive(Debug, Clone, Default)]
+struct Tally {
+    expected: u32,
+    true_positives: u32,
+    misses: u32,
+    false_positives: u32,
+    unreported: u32,
+    duplicates: u32,
+    cross_role: u32,
+    severity_agreement: u32,
+    found: u32,
+    moved: u32,
+    invalid: u32,
+    unchecked: u32,
 }
 
-/// Aggregates the cases per role and applies the thresholds.
-pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) -> SuiteScore {
-    cases.sort_by(|a, b| a.id.cmp(&b.id));
-    let mut roles: BTreeMap<String, RoleScore> = BTreeMap::new();
-    for c in &cases {
-        let r = role_score(&mut roles, &c.role);
-        r.cases += 1;
-        if c.kind == Kind::Seeded.as_str() {
-            r.seeded += 1;
-        } else {
-            r.controls += 1;
-        }
-        r.cost_usd += c.cost_usd.unwrap_or(0.0);
-        r.false_positives += c.changed.len() as u32;
+impl Tally {
+    fn recall(&self) -> Option<f64> {
+        ratio(self.true_positives, self.expected)
+    }
+
+    fn checked(&self) -> u32 {
+        self.found + self.moved + self.invalid
+    }
+
+    fn evidence_validity(&self) -> Option<f64> {
+        ratio(self.found + self.moved, self.checked())
+    }
+}
+
+/// Each role's tally over the runs of one repetition.
+fn tally(runs: &[&CaseScore]) -> BTreeMap<String, Tally> {
+    let mut roles: BTreeMap<String, Tally> = BTreeMap::new();
+    for c in runs {
+        roles.entry(c.role.clone()).or_default().false_positives += c.changed.len() as u32;
         for e in &c.expected {
-            let r = role_score(&mut roles, &e.role);
+            let r = roles.entry(e.role.clone()).or_default();
             r.expected += 1;
             if e.matched_by.is_some() {
                 r.true_positives += 1;
@@ -598,7 +862,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
             }
         }
         for f in &c.findings {
-            let r = role_score(&mut roles, &f.role);
+            let r = roles.entry(f.role.clone()).or_default();
             match f.class {
                 Class::FalsePositive => r.false_positives += 1,
                 Class::Unreported => r.unreported += 1,
@@ -607,59 +871,252 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
                 Class::TruePositive => {}
             }
             match f.evidence {
-                Evidence::Found => r.evidence.found += 1,
-                Evidence::Moved => r.evidence.moved += 1,
-                Evidence::Invalid => r.evidence.invalid += 1,
-                Evidence::Unchecked => r.evidence.unchecked += 1,
+                Evidence::Found => r.found += 1,
+                Evidence::Moved => r.moved += 1,
+                Evidence::Invalid => r.invalid += 1,
+                Evidence::Unchecked => r.unchecked += 1,
             }
         }
     }
+    roles
+}
 
-    let mut failures = Vec::new();
-    for r in roles.values_mut() {
-        r.cost_usd = cents(r.cost_usd);
-        r.recall = ratio(r.true_positives, r.expected);
-        let checked = r.evidence.found + r.evidence.moved + r.evidence.invalid;
-        r.evidence_validity = ratio(r.evidence.found + r.evidence.moved, checked);
-        if let Some(recall) = r.recall.filter(|v| *v < thresholds.min_recall) {
-            r.failures.push(format!(
-                "{}: recall {recall:.2} is under {:.2}",
-                r.role, thresholds.min_recall
-            ));
-        }
-        if r.false_positives > thresholds.max_false_positives {
-            r.failures.push(format!(
-                "{}: {} false positive(s) exceed {}",
-                r.role, r.false_positives, thresholds.max_false_positives
-            ));
-        }
-        if let Some(validity) = r.evidence_validity.filter(|v| *v < thresholds.min_evidence) {
-            r.failures.push(format!(
-                "{}: evidence validity {validity:.2} is under {:.2}",
-                r.role, thresholds.min_evidence
-            ));
-        }
-        failures.extend(r.failures.iter().cloned());
-    }
+/// One repetition: its runs and each role's tally over them.
+struct Repetition<'a> {
+    runs: Vec<&'a CaseScore>,
+    tallies: BTreeMap<String, Tally>,
+}
+
+/// Scores every run: each role per repetition, then the medians over the
+/// repetitions, the thresholds applied to the medians.
+pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) -> SuiteScore {
+    cases.sort_by(|a, b| a.id.cmp(&b.id).then(a.repetition.cmp(&b.repetition)));
+    let mut numbers: Vec<u32> = cases.iter().map(|c| c.repetition).collect();
+    numbers.sort_unstable();
+    numbers.dedup();
+    let repetitions: Vec<Repetition> = numbers
+        .iter()
+        .map(|n| {
+            let runs: Vec<&CaseScore> = cases.iter().filter(|c| c.repetition == *n).collect();
+            let tallies = tally(&runs);
+            Repetition { runs, tallies }
+        })
+        .collect();
+    let case_consumption = case_consumption(&cases);
+
+    let mut role_ids: Vec<String> = repetitions
+        .iter()
+        .flat_map(|r| r.tallies.keys().cloned())
+        .chain(cases.iter().map(|c| c.role.clone()))
+        .collect();
+    role_ids.sort();
+    role_ids.dedup();
+    let roles: Vec<RoleScore> = role_ids
+        .iter()
+        .map(|id| role_score(id, &repetitions, &cases, &case_consumption, &thresholds))
+        .collect();
+    let mut failures: Vec<String> = roles.iter().flat_map(|r| r.failures.clone()).collect();
     for c in &cases {
         if let Outcome::Error(reason) = &c.outcome {
-            failures.push(format!("case `{}` stopped: {reason}", c.id));
+            failures.push(format!(
+                "case `{}` (repetition {}) stopped: {reason}",
+                c.id, c.repetition
+            ));
         }
     }
-    let cost_usd = cents(cases.iter().filter_map(|c| c.cost_usd).sum());
+
+    let figures = suite_figures(&repetitions);
+    let consumption = Measures::sum_of(case_consumption.iter().map(|c| &c.measures));
     SuiteScore {
         format: crate::observed::FORMAT,
         run,
         thresholds,
         pass: failures.is_empty(),
-        cost_usd,
+        repetitions: numbers.last().copied().unwrap_or(0),
+        cost_usd: consumption.cost_usd.unwrap_or(0.0),
+        total_cost_usd: round4(cases.iter().filter_map(|c| c.cost_usd).sum()),
+        figures,
+        consumption,
         failures,
-        roles: roles.into_values().collect(),
+        roles,
         cases,
+        case_consumption,
     }
 }
 
-/// 0 when every role passes and no case stopped, 1 otherwise.
+/// Each case's consumption: the medians over its runs not in error.
+/// `cases` come sorted by case id.
+fn case_consumption(cases: &[CaseScore]) -> Vec<CaseConsumption> {
+    cases
+        .chunk_by(|a, b| a.id == b.id)
+        .map(|runs| {
+            let measured: Vec<Measures> = runs
+                .iter()
+                .filter(|r| !matches!(r.outcome, Outcome::Error(_)))
+                .map(Measures::of)
+                .collect();
+            CaseConsumption {
+                id: runs[0].id.clone(),
+                role: runs[0].role.clone(),
+                repetitions: runs.len() as u32,
+                measures: Measures::median_of(&measured),
+            }
+        })
+        .collect()
+}
+
+/// A role's medians and ranges over the repetitions in which it has a
+/// case, its consumption, and the thresholds it fails.
+fn role_score(
+    id: &str,
+    repetitions: &[Repetition],
+    cases: &[CaseScore],
+    case_consumption: &[CaseConsumption],
+    thresholds: &Thresholds,
+) -> RoleScore {
+    let tallies: Vec<&Tally> = repetitions
+        .iter()
+        .filter_map(|r| r.tallies.get(id))
+        .collect();
+    // The median over the repetitions of one count of the tally.
+    let median_of = |count: fn(&Tally) -> u32| -> f64 {
+        let values: Vec<f64> = tallies.iter().map(|t| f64::from(count(t))).collect();
+        median(&values).unwrap_or(0.0)
+    };
+    let recalls: Vec<f64> = tallies.iter().filter_map(|t| t.recall()).collect();
+    let validities: Vec<f64> = tallies
+        .iter()
+        .filter_map(|t| t.evidence_validity())
+        .collect();
+    let fps: Vec<f64> = tallies
+        .iter()
+        .map(|t| f64::from(t.false_positives))
+        .collect();
+    let mut distinct: Vec<&CaseScore> = cases.iter().filter(|c| c.role == id).collect();
+    distinct.dedup_by(|a, b| a.id == b.id);
+    let seeded = distinct
+        .iter()
+        .filter(|c| c.kind == Kind::Seeded.as_str())
+        .count() as u32;
+    let consumption = Measures::sum_of(
+        case_consumption
+            .iter()
+            .filter(|c| c.role == id)
+            .map(|c| &c.measures),
+    );
+    let mut r = RoleScore {
+        role: id.to_string(),
+        cases: distinct.len() as u32,
+        seeded,
+        controls: distinct.len() as u32 - seeded,
+        repetitions: tallies.len() as u32,
+        expected: median_of(|t| t.expected),
+        true_positives: median_of(|t| t.true_positives),
+        misses: median_of(|t| t.misses),
+        false_positives: median_of(|t| t.false_positives),
+        unreported: median_of(|t| t.unreported),
+        duplicates: median_of(|t| t.duplicates),
+        cross_role: median_of(|t| t.cross_role),
+        severity_agreement: median_of(|t| t.severity_agreement),
+        evidence: EvidenceCounts {
+            found: median_of(|t| t.found),
+            moved: median_of(|t| t.moved),
+            invalid: median_of(|t| t.invalid),
+            unchecked: median_of(|t| t.unchecked),
+        },
+        recall: median(&recalls).map(round3),
+        evidence_validity: median(&validities).map(round3),
+        ranges: RoleRanges {
+            recall: spread(&recalls),
+            false_positives: spread(&fps),
+            evidence_validity: spread(&validities),
+        },
+        cost_usd: consumption.cost_usd.unwrap_or(0.0),
+        consumption,
+        failures: Vec::new(),
+    };
+    r.failures = threshold_failures(&r, thresholds);
+    r
+}
+
+/// The thresholds a role's medians fail, in the report's order.
+fn threshold_failures(r: &RoleScore, thresholds: &Thresholds) -> Vec<String> {
+    let mut out = Vec::new();
+    if let Some(recall) = r.recall.filter(|v| *v < thresholds.min_recall) {
+        out.push(format!(
+            "{}: recall {recall:.2} is under {:.2}",
+            r.role, thresholds.min_recall
+        ));
+    }
+    if r.false_positives > f64::from(thresholds.max_false_positives) {
+        out.push(format!(
+            "{}: {} false positive(s) exceed {}",
+            r.role,
+            number(r.false_positives),
+            thresholds.max_false_positives
+        ));
+    }
+    if let Some(validity) = r.evidence_validity.filter(|v| *v < thresholds.min_evidence) {
+        out.push(format!(
+            "{}: evidence validity {validity:.2} is under {:.2}",
+            r.role, thresholds.min_evidence
+        ));
+    }
+    out
+}
+
+/// The suite-level figures: for each repetition, the tally of all its
+/// roles together, then the median and range over the repetitions.
+fn suite_figures(repetitions: &[Repetition]) -> SuiteFigures {
+    let totals: Vec<(Tally, usize)> = repetitions
+        .iter()
+        .map(|r| {
+            let mut all = Tally::default();
+            for t in r.tallies.values() {
+                all.expected += t.expected;
+                all.true_positives += t.true_positives;
+                all.false_positives += t.false_positives;
+                all.found += t.found;
+                all.moved += t.moved;
+                all.invalid += t.invalid;
+            }
+            (all, r.runs.len())
+        })
+        .collect();
+    let values = |f: fn(&Tally) -> Option<f64>| -> Vec<f64> {
+        totals.iter().filter_map(|(t, _)| f(t)).collect()
+    };
+    let per_case: Vec<f64> = totals
+        .iter()
+        .filter(|(_, runs)| *runs > 0)
+        .map(|(t, runs)| f64::from(t.false_positives) / *runs as f64)
+        .collect();
+    SuiteFigures {
+        expected: median(&values(|t| Some(f64::from(t.expected)))).unwrap_or(0.0),
+        true_positives: spread(&values(|t| Some(f64::from(t.true_positives)))),
+        recall: spread(&values(Tally::recall)),
+        checked: median(&values(|t| Some(f64::from(t.checked())))).unwrap_or(0.0),
+        valid: median(&values(|t| Some(f64::from(t.found + t.moved)))).unwrap_or(0.0),
+        evidence_validity: spread(&values(Tally::evidence_validity)),
+        false_positives: spread(&values(|t| Some(f64::from(t.false_positives)))),
+        false_positives_per_case: spread(&per_case),
+    }
+}
+
+fn round3(value: f64) -> f64 {
+    (value * 1000.0).round() / 1000.0
+}
+
+/// A median count: whole numbers without decimals, halves with one.
+pub fn number(value: f64) -> String {
+    if value.fract() == 0.0 {
+        format!("{value:.0}")
+    } else {
+        format!("{value}")
+    }
+}
+
+/// 0 when every role passes and no run stopped, 1 otherwise.
 pub fn exit_code(score: &SuiteScore) -> i32 {
     if score.pass { 0 } else { 1 }
 }
@@ -739,6 +1196,7 @@ pub(crate) mod tests {
             error: None,
             cost_usd: Some(0.5),
             duration_ms: Some(1000),
+            consumption: None,
             strayed: vec![],
             review: Some(json!({"exists": true,
                 "steps": [{"step": "code.review", "recorded": true, "roles": roles}],
@@ -857,8 +1315,8 @@ pub(crate) mod tests {
             ]
         );
         let suite = suite(run(), vec![s], Thresholds::default());
-        assert_eq!(suite.roles[0].false_positives, 1);
-        assert_eq!(suite.roles[0].unreported, 1);
+        assert_eq!(suite.roles[0].false_positives, 1.0);
+        assert_eq!(suite.roles[0].unreported, 1.0);
     }
 
     #[test]
@@ -1233,7 +1691,7 @@ pub(crate) mod tests {
         let s = case(&c, &files("- [ ] 1.1 Task, verified by a test\n"));
         assert_eq!(s.changed, ["_codev/changes/c/tasks.md"]);
         let suite = suite(run(), vec![s], Thresholds::default());
-        assert_eq!(suite.roles[0].false_positives, 1);
+        assert_eq!(suite.roles[0].false_positives, 1.0);
     }
 
     pub(crate) fn run() -> RunInfo {
@@ -1243,6 +1701,8 @@ pub(crate) mod tests {
             date: "2026-10-13".into(),
             claude_version: None,
             codev_version: None,
+            repeat: None,
+            jobs: None,
         }
     }
 
@@ -1299,7 +1759,7 @@ pub(crate) mod tests {
         assert_eq!(exit_code(&suite), 1);
         assert_eq!(
             suite.failures,
-            ["case `security-case` stopped: timeout after 600 s"]
+            ["case `security-case` (repetition 1) stopped: timeout after 600 s"]
         );
     }
 
@@ -1330,5 +1790,145 @@ pub(crate) mod tests {
         assert_eq!(suite.roles[0].evidence_validity, None);
         assert_eq!(suite.roles[0].recall, None);
         assert!(suite.pass);
+    }
+
+    /// `ops_scores` runs, one per repetition, finding `found[i]` of four.
+    fn repeated(found: &[usize]) -> Vec<CaseScore> {
+        found
+            .iter()
+            .enumerate()
+            .flat_map(|(i, f)| ops_scores(*f).into_iter().map(move |s| s.at(i as u32 + 1)))
+            .collect()
+    }
+
+    #[test]
+    fn role_measures_are_medians_over_repetitions() {
+        let s = suite(run(), repeated(&[4, 2, 4]), Thresholds::default());
+        let ops = &s.roles[0];
+        assert_eq!(ops.recall, Some(1.0));
+        let range = ops.ranges.recall.unwrap();
+        assert_eq!((range.min, range.max), (0.5, 1.0));
+        assert_eq!(ops.true_positives, 4.0);
+        assert_eq!(ops.repetitions, 3);
+        assert_eq!(ops.cases, 1, "one distinct case, run three times");
+        assert!(
+            s.pass,
+            "the median passes a recall of 0.5: {:?}",
+            s.failures
+        );
+        assert_eq!(s.repetitions, 3);
+    }
+
+    #[test]
+    fn an_even_count_takes_the_mean_of_the_middle_values() {
+        assert_eq!(median(&[1.0, 4.0, 2.0, 3.0]), Some(2.5));
+        assert_eq!(median(&[]), None);
+        let s = spread(&[0.5, 1.0]).unwrap();
+        assert_eq!((s.median, s.min, s.max), (0.75, 0.5, 1.0));
+    }
+
+    #[test]
+    fn one_repetition_in_error_fails_and_is_named() {
+        let mut runs = repeated(&[4, 4, 4]);
+        runs[1].outcome = Outcome::Error("timeout after 600 s".into());
+        runs[1].cost_usd = Some(9.0);
+        let s = suite(run(), runs, Thresholds::default());
+        assert!(!s.pass);
+        assert!(
+            s.failures.contains(
+                &"case `ops-case` (repetition 2) stopped: timeout after 600 s".to_string()
+            ),
+            "{:?}",
+            s.failures
+        );
+        assert_eq!(
+            s.case_consumption[0].measures.cost_usd,
+            Some(0.5),
+            "the run in error is left out of the median"
+        );
+    }
+
+    #[test]
+    fn a_single_repetition_scores_as_before() {
+        let s = suite(run(), ops_scores(1), Thresholds::default());
+        assert_eq!(s.repetitions, 1);
+        assert_eq!(s.roles[0].recall, Some(0.25));
+        let range = s.roles[0].ranges.recall.unwrap();
+        assert_eq!((range.min, range.median, range.max), (0.25, 0.25, 0.25));
+        assert_eq!(s.cost_usd, 0.5);
+        assert_eq!(s.total_cost_usd, 0.5);
+    }
+
+    #[test]
+    fn the_suite_recall_is_a_median_over_repetitions() {
+        // 39 seeded defects; repetitions find 36, 38 and 39 of them.
+        let expected: Vec<String> = (0..39).map(|i| format!("e{i}")).collect();
+        let locations: Vec<String> = (0..39).map(|i| format!("a.py:{}", i * 10 + 1)).collect();
+        let pairs: Vec<(&str, Vec<&str>)> = expected
+            .iter()
+            .zip(&locations)
+            .map(|(e, l)| (e.as_str(), vec![l.as_str()]))
+            .collect();
+        let slices: Vec<(&str, &[&str])> = pairs.iter().map(|(e, l)| (*e, l.as_slice())).collect();
+        let c = a_case("ops", Kind::Seeded, &slices);
+        let ids: Vec<String> = (0..39).map(|i| format!("R-ops-{i}")).collect();
+        let runs: Vec<CaseScore> = [36usize, 38, 39]
+            .iter()
+            .enumerate()
+            .map(|(n, found)| {
+                let findings: Vec<(&str, &str, &str, &str)> = (0..*found)
+                    .map(|i| (ids[i].as_str(), "ops", locations[i].as_str(), "high"))
+                    .collect();
+                let mut o = observed("findings", &findings, json!([]));
+                o.review.as_mut().unwrap()["steps"][0]["roles"] =
+                    json!([{"role": "ops", "state": "findings"}]);
+                case(&c, &o).at(n as u32 + 1)
+            })
+            .collect();
+        let s = suite(run(), runs, Thresholds::default());
+        let recall = s.figures.recall.unwrap();
+        assert_eq!((recall.median, recall.min, recall.max), (0.974, 0.923, 1.0));
+        assert_eq!(s.figures.expected, 39.0);
+    }
+
+    fn with_consumption(cache_read: Option<u64>) -> Consumption {
+        Consumption {
+            turns: Some(9),
+            tokens: cache_read.map(|r| crate::observed::Tokens {
+                cache_read: r,
+                ..Default::default()
+            }),
+            ..Consumption::default()
+        }
+    }
+
+    #[test]
+    fn consumption_is_the_median_per_case() {
+        let mut runs = repeated(&[4, 4, 4]);
+        for (r, read) in runs.iter_mut().zip([300_000, 320_000, 900_000]) {
+            r.consumption = Some(with_consumption(Some(read)));
+        }
+        let s = suite(run(), runs, Thresholds::default());
+        assert_eq!(
+            s.case_consumption[0].measures.cache_read_tokens,
+            Some(320_000.0)
+        );
+        assert_eq!(s.consumption.cache_read_tokens, Some(320_000.0));
+        assert_eq!(s.roles[0].consumption.turns, Some(9.0));
+    }
+
+    #[test]
+    fn an_absent_measure_is_left_out_of_the_median() {
+        let mut runs = repeated(&[4, 4, 4]);
+        runs[0].consumption = Some(with_consumption(Some(100)));
+        runs[1].consumption = Some(with_consumption(None));
+        runs[2].consumption = Some(with_consumption(Some(300)));
+        let s = suite(run(), runs, Thresholds::default());
+        assert_eq!(
+            s.case_consumption[0].measures.cache_read_tokens,
+            Some(200.0)
+        );
+        let none = suite(run(), repeated(&[4]), Thresholds::default());
+        assert_eq!(none.consumption.cache_read_tokens, None, "absent, not zero");
     }
 }

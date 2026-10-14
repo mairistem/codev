@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "accessibility-control-custom-listbox",
+  "error": null,
+  "costUsd": 0.3453914,
+  "durationMs": 37863,
+  "consumption": {
+    "durationApiMs": 36810,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 27551,
+      "cacheRead": 282597,
+      "output": 3373
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-size-picker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SizePicker.tsx:92",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "With aria-activedescendant, DOM focus stays on the combobox, so the only visible cue of the highlighted option for sighted keyboard users is the `option--active` class; no stylesheet in the repository defines it (nor a focus style for the `size-picker` combobox). Check that `option--active` gives a visible highlight with at least 3:1 contrast and that the combobox keeps a visible focus indicator (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast); if the list can overflow, scroll the active option into view when it changes (2.4.11 Focus Not Obscured).",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Highlighted option relies on an unstyled class"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-size-picker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

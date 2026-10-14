@@ -21,6 +21,10 @@ on:
         description: "Minimum recall per role"
         required: false
         default: "0.5"
+      repeat:
+        description: "Runs of each case, 1 to 3 (record more, a baseline of five, locally)"
+        required: false
+        default: "1"
 
 permissions:
   contents: read
@@ -32,8 +36,12 @@ jobs:
   evals:
     name: Evaluate the roles
     runs-on: ubuntu-24.04
-    # 26 cases, at most 10 minutes each, two at a time: at most 130 minutes.
-    timeout-minutes: 240
+    # The hosted maximum. One repetition of the 40 cases takes about 21
+    # minutes of agent time (the 2026-10-14 baseline), some 6 minutes at four
+    # jobs; at worst each case runs into its 600 s timeout, 100 minutes per
+    # repetition. Three repetitions fit even then; more are recorded locally
+    # (CONTRIBUTING.md), and the run step refuses them.
+    timeout-minutes: 360
     steps:
       - name: Check the API key
         id: key
@@ -58,6 +66,24 @@ jobs:
         # Pinned: the job holds the API key and runs what it installs, and
         # scores compare with the baseline's version. Raise it deliberately.
         run: npm install -g @anthropic-ai/claude-code@2.1.289
+      - name: Install the sandbox
+        if: steps.key.outputs.present == 'true'
+        # Claude Code's sandbox confines the agent's shell commands; on
+        # Linux it needs bubblewrap and socat, and Ubuntu 24.04 lets bwrap
+        # create user namespaces only through an AppArmor profile.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap socat
+          sudo tee /etc/apparmor.d/bwrap > /dev/null <<'EOF'
+          abi <abi/4.0>,
+          include <tunables/global>
+
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+            include if exists <local/bwrap>
+          }
+          EOF
+          sudo systemctl reload apparmor
       - name: Build codev
         if: steps.key.outputs.present == 'true'
         run: cargo build --locked --bin codev
@@ -71,11 +97,16 @@ jobs:
           CODEV_EVAL_MODEL: ${{ inputs.model }}
           CODEV_EVAL_MIN_RECALL: ${{ inputs.min_recall }}
           EVAL_ROLES: ${{ inputs.roles }}
+          EVAL_REPEAT: ${{ inputs.repeat }}
         run: |
+          if ! [[ "$EVAL_REPEAT" =~ ^[1-3]$ ]]; then
+            echo "repeat must be 1, 2 or 3 here: record more repetitions locally (CONTRIBUTING.md)." >&2
+            exit 1
+          fi
           read -ra roles <<< "$EVAL_ROLES"
           args=()
           for role in "${roles[@]}"; do args+=(--role "$role"); done
-          cargo run --locked -p codev-evals -- run --out evals-output "${args[@]}"
+          cargo run --locked -p codev-evals -- run --out evals-output --repeat "$EVAL_REPEAT" --jobs 4 "${args[@]}"
       - name: Keep the output
         if: always() && steps.key.outputs.present == 'true'
         uses: actions/upload-artifact@v4

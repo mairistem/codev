@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.3074452,
+  "durationMs": 28403,
+  "consumption": {
+    "durationApiMs": 28603,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 26960,
+      "cacheRead": 186496,
+      "output": 2673
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/pricing.ts:8-10",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Rewrite `bucket` as a plain function a reader can follow without the plan: a named constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros, the rule the proposal states), a readable comparison `price.cents >= PREMIUM_THRESHOLD_CENTS`, full names (`prices`, `price`, `groups` instead of `ps`, `p`, `a`), and a typed result such as `{ cheap: Price[]; premium: Price[] }` built with two `filter` calls or a simple loop — instead of the `reduce` with a comma expression and `||=` in a computed key. The doc comment speaks of \"cheap\" and \"premium\" while the keys are \"hi\" and \"lo\", and `Record<string, Price[]>` hides that a key may be missing when no price falls in it; aligning the names and the type removes both questions. Where a newcomer stumbles: the condition `(p.cents >> 4) & 0x3e8` — nothing says what the shift and the mask mean, nor that 0x3e8 is 1000, and a reader cannot tell whether it is meant to be \"10 euros and more\". It is not: 512 cents gives 32 & 1000 = 32, so a 5.12-euro price lands in \"hi\", while 16384 cents gives 1024 & 1000 = 0, so a 163.84-euro price lands in \"lo\" — the bit mask does not express a threshold at all. The dense shape is what hides this; the developer should confirm the intended rule when rewriting it.\n",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`bucket` packs the premium rule into an unreadable bit-twiddling one-liner"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

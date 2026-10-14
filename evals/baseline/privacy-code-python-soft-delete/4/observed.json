@@ -1,0 +1,158 @@
+{
+  "format": 2,
+  "case": "privacy-code-python-soft-delete",
+  "error": null,
+  "costUsd": 0.36856780000000006,
+  "durationMs": 45636,
+  "consumption": {
+    "durationApiMs": 44823,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 30234,
+      "cacheRead": 295059,
+      "output": 3334
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Account deletion keeps the member's e-mail, name, phone and postal address) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-account-deletion",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "\"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/account.py:18-21",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal promises that the button \"erases the member's personal data\", but delete_account only soft-deletes the row: email, display_name, phone and postal_address (app/schema.sql:3-6) stay in the users table indefinitely. A member who clicks \"Delete my account\" still has their e-mail, name, phone number and postal address stored, so the right to erasure (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Overwrite or null these fields in the same UPDATE (email is NOT NULL UNIQUE, so replace it with a unique non-identifying value such as \"deleted-<id>@invalid\"), keeping the row only so orders.user_id still resolves to a now pseudonymous record for accounting. Add a test asserting the personal columns are gone after delete_account — the current tests only check sign-in and sessions.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Account deletion keeps the member's e-mail, name, phone and postal address"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def analytics_id(user_id: int) -> str:\n    \"\"\"The pseudonymous id analytics events carry instead of the user id.\"\"\"\n    return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 34,
+        "location": "app/account.py:11-13",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "analytics_id is a deterministic hash of the user id under a long-lived salt, so every analytics event it tags stays linkable to the member (anyone holding ANALYTICS_SALT and the users/orders ids can re-identify it) — it is pseudonymous, not anonymous, and remains personal data. The change adds it but delete_account does nothing about the events carrying it, so erasure misses that copy. State where analytics events are stored and who processes them (a new processor or transfer outside the EEA must be identified), and have delete_account erase or detach the member's analytics events (or use a per-user random id deleted with the account). Confidence low: the analytics store and its callers are not visible in this change.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Analytics events keyed by analytics_id are not erased with the account"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"\"\"Deletes the member's account; their orders are kept for accounting.\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 58,
+        "location": "app/account.py:17",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change defines no retention period: soft-deleted users rows are never purged, orders are \"kept for accounting\" with no stated duration, and nothing says how long erased data survives in backups of members.db. Define the accounting retention period for orders, a purge of soft-deleted rows once it has elapsed, and the backup retention after which an erasure is complete (GDPR Art. 5(1)(e), Art. 17). Confidence low: the backup setup and the accounting obligation are not visible in the repository — a question for the team.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No retention rule for deleted accounts and their backups"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-account-deletion/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

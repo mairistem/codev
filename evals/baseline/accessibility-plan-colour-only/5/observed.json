@@ -1,0 +1,137 @@
+{
+  "format": 2,
+  "case": "accessibility-plan-colour-only",
+  "error": null,
+  "costUsd": 0.34868,
+  "durationMs": 33152,
+  "consumption": {
+    "durationApiMs": 32503,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 28834,
+      "cacheRead": 286575,
+      "output": 2986
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Invalid fields are identified by colour only, with no text and no programmatic state) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "inline-form-validation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`field--invalid`, a red border (`#e5484d`); the list of errors at the top of\nthe page is removed, since the red border already shows where the problem\nis. No message text is added, to keep the form compact.\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 15,
+        "location": "design.md#Decision: Invalid fields turn red",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Identify each error in text next to its field (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification, 4.1.2 Name, Role, Value): render a message element under the invalid field, link it with `aria-describedby`, and set `aria-invalid=\"true\"` on the input while it is invalid, removing both when it is corrected. Scenario that fails: a screen reader user tabs out of the postcode field with `ABC`; the only change is the border colour, nothing is announced, and with the top error list removed they have no way to learn that the field is invalid or why; a colour-blind user cannot tell the red border from the grey one either. The spec encodes the same gap — its scenarios only require \"the field's border turns red\" and \"the border returns to grey\" (specs/checkout-validation/spec.md) — so add THEN clauses for the message text and `aria-invalid`, and the matching checks to task 1.2; the proposal's \"invalid fields are shown in red\" should follow.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Invalid fields are identified by colour only, with no text and no programmatic state"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Each field validates on `blur`. An invalid field gets the class\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 44,
+        "location": "design.md#Decision: Invalid fields turn red",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "State what happens on submit when fields are invalid (WCAG 3.3.1 Error Identification, 2.4.3 Focus Order): validate every field on submit, not only the ones blurred, and move focus to the first invalid field — or keep an error summary that takes focus and links to each field. Without it, a keyboard or screen reader user who never focused a required field, or who presses Enter from inside a field, submits, and the plan does not say whether anything is announced or where focus goes. Confidence is low because the design does not describe the submit path at all.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Submitting with errors gives no summary and no focus move once the top error list is removed"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/inline-form-validation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

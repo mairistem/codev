@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "migration-code-drop-and-rename",
+  "error": null,
+  "costUsd": 0.30805720000000003,
+  "durationMs": 23697,
+  "consumption": {
+    "durationApiMs": 22651,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 27147,
+      "cacheRead": 233726,
+      "output": 2157
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Public JSON field `user_name` renamed `userName` without a BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Irreversible `DROP COLUMN legacy_email` with no down migration, backup step or release note) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "drop-legacy-email",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"userName\")]\npub user_name: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:8-9",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Every existing client of the public HTTP API that reads `user_name` from an Account response gets a missing field (undefined / deserialization error) as soon as this ships, with no warning: the release note only says \"Changed: Account JSON uses camelCase.\" Mark it **BREAKING** in the release note and say what clients must do (read `userName`). Give consumers time: serialize both keys during a deprecation window (e.g. a second `#[serde(rename = \"user_name\")]` field or a custom Serialize emitting both), announce the removal date of `user_name`, or version the endpoint; add a test that pins the response keys.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Public JSON field `user_name` renamed `userName` without a BREAKING mark or transition"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 35,
+        "location": "migrations/0005_drop_legacy_email.sql:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Running migration 0005 permanently deletes every value still stored in `users.legacy_email` (rows imported in 2023 keep it, per `migrations/0004_accounts.sql`), and there is no `0005_drop_legacy_email.down.sql` while 0004 has one, so a rollback cannot restore the column or its data. Add a down migration (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`) and a backup/export step of the column before the drop (or a copy to an archive table), or state in the plan why the data is disposable and how to recover. Check that no deployed instance or external consumer still reads the column before dropping it (contract step after the code stops using it), and list the removal in the release note, which currently omits it.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Irreversible `DROP COLUMN legacy_email` with no down migration, backup step or release note"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/drop-legacy-email/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

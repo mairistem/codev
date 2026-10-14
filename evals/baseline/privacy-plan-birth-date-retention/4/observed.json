@@ -1,0 +1,208 @@
+{
+  "format": 2,
+  "case": "privacy-plan-birth-date-retention",
+  "error": null,
+  "costUsd": 0.4540472,
+  "durationMs": 47006,
+  "consumption": {
+    "durationApiMs": 47240,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 36022,
+      "cacheRead": 361091,
+      "output": 4633
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-birthday-greetings",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are\nkept as long as the profile exists, and copied with the rest of the\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Tie retention to the purpose, not to the profile (GDPR Art. 5(1)(c) and 5(1)(e)): when a member turns the option off, clear `birthday` and `phone` in the same update. Add a requirement and scenario for it to the spec (\"WHEN a member opts out THEN their birthday and phone number are erased\") and a test to task 1.2. Today a member who opts out keeps both values on their profile for as long as the account lives, with no use left for them; the spec's \"No phone\" scenario even assumes the phone can be removed while the birthday stays.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Opting out leaves the birthday and phone number stored"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 34,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "State how long the nightly backups holding `birthday` and `phone` are kept and how an erased or opted-out member's values leave them (backup expiry period, or re-application of deletions on restore). Without it, a member's erasure request or opt-out removes the live row while the backups keep the data indefinitely (GDPR Art. 5(1)(e), Art. 17).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No retention or purge for the copies in nightly backups"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 54,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Send Textly only what sending the SMS needs — the phone number and the message text — or state why the name must reach the processor (data minimisation, GDPR Art. 5(1)(c)). If the greeting is personalised, compose the text on our side so Textly does not receive the name as a separate field tied to the number. Confidence low: whether the greeting is meant to carry the name is not stated in the plan.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Display name sent to Textly beyond what delivery needs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 75,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: name Textly as a processor in the proposal's Impact (it lists only \"Textly account\") and state the processor agreement (GDPR Art. 28) and the transfer mechanism for sending phone numbers and names to the United States (Chapter V — e.g. EU-US Data Privacy Framework certification or standard contractual clauses), plus Textly's own retention of the numbers. Only the controller can confirm what is in place.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Transfer to a US processor without a stated safeguard or processor agreement"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Members enjoy being remembered; marketing wants birthday messages.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-5",
+        "line": 97,
+        "location": "proposal.md#Why",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: state the purpose of the new birthday and phone data and its lawful basis (presumably consent, given the opt-in — GDPR Art. 6(1)(a), Art. 7), and state that the phone number is used only for the birthday greeting, not for other marketing messages. If marketing intends further use, that is a separate purpose needing its own basis and, for SMS marketing, ePrivacy consent.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Purpose and lawful basis not stated; marketing purpose mixed in"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

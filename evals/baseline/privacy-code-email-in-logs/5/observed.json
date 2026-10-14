@@ -1,0 +1,195 @@
+{
+  "format": 2,
+  "case": "privacy-code-email-in-logs",
+  "error": null,
+  "costUsd": 0.35781320000000005,
+  "durationMs": 37127,
+  "consumption": {
+    "durationApiMs": 35718,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 28767,
+      "cacheRead": 291676,
+      "output": 3416
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (E-mail address and display name written to the application log) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-signup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "log.info(\"new signup email=%s name=%s id=%s\", email, display_name, user_id)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/signup.py:14",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Log only the opaque id (`log.info(\"new signup id=%s\", user_id)`). As written, every sign-up copies the member's e-mail address and display name into the application logs, which have no retention rule of their own and are not reached by access or erasure requests (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 17 erasure).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "E-mail address and display name written to the application log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "track(\"signup\", {\"user_id\": user_id, \"email\": email})\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 30,
+        "location": "app/signup.py:15",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Drop `email` from the event properties. The stated purpose is that \"Sign-ups are counted in product analytics\", which needs no e-mail address; with this line every sign-up sends the member's e-mail address to the third-party processor at https://beacon.example.com (app/analytics.py:5), beyond the purpose (GDPR Art. 5(1)(b)-(c), Art. 25). Consider whether even `user_id` is needed to count sign-ups; if it is kept, Beacon still receives a pseudonymous identifier (see R-privacy-3).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "E-mail address sent to the Beacon analytics SaaS"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"\"\"Product analytics, sent to the Beacon SaaS (beacon.example.com).\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 51,
+        "location": "app/analytics.py:1",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change introduces a new processor (Beacon, a SaaS at beacon.example.com) receiving member data, but the proposal does not name it, its data processing agreement (GDPR Art. 28), nor where it hosts the data (Chapter V transfers outside the EEA). Question for the team: record Beacon in the records of processing (Art. 30) and state its location, or keep only anonymous counts in the events. Confidence low: a register outside this repository may already cover it.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "New processor Beacon not identified in the plan"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [x] personal-data — collects e-mail addresses and display names\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 72,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: the proposal states what is collected but not the lawful basis (Art. 6) for collecting the e-mail address and display name, nor how long the member record is kept and how it is erased, backups included. Only the controller can say; record it in the proposal.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Lawful basis and retention of sign-up data not stated"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-signup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

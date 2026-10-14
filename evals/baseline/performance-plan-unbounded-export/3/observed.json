@@ -1,0 +1,143 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.3574642,
+  "durationMs": 35405,
+  "consumption": {
+    "durationApiMs": 34616,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 29312,
+      "cacheRead": 333061,
+      "output": 2768
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export loads the whole audit log into memory and builds one CSV string on the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 19,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Stream the export: read the rows with a database cursor or keyset batches (`WHERE org_id = $1 AND (created_at, id) > ($2, $3) ORDER BY created_at, id LIMIT n`), convert each batch to CSV lines and write them to the response stream, honouring backpressure. Memory then stays bounded by the batch size and the event loop is yielded between batches. Keep the spec's ordering (oldest first) and its \"every event\" result; only the way rows are read and written changes. Cost today grows linearly with the organization's history: per design.md#Context, about 40 000 rows a month kept seven years, that is up to ~3.4 million rows per organization held at once as row objects, then as an array of lines, then as one string — enough to exhaust the Node.js heap or exceed V8's maximum string length, and the synchronous map/join blocks the single event loop for every other request of the instance while it runs. Add a task that exercises the export on a large organization.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export loads the whole audit log into memory and builds one CSV string on the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 48,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so this could not be verified. Check that an index on `(org_id, created_at)` exists (or add one to the plan), and run `EXPLAIN` on the query against a production-sized table: without it the database sorts every row of the organization, over a table holding seven years of events for all organizations, on each export.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is stated for the export's filter and sort"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

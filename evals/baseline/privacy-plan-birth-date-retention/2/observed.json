@@ -1,0 +1,214 @@
+{
+  "format": 2,
+  "case": "privacy-plan-birth-date-retention",
+  "error": null,
+  "costUsd": 0.4244392,
+  "durationMs": 49615,
+  "consumption": {
+    "durationApiMs": 49080,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 32227,
+      "cacheRead": 340326,
+      "output": 4879
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-birthday-greetings",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 15,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Store the opt-in explicitly (a consent flag with its date) and define what withdrawing it does: clear `birthday` and `phone` from `profiles` when the member turns the option off, and make the daily job select only opted-in profiles. Add a spec scenario \"A member opts out\" (WHEN a member turns the option off THEN birthday and phone are erased and no greeting is sent) and a matching task. Today the plan adds only the two columns (tasks.md 1.1), the job selects \"the profiles whose birthday is today\" with no consent check, and nothing describes opting out: a member who withdraws keeps their birthday and phone in `profiles` and may keep receiving SMS sent through Textly (GDPR Art. 5(1)(c), 5(1)(e), Art. 7(3)).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Opting out neither erases the birthday and phone nor stops the greetings"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 39,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "State the retention period of the nightly backups and how an erasure (opt-out or account deletion) reaches them — backup rotation within a stated delay, or re-applying erasures on restore. As written, a member's birthday and phone removed from `profiles` survive in every backup for an undefined time, and a restore brings them back (GDPR Art. 5(1)(e), Art. 17).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Birthday and phone kept indefinitely in nightly backups, with no expiry or erasure"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 59,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: record Textly as a processor (Art. 28 agreement, record of processing under Art. 30) and name the transfer mechanism for the US (EU-US Data Privacy Framework certification or standard contractual clauses, GDPR Chapter V), or choose an EEA-hosted SMS provider. Also say whether Textly retains the phone numbers and message contents, and for how long. Only the controller can confirm what was agreed.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Phone numbers and names transferred to a US processor without a stated safeguard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Members enjoy being remembered; marketing wants birthday messages.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 80,
+        "location": "proposal.md#Why",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: state the purpose (a greeting, or marketing) and the lawful basis — presumably consent through the opt-in (GDPR Art. 6(1)(a); ePrivacy Directive for marketing SMS) — and restrict the phone number to that purpose, so marketing does not reuse it for other campaigns (Art. 5(1)(b)).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Purpose and lawful basis of the birthday SMS not stated"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [Textly is down] → the job retries the next day.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-5",
+        "line": 99,
+        "location": "design.md#Risks / Trade-offs",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Say that the job's failure handling logs only the profile's `user_id` and the error, never the phone number, display name or the request body sent to Textly.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "What the job logs when Textly fails is not defined"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

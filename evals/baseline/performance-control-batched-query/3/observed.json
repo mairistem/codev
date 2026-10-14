@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "case": "performance-control-batched-query",
+  "error": null,
+  "costUsd": 0.34478620000000004,
+  "durationMs": 36645,
+  "consumption": {
+    "durationApiMs": 35217,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 28018,
+      "cacheRead": 329551,
+      "output": 2686
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "batch-cart-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [x] 1.1 `cartTotal` with one query, verified by the cart page of a test account\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "tasks.md#1. Implementation",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The proposal says large carts were slow, but the only check is loading the cart page of a test account, so nothing shows the gain. Time `cartTotal` (or the cart request) on a large cart, for example 100 items, before and after the change, run `EXPLAIN` on `SELECT id, price_cents FROM products WHERE id = ANY($1)`, and put the numbers in the change.",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The speed gain is not backed by a measurement"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "const ids = [...new Set(items.map((item) => item.productId))];\nconst rows = await query<PriceRow>(\"SELECT id, price_cents FROM products WHERE id = ANY($1)\", [ids]);\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 25,
+        "location": "src/cart.ts:18-19",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The size of the `ANY($1)` array and of the result set grows with the number of distinct products in the cart. The proposal says \"Carts are limited to 100 items by the existing validation\", but no such validation exists in `src/` (only `cart.ts`, `db.ts` and `server.ts` are there), and `cartTotal` accepts any `CartItem[]`. Check that the 100-item limit is enforced before `cartTotal` is called. Also check that `products.id` is indexed (it is probably the primary key; the schema is not in the repository).",
+        "reported": false,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The cart-size bound the query relies on is not in the repository"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/batch-cart-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

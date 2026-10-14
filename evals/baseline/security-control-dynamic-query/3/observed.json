@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "security-control-dynamic-query",
+  "error": null,
+  "costUsd": 0.35471520000000006,
+  "durationMs": 42204,
+  "consumption": {
+    "durationApiMs": 41099,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 27717,
+      "cacheRead": 330836,
+      "output": 3290
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-ticket-filters",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def search_tickets(filters: dict[str, str], order: str = \"newest\", limit: int = 50) -> list[tuple]:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "app/search.py:22",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The new operation takes no caller identity and applies no restriction of its own: any console user who can call it lists every ticket, any assignee's included (`assignee` is a free filter, not the caller). If tickets are not meant to be visible to every agent, take the caller as a parameter and scope the query server-side (CWE-862). Confidence is low because no caller of `search_tickets` is in the change, so whether the console already restricts who reaches it could not be checked. The query itself is safe: column fragments and sort orders come only from the `FILTERS` and `ORDERS` allow-lists, and values and the limit are bound parameters.\n",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Search returns every ticket with no caller scope"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-ticket-filters/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

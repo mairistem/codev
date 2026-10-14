@@ -1,0 +1,131 @@
+{
+  "format": 2,
+  "case": "accessibility-plan-colour-only",
+  "error": null,
+  "costUsd": 0.33238719999999994,
+  "durationMs": 31695,
+  "consumption": {
+    "durationApiMs": 32116,
+    "turns": 6,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1169,
+      "cacheCreation": 28738,
+      "cacheRead": 238191,
+      "output": 2694
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Field errors are conveyed by a red border only, with no text) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "inline-form-validation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Each field validates on `blur`. An invalid field gets the class\n`field--invalid`, a red border (`#e5484d`); the list of errors at the top of\nthe page is removed, since the red border already shows where the problem\nis. No message text is added, to keep the form compact.\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "design.md#Decision: Invalid fields turn red",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "A screen reader user who tabs out of the postcode field with `ABC` hears nothing — the class only changes a border, so the field is not exposed as invalid and no reason is given; a colour-blind or low-vision user cannot tell the red border from the grey one. Neither can learn what is wrong nor how to fix it (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification, 3.3.3 Error Suggestion, 4.1.2 Name, Role, Value). Add a text message next to each invalid field, associated with it through `aria-describedby`, set `aria-invalid=\"true\"` on the input, and keep the red border only as a complement. Update the spec scenarios (\"the field's border turns red\" / \"returns to grey\") to require the message and its removal, and drop the rejected alternative's rationale from the design.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Field errors are conveyed by a red border only, with no text"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- The error list at the top of the form is removed.\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 38,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "With the top error list removed and no submit behaviour specified, a keyboard or screen reader user who presses Submit with a field still invalid (or never visited, so never blurred) gets no announcement and focus stays on the button: they cannot find which field blocks the order (WCAG 3.3.1 Error Identification, 2.4.3 Focus Order). Specify what happens on submit: validate every field, then move focus to the first invalid field (or to an error summary with links to the fields), and add a scenario for it in `specs/checkout-validation/spec.md`.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Submitting an invalid form no longer tells the user anything"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/inline-form-validation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "migration-plan-breaking-rename",
+  "error": null,
+  "costUsd": 0.3443776,
+  "durationMs": 31867,
+  "consumption": {
+    "durationApiMs": 31271,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 28996,
+      "cacheRead": 284983,
+      "output": 2722
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Public field removed with no deprecation or transition period) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (The rename is not marked BREAKING and the release note gives partners no action) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-order-status",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`OrderResponse.status` becomes `OrderResponse.state`; the old name is not\nkept. The OpenAPI file is regenerated.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 15,
+        "location": "design.md#Decision: The field is renamed in place",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Follow expand then contract. In this change, `GET /orders/{id}` returns both `state` and `status` with the same value, and `status` is marked deprecated in `openapi.yaml` with a stated removal date or version. Remove `status` in a later change, after partners have had time to migrate. Add a spec scenario and a task test showing that a paid order still holds `\"status\": \"paid\"` next to `\"state\": \"paid\"` during the deprecation window. The design's rejection of this option (\"keeping both fields (duplication)\") should weigh the cost to partners, not only the duplication.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Public field removed with no deprecation or transition period"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- The order JSON's `status` field is renamed `state`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 47,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Mark the item **BREAKING** in What Changes, and turn the release note's `- Changed: The order's `status` field is now called `state`.` into a **BREAKING** item that tells API consumers what to do: read `state` instead of `status`, from which version or date, and until when `status` remains available (see R-migration-1).",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The rename is not marked BREAKING and the release note gives partners no action"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-order-status/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

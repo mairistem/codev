@@ -1,0 +1,100 @@
+{
+  "format": 2,
+  "case": "ops-control-graceful-shutdown",
+  "error": null,
+  "costUsd": 0.3761285999999999,
+  "durationMs": 43523,
+  "consumption": {
+    "durationApiMs": 42911,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 31121,
+      "cacheRead": 244723,
+      "output": 3861
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-mail-worker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/worker.rs:46-48",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Sending an e-mail is not idempotent. `SendError::Unavailable` covers both \"the relay could not be reached\" and a temporary failure; if the mailer also returns it when `SEND_TIMEOUT` expires after the message data was transmitted, the relay may still deliver it while the job is released and sent again, up to MAX_ATTEMPTS times. Confirm how the mailer classifies a timeout after DATA; if it maps to `Unavailable`, give the message a stable Message-ID derived from the job id so duplicates can be recognised, or distinguish \"outcome unknown\" from \"not sent\" before retrying.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay took the message is retried and may be delivered twice"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-mail-worker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

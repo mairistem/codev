@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.35974420000000007,
+  "durationMs": 34419,
+  "consumption": {
+    "durationApiMs": 33564,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 29479,
+      "cacheRead": 324876,
+      "output": 2897
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The migration paths were verified once by hand on staging (tasks 1.1 and 1.2). Add unit tests that load a TOML file using `listen` and one using `bind_address` through `config::load`, and that serialize an `OrderResponse` and assert the JSON key is `customer_id` (src/api.rs:10-11), so that dropping the alias or the rename in a later change fails the build instead of breaking existing config files or partners' integrations.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The `listen` alias and the `customer_id` JSON key have no automated test"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "bind_address = \"0.0.0.0:8080\"\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 32,
+        "location": "config.example.toml:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The release note invites operators to rename `listen` to `bind_address`, but the previous release's `Config` requires `listen`, so a 4.1 instance started on a migrated file (rollback, or old and new instances sharing one file during a rolling deploy) fails at start-up with a missing-field error. Whether that happens depends on deployment practice the reviewer could not see. Add to the release note that files should keep `listen` until rollback to 4.1 is no longer needed, or that a rollback requires restoring `listen`.",
+        "reported": false,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Rolling back to 4.1 fails on a config file already moved to `bind_address`"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

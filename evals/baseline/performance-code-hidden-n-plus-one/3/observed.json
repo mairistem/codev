@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "case": "performance-code-hidden-n-plus-one",
+  "error": null,
+  "costUsd": 0.3614718,
+  "durationMs": 34763,
+  "consumption": {
+    "durationApiMs": 33407,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 29318,
+      "cacheRead": 334954,
+      "output": 2947
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-monthly-report",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "let customer = db.customer(invoice.customer_id)?;\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "src/report.rs:39",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "N+1 queries: called from the invoice loop (src/report.rs:23-26, `customer: customer_label(db, invoice)?`), `monthly_report` runs `SELECT ... FROM customers WHERE id = $1` once per invoice, so a month of about 3 000 invoices (proposal) costs about 3 000 sequential round trips for only 800 distinct customers; the cost grows linearly with the month's invoices. `Db` already offers `customers(&[i64])` (`WHERE id = ANY($1)`, src/db.rs:26): collect the distinct `customer_id`s, fetch them in one call, index them in a `HashMap<i64, Customer>` and build each label from it, keeping the invoice order and returning the same error when a customer is missing.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "One customer query per invoice in the monthly report"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 34,
+        "location": "src/report.rs:44-46",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "`purchase_order` is called once per invoice in the report loop (src/report.rs:28) and compiles the same pattern on each call, so a month of about 3 000 invoices compiles it about 3 000 times; compiling a regex is far more expensive than matching one short note. Compile it once, in a `static PATTERN: std::sync::LazyLock<Regex>` (or `OnceLock`), and reuse it.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The purchase-order regex is compiled again for every invoice"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-monthly-report/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

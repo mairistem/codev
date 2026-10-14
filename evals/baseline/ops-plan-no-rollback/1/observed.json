@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "ops-plan-no-rollback",
+  "error": null,
+  "costUsd": 0.366353,
+  "durationMs": 29141,
+  "consumption": {
+    "durationApiMs": 29008,
+    "turns": 9,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 29549,
+      "cacheRead": 383585,
+      "output": 2612
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (The switch to Paylane has no way back once Stripe is closed) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (Nobody would see the settlement worker fail or not run) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "switch-payment-provider",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The Stripe client is deleted and replaced by the Paylane client in the same\nrelease. There is no switch between the two: keeping both would double the\ncode to maintain. The Stripe account is closed the day after the release.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 15,
+        "location": "design.md#Decision: All traffic moves at deploy",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Keep a way back that does not depend on a redeploy alone: keep the Stripe client behind a configuration switch (provider selected per environment) for at least one release cycle, and keep the Stripe account open until Paylane has run in production through several nightly settlements without incident. State in the design the rollback procedure and the condition that allows closing the Stripe account. Scenario that fails: Paylane rejects or times out on authorizations two days after the release; deploys are weekly and the previous release calls a closed Stripe account, so every card payment fails until a new release ships.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The switch to Paylane has no way back once Stripe is closed"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "A new worker, `settlement-worker`, runs at 02:00, fetches the day's Paylane\npayments and matches them to orders. It runs as a Kubernetes CronJob and\nwrites its result to the database.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 40,
+        "location": "design.md#Decision: A worker settles payments nightly",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Decide in the design how a failed or missed run is detected: log a structured start and end line with the run date and the counts fetched, matched and unmatched; expose a last-successful-run timestamp (metric or database row) and alert when it is older than a day; alert on a CronJob failure or a Paylane fetch error with the run date. Add a task for it. Scenario that fails: the Paylane API is down at 02:00 or the pod is evicted; the CronJob fails, no payment is written to `unmatched_payments`, so the only alert the spec defines never fires and the day stays unreconciled with no one aware.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Nobody would see the settlement worker fail or not run"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/switch-payment-provider/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

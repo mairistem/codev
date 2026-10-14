@@ -1,0 +1,127 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.3486808,
+  "durationMs": 30342,
+  "consumption": {
+    "durationApiMs": 29743,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 27946,
+      "cacheRead": 334504,
+      "output": 2860
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The migration path for existing `config.toml` files (the `listen` alias) works, but it was only checked by hand on staging (task 1.1); the repository has no test for it, so a later edit that drops the alias would make every pre-4.2 file fail at start-up with a missing-field error and no test would catch it. Add a unit test calling `config::load` with a file that uses `listen` and one that uses `bind_address`, both yielding the same `bind_address`.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No automated test that a pre-4.2 file with `listen` still loads"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"customer_id\")]\npub buyer_id: i64,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 32,
+        "location": "src/api.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Partners' integrations read `customer_id` (docs/api.md); the rename keeps it, but only a manual before/after comparison on staging checked it (task 1.2). A later edit that removes the `rename` would silently send `buyer_id` and break partners. Add a test serializing an `OrderResponse` with `serde_json` and asserting the `customer_id` key is present and `buyer_id` absent.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No automated test that the orders JSON still says `customer_id`"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

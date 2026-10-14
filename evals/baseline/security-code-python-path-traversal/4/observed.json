@@ -1,0 +1,164 @@
+{
+  "format": 2,
+  "case": "security-code-python-path-traversal",
+  "error": null,
+  "costUsd": 0.3494518,
+  "durationMs": 32668,
+  "consumption": {
+    "durationApiMs": 31739,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1193,
+      "cacheCreation": 28969,
+      "cacheRead": 283124,
+      "output": 3004
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (Path traversal in read_attachment through the client-supplied name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-ticket-attachments",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "path = os.path.join(UPLOAD_DIR, str(ticket_id), name)\nwith open(path, \"rb\") as f:\n    return f.read()\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "app/attachments.py:30-32",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Validate `name` where it enters (CWE-22): reject it unless it equals `os.path.basename(name)` and is not empty, `.` or `..`, or better look it up in the `attachments` table for this `ticket_id` and open only a stored name; then check that the resolved path (`os.path.realpath`) stays under `UPLOAD_DIR/<ticket_id>`. The `may_read_ticket` check on line 28 only covers `ticket_id`, so without this fix it protects nothing. Add a test that `read_attachment` refuses `../2/x.png`, `../../../../etc/passwd` and `/etc/passwd`.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Path traversal in read_attachment through the client-supplied name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:\n    \"\"\"Stores an uploaded file under the ticket's directory; returns its name.\"\"\"\n    name = os.path.basename(filename)\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 39,
+        "location": "app/attachments.py:11-17",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Give `save_attachment` the caller's identity and check on the server that it may write to `ticket_id` (CWE-862), as `read_attachment` does with `may_read_ticket`; otherwise any caller of the upload entry point attaches files to any ticket. Confidence low: the HTTP handler calling it is not in the change, so whether it checks ownership could not be verified.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "save_attachment takes no caller and checks no authorization"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "with open(os.path.join(directory, name), \"wb\") as f:\n    f.write(data)\n_conn.execute(\n    \"INSERT INTO attachments (ticket_id, name, size) VALUES (?, ?, ?)\",\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 60,
+        "location": "app/attachments.py:16-21",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Store each upload under a server-generated name (a UUID, or the row id) and keep the client's filename only as display metadata, or refuse an existing name (open with mode `\"xb\"`). As written, whoever can upload to a ticket replaces a file agents already trust — e.g. a screenshot swapped for a malicious document under the same name — and the table keeps two rows pointing at one file with a stale `size`. Confidence low: who may upload to a ticket depends on the caller, not visible in the change.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "An upload silently overwrites an earlier attachment of the same name"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-ticket-attachments/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

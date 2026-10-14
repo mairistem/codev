@@ -1,0 +1,164 @@
+{
+  "format": 2,
+  "case": "ops-code-retry-without-backoff",
+  "error": null,
+  "costUsd": 0.37038599999999994,
+  "durationMs": 41428,
+  "consumption": {
+    "durationApiMs": 40413,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1195,
+      "cacheCreation": 28488,
+      "cacheRead": 333495,
+      "output": 3739
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (A dropped webhook is only logged at debug level, in free text) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-merchant-webhooks",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/webhooks.ts:9-23",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Wait between attempts with exponential backoff and jitter (for example 1s, 2s, 4s, 8s, capped), or better, hand failed deliveries to a delayed retry queue. As written, when a merchant's server returns 5xx or is briefly unreachable, the five POSTs are sent immediately one after another: a restart of a few seconds exhausts every attempt and the event is lost, while a merchant under load receives a burst of retries for every payment event (a retry storm across all its events). Also stop retrying on non-retryable 4xx responses (other than 408/429), which the loop currently retries identically.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Retries fire back-to-back with no backoff"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "    console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n  }\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 32,
+        "location": "src/webhooks.ts:21-24",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Use the project's structured `logger` (src/logger.ts, as src/events.ts does) instead of `console.debug`: log each failed attempt with fields (eventId, merchant/payment id, URL host, attempt, HTTP status or error) and log the final drop at error level, plus a counter metric for delivered/failed/dropped webhooks. Today, when a merchant endpoint is down, debug output is typically filtered in production, so the event is permanently lost and nobody — operator or merchant — knows. A non-ok HTTP response (`response.ok` false) is not logged at all, so the status code that would explain the failure is never visible.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "A dropped webhook is only logged at debug level, in free text"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "if (rows.length > 0) {\n  await deliver(rows[0].webhook_url, event);\n}\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 56,
+        "location": "src/webhooks.ts:33-35",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "`publish` in src/events.ts awaits each listener in turn, so a merchant endpoint that times out holds the dispatch of that event — and every listener after this one — for up to 5 × 5 s = 25 s (more once backoff is added). Whether this stalls the payment service depends on whether its caller awaits `publish`, which the change does not show. Consider dispatching delivery asynchronously (a queue or a fire-and-forget task with its own error handling).",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delivery retries block the payment event dispatch loop"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

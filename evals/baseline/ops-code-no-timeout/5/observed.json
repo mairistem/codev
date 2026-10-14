@@ -1,0 +1,220 @@
+{
+  "format": 2,
+  "case": "ops-code-no-timeout",
+  "error": null,
+  "costUsd": 0.35043300000000005,
+  "durationMs": 37051,
+  "consumption": {
+    "durationApiMs": 36542,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1177,
+      "cacheCreation": 26728,
+      "cacheRead": 328795,
+      "output": 3491
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (Payment call has no timeout and can hang the checkout forever) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (Unbounded retry loop with fixed one-second delay, including on permanent errors) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Retrying a non-idempotent charge can charge the customer twice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "charge-orders",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "app/payments.py:14",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it, when the provider accepts the connection but stops answering, `charge()` blocks indefinitely: the checkout request and its worker hang with no error and no log, and the operator only sees stuck workers. Treat a read timeout as an ambiguous outcome (the charge may have gone through), see R-ops-3.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Payment call has no timeout and can hang the checkout forever"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "while True:\n    try:\n        response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException:\n        time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 30,
+        "location": "app/payments.py:12-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Bound the retries (a small maximum number of attempts) with exponential backoff and jitter, then raise. As written, `raise_for_status()` turns a 4xx (declined card, invalid amount, bad credentials) into `requests.HTTPError`, a `RequestException`, so a request that can never succeed is retried every second forever: `charge()` never returns, and during a provider outage every checkout hammers the provider once a second (retry storm). Retry only transient failures (connection errors, 5xx, 429) and surface the others to the caller.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded retry loop with fixed one-second delay, including on permanent errors"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 57,
+        "location": "app/payments.py:14-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Make the retried request idempotent: send an idempotency key derived from `order_id` (e.g. an `Idempotency-Key` header, if the provider supports it) so the provider deduplicates repeats, or do not retry an ambiguous outcome. Scenario: the provider processes the charge but the response is lost (connection reset, 502 from a proxy, or a timeout once R-ops-1 is fixed); the `except` branch sleeps and POSTs the same charge again, creating a second charge for the same order.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Retrying a non-idempotent charge can charge the customer twice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "except requests.RequestException:\n    time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 77,
+        "location": "app/payments.py:17-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Log each failed attempt with structured fields (order_id, attempt number, HTTP status, exception type; never the request body or credentials) and raise an actionable error naming the order and the provider status when retries are exhausted. Today, when the provider rejects or fails a charge, the exception is dropped: no log, no metric, no error reaches the caller, so an operator investigating a stuck or unpaid order has nothing to diagnose it with.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Payment failures are swallowed without any log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "PAYMENT_URL = \"https://payments.example.com/v2/charges\"\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-5",
+        "line": 98,
+        "location": "app/payments.py:7",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Read the provider URL from the environment or the project's configuration. The endpoint differs between environments (provider sandbox vs production); with it baked in, a development or staging deployment that calls `charge()` hits the production endpoint, and pointing an environment elsewhere requires a code change and a release.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Provider URL hard-coded instead of read from configuration"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/charge-orders/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

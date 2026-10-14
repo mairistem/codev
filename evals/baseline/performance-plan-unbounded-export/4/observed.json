@@ -1,0 +1,158 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.3781712,
+  "durationMs": 43890,
+  "consumption": {
+    "durationApiMs": 43520,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 29606,
+      "cacheRead": 382596,
+      "output": 3190
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export loads the whole audit log into memory and builds the CSV on the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Cost grows linearly with the organization's history, per request. The design's own context gives about 40 000 events per organization per month, kept seven years: up to about 3.4 million rows for one export. `query()` in `src/db.ts` returns `result.rows` as one array, so the handler holds every row, then an array of CSV lines, then the joined string, all at once — hundreds of megabytes per request, enough to exhaust the heap or hit V8's maximum string length. `rows.map(...).join` is synchronous: on a service with \"one event loop per instance\" it blocks every other request of the instance for the whole build. Stream instead: read the rows through a server-side cursor (`pg-cursor` or `pg-query-stream`) in batches, write each batch's CSV lines to the response as they come, and respect backpressure. Replace \"Alternatives considered: none\" with this alternative and why it is or is not chosen. Ordering (oldest first) and the set of rows stay unchanged.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export loads the whole audit log into memory and builds the CSV on the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`GET /admin/audit-events.csv` SHALL return every audit event of the organization as CSV, oldest first.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 39,
+        "location": "specs/audit-export/spec.md#Requirement: Administrators export the audit log",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The result set grows without limit — up to seven years of events per request — and the requirement allows no way to ask for less: an auditor wanting one quarter still pulls the whole history, holding a database connection and a full scan of the organization's rows for the length of the transfer, and any administrator can repeat it at will. Bound it: add `from` / `to` date parameters (with a default or maximum range) and a scenario for them, or state explicitly that the unbounded export is intended and rely on streaming (R-performance-1) plus a rate limit. This is a separate fix from streaming: streaming bounds memory, not the work per request.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The requirement exports every event with no bound on the result set"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 61,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so the index cannot be checked. Without an index on `(org_id, created_at)` the query scans the whole table (every organization's events) and sorts the result, a cost that grows with the total table size, not just the organization's. Check the existing indexes with `EXPLAIN` on a production-sized table, and add a task to create the composite index if it is missing.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is stated for the export's filter and sort"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,189 @@
+{
+  "format": 2,
+  "case": "privacy-code-error-message-pii",
+  "error": null,
+  "costUsd": 0.34340879999999996,
+  "durationMs": 27004,
+  "consumption": {
+    "durationApiMs": 26466,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 29212,
+      "cacheRead": 293344,
+      "output": 2502
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Looked-up e-mail address written to the error log) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (Chat vendor receives phone, birth date and address to greet by name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-support-lookup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "throw new NotFoundError(`no customer with e-mail ${email}`);\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/support.ts:20",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Keep the e-mail address out of the error message (e.g. `no customer for this e-mail`): `errorHandler` in src/server.ts logs `error: err.message` for every failed request, so each unsuccessful lookup on POST /support/customers/lookup writes the typed e-mail address to the application log, where it has no retention rule and escapes erasure (GDPR Art. 5(1)(c), 5(1)(e)). The same applies, to a lesser degree, to the customer id in `no customer ${id}` (src/support.ts:32). Add a test asserting the logged message holds no e-mail.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Looked-up e-mail address written to the error log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "email: customer.email,\nphone: customer.phone,\nbirthDate: customer.birth_date,\naddress: customer.address,\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 32,
+        "location": "src/support.ts:41-48",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal's purpose is that the Helply widget greets the signed-in customer by name; send only `id` and `name` (and the e-mail only if the agent's identification needs it, stated in the plan). As written, every signed-in customer who loads /chat/settings hands their phone number, birth date and postal address to the third-party chat vendor, beyond what the purpose needs (GDPR Art. 5(1)(c) data minimisation, Art. 25).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Chat vendor receives phone, birth date and address to greet by name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "appId: process.env.HELPLY_APP_ID,\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 55,
+        "location": "src/support.ts:40",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: record Helply as a processor (Art. 28 contract, Art. 30 record of processing), state whether customer data leaves the EEA (Chapter V), and state the lawful basis of sharing the chatting customer's identity with it. Neither the proposal nor the code says so.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Helply as processor and its transfer location are not identified"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"SELECT id, email, name, phone, birth_date, address FROM customers WHERE lower(email) = lower($1)\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 73,
+        "location": "src/support.ts:16",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The stated purpose is that agents stop asking customers who they are; the lookup returns the whole record, birth date and postal address included, to every support agent. Select only the fields agents need, or state in the proposal why the birth date and address are needed (e.g. identity verification) (GDPR Art. 5(1)(c)).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Agent lookup returns birth date and address with no stated need"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-support-lookup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

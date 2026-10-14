@@ -1,0 +1,131 @@
+{
+  "format": 2,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.3474981999999999,
+  "durationMs": 26759,
+  "consumption": {
+    "durationApiMs": 26373,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1195,
+      "cacheCreation": 28996,
+      "cacheRead": 340536,
+      "output": 2321
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const rows = await query<InvoiceRow>(\n  \"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n  [id],\n);\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/invoices.ts:32-35",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs to another organization: the query selects by `id` alone and the handler never compares `org_id` with `currentUser(req).orgId`, unlike the list route. Scope the lookup to the caller's organization (`WHERE id = $1 AND org_id = $2`, `[id, currentUser(req).orgId]`) and answer 404 when nothing matches, so the existence of other organizations' invoices is not revealed; add a test asserting the org filter on the detail route, as the list route's test does.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "GET /invoices/:id returns any organization's invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 37,
+        "location": "src/server.ts:15-18",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Information exposure through error messages (CWE-209). A signed-in user who sends `GET /invoices/99999999999` passes the `Number.isInteger` check, the database rejects the value as out of range for an integer column, and the 500 response carries the PostgreSQL error message and the server's stack trace (file paths, module layout, driver internals); any other failure — connection errors naming the host, for instance — leaks the same way. Log the error server-side only and answer a generic `{ error: \"internal error\" }`; also bound the id at the boundary (positive, within the column's range) so such input gets a 400.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Error handler sends error messages and stack traces to clients"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

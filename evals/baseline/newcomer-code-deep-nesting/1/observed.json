@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-deep-nesting",
+  "error": null,
+  "costUsd": 0.32330320000000007,
+  "durationMs": 34556,
+  "consumption": {
+    "durationApiMs": 33928,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 27872,
+      "cacheRead": 281626,
+      "output": 2149
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "import-accounts",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "match db.find_account(&row.email)? {\n    Some(account) => {\n        if account.plan != row.plan {\n            for seat in &row.seats {\n                if !account.seats.contains(seat) {\n                    if seat.contains('@') {\n                        db.add_seat(account.id, seat)?;\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/import.rs:14-40",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Flatten and name the rules so the function reads without the plan. Skip rows with an empty email by an early `continue` (`if row.email.is_empty() { continue; }`) and say in a comment why such rows are dropped. Extract the duplicated seat loop (lines 19-26 and 31-36) into one helper, e.g. `add_new_seats(db, account_id, existing, seats) -> Result<usize, DbError>`, whose filters use `Iterator::filter` and a named predicate such as `is_seat_email(seat)` instead of the bare `seat.contains('@')`, so the reader learns that a seat is an email address and that others are skipped. Replace the nested `if !account.seats.contains(seat)` / `if seat.contains('@')` pair with one combined condition. The condition `if account.plan != row.plan` is the line a newcomer would misread: nothing says why seats are only added to an existing account whose plan differs from the CSV row (and the plan itself is never updated); the proposal only says \"creates missing accounts and their seats\". Name that rule with a comment or a well-named function stating why, so the reader does not take it for a bug or a typo for `==`. This restructuring must keep the current behaviour.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`import` nests six levels deep, duplicates its seat loop and leaves its filters unexplained"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/import-accounts/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

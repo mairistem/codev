@@ -1,0 +1,100 @@
+{
+  "format": 2,
+  "case": "security-control-docs-only",
+  "error": null,
+  "costUsd": 0.31921720000000003,
+  "durationMs": 33188,
+  "consumption": {
+    "durationApiMs": 32552,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1191,
+      "cacheCreation": 25796,
+      "cacheRead": 371996,
+      "output": 1870
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "document-token-rotation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "3. Revoke the old token from the same page. Requests that still carry it\n   are refused with `401 Unauthorized`.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "README.md:19-20",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Check the README's claims (tokens never expire, a revoked token is refused with 401 at once, the token is shown once) against the service that issues and checks tokens. This repository has no token, revocation or authentication code (src/api.rs, src/db.rs, src/lib.rs), so the claims could not be verified here. If revocation is cached or delayed, say so in step 3, so that an integrator rotating an exposed token does not take it to be dead while it is still accepted.",
+        "reported": false,
+        "role": "security",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Revocation guarantee documented without code to back it"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/document-token-rotation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

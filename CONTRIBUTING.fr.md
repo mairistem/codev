@@ -84,10 +84,18 @@ specs, les changes actifs et les sceaux des décisions doivent rester valides.
 
 Les rôles intégrés (`assets/roles/`) sont des prompts : leur effet se
 mesure, il ne se devine pas. Une pull request qui modifie un fichier de
-`assets/roles/` exécute les évaluations des rôles avant et après la
-modification et colle les deux scores — rappel, faux positifs et validité
-des preuves des rôles concernés — dans sa description. La référence est la
-ligne de base versionnée, `evals/baseline/report.md`.
+`assets/roles/` exécute les évaluations des rôles concernés et colle dans
+sa description la sortie de
+`cargo run -p codev-evals -- compare --quality-only` face à la ligne de
+base versionnée, `evals/baseline/` : le rappel, les faux positifs et la
+validité des preuves de chaque rôle doivent rester dans l'écart couvert
+par les répétitions de la ligne de base. Une pull request destinée à
+réduire la consommation des skills colle la sortie de
+`cargo run -p codev-evals -- compare`, sans `--quality-only` : la qualité
+doit tenir et le coût passer sous le plancher de la ligne de base, chaque
+cas à son exécution la moins chère. Enregistrez le candidat avec
+`--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
+que les deux exécutions profitent du cache de prompt de la même façon.
 
 La suite demande [Claude Code](https://claude.com/claude-code) installé et
 connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
@@ -97,16 +105,36 @@ cas étant plafonné à 3 par défaut.
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # les cas
-cargo run -p codev-evals -- run --role security        # les cas d'un rôle
-cargo run -p codev-evals -- run --out target/evals/mine  # tous les cas
+cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
+cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
+
+L'agent tourne dans le bac à sable (sandbox) de Claude Code, comme le
+ferait un utilisateur qui s'en sert : les commandes shell que Claude Code
+connaît, et `codev`, s'exécutent sans demande, mais elles ne peuvent
+écrire que dans le répertoire du cas et dans le répertoire temporaire du
+système — qui contient aussi ceux des autres cas —, ne joindre que l'API
+d'Anthropic, et ne pas lire la clé d'API ; les outils de fichiers, hors du
+bac à sable, ne modifient qu'à l'intérieur du répertoire du cas. Tout autre
+appel est refusé et compté dans le rapport, et une exécution qui modifie
+le `.git/config` de son dépôt est enregistrée en erreur. Le bac à sable
+borne un agent, il ne l'isole pas : lancez la suite sur une machine ou
+dans un conteneur jetable. Sous macOS, le bac à sable est intégré. Sous Linux, il demande
+`bubblewrap` et `socat` (`sudo apt-get install bubblewrap socat`) et, sous
+Ubuntu 24.04, un profil AppArmor qui autorise `bwrap` à créer des espaces
+de noms utilisateur, comme l'installe `.github/workflows/evals.yml` ; sans
+eux, chaque cas s'arrête en erreur plutôt que de tourner sans
+confinement.
 
 `run` écrit `report.md` et `report.json` dans son répertoire de sortie et
 se termine avec le code 1 quand un rôle passe sous un seuil
-(`--min-recall`, `--max-false-positives`, `--min-evidence`) ou qu'un cas
-s'est arrêté ; un répertoire qui contient déjà des observations est
-repris. `CODEV_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
+(`--min-recall`, `--max-false-positives`, `--min-evidence`) ou qu'une
+exécution s'est arrêtée. `--repeat N` exécute chaque cas N fois ; le
+rapport donne la médiane de chaque mesure sur les exécutions, avec son
+écart, et ce qu'elles ont consommé (coût, durées, tours, tokens, refus de
+permission). Un répertoire qui contient déjà des observations est repris :
+seules les exécutions manquantes, et celles en erreur, sont refaites. `CODEV_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
 Code), `CODEV_EVAL_BUDGET_USD` et `CODEV_EVAL_TIMEOUT_SECS` bornent chaque
 cas. Comparez avec le même modèle que la ligne de base. Les mainteneurs
 peuvent aussi lancer à la main le workflow **Role evaluations** ; il
@@ -148,9 +176,16 @@ constats il reclasse.
 N'ajustez pas un rôle et ses cas dans la même pull request : un cas dit
 ce qu'un relecteur devrait trouver, indépendamment de la formulation du
 rôle. Quand les règles de notation ou les cas changent, enregistrez de
-nouveau la ligne de base — supprimez `evals/baseline/`, puis
-`cargo run -p codev-evals -- run --out evals/baseline` —, ce que les tests
-vérifient.
+nouveau la ligne de base, en local, avec la version de Claude Code
+qu'épingle `.github/workflows/evals.yml`
+(`npm install -g @anthropic-ai/claude-code@<cette version>` ; un test
+vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
+`evals/baseline/`, puis
+`cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
+(environ 75 dollars) —, ce que les tests vérifient : cinq exécutions de
+chaque cas, aucune en erreur. La sortie brute de Claude Code de chaque
+exécution (`claude.json`, `claude.stderr`) reste hors du contrôle de
+version.
 
 ## Commits
 

@@ -1,0 +1,168 @@
+{
+  "format": 2,
+  "case": "security-plan-tokens-in-clear",
+  "error": null,
+  "costUsd": 0.3832556,
+  "durationMs": 38071,
+  "consumption": {
+    "durationApiMs": 37506,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 31341,
+      "cacheRead": 337258,
+      "output": 3204
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-2 (The Authorization header, and so every bearer token, is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-api-tokens",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The `api_tokens` table holds `user_id`, `token` and `created_at`; the\nmiddleware looks a request's token up with `WHERE token = $1`. Storing the\ntoken as given keeps the lookup a simple indexed equality.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 15,
+        "location": "design.md#Decision: Tokens are stored as given",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Store only a hash of the token (e.g. `token_hash`, SHA-256 of the 32 random bytes — a fast hash is enough for a high-entropy secret, unlike passwords) and look it up with `WHERE token_hash = $1`, bound as a parameter: the lookup stays an indexed equality, so the stated reason for storing the token as given does not hold. Show the token once at creation (as the spec already requires) and never persist it. Update task 1.1 and its test accordingly. CWE-312 / CWE-522.\n",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "API tokens are stored in clear in the database"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "To diagnose integration problems, the middleware logs each request's\nmethod, path and headers at `info` level, including `Authorization`, so\nsupport can see which token an integration sent.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 44,
+        "location": "design.md#Decision: Every request is logged with its headers",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Never log the `Authorization` header (nor `Cookie` or any credential header): redact it to `Bearer <redacted>`, or log a non-secret token identifier (a token id, or a short prefix of the token hash) so support can still tell which token an integration used. Change task 1.3 so that `logs_requests` asserts the header value is absent from the log output. CWE-532.\n",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The Authorization header, and so every bearer token, is written to the logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [A user loses a token] → they create another one; revoking the old one comes with the later revocation change.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 75,
+        "location": "design.md#Risks / Trade-offs",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Either ship a minimal revocation (delete a token by id, owned by the caller, checked on the server) or an expiry (`expires_at` checked by the middleware) in this change, or state explicitly in the design that tokens must not be released to users before the revocation change ships. The proposal's own motivation is that a leaked credential exposes the account; without any way to invalidate a token, a leaked token exposes it permanently.\n",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A leaked token can never be invalidated"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-api-tokens/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

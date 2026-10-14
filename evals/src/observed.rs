@@ -6,8 +6,10 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-/// The format of `observed.json`, `run.json` and `report.json`.
-pub const FORMAT: u32 = 1;
+/// The format of `observed.json`, `run.json` and `report.json`. Format 1
+/// is still read: it lacks the consumption and the repetition count, which
+/// are then absent.
+pub const FORMAT: u32 = 2;
 
 /// One case's observation, written by `run`, read by `score`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -19,6 +21,10 @@ pub struct Observed {
     pub error: Option<String>,
     pub cost_usd: Option<f64>,
     pub duration_ms: Option<u64>,
+    /// What the run consumed beyond its cost and duration; `None` when
+    /// Claude Code printed no result, or in format 1.
+    #[serde(default)]
+    pub consumption: Option<Consumption>,
     /// Files the run modified outside what its step allows.
     #[serde(default)]
     pub strayed: Vec<String>,
@@ -27,6 +33,33 @@ pub struct Observed {
     /// The checked files after the run; `null` for a file that is gone.
     #[serde(default)]
     pub files: BTreeMap<String, Option<String>>,
+}
+
+/// What Claude Code reports a run consumed, besides its cost and duration.
+/// Each measure is `None` when Claude Code did not print it: absent, never
+/// zero, so that a missing figure never reads as a free run.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Consumption {
+    pub duration_api_ms: Option<u64>,
+    pub turns: Option<u64>,
+    pub permission_denials: Option<u64>,
+    /// The models the run used, sorted: the model asked for, and the small
+    /// one Claude Code calls for housekeeping.
+    #[serde(default)]
+    pub models: Vec<String>,
+    pub tokens: Option<Tokens>,
+}
+
+/// Tokens summed over every model the run used.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Tokens {
+    /// Input tokens read without the cache.
+    pub input: u64,
+    pub cache_creation: u64,
+    pub cache_read: u64,
+    pub output: u64,
 }
 
 /// The run's metadata, written once when a run starts.
@@ -39,6 +72,14 @@ pub struct RunInfo {
     pub date: String,
     pub claude_version: Option<String>,
     pub codev_version: Option<String>,
+    /// The repetitions asked for; `None` in format 1, which ran each case
+    /// once.
+    #[serde(default)]
+    pub repeat: Option<u32>,
+    /// The runs made at the same time, which decides how much of the
+    /// prompt cache they share; `None` when not recorded.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub jobs: Option<u32>,
 }
 
 /// Reads a JSON file carrying a format marker, refusing a newer one.
@@ -147,9 +188,9 @@ mod tests {
 
     #[test]
     fn a_newer_observation_is_refused_with_its_case() {
-        let err = parse_observed(r#"{"format": 2, "case": "x"}"#, "ops-code-timeout").unwrap_err();
+        let err = parse_observed(r#"{"format": 3, "case": "x"}"#, "ops-code-timeout").unwrap_err();
         assert!(
-            err.contains("ops-code-timeout") && err.contains("format 2"),
+            err.contains("ops-code-timeout") && err.contains("format 3"),
             "{err}"
         );
     }
@@ -171,6 +212,21 @@ mod tests {
     }
 
     #[test]
+    fn a_format_1_observation_reads_without_consumption() {
+        let text = r#"{"format": 1, "case": "c", "error": null, "costUsd": 0.35,
+            "durationMs": 28004, "strayed": [], "review": null}"#;
+        let observed = parse_observed(text, "c").unwrap();
+        assert_eq!(observed.cost_usd, Some(0.35));
+        assert_eq!(observed.consumption, None);
+        let info = parse_run_info(
+            r#"{"format": 1, "model": null, "date": "2026-10-13",
+            "claudeVersion": null, "codevVersion": null}"#,
+        )
+        .unwrap();
+        assert_eq!(info.repeat, None);
+    }
+
+    #[test]
     fn run_info_round_trips() {
         let info = RunInfo {
             format: FORMAT,
@@ -178,6 +234,8 @@ mod tests {
             date: "2026-10-13".into(),
             claude_version: Some("2.1.289".into()),
             codev_version: Some("0.6.1".into()),
+            repeat: Some(5),
+            jobs: None,
         };
         let text = serde_json::to_string(&info).unwrap();
         assert_eq!(parse_run_info(&text).unwrap(), info);

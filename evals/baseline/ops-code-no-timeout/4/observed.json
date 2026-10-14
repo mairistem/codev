@@ -1,0 +1,199 @@
+{
+  "format": 2,
+  "case": "ops-code-no-timeout",
+  "error": null,
+  "costUsd": 0.36369000000000007,
+  "durationMs": 36961,
+  "consumption": {
+    "durationApiMs": 36109,
+    "turns": 11,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 27365,
+      "cacheRead": 374460,
+      "output": 3442
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (Payment call has no timeout and can hang the checkout forever) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge can duplicate charges and never ends) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Charge failures are swallowed with no log, so an operator cannot see them) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "charge-orders",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "app/payments.py:14",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it, a provider that accepts the connection but never answers blocks the checkout worker indefinitely; no exception is raised, so the retry loop and any logging never run and the operator sees only stuck requests with no error.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Payment call has no timeout and can hang the checkout forever"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "while True:\n    try:\n        response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException:\n        time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 25,
+        "location": "app/payments.py:12-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Bound the retries (a small maximum attempt count) with exponential backoff and jitter, retry only transient errors (connection errors, timeouts, 5xx/429) and never 4xx such as a declined card, and send an idempotency key derived from `order_id` so a retry after a lost response cannot charge the customer twice. Today, a provider 5xx or a dropped response after the charge succeeded makes the loop POST the charge again every second, and a permanent 4xx (invalid amount, declined) loops forever, hammering the provider at a fixed 1 s rate during an outage and never returning to the caller. Once the attempts are exhausted, raise an error naming the order.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded retry of a non-idempotent charge can duplicate charges and never ends"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "except requests.RequestException:\n    time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 45,
+        "location": "app/payments.py:17-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Log each failed attempt with structured fields (`order_id`, attempt number, HTTP status or exception type, provider URL host; never the request credentials) and raise an actionable error naming the order when retries are exhausted. As written, when the provider rejects or is unreachable, nothing is logged and nothing is raised; the checkout just spins, and the operator has no error, no order id and no status code to diagnose it in the middle of the night.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Charge failures are swallowed with no log, so an operator cannot see them"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "PAYMENT_URL = \"https://payments.example.com/v2/charges\"\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 60,
+        "location": "app/payments.py:7",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Read the provider endpoint from the environment or the project configuration (with no default to the production host). With the URL baked in, every environment — local, CI, staging — sends real charges to the production provider, and pointing a deployment at the provider's sandbox or a new endpoint requires a code release.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Production provider URL is hard-coded instead of read from configuration"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/charge-orders/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

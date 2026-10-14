@@ -1,0 +1,137 @@
+{
+  "format": 2,
+  "case": "performance-code-hidden-n-plus-one",
+  "error": null,
+  "costUsd": 0.3707466,
+  "durationMs": 36046,
+  "consumption": {
+    "durationApiMs": 35135,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 30012,
+      "cacheRead": 328293,
+      "output": 3199
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (One customer query per invoice in the monthly report) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-monthly-report",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "fn customer_label(db: &dyn Db, invoice: &Invoice) -> Result<String, DbError> {\n    let customer = db.customer(invoice.customer_id)?;\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "src/report.rs:38-39",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "`customer_label` is called for every invoice in the loop of `monthly_report` (`src/report.rs:23-26`), so it runs `SELECT ... FROM customers WHERE id = $1` once per invoice: with the proposal's ~3 000 invoices a month from 800 customers, one report issues ~3 000 customer queries (cost grows linearly with the month's invoices, and repeats each customer ~4 times). `Db::customers(&[i64])` (`src/db.rs:26`, `WHERE id = ANY($1)`) already serves the whole set: collect the distinct `customer_id`s, fetch them in one call, index them in a `HashMap<i64, Customer>`, and build each line from the map. Keep the invoice-number order and return a `DbError` when a customer is missing, as today.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "One customer query per invoice in the monthly report"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "fn purchase_order(notes: &str) -> Option<String> {\n    let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 36,
+        "location": "src/report.rs:44-46",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "`purchase_order` is called for every invoice of the month (`src/report.rs:28`), so `Regex::new` compiles the same pattern ~3 000 times per report; compiling a pattern is expensive compared with matching one short note. Compile it once — a `static PATTERN: LazyLock<Regex>` (or `once_cell::sync::Lazy`), or build it in `monthly_report` and pass it in.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The purchase-order regex is compiled once per invoice"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-monthly-report/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}
