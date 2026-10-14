@@ -2,10 +2,10 @@
   "format": 2,
   "case": "newcomer-control-plain-code",
   "error": null,
-  "costUsd": 0.24147499999999997,
-  "durationMs": 15656,
+  "costUsd": 0.2363456,
+  "durationMs": 10020,
   "consumption": {
-    "durationApiMs": 15154,
+    "durationApiMs": 9795,
     "turns": 5,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1195,
-      "cacheCreation": 23294,
-      "cacheRead": 182565,
-      "output": 882
+      "input": 1180,
+      "cacheCreation": 23998,
+      "cacheRead": 139863,
+      "output": 772
     }
   },
   "strayed": [],

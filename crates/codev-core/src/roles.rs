@@ -694,6 +694,17 @@ pub fn active_at<'a>(roles: &'a [ResolvedRole], step: &str) -> Vec<&'a ResolvedR
         .collect()
 }
 
+/// The roles serving `step` that the configuration turned off: whose
+/// activation, once the project's then the change's settings are applied,
+/// is `never`. An `on_domain` role whose domain is not ticked is inactive,
+/// not disabled: the review record expects nothing of it.
+pub fn disabled_at<'a>(roles: &'a [ResolvedRole], step: &str) -> Vec<&'a ResolvedRole> {
+    roles
+        .iter()
+        .filter(|resolved| resolved.role.serves(step) && resolved.when == Activation::Never)
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1557,5 +1568,36 @@ apply:
                 assert!(refs.contains(needle), "`{id}` references `{needle}`");
             }
         }
+    }
+
+    fn disabled_ids(roles: &[ResolvedRole], step: &str) -> Vec<String> {
+        disabled_at(roles, step)
+            .iter()
+            .map(|r| r.role.id.clone())
+            .collect()
+    }
+
+    #[test]
+    fn the_roles_set_to_never_are_disabled_at_their_step() {
+        let roles = resolve_with(&settings("newcomer: never"), &BTreeMap::new()).unwrap();
+        assert_eq!(disabled_ids(&roles, "code.review"), ["newcomer"]);
+        assert!(disabled_ids(&roles, "plan.challenge").is_empty());
+        assert_eq!(role(&roles, "newcomer").when_origin, WhenOrigin::Project);
+        assert!(!active_ids(&roles, "code.review").contains(&"newcomer".to_string()));
+    }
+
+    #[test]
+    fn a_role_turned_back_on_by_the_change_is_not_disabled() {
+        let roles =
+            resolve_with(&settings("newcomer: never"), &settings("newcomer: always")).unwrap();
+        assert!(disabled_ids(&roles, "code.review").is_empty());
+        assert!(active_ids(&roles, "code.review").contains(&"newcomer".to_string()));
+    }
+
+    #[test]
+    fn an_inactive_expert_is_not_disabled() {
+        let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
+        assert!(disabled_ids(&roles, "code.review").is_empty());
+        assert!(!active_ids(&roles, "code.review").contains(&"security".to_string()));
     }
 }

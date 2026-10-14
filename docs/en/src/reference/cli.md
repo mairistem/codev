@@ -752,7 +752,10 @@ inactive. It fails
 with `unknown_step` when `--at` is not one of the steps, and with
 `unknown_role`, `invalid_role_activation` or `role_not_disableable` when a
 role setting is invalid — see [Configuring roles](../roles.md#configuring-roles).
-The skills call it with `--json`; see [`codev roles`](json-output.md#roles).
+With `--at`, a last line names the roles of the step that the
+configuration turned off, each with the file whose setting did it
+(`project` or `change`). The skills call it with `--json`; see
+[`codev roles`](json-output.md#roles).
 
 ### codev schemas
 

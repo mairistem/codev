@@ -2,10 +2,10 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3417272,
-  "durationMs": 37775,
+  "costUsd": 0.3576572,
+  "durationMs": 33844,
   "consumption": {
-    "durationApiMs": 39195,
+    "durationApiMs": 33480,
     "turns": 7,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1183,
-      "cacheCreation": 30006,
-      "cacheRead": 194656,
-      "output": 3088
+      "input": 1176,
+      "cacheCreation": 29709,
+      "cacheRead": 294761,
+      "output": 3002
     }
   },
   "strayed": [],
@@ -32,7 +32,35 @@
     },
     "changeName": "add-mail-worker",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/worker.rs:46-50",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Confirm in the `Mailer` implementation that a timeout after the message data was handed to the relay is not reported as `Unavailable`, or give each message a stable Message-ID so a re-send can be recognised; otherwise a slow relay that accepts the message after `SEND_TIMEOUT` makes the worker release the job and send the same e-mail again, up to `MAX_ATTEMPTS` times. Low confidence because the `Mailer` implementation is not part of the change.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay accepted it is retried and may be delivered twice"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-mail-worker/review.md",
@@ -60,7 +88,7 @@
             "credited": [],
             "fallback": null,
             "role": "ops",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

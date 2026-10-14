@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-control-custom-listbox",
   "error": null,
-  "costUsd": 0.3508004,
-  "durationMs": 34683,
+  "costUsd": 0.3518992000000001,
+  "durationMs": 37807,
   "consumption": {
-    "durationApiMs": 33632,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 37203,
+    "turns": 8,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 29083,
-      "cacheRead": 283162,
-      "output": 3025
+      "input": 1174,
+      "cacheCreation": 28768,
+      "cacheRead": 243451,
+      "output": 3604
     }
   },
   "strayed": [],
@@ -36,7 +36,7 @@
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "evidence": "<div\n  ref={combo}\n  role=\"combobox\"\n  tabIndex={0}\n",
         "history": [
           {
             "by": "accessibility",
@@ -48,17 +48,44 @@
         ],
         "id": "R-accessibility-1",
         "line": 11,
+        "location": "src/components/SizePicker.tsx:70-73",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The combobox is a focusable `div`; its focus indicator comes from the browser default unless a stylesheet removes it, and no stylesheet is in the diff. Check that `.size-picker [role=\"combobox\"]` keeps a visible focus style with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast) — keyboard users must see where focus is.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Focus indicator of the combobox depends on a stylesheet outside the change"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 33,
         "location": "src/components/SizePicker.tsx:92",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "The keyboard interaction follows the APG select-only combobox (arrows, Home/End, Enter/Space, Escape, Tab, aria-activedescendant), but the only visual cue of the highlighted option is the `option--active` class, and no stylesheet in the repository defines it. Check that `.option--active` gives a visible indicator with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast), that the combobox keeps a visible focus outline, and that options are at least 24 by 24 CSS pixels (2.5.8 Target Size, the proposal's mis-tap problem); otherwise sighted keyboard users cannot see which size Enter or Tab will choose.",
+        "recommendation": "With `aria-activedescendant`, DOM focus stays on the combobox, so the only visual cue of the highlighted option is `option--active`. Check that this class gives a visible, non-colour-only highlight with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast), and that options are at least 24 by 24 CSS pixels for the phone users this change targets (2.5.8 Target Size (Minimum)).",
         "reported": false,
         "role": "accessibility",
-        "severity": "medium",
+        "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Highlighted option relies on a stylesheet the change does not include"
+        "title": "Highlighted option is shown only through a class whose style is not in the change"
       }
     ],
     "format": 1,

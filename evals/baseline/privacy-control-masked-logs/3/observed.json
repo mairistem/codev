@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-control-masked-logs",
   "error": null,
-  "costUsd": 0.4186488,
-  "durationMs": 49456,
+  "costUsd": 0.37530720000000006,
+  "durationMs": 42563,
   "consumption": {
-    "durationApiMs": 48823,
-    "turns": 10,
-    "permissionDenials": 3,
+    "durationApiMs": 42295,
+    "turns": 9,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1203,
-      "cacheCreation": 31427,
-      "cacheRead": 376629,
-      "output": 4546
+      "input": 1188,
+      "cacheCreation": 28327,
+      "cacheRead": 335326,
+      "output": 4033
     }
   },
   "strayed": [],
@@ -26,10 +26,6 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## plan.challenge` section, while roles were active at it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-privacy-1 (Addresses with non-ASCII or percent-encoded characters reach the logs unmasked) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,18 +52,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The pattern requires the character right before `@` to be ASCII and the domain to be ASCII, and needs a literal `@`. `logInfo(\"signup\", { email: \"josé@example.fr\" })`, `\"ada@exämple.de\"` or a logged URL holding `ada%40example.org` match nothing and are written in full to the logs the hosting provider keeps 90 days — the very leak the change promises to stop (GDPR Art. 5(1)(c) and 32). Match any non-space, non-`@` run around `@` (e.g. `/([^\\s@<>\"'])[^\\s@<>\"']*(?:@|%40)([^\\s@<>\"']+\\.[^\\s@<>\"'.]{2,})/giu`) and add test cases for a Unicode local part, an IDN domain and a percent-encoded `@`.",
+        "recommendation": "The local part and the domain only accept ASCII, while the proposal promises to mask \"every e-mail address\". `logInfo(\"signup\", { email: \"josé@exemple.fr\" })` writes `josé@exemple.fr` in full to the logs kept 90 days by the hosting provider (GDPR Art. 5(1)(c), Art. 32), since the character before `@` is outside the class and nothing matches; an internationalised domain (`ada@exämple.fr`) is missed the same way, and `andré.dupont@example.fr` only becomes `andré.***@example.fr`, keeping the first name. Match the address on its structure instead — e.g. `/([^\\s@<>\"'(),;:])[^\\s@<>\"'(),;:]*@([^\\s@<>\"'(),;:]+\\.[^\\s@<>\"'(),;:]{2,})/gu` — and add tests for an accented local part and an IDN domain.",
         "reported": true,
         "role": "privacy",
-        "severity": "high",
+        "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Addresses with non-ASCII or percent-encoded characters reach the logs unmasked"
+        "title": "Addresses with non-ASCII characters are logged unmasked"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\nexport function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n",
+        "evidence": "return text.replace(EMAIL, \"$1***@$2\");\n",
         "history": [
           {
             "by": "privacy",
@@ -78,23 +74,23 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 34,
-        "location": "src/logger.ts:5-7",
+        "line": 33,
+        "location": "src/logger.ts:7",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "`a***@example.org` is still personal data when the domain is a small company or a personal domain: with the 90-day retention and the other fields of the log line, the customer can be re-identified (GDPR Art. 5(1)(c), Art. 25). Whether this matters depends on the customers' domains, which the reviewer could not see; if no log reader needs the domain, replace the whole address with a fixed token or a keyed hash, and ask the team whether the first letter and domain have a stated purpose.",
+        "recommendation": "Only a literal `@` is recognised, so a logged URL or query string such as `/reset?email=ada.lovelace%40example.org` reaches the logs unmasked. No caller logs URLs yet (the logger has no caller in the diff), hence the low confidence; if request paths are to be logged through `logInfo`, also match `%40` (case-insensitive) or decode before masking, and test it.",
         "reported": false,
         "role": "privacy",
-        "severity": "low",
+        "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "The masked form keeps the first letter and the full domain"
+        "title": "URL-encoded addresses escape the mask"
       },
       {
         "awaiting": "author",
-        "confidence": "high",
-        "evidence": "for (const [key, value] of Object.entries(fields)) {\n  safe[key] = typeof value === \"string\" ? maskEmails(value) : value;\n}\n",
+        "confidence": "low",
+        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\n",
         "history": [
           {
             "by": "privacy",
@@ -105,18 +101,18 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 57,
-        "location": "src/logger.ts:12-15",
+        "line": 52,
+        "location": "src/logger.ts:5",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Only the values pass through `maskEmails`; a field map keyed by address, such as `logInfo(\"quota\", { [user.email]: 3 })`, writes the full address as a JSON key. Mask the key too (`safe[maskEmails(key)] = …`) so the module keeps its promise of never writing a full e-mail address.",
-        "reported": true,
+        "recommendation": "For a personal or small-company domain (`a***@lovelace.family`), the first letter plus the domain can be enough to single out the customer, so the logs would still hold personal data (GDPR Art. 4(1), Art. 25). Whether this is acceptable depends on the domains in the customer base, which the review could not see; if the domain is not needed for support, mask it too or replace the address with a keyed hash.",
+        "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Field names are logged without masking"
+        "title": "The kept first letter and full domain may still identify the person"
       }
     ],
     "format": 1,
@@ -147,6 +143,12 @@
             "fallback": null,
             "role": "privacy",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

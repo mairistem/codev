@@ -2,10 +2,10 @@
   "format": 2,
   "case": "newcomer-code-clever-one-liner",
   "error": null,
-  "costUsd": 0.30078840000000007,
-  "durationMs": 23030,
+  "costUsd": 0.2866654,
+  "durationMs": 22668,
   "consumption": {
-    "durationApiMs": 21999,
+    "durationApiMs": 22681,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1173,
-      "cacheCreation": 26558,
-      "cacheRead": 236152,
-      "output": 2004
+      "input": 1164,
+      "cacheCreation": 24880,
+      "cacheRead": 231202,
+      "output": 2019
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Replace the one-liner with a plain function: a named constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros, the premium band of the proposal), a loop or two `filter` calls comparing `price.cents >= PREMIUM_THRESHOLD_CENTS`, and an explicit return type such as `{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` keyed by the bare strings \"hi\" / \"lo\". Name the parameters (`prices`, `groups`, `price`) instead of `ps`, `a`, `p`. A reader cannot tell from `(p.cents >> 4) & 0x3e8` where the premium band starts — it is not \"10 euros and more\": 500 cents gives `31 & 1000 = 8`, truthy, so a 5-euro price lands in \"hi\", while the docstring promises a cheap/premium split. The shape is what hides this; the simple comparison would make the threshold, and any defect in it, visible. Callers also cannot know the keys without reading the expression, and a group with no price is absent from the result rather than empty.",
+        "recommendation": "Rewrite `bucket` as a plain function a newcomer can read without the plan:\na named constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros, the premium\nband), a comparison `price.cents >= PREMIUM_THRESHOLD_CENTS`, a return type\nwith named keys (`{ cheap: Price[]; premium: Price[] }`, matching the\ndocstring) instead of `Record<string, Price[]>` with \"hi\"/\"lo\", and full\nnames instead of `ps`, `a`, `p`. A reader stumbles on line 10: the\ncomma-operator arrow, the `||=` push inside an index expression and the\nbit shift masked with `0x3e8` cannot be decoded without knowing that\npremium means 10 euros and more; nothing says 0x3e8 is 1000 cents, and a\nreader who works it out would read the expression as \"cents >= 1000\"\nwhen it is a bitwise test (`(cents >> 4) & 1000`): 999 cents or 200 cents\nland in \"hi\", 100 cents in \"lo\". The dense shape is what hides that the\nrule does not match the stated premium band; the developer should confirm\nthe intended rule when simplifying, since that part changes behavior.\n",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`bucket` packs its threshold into a bitwise one-liner nobody can read"
+        "title": "`bucket` packs the premium rule into an unreadable one-liner that hides its threshold"
       }
     ],
     "format": 1,

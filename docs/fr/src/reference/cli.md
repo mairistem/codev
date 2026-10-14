@@ -781,8 +781,11 @@ domaines que coche sa proposal, qui activent les
 inactifs. Elle échoue avec `unknown_step` lorsque `--at` n'est pas une des étapes, et avec
 `unknown_role`, `invalid_role_activation` ou `role_not_disableable`
 lorsqu'un réglage de rôle est invalide — voir
-[Configurer les rôles](../roles.md#configurer-les-rôles). Les skills
-l'appellent avec `--json` ; voir [`codev roles`](json-output.md#roles).
+[Configurer les rôles](../roles.md#configurer-les-rôles). Avec `--at`,
+une dernière ligne nomme les rôles de l'étape que la configuration a
+désactivés, chacun avec le fichier dont le réglage l'a fait (`project` ou
+`change`). Les skills l'appellent avec `--json` ; voir
+[`codev roles`](json-output.md#roles).
 
 ### codev schemas
 

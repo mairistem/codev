@@ -8,22 +8,23 @@ Mode: inline.
 
 ### accessibility
 
-#### R-accessibility-1 Highlighted option relies on an unstyled class
+#### R-accessibility-1 Visible focus and highlighted option rely on styles the change does not ship
+
 ```yaml
-severity: low
+severity: medium
 confidence: low
 location: "src/components/SizePicker.tsx:92"
 evidence: |
   className={index === active ? "option option--active" : "option"}
 recommendation: >-
-  With aria-activedescendant, DOM focus stays on the combobox, so the only
-  visible cue of the highlighted option for sighted keyboard users is the
-  `option--active` class; no stylesheet in the repository defines it (nor a
-  focus style for the `size-picker` combobox). Check that `option--active`
-  gives a visible highlight with at least 3:1 contrast and that the
-  combobox keeps a visible focus indicator (WCAG 2.4.7 Focus Visible,
-  1.4.11 Non-text Contrast); if the list can overflow, scroll the active
-  option into view when it changes (2.4.11 Focus Not Obscured).
+  The combobox is a `div` with `tabIndex={0}` and focus never leaves it while
+  the list is open, so the highlighted option is shown to sighted keyboard
+  users only through the `option--active` class. No stylesheet in the change
+  or the repository defines `.size-picker` or `.option--active`. Check that the
+  stylesheet loaded on the product page gives the combobox a visible focus
+  indicator (WCAG 2.4.7 Focus Visible) and the active option a highlight that
+  meets 3:1 against its neighbours (WCAG 1.4.11 Non-text Contrast); without
+  them, a keyboard user pressing ArrowDown cannot see which size Enter will pick.
 history:
   - status: open
     by: accessibility

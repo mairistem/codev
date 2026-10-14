@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-control-labelled-form",
   "error": null,
-  "costUsd": 0.2493662,
-  "durationMs": 17699,
+  "costUsd": 0.2613778,
+  "durationMs": 13902,
   "consumption": {
-    "durationApiMs": 17594,
-    "turns": 5,
+    "durationApiMs": 14159,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1181,
-      "cacheCreation": 24037,
-      "cacheRead": 139551,
-      "output": 1409
+      "input": 1170,
+      "cacheCreation": 25799,
+      "cacheRead": 144484,
+      "output": 1256
     }
   },
   "strayed": [],
@@ -61,6 +61,12 @@
             "fallback": null,
             "role": "accessibility",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

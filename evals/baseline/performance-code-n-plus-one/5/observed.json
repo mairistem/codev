@@ -2,21 +2,21 @@
   "format": 2,
   "case": "performance-code-n-plus-one",
   "error": null,
-  "costUsd": 0.259756,
-  "durationMs": 17698,
+  "costUsd": 0.2858668,
+  "durationMs": 28242,
   "consumption": {
-    "durationApiMs": 17123,
-    "turns": 6,
+    "durationApiMs": 27818,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 24150,
-      "cacheRead": 181285,
-      "output": 1466
+      "input": 1181,
+      "cacheCreation": 24742,
+      "cacheRead": 276339,
+      "output": 1584
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (One order_lines query per order (N+1) in order_summaries) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (One query per order to load its lines (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,13 +56,13 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "Replace the per-order `db.lines_of_order(order.id)` call with one call to the existing batch method `db.lines_of_orders(&order_ids)` (api/src/db.rs:30-33, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (e.g. a HashMap<i64, i64> of totals) and build the summaries in the order returned by `orders_of_customer`, keeping orders with no line at a total of 0. This turns 1 + N queries (up to 101 per customer page view, as the proposal says the endpoint runs on every customer page view) into 2, without changing the ordering, the results or the error behavior. Alternatively, sum `quantity * unit_price_cents` with `GROUP BY order_id` in SQL.",
+        "recommendation": "Load every line in one query with the existing batch method `db.lines_of_orders(&ids)` (`api/src/db.rs:31`, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (a `HashMap<i64, i64>` of totals) and build the summaries in the order `orders_of_customer` returned, keeping orders with no line at a total of 0. This turns up to 101 queries per customer page view into 2, without changing results or ordering.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "One order_lines query per order (N+1) in order_summaries"
+        "title": "One query per order to load its lines (N+1)"
       }
     ],
     "format": 1,
@@ -93,6 +93,12 @@
             "fallback": null,
             "role": "performance",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

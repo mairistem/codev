@@ -620,6 +620,7 @@ leaves out or gets wrong are `null`.
       ]
     }
   ],
+  "disabled": [{ "id": "newcomer", "name": "Newcomer", "whenOrigin": "project" }],
   "review": {
     "mode": "isolated",
     "origin": "project",
@@ -655,6 +656,7 @@ leaves out or gets wrong are `null`.
 | `roles[].disableable` | `false` for the artifact roles, the `analyst` and the `developer` |
 | `roles[].knowledge` | The role's knowledge, as markdown in the sections Scope, Signals, By stack, References and Reporting, for an active role that has some, its `By stack` part filtered as `stacks.filter` says; `null` otherwise |
 | `roles[].doneWhen` | The role's criteria, then the project's, each with its `origin`: `built-in`, `schema:<name>` or `project` |
+| `disabled` | With `--at`, the roles serving the step that the configuration turned off — their activation, once the project's then the change's settings are applied, is `never` — each with `id`, `name` and `whenOrigin` (`project` or `change`, the file whose setting won). The skills write `Disabled by configuration.` for them in the review record without a second call. Empty without `--at`; an expert whose domain is not ticked is inactive, not disabled |
 | `review.mode`, `review.origin` | The [review mode](configuration.md#review) in effect, `inline` or `isolated`, set by `default`, `project` or `change` |
 | `review.material` | With `--change` at `plan.trace`, `plan.challenge` or `code.review`, what the reviewers read: the change's planning files but `change.yaml` and `review.md` at the plan steps, the diff's files at `code.review` — no planning, vendored, generated, lock or binary file, no symbolic link; a deleted file counts 0 bytes. Each file has its `bytes` and its `treatment`: `full`, or `summarize` once the files taken from the smallest stop fitting in `limitBytes` (160 KiB). `null` otherwise, and at `code.review` without a diff. A file left out because its size cannot be read or its name holds a control character is named by a `review_material_incomplete` warning in `status` |
 
@@ -662,7 +664,7 @@ With `--at`, `roles` holds only the active roles, possibly none: the step is
 then skipped. Without `--change`, no proposal is read, so the experts are
 inactive. A failure — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — keeps this shape, with
-`roles` and `suggestions` empty, `stacks`, `diff` and `review` `null`, and
+`roles`, `disabled` and `suggestions` empty, `stacks`, `diff` and `review` `null`, and
 `language` set as for `instructions`; an invalid review mode fails with
 `invalid_review_mode`. A project trigger that cannot be used is left
 out with an `invalid_trigger` warning in `status`.

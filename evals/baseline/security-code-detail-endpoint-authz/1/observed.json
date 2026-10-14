@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-detail-endpoint-authz",
   "error": null,
-  "costUsd": 0.31530959999999997,
-  "durationMs": 33326,
+  "costUsd": 0.2799164,
+  "durationMs": 18268,
   "consumption": {
-    "durationApiMs": 32874,
-    "turns": 6,
+    "durationApiMs": 18087,
+    "turns": 5,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1191,
-      "cacheCreation": 28234,
-      "cacheRead": 239353,
-      "output": 2029
+      "input": 1177,
+      "cacheCreation": 26242,
+      "cacheRead": 190567,
+      "output": 1545
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (Any signed-in user can read any organization's invoice by id) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (Invoice detail endpoint returns any organization's invoice (IDOR)) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -52,22 +52,22 @@
         ],
         "id": "R-security-1",
         "line": 11,
-        "location": "src/invoices.ts:33-36",
+        "location": "src/invoices.ts:32-35",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Scope the lookup to the caller's organization — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — so another organization's invoice answers 404, exactly like a missing one. Add a test asserting the detail query is bound to the caller's `orgId`, as the list test does (CWE-639 / CWE-862, insecure direct object reference).",
+        "recommendation": "Scope the lookup to the caller's organization, as the list route does: call currentUser(req) and query \"... WHERE id = $1 AND org_id = $2\" with [id, user.orgId], answering 404 when no row matches so other organizations' ids are not revealed. Add a test where a user of org 7 asks for an invoice of org 8 and gets 404. Attack: any authenticated user sends GET /invoices/1, /invoices/2, ... and reads every organization's invoices (CWE-639 / CWE-862).",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Any signed-in user can read any organization's invoice by id"
+        "title": "Invoice detail endpoint returns any organization's invoice (IDOR)"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
+        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
         "history": [
           {
             "by": "security",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-security-2",
-        "line": 35,
-        "location": "src/server.ts:15-18",
+        "line": 34,
+        "location": "src/server.ts:17",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Answer a generic body such as `{ error: \"internal error\" }` and keep the message and stack in the server log only (CWE-209). The error is already logged by `console.error(err)`.",
+        "recommendation": "Keep logging the error server-side, but answer a generic body such as { error: \"internal error\" } without err.message or err.stack. Scenario: any request whose handler throws (a database failure, a malformed query) returns file paths, module layout and driver error text — possibly SQL or connection details — to the caller (CWE-209).",
         "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "The error handler sends the error message and stack trace to the client"
+        "title": "Error handler sends the exception message and stack trace to the client"
       }
     ],
     "format": 1,
@@ -120,6 +120,12 @@
             "fallback": null,
             "role": "security",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

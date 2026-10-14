@@ -8,7 +8,7 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 GET /invoices/:id returns any organization's invoice
+#### R-security-1 Any signed-in user reads any organization's invoice by id
 
 ```yaml
 severity: high
@@ -20,19 +20,19 @@ evidence: |
     [id],
   );
 recommendation: >-
-  Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of
-  organization 7 who sends `GET /invoices/42` receives invoice 42 even when it
-  belongs to another organization: the query selects by id alone and the
-  handler never calls `currentUser(req)`. Scope the query to the caller's
-  organization (`WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]`),
-  answer 404 when nothing matches so ids of other organizations are not
-  confirmed, and add a test that a foreign invoice id returns 404.
+  Insecure direct object reference (CWE-639 / CWE-862). A user of organization 7
+  sends `GET /invoices/42` and gets invoice 42 of another organization: the handler
+  never calls `currentUser(req)` and the query filters on `id` only, so ids can be
+  enumerated to read every customer's invoices (number, total, date). Scope the
+  query to the caller's organization — `WHERE id = $1 AND org_id = $2` with
+  `[id, currentUser(req).orgId]` — so a foreign id answers 404, and add a test
+  asserting the org filter, like the list endpoint's test.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 Error handler sends the error message and stack trace to the client
+#### R-security-2 Error handler returns the error message and stack trace to the client
 
 ```yaml
 severity: medium
@@ -41,12 +41,12 @@ location: "src/server.ts:15-18"
 evidence: |
   res.status(500).json({ error: err.message, stack: err.stack });
 recommendation: >-
-  Any request that makes a handler fail — for example a database error raised
-  by `pg` (connection string host, relation or column names, constraint
-  details) — returns the raw message and the full stack trace (file paths,
-  dependency versions) to the caller (CWE-209). Keep `console.error(err)` for
-  the server log and answer a generic body such as `{ error: "internal error" }`
-  without `stack` or `err.message`.
+  Information exposure through an error message (CWE-209). Any request that makes a
+  handler throw — e.g. a database failure while serving `GET /invoices` — answers
+  the client with the raw error message (pg errors can carry SQL fragments, table
+  and constraint names, connection details) and the server stack trace with file
+  paths and dependency versions. Log the error server-side as is done, and answer
+  only a generic body such as `{ error: "internal error" }`.
 history:
   - status: open
     by: security

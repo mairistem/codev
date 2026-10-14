@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-code-drop-and-rename",
   "error": null,
-  "costUsd": 0.35439,
-  "durationMs": 36994,
+  "costUsd": 0.2873308,
+  "durationMs": 20388,
   "consumption": {
-    "durationApiMs": 36367,
-    "turns": 9,
-    "permissionDenials": 1,
+    "durationApiMs": 20077,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 29659,
-      "cacheRead": 289170,
-      "output": 2914
+      "input": 1174,
+      "cacheCreation": 25444,
+      "cacheRead": 233269,
+      "output": 1807
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Irreversible column drop with no down migration or backup) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Account field renamed in the public API without a BREAKING mark or a transition) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Account JSON field renamed to userName without a BREAKING mark or compatibility path) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Irreversible DROP COLUMN with no down migration or backup step) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,33 +41,6 @@
     "changeName": "drop-legacy-email",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-1",
-        "line": 11,
-        "location": "migrations/0005_drop_legacy_email.sql:2",
-        "raisedBy": [
-          "migration"
-        ],
-        "recommendation": "Running migration 0005 on production permanently deletes every value in users.legacy_email. There is no 0005_drop_legacy_email.down.sql (unlike 0004, which has 0004_accounts.down.sql), and neither the proposal nor tasks.md has a backup or recovery step; task 1.1 only checks that `sqlx migrate run` succeeds. Add a down migration that re-adds the column (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`), and add a step that exports `id, legacy_email` (or snapshots the table) before the drop. Otherwise, say in the plan that the data is deliberately abandoned and how to recover it from backups. Also confirm no running instance still reads the column before the drop ships (contract only after the code no longer uses it).",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "Irreversible column drop with no down migration or backup"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -81,19 +54,46 @@
             "to": null
           }
         ],
-        "id": "R-migration-2",
-        "line": 36,
+        "id": "R-migration-1",
+        "line": 11,
         "location": "src/api.rs:8-9",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "`Account` is a type of the public HTTP API (src/api.rs: \"The JSON types of the public HTTP API.\"). Every existing client that reads `user_name` from the account endpoint gets a missing field after deploy: it reads undefined/null, or fails to deserialize. The proposal's release note only says \"Changed: Account JSON uses camelCase.\" with no **BREAKING** mark and nothing on what clients must do, and no deprecation period. Mark the item **BREAKING** in the release note with the old and new name and the required client change. Give consumers time: emit both `user_name` and `userName` for one release (e.g. a second serialized field or a custom Serialize), deprecate `user_name`, then remove it, or version the endpoint.",
+        "recommendation": "`Account` is a type of the public HTTP API (src/api.rs:1); every existing client that reads `user_name` from the account endpoint gets a missing field after deploy, with no warning. Mark it **BREAKING** in the proposal's release note (today it reads \"Changed: Account JSON uses camelCase.\") with what clients must do, and give consumers time: serialize both `user_name` (deprecated) and `userName` for a release, or version the endpoint, before removing the snake_case field.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Account JSON field renamed to userName without a BREAKING mark or compatibility path"
+        "title": "Account field renamed in the public API without a BREAKING mark or a transition"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 32,
+        "location": "migrations/0005_drop_legacy_email.sql:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Running 0005 on production deletes every stored `legacy_email` value for good: there is no `0005_drop_legacy_email.down.sql` (0004 has one), and neither the plan nor the tasks back up the column. Add a backup step (copy `id, legacy_email` to an archive table or dump) and a down migration that re-adds the column and restores it, or state in the plan why the data can be lost and how to recover.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Irreversible DROP COLUMN with no down migration or backup step"
       }
     ],
     "format": 1,

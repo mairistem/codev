@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-control-custom-listbox",
   "error": null,
-  "costUsd": 0.3706418,
-  "durationMs": 38019,
+  "costUsd": 0.3136976,
+  "durationMs": 30571,
   "consumption": {
-    "durationApiMs": 37086,
-    "turns": 8,
-    "permissionDenials": 2,
+    "durationApiMs": 32413,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 29628,
-      "cacheRead": 330929,
-      "output": 3321
+      "input": 1174,
+      "cacheCreation": 26669,
+      "cacheRead": 237503,
+      "output": 2593
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Check that a stylesheet styles `.option--active` (and the `.size-picker` combobox's `:focus-visible`) with an indicator that meets 1.4.11 Non-text Contrast. No stylesheet in the repository defines `option--active`, and focus stays on the combobox while ArrowDown/ArrowUp/Home/End move the highlight through `aria-activedescendant`, so the browser draws no focus ring on the options: without that class styled, a sighted keyboard user pressing ArrowDown sees nothing change and cannot tell which size Enter or Tab will choose (WCAG 2.4.7 Focus Visible). Add the style with this change if it does not exist elsewhere.",
+        "recommendation": "The combobox keeps DOM focus and points to the highlighted option with aria-activedescendant, so the browser draws no focus ring on the option: sighted keyboard users see which size Arrow keys, Enter and Tab will choose only through the `option--active` style. No stylesheet defining `option--active` (or `.size-picker`) exists in the repository. Check that a stylesheet gives `.option--active` a visible indicator with at least 3:1 contrast against adjacent colours (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast), and that options on phones are at least 24 by 24 CSS pixels (2.5.8 Target Size (Minimum)), the mis-tap problem the proposal addresses.",
         "reported": false,
         "role": "accessibility",
-        "severity": "medium",
+        "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Highlighted option and combobox focus rely on styles that are not in the repository"
+        "title": "Highlighted option is marked only by a class with no style in the repository"
       }
     ],
     "format": 1,

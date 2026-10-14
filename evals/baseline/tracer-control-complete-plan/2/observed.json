@@ -2,21 +2,21 @@
   "format": 2,
   "case": "tracer-control-complete-plan",
   "error": null,
-  "costUsd": 0.2950982,
-  "durationMs": 20494,
+  "costUsd": 0.257107,
+  "durationMs": 14765,
   "consumption": {
-    "durationApiMs": 19633,
-    "turns": 8,
-    "permissionDenials": 2,
+    "durationApiMs": 14609,
+    "turns": 9,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1092,
-      "cacheCreation": 25690,
-      "cacheRead": 271121,
-      "output": 1723
+      "input": 1086,
+      "cacheCreation": 25039,
+      "cacheRead": 131700,
+      "output": 1480
     }
   },
   "strayed": [],

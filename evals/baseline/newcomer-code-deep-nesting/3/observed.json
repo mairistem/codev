@@ -2,21 +2,21 @@
   "format": 2,
   "case": "newcomer-code-deep-nesting",
   "error": null,
-  "costUsd": 0.2747576,
-  "durationMs": 17078,
+  "costUsd": 0.2796694,
+  "durationMs": 18938,
   "consumption": {
-    "durationApiMs": 17053,
-    "turns": 5,
+    "durationApiMs": 18733,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1171,
-      "cacheCreation": 26001,
-      "cacheRead": 187818,
-      "output": 1409
+      "input": 1162,
+      "cacheCreation": 25741,
+      "cacheRead": 190122,
+      "output": 1736
     }
   },
   "strayed": [],
@@ -36,7 +36,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "if account.plan != row.plan {\n    for seat in &row.seats {\n        if !account.seats.contains(seat) {\n            if seat.contains('@') {\n                db.add_seat(account.id, seat)?;\n                created += 1;\n",
+        "evidence": "Some(account) => {\n    if account.plan != row.plan {\n        for seat in &row.seats {\n            if !account.seats.contains(seat) {\n                if seat.contains('@') {\n",
         "history": [
           {
             "by": "newcomer",
@@ -48,17 +48,17 @@
         ],
         "id": "R-newcomer-1",
         "line": 11,
-        "location": "src/import.rs:12-42",
+        "location": "src/import.rs:14-40",
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Flatten the function and name its rules. A newcomer reading line 18 cannot tell, without the plan, why seats of an existing account are only added when the row's plan differs from the stored one (and that the stored plan is never updated), nor why a seat without '@' (lines 21 and 32) or a row with an empty email (line 15) is silently skipped. The seat loop is also duplicated between the `Some` and `None` arms (lines 19-26 and 31-36). Suggested shape: `if row.email.is_empty() { continue; }` as an early return; extract `fn is_valid_seat(seat: &str) -> bool` (or a named constant/comment explaining the '@' check); extract one helper such as `fn add_new_seats(db, account_id, existing: &[String], seats: &[String]) -> Result<usize, DbError>` used by both arms; and a comment stating why the plan comparison gates seat creation. Behavior stays the same.",
+        "recommendation": "Flatten `import` and name its rules. Skip an empty email with an early `continue` instead of wrapping the whole body in `if !row.email.is_empty()`. Extract the per-seat loop, which is written twice (lines 19-26 and 31-36), into one helper such as `add_new_seats(db, account_id, existing, &row.seats)` that filters `seat.contains('@')` once, behind a named predicate such as `is_email_seat`, with a comment saying why a seat without `@` is dropped silently. Turn `if account.plan != row.plan` into a guard with a comment or a named condition saying why seats are added to an existing account only when its plan changed: a newcomer reading line 18 cannot tell, without the plan, whether it is a rule or a mistake, and would likely read the import as \"add the missing seats to every existing account\", which it does not do. The doc comment on `import` should also say that rows with an empty email and seats without `@` are skipped.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`import` nests six levels deep and hides its seat rules in unexplained conditions"
+        "title": "`import` nests six levels deep and hides its two unexplained filters"
       }
     ],
     "format": 1,

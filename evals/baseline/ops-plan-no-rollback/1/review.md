@@ -6,13 +6,9 @@
 
 Mode: inline.
 
-### skeptic
-
-Disabled by configuration.
-
 ### ops
 
-#### R-ops-1 The switch to Paylane has no way back once Stripe is closed
+#### R-ops-1 The switch to Paylane has no way back
 
 ```yaml
 severity: high
@@ -23,21 +19,20 @@ evidence: |
   release. There is no switch between the two: keeping both would double the
   code to maintain. The Stripe account is closed the day after the release.
 recommendation: >-
-  Keep a way back that does not depend on a redeploy alone: keep the Stripe
-  client behind a configuration switch (provider selected per environment)
-  for at least one release cycle, and keep the Stripe account open until
-  Paylane has run in production through several nightly settlements without
-  incident. State in the design the rollback procedure and the condition that
-  allows closing the Stripe account. Scenario that fails: Paylane rejects or
-  times out on authorizations two days after the release; deploys are weekly
-  and the previous release calls a closed Stripe account, so every card
-  payment fails until a new release ships.
+  Keep a way back until Paylane is proven in production: a configuration
+  switch selecting Stripe or Paylane at runtime (or a gradual rollout behind
+  it), with the Stripe client kept for that period, and the Stripe account
+  kept open until a stated exit criterion is met (e.g. a full settlement
+  cycle with no unmatched payments). Today, if Paylane fails or misbehaves
+  after the release, the operator has no switch, and redeploying the previous
+  version no longer works once the Stripe account is closed the next day:
+  card payments stay down until a new release against a reopened account.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Nobody would see the settlement worker fail or not run
+#### R-ops-2 The settlement worker can fail without anyone seeing it
 
 ```yaml
 severity: high
@@ -48,16 +43,19 @@ evidence: |
   payments and matches them to orders. It runs as a Kubernetes CronJob and
   writes its result to the database.
 recommendation: >-
-  Decide in the design how a failed or missed run is detected: log a
-  structured start and end line with the run date and the counts fetched,
-  matched and unmatched; expose a last-successful-run timestamp (metric or
-  database row) and alert when it is older than a day; alert on a CronJob
-  failure or a Paylane fetch error with the run date. Add a task for it.
-  Scenario that fails: the Paylane API is down at 02:00 or the pod is
-  evicted; the CronJob fails, no payment is written to `unmatched_payments`,
-  so the only alert the spec defines never fires and the day stays
-  unreconciled with no one aware.
+  Decide in the design how an operator sees the worker fail or not run:
+  an alert on a failed or missed CronJob run (e.g. on the time of the last
+  successful run), metrics for payments fetched, matched and unmatched, and
+  a log at start and end of each run. Today, if the Paylane API is down at
+  02:00 or the job crashes or is never scheduled, no settlement happens and
+  nothing reports it — the finance alert of the spec fires only for unmatched
+  payments of a run that succeeded — so payments go unreconciled for days
+  unnoticed.
 history:
   - status: open
     by: ops
 ```
+
+### skeptic
+
+Disabled by configuration.

@@ -16,8 +16,8 @@ i. **One brief per role.** Build each brief only from codev's outputs
      read whole — at `code.review` with the change's diff for it,
      against the default branch of `diff.base`; for each file marked
      `summarize`, its summary (step ii);
-   - the ids already in the record (`codev review --change "<name>"
-     --json`), not to be raised again;
+   - the ids already in the record, as `codev review --change "<name>"`
+     lists them, not to be raised again;
    - the finding format, the scales and the rules of the review record
      below, and the instruction to return only a `### <role-id>` section:
      its findings, or `No finding.`.

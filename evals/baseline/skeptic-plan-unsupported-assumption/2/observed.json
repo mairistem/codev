@@ -2,21 +2,21 @@
   "format": 2,
   "case": "skeptic-plan-unsupported-assumption",
   "error": null,
-  "costUsd": 0.5076244,
-  "durationMs": 47326,
+  "costUsd": 0.3919016,
+  "durationMs": 34741,
   "consumption": {
-    "durationApiMs": 46639,
-    "turns": 12,
-    "permissionDenials": 4,
+    "durationApiMs": 34463,
+    "turns": 10,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1173,
-      "cacheCreation": 43015,
-      "cacheRead": 344642,
-      "output": 4679
+      "input": 1164,
+      "cacheCreation": 30455,
+      "cacheRead": 385918,
+      "output": 3505
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-skeptic-1 (The merge rests on \"one e-mail = one person\", which the design's own context contradicts) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-skeptic-1 (The plan assumes one e-mail is one person, which its own context contradicts) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-skeptic-2 (Deleting the merged records is irreversible and the plan has no way back) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-skeptic-2 (Merged records are deleted with no way back) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -44,7 +44,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "Since an e-mail address identifies exactly one person, the job groups\ncustomers by lower-cased e-mail, keeps the oldest record of each group,\n",
+        "evidence": "Since an e-mail address identifies exactly one person, the job groups\ncustomers by lower-cased e-mail, keeps the oldest record of each group,\nmoves the others' orders to it and deletes the others.\n",
         "history": [
           {
             "by": "skeptic",
@@ -60,13 +60,13 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The decision's premise is refuted three lines above it, in Context: \"Business customers often share a purchasing mailbox (`orders@acme.example`) between several buyers, each with their own customer record and billing address.\" Running the job as planned would merge distinct buyers into the oldest record, moving their orders to the wrong person and dropping their own billing addresses. The Why (\"Guest checkouts create a new customer each time\") also only concerns guest records, while the requirement merges every customer sharing an e-mail. Restrict the merge to what the Why needs (for example, guest records folded into the matching record) or add a matching key that tells buyers of a shared mailbox apart; then add a spec scenario \"shared business mailbox: records are not merged\" and a test for it in task 1.1.",
+        "recommendation": "The design's own Context says the opposite: \"Business customers often share a purchasing mailbox (`orders@acme.example`) between several buyers, each with their own customer record and billing address.\" Under the decision as written, the nightly job merges those distinct buyers into the oldest one, moves every buyer's orders to that one person and deletes the others' records along with their names and billing addresses — the wrong thing built, and data lost. Drop the assumption or ground it: choose a matching key that separates shared mailboxes (e.g. e-mail plus name and billing address, or only records created by guest checkout with identical details), or exclude known shared mailboxes. Then add a spec scenario \"Shared mailbox, different buyers\" whose THEN is that both records remain, and cover it in task 1.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The merge rests on \"one e-mail = one person\", which the design's own context contradicts"
+        "title": "The plan assumes one e-mail is one person, which its own context contradicts"
       },
       {
         "awaiting": "author",
@@ -82,18 +82,18 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 35,
+        "line": 39,
         "location": "design.md#Decision: Customers are merged by e-mail",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The nightly job hard-deletes customer records with no rollback, dry-run, audit of what was merged, or staged rollout; a wrong merge (see R-skeptic-1) cannot be undone, and the design has no Risks / Trade-offs or Migration Plan section. Keep a reversible trace (soft-delete or a merge log mapping each removed record and its orders to the survivor), run a dry-run report before the first real run, and state how to unmerge; cover it with a task and a test.",
+        "recommendation": "The deletion is a one-way door: the deleted records' `name` and `billing_address` (app/schema.sql, NOT NULL columns) are gone, and a wrong merge cannot be undone because nothing records which orders belonged to which customer. Add a way back before deleting — a merge log of the moved order ids and the removed rows, or a soft delete / `merged_into` column — and a staged rollout (a dry-run mode reporting the groups it would merge before the first real run). Add the corresponding requirement and task.",
         "reported": true,
         "role": "skeptic",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Deleting the merged records is irreversible and the plan has no way back"
+        "title": "Merged records are deleted with no way back"
       },
       {
         "awaiting": "author",
@@ -109,18 +109,18 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 54,
+        "line": 60,
         "location": "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The scenarios cover only an exact match and \"every e-mail is distinct\". Whether `Ada@Example.org` and `ada@example.org` \"share an e-mail address\" is decided only in the design (\"lower-cased e-mail\"), not in the spec, so the requirement cannot be checked on that case; nothing says what happens to customers with no or empty e-mail (grouped together and merged, or skipped), nor what happens to data held only on the deleted records (billing address). Add scenarios for case-insensitive matching, missing e-mail, and three or more duplicates, and cover each in task 1.1's verification.",
+        "recommendation": "The only scenarios are \"Two records, one e-mail\" and \"No duplicate\". The design matches on \"lower-cased e-mail\", but no scenario says that `Ada@Example.org` and `ada@example.org` are merged, so the case rule is not verifiable. Missing too: a group of three or more records, two records with the same `created_at` (which one is \"the oldest\"), and a guest checkout that inserts a customer or an order while the job runs. Add a scenario for each case the job must handle, and list them in task 1.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The requirement leaves e-mail matching edge cases unspecified"
+        "title": "The spec covers only the happy path"
       },
       {
         "awaiting": "author",
@@ -136,18 +136,18 @@
           }
         ],
         "id": "R-skeptic-4",
-        "line": 75,
+        "line": 81,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "What Changes adds \"A nightly job merges customers that share an e-mail address.\" — a new scheduled component that must be scheduled, observed, and switched off or rolled back. Tick `operations` so its expert reviews the job, or state on the line why it does not apply.",
+        "recommendation": "The What Changes adds \"A nightly job merges customers that share an e-mail address.\" — something that must be scheduled, monitored and stopped if it misbehaves — yet the operations box is unticked with no reason, so no expert reviews how it runs. Tick it, or keep it unticked with the reason on its line.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A new nightly job is deployed but the operations domain is unticked with no reason"
+        "title": "Operations is unticked although the plan adds a scheduled job"
       }
     ],
     "format": 1,

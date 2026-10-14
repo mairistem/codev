@@ -8,7 +8,7 @@ Mode: inline.
 
 ### skeptic
 
-#### R-skeptic-1 `--quiet` after the file is rejected, and no scenario says so
+#### R-skeptic-1 `--quiet` after the file is a usage error, and no scenario says so
 
 ```yaml
 severity: low
@@ -17,51 +17,45 @@ location: "design.md#Decision: The progress reporter takes a `quiet` switch"
 evidence: |
   `src/main.rs` accepts `--quiet` before the file and passes it to
 recommendation: >-
-  The design accepts the flag only before the file, and `src/main.rs` matches
-  the arguments by position (`[command, path] if command == "import"`), so
-  `ledger import data.csv --quiet` falls into the usage branch and exits 2
-  without importing. Either accept the flag in any position, or state the
-  order in the requirement and add a scenario for the flag placed after the
-  file (and for an unknown flag), with a test in task 1.1.
+  State in the spec where `--quiet` may appear and what happens otherwise:
+  either accept it before or after the file, or add a scenario where
+  `ledger import data.csv --quiet` exits 2 with a usage line. Update the
+  usage line in `src/main.rs:8` (`usage: ledger import <file>`) to mention
+  `--quiet`, so a script that puts the flag last learns why it failed.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 The usage line printed by `ledger` is not updated
+#### R-skeptic-2 Task 1.1 breaks `docs_mention_every_flag` until task 1.2 is done
 
 ```yaml
 severity: low
 confidence: high
 location: "tasks.md#1. Flag"
 evidence: |
-  - [ ] 1.2 Document `--quiet` in `docs/cli.md`, verified by `cargo test docs_mention_every_flag`
+  - [ ] 1.1 `--quiet` read by `src/main.rs`, added to `FLAGS` in `src/cli/import.rs` and passed to `Progress::new(quiet)`, verified by tests `a_quiet_import_prints_nothing` ("A quiet import") and `a_quiet_import_still_prints_errors` ("A quiet import that fails")
 recommendation: >-
-  The only in-program help, `eprintln!("usage: ledger import <file>");` in
-  `src/main.rs:8`, keeps omitting the new flag, and the docs test checks
-  `docs/cli.md` alone. Add the usage line to task 1.1 or 1.2 (for example
-  `usage: ledger import [--quiet] <file>`), or state that it stays unchanged.
+  Adding `--quiet` to `FLAGS` makes `tests/docs.rs` fail (`docs/cli.md does
+  not mention --quiet`) as soon as 1.1 is done, so the suite is red between
+  the two tasks. Document the flag in the same task, or move task 1.2 first.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-3 Every domain is unticked with no reason
+#### R-skeptic-3 No scenario keeps the progress lines when `--quiet` is absent
 
 ```yaml
 severity: low
-confidence: low
-location: "proposal.md#Domains"
+confidence: high
+location: "specs/cli-import/spec.md#Requirement: `--quiet` silences progress"
 evidence: |
-  - [ ] user-interface
-  - [ ] performance
-  - [ ] operations
+  `ledger import --quiet` SHALL print no progress line on standard error; errors SHALL still be printed, and the exit code SHALL be unchanged.
 recommendation: >-
-  The change adds a flag to the public command line and changes the output
-  of nightly jobs, which touches `user-interface` (the CLI contract) and
-  possibly `operations` (what the nightly reports show). No suggestion was
-  raised from the diff, but an unticked box carries no reason. Tick the
-  domains the change touches, or give each unticked one a reason on its line.
+  Add a scenario where `ledger import data.csv` on 2 500 rows still prints
+  two progress lines, and a test for it in task 1.1, so that an
+  implementation that silences progress unconditionally does not pass.
 history:
   - status: open
     by: skeptic

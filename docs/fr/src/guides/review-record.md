@@ -175,9 +175,10 @@ codev review --change add-sessions
 Affiche le compte rendu étape par étape — chaque rôle, chaque constat avec
 sa gravité, son statut et son emplacement —, qui doit agir ensuite sur
 chacun (`author`, `reviewer` ou `human`), les défauts du compte rendu, et
-si la revue permet d'archiver le change. `--json` produit le document
-[`ReviewV1`](../reference/json-output.md#review) que les skills lisent pour
-reprendre une revue interrompue. La commande sort avec 1 seulement quand le
+si la revue permet d'archiver le change. Les skills lisent cette sortie
+telle qu'elle s'affiche pour reprendre une revue interrompue et vérifier le
+compte rendu ; `--json` produit le document
+[`ReviewV1`](../reference/json-output.md#review), pour les scripts. La commande sort avec 1 seulement quand le
 compte rendu contient une erreur.
 
 ## Archiver

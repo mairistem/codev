@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.29586260000000003,
-  "durationMs": 23126,
+  "costUsd": 0.277713,
+  "durationMs": 18786,
   "consumption": {
-    "durationApiMs": 22207,
-    "turns": 7,
+    "durationApiMs": 18663,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 26114,
-      "cacheRead": 235373,
-      "output": 1944
+      "input": 1172,
+      "cacheCreation": 25768,
+      "cacheRead": 188835,
+      "output": 1642
     }
   },
   "strayed": [],
@@ -61,6 +61,12 @@
             "fallback": null,
             "role": "ops",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

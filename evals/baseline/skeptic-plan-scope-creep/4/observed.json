@@ -2,21 +2,21 @@
   "format": 2,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.3905486,
-  "durationMs": 39319,
+  "costUsd": 0.3786802000000001,
+  "durationMs": 56827,
   "consumption": {
-    "durationApiMs": 38029,
-    "turns": 9,
-    "permissionDenials": 3,
+    "durationApiMs": 56135,
+    "turns": 8,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 30261,
-      "cacheRead": 384583,
-      "output": 3527
+      "input": 1162,
+      "cacheCreation": 29994,
+      "cacheRead": 335416,
+      "output": 3533
     }
   },
   "strayed": [],
@@ -52,18 +52,18 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a CSV route answers it. The design itself names the simpler option (\"a single CSV function\") and rejects it only as \"not extensible\", for formats no one requested. Drop the plugin registry from What Changes, the design decision \"Exports go through a plugin registry\" and task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"), and implement the CSV export directly; propose the registry in its own change when a second format is actually asked for.",
+        "recommendation": "The Why only covers accountants copying invoices into a spreadsheet each month (\"Accountants copy invoices one by one into their spreadsheet at the end of each month.\"), and one CSV route solves that. Drop the plugin registry from What Changes, from \"design.md#Decision: Exports go through a plugin registry\" (it turns down the single CSV function only because it is \"not extensible\", but nothing in the plan needs extensibility) and drop task 1.2. Task 1.2 also cannot be checked as written: \"verified by `npm test -- registry`\" names no scenario, and no requirement in the spec describes the registry. Scanning `src/export/plugins/` at start-up also assumes the source folder exists at run time, which the `tsc -p .` build does not show. If more formats are needed later, put them in a change of their own.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Plugin system for future export formats is scope nobody asked for"
+        "title": "A plugin system for export formats nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- A settings page where each user picks their preferred export format.\n",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
         "history": [
           {
             "by": "skeptic",
@@ -74,23 +74,23 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 33,
-        "location": "proposal.md#What Changes",
+        "line": 31,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "Nothing in the Why asks for a per-user format choice, and with only CSV there is nothing to choose. The requirement \"Users choose their export format\" cannot be checked as written: the only route, `GET /invoices.csv`, is CSV by its URL, so the scenario \"WHEN a user picks CSV THEN exports use CSV\" holds whatever the setting says, and \"WHEN no plugin is installed THEN the settings page says so\" describes a state that cannot occur once CSV ships. It also pulls `web/src/settings/` into the Impact and the user-interface domain. Remove the settings-page bullet, the requirement \"Users choose their export format\" with its two scenarios, and task 2.1.",
+        "recommendation": "Nothing in the Why asks for this requirement, and the only route the plan adds is `GET /invoices.csv?month=YYYY-MM`, which is CSV whatever is chosen. So the scenario \"A preference\" (WHEN a user picks CSV, THEN exports use CSV) cannot fail and does not check anything. Remove the requirement, its scenarios, the \"A settings page\" bullet in What Changes, `web/src/settings/` in Impact, the settings sentence in the design, and task 2.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Settings page for a preferred export format is scope nobody asked for and has no observable effect"
+        "title": "A settings page for a preferred export format nobody asked for, with no effect"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "evidence": "- [ ] security\n",
         "history": [
           {
             "by": "skeptic",
@@ -101,18 +101,72 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 56,
+        "line": 49,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "`GET /invoices.csv?month=YYYY-MM` returns every invoice of a month with \"number, date, customer and total\" — customer names leave the system in a file, and the spec has no scenario for who may call the route (an unauthenticated or non-accountant caller). Tick security and personal-data so their experts review the endpoint, or give the reason on each line (`- [ ] <domain> — <reason>`). If the settings page stays (see R-skeptic-2), user-interface must be ticked too, since `web/src/settings/` is in the Impact.",
+        "recommendation": "`GET /invoices.csv?month=YYYY-MM` returns a whole month of invoices, and the spec has no scenario about who may call it: it only covers the happy path for an \"accountant\". Tick `security` so its expert reviews access to the route, or give the reason on the line (`- [ ] security — <reason>`), and add the scenario for an unauthorized caller that the security review asks for.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Every domain is unticked with no reason, though the plan exposes customer invoice data and changes a page"
+        "title": "The security domain is unticked although the change adds a route that exposes invoices"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] personal-data\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-4",
+        "line": 66,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The requirement exports \"number, date, customer and total\", and `customer` can be a person's name (`src/invoices.ts` `customer: string;`). The CSV file then leaves the application to spreadsheets. Tick `personal-data` so its expert reviews this, or give the reason on the line.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The personal-data domain is unticked although the export contains customer names"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] user-interface\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-5",
+        "line": 82,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Impact lists `web/src/settings/`, and task 2.1 adds a control to the settings page, but `user-interface` is unticked with no reason. If R-skeptic-2 is fixed by removing the page, give that reason on the line. Otherwise, tick it.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The user-interface domain is unticked although the plan changes the settings page"
       }
     ],
     "format": 1,

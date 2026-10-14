@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-control-ids-in-logs",
   "error": null,
-  "costUsd": 0.3124274,
-  "durationMs": 28260,
+  "costUsd": 0.2515696,
+  "durationMs": 15671,
   "consumption": {
-    "durationApiMs": 27170,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 15325,
+    "turns": 4,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1205,
-      "cacheCreation": 27088,
-      "cacheRead": 283832,
-      "output": 1899
+      "input": 1185,
+      "cacheCreation": 24581,
+      "cacheRead": 141313,
+      "output": 1286
     }
   },
   "strayed": [],

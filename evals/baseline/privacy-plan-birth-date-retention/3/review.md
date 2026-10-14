@@ -6,9 +6,13 @@
 
 Mode: inline.
 
+### skeptic
+
+Disabled by configuration.
+
 ### privacy
 
-#### R-privacy-1 Opting out does not erase the birthday and phone number
+#### R-privacy-1 Birthday and phone are kept after the member opts out
 
 ```yaml
 severity: medium
@@ -18,18 +22,17 @@ evidence: |
   Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are
   kept as long as the profile exists, and copied with the rest of the
 recommendation: >-
-  Tie retention to the purpose, not to the profile (GDPR Art. 5(1)(e), Art. 17).
-  Add a requirement and a scenario to specs/birthday-greetings/spec.md: when a
-  member opts out, `birthday` and `phone` are cleared on their profile. Today the
-  spec only covers opting in, so a member who withdraws keeps both fields stored
-  for the life of the profile with no purpose left. Add the matching task in
-  tasks.md.
+  Tie retention to the purpose (GDPR Art. 5(1)(e), storage limitation; Art. 7(3), withdrawal of consent):
+  when a member turns the option off, clear `birthday` and `phone` in the same update, and add a spec
+  scenario "A member opts out → both fields are erased" with a matching task. Today a member who opts out
+  keeps both values in `profiles` until the whole profile is deleted, although no feature uses them any more;
+  the spec's "No phone" scenario even assumes the birthday stays once the phone is removed.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 No retention or purge rule for the copies in nightly backups
+#### R-privacy-2 No retention or erasure rule for the copies in the nightly backups
 
 ```yaml
 severity: medium
@@ -39,17 +42,15 @@ evidence: |
   kept as long as the profile exists, and copied with the rest of the
   database into the nightly backups.
 recommendation: >-
-  State how long the nightly backups holding `birthday` and `phone` are kept and
-  how an erasure (opt-out or account deletion) reaches them — for instance a
-  bounded backup rotation after which erased values are gone, documented in the
-  design (GDPR Art. 5(1)(e), Art. 17). As written, a member's birthday and phone
-  number erased from `profiles` survive in every backup with no stated expiry.
+  State how long the nightly backups holding `birthday` and `phone` are kept and how an opt-out or a profile
+  deletion reaches them (backup expiry period, or re-applying erasures on restore). As written, a birthday and
+  phone number erased from `profiles` survive in every backup for an undefined time (GDPR Art. 5(1)(e), Art. 17).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-3 Transfer of phone numbers and names to Textly in the United States has no stated safeguard
+#### R-privacy-3 Transfer of phone numbers to Textly in the United States has no stated safeguard or processor terms
 
 ```yaml
 severity: medium
@@ -59,30 +60,46 @@ evidence: |
   phone number and display name to Textly's API (hosted in the United
   States), which sends the message.
 recommendation: >-
-  Question for the team: record Textly as a processor (Art. 28 contract) and the
-  Chapter V mechanism for the transfer to the United States (adequacy decision /
-  Data Privacy Framework certification or standard contractual clauses), and add
-  Textly to the records of processing (Art. 30). Also confirm the display name is
-  needed in the message; if the text can be generic, send the phone number only.
+  A question for the team: identify Textly as a processor in the plan, with its data processing agreement
+  (GDPR Art. 28), the transfer mechanism for the United States (Chapter V — adequacy decision under the
+  EU-US Data Privacy Framework if Textly is certified, otherwise standard contractual clauses), and how long
+  Textly keeps the phone numbers and display names it receives. Only the controller can tell what was decided;
+  add it to the design and to the records of processing (Art. 30).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-4 Lawful basis for marketing text messages not stated
+#### R-privacy-4 The display name is sent to Textly without the purpose requiring it
 
 ```yaml
 severity: low
 confidence: low
-location: "proposal.md#Why"
+location: "design.md#Decision: Greetings are sent by SMS through Textly"
 evidence: |
-  Members enjoy being remembered; marketing wants birthday messages.
+  A daily job selects the profiles whose birthday is today and posts each
+  phone number and display name to Textly's API (hosted in the United
 recommendation: >-
-  Question for the team: state the purpose and lawful basis of the processing
-  (presumably consent given by the opt-in, Art. 6(1)(a) and Art. 7) and whether
-  these texts count as direct marketing under the ePrivacy Directive; if so, the
-  opt-in wording must say so and withdrawal must be as easy as giving consent
-  (see R-privacy-1).
+  Neither the proposal nor the spec says the message is personalised by name ("SHALL send them a text message").
+  Send only the phone number and a fixed text, or state in the spec that the greeting carries the display name,
+  so that what goes to the processor matches the stated purpose (GDPR Art. 5(1)(c), data minimisation).
+history:
+  - status: open
+    by: privacy
+```
+
+#### R-privacy-5 Lawful basis for the new data is not stated
+
+```yaml
+severity: low
+confidence: low
+location: "proposal.md#What Changes"
+evidence: |
+  - Members can opt in to birthday greetings; they then give their birthday (day and month) and a mobile phone number.
+recommendation: >-
+  A question for the team: the opt-in suggests consent (GDPR Art. 6(1)(a)), but the plan never names the lawful
+  basis, while the proposal's "Why" cites marketing. State the basis in the proposal, and if it is consent, the
+  wording shown on the profile form and how withdrawal works (see R-privacy-1).
 history:
   - status: open
     by: privacy

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-detail-endpoint-authz",
   "error": null,
-  "costUsd": 0.3109488000000001,
-  "durationMs": 23148,
+  "costUsd": 0.3307776,
+  "durationMs": 31049,
   "consumption": {
-    "durationApiMs": 22813,
+    "durationApiMs": 30425,
     "turns": 8,
-    "permissionDenials": 1,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1193,
-      "cacheCreation": 26575,
-      "cacheRead": 282269,
-      "output": 2045
+      "input": 1179,
+      "cacheCreation": 28766,
+      "cacheRead": 243373,
+      "output": 2550
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (Any signed-in user can read any organization's invoice by id) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +40,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "\"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n[id],\n",
+        "evidence": "const rows = await query<InvoiceRow>(\n  \"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n  [id],\n);\n",
         "history": [
           {
             "by": "security",
@@ -56,13 +56,13 @@
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Scope the lookup to the caller's organization — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so another organization's invoice ids are neither readable nor confirmable. Add a test that a user of org 7 asking for an invoice of org 8 gets 404 (insecure direct object reference, CWE-639 / CWE-862). Attack: a user signed in to organization 7 sends `GET /invoices/42`, where invoice 42 belongs to organization 8, and receives its number, total and date; iterating ids dumps every organization's invoices.",
+        "recommendation": "Scope the lookup to the caller's organization, as the list endpoint does: `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]`, and keep answering 404 when no row matches so other organizations' ids are not revealed. Add a test that a user of org 7 asking for an invoice of org 8 gets 404 (CWE-639 / CWE-862, insecure direct object reference).",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Any signed-in user can read any organization's invoice by id"
+        "title": "GET /invoices/:id returns any organization's invoice"
       },
       {
         "awaiting": "author",
@@ -78,12 +78,12 @@
           }
         ],
         "id": "R-security-2",
-        "line": 34,
+        "line": 38,
         "location": "src/server.ts:15-18",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Keep `console.error(err)` on the server and answer the client with a generic body such as `{ error: \"internal error\" }`, without `stack` or the raw message (CWE-209). Scenario: any failure behind `requireUser` — for example a database error raised by `query` in an invoices handler — reaches this handler, and the caller receives the stack trace with file paths, module layout and the driver's error text (table, column or connection details).",
+        "recommendation": "Log the error server-side only and answer a generic body such as `{ error: \"internal error\" }` (with the status of `err.status` when it is a client error, e.g. 400 for a malformed body). Never put `err.stack` or a raw database message in the response (CWE-209).",
         "reported": true,
         "role": "security",
         "severity": "medium",

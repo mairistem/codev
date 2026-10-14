@@ -648,10 +648,26 @@ pub struct RolesV1 {
     /// domains list; empty otherwise. Additive in v1.
     pub suggestions: Vec<SuggestionV1>,
     pub roles: Vec<RoleV1>,
+    /// With `--at`, the roles serving the step that the configuration turned
+    /// off (activation `never`), so that a skill writes `Disabled by
+    /// configuration.` for them without a second call; empty otherwise.
+    /// Additive in v1.
+    pub disabled: Vec<DisabledRoleV1>,
     /// The review mode in effect and the material of a reviewing step.
     /// Additive in v1; `null` only in a failure's document.
     pub review: Option<ReviewModeV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// A role the configuration turned off at a step.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DisabledRoleV1 {
+    pub id: String,
+    /// The display name in the configured language, English otherwise.
+    pub name: String,
+    /// `project` or `change`: the file whose setting won.
+    pub when_origin: &'static str,
 }
 
 /// How the reviewing roles run, and what they read.
@@ -837,6 +853,15 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
                 .roles
                 .iter()
                 .map(|role| RoleV1::from(role, &outcome.language, outcome.at.as_deref()))
+                .collect(),
+            disabled: outcome
+                .disabled
+                .iter()
+                .map(|role| DisabledRoleV1 {
+                    id: role.role.id.clone(),
+                    name: role.role.name(&outcome.language).to_string(),
+                    when_origin: role.when_origin.as_str(),
+                })
                 .collect(),
             review: Some(ReviewModeV1::from(&outcome.review)),
             status: statuses(&outcome.warnings),
@@ -1822,6 +1847,7 @@ apply:
             at: None,
             language: "en".into(),
             roles: Vec::new(),
+            disabled: Vec::new(),
             knowledge: false,
             stacks: crate::commands::Stacks {
                 detected: vec!["Rust", "Go"],
@@ -1871,6 +1897,7 @@ apply:
             at: Some("code.review".into()),
             language: "en".into(),
             roles: Vec::new(),
+            disabled: Vec::new(),
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
@@ -1908,6 +1935,7 @@ apply:
             at: Some("plan.challenge".into()),
             language: "fr".into(),
             roles: vec![skeptic_with_a_project_criterion()],
+            disabled: Vec::new(),
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
             suggestions: None,
@@ -1924,6 +1952,7 @@ apply:
             "diff",
             "suggestions",
             "roles",
+            "disabled",
             "review",
             "status",
         ] {

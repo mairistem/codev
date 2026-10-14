@@ -627,6 +627,7 @@ champs que le fichier omet ou rend invalides valent `null`.
       ]
     }
   ],
+  "disabled": [{ "id": "newcomer", "name": "Newcomer", "whenOrigin": "project" }],
   "review": {
     "mode": "isolated",
     "origin": "project",
@@ -662,6 +663,7 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
 | `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
+| `disabled` | Avec `--at`, les rôles de l'étape que la configuration a désactivés — leur activation, une fois appliqués les réglages du projet puis ceux du change, vaut `never` —, chacun avec `id`, `name` et `whenOrigin` (`project` ou `change`, le fichier dont le réglage l'emporte). Les skills écrivent pour eux `Disabled by configuration.` dans le compte rendu de revue, sans second appel. Vide sans `--at` ; un expert dont le domaine n'est pas coché est inactif, pas désactivé |
 | `review.mode`, `review.origin` | Le [mode de revue](configuration.md#review) en vigueur, `inline` ou `isolated`, fixé par `default`, `project` ou `change` |
 | `review.material` | Avec `--change` à `plan.trace`, `plan.challenge` ou `code.review`, ce que lisent les relecteurs : les fichiers de planification du change sauf `change.yaml` et `review.md` aux étapes du plan, les fichiers du diff à `code.review` — aucun fichier de planification, vendorisé, généré, de verrouillage ou binaire, aucun lien symbolique ; un fichier supprimé compte 0 octet. Chaque fichier a ses `bytes` et son `treatment` : `full`, ou `summarize` dès que les fichiers pris du plus petit au plus gros ne tiennent plus dans `limitBytes` (160 Kio). `null` sinon, et à `code.review` sans diff. Un fichier écarté parce que sa taille ne peut pas être lue ou que son nom contient un caractère de contrôle est nommé par un avertissement `review_material_incomplete` dans `status` |
 
@@ -669,7 +671,7 @@ Avec `--at`, `roles` ne contient que les rôles actifs, éventuellement
 aucun : l'étape est alors sautée. Sans `--change`, aucune proposal n'est
 lue : les experts sont donc inactifs. Un échec — `unknown_step`, `unknown_role`,
 `invalid_role_activation`, `role_not_disableable` — conserve cette forme,
-avec `roles` et `suggestions` vides, `stacks`, `diff` et `review` à `null`,
+avec `roles`, `disabled` et `suggestions` vides, `stacks`, `diff` et `review` à `null`,
 et `language` renseigné comme pour `instructions` ; un mode de revue
 invalide échoue avec `invalid_review_mode`. Un déclencheur du projet
 inutilisable est écarté, avec un avertissement `invalid_trigger` dans

@@ -975,11 +975,38 @@ mod tests {
     }
 
     #[test]
+    fn the_review_record_takes_disabled_roles_from_the_step_and_reads_codev_as_printed() {
+        let record = flat(&review_record());
+        assert!(
+            record.contains("listed under `disabled` by the same `codev roles --at <step> --change \"<name>\" --json` call"),
+            "{record}"
+        );
+        assert!(
+            !record.contains("when: never"),
+            "no second call for the disabled roles"
+        );
+        assert!(!record.contains("codev review --change \"<name>\" --json"));
+        assert!(!record.contains("findings[]") && !record.contains("issues[]"));
+        assert!(record.contains("never filter it through another program"));
+        for name in ["propose", "apply"] {
+            let skill = flat(&rendered(name));
+            assert!(
+                skill.contains("never filter it through another program"),
+                "{name}"
+            );
+            assert!(
+                !skill.contains("codev review --change \"<name>\" --json"),
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
     fn propose_and_apply_describe_the_record_and_the_loop() {
         let record = flat(&review_record());
         for keyword in [
             "_codev/changes/<name>/review.md",
-            "codev review --change \"<name>\" --json",
+            "codev review --change \"<name>\"",
             "No finding.",
             "Disabled by configuration.",
             "#### R-<role-id>-<n> <title>",
@@ -993,11 +1020,11 @@ mod tests {
             "status: rejected",
             "No second round",
             "goes to the human",
-            "Present only findings with `reported: true` that are not `rejected`",
+            "does not mark `(low confidence)` and that are not `rejected`",
             "**To decide**",
-            "`awaiting` is `human`",
+            "**Waiting for an answer** with `human`",
             "Nothing to decide",
-            "fix every entry of `issues[]`",
+            "every line of its **Issues in the record**",
         ] {
             assert!(
                 record.contains(keyword),
@@ -1119,8 +1146,8 @@ mod tests {
         let record = flat(&review_record());
         for keyword in [
             "Resume first",
-            "A finding already in `findings[]` is never raised again",
-            "`awaiting` is `author` or `reviewer` is answered before anything new",
+            "A finding it lists under a step is never raised again",
+            "under **Waiting for an answer** with `author` or `reviewer` is answered before anything new",
             "Never write a step or a role twice",
         ] {
             assert!(

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-detail-endpoint-authz",
   "error": null,
-  "costUsd": 0.34862160000000003,
-  "durationMs": 25043,
+  "costUsd": 0.33613420000000005,
+  "durationMs": 26961,
   "consumption": {
-    "durationApiMs": 23762,
+    "durationApiMs": 26609,
     "turns": 8,
-    "permissionDenials": 1,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1195,
-      "cacheCreation": 29535,
-      "cacheRead": 345993,
-      "output": 2107
+      "input": 1181,
+      "cacheCreation": 28273,
+      "cacheRead": 291236,
+      "output": 2536
     }
   },
   "strayed": [],
@@ -56,7 +56,7 @@
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Scope the lookup to the caller's organization, as the list route does: read `currentUser(req)` and query `WHERE id = $1 AND org_id = $2` with `[id, user.orgId]`, answering 404 when no row matches (so another organization's ids are not confirmed). Add a test where a user of org 7 asks for an invoice of org 8 and gets 404. Insecure direct object reference, CWE-639 / CWE-862: any signed-in user of the accounting app sends `GET /invoices/1`, `/invoices/2`, … and reads every other organization's invoice numbers and totals.",
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization A sends `GET /invoices/42` (or iterates ids 1, 2, 3…) and gets the number, total and date of organization B's invoices: the query selects by `id` alone, with no check against the caller's organization, while `GET /invoices` scopes by `org_id`. Scope the query to the caller — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and answer 404 (not 403) when no row matches, so ids of other organizations cannot be probed. Add a test asserting the query carries the caller's `orgId`, alongside the existing list test.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -67,7 +67,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
+        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
         "history": [
           {
             "by": "security",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-security-2",
-        "line": 36,
+        "line": 37,
         "location": "src/server.ts:15-18",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Keep the details in the server log (`console.error(err)` already does) and answer a generic body such as `{ error: \"internal error\" }`. Any caller who triggers a failure — e.g. a database error raised by `query` in an invoices route — receives the stack trace (file paths, module layout, dependency versions) and the raw `pg` error message, which can carry SQL fragments, table and column names or connection details. CWE-209.",
+        "recommendation": "Information exposure through an error message (CWE-209). Any client, even without a session — `express.json()` runs before `requireUser` — sends a request with `Content-Type: application/json` and a malformed body; the body parser's error reaches this handler and the response carries its message and full stack trace, revealing the server's file paths, module layout and dependency versions. Database errors forwarded here would likewise expose `pg` messages (table, column, constraint names). Answer a generic body (`{ error: \"internal error\" }`, with the client-error status for parser errors such as `err.status` 400) and keep the details in the server log only.",
         "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Error handler sends the error message and stack trace to the client"
+        "title": "Error handler sends error messages and stack traces to the client"
       }
     ],
     "format": 1,

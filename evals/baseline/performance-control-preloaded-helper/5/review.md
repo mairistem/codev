@@ -8,22 +8,15 @@ Mode: inline.
 
 ### performance
 
-#### R-performance-1 No visible index backs the month filter the report makes hot
+#### R-performance-1 Index on invoices.month not verifiable
 
 ```yaml
-severity: medium
+severity: low
 confidence: low
 location: "src/report.rs:25"
 evidence: |
   let invoices = db.invoices_of_month(month)?;
-recommendation: >-
-  The report is the first caller of `invoices_of_month` and `month_total`,
-  both filtering `invoices` on `month` (`WHERE month = $1`, src/db.rs:21,27).
-  The schema is not in the repository, so check with `EXPLAIN` that an index
-  on `invoices(month)` exists — ideally `(month, number)` to serve the
-  `ORDER BY number` too; without one, each report scans the whole invoices
-  table twice, a cost growing with every month of history rather than with
-  the ~3 000 invoices of the month.
+recommendation: The report runs two queries filtering `invoices` on `month` (`invoices_of_month` and `month_total`, see `src/db.rs:21` and `src/db.rs:27`); the schema is not in the repository, so check with `EXPLAIN` that `invoices` has an index on `month` (ideally `(month, number)` to serve the `ORDER BY number`). Without it, each report scans the whole invoices table, a cost that grows with every month of history rather than with the month's ~3 000 invoices.
 history:
   - status: open
     by: performance

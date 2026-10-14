@@ -46,6 +46,7 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `/codev-propose` and `/codev-apply` write their findings into the review record, let the author answer each one and the reviewer re-check it, and ask you to decide what is still disputed.
 - The reviewing roles report fewer false positives. A finding presented to you with high confidence now quotes the line and states the scenario that fails; hypotheses and preferences stay in the review record with low confidence. Each defect is reported once, and each expert says what lies outside its domain.
 - The skeptic no longer reviews security, privacy, migration, operations, performance or accessibility itself: it challenges the plan's logic and evidence and checks that the proposal's Domains bring the experts who do. Run `codev update` to refresh your skills.
+- The review steps of `/codev-propose` and `/codev-apply` take fewer turns and ask for fewer permissions: `codev roles --at` now lists the roles disabled at the step, and the skills read codev's output as printed instead of filtering it through other programs. Measured on the evaluation suite with no change in what the roles find: permission denials down 46 %, context re-read down 16 %, turns down 6 %, time down 12 %, cost down 7 %.
 <!-- codev:end -->
 
 ## [0.6.1] - 2026-10-12

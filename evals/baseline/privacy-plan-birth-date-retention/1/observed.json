@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-plan-birth-date-retention",
   "error": null,
-  "costUsd": 0.42050260000000006,
-  "durationMs": 40903,
+  "costUsd": 0.4083106,
+  "durationMs": 50025,
   "consumption": {
-    "durationApiMs": 40830,
-    "turns": 9,
+    "durationApiMs": 49755,
+    "turns": 11,
     "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 32702,
-      "cacheRead": 386203,
-      "output": 4033
+      "input": 1174,
+      "cacheCreation": 29453,
+      "cacheRead": 357268,
+      "output": 5013
     }
   },
   "strayed": [],
@@ -36,7 +36,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are\nkept as long as the profile exists, and copied with the rest of the\n",
         "history": [
           {
             "by": "privacy",
@@ -52,18 +52,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Tie retention to the purpose: when a member opts out of birthday greetings, clear `birthday` and `phone` on their profile (and say so in the spec, with a scenario \"A member opts out\"), and add a task with its test. Today the columns are \"filled only for members who opt in\" but nothing empties them on withdrawal, so a member who opts out keeps both in `profiles` until the account is deleted (GDPR Art. 5(1)(e) storage limitation, Art. 7(3) withdrawal of consent, Art. 17 erasure).",
+        "recommendation": "Tie retention to the purpose, not to the profile (GDPR Art. 5(1)(e), storage limitation): add a requirement and a scenario for opting out — when a member turns birthday greetings off, `birthday` and `phone` are cleared from `profiles` — and a task that implements and tests it. Today a member who withdraws keeps both fields stored for the life of the account, with no use left for them; the spec only covers \"the phone number was removed\", not withdrawal of the opt-in.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Birthday and phone kept after the member opts out"
+        "title": "Birthday and phone are kept after the member opts out"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "database into the nightly backups.\n",
+        "evidence": "copied with the rest of the\ndatabase into the nightly backups.\n",
         "history": [
           {
             "by": "privacy",
@@ -79,18 +79,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "State how long the nightly backups holding `birthday` and `phone` are kept and how an erased or opted-out value leaves them (backup rotation period, or re-applying erasures on restore). As written, a member's birthday and phone number survive in backups for an undefined time after they opt out or delete their account (GDPR Art. 5(1)(e), Art. 17).",
+        "recommendation": "State how long the nightly backups holding `birthday` and `phone` are kept and how an erased or withdrawn member's values leave them (backup expiry period, or re-application of erasures on restore). As written, a member's birthday and phone number cleared from `profiles` survive in every backup with no defined end (GDPR Art. 5(1)(e), Art. 17).",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No retention period for the new data in nightly backups"
+        "title": "No retention or erasure rule for the copies in nightly backups"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\n",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\n",
         "history": [
           {
             "by": "privacy",
@@ -101,23 +101,23 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 52,
+        "line": 53,
         "location": "design.md#Decision: Greetings are sent by SMS through Textly",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Send Textly only the phone number and the final message text, or, if a personalised greeting is wanted, state it in the spec and send no more than the first name the text needs. The spec only requires \"a greeting is sent to their phone\"; the display name posted to a US processor goes beyond that purpose (GDPR Art. 5(1)(c) data minimisation, Art. 25).",
+        "recommendation": "Send Textly only the phone number and the message text it must deliver (GDPR Art. 5(1)(c), data minimisation). Nothing in the spec says the greeting carries the member's name; if it must, say so in the requirement and send the name only inside the message body. Otherwise every opted-in member's display name goes to a third-party processor for no stated purpose.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Display name sent to Textly beyond what the greeting requires"
+        "title": "Display name sent to Textly though the greeting does not need it"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "phone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
         "history": [
           {
             "by": "privacy",
@@ -128,18 +128,18 @@
           }
         ],
         "id": "R-privacy-4",
-        "line": 72,
+        "line": 73,
         "location": "design.md#Decision: Greetings are sent by SMS through Textly",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Question for the team: confirm that a processor agreement with Textly exists (GDPR Art. 28) and which Chapter V mechanism covers the transfer to the United States (adequacy under the EU-US Data Privacy Framework, or standard contractual clauses), and record it in the design and the record of processing (Art. 30). Only the controller can say what was decided.",
+        "recommendation": "Question for the team: Textly is a new processor outside the EEA. Record the processing agreement (GDPR Art. 28) and the transfer mechanism (Chapter V — adequacy decision such as the EU-US Data Privacy Framework, or standard contractual clauses) in the design, or pick an EEA-hosted SMS provider. Only the controller can confirm what was decided.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Transfer of phone numbers to Textly in the United States has no stated safeguard"
+        "title": "Transfer of phone numbers to a US processor has no stated safeguard"
       },
       {
         "awaiting": "author",
@@ -155,18 +155,45 @@
           }
         ],
         "id": "R-privacy-5",
-        "line": 93,
+        "line": 94,
         "location": "proposal.md#Why",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Question for the team: state the purpose (birthday greetings only, not other marketing use) and the lawful basis (consent through the opt-in, GDPR Art. 6(1)(a)) for `birthday` and `phone` in the proposal, so that \"marketing wants\" does not later justify reusing the phone numbers for other campaigns (Art. 5(1)(b) purpose limitation).",
+        "recommendation": "Question for the team: state the purpose (a member-requested greeting, or marketing) and the lawful basis (presumably consent through the opt-in, GDPR Art. 6(1)(a)) for `birthday` and `phone`. If the messages serve marketing, the SMS needs prior consent under the ePrivacy Directive and the phone number must not be reused for other campaigns; say so in the proposal.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Purpose and lawful basis of the new data are not stated"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-6",
+        "line": 114,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Confirm in the design that the existing account export and account deletion cover the new `birthday` and `phone` columns (GDPR Art. 15, 17, 20), and add a task to check it. The material does not show how these rights are served today, so this could not be verified.",
         "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Lawful basis and purpose of the new data not stated"
+        "title": "Access, portability and erasure are not shown to reach the new columns"
       }
     ],
     "format": 1,
@@ -186,6 +213,12 @@
             "fallback": null,
             "role": "privacy",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

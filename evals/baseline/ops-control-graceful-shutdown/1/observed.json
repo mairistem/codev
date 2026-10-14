@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3929788000000001,
-  "durationMs": 45441,
+  "costUsd": 0.314446,
+  "durationMs": 24635,
   "consumption": {
-    "durationApiMs": 44069,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 24655,
+    "turns": 7,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 30857,
-      "cacheRead": 349854,
-      "output": 3757
+      "input": 1172,
+      "cacheCreation": 28619,
+      "cacheRead": 194285,
+      "output": 2283
     }
   },
   "strayed": [],
@@ -32,35 +32,7 @@
     },
     "changeName": "add-mail-worker",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-1",
-        "line": 11,
-        "location": "src/worker.rs:46-50",
-        "raisedBy": [
-          "ops"
-        ],
-        "recommendation": "Check how the mailer maps a timeout once the message data has been handed to the relay (`src/mailer.rs` only says it gives up after `timeout`). If that case returns `Unavailable`, the job is released and sent again, up to 12 times, so a slow relay that does deliver produces duplicate e-mails. Either have the mailer report an ambiguous outcome separately (e.g. dead-letter it or retry with a stable Message-ID the relay deduplicates), or document that duplicates are accepted.",
-        "reported": false,
-        "role": "ops",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "A send that times out after the relay accepted it is retried and duplicates the e-mail"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-mail-worker/review.md",
@@ -88,7 +60,13 @@
             "credited": [],
             "fallback": null,
             "role": "ops",
-            "state": "findings"
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

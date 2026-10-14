@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-plan-no-rollback",
   "error": null,
-  "costUsd": 0.33582579999999995,
-  "durationMs": 42572,
+  "costUsd": 0.3327746,
+  "durationMs": 36733,
   "consumption": {
-    "durationApiMs": 42245,
+    "durationApiMs": 36470,
     "turns": 8,
-    "permissionDenials": 2,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1173,
-      "cacheCreation": 28014,
-      "cacheRead": 332189,
-      "output": 2214
+      "input": 1160,
+      "cacheCreation": 27942,
+      "cacheRead": 285983,
+      "output": 2554
     }
   },
   "strayed": [],
@@ -33,7 +33,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Nobody would see the settlement worker fail) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (The settlement worker can fail without anyone seeing it) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,12 +55,12 @@
           }
         ],
         "id": "R-ops-1",
-        "line": 11,
+        "line": 15,
         "location": "design.md#Decision: All traffic moves at deploy",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Keep a way back until Paylane is proven in production: keep the Stripe client behind a configuration switch (or a percentage rollout) for at least one release cycle, and keep the Stripe account open until the switch has been off for that period and the first settlements have run cleanly. State in the design the rollback procedure (flip the switch, or redeploy the previous version while Stripe is still open) and the criterion for closing the Stripe account. Scenario that fails today: Paylane has an outage or the new client mis-captures payments on day two; deploys are weekly, the Stripe account is already closed, so redeploying the previous version cannot restore card payments and checkout stays down.\n",
+        "recommendation": "Keep a way back until Paylane has proven itself in production: keep the Stripe client behind a configuration switch (provider selected per environment), or at least keep the Stripe account open and the previous release deployable for a stated period (for example several weekly deploy cycles), and only close the account and delete the client in a later change. Failure scenario: Paylane rejects or times out on authorizations after the release; redeploying the previous version (blue/green) does not help once the Stripe account is closed the next day, so card payments stay down until a new release is built. State the rollback procedure and the condition for closing the Stripe account in the design, and add a task for the switch.",
         "reported": true,
         "role": "ops",
         "severity": "high",
@@ -82,18 +82,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 37,
+        "line": 42,
         "location": "design.md#Decision: A worker settles payments nightly",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Decide how an operator learns that the worker failed or did not run: alert on a failed or missed CronJob run (or a \"last successful settlement\" timestamp/metric checked against its schedule), log the start and the outcome of each run with counts (payments fetched, matched, unmatched), and state whether a failed run can be re-run safely for the same day. Scenario that fails today: the Paylane API is unreachable at 02:00 or the job crashes; nothing is written, no alert fires (the only alert in the spec is for an unmatched payment), and the day's payments stay unreconciled without anyone knowing.\n",
+        "recommendation": "Decide how operators see the worker's health: a log at start and end of each run with structured fields (run date, payments fetched, matched, unmatched), a metric or a last-successful-run timestamp, and an alert when a run fails or does not complete by a deadline. Failure scenario: the Paylane API is unreachable at 02:00 or the CronJob is never scheduled; the job fails, nothing is written, and since the only alert in the plan fires on unmatched payments, the finance channel stays silent and the night's settlement is missing unnoticed — the requirement \"Payments are settled nightly\" is broken without a signal. Also say whether a failed run may be re-run safely for the same day (idempotent matching) and add the monitoring to task 1.2.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Nobody would see the settlement worker fail"
+        "title": "The settlement worker can fail without anyone seeing it"
       }
     ],
     "format": 1,
@@ -108,6 +108,12 @@
         "mode": "inline",
         "recorded": true,
         "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
           {
             "credited": [],
             "fallback": null,

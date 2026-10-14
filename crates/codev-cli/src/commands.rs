@@ -693,6 +693,9 @@ pub struct RolesOutcome {
     pub language: String,
     /// The roles active at `at`, or every role without it.
     pub roles: Vec<ResolvedRole>,
+    /// The roles serving `at` that the configuration turned off; empty
+    /// without `at`.
+    pub disabled: Vec<ResolvedRole>,
     /// `--knowledge`: the human output prints each role's knowledge.
     pub knowledge: bool,
     /// The languages the knowledge is filtered for.
@@ -751,6 +754,10 @@ pub fn roles(
         Some(step) => resolved.active_at(step)?.into_iter().cloned().collect(),
         None => resolved.roles.clone(),
     };
+    let disabled: Vec<ResolvedRole> = match at {
+        Some(step) => resolved.disabled_at(step)?.into_iter().cloned().collect(),
+        None => Vec::new(),
+    };
 
     let detected = engine_detect::stacks(ctx.fs, layout.project_root());
     let filter = if all_stacks {
@@ -802,6 +809,7 @@ pub fn roles(
         at: at.map(str::to_string),
         language: config.language,
         roles,
+        disabled,
         knowledge,
         stacks: Stacks { detected, filter },
         suggestions,
@@ -2455,6 +2463,53 @@ edition = "2024"
     fn roles_json(h: &Harness, at: Option<&str>, change: Option<&str>) -> serde_json::Value {
         let outcome = roles(&h.ctx(), at, change, false, false).unwrap();
         serde_json::to_value(crate::contract::RolesV1::from(&outcome)).unwrap()
+    }
+
+    #[test]
+    fn roles_list_the_roles_disabled_at_the_step() {
+        let h = roles_project("roles:\n  newcomer: never\n", "schema: spec-driven\n").with(
+            "/p/_codev/changes/add-auth/proposal.md",
+            "# Proposal: Auth\n\n## Why\n\nx\n\n## Domains\n\n- [x] security\n",
+        );
+        let json = roles_json(&h, Some("code.review"), Some("add-auth"));
+        let active: Vec<&str> = json["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["id"].as_str().unwrap())
+            .collect();
+        assert!(
+            active.contains(&"security") && !active.contains(&"newcomer"),
+            "{active:?}"
+        );
+        assert_eq!(
+            json["disabled"],
+            serde_json::json!([{ "id": "newcomer", "name": "Newcomer", "whenOrigin": "project" }])
+        );
+        let outcome = roles(
+            &h.ctx(),
+            Some("code.review"),
+            Some("add-auth"),
+            false,
+            false,
+        )
+        .unwrap();
+        let text = crate::render::roles(&outcome);
+        assert!(
+            text.trim_end()
+                .ends_with("Disabled by configuration: newcomer (project)"),
+            "the last line: {text}"
+        );
+        // Not at a step it does not serve.
+        let json = roles_json(&h, Some("plan.challenge"), Some("add-auth"));
+        assert_eq!(json["disabled"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn roles_without_at_have_no_disabled() {
+        let h = roles_project("roles:\n  newcomer: never\n", "schema: spec-driven\n");
+        let json = roles_json(&h, None, Some("add-auth"));
+        assert_eq!(json["disabled"], serde_json::json!([]));
     }
 
     #[test]

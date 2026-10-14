@@ -17,42 +17,40 @@ location: "proposal.md#What Changes"
 evidence: |
   - A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.
 recommendation: >-
-  The Why only asks that accountants stop copying invoices one by one into
-  their spreadsheet ("Accountants copy invoices one by one into their
-  spreadsheet at the end of each month."); a single CSV route answers it.
-  Drop the plugin registry from the proposal, the design decision "Exports
-  go through a plugin registry" (whose only argument against a single CSV
-  function is "not extensible", for formats nobody requested) and task 1.2,
-  which has no requirement or scenario behind it ("verified by `npm test --
-  registry`"). Propose the registry in its own change when a second format
-  is actually needed.
+  The Why is only "Accountants copy invoices one by one into their spreadsheet at the end of each month." —
+  a single CSV export answers it. No PDF, XLSX, XML or JSON export is requested, yet the plan builds a
+  start-up module discovery (design.md#Decision: Exports go through a plugin registry, which dismisses
+  "a single CSV function (not extensible)" on speculative extensibility alone) and task 1.2, whose check
+  "verified by `npm test -- registry`" names no observable behaviour. Drop the plugin system from What
+  Changes, replace the design decision by a single CSV serializer next to `invoicesOfMonth`
+  (src/invoices.ts), and remove task 1.2. A registry can come with the second format, when one is asked for.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 Settings page for a preferred export format is out of scope
+#### R-skeptic-2 Settings page for a preferred export format nobody asked for
 
 ```yaml
 severity: medium
 confidence: high
-location: "specs/invoice-export/spec.md#Requirement: Users choose their export format"
+location: "proposal.md#What Changes"
 evidence: |
-  The settings page SHALL let a user choose their preferred export format among the installed plugins.
+  - A settings page where each user picks their preferred export format.
 recommendation: >-
-  Nothing in the Why asks for a per-user format preference, and with CSV as
-  the only format the choice is empty. The requirement is also not
-  verifiable as written: the export route is fixed to `/invoices.csv`, so
-  "**THEN** exports use CSV" cannot observe the preference having any
-  effect. Remove this requirement, the "A settings page where each user
-  picks their preferred export format." bullet, `web/src/settings/` from
-  Impact, the last sentence of the design decision and task 2.1.
+  Nothing in the Why asks for a per-user format choice, and with a single format the choice is empty.
+  The requirement it brings is not verifiable either: specs/invoice-export/spec.md "A preference" says
+  "**THEN** exports use CSV", but the only export is `GET /invoices.csv`, CSV by its URL, so the
+  preference changes nothing observable; and the design ("A settings page stores each user's preferred
+  format") never says where the preference is stored — src/db.ts and the existing SettingsPage.tsx hold
+  no such field, so a schema change is implied but unplanned. Remove the bullet, the requirement
+  "Users choose their export format" with its two scenarios, task 2.1, and `web/src/settings/` from Impact.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-3 Domains the plan touches are left unticked without a reason
+#### R-skeptic-3 Domains all unticked while the plan exposes invoices and changes the UI
 
 ```yaml
 severity: medium
@@ -63,21 +61,18 @@ evidence: |
   - [ ] personal-data
   - [ ] user-interface
 recommendation: >-
-  The change adds a route, `GET /invoices.csv?month=YYYY-MM`, that returns a
-  month's invoices with their customer and total, yet `security` and
-  `personal-data` are unticked with no reason, so no expert will review who
-  may call it or what customer data leaves the system; the spec has no
-  scenario for an unauthenticated or unauthorized caller. As planned, the
-  settings page also touches `user-interface`, unticked. Tick each domain
-  the plan touches, or give the reason it does not on its line (if
-  R-skeptic-2 removes the settings page, `user-interface` can stay unticked
-  with that reason).
+  The plan adds an endpoint returning every invoice of a month with its customer
+  (spec: "with number, date, customer and total"), and src/server.ts has no authentication middleware
+  — only `app.use(express.json());` and `/health` — so who may call `GET /invoices.csv` is decided
+  nowhere, and the spec has no unauthorized-caller scenario. Tick `security` and `personal-data` so
+  their experts review the exposure, or give the reason on each line. If the settings page stays
+  (see R-skeptic-2), tick `user-interface` too, and `migration` for the stored preference.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-4 Which invoices belong to a month is not defined
+#### R-skeptic-4 Which date places an invoice in a month is not stated
 
 ```yaml
 severity: low
@@ -86,10 +81,10 @@ location: "specs/invoice-export/spec.md#Requirement: Invoices are exported as CS
 evidence: |
   - **THEN** the CSV holds every invoice of September 2026
 recommendation: >-
-  The plan does not say which date places an invoice in a month (issue
-  date, due date) nor in which time zone, so an invoice issued near
-  midnight on a month boundary may land in either export. State the rule in
-  the requirement and add a boundary scenario.
+  The scenario does not say which date decides the month, nor in which time zone; src/invoices.ts uses
+  `to_char(issued_on, 'YYYY-MM')`, so the plan probably means the issue date in the database's zone.
+  State it ("invoices issued in the month") so the test of "A month" can be written without guessing,
+  and say whether `invoicesOfMonth` is reused.
 history:
   - status: open
     by: skeptic

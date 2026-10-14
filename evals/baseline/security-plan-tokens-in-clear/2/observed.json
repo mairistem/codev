@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-plan-tokens-in-clear",
   "error": null,
-  "costUsd": 0.3812416,
-  "durationMs": 47987,
+  "costUsd": 0.3608778,
+  "durationMs": 44558,
   "consumption": {
-    "durationApiMs": 47214,
+    "durationApiMs": 44239,
     "turns": 9,
-    "permissionDenials": 2,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1173,
-      "cacheCreation": 31002,
-      "cacheRead": 339348,
-      "output": 3218
+      "input": 1164,
+      "cacheCreation": 29640,
+      "cacheRead": 364724,
+      "output": 2491
     }
   },
   "strayed": [],
@@ -33,7 +33,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-2 (The Authorization header is logged at info level) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-2 (The Authorization header is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,12 +55,12 @@
           }
         ],
         "id": "R-security-1",
-        "line": 15,
+        "line": 11,
         "location": "design.md#Decision: Tokens are stored as given",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for a high-entropy secret; no bcrypt needed) in a `token_hash` column with a unique index, and look requests up with `WHERE token_hash = $1` on the hash of the presented token — the lookup stays a single indexed equality, so the stated reason for storing it as given does not hold. Optionally keep a short non-secret prefix to let users identify a token. Update task 1.1 and the spec (a token is \"shown once\" only if the service cannot show it again). Anyone who reads the `api_tokens` table — a SQL injection elsewhere, a leaked backup or replica, a support engineer with read access — gets every live token and can call the API as each user (CWE-312, CWE-256); with no revocation (R-security-3) the access cannot be cut.",
+        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for a high-entropy secret; no bcrypt needed) in a `token_hash` column, hash the presented token in the middleware and look it up with `WHERE token_hash = $1` — still a simple indexed equality, so the stated reason for storing it as given does not hold. Anyone who reads the table (a SQL injection elsewhere, a leaked backup, a replica, a support dump) otherwise gets bearer credentials for every account, usable at once and, since revocation is deferred, impossible to cancel (CWE-312, CWE-256). Update task 1.1 and 1.2 accordingly.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -82,45 +82,18 @@
           }
         ],
         "id": "R-security-2",
-        "line": 42,
+        "line": 36,
         "location": "design.md#Decision: Every request is logged with its headers",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Never log credential-bearing headers: redact `Authorization`, `Cookie` and `Set-Cookie` (log at most the token's non-secret prefix or an id of the token row resolved by the middleware), and make task 1.3's test `logs_requests` assert that the secret values are absent from the output. As designed, every bearer token — and every session cookie, since all headers are logged and `authenticate` reads the session from `cookie` — ends up in plaintext logs: anyone with access to the logs, the log pipeline or its retention store replays them to act as the user (CWE-532).",
+        "recommendation": "Redact credential headers before logging: drop or mask `Authorization` and `Cookie` (the middleware already authenticates by the `session=` cookie, so every browser session would leak too). Anyone with access to the logs — support, the log pipeline, a log aggregator — can copy a token or session and call the API as that user, with no way to revoke it in this change (CWE-532). To identify which token an integration sent, log a non-secret token id or a short prefix of its hash instead. Task 1.3's test `logs_requests` should assert the header is absent from the log.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The Authorization header is logged at info level"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- [A user loses a token] → they create another one; revoking the old one comes with the later revocation change.\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-3",
-        "line": 67,
-        "location": "design.md#Risks / Trade-offs",
-        "raisedBy": [
-          "security"
-        ],
-        "recommendation": "The proposal's own motivation is that \"a leaked integration exposes the account\"; with this change, a leaked token (from logs per R-security-2, from the table per R-security-1, or from the integration itself) grants API access indefinitely, and changing the password does not stop it since tokens are independent of `users.password_hash`. Either bring a minimal revocation (delete a token by id, scoped to its owner) into this change, or give tokens an expiry (`expires_at`, checked in the lookup) until the revocation change ships, and state in the spec what the user can do when a token leaks.",
-        "reported": true,
-        "role": "security",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "A leaked token cannot be revoked and never expires"
+        "title": "The Authorization header is written to the logs"
       }
     ],
     "format": 1,
@@ -138,14 +111,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "security",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "security",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

@@ -19,23 +19,21 @@ evidence: |
   middleware looks a request's token up with `WHERE token = $1`. Storing the
   token as given keeps the lookup a simple indexed equality.
 recommendation: >-
-  Store only a hash of the token (SHA-256 of the 32 random bytes is enough
-  for high-entropy tokens; no bcrypt needed) in a `token_hash` column, and
-  look a request up with `WHERE token_hash = $1` on the hash of the presented
-  token — still a simple indexed equality, so the stated reason for storing
-  it as given does not hold. Show the clear token only once at creation, as
-  the spec requires. Anyone who reads the `api_tokens` table — a SQL
-  injection elsewhere, a leaked backup or dump, a read-only DB account —
-  otherwise gets bearer credentials usable at once against the API for every
-  user (CWE-312 / CWE-256), unlike passwords which are bcrypt-hashed. Hashing
-  also removes the timing side channel of comparing the secret itself in the
-  lookup. Update task 1.1 accordingly.
+  Anyone who reads the `api_tokens` table — a leaked backup or SQL dump, a
+  read-only replica, a support account, an SQL injection elsewhere — gets
+  every user's working bearer credential and calls the API as them
+  (CWE-312 / CWE-256); since revocation is a Non-Goal, nothing can cut that
+  access off. Store only a hash of the token (SHA-256 is enough for a 32-byte
+  random value) in a `token_hash` column and look it up with
+  `WHERE token_hash = $1`: the lookup stays a single indexed equality, so the
+  stated reason for storing it as given does not hold. Update task 1.1 and
+  1.2 and the spec accordingly (the token is shown once and never stored).
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 The Authorization header, holding the bearer token, is logged
+#### R-security-2 The Authorization header, and so every token, is written to the logs
 
 ```yaml
 severity: high
@@ -46,38 +44,20 @@ evidence: |
   method, path and headers at `info` level, including `Authorization`, so
   support can see which token an integration sent.
 recommendation: >-
-  Never log the `Authorization` header (nor `Cookie`); redact it, or log
-  only a non-secret token identifier (a token id or a short prefix of the
-  token's hash) so support can still tell which token was used. As written,
-  every request writes a live bearer token into the logs at `info`, so
-  anyone with access to the logs or the log pipeline (support staff, a log
-  aggregator, a leaked log archive) can replay any integration's token and
-  act as its user (CWE-532); the same line also logs session cookies and
-  Basic credentials for password-based integrations. Adjust task 1.3 and its
-  test `logs_requests` to assert the header is redacted.
+  Every request writes its bearer token (and, since all headers are logged,
+  the `Cookie` session too — see `src/http/middleware.rs:21`) into the info
+  logs; anyone with log access — support, a log aggregator, a shipped log
+  archive — replays it and acts as the user until the token is revoked,
+  which this change cannot do (CWE-532, CWE-200). Never log `Authorization`
+  or `Cookie`: redact them (e.g. `Bearer ***`), and if support must identify
+  a token, log a non-secret identifier such as the token's row id or a short
+  prefix of its hash. Change task 1.3 so `logs_requests` asserts the
+  redaction.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-3 A leaked token cannot be invalidated: revocation is deferred
+### skeptic
 
-```yaml
-severity: medium
-confidence: high
-location: "design.md#Goals / Non-Goals"
-evidence: |
-  **Non-Goals:** OAuth, scopes, revocation (a later change).
-recommendation: >-
-  The proposal's motivation is that "a leaked integration exposes the
-  account"; with no revocation and no expiry, a leaked token (from logs, see
-  R-security-2, or from the integration's host) grants full, unscoped access
-  to the account forever, and the user's only remedy listed — creating
-  another token — leaves the leaked one valid. Either ship at least deletion
-  of a token by its owner in this change, or give tokens an expiry, or record
-  explicitly that the change must not be released before the revocation
-  change.
-history:
-  - status: open
-    by: security
-```
+Disabled by configuration.

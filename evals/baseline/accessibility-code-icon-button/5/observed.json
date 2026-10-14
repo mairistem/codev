@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-code-icon-button",
   "error": null,
-  "costUsd": 0.3453506,
-  "durationMs": 32211,
+  "costUsd": 0.31173779999999995,
+  "durationMs": 27950,
   "consumption": {
-    "durationApiMs": 31218,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 27618,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1177,
-      "cacheCreation": 27417,
-      "cacheRead": 333023,
-      "output": 2919
+      "input": 1164,
+      "cacheCreation": 26255,
+      "cacheRead": 234164,
+      "output": 2693
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable with the keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable by keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
@@ -60,13 +60,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Replace the div with a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`: it is in the tab order, reacts to Enter and Space, and exposes the button role. A keyboard user pressing Tab never lands on the delete action and cannot delete a document; screen readers announce no control. WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value.",
+        "recommendation": "Render the delete action as a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`. As a `div` it has no `tabindex`, no role and no key handler: a keyboard user pressing Tab never lands on it, and Enter or Space cannot trigger it, so they cannot delete a document — the very task the change adds (WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value). Screen reader users do not hear it announced as a button either. The native element gives focus, role and Enter/Space activation together; check that the `icon-button` style keeps a visible focus indicator (WCAG 2.4.7 Focus Visible).",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Delete action is a clickable div, unreachable with the keyboard"
+        "title": "Delete action is a clickable div, unreachable by keyboard"
       },
       {
         "awaiting": "author",
@@ -82,12 +82,12 @@
           }
         ],
         "id": "R-accessibility-2",
-        "line": 31,
+        "line": 34,
         "location": "src/components/Toolbar.tsx:13-14",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Give the control a text name, e.g. `aria-label=\"Delete document\"` on the button (or visually hidden text). The only content is `TrashIcon`, whose svg is `aria-hidden=\"true\"` (src/components/icons.tsx:3), so a screen reader user reaching the control hears nothing, or just \"button\" once it becomes one, and cannot tell it deletes the document. WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value.",
+        "recommendation": "Give the control a text name, e.g. `aria-label=\"Delete document\"` on the button (or visually hidden text inside it). Its only content is `TrashIcon`, whose `<svg>` is `aria-hidden=\"true\"` (src/components/icons.tsx:3), so even once it becomes a `<button>` a screen reader user reaching it hears only \"button\", with nothing saying it deletes the document — they cannot identify the action before triggering a destructive operation (WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value).",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
@@ -109,12 +109,12 @@
           }
         ],
         "id": "R-accessibility-3",
-        "line": 51,
+        "line": 55,
         "location": "src/components/Toolbar.tsx:12",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Add an `alt`: the owner's name (e.g. `alt={ownerName}`, which needs a prop) since the avatar identifies the document's owner, or `alt=\"\"` if the owner is named in text elsewhere. Without it, screen readers announce the image file name or URL instead of who owns the document. WCAG 1.1.1 Non-text Content.",
+        "recommendation": "Add a text alternative. The proposal says the toolbar \"shows the owner's avatar\", so the image conveys who owns the document: pass the owner's name in and render `alt={`${ownerName}'s avatar`}` (or `alt={ownerName}`). If the owner's name is already shown as text next to it, use `alt=\"\"` instead. Without any `alt`, screen readers announce the image file name or URL from `avatarUrl`, or \"image\", and the owner is never conveyed (WCAG 1.1.1 Non-text Content).",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
@@ -125,7 +125,7 @@
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n",
         "history": [
           {
             "by": "accessibility",
@@ -136,18 +136,18 @@
           }
         ],
         "id": "R-accessibility-4",
-        "line": 69,
-        "location": "src/components/Toolbar.tsx:13-14",
+        "line": 75,
+        "location": "src/components/Toolbar.tsx:13",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "The icon is 16 by 16 (src/components/icons.tsx:3) and the `icon-button` style is not in the change: check that the control is at least 24 by 24 CSS pixels (or spaced enough) and has a visible focus indicator once it is a button. WCAG 2.5.8 Target Size (Minimum), 2.4.7 Focus Visible.",
+        "recommendation": "The `icon-button` class is styled outside the change (no stylesheet in the repository diff), and the only visible size is the 16×16 `TrashIcon`. Check that the control's hit area is at least 24×24 CSS pixels or has enough spacing (WCAG 2.5.8 Target Size (Minimum)), that the icon stroke meets 3:1 against the toolbar background (WCAG 1.4.11 Non-text Contrast), and that it shows a visible focus once it is a button (WCAG 2.4.7 Focus Visible).",
         "reported": false,
         "role": "accessibility",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Icon button target size and focus style not verifiable"
+        "title": "Delete target size and focus style not verifiable in the change"
       }
     ],
     "format": 1,

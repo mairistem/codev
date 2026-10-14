@@ -8,7 +8,7 @@ Mode: inline.
 
 ### performance
 
-#### R-performance-1 One order-lines query per order (N+1) on every customer page view
+#### R-performance-1 One order_lines query per order (N+1) on the customer page
 
 ```yaml
 severity: high
@@ -19,14 +19,17 @@ evidence: |
       let lines = db.lines_of_order(order.id)?;
 recommendation: >-
   Fetch every line in one query with the existing batch method
-  `Db::lines_of_orders(&ids)` (`WHERE order_id = ANY($1)`, api/src/db.rs),
-  then group the lines by `order_id` (e.g. a `HashMap<i64, i64>` of totals)
-  and build the summaries in the order `orders_of_customer` returned, so
-  ordering and results stay identical. As written, each customer page view
-  runs 1 + N queries, N being the customer's order count up to 100 — up to
-  101 sequential round trips per request, growing with the customer's order
-  history and multiplied by page traffic; the batch version runs 2.
+  `db.lines_of_orders(&ids)` (api/src/db.rs:31, `WHERE order_id = ANY($1)`),
+  then sum the totals per order id in a HashMap and build the summaries in the
+  order `orders_of_customer` returned, so ordering and results are unchanged.
+  Today `order_summaries` runs 1 + N queries, N up to 100 per call: a customer
+  with 100 orders costs 101 database round trips on every customer page view
+  (the proposal's Domains line), instead of 2.
 history:
   - status: open
     by: performance
 ```
+
+### newcomer
+
+Disabled by configuration.

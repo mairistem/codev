@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-python-path-traversal",
   "error": null,
-  "costUsd": 0.32125299999999996,
-  "durationMs": 26202,
+  "costUsd": 0.2822034,
+  "durationMs": 22322,
   "consumption": {
-    "durationApiMs": 25176,
-    "turns": 7,
+    "durationApiMs": 21798,
+    "turns": 5,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1193,
-      "cacheCreation": 27360,
-      "cacheRead": 285290,
-      "output": 2216
+      "input": 1177,
+      "cacheCreation": 25601,
+      "cacheRead": 187642,
+      "output": 1945
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (Path traversal in read_attachment bypasses the ticket check) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (Path traversal in read_attachment through the client-supplied name) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -52,17 +52,17 @@
         ],
         "id": "R-security-1",
         "line": 11,
-        "location": "app/attachments.py:30-32",
+        "location": "app/attachments.py:30-31",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "The client-supplied `name` is joined to the ticket directory unvalidated (CWE-22). An agent allowed to read ticket 1 asks for `name=\"../2/invoice.pdf\"` and gets ticket 2's attachment, defeating `may_read_ticket`; `name=\"../../../../etc/passwd\"` or an absolute `name=\"/etc/passwd\"` (which makes `os.path.join` discard the base) reads any file the service can read. Reduce `name` with `os.path.basename` as `save_attachment` does, or better look it up in the `attachments` table for that `ticket_id`, then resolve the path with `os.path.realpath` and refuse it unless it lies under `UPLOAD_DIR/<ticket_id>/`. Add a test with `../` and absolute names.",
+        "recommendation": "Validate `name` where it enters (CWE-22): reject it unless it equals `os.path.basename(name)` and is not empty, `.` or `..`, or better, look it up in the `attachments` table for this `ticket_id` and open only the stored name; then resolve the path with `os.path.realpath` and check it stays under the ticket's directory. Add a test that `../`, absolute and other-ticket names are refused.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Path traversal in read_attachment bypasses the ticket check"
+        "title": "Path traversal in read_attachment through the client-supplied name"
       },
       {
         "awaiting": "author",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-security-2",
-        "line": 36,
-        "location": "app/attachments.py:11-17",
+        "line": 38,
+        "location": "app/attachments.py:11",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Unlike `read_attachment`, the upload takes no `agent_id` and calls no authorization check, so whatever entry point exposes it lets any caller write files into any ticket's directory (and silently overwrite an existing attachment of the same name). The caller was not visible in the change, so this depends on it enforcing access; take `agent_id` and check `may_read_ticket` (or a write permission) here, on the server.",
+        "recommendation": "Take the caller's `agent_id` and check it may write to `ticket_id` on the server, as `read_attachment` does with `may_read_ticket`, unless the caller of this function is shown to enforce it.",
         "reported": false,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "save_attachment checks no authorization"
+        "title": "save_attachment enforces no authorization on the ticket written to"
       }
     ],
     "format": 1,

@@ -9,3 +9,7 @@ Mode: inline.
 ### accessibility
 
 No finding.
+
+### newcomer
+
+Disabled by configuration.

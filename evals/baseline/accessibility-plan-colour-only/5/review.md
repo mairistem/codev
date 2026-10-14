@@ -6,59 +6,64 @@
 
 Mode: inline.
 
-### skeptic
-
-Disabled by configuration.
-
 ### accessibility
 
-#### R-accessibility-1 Invalid fields are identified by colour only, with no text and no programmatic state
+#### R-accessibility-1 Field errors are conveyed by a red border only, with no text
 
 ```yaml
 severity: high
 confidence: high
 location: "design.md#Decision: Invalid fields turn red"
 evidence: |
+  An invalid field gets the class
   `field--invalid`, a red border (`#e5484d`); the list of errors at the top of
   the page is removed, since the red border already shows where the problem
   is. No message text is added, to keep the form compact.
 recommendation: >-
-  Identify each error in text next to its field (WCAG 1.4.1 Use of Color,
-  3.3.1 Error Identification, 4.1.2 Name, Role, Value): render a message
-  element under the invalid field, link it with `aria-describedby`, and set
-  `aria-invalid="true"` on the input while it is invalid, removing both when
-  it is corrected. Scenario that fails: a screen reader user tabs out of the
-  postcode field with `ABC`; the only change is the border colour, nothing is
-  announced, and with the top error list removed they have no way to learn
-  that the field is invalid or why; a colour-blind user cannot tell the red
-  border from the grey one either. The spec encodes the same gap — its
-  scenarios only require "the field's border turns red" and "the border
-  returns to grey" (specs/checkout-validation/spec.md) — so add THEN clauses
-  for the message text and `aria-invalid`, and the matching checks to task
-  1.2; the proposal's "invalid fields are shown in red" should follow.
+  Errors by colour only (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification,
+  1.3.1 Info and Relationships, 4.1.2 Name, Role, Value). A screen reader user
+  who tabs out of the postcode field with `ABC` hears nothing, and on returning
+  to it hears only "Postcode, edit text": nothing says it is invalid or why. A
+  colour-blind user cannot tell the red `#e5484d` border from the grey one, and
+  no user learns what a valid postcode is, since the rule messages that
+  `rules.ts` returns (today shown in the summary) are no longer displayed
+  anywhere. Add a short text message under each invalid field (the rule's
+  message), tie it to the input with `aria-describedby`, set
+  `aria-invalid="true"` on the input, and keep the red border only as a
+  supplement. Update the spec scenarios "An invalid postcode" and "A corrected
+  field" — which today assert only "the field's border turns red" / "returns to
+  grey" — and task 1.2 to require and test the message and `aria-invalid`.
 history:
   - status: open
     by: accessibility
 ```
 
-#### R-accessibility-2 Submitting with errors gives no summary and no focus move once the top error list is removed
+#### R-accessibility-2 Removing the error summary leaves a failed submit unannounced and without focus
 
 ```yaml
 severity: medium
-confidence: low
+confidence: high
 location: "design.md#Decision: Invalid fields turn red"
 evidence: |
-  Each field validates on `blur`. An invalid field gets the class
+  the list of errors at the top of
+  the page is removed
 recommendation: >-
-  State what happens on submit when fields are invalid (WCAG 3.3.1 Error
-  Identification, 2.4.3 Focus Order): validate every field on submit, not
-  only the ones blurred, and move focus to the first invalid field — or keep
-  an error summary that takes focus and links to each field. Without it, a
-  keyboard or screen reader user who never focused a required field, or who
-  presses Enter from inside a field, submits, and the plan does not say
-  whether anything is announced or where focus goes. Confidence is low
-  because the design does not describe the submit path at all.
+  Today the summary is the only announced feedback
+  (`web/src/checkout/Form.tsx:22` renders `<div role="alert"
+  className="error-summary">`). The plan removes it and says nothing of what
+  happens on submit. A keyboard or screen reader user who presses Enter on
+  "Pay" with a field they never left (validation runs on `blur` only) gets no
+  announcement and focus stays on the button: the payment silently does not
+  happen (WCAG 3.3.1 Error Identification, 4.1.3 Status Messages, 2.4.3 Focus
+  Order). State in the design that submit still validates every field and
+  either moves focus to the first invalid field (whose message is then read
+  through `aria-describedby`, see R-accessibility-1) or keeps a summary with
+  `role="alert"` linking to the fields; add a spec scenario and a task for it.
 history:
   - status: open
     by: accessibility
 ```
+
+### skeptic
+
+Disabled by configuration.

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-control-masked-logs",
   "error": null,
-  "costUsd": 0.3761228,
-  "durationMs": 40759,
+  "costUsd": 0.4507422,
+  "durationMs": 60075,
   "consumption": {
-    "durationApiMs": 40017,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 59564,
+    "turns": 11,
+    "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1199,
-      "cacheCreation": 30333,
-      "cacheRead": 290664,
-      "output": 3717
+      "input": 1192,
+      "cacheCreation": 31187,
+      "cacheRead": 427846,
+      "output": 5734
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (Addresses with non-ASCII characters are logged in full or partly unmasked) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (The address pattern misses valid and encoded addresses, which reach the logs in full) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -51,23 +51,23 @@
           }
         ],
         "id": "R-privacy-1",
-        "line": 11,
+        "line": 15,
         "location": "src/logger.ts:3",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The pattern accepts only ASCII in the local part and the domain, so an address the proposal promises to mask reaches the logs kept 90 days by the hosting provider (GDPR Art. 5(1)(c), Art. 32). `logInfo(\"signup\", { email: \"josé@exemple.fr\" })` writes `josé@exemple.fr` unchanged (the character before `@` is outside the class, so nothing matches); `ada@münchen.de` is not matched either; `zoë.martin@example.org` becomes `zoë.***@example.org`, leaking the first name. Match on Unicode letters (`\\p{L}\\p{N}` with the `u` flag) in both the local part and the domain, or mask any token containing `@`, and add tests for a non-ASCII local part and an IDN domain.\n",
+        "recommendation": "The module promises it \"never writes a full e-mail address\" and the proposal says every address in the message and the fields is masked, but the pattern only matches an ASCII local part made of `A-Za-z0-9._%+-` followed by a literal `@` and an ASCII domain. Each of these goes to the hosting provider's logs (kept 90 days) unmasked or partly masked: `logInfo(\"GET /reset?email=ada.lovelace%40example.org\")` (percent-encoded `@`, as in a logged URL or query string) is written whole; `ada.lovelace@exämple.org` (internationalized domain) and `\"ada lovelace\"@example.org` (quoted local part) do not match and are written whole; `o'brien@example.org` matches only from `b` and is logged as `o'b***@example.org`, leaking the start of the local part. GDPR Art. 5(1)(c) data minimisation and Art. 25 data protection by design. Fix: decode or also match `%40` (case-insensitive), widen the local part to the RFC 5322 atext characters and quoted strings, accept non-ASCII domain labels, and add a test per form.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Addresses with non-ASCII characters are logged in full or partly unmasked"
+        "title": "The address pattern misses valid and encoded addresses, which reach the logs in full"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\nexport function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n",
+        "evidence": "for (const [key, value] of Object.entries(fields)) {\n  safe[key] = typeof value === \"string\" ? maskEmails(value) : value;\n",
         "history": [
           {
             "by": "privacy",
@@ -78,18 +78,45 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 35,
-        "location": "src/logger.ts:5-7",
+        "line": 44,
+        "location": "src/logger.ts:12-13",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "For a personal or small-company domain (`a***@lovelace.family`), the first letter plus the domain can still identify the customer, so the log line stays personal data (GDPR Art. 4(1), Art. 5(1)(c)). Whether such domains appear in the logs could not be verified; if they do, replace the whole address with a fixed token or a keyed hash when correlation is needed.\n",
+        "recommendation": "Only field values go through `maskEmails`; the keys are copied as they come. A caller that keys fields by address, e.g. `logInfo(\"retries\", { [user.email]: 3 })`, writes the full address to the logs. No caller exists yet, so this depends on future use. Mask the keys too (`safe[maskEmails(key)]`), or document that keys must never hold personal data.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Field keys are written to the log without masking"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "return text.replace(EMAIL, \"$1***@$2\");\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 65,
+        "location": "src/logger.ts:7",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "`a***@example.org` keeps the initial and the whole domain. For a personal or small-organization domain (e.g. `a***@lovelace-family.org`) the masked form can still single out the person, so it remains personal data in logs kept 90 days. Whether such domains appear depends on the customer base, not visible here. If the domain is not needed for debugging, mask it too, or replace the address by a keyed hash so log lines stay correlatable.",
         "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "The masked form keeps the domain and first letter"
+        "title": "The mask keeps the first letter and the full domain"
       }
     ],
     "format": 1,
@@ -115,6 +142,12 @@
         "mode": "inline",
         "recorded": true,
         "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          },
           {
             "credited": [],
             "fallback": null,

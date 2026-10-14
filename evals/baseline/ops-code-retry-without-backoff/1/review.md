@@ -8,7 +8,7 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 Webhook delivery retries immediately, with no backoff
+#### R-ops-1 Failed deliveries are retried immediately, with no backoff
 
 ```yaml
 severity: medium
@@ -16,39 +16,42 @@ confidence: high
 location: "src/webhooks.ts:9-23"
 evidence: |
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-recommendation: >-
-  Wait between attempts with an exponential backoff and jitter (for example
-  1s, 2s, 4s, 8s), or hand failed deliveries to a queue that retries later.
-  As written, when a merchant's server returns 503 or is briefly down, the
-  five attempts fire back to back within milliseconds (or every 5s on
-  timeouts), hammering an endpoint that is already failing and exhausting
-  every attempt before a short outage ends, so the event is dropped.
-  Retrying is safe here since merchants deduplicate on `x-event-id`; only
-  the spacing is missing.
+recommendation: |
+  Space the attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s) before each retry, and do not retry on 4xx responses other than 408/429. The retries are bounded and the POST is deduplicated by `x-event-id`, but with no delay between them, a merchant endpoint that is restarting or returning 503 for a few seconds receives five back-to-back POSTs and the event is given up within that same window, so a short outage on the merchant side loses the webhook. Spacing the retries in the payment listener lengthens its run (see R-ops-3): moving delivery off the publish path fixes both.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Failed and dropped deliveries are logged as free text at debug level, HTTP failures not at all
+#### R-ops-2 Failed and dropped webhooks are logged at debug level, outside the structured logger
+
+```yaml
+severity: high
+confidence: high
+location: "src/webhooks.ts:24"
+evidence: |
+  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
+recommendation: |
+  Log through `logger` from `src/logger.ts` with fields — `logger.warn` per failed attempt and `logger.error` when the event is dropped, with `eventId`, `paymentId`, `merchantId` or host, `attempt` and the HTTP `status` (a non-2xx response is currently not logged at all, only thrown errors are) — and emit a delivered/dropped counter. When a merchant's endpoint returns 500 five times, `deliver` returns `false`, the listener ignores that result (`await deliver(rows[0].webhook_url, event);`), and the only trace is a free-text `console.debug` line that bypasses the project's structured logger shipped to the log platform: the merchant never gets the payment event and no operator can see or query that it was dropped.
+history:
+  - status: open
+    by: ops
+```
+
+#### R-ops-3 Webhook delivery runs inline in the payment event publish path
 
 ```yaml
 severity: medium
-confidence: high
-location: "src/webhooks.ts:17-24"
+confidence: low
+location: "src/webhooks.ts:28-36"
 evidence: |
-  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
-recommendation: >-
-  Use the project's structured `logger` (as `src/events.ts` does) and log the
-  drop at `error` (attempt failures at `warn`) with fields: eventId,
-  merchant or paymentId, attempt, HTTP status or error. Today a merchant
-  answering 500 or 404 produces no log at all (only thrown errors reach the
-  `catch`), and a webhook given up after five attempts is a `console.debug`
-  prose line that debug-filtered production logs hide and that cannot be
-  queried or alerted on: a merchant who never received a payment
-  notification leaves the operator nothing to find. Consider a metric or
-  counter of dropped deliveries as well.
+  onPaymentEvent(async (event) => {
+recommendation: "`publish` in `src/events.ts` awaits each listener in turn, so a slow or unreachable merchant holds it for up to five 5-second timeouts (about 25 s, more once backoff is added) before the next listener runs and `publish` resolves. Whether this delays settlement depends on how the payment service awaits `publish`, which the change does not show. Enqueue the delivery (a job or outbox table) and return from the listener at once."
 history:
   - status: open
     by: ops
 ```
+
+### newcomer
+
+Disabled by configuration.

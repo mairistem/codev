@@ -29,18 +29,32 @@ impl ResolvedRoles {
     /// The roles active at `step`; `unknown_step` when `step` is not one of
     /// the workflow steps.
     pub fn active_at(&self, step: &str) -> Result<Vec<&ResolvedRole>> {
-        if !core_roles::STEPS.contains(&step) {
-            return Err(EngineError::UnknownStep {
-                step: step.to_string(),
-            });
-        }
+        check_step(step)?;
         Ok(core_roles::active_at(&self.roles, step))
+    }
+
+    /// The roles serving `step` that the configuration turned off;
+    /// `unknown_step` when `step` is not one of the workflow steps.
+    pub fn disabled_at(&self, step: &str) -> Result<Vec<&ResolvedRole>> {
+        check_step(step)?;
+        Ok(core_roles::disabled_at(&self.roles, step))
     }
 
     /// The role that owns `artifact`, if its schema declares one.
     pub fn for_artifact(&self, artifact: &str) -> Option<&ResolvedRole> {
         self.roles.iter().find(|resolved| {
             matches!(&resolved.role.kind, core_roles::RoleKind::Artifact(id) if id == artifact)
+        })
+    }
+}
+
+/// `unknown_step` unless `step` is one of the workflow steps.
+fn check_step(step: &str) -> Result<()> {
+    if core_roles::STEPS.contains(&step) {
+        Ok(())
+    } else {
+        Err(EngineError::UnknownStep {
+            step: step.to_string(),
         })
     }
 }

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "performance-code-hidden-n-plus-one",
   "error": null,
-  "costUsd": 0.32101,
-  "durationMs": 32104,
+  "costUsd": 0.3669948,
+  "durationMs": 36756,
   "consumption": {
-    "durationApiMs": 31277,
-    "turns": 7,
-    "permissionDenials": 0,
+    "durationApiMs": 36389,
+    "turns": 9,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 27840,
-      "cacheRead": 279430,
-      "output": 2070
+      "input": 1176,
+      "cacheCreation": 29587,
+      "cacheRead": 291629,
+      "output": 3549
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (One customer query per invoice in the monthly report) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (One customer query per invoice (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -52,17 +52,17 @@
         ],
         "id": "R-performance-1",
         "line": 11,
-        "location": "src/report.rs:38-40",
+        "location": "src/report.rs:39",
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "N+1 queries: `customer_label` is called once per invoice inside the loop of `monthly_report` (src/report.rs:23-26), so a month of about 3 000 invoices runs about 3 000 `SELECT ... FROM customers WHERE id = $1` queries, growing linearly with the month's invoices, while only about 800 distinct customers exist. `Db::customers(&[i64])` (src/db.rs:26, `WHERE id = ANY($1)`) already serves the whole set: collect the distinct `customer_id`s, load them in one call, index them in a `HashMap<i64, Customer>` and build each label from it, keeping the invoice-number order and returning the same error when a customer is missing.",
+        "recommendation": "The loop runs `SELECT ... FROM customers WHERE id = $1` once per invoice: with the proposal's ~3 000 invoices a month that is ~3 000 sequential round trips (for only ~800 distinct customers), growing linearly with invoice volume on the report finance reads. Collect the distinct `customer_id`s, load them in one call with the existing `db.customers(&ids)` (`WHERE id = ANY($1)`), index them in a `HashMap<i64, Customer>`, and build each label from the map. Keep the current error behavior for an invoice whose customer is missing (return a `DbError` rather than skipping the line).",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "One customer query per invoice in the monthly report"
+        "title": "One customer query per invoice (N+1)"
       },
       {
         "awaiting": "author",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-performance-2",
-        "line": 34,
+        "line": 32,
         "location": "src/report.rs:45",
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "`purchase_order` is called for every invoice (src/report.rs:28) and compiles the regex on each call, so a 3 000-invoice month compiles the same pattern 3 000 times — compiling a pattern is expensive compared with matching one short note. Compile it once, in a `static` `std::sync::LazyLock<Regex>` (or `once_cell`), and reuse it; the matches stay the same.",
+        "recommendation": "`purchase_order` is called for every invoice and calls `Regex::new` each time, so the pattern is parsed and compiled ~3 000 times per report, a cost far larger than the match itself and growing with invoice volume. Compile it once — a `static PATTERN: std::sync::LazyLock<Regex>` (or `once_cell::sync::Lazy`), or build it in `monthly_report` before the loop and pass `&Regex` in.",
         "reported": true,
         "role": "performance",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "The purchase-order pattern is compiled once per invoice"
+        "title": "The purchase-order regex is compiled once per invoice"
       }
     ],
     "format": 1,

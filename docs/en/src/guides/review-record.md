@@ -167,9 +167,9 @@ codev review --change add-sessions
 Shows the record step by step — each role, each finding with its severity,
 status and location —, who must act next on each one (`author`,
 `reviewer` or `human`), the record's defects, and whether the review lets
-the change be archived. `--json` gives the
-[`ReviewV1`](../reference/json-output.md#review) document the skills read
-to resume an interrupted review. It exits with 1 only when the record has
+the change be archived. The skills read this printed output to resume an
+interrupted review and to check the record; `--json` gives the
+[`ReviewV1`](../reference/json-output.md#review) document, for scripts. It exits with 1 only when the record has
 an error.
 
 ## Archiving

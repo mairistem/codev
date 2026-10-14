@@ -12,55 +12,58 @@ Disabled by configuration.
 
 ### ops
 
-#### R-ops-1 The switch to Paylane has no way back once the Stripe account is closed
+#### R-ops-1 The switch to Paylane has no way back
 
 ```yaml
 severity: high
 confidence: high
 location: "design.md#Decision: All traffic moves at deploy"
 evidence: |
-  There is no switch between the two: keeping both would double the
+  The Stripe client is deleted and replaced by the Paylane client in the same
+  release. There is no switch between the two: keeping both would double the
   code to maintain. The Stripe account is closed the day after the release.
 recommendation: >-
-  Keep a way back that a redeploy alone cannot give. Paylane rejects
-  authorizations or captures after the release (outage, misconfigured
-  merchant account, a card network it declines). Every card payment fails,
-  and the operator's only recovery is to redeploy the previous release. But
-  from the next day the Stripe account is closed, so that release cannot take
-  payments either: checkout stays down until Paylane is fixed. With weekly
-  blue/green deploys, even a rollback on day one takes a full release. Keep
-  the Stripe client behind a configuration switch (or a percentage rollout)
-  for a set period, and close the Stripe account only once Paylane has run
-  cleanly for that period. Write in the design the rollback procedure and the
-  criterion for closing the account, and add a task for the switch.
+  Keep a way back until Paylane has proven itself in production: keep the
+  Stripe client behind a configuration switch (provider selected from the
+  environment) for at least one release cycle, and do not close the Stripe
+  account until that period ends and a rollback criterion is met. State in
+  the design how an operator switches back and who decides. Add the
+  corresponding task to tasks.md.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 The nightly settlement-worker can fail or not run without anyone noticing
+Failure scenario: after the release, Paylane fails authorizations or
+captures (outage, misconfigured account, a card network it rejects). Since
+there is no switch, the only remedy is redeploying the previous version —
+and once the Stripe account is closed the day after, that previous version
+cannot take payments either. With weekly deploys, checkout is down with no
+rollback.
+
+#### R-ops-2 Nobody would see the settlement worker fail or not run
 
 ```yaml
 severity: high
 confidence: high
 location: "design.md#Decision: A worker settles payments nightly"
 evidence: |
-  It runs as a Kubernetes CronJob and
+  A new worker, `settlement-worker`, runs at 02:00, fetches the day's Paylane
+  payments and matches them to orders. It runs as a Kubernetes CronJob and
   writes its result to the database.
 recommendation: >-
-  Make the new worker visible when it fails. At 02:00 the Paylane API times
-  out, the database is unreachable, or the CronJob is never scheduled (bad
-  manifest, suspended job): no payment is reconciled, and nothing tells the
-  operator. The only alert the plan defines (the finance channel, for an
-  unmatched payment) fires only when the worker runs and succeeds, so a
-  missing run looks the same as a clean night. Specify in the design a
-  structured log at start and end of each run (date settled, payments
-  fetched, matched, unmatched), a run-status metric or a last-success
-  timestamp, and an alert when a run fails or no successful run happened in
-  the last 24 hours. Also decide what a failed night does: re-run it safely
-  (the matching should be idempotent) and catch up the missed days. Add a
-  scenario to the spec and a task for this.
+  Decide in the design how a failed or missed run is seen: an alert when
+  the CronJob fails or has not completed successfully by a deadline (e.g.
+  last-success timestamp metric or a heartbeat), a structured log at start
+  and end with the run date and counts (fetched, matched, unmatched), and
+  a way to re-run a given day safely. Add a task for it in tasks.md.
 history:
   - status: open
     by: ops
 ```
+
+Failure scenario: at 02:00 the Paylane API is unreachable, the job's
+credentials expired, or the CronJob is never scheduled. The design only
+alerts on a payment without an order (spec "A payment without order"); a
+run that crashes or never starts produces no alert, so the day's payments
+stay unreconciled and nobody notices until finance does.

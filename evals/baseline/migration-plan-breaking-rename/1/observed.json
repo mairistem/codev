@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-plan-breaking-rename",
   "error": null,
-  "costUsd": 0.358668,
-  "durationMs": 28733,
+  "costUsd": 0.33382,
+  "durationMs": 33351,
   "consumption": {
-    "durationApiMs": 28126,
-    "turns": 9,
-    "permissionDenials": 2,
+    "durationApiMs": 33050,
+    "turns": 7,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 28806,
-      "cacheRead": 382080,
-      "output": 2540
+      "input": 1160,
+      "cacheCreation": 27899,
+      "cacheRead": 285630,
+      "output": 2627
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public field removed in place, with no deprecation or side-by-side period) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Public field removed in the same release, with no deprecation window) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Breaking rename not marked BREAKING, release note says nothing about what partners must do) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Breaking rename not marked BREAKING, no action for consumers) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,18 +55,18 @@
           }
         ],
         "id": "R-migration-1",
-        "line": 15,
+        "line": 11,
         "location": "design.md#Decision: The field is renamed in place",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "design.md#Context states that partners' integrations read `status` from the public `GET /orders/{id}` to know when to ship (src/orders.ts:7 and openapi.yaml:18 `required: [id, status]` today). On deploy, every partner integration reads a missing `status` and stops shipping orders, with no warning. Use expand and contract: return both `status` and `state` with the same value for a deprecation period (mark `status` `deprecated: true` in openapi.yaml), announce a removal date, and remove `status` in a later change. Add a requirement and scenario to specs/orders-api/spec.md that the response still holds `status` during the period, and a task in tasks.md with a test that covers it. The \"duplication\" alternative rejected in the design is exactly this path and should be reconsidered.",
+        "recommendation": "Use expand then contract. In this change, `GET /orders/{id}` returns both `state` and `status` with the same value. Mark `status` `deprecated: true` in `openapi.yaml` and take it out of `required: [id, status]`. Announce a removal date, and remove `status` in a later change. Add a spec scenario \"A paid order still exposes status during deprecation\" (`\"status\": \"paid\"` next to `\"state\": \"paid\"`) and a task that tests it. Today the design calls the dual field \"duplication\" and rejects it, although a partner integration cannot change at the moment the API does.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Public field removed in place, with no deprecation or side-by-side period"
+        "title": "Public field removed in the same release, with no deprecation window"
       },
       {
         "awaiting": "author",
@@ -87,13 +87,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Partners reading the release note see an ordinary \"Changed\" item and are not told their integration breaks or what to do. Mark the item **BREAKING**, state that clients must read `state` instead of `status` (and, with R-migration-1, until which date `status` is still served), and mark the same item in proposal.md#What Changes.",
+        "recommendation": "Mark the item **BREAKING** in the release note and in `## What Changes`. Say what partners must do: read `state` instead of `status`, before the removal date. If R-migration-1 is fixed, say also that `status` stays deprecated until then. Add a task to publish the note, and to bump the API version in `openapi.yaml` (`info.version: 1.4.0`) so that the contract change is visible.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Breaking rename not marked BREAKING, release note says nothing about what partners must do"
+        "title": "Breaking rename not marked BREAKING, no action for consumers"
       }
     ],
     "format": 1,
@@ -111,14 +111,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "migration",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "migration",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

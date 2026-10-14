@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-control-custom-listbox",
   "error": null,
-  "costUsd": 0.3453914,
-  "durationMs": 37863,
+  "costUsd": 0.35990540000000004,
+  "durationMs": 36700,
   "consumption": {
-    "durationApiMs": 36810,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 35984,
+    "turns": 10,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 27551,
-      "cacheRead": 282597,
-      "output": 3373
+      "input": 1176,
+      "cacheCreation": 29060,
+      "cacheRead": 291962,
+      "output": 3402
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "With aria-activedescendant, DOM focus stays on the combobox, so the only visible cue of the highlighted option for sighted keyboard users is the `option--active` class; no stylesheet in the repository defines it (nor a focus style for the `size-picker` combobox). Check that `option--active` gives a visible highlight with at least 3:1 contrast and that the combobox keeps a visible focus indicator (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast); if the list can overflow, scroll the active option into view when it changes (2.4.11 Focus Not Obscured).",
+        "recommendation": "The combobox is a `div` with `tabIndex={0}` and focus never leaves it while the list is open, so the highlighted option is shown to sighted keyboard users only through the `option--active` class. No stylesheet in the change or the repository defines `.size-picker` or `.option--active`. Check that the stylesheet loaded on the product page gives the combobox a visible focus indicator (WCAG 2.4.7 Focus Visible) and the active option a highlight that meets 3:1 against its neighbours (WCAG 1.4.11 Non-text Contrast); without them, a keyboard user pressing ArrowDown cannot see which size Enter will pick.",
         "reported": false,
         "role": "accessibility",
-        "severity": "low",
+        "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Highlighted option relies on an unstyled class"
+        "title": "Visible focus and highlighted option rely on styles the change does not ship"
       }
     ],
     "format": 1,

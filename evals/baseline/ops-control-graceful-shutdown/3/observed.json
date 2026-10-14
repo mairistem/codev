@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3761285999999999,
-  "durationMs": 43523,
+  "costUsd": 0.3660336,
+  "durationMs": 39385,
   "consumption": {
-    "durationApiMs": 42911,
-    "turns": 6,
+    "durationApiMs": 38927,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 31121,
-      "cacheRead": 244723,
-      "output": 3861
+      "input": 1174,
+      "cacheCreation": 30083,
+      "cacheRead": 246123,
+      "output": 3758
     }
   },
   "strayed": [],
@@ -48,17 +48,17 @@
         ],
         "id": "R-ops-1",
         "line": 11,
-        "location": "src/worker.rs:46-48",
+        "location": "src/worker.rs:46-50",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Sending an e-mail is not idempotent. `SendError::Unavailable` covers both \"the relay could not be reached\" and a temporary failure; if the mailer also returns it when `SEND_TIMEOUT` expires after the message data was transmitted, the relay may still deliver it while the job is released and sent again, up to MAX_ATTEMPTS times. Confirm how the mailer classifies a timeout after DATA; if it maps to `Unavailable`, give the message a stable Message-ID derived from the job id so duplicates can be recognised, or distinguish \"outcome unknown\" from \"not sent\" before retrying.",
+        "recommendation": "Confirm how the mailer maps a send that exceeds `SEND_TIMEOUT` after the message data was transmitted. If it returns `SendError::Unavailable`, the job is released and sent again, so the recipient gets a duplicate e-mail. Either map an ambiguous timeout to a distinct outcome that is not retried blindly, or document that delivery is at-least-once. This is low confidence because the mailer implementation was not visible.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "A send that times out after the relay took the message is retried and may be delivered twice"
+        "title": "A send that times out after the relay accepted it may be retried and duplicated"
       }
     ],
     "format": 1,
@@ -89,6 +89,12 @@
             "fallback": null,
             "role": "ops",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

@@ -2,10 +2,10 @@
   "format": 2,
   "case": "migration-code-drop-and-rename",
   "error": null,
-  "costUsd": 0.30805720000000003,
-  "durationMs": 23697,
+  "costUsd": 0.2906866,
+  "durationMs": 21910,
   "consumption": {
-    "durationApiMs": 22651,
+    "durationApiMs": 21533,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 27147,
-      "cacheRead": 233726,
-      "output": 2157
+      "input": 1174,
+      "cacheCreation": 25462,
+      "cacheRead": 232728,
+      "output": 1973
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public JSON field `user_name` renamed `userName` without a BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Account JSON field renamed with no BREAKING mark and no path for consumers) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Irreversible `DROP COLUMN legacy_email` with no down migration, backup step or release note) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Irreversible DROP COLUMN with no down migration and no backup step) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +60,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Every existing client of the public HTTP API that reads `user_name` from an Account response gets a missing field (undefined / deserialization error) as soon as this ships, with no warning: the release note only says \"Changed: Account JSON uses camelCase.\" Mark it **BREAKING** in the release note and say what clients must do (read `userName`). Give consumers time: serialize both keys during a deprecation window (e.g. a second `#[serde(rename = \"user_name\")]` field or a custom Serialize emitting both), announce the removal date of `user_name`, or version the endpoint; add a test that pins the response keys.",
+        "recommendation": "The public HTTP API's `Account` JSON now emits `userName` instead of `user_name` (src/api.rs is \"The JSON types of the public HTTP API\"). Every existing client reading `user_name` gets a missing field (undefined, or a deserialization error in strict clients) on the first response after deploy, with no warning: the proposal's release note lists it as \"Changed: Account JSON uses camelCase.\" with no **BREAKING** item and no action for users. Mark it **BREAKING** in the release note with what clients must do, and give consumers a transition: emit both `user_name` and `userName` for a deprecation period (or version the endpoint), then remove `user_name` in a later release.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Public JSON field `user_name` renamed `userName` without a BREAKING mark or transition"
+        "title": "Account JSON field renamed with no BREAKING mark and no path for consumers"
       },
       {
         "awaiting": "author",
@@ -82,18 +82,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 35,
+        "line": 36,
         "location": "migrations/0005_drop_legacy_email.sql:2",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Running migration 0005 permanently deletes every value still stored in `users.legacy_email` (rows imported in 2023 keep it, per `migrations/0004_accounts.sql`), and there is no `0005_drop_legacy_email.down.sql` while 0004 has one, so a rollback cannot restore the column or its data. Add a down migration (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`) and a backup/export step of the column before the drop (or a copy to an archive table), or state in the plan why the data is disposable and how to recover. Check that no deployed instance or external consumer still reads the column before dropping it (contract step after the code stops using it), and list the removal in the release note, which currently omits it.",
+        "recommendation": "Running migration 0005 deletes every value of `users.legacy_email` (the data from the 2023 import, per the migration's comment) with no way back: there is no `0005_drop_legacy_email.down.sql`, while 0004 has one, and neither the proposal nor tasks.md mention a backup or a recovery plan. A rollback after deploy cannot restore the column or its data. Before dropping, export the column (e.g. copy `id, legacy_email` to an archive table or dump), add a down migration that re-adds `legacy_email TEXT` (and restores from the archive if kept), or state in the plan why the data can be lost and how to recover.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Irreversible `DROP COLUMN legacy_email` with no down migration, backup step or release note"
+        "title": "Irreversible DROP COLUMN with no down migration and no backup step"
       }
     ],
     "format": 1,
