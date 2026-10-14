@@ -28,6 +28,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - Each change keeps a review record, `review.md`, where the roles write their findings with a severity, a confidence, a location and the quoted evidence, and where every answer — fixed, disputed, accepted risk, deferred, rejected — is recorded with who decided it. `codev review` shows it and what is left to decide.
 - `codev validate` checks the review record: its format, that each cited file and line exists and that the quoted evidence is really there.
 - The built-in roles are measured by an evaluation suite in the repository: seeded defects and clean controls score what each role finds, misses and invents, and whether its evidence is real. The baseline is published in `evals/baseline/report.md`, and the Roles chapter explains it.
+- Specs and deltas can be written with French structural keywords — `### Exigence :`, `#### Scénario :`, `## Exigences AJOUTÉES`, `DOIT` and the others — next to the English ones, which keep working.
+- The keywords come from a per-language catalog, so a new language can be added with one file.
 
 ### Changed
 

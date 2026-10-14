@@ -11,6 +11,7 @@ use super::shared::{
     ScannedLine, block_span, collect_scenarios, is_delta_header, line_starts,
     requirement_from_lines, section_header, trim_body,
 };
+use crate::keywords::{self, Key, Lang};
 
 pub fn parse_spec(source: &str) -> Parsed<Spec> {
     let lines: Vec<&str> = source.split('\n').collect();
@@ -73,7 +74,7 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
     // Purpose: first top-level `## Purpose`.
     let purpose_idx = h2
         .iter()
-        .position(|h| h.title.eq_ignore_ascii_case("Purpose"));
+        .position(|h| keywords::section_title(&h.title, Key::SpecPurpose).is_some());
     if let Some(idx) = purpose_idx {
         let start_line = h2[idx].header_index;
         let end_line = h2
@@ -95,7 +96,10 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
     // section are reported.
     let requirements_idx = h2
         .iter()
-        .position(|h| h.title.eq_ignore_ascii_case("Requirements"));
+        .position(|h| keywords::section_title(&h.title, Key::SpecRequirements).is_some());
+    let lang = requirements_idx
+        .and_then(|idx| keywords::section_title(&h2[idx].title, Key::SpecRequirements))
+        .unwrap_or(Lang::EN);
 
     // `requirements_section_end`: insertion point for ADDED entries, in
     // bytes. It is the start of the next top-level `##` section after
@@ -167,6 +171,7 @@ pub fn parse_spec(source: &str) -> Parsed<Spec> {
             purpose,
             requirements,
             requirements_section_end,
+            lang,
         },
         findings,
     }
@@ -297,5 +302,47 @@ mod tests {
         );
         assert_eq!(parsed.value.requirements.len(), 1);
         assert!(parsed.value.requirements[0].scenarios.is_empty());
+    }
+
+    #[test]
+    fn a_french_main_spec_is_read() {
+        let source = "## Objet\n\nGérer les sessions.\n\n## Exigences\n\n### Exigence : Expiration de session\nLe portail DOIT expirer.\n\n#### Scénario : Inactivité\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_spec(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert_eq!(parsed.value.purpose.unwrap().text, "Gérer les sessions.");
+        let req = &parsed.value.requirements[0];
+        assert_eq!(req.name, "Expiration de session");
+        assert_eq!(req.scenarios[0].name, "Inactivité");
+        assert_eq!(parsed.value.lang.code(), "fr");
+        assert_eq!(parse_spec(purpose_only()).value.lang, Lang::EN);
+    }
+
+    #[test]
+    fn a_french_scenario_at_the_wrong_level_is_reported() {
+        let source = "## Objet\n\nx\n\n## Exigences\n\n### Exigence : R\nLe portail DOIT r.\n\n### Scénario : Trop haut\n- **WHEN** a\n- **THEN** b\n";
+        let parsed = parse_spec(source);
+        assert!(
+            parsed
+                .findings
+                .iter()
+                .any(|f| f.code == "scenario_wrong_heading_level" && f.line == 10),
+            "{:?}",
+            parsed.findings
+        );
+        assert!(parsed.value.requirements[0].scenarios.is_empty());
+    }
+
+    #[test]
+    fn a_french_delta_header_in_a_main_spec_is_reported() {
+        let source = "## Objet\n\nx\n\n## Exigences\n\n### Exigence : R\nLe portail DOIT r.\n\n#### Scénario : S\n- **WHEN** a\n- **THEN** b\n\n## Exigences AJOUTÉES\n\n### Exigence : X\nLe portail DOIT x.\n";
+        let parsed = parse_spec(source);
+        let f = parsed
+            .findings
+            .iter()
+            .find(|f| f.code == "delta_header_in_main_spec")
+            .expect("finding expected");
+        assert_eq!(f.line, 14);
+        // `## Exigences AJOUTÉES` is not the requirements section: R is.
+        assert_eq!(parsed.value.requirements[0].name, "R");
     }
 }

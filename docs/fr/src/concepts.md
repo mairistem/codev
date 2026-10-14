@@ -57,7 +57,8 @@ L'application SHALL s'afficher avec le jeu de couleurs du système d'exploitatio
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
-Chaque exigence est normative (elle emploie `SHALL` ou `MUST`) et comporte au
+Chaque exigence est normative (elle emploie `SHALL` ou `MUST`, ou `DOIT` ou
+`DOIVENT` dans une spec en français) et comporte au
 moins un scénario décrivant un comportement observable. Une spec décrit un
 comportement, jamais une implémentation : si le code peut changer sans que le
 comportement change, la spec ne doit pas changer non plus.

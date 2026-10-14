@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+pub use crate::keywords::Lang;
+
 /// The range a node occupies in the source text.
 ///
 /// Two views of the same range, and that is deliberate: `byte_range` serves
@@ -144,6 +146,9 @@ pub struct Spec {
     /// any `ADDED` must be rejected upstream by the validator, and the merge
     /// should never be called.
     pub requirements_section_end: Option<usize>,
+    /// The language of the spec's keywords — that of its requirements
+    /// section heading, English when it has none. A merge writes in it.
+    pub lang: Lang,
 }
 
 /// A delta read from `_codev/changes/<name>/specs/<capability>/spec.md`.
@@ -155,6 +160,10 @@ pub struct Spec {
 pub struct Delta {
     pub purpose: Option<PurposeBlock>,
     pub sections: Vec<DeltaSection>,
+    /// The language of the delta's keywords — that of its first delta
+    /// section heading, English when it has none. A new main spec created
+    /// from the delta is written in it.
+    pub lang: Lang,
 }
 
 /// Severity of a structural defect.
@@ -256,11 +265,13 @@ mod tests {
             }),
             requirements: vec![requirement],
             requirements_section_end: Some(10),
+            lang: Lang::EN,
         };
         assert_eq!(spec.requirements.len(), 1);
 
         let delta = Delta {
             purpose: None,
+            lang: Lang::EN,
             sections: vec![
                 DeltaSection::Added {
                     requirements: Vec::new(),

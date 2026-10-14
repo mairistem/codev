@@ -15,8 +15,16 @@
 
 use std::ops::Range;
 
-const H2_DECISIONS: &str = "## Decisions";
-const H3_DECISION_PREFIX: &str = "### Decision: ";
+use codev_core::keywords::{self, Key};
+
+/// The title of a `### Decision: <title>` line, in any catalog language. A
+/// heading never starts with a space here, as before the catalog.
+fn decision_title(line: &str) -> Option<String> {
+    if !line.starts_with('#') {
+        return None;
+    }
+    keywords::named_heading(line, Key::DesignDecision).map(|(_, title)| title)
+}
 
 /// A `### Decision: <title>` block extracted from a `design.md`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -56,8 +64,7 @@ pub fn extract_decision_blocks(source: &str) -> Vec<DecisionBlock> {
     let mut rel = 0usize;
     for line in section.split_inclusive('\n') {
         let trimmed = line.trim_end_matches(['\n', '\r']);
-        if let Some(after) = trimmed.strip_prefix(H3_DECISION_PREFIX) {
-            let title = after.trim().to_string();
+        if let Some(title) = decision_title(trimmed) {
             let abs_line = line_at_byte(source, base_offset + rel);
             heads.push((rel, title, abs_line));
         }
@@ -107,13 +114,13 @@ fn find_decisions_section(source: &str) -> Option<(usize, usize)> {
         let trimmed = line.trim_end_matches(['\n', '\r']);
         match section_start {
             None => {
-                if trimmed == H2_DECISIONS {
+                if keywords::section_line(trimmed, Key::DesignDecisions).is_some() {
                     section_start = Some(cursor);
                 }
             }
             Some(_) => {
                 // A new H2 section closes the Decisions section.
-                if trimmed.starts_with("## ") && !trimmed.starts_with(H3_DECISION_PREFIX) {
+                if trimmed.starts_with("## ") {
                     section_end = cursor;
                     break;
                 }
@@ -266,5 +273,27 @@ mod tests {
             }
             other => panic!("expected Ambiguous, got {:?}", other),
         }
+    }
+
+    // ─────────────── languages ───────────────
+
+    #[test]
+    fn a_french_decision_is_promoted_verbatim() {
+        let source = "# Design\n\n## Décisions\n\n### Décision : Utiliser JWT\n\nLa justification.\n\n| A | B |\n\n## Risques\n\nz\n";
+        let blocks = extract_decision_blocks(source);
+        assert_eq!(blocks.len(), 1);
+        assert_eq!(blocks[0].title, "Utiliser JWT");
+        assert_eq!(blocks[0].body, "\nLa justification.\n\n| A | B |\n\n");
+        assert_eq!(find_decision_block(&blocks, "Utiliser JWT"), Ok(0));
+    }
+
+    #[test]
+    fn the_same_title_in_both_languages_is_ambiguous() {
+        let source = "## Decisions\n\n### Decision: Library\n\nv1\n\n### Décision : Library\n\nv2\n\n## End\n";
+        let blocks = extract_decision_blocks(source);
+        assert_eq!(
+            find_decision_block(&blocks, "Library"),
+            Err(LookupError::Ambiguous { lines: vec![3, 7] })
+        );
     }
 }

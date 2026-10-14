@@ -53,7 +53,8 @@ The application SHALL render with the operating system's color scheme until the 
 - **THEN** the application renders with the dark theme
 ```
 
-Each requirement is normative (it uses `SHALL` or `MUST`) and has at least one
+Each requirement is normative (it uses `SHALL` or `MUST`, or `DOIT` or
+`DOIVENT` in a French spec) and has at least one
 scenario describing observable behavior. A spec describes behavior, never
 implementation: if the code can change without the behavior changing, the
 spec should not change either.

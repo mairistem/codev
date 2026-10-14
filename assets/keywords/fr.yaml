@@ -1,0 +1,30 @@
+# Mots-clés structurels des documents codev, en français.
+#
+# Mêmes clés que `en.yaml` ; la première forme d'une liste est celle que
+# codev écrit.
+spec.title: "# Spécification {title}"
+spec.purpose: "## Objet"
+spec.requirements: "## Exigences"
+requirement: "### Exigence :"
+scenario: "#### Scénario :"
+delta.added: "## Exigences AJOUTÉES"
+delta.modified: "## Exigences MODIFIÉES"
+delta.removed: "## Exigences SUPPRIMÉES"
+delta.renamed: "## Exigences RENOMMÉES"
+removed.reason: "**Raison**"
+removed.migration: "**Migration**"
+renamed.from: "DE :"
+renamed.to: "VERS :"
+normative: [DOIT, DOIVENT]
+proposal.what_changes: "## Changements"
+proposal.domains: "## Domaines"
+proposal.release_note: "## Note de version"
+none: [Aucun, Aucune]
+category.added: Ajouté
+category.changed: Modifié
+category.deprecated: Obsolète
+category.removed: Supprimé
+category.fixed: Corrigé
+category.security: Sécurité
+design.decisions: "## Décisions"
+design.decision: "### Décision :"

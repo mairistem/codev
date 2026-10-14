@@ -1,9 +1,10 @@
 # File formats
 
 codev's files are Markdown and YAML meant to be written by people and agents,
-and parsed by codev. This chapter gives the exact rules. Headings and
-keywords are always in English, whatever the
-[artifact language](../guides/artifact-language.md).
+and parsed by codev. This chapter gives the exact rules, with the English
+keywords. codev also reads their French equivalents (`### Exigence :`,
+`## Exigences AJOUTÉES`, `DOIT`…), listed in
+[Artifact language](../guides/artifact-language.md).
 
 Everything inside fenced code blocks and HTML comments is ignored by the
 parsers, so templates can carry guidance in `<!-- … -->` comments.
@@ -39,7 +40,8 @@ The application SHALL render with the operating system's color scheme until the 
 - Requirements are `### Requirement: <name>` headings inside
   `## Requirements`. The name identifies the requirement in deltas, so keep it
   unique within the spec.
-- A requirement's description contains `SHALL` or `MUST`.
+- A requirement's description contains a normative keyword in upper case:
+  `SHALL` or `MUST`, or `DOIT` or `DOIVENT`.
 - Every requirement has at least one `#### Scenario: <name>`, with exactly four
   `#` characters. Scenario steps are bullet lines using `**GIVEN**`,
   `**WHEN**`, `**THEN**` and `**AND**`.
@@ -487,7 +489,7 @@ may be reworded between versions; codes are not.
 | `spec_no_requirement` | error | A main spec has no requirement |
 | `requirement_outside_section` | error | A `### Requirement:` outside `## Requirements` |
 | `delta_header_in_main_spec` | error | A delta heading in a main spec |
-| `requirement_no_shall` | error | A requirement without `SHALL` or `MUST` |
+| `requirement_no_shall` | error | A requirement without `SHALL`, `MUST`, `DOIT` or `DOIVENT` |
 | `requirement_no_scenario` | error | A requirement without a scenario |
 | `scenario_wrong_heading_level` | error | A scenario written with three `#` instead of four |
 | `duplicate_requirement` | error | The same requirement twice in one delta section |

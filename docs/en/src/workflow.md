@@ -170,7 +170,8 @@ codev validate --strict
 ```
 
 The checks cover the structure of specs and deltas (every requirement uses
-`SHALL` or `MUST` and has at least one `#### Scenario:`), consistency inside a
+`SHALL` or `MUST` — or `DOIT` or `DOIVENT` — and has at least one
+`#### Scenario:`), consistency inside a
 delta (no requirement both added and modified, no rename colliding with an
 addition), the zero-delta rule, and the integrity of sealed decisions. See
 [File formats](reference/file-formats.md) for the rules each file must follow.

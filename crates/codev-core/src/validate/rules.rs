@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use super::Rule;
 use super::codes;
+use crate::keywords;
 use crate::parser::ast::{Delta, DeltaSection, Finding, Requirement, Spec};
 
 // ─────────────────────────── structural rules ────────────────────────────
@@ -34,18 +35,23 @@ impl Rule for RequirementNoShall {
     }
 }
 
-/// A requirement is normative if its description contains `SHALL` or `MUST`
-/// **in exact uppercase** — this is the convention documented in the
-/// schema. The requirement name is left free-form: it is a label.
+/// A requirement is normative if its description contains a normative
+/// keyword of the catalog — `SHALL`, `MUST`, `DOIT`, `DOIVENT` — **in exact
+/// uppercase**: in lower case the same words are ordinary prose. The
+/// requirement name is left free-form: it is a label.
 fn check_requirement_shall(req: &Requirement, context: &str) -> Option<Finding> {
-    if req.description.contains("SHALL") || req.description.contains("MUST") {
+    if keywords::is_normative(&req.description) {
         return None;
     }
+    let words = keywords::normative_words()
+        .map(|w| format!("`{w}`"))
+        .collect::<Vec<_>>()
+        .join(", ");
     Some(Finding::error(
         codes::REQUIREMENT_NO_SHALL,
         req.span.start_line(),
         format!(
-            "line {}: {context} — requirement \"{}\" has neither `SHALL` nor `MUST`; \
+            "line {}: {context} — requirement \"{}\" has no normative keyword ({words}); \
              use one of them in its description",
             req.span.start_line(),
             req.name
@@ -402,5 +408,63 @@ mod tests {
         assert_eq!(modified_uses.len(), 1);
         assert!(modified_uses[0].message.contains("Old Name"));
         assert!(modified_uses[0].message.contains("New Name"));
+    }
+
+    const FR_SCENARIO: &str = "\n\n#### Scénario : S\n- **WHEN** a\n- **THEN** b\n";
+
+    #[test]
+    fn a_french_requirement_with_doit_is_normative() {
+        let source = format!(
+            "## Exigences AJOUTÉES\n\n### Exigence : Annulation\nLe portail DOIT permettre d'annuler une demande en attente.{FR_SCENARIO}"
+        );
+        let findings = run_delta(&source);
+        assert!(findings.is_empty(), "{findings:?}");
+    }
+
+    #[test]
+    fn either_doit_or_doivent_is_normative() {
+        for verb in ["Le portail DOIT x.", "Les portails DOIVENT x."] {
+            let source = format!("## Exigences AJOUTÉES\n\n### Exigence : X\n{verb}{FR_SCENARIO}");
+            assert!(run_delta(&source).is_empty(), "{verb}");
+        }
+    }
+
+    #[test]
+    fn a_requirement_with_lower_case_doit_has_no_shall_finding() {
+        let source = format!(
+            "## Exigences AJOUTÉES\n\n### Exigence : Date\nLe portail doit afficher la date.{FR_SCENARIO}"
+        );
+        let findings = run_delta(&source);
+        assert_eq!(findings.len(), 1, "{findings:?}");
+        assert_eq!(findings[0].code, codes::REQUIREMENT_NO_SHALL);
+        assert!(findings[0].message.contains("\"Date\""));
+        assert!(
+            findings[0].message.contains("`DOIT`"),
+            "{}",
+            findings[0].message
+        );
+    }
+
+    #[test]
+    fn a_french_requirement_without_scenario_is_reported() {
+        let source = "## Exigences AJOUTÉES\n\n### Exigence : Y\nLe portail DOIT y.\n";
+        let findings = run_delta(source);
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.code == codes::REQUIREMENT_NO_SCENARIO && f.message.contains("\"Y\"")),
+            "{findings:?}"
+        );
+    }
+
+    #[test]
+    fn an_empty_french_requirements_section_is_reported() {
+        let findings = run_spec("## Objet\n\nx.\n\n## Exigences\n");
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.code == codes::SPEC_NO_REQUIREMENT),
+            "{findings:?}"
+        );
     }
 }

@@ -82,7 +82,8 @@ en cours. Voir [Schémas personnalisés](../guides/custom-schemas.md).
 La langue dans laquelle les skills rédigent la prose des artefacts, sous la
 forme d'un code ISO 639 : deux ou trois lettres minuscules, éventuellement
 suivies d'une sous-étiquette (`en`, `fr`, `pt-BR`, `zh-Hant`). Valeur par
-défaut : `en`. Les mots-clés structurels restent toujours en anglais. Voir
+défaut : `en`. Les skills écrivent les mots-clés structurels en anglais ;
+codev les lit en anglais comme en français, quel que soit ce réglage. Voir
 [Langue des artefacts](../guides/artifact-language.md).
 
 ## workflows

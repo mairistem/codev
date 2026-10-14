@@ -2,8 +2,9 @@
 
 Les fichiers de codev sont du Markdown et du YAML destinés à être rédigés par
 des personnes et des agents, puis analysés par codev. Ce chapitre en donne les
-règles exactes. Les titres et les mots-clés sont toujours en anglais, quelle
-que soit la [langue des artefacts](../guides/artifact-language.md).
+règles exactes, avec les mots-clés anglais. codev lit aussi leurs équivalents
+français (`### Exigence :`, `## Exigences AJOUTÉES`, `DOIT`…), présentés dans
+[Langue des artefacts](../guides/artifact-language.md).
 
 Tout ce qui figure dans des blocs de code délimités et dans des commentaires
 HTML est ignoré par les analyseurs : les templates peuvent donc contenir des
@@ -41,7 +42,8 @@ L'application SHALL s'afficher avec le jeu de couleurs du système d'exploitatio
 - Les exigences sont des titres `### Requirement: <name>` placés dans
   `## Requirements`. Le nom identifie l'exigence dans les deltas : veillez à
   ce qu'il soit unique au sein de la spec.
-- La description d'une exigence contient `SHALL` ou `MUST`.
+- La description d'une exigence contient un mot-clé normatif en majuscules :
+  `SHALL` ou `MUST`, ou `DOIT` ou `DOIVENT`.
 - Chaque exigence comporte au moins un `#### Scenario: <name>`, avec
   exactement quatre caractères `#`. Les étapes d'un scénario sont des lignes à
   puces utilisant `**GIVEN**`, `**WHEN**`, `**THEN**` et `**AND**`.
@@ -505,7 +507,7 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `spec_no_requirement` | erreur | Une spec principale ne contient aucune exigence |
 | `requirement_outside_section` | erreur | Un `### Requirement:` en dehors de `## Requirements` |
 | `delta_header_in_main_spec` | erreur | Un titre de delta dans une spec principale |
-| `requirement_no_shall` | erreur | Une exigence sans `SHALL` ni `MUST` |
+| `requirement_no_shall` | erreur | Une exigence sans `SHALL`, `MUST`, `DOIT` ni `DOIVENT` |
 | `requirement_no_scenario` | erreur | Une exigence sans scénario |
 | `scenario_wrong_heading_level` | erreur | Un scénario écrit avec trois `#` au lieu de quatre |
 | `duplicate_requirement` | erreur | La même exigence deux fois dans une même section de delta |

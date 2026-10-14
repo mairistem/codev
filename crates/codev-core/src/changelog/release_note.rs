@@ -7,6 +7,7 @@
 //! content: a category outside the six of Keep a Changelog, or an item
 //! without text, is a finding, never a silent guess.
 
+use crate::keywords::{self, Key};
 use crate::parser::ast::{Finding, Parsed};
 use crate::parser::section::{heading_line, section};
 
@@ -44,12 +45,25 @@ impl Category {
         }
     }
 
-    /// Case-insensitive: `added` is plainly meant as `Added`, and refusing
-    /// it would teach nothing.
+    /// The keyword of the category in the catalog.
+    fn key(self) -> Key {
+        match self {
+            Self::Added => Key::CategoryAdded,
+            Self::Changed => Key::CategoryChanged,
+            Self::Deprecated => Key::CategoryDeprecated,
+            Self::Removed => Key::CategoryRemoved,
+            Self::Fixed => Key::CategoryFixed,
+            Self::Security => Key::CategorySecurity,
+        }
+    }
+
+    /// In any catalog language (`Ajouté` is `Added`), and case-insensitive:
+    /// `added` is plainly meant as `Added`, and refusing it would teach
+    /// nothing. [`Category::as_str`] stays English whatever was written.
     pub fn parse(raw: &str) -> Option<Self> {
         Self::ALL
             .into_iter()
-            .find(|c| c.as_str().eq_ignore_ascii_case(raw.trim()))
+            .find(|c| keywords::word(raw.trim(), c.key()).is_some())
     }
 }
 
@@ -76,8 +90,8 @@ pub enum ReleaseNote {
     Items(Vec<NoteItem>),
 }
 
-/// The heading of the section, matched case-insensitively.
-pub const HEADING: &str = "## Release note";
+/// The heading of the section, in any language of the keyword catalog.
+pub const HEADING: Key = Key::ReleaseNote;
 
 /// Whether an item's text marks a breaking change. `**BREAKING:**` is
 /// accepted too: it is how breaking items were written by hand so far.
@@ -150,13 +164,14 @@ pub fn parse(proposal: &str) -> Parsed<ReleaseNote> {
 /// The bullets of `## What Changes`, wrapped lines and nested bullets
 /// joined into their parent, for a change archived without a release note.
 pub fn what_changes(proposal: &str) -> Vec<String> {
-    section(proposal, "## What Changes")
+    section(proposal, Key::WhatChanges)
         .map(|lines| bullets(&lines).0.into_iter().map(|(_, t)| t).collect())
         .unwrap_or_default()
 }
 
+/// `None`, or its translation in a catalog language (`Aucune`).
 fn is_none(text: &str) -> bool {
-    matches!(text.trim().trim_end_matches('.'), "None" | "none" | "NONE")
+    keywords::word(text.trim().trim_end_matches('.'), Key::None).is_some()
 }
 
 fn item(line: u32, content: &str) -> Result<NoteItem, String> {
@@ -359,5 +374,58 @@ mod tests {
             ]
         );
         assert!(what_changes("## Why\n").is_empty());
+    }
+
+    fn french(note: &str) -> String {
+        format!("# Proposition : X\n\n## Impact\n\n- code\n\n## Note de version\n\n{note}\n")
+    }
+
+    #[test]
+    fn french_release_note_is_valid() {
+        let source = french("- Ajouté : un export.\n- Modifié : **BREAKING** un défaut.");
+        let parsed = parse(&source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        let found = items(&source);
+        assert_eq!(found[0].category, Category::Added);
+        assert_eq!(found[0].text, "un export.");
+        assert!(found[1].breaking);
+    }
+
+    #[test]
+    fn an_unknown_french_category_is_reported() {
+        let parsed = parse(&french("- Amélioré : la vitesse."));
+        let f = &parsed.findings[0];
+        assert_eq!(f.code, codes::RELEASE_NOTE_INVALID);
+        assert_eq!(f.line, 9);
+        assert!(f.message.contains("`Amélioré`"), "{}", f.message);
+    }
+
+    #[test]
+    fn aucune_release_note_is_an_internal_change() {
+        let parsed = parse(&french("Aucune"));
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        assert_eq!(parsed.value, ReleaseNote::Internal);
+    }
+
+    #[test]
+    fn french_categories_parse_to_the_english_category() {
+        let pairs = [
+            ("Ajouté", Category::Added),
+            ("modifie", Category::Changed),
+            ("Obsolète", Category::Deprecated),
+            ("Supprimé", Category::Removed),
+            ("Corrigé", Category::Fixed),
+            ("Sécurité", Category::Security),
+        ];
+        for (raw, expected) in pairs {
+            assert_eq!(Category::parse(raw), Some(expected), "{raw}");
+        }
+        assert_eq!(Category::parse("Ajouté").unwrap().as_str(), "Added");
+    }
+
+    #[test]
+    fn french_what_changes_bullets_are_read() {
+        let source = "# P\n\n## Changements\n\n- Un export mensuel.\n";
+        assert_eq!(what_changes(source), ["Un export mensuel."]);
     }
 }

@@ -182,8 +182,8 @@ codev validate --strict
 ```
 
 Les vérifications portent sur la structure des specs et des deltas (chaque
-exigence emploie `SHALL` ou `MUST` et comporte au moins un
-`#### Scenario:`), sur la cohérence interne d'un delta (aucune exigence à la
+exigence emploie `SHALL` ou `MUST` — ou `DOIT` ou `DOIVENT` — et comporte au
+moins un `#### Scenario:`), sur la cohérence interne d'un delta (aucune exigence à la
 fois ajoutée et modifiée, aucun renommage en conflit avec un ajout), sur la
 règle du delta vide, et sur l'intégrité des décisions scellées. Voir
 [Formats de fichiers](reference/file-formats.md) pour les règles que chaque

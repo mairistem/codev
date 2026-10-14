@@ -53,36 +53,73 @@ The skills write every sentence in the configured language, whatever language
 you chat with Claude in: the files are the team's record, and the language is
 the team's choice.
 
-The **structure** of the files always stays in English, because codev parses
-it:
+The skills write the **structure** of the files in English: template headings
+(`# Proposal:`, `## Why`, `## What Changes`, `## Context`, `# Tasks`…), spec
+and delta structure (`## Purpose`, `### Requirement:`, `#### Scenario:`…), and
+the scenario and normative keywords (`**WHEN**`, `**THEN**`, `SHALL`, `MUST`).
 
-- template headings: `# Proposal:`, `## Why`, `## What Changes`,
-  `## Capabilities`, `## Impact`, `## Context`, `## Decisions`, `# Tasks`…;
-- spec and delta structure: `## Purpose`, `## Requirements`,
-  `## ADDED Requirements` and the other delta sections, `### Requirement:`,
-  `#### Scenario:`, `**Reason**`, `**Migration**`, `FROM:` / `TO:`;
-- scenario and normative keywords: `**GIVEN**`, `**WHEN**`, `**THEN**`,
-  `**AND**`, `SHALL`, `MUST`.
+codev **reads** that structure in English or in French, whatever
+`language:` says, so a team can also write its specs entirely in French. Each
+keyword has its text in every language of codev's keyword catalog:
 
-A requirement written in French therefore looks like this:
+| English | French |
+|---|---|
+| `## Purpose` | `## Objet` |
+| `## Requirements` | `## Exigences` |
+| `### Requirement:` | `### Exigence :` |
+| `#### Scenario:` | `#### Scénario :` |
+| `## ADDED Requirements` | `## Exigences AJOUTÉES` |
+| `## MODIFIED Requirements` | `## Exigences MODIFIÉES` |
+| `## REMOVED Requirements` | `## Exigences SUPPRIMÉES` |
+| `## RENAMED Requirements` | `## Exigences RENOMMÉES` |
+| `**Reason**`, `**Migration**` | `**Raison**`, `**Migration**` |
+| `FROM:` / `TO:` | `DE :` / `VERS :` |
+| `SHALL`, `MUST` | `DOIT`, `DOIVENT` |
+| `## What Changes` | `## Changements` |
+| `## Domains`, `None` | `## Domaines`, `Aucun` |
+| `## Release note`, `None` | `## Note de version`, `Aucune` |
+| `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` | `Ajouté`, `Modifié`, `Obsolète`, `Supprimé`, `Corrigé`, `Sécurité` |
+| `## Decisions`, `### Decision:` | `## Décisions`, `### Décision :` |
+
+A requirement written entirely in French therefore looks like this:
 
 ```markdown
-### Requirement: Le thème suit la préférence du système
+### Exigence : Le thème suit la préférence du système
 
-L'application SHALL s'afficher avec le thème du système tant que l'utilisateur n'en a pas choisi.
+L'application DOIT s'afficher avec le thème du système tant que l'utilisateur n'en a pas choisi.
 
-#### Scenario: Aucun thème choisi
+#### Scénario : Aucun thème choisi
 
 - **GIVEN** un utilisateur qui n'a jamais modifié le thème
 - **WHEN** son système est en mode sombre
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
+How codev reads and writes them:
+
+- French keywords forgive case, accents and the space — ordinary or
+  no-break — before a colon: `### Exigence: X` and `#### Scenario : Y` are
+  read too. English keywords are read exactly as before.
+- Normative keywords count only in upper case, in both languages: `doit` in
+  lower case is ordinary prose, and the requirement fails validation.
+- A document may mix both languages.
+- When `codev sync` or `codev archive` edits a spec, it writes the keywords
+  in that spec's language; a new spec takes the language of the delta that
+  creates it.
+- The changelog shows release note categories in English, whatever language
+  wrote them.
+- Domain names (`security`, `migration`…) and the review record's markers
+  stay in English. codev does not read the `**GIVEN**` / `**WHEN**` /
+  `**THEN**` lines, which the skills write in English.
+
 > **Warning**
-> A translated keyword is a broken artifact. codev does not recognize
-> `### Exigence :` as a requirement: in a delta section, validation reports it
-> (`delta_unexpected_heading`), and the sync and the archive refuse the change.
-> A requirement without `SHALL` or `MUST` fails validation too.
+> A codev release older than this catalog rejects French keywords. Before
+> your team writes them, raise `codev_version` in `_codev/config.yaml` to
+> the first release whose changelog announces them, so that every
+> contributor runs a codev that reads them. A heading in a language codev
+> does not know, such as `### Requisito:`, is reported in a delta section
+> (`delta_unexpected_heading`), and the sync and the archive refuse the
+> change.
 
 ## Which skills use it
 
