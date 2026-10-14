@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-plan-unbounded-export",
   "error": null,
-  "costUsd": 0.35678620000000005,
-  "durationMs": 37144,
+  "costUsd": 0.35269439999999996,
+  "durationMs": 29177,
   "consumption": {
-    "durationApiMs": 36878,
+    "durationApiMs": 28769,
     "turns": 9,
     "permissionDenials": 3,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 28154,
-      "cacheRead": 373051,
-      "output": 2797
+      "input": 1164,
+      "cacheCreation": 27660,
+      "cacheRead": 380507,
+      "output": 2716
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (The export loads the whole audit log into memory and builds it on the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (The export loads the whole audit log and builds the CSV in memory on the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +40,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "created_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
         "history": [
           {
             "by": "performance",
@@ -56,18 +56,18 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "The result is unbounded and grows with the organization's history: the design's own figures (about 40 000 events per organization per month, kept seven years) give up to about 3.4 million rows for one request. Per export, memory holds every row object, the array of CSV lines and the joined string at once, and the synchronous map/join runs on the instance's single event loop, stalling every other request it serves until it finishes; two concurrent exports can exhaust the heap. Stream instead: read with a server-side cursor or keyset batches on (created_at, id), format each batch to CSV and write it to the response as a stream honouring backpressure (e.g. pipeline from a query stream through a CSV transform). This keeps the spec's \"every audit event, oldest first\" and its ordering unchanged. Record the choice and its alternatives in the design (the current \"Alternatives considered: none\" gives no reason), and update task 1.1 accordingly.",
+        "recommendation": "Cost grows linearly with the organization's history, per request: the design's own context gives about 40 000 events per organization per month kept seven years, so an export reaches about 3.4 million rows. The query has no LIMIT, every row is held in one array, then copied once more into an array of lines and once more into a single string, and the map/join runs synchronously on the single event loop of the instance (\"one event loop per instance\"), stalling every other request it serves until it ends, with a memory peak that can exhaust the heap. Keep the requirement (every event, oldest first) but stream it: read the rows through a server-side cursor or keyset batches (`WHERE org_id = $1 AND (created_at, id) > $last ORDER BY created_at, id LIMIT n`), write each batch's CSV lines to the response stream with backpressure, and never hold the whole set or string. Record the decision's alternatives (streaming, an asynchronous export job) instead of \"none\", and back the chosen approach with a measurement on an organization with seven years of events.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The export loads the whole audit log into memory and builds it on the event loop"
+        "title": "The export loads the whole audit log and builds the CSV in memory on the event loop"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\n",
+        "evidence": "`SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
         "history": [
           {
             "by": "performance",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-performance-2",
-        "line": 39,
+        "line": 41,
         "location": "design.md#Decision: The export loads every event, then writes the CSV",
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "The query filters on org_id and sorts on created_at over a table holding seven years of every organization's events. The schema of audit_events is not in the repository, so whether an index on (org_id, created_at) exists could not be checked. Check it with EXPLAIN on a production-sized table; if missing, add it (or state in the design that it exists), otherwise each export does a full scan and sort of the table.",
+        "recommendation": "The schema of `audit_events` is not in the repository, so the existing indexes could not be checked. Without an index on `(org_id, created_at)`, each export scans and sorts a table that grows with every organization's seven years of events. Check the query plan (`EXPLAIN`) and, if missing, add the index in this change; keyset batches (R-performance-1) need it too.",
         "reported": false,
         "role": "performance",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No index is shown for the export's filter and sort"
+        "title": "No index is stated for the export's filter and sort"
       }
     ],
     "format": 1,
@@ -109,6 +109,18 @@
             "fallback": null,
             "role": "performance",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

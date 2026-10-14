@@ -70,7 +70,7 @@ pub fn prompt(case: &Case) -> String {
                  ask for the roles of the step with `codev roles --at {step} --change {change} --json`, apply every role returned, \
                  and write every finding to the review record `_codev/changes/{change}/review.md` as the skill's review-record \
                  procedure says (resume first, a section per role, each finding with its location and verbatim evidence, then \
-                 check the record with `codev review --change {change} --json`).\n\
+                 check the record as the skill says).\n\
                  \n\
                  Evaluation mode: skip the author's answer and the reviewer's re-check — leave every finding `open`. \
                  Modify no file but `_codev/changes/{change}/review.md`: do not fix, simplify or edit the code or the plan. \
@@ -919,6 +919,10 @@ mod tests {
         ] {
             assert!(text.contains(needle), "missing {needle} in {text}");
         }
+        assert!(
+            !text.contains("--json`)"),
+            "the prompt leaves the record's check to the skill: {text}"
+        );
         case.step = Step::CodeReview;
         assert!(prompt(&case).contains("`codev-apply`"));
         assert!(prompt(&case).contains("code.review"));

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-detail-endpoint-authz",
   "error": null,
-  "costUsd": 0.3474981999999999,
-  "durationMs": 26759,
+  "costUsd": 0.2917912,
+  "durationMs": 24525,
   "consumption": {
-    "durationApiMs": 26373,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 23997,
+    "turns": 5,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1195,
-      "cacheCreation": 28996,
-      "cacheRead": 340536,
-      "output": 2321
+      "input": 1177,
+      "cacheCreation": 26048,
+      "cacheRead": 189201,
+      "output": 2230
     }
   },
   "strayed": [],
@@ -52,11 +52,11 @@
         ],
         "id": "R-security-1",
         "line": 11,
-        "location": "src/invoices.ts:32-35",
+        "location": "src/invoices.ts:32-40",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs to another organization: the query selects by `id` alone and the handler never compares `org_id` with `currentUser(req).orgId`, unlike the list route. Scope the lookup to the caller's organization (`WHERE id = $1 AND org_id = $2`, `[id, currentUser(req).orgId]`) and answer 404 when nothing matches, so the existence of other organizations' invoices is not revealed; add a test asserting the org filter on the detail route, as the list route's test does.",
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any authenticated user of organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs to another organization, and can enumerate every invoice by iterating ids. Scope the query to the caller, as the list route does — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so existence in another organization is not revealed. Add a test that a caller of another organization gets 404.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -67,7 +67,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
+        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
         "history": [
           {
             "by": "security",
@@ -78,18 +78,45 @@
           }
         ],
         "id": "R-security-2",
-        "line": 37,
+        "line": 35,
         "location": "src/server.ts:15-18",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Information exposure through error messages (CWE-209). A signed-in user who sends `GET /invoices/99999999999` passes the `Number.isInteger` check, the database rejects the value as out of range for an integer column, and the 500 response carries the PostgreSQL error message and the server's stack trace (file paths, module layout, driver internals); any other failure — connection errors naming the host, for instance — leaks the same way. Log the error server-side only and answer a generic `{ error: \"internal error\" }`; also bound the id at the boundary (positive, within the column's range) so such input gets a 400.",
+        "recommendation": "Information exposure through an error message (CWE-209). Any request whose handler throws — a database failure in `query`, a driver error quoting the SQL or the connection details — returns the raw message and the full stack trace (file paths, module layout, library versions) to the caller. Keep `console.error(err)` on the server and answer a generic body such as `{ error: \"internal error\" }`.",
         "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Error handler sends error messages and stack traces to clients"
+        "title": "The error handler sends the error message and stack trace to the client"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const id = Number(req.params.id);\nif (!Number.isInteger(id)) {\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 54,
+        "location": "src/invoices.ts:27-31",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "`Number(\" \")` is 0 and `Number(\"1e3\")` is 1000, so whitespace or exponent forms pass the integer check. No data is exposed by it, but an allow-list at the boundary is stricter: accept only `/^[1-9]\\d*$/` and answer 400 otherwise.",
+        "reported": true,
+        "role": "security",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "An empty or zero id passes the id validation"
       }
     ],
     "format": 1,
@@ -120,6 +147,12 @@
             "fallback": null,
             "role": "security",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

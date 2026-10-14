@@ -20,66 +20,51 @@ evidence: |
       return f.read()
 recommendation: >-
   Validate `name` where it enters (CWE-22): reject it unless it equals
-  `os.path.basename(name)` and is not empty, `.` or `..`, or better look it up
-  in the `attachments` table for this `ticket_id` and open only a stored name;
-  then check that the resolved path (`os.path.realpath`) stays under
-  `UPLOAD_DIR/<ticket_id>`. The `may_read_ticket` check on line 28 only covers
-  `ticket_id`, so without this fix it protects nothing. Add a test that
-  `read_attachment` refuses `../2/x.png`, `../../../../etc/passwd` and `/etc/passwd`.
+  `os.path.basename(name)` and is not empty, `.` or `..`, and better, look it
+  up in the `attachments` table for that `ticket_id` (the allow-list the
+  upload already writes) before opening it. Additionally resolve the final
+  path with `os.path.realpath` and check it stays under
+  `os.path.join(UPLOAD_DIR, str(ticket_id))`. Add a test with `../1/x`,
+  `../../../../etc/passwd` and `/etc/passwd`.
 history:
   - status: open
     by: security
 ```
 
-An agent allowed to read ticket 1 asks for `name="../2/contract.pdf"` and gets
-an attachment of ticket 2 they may not read; with `name="../../../../etc/passwd"`,
-or an absolute `name="/etc/passwd"` (which makes `os.path.join` discard the base),
-they read any file the server process can read, configuration and secrets included.
+`name` is "the name the client asks for" and is joined unvalidated. An agent
+allowed to read any one ticket passes `may_read_ticket` for that ticket, then
+asks for `name="../<other_ticket_id>/invoice.pdf"` to read another team's
+attachment (bypassing the very ownership check just made), or
+`name="../../../../etc/passwd"` / `name="/etc/passwd"` — an absolute name makes
+`os.path.join` discard the base — to read any file the server process can
+read, including `helpdesk.db` and its API key hashes. `save_attachment` applies
+`os.path.basename`; `read_attachment` does not.
 
-#### R-security-2 save_attachment takes no caller and checks no authorization
+#### R-security-2 save_attachment performs no authorization check
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/attachments.py:11-17"
+location: "app/attachments.py:11-13"
 evidence: |
   def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:
       """Stores an uploaded file under the ticket's directory; returns its name."""
       name = os.path.basename(filename)
 recommendation: >-
-  Give `save_attachment` the caller's identity and check on the server that it
-  may write to `ticket_id` (CWE-862), as `read_attachment` does with
-  `may_read_ticket`; otherwise any caller of the upload entry point attaches
-  files to any ticket. Confidence low: the HTTP handler calling it is not in
-  the change, so whether it checks ownership could not be verified.
+  Take the `agent_id` and check `may_read_ticket` (or a write-specific check)
+  on the server before writing, as `read_attachment` does. Also refuse to
+  overwrite an existing attachment of the same name, which currently replaces
+  another agent's file silently.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-3 An upload silently overwrites an earlier attachment of the same name
-
-```yaml
-severity: medium
-confidence: low
-location: "app/attachments.py:16-21"
-evidence: |
-  with open(os.path.join(directory, name), "wb") as f:
-      f.write(data)
-  _conn.execute(
-      "INSERT INTO attachments (ticket_id, name, size) VALUES (?, ?, ?)",
-recommendation: >-
-  Store each upload under a server-generated name (a UUID, or the row id) and
-  keep the client's filename only as display metadata, or refuse an existing
-  name (open with mode `"xb"`). As written, whoever can upload to a ticket
-  replaces a file agents already trust — e.g. a screenshot swapped for a
-  malicious document under the same name — and the table keeps two rows
-  pointing at one file with a stale `size`. Confidence low: who may upload
-  to a ticket depends on the caller, not visible in the change.
-history:
-  - status: open
-    by: security
-```
+Unlike `read_attachment`, the upload takes no agent and checks nothing: any
+caller that reaches it can write files into, and add rows to, any ticket by
+id, including overwriting an existing attachment with the same name. The
+handler calling it is not in the diff, so whether it checks ownership itself
+could not be verified — hence confidence `low`.
 
 ### newcomer
 

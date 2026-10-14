@@ -8,7 +8,7 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 SQL injection through the search term
+#### R-security-1 SQL injection through the `q` search term
 
 ```yaml
 severity: high
@@ -18,19 +18,25 @@ evidence: |
   const sql = "SELECT id, name FROM users WHERE name LIKE '%" + term + "%' ORDER BY name LIMIT 50";
   return query<UserRow>(sql);
 recommendation: >-
-  CWE-89. Any caller holding the `support` role sends
-  `GET /users/search?q=x' UNION SELECT ...--` (or `q=x'; DROP TABLE users;--`):
-  `q` is only trimmed and length-checked in src/server.ts:13-14, then
-  concatenated into the SQL string, and `query` is called without `params`,
-  so node-postgres uses the simple query protocol and also runs stacked
-  statements. The attacker reads any table of the database (the 100-char cap
-  does not prevent it) and can modify or drop data. Bind the term as a
-  parameter, as `query` in src/db.ts:5-6 documents ("values go in `params`,
-  never in `sql`"): `query<UserRow>("SELECT id, name FROM users WHERE name
-  LIKE $1 ORDER BY name LIMIT 50", ["%" + escaped + "%"])`, escaping `%`, `_`
-  and `\` in the term so it matches literally; add a test that a term
-  containing a quote returns rows instead of failing or leaking.
+  Pass the term as a bound parameter instead of concatenating it (CWE-89):
+  `query<UserRow>("SELECT id, name FROM users WHERE name ILIKE $1 ORDER BY name LIMIT 50", ["%" + term + "%"])`,
+  as `src/db.ts` documents ("values go in `params`, never in `sql`"). The length
+  check in `src/server.ts:14` (2 to 100 characters) does not prevent the attack.
+  Add a test that a term containing a quote returns matching rows without error.
+  Escaping `%` and `_` in the term (with `ESCAPE`) would also keep them literal.
 history:
   - status: open
     by: security
 ```
+
+Attack: any caller holding the `support` role sends
+`GET /users/search?q=' UNION SELECT id, password_hash FROM users --` (under
+100 characters); the term is spliced into the SQL string, so the query reads
+any table or column the database user can reach and returns it in the JSON
+response — data beyond the `id`/`name` the endpoint is meant to expose. A
+compromised or malicious support account is enough; no further privilege is
+needed.
+
+### newcomer
+
+Disabled by configuration.

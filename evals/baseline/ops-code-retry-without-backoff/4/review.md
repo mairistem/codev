@@ -6,6 +6,10 @@
 
 Mode: inline.
 
+### newcomer
+
+Disabled by configuration.
+
 ### ops
 
 #### R-ops-1 Webhook retries fire back to back, with no backoff
@@ -19,52 +23,55 @@ evidence: |
     try {
       const response = await fetch(url, {
 recommendation: >-
-  Wait between attempts with exponential backoff and jitter (for example 1s,
-  2s, 4s, 8s), and retry only on network errors, timeouts, 429 and 5xx — not
-  on other 4xx responses, which will not succeed on a retry. The loop is
-  bounded and the POST is safe to repeat (merchants deduplicate by
-  `x-event-id`), but the attempts are not spaced: when a merchant's server
-  restarts or returns 503 for a few seconds, the five attempts are spent
-  within that window (instantly on fast 5xx responses) and the event is
-  dropped, while an overloaded merchant gets hit five times in a row. As
-  `publish` in `src/events.ts` awaits each listener in turn, the retries
-  also hold the payment service's call for up to 25 s per event; spacing
-  them out makes that worse, so move delivery off the publish path (a
-  queue or a background job) when adding the backoff.
+  Space the attempts with an exponential backoff and jitter (for example 1 s,
+  2 s, 4 s, 8 s), or hand failed deliveries to a delayed retry queue so the
+  payment event listener is not held while waiting. The retries are bounded
+  and the operation is deduplicated by `x-event-id`, so only the spacing is
+  missing.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Failed and dropped deliveries are invisible to operators
+When a merchant's endpoint has a short outage or answers 503 while it
+restarts, the five attempts are sent immediately one after the other (a
+non-ok response goes straight to the next iteration, an exception only
+waits for the log call). All five fail within the same outage window and the
+event is dropped, so the retry gives no real resilience; and during a wider
+incident every payment event hammers the already struggling merchant servers
+with five requests in a burst.
+
+#### R-ops-2 A dropped webhook is only logged at debug level, in free text, without the HTTP status
 
 ```yaml
 severity: high
 confidence: high
-location: "src/webhooks.ts:17-25"
+location: "src/webhooks.ts:17-24"
 evidence: |2
-        if (response.ok) {
-          return true;
-        }
-      } catch (error) {
-        console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
+      if (response.ok) {
+        return true;
       }
+    } catch (error) {
+      console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
     }
-    console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
-    return false;
+  }
+  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
 recommendation: >-
-  Log through the project's structured `logger` (`src/logger.ts`, as
-  `src/events.ts` does) rather than `console.debug`: a `warn` per failed
-  attempt with `eventId`, `attempt`, the HTTP `status` or the error, and an
-  `error` when the event is dropped, with `eventId`, the merchant id and the
-  payment id; add a counter of dropped deliveries an operator can alert on.
-  Today a merchant whose endpoint returns 500 gets no attempt logged at all
-  (a non-ok response falls through without any log), the final drop is a
-  free-text debug line that production log levels filter out, and the
-  `false` returned by `deliver` is ignored by the listener at line 34 — so a
-  payment webhook is lost permanently with nothing for the operator or the
-  merchant support team to see.
+  Use the project's structured `logger` (as `src/events.ts` does) instead of
+  `console.debug`: log each failed attempt with fields (`eventId`,
+  `attempt`, `status` of a non-ok response or the error), and log the final
+  drop at `error` level with `eventId`, the merchant or payment id, the last
+  status and the error, so a dropped delivery is visible and alertable. The
+  URL may carry a merchant token: do not log it whole.
 history:
   - status: open
     by: ops
 ```
+
+When a merchant's endpoint answers 500 (or 401, 404) on every attempt, the
+non-ok branch logs nothing — the status is never recorded — and the final
+"dropped" line is emitted with `console.debug`, which is usually filtered out
+in production. The merchant never receives the payment notification and the
+operator has no error log, no queryable field and no status code to notice
+or diagnose it; `deliver` returns `false` and the listener ignores that
+return value.

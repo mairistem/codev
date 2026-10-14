@@ -2,21 +2,21 @@
   "format": 2,
   "case": "skeptic-control-small-flag",
   "error": null,
-  "costUsd": 0.4504142000000001,
-  "durationMs": 42179,
+  "costUsd": 0.4506522,
+  "durationMs": 48778,
   "consumption": {
-    "durationApiMs": 41077,
-    "turns": 14,
-    "permissionDenials": 5,
+    "durationApiMs": 48398,
+    "turns": 12,
+    "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1183,
-      "cacheCreation": 32192,
-      "cacheRead": 576286,
-      "output": 3830
+      "input": 1168,
+      "cacheCreation": 32218,
+      "cacheRead": 489271,
+      "output": 4703
     }
   },
   "strayed": [],
@@ -36,7 +36,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "`src/main.rs` accepts `--quiet` before the file and passes it to\n",
+        "evidence": "`ledger import --quiet` SHALL print no progress line on standard error; errors SHALL still be printed, and the exit code SHALL be unchanged.\n",
         "history": [
           {
             "by": "skeptic",
@@ -48,17 +48,71 @@
         ],
         "id": "R-skeptic-1",
         "line": 11,
-        "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
+        "location": "specs/cli-import/spec.md#Requirement: `--quiet` silences progress",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "State in the spec what `ledger import data.csv --quiet` does — accepted like `ledger import --quiet data.csv`, or rejected with the usage message and exit code 2 — and add a scenario for it. Today `src/main.rs` matches only `[command, path]`, so a script appending the flag after the file gets the usage error, a behavior users see that neither the requirement nor its scenarios decide.",
+        "recommendation": "Add a scenario for `ledger import data.csv` on 2 500 rows that prints exactly two progress lines and exits 0, so an implementation that silences progress unconditionally fails a test; cover it in task 1.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The position of `--quiet` after the file is left unspecified"
+        "title": "The spec never states that progress still prints without `--quiet`"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`src/main.rs` accepts `--quiet` before the file and passes it to\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 25,
+        "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "State in the spec whether `ledger import data.csv --quiet` is accepted or rejected (today `src/main.rs:6-9` matches only `[command, path]` and falls to the usage message `ledger import <file>` with exit code 2), add a scenario for it, and include the usage message in task 1.1 so it names `--quiet`.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Where `--quiet` goes on the command line is decided only in the design, and the usage line is not updated"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [ ] operations\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 39,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Either tick `operations`, since the change alters what scheduled jobs report by mail, or keep it unticked with the reason on its line (`- [ ] operations — <reason>`).",
+        "reported": false,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "`operations` left unticked with no reason although the change targets nightly jobs' output"
       }
     ],
     "format": 1,

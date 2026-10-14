@@ -8,28 +8,32 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 Any signed-in user can read any organization's invoice by id
+#### R-security-1 GET /invoices/:id returns any organization's invoice
 
 ```yaml
 severity: high
 confidence: high
 location: "src/invoices.ts:32-35"
 evidence: |
-  "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
-  [id],
+  const rows = await query<InvoiceRow>(
+    "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
+    [id],
+  );
 recommendation: >-
-  Scope the lookup to the caller's organization — `WHERE id = $1 AND org_id = $2`
-  with `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so
-  another organization's invoice ids are neither readable nor confirmable. Add a
-  test that a user of org 7 asking for an invoice of org 8 gets 404
-  (insecure direct object reference, CWE-639 / CWE-862). Attack: a user signed
-  in to organization 7 sends `GET /invoices/42`, where invoice 42 belongs to
-  organization 8, and receives its number, total and date; iterating ids dumps
-  every organization's invoices.
+  Scope the lookup to the caller's organization, as the list endpoint does:
+  `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]`, and keep
+  answering 404 when no row matches so other organizations' ids are not
+  revealed. Add a test that a user of org 7 asking for an invoice of org 8 gets
+  404 (CWE-639 / CWE-862, insecure direct object reference).
 history:
   - status: open
     by: security
 ```
+
+Any signed-in user of one organization sends `GET /invoices/42` (or iterates
+ids 1, 2, 3…) and receives the number, total and date of invoices belonging to
+other organizations: the query filters on `id` only, never on the caller's
+`orgId`, although the proposal promises each organization's invoices.
 
 #### R-security-2 The error handler sends the error message and stack trace to the client
 
@@ -40,16 +44,20 @@ location: "src/server.ts:15-18"
 evidence: |
   res.status(500).json({ error: err.message, stack: err.stack });
 recommendation: >-
-  Keep `console.error(err)` on the server and answer the client with a generic
-  body such as `{ error: "internal error" }`, without `stack` or the raw
-  message (CWE-209). Scenario: any failure behind `requireUser` — for example a
-  database error raised by `query` in an invoices handler — reaches this
-  handler, and the caller receives the stack trace with file paths, module
-  layout and the driver's error text (table, column or connection details).
+  Log the error server-side only and answer a generic body such as
+  `{ error: "internal error" }` (with the status of `err.status` when it is a
+  client error, e.g. 400 for a malformed body). Never put `err.stack` or a raw
+  database message in the response (CWE-209).
 history:
   - status: open
     by: security
 ```
+
+The handler is mounted on the whole app, so it also catches errors raised
+before `requireUser`: an unauthenticated client posting a malformed JSON body
+makes `express.json()` fail, and gets back the stack trace with server file
+paths and module versions; a database error reaching it would likewise expose
+its message (table, column or connection details).
 
 ### newcomer
 

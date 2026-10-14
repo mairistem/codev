@@ -1231,12 +1231,13 @@ project's review mode is `isolated`.
 ### Requirement: The `propose` and `apply` skills keep the review record and run the answer loop
 
 At `plan.challenge` and `code.review`, the skill SHALL first read the
-record with `codev review --change <name> --json` and resume from it: a
+record with `codev review --change <name>`, as printed, and resume from it: a
 finding already recorded is not raised again, and a finding still waiting
 for an answer is answered before anything else. It SHALL write, under the
 step's section of `review.md`, one section per role returned — its
 findings, or `No finding.` — and `Disabled by configuration.` for each
-role of the step that the project or the change sets to `never`. Each
+role that `codev roles --at <step> --change <name> --json` lists under
+`disabled`, taken from the same call that returned the active roles. Each
 finding gets the next free id of its role, a severity and a confidence
 from the shared scales, a location, the cited text copied verbatim after
 re-reading it, a recommendation, and a first history entry `open` by its
@@ -1253,12 +1254,17 @@ second round. The skill MUST NOT record `accepted-risk`, nor defer a
 `high` finding: those are the human's decisions, recorded with `by:
 human` (or `human:<name>`) only once the human has given them.
 
-The skill SHALL then run `codev review --change <name> --json` and fix
+The skill SHALL then run `codev review --change <name>` and fix
 the defects it reports in the record itself, never by changing a
 finding's substance. Its summary MUST carry a "To decide" block listing
 every finding the record says awaits a human and every `high` finding
 still `open`, with the choices: fix, accept the risk (with a
 justification) or defer (with where it goes); or "Nothing to decide".
+
+The skill SHALL read codev's output as codev prints it, and MUST NOT
+filter it through another program (`python3`, `jq`): each command prints
+what the step needs, and a filter is a command a user's session may not
+approve, which costs a turn.
 
 #### Scenario: The skills describe the record and the loop
 
@@ -1289,6 +1295,16 @@ justification) or defer (with where it goes); or "Nothing to decide".
 - **WHEN** `/codev-apply` runs the review again in a new session
 - **THEN** the reviewer answers that dispute
 - **AND** no finding already in the record is written twice
+
+#### Scenario: The disabled roles come with the active ones
+
+- **GIVEN** the codev workflow catalog
+- **WHEN** the `propose` and `apply` workflows are rendered
+- **THEN** their review-record procedure takes the disabled roles from
+  `disabled` in `codev roles --at`, does not ask for `when: never` in a
+  second call, and resumes and checks the record with `codev review
+  --change` without `--json`
+- **AND** it says not to filter codev's output through another program
 
 ### Requirement: The `archive` skill explains a review that blocks archiving
 

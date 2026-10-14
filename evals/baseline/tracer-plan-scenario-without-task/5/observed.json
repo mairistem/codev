@@ -2,11 +2,11 @@
   "format": 2,
   "case": "tracer-plan-scenario-without-task",
   "error": null,
-  "costUsd": 0.2918464,
-  "durationMs": 21683,
+  "costUsd": 0.29174839999999996,
+  "durationMs": 20626,
   "consumption": {
-    "durationApiMs": 21377,
-    "turns": 10,
+    "durationApiMs": 20892,
+    "turns": 11,
     "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,14 +14,14 @@
     ],
     "tokens": {
       "input": 1090,
-      "cacheCreation": 25771,
-      "cacheRead": 224437,
-      "output": 1996
+      "cacheCreation": 25826,
+      "cacheRead": 224147,
+      "output": 1972
     }
   },
   "strayed": [],
   "review": null,
   "files": {
-    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject an expired link and ask the member to request a new one, verified by test `an_expired_link_does_not_sign_in` (\"An expired link\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject a link opened after 15 minutes and prompt for a new one, verified by test `an_expired_link_is_refused` (\"An expired link\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
   }
 }

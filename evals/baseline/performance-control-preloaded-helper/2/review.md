@@ -9,3 +9,7 @@ Mode: inline.
 ### performance
 
 No finding.
+
+### newcomer
+
+Disabled by configuration.

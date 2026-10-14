@@ -8,7 +8,7 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 No automated test that a pre-4.2 file with `listen` still loads
+#### R-migration-1 The `listen` alias has no automated test
 
 ```yaml
 severity: low
@@ -17,34 +17,27 @@ location: "src/config.rs:10-11"
 evidence: |
   #[serde(alias = "listen")]
   pub bind_address: String,
-recommendation: >-
-  The migration path for existing `config.toml` files (the `listen` alias) works,
-  but it was only checked by hand on staging (task 1.1); the repository has no
-  test for it, so a later edit that drops the alias would make every pre-4.2
-  file fail at start-up with a missing-field error and no test would catch it.
-  Add a unit test calling `config::load` with a file that uses `listen` and one
-  that uses `bind_address`, both yielding the same `bind_address`.
+recommendation: Add a unit test that calls `config::load` on a file holding `listen = "0.0.0.0:8080"` and asserts `bind_address`, and one on a file holding `bind_address`, so the compatibility path for existing configuration files stays covered after the manual staging check of task 1.1 (the role asks for a tested migration path). A test that `OrderResponse` still serializes `customer_id` would cover the API side the same way.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 No automated test that the orders JSON still says `customer_id`
+#### R-migration-2 Public Rust fields renamed without deprecation
 
 ```yaml
 severity: low
-confidence: high
-location: "src/api.rs:10-11"
+confidence: low
+location: "src/config.rs:11"
 evidence: |
-  #[serde(rename = "customer_id")]
-  pub buyer_id: i64,
+  pub bind_address: String,
 recommendation: >-
-  Partners' integrations read `customer_id` (docs/api.md); the rename keeps it,
-  but only a manual before/after comparison on staging checked it (task 1.2).
-  A later edit that removes the `rename` would silently send `buyer_id` and
-  break partners. Add a test serializing an `OrderResponse` with `serde_json`
-  and asserting the `customer_id` key is present and `buyer_id` absent.
+  `Config::listen` (src/config.rs) and `OrderResponse::customer_id` (src/api.rs:11, now `pub buyer_id: i64,`) are `pub` fields of the `orders` library crate (`src/lib.rs` exports `pub mod api; pub mod config;`); any crate depending on `orders` that reads or builds these structs stops compiling. If such a consumer exists, mark the rename **BREAKING** in the release note with the new field names; if the crate has no outside consumer, nothing to do. Could not verify whether other crates depend on it.
 history:
   - status: open
     by: migration
 ```
+
+### newcomer
+
+Disabled by configuration.

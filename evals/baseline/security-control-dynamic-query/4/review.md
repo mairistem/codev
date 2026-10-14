@@ -9,3 +9,7 @@ Mode: inline.
 ### security
 
 No finding.
+
+### newcomer
+
+Disabled by configuration.

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-code-retry-without-backoff",
   "error": null,
-  "costUsd": 0.3392196,
-  "durationMs": 37301,
+  "costUsd": 0.3728374,
+  "durationMs": 48729,
   "consumption": {
-    "durationApiMs": 36702,
-    "turns": 6,
+    "durationApiMs": 48205,
+    "turns": 9,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1191,
-      "cacheCreation": 28121,
-      "cacheRead": 235023,
-      "output": 3313
+      "input": 1183,
+      "cacheCreation": 28739,
+      "cacheRead": 339072,
+      "output": 3706
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (A dropped webhook is logged only with console.debug, in free text) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-1 (A dropped webhook is logged only at debug level, in free text) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +40,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n",
+        "evidence": "console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\nreturn false;\n",
         "history": [
           {
             "by": "ops",
@@ -52,22 +52,22 @@
         ],
         "id": "R-ops-1",
         "line": 11,
-        "location": "src/webhooks.ts:9-23",
+        "location": "src/webhooks.ts:24-25",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Wait between attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s, capped), or better, hand failed deliveries to a scheduled retry queue so the spacing can span minutes. The retries are bounded and the operation is idempotent (merchants deduplicate on `x-event-id`); only the spacing is missing.",
+        "recommendation": "When a merchant's endpoint is down or answers 5xx for all five attempts, the event is dropped and the only trace is a `console.debug` prose line, which production log levels typically discard and which the log platform cannot query; the listener also ignores the `false` returned by `deliver`, so the merchant silently never learns the payment settled and no operator is alerted. A non-ok response (`response.ok` false) is not logged at all, so its status code is lost. Use the project's structured `logger` from `src/logger.ts`: `logger.warn` per failed attempt with fields `eventId`, `attempt`, `status` (or `error: String(error)`), and `logger.error` when the event is dropped, with `eventId`, `paymentId` and `attempts`. Log the merchant host rather than the full URL, in case it carries a token.",
         "reported": true,
         "role": "ops",
-        "severity": "medium",
+        "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Failed deliveries are retried immediately, with no backoff"
+        "title": "A dropped webhook is logged only at debug level, in free text"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n  try {\n    const response = await fetch(url, {\n",
         "history": [
           {
             "by": "ops",
@@ -79,44 +79,17 @@
         ],
         "id": "R-ops-2",
         "line": 37,
-        "location": "src/webhooks.ts:24",
+        "location": "src/webhooks.ts:9-23",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Log the final drop with the project's structured logger at error level — `logger.error(\"webhook delivery dropped\", { eventId, paymentId, merchant identifier, attempts, lastStatus or lastError })` — and count drops in a metric an alert can watch, so an operator sees lost notifications and can replay them.",
-        "reported": true,
-        "role": "ops",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "A dropped webhook is logged only with console.debug, in free text"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "if (response.ok) {\n  return true;\n}\n} catch (error) {\n  console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-3",
-        "line": 64,
-        "location": "src/webhooks.ts:17-22",
-        "raisedBy": [
-          "ops"
-        ],
-        "recommendation": "Log every failed attempt through `logger.warn` with fields — eventId, attempt, the HTTP status for a non-2xx response or `String(error)` for a network error or timeout — so an operator can tell a merchant returning 401/404/500 from a timeout.",
+        "recommendation": "The loop starts the next attempt as soon as the previous one fails: when a merchant's server is overloaded or restarting and answers 503, the five POSTs hit it back to back within milliseconds, add load at the worst moment, and all fail inside the same outage window, so the event is dropped even though a retry a few seconds later would have succeeded. Space the attempts with exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s), and retry only on network errors, 429 and 5xx, not on other 4xx. Because `publish` in `src/events.ts` awaits each listener in turn, sleeping inside this loop would hold the payment service's `publish` call; run the retries off that path (a queue or a scheduled retry) rather than awaiting them in the listener.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Non-2xx responses are retried without any log, and attempt failures are free text"
+        "title": "Failed deliveries are retried immediately, with no backoff"
       }
     ],
     "format": 1,
@@ -147,6 +120,12 @@
             "fallback": null,
             "role": "ops",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

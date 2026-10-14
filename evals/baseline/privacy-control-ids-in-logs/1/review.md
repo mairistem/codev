@@ -9,3 +9,11 @@ Mode: inline.
 ### privacy
 
 No finding.
+
+### ops
+
+Disabled by configuration.
+
+### newcomer
+
+Disabled by configuration.

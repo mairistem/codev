@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-code-retry-without-backoff",
   "error": null,
-  "costUsd": 0.3911832,
-  "durationMs": 43708,
+  "costUsd": 0.3527431999999999,
+  "durationMs": 38152,
   "consumption": {
-    "durationApiMs": 42788,
+    "durationApiMs": 37754,
     "turns": 9,
-    "permissionDenials": 1,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1195,
-      "cacheCreation": 30152,
-      "cacheRead": 340621,
-      "output": 4042
+      "input": 1181,
+      "cacheCreation": 28023,
+      "cacheRead": 283881,
+      "output": 3540
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Failed and dropped deliveries are invisible to operators) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (A dropped webhook is only logged at debug level, in free text, without the HTTP status) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -51,12 +51,12 @@
           }
         ],
         "id": "R-ops-1",
-        "line": 11,
+        "line": 15,
         "location": "src/webhooks.ts:9-23",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Wait between attempts with exponential backoff and jitter (for example 1s, 2s, 4s, 8s), and retry only on network errors, timeouts, 429 and 5xx — not on other 4xx responses, which will not succeed on a retry. The loop is bounded and the POST is safe to repeat (merchants deduplicate by `x-event-id`), but the attempts are not spaced: when a merchant's server restarts or returns 503 for a few seconds, the five attempts are spent within that window (instantly on fast 5xx responses) and the event is dropped, while an overloaded merchant gets hit five times in a row. As `publish` in `src/events.ts` awaits each listener in turn, the retries also hold the payment service's call for up to 25 s per event; spacing them out makes that worse, so move delivery off the publish path (a queue or a background job) when adding the backoff.",
+        "recommendation": "Space the attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s), or hand failed deliveries to a delayed retry queue so the payment event listener is not held while waiting. The retries are bounded and the operation is deduplicated by `x-event-id`, so only the spacing is missing.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
@@ -67,7 +67,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "      if (response.ok) {\n        return true;\n      }\n    } catch (error) {\n      console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n    }\n  }\n  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n  return false;\n",
+        "evidence": "    if (response.ok) {\n      return true;\n    }\n  } catch (error) {\n    console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n  }\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
         "history": [
           {
             "by": "ops",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 39,
-        "location": "src/webhooks.ts:17-25",
+        "line": 44,
+        "location": "src/webhooks.ts:17-24",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Log through the project's structured `logger` (`src/logger.ts`, as `src/events.ts` does) rather than `console.debug`: a `warn` per failed attempt with `eventId`, `attempt`, the HTTP `status` or the error, and an `error` when the event is dropped, with `eventId`, the merchant id and the payment id; add a counter of dropped deliveries an operator can alert on. Today a merchant whose endpoint returns 500 gets no attempt logged at all (a non-ok response falls through without any log), the final drop is a free-text debug line that production log levels filter out, and the `false` returned by `deliver` is ignored by the listener at line 34 — so a payment webhook is lost permanently with nothing for the operator or the merchant support team to see.",
+        "recommendation": "Use the project's structured `logger` (as `src/events.ts` does) instead of `console.debug`: log each failed attempt with fields (`eventId`, `attempt`, `status` of a non-ok response or the error), and log the final drop at `error` level with `eventId`, the merchant or payment id, the last status and the error, so a dropped delivery is visible and alertable. The URL may carry a merchant token: do not log it whole.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Failed and dropped deliveries are invisible to operators"
+        "title": "A dropped webhook is only logged at debug level, in free text, without the HTTP status"
       }
     ],
     "format": 1,
@@ -115,6 +115,12 @@
         "mode": "inline",
         "recorded": true,
         "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          },
           {
             "credited": [],
             "fallback": null,

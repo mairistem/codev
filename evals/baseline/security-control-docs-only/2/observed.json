@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-control-docs-only",
   "error": null,
-  "costUsd": 0.323364,
-  "durationMs": 26380,
+  "costUsd": 0.28399019999999997,
+  "durationMs": 26016,
   "consumption": {
-    "durationApiMs": 25613,
-    "turns": 9,
+    "durationApiMs": 25567,
+    "turns": 8,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 26574,
-      "cacheRead": 326400,
-      "output": 2224
+      "input": 1174,
+      "cacheCreation": 25684,
+      "cacheRead": 235566,
+      "output": 1521
     }
   },
   "strayed": [],
@@ -32,35 +32,7 @@
     },
     "changeName": "document-token-rotation",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "2. Deploy the integration with the new token.\n3. Revoke the old token from the same page. Requests that still carry it\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-1",
-        "line": 11,
-        "location": "README.md:18-20",
-        "raisedBy": [
-          "security"
-        ],
-        "recommendation": "Keep the create-deploy-revoke order for planned rotation (a person leaving), but add that when a token may have been exposed it should be revoked first, accepting the integration's downtime: as written, whoever holds a leaked token keeps calling the API, and since tokens never expire, for as long as step 2 takes. Documentation advice, hence low.",
-        "reported": true,
-        "role": "security",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Exposed-token rotation keeps the leaked token valid until redeploy"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/document-token-rotation/review.md",
@@ -88,7 +60,13 @@
             "credited": [],
             "fallback": null,
             "role": "security",
-            "state": "findings"
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

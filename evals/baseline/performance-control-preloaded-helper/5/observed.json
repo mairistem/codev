@@ -2,21 +2,21 @@
   "format": 2,
   "case": "performance-control-preloaded-helper",
   "error": null,
-  "costUsd": 0.3454906,
-  "durationMs": 28809,
+  "costUsd": 0.3139138,
+  "durationMs": 32534,
   "consumption": {
-    "durationApiMs": 27703,
-    "turns": 9,
-    "permissionDenials": 1,
+    "durationApiMs": 32157,
+    "turns": 8,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 29740,
-      "cacheRead": 289033,
-      "output": 2438
+      "input": 1174,
+      "cacheCreation": 27157,
+      "cacheRead": 238364,
+      "output": 2400
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "The report is the first caller of `invoices_of_month` and `month_total`, both filtering `invoices` on `month` (`WHERE month = $1`, src/db.rs:21,27). The schema is not in the repository, so check with `EXPLAIN` that an index on `invoices(month)` exists — ideally `(month, number)` to serve the `ORDER BY number` too; without one, each report scans the whole invoices table twice, a cost growing with every month of history rather than with the ~3 000 invoices of the month.",
+        "recommendation": "The report runs two queries filtering `invoices` on `month` (`invoices_of_month` and `month_total`, see `src/db.rs:21` and `src/db.rs:27`); the schema is not in the repository, so check with `EXPLAIN` that `invoices` has an index on `month` (ideally `(month, number)` to serve the `ORDER BY number`). Without it, each report scans the whole invoices table, a cost that grows with every month of history rather than with the month's ~3 000 invoices.",
         "reported": false,
         "role": "performance",
-        "severity": "medium",
+        "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "No visible index backs the month filter the report makes hot"
+        "title": "Index on invoices.month not verifiable"
       }
     ],
     "format": 1,

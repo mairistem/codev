@@ -8,50 +8,53 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 Path traversal in read_attachment bypasses the ticket check
+#### R-security-1 Path traversal in read_attachment through the client-supplied name
 
 ```yaml
 severity: high
 confidence: high
-location: "app/attachments.py:30-32"
+location: "app/attachments.py:30-31"
 evidence: |
   path = os.path.join(UPLOAD_DIR, str(ticket_id), name)
   with open(path, "rb") as f:
 recommendation: >-
-  The client-supplied `name` is joined to the ticket directory unvalidated
-  (CWE-22). An agent allowed to read ticket 1 asks for
-  `name="../2/invoice.pdf"` and gets ticket 2's attachment, defeating
-  `may_read_ticket`; `name="../../../../etc/passwd"` or an absolute
-  `name="/etc/passwd"` (which makes `os.path.join` discard the base) reads any
-  file the service can read. Reduce `name` with `os.path.basename` as
-  `save_attachment` does, or better look it up in the `attachments` table for
-  that `ticket_id`, then resolve the path with `os.path.realpath` and refuse it
-  unless it lies under `UPLOAD_DIR/<ticket_id>/`. Add a test with `../` and
-  absolute names.
+  Validate `name` where it enters (CWE-22): reject it unless it equals
+  `os.path.basename(name)` and is not empty, `.` or `..`, or better, look it up
+  in the `attachments` table for this `ticket_id` and open only the stored
+  name; then resolve the path with `os.path.realpath` and check it stays under
+  the ticket's directory. Add a test that `../`, absolute and other-ticket
+  names are refused.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 save_attachment checks no authorization
+An agent allowed to read any one ticket calls `read_attachment(agent, own_ticket, "../42/invoice.pdf")`
+and gets another ticket's attachment, bypassing `may_read_ticket`; `"../../../../etc/passwd"` or an
+absolute name such as `"/etc/passwd"` (which `os.path.join` keeps, discarding the base) reads any
+file the server process can read, secrets included. Unlike `save_attachment`, the name is not passed
+through `os.path.basename`.
+
+#### R-security-2 save_attachment enforces no authorization on the ticket written to
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/attachments.py:11-17"
+location: "app/attachments.py:11"
 evidence: |
   def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:
 recommendation: >-
-  Unlike `read_attachment`, the upload takes no `agent_id` and calls no
-  authorization check, so whatever entry point exposes it lets any caller write
-  files into any ticket's directory (and silently overwrite an existing
-  attachment of the same name). The caller was not visible in the change, so
-  this depends on it enforcing access; take `agent_id` and check
-  `may_read_ticket` (or a write permission) here, on the server.
+  Take the caller's `agent_id` and check it may write to `ticket_id` on the
+  server, as `read_attachment` does with `may_read_ticket`, unless the caller
+  of this function is shown to enforce it.
 history:
   - status: open
     by: security
 ```
+
+Any caller reaching this function can add a file to any ticket, and a file with an existing name
+silently overwrites that ticket's attachment (`open(..., "wb")`). Confidence is low: the handler that
+calls it is not part of the change, so whether it checks authorization could not be verified.
 
 ### newcomer
 

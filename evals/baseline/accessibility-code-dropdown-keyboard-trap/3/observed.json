@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-code-dropdown-keyboard-trap",
   "error": null,
-  "costUsd": 0.32064000000000004,
-  "durationMs": 22335,
+  "costUsd": 0.3225672,
+  "durationMs": 27117,
   "consumption": {
-    "durationApiMs": 21742,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 26653,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 28681,
-      "cacheRead": 244280,
-      "output": 2067
+      "input": 1172,
+      "cacheCreation": 28965,
+      "cacheRead": 196251,
+      "output": 2531
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Open sort menu traps keyboard focus: Tab cycles inside and Escape does nothing) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Open sort menu traps Tab and ignores Escape) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +40,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n  event.preventDefault();\n  items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n  const index = items.current.findIndex((item) => item === document.activeElement);\n  if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n    event.preventDefault();\n    items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
         "history": [
           {
             "by": "accessibility",
@@ -56,13 +56,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 2.1.2 No Keyboard Trap (and 2.1.1 Keyboard). Once a keyboard user opens the menu, focus moves to the first item; pressing Tab (or Shift+Tab) is cancelled and wraps back to an item, and there is no Escape handler nor any close on blur, so the only way out is to pick an option — the user cannot leave the menu without changing the sort, nor reach the product list. Stop intercepting Tab (let it move on and close the menu), add Escape that closes the menu and returns focus to the button, as the APG menu button pattern requires; or use a native <select> with a <label>, which needs none of this.",
+        "recommendation": "Keyboard users (WCAG 2.1.2 No Keyboard Trap, 2.1.1 Keyboard): once the menu is open, pressing Tab or Shift+Tab is cancelled and cycles focus among the four items, and Escape does nothing, so the user cannot move on to the product list or dismiss the menu without picking a sort order. Stop handling Tab (let it close the menu and move focus on, as the WAI-ARIA APG menu button pattern does), and add an Escape handler that calls setOpen(false) and returns focus to the \"Sort\" button. Shift+Tab is also caught by the same branch and moves forward instead of backward. A native <select> would give all of this for free.",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Open sort menu traps keyboard focus: Tab cycles inside and Escape does nothing"
+        "title": "Open sort menu traps Tab and ignores Escape"
       },
       {
         "awaiting": "author",
@@ -78,18 +78,18 @@
           }
         ],
         "id": "R-accessibility-2",
-        "line": 35,
+        "line": 38,
         "location": "src/components/SortMenu.tsx:34",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 4.1.2 Name, Role, Value. aria-expanded is hard-coded to \"false\", so when a screen reader user activates the button and the menu opens, the button is still announced as \"collapsed\" — the state contradicts the behaviour. Bind it to the state: aria-expanded={open}.",
+        "recommendation": "Screen reader users (WCAG 4.1.2 Name, Role, Value): aria-expanded is hard-coded to \"false\", so after pressing Enter on \"Sort: Newest\" the button is still announced as collapsed while the menu is open. Bind it to the state: aria-expanded={open}.",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Menu button always announces aria-expanded=\"false\""
+        "title": "Menu button always announces \"collapsed\""
       }
     ],
     "format": 1,
@@ -120,6 +120,12 @@
             "fallback": null,
             "role": "accessibility",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

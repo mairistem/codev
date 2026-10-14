@@ -2,21 +2,21 @@
   "format": 2,
   "case": "newcomer-control-plain-code",
   "error": null,
-  "costUsd": 0.2515658,
-  "durationMs": 12030,
+  "costUsd": 0.2532912,
+  "durationMs": 11982,
   "consumption": {
-    "durationApiMs": 11535,
-    "turns": 5,
+    "durationApiMs": 11731,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1195,
-      "cacheCreation": 24476,
-      "cacheRead": 186139,
-      "output": 878
+      "input": 1180,
+      "cacheCreation": 25242,
+      "cacheRead": 142331,
+      "output": 1097
     }
   },
   "strayed": [],

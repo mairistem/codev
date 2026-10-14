@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-control-batched-query",
   "error": null,
-  "costUsd": 0.26982,
-  "durationMs": 19464,
+  "costUsd": 0.2580982,
+  "durationMs": 16315,
   "consumption": {
-    "durationApiMs": 18813,
+    "durationApiMs": 16040,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1183,
-      "cacheCreation": 25359,
-      "cacheRead": 186100,
-      "output": 1437
+      "input": 1172,
+      "cacheCreation": 24063,
+      "cacheRead": 184786,
+      "output": 1383
     }
   },
   "strayed": [],
@@ -61,6 +61,12 @@
             "fallback": null,
             "role": "performance",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "security-code-sql-injection",
   "error": null,
-  "costUsd": 0.31956100000000004,
-  "durationMs": 25664,
+  "costUsd": 0.2812876,
+  "durationMs": 23228,
   "consumption": {
-    "durationApiMs": 24562,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 22918,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 26978,
-      "cacheRead": 329325,
-      "output": 1843
+      "input": 1174,
+      "cacheCreation": 25178,
+      "cacheRead": 233793,
+      "output": 1606
     }
   },
   "strayed": [],
@@ -40,7 +40,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\n",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\nreturn query<UserRow>(sql);\n",
         "history": [
           {
             "by": "security",
@@ -52,11 +52,11 @@
         ],
         "id": "R-security-1",
         "line": 11,
-        "location": "src/users.ts:10",
+        "location": "src/users.ts:10-11",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "CWE-89. Any caller holding the `support` role sends `GET /users/search?q=` with a value such as `x' UNION SELECT id, password_hash FROM users --` (2 to 100 characters, so it passes the length check in src/server.ts:14); `req.query.q` reaches `searchUsers` unescaped and is concatenated into the SQL, so the attacker reads any table the database user can read (or alters the query). Bind the term as a parameter, as `query` in src/db.ts already supports (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE '%' || $1 || '%' ORDER BY name LIMIT 50\", [term])`, and escape `%`, `_` and `\\` in the term (with `ESCAPE '\\'`) so they match literally. Add a test with a quote in `q`.",
+        "recommendation": "CWE-89. Any caller holding the `support` role sends `GET /users/search?q=x' UNION SELECT ...--` (src/server.ts:13-18 only trims and checks the length, 2 to 100 characters) and the term is concatenated into the SQL text, so they read any table of the database and, since the query runs without parameters (pg simple protocol allows several statements), can chain `; UPDATE ...` / `; DROP ...`. Bind the term as a parameter, as `query` in src/db.ts is documented to require (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ESCAPE '\\\\' ORDER BY name LIMIT 50\", ['%' + term.replace(/[\\\\%_]/g, '\\\\$&') + '%'])`, escaping `%`, `_` and `\\` so the term is matched literally as the proposal's \"name contains the term\" requires. Add a test sending a quote in `q`.",
         "reported": true,
         "role": "security",
         "severity": "high",

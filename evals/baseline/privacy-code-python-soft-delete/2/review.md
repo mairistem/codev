@@ -8,7 +8,7 @@ Mode: inline.
 
 ### privacy
 
-#### R-privacy-1 Account deletion keeps the member's e-mail, name, phone and postal address
+#### R-privacy-1 Account deletion keeps the member's personal data in the users row
 
 ```yaml
 severity: high
@@ -20,23 +20,26 @@ evidence: |
       (user_id,),
   )
 recommendation: >-
-  The proposal promises that the button "erases the member's personal data", but
-  delete_account only stamps deleted_at and clears password_hash: the users row keeps
-  email, display_name, phone and postal_address (app/schema.sql) indefinitely, with no
-  retention rule, so a member who deletes their account still has every personal field
-  stored (GDPR Art. 17 erasure, Art. 5(1)(e) storage limitation). Since orders keep a
-  user_id pointing at this row, the orders are not "without personal data" either.
-  Overwrite or NULL the personal columns in the same UPDATE (email needs a unique
-  non-identifying placeholder, e.g. 'deleted-<id>@invalid', and display_name a
-  placeholder, since both are NOT NULL), keep only what accounting needs, and add a test
-  asserting the row no longer holds email, display_name, phone or postal_address after
-  delete_account. State how backups holding the old row are purged (retention period).
+  The proposal promises that the button "erases the member's personal data" and
+  keeps orders "without personal data", but delete_account only soft-deletes:
+  it sets deleted_at and clears password_hash, leaving email, display_name,
+  phone and postal_address (app/schema.sql:3-6) in the users row. After a member
+  clicks "Delete my account", every one of those fields is still stored and
+  still joined to their orders through orders.user_id — the right to erasure
+  (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Overwrite or
+  null those columns in the same UPDATE (e.g. email set to a unique opaque
+  placeholder such as 'deleted-<id>' since the column is NOT NULL UNIQUE, which
+  also frees the address for a new sign-up; display_name to a placeholder;
+  phone and postal_address to NULL), so the kept orders point at a row with no
+  personal data. Add a test asserting these columns no longer hold the member's
+  values, and state how backups are purged or expire, since the plan says
+  nothing about them.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 Analytics pseudonym survives deletion and is re-identifiable with the salt
+#### R-privacy-2 Erasure does not reach analytics events keyed by analytics_id
 
 ```yaml
 severity: medium
@@ -47,16 +50,18 @@ evidence: |
       """The pseudonymous id analytics events carry instead of the user id."""
       return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()
 recommendation: >-
-  analytics_id is a deterministic salted hash of a small sequential integer: whoever
-  holds ANALYTICS_SALT can recompute it for every user id, so analytics events keyed by
-  it remain personal data (pseudonymous, not anonymous — GDPR Recital 26), and
-  delete_account does nothing to the analytics data carrying it, so erasure misses that
-  copy. The function is also unused in this change and not in the proposal. Either drop
-  it from this change, or state where analytics events go (processor, EEA or not), their
-  retention, and how a deletion reaches them (delete the member's events, or rotate to a
-  per-user random id that is destroyed on deletion). Confidence low: the analytics
-  pipeline that would consume this id is not visible in the repository.
+  analytics_id is added with no caller in the change, and is a deterministic
+  salted hash of the user id: whoever holds ANALYTICS_SALT can re-link events to
+  the member, so they are pseudonymous, still personal data (GDPR recital 26).
+  delete_account does nothing about events already carrying this id. The
+  analytics store was not visible to the reviewer; the team should state whether
+  those events are erased, aggregated or expire on deletion, or drop the
+  function from this change if it is unused.
 history:
   - status: open
     by: privacy
 ```
+
+### newcomer
+
+Disabled by configuration.

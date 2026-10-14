@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-code-error-message-pii",
   "error": null,
-  "costUsd": 0.3576976,
-  "durationMs": 52323,
+  "costUsd": 0.32941619999999994,
+  "durationMs": 27198,
   "consumption": {
-    "durationApiMs": 51351,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 27171,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 29885,
-      "cacheRead": 294743,
-      "output": 2934
+      "input": 1174,
+      "cacheCreation": 28430,
+      "cacheRead": 240956,
+      "output": 2640
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (Typed e-mail address written to the log platform on a failed lookup) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (Customer e-mail address written to the error log on a failed lookup) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-2 (Chat vendor Helply receives phone, birth date, address and e-mail to greet by name) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-2 (Chat vendor Helply receives phone, birth date, address and e-mail when only the name is needed) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,18 +60,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Keep the e-mail address out of the error message (e.g. `no customer for this e-mail`), or carry it in a field the error handler never logs. The `errorHandler` registered at src/routes.ts:21 logs `err.message` (`logger.error(\"request failed\", { path: req.path, error: err.message })` in src/server.ts), and src/logger.ts ships every line to the log platform: every lookup with no match puts the typed e-mail address — a customer's or a mistyped third party's — into the logs, with no retention rule of its own (GDPR Art. 5(1)(c) and 5(1)(e), Art. 32). The same holds, to a lesser degree, for the customer id at src/support.ts:32.",
+        "recommendation": "Keep the e-mail address out of the error message (e.g. `throw new NotFoundError(\"no customer for this e-mail\")`). When an agent looks up an address that matches no customer, `errorHandler` (src/server.ts:14, `logger.error(\"request failed\", { path: req.path, error: err.message })`) writes the typed e-mail address to the application log, which then holds personal data with no purpose or retention rule — GDPR Art. 5(1)(c) data minimisation and 5(1)(e) storage limitation; the criterion \"No personal data goes to logs\" fails.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Typed e-mail address written to the log platform on a failed lookup"
+        "title": "Customer e-mail address written to the error log on a failed lookup"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "user: {\n  id: String(customer.id),\n  name: customer.name,\n  email: customer.email,\n  phone: customer.phone,\n  birthDate: customer.birth_date,\n  address: customer.address,\n},\n",
+        "evidence": "id: String(customer.id),\nname: customer.name,\nemail: customer.email,\nphone: customer.phone,\nbirthDate: customer.birth_date,\naddress: customer.address,\n",
         "history": [
           {
             "by": "privacy",
@@ -82,18 +82,45 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 40,
+        "line": 30,
         "location": "src/support.ts:41-48",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Send Helply only what the stated purpose needs — the proposal says the widget \"greets the signed-in customer by name, so that the agent knows who they talk to\": the customer id and name. Drop `email`, `phone`, `birthDate` and `address` from `chatWidgetSettings` (and stop selecting them in `customerById` if nothing else uses them). As written, every page load of `/chat/settings` (src/routes.ts:13-19) hands the full record to the browser and to the Helply widget script, i.e. to a third-party processor, beyond the purpose (GDPR Art. 5(1)(b)-(c), Art. 25, Art. 28).",
+        "recommendation": "The proposal's purpose is that the widget \"greets the signed-in customer by name, so that the agent knows who they talk to\": send only `id` and `name` to Helply, and drop `email`, `phone`, `birthDate` and `address` (and select only `id, name` in `customerById`, src/support.ts:28). Every signed-in customer who opens the chat currently has their phone number, date of birth and postal address shipped to the third-party chat vendor through `GET /chat/settings` — GDPR Art. 5(1)(c) data minimisation, Art. 25 data protection by default.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Chat vendor Helply receives phone, birth date, address and e-mail to greet by name"
+        "title": "Chat vendor Helply receives phone, birth date, address and e-mail when only the name is needed"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** What the Helply chat widget is started with, for the signed-in customer. */\nexport function chatWidgetSettings(customer: Customer) {\n  return {\n    appId: process.env.HELPLY_APP_ID,\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 54,
+        "location": "src/support.ts:37-40",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: is Helply already a processor under contract (GDPR Art. 28), listed in the records of processing (Art. 30), and where does it process the data — inside the EEA, or under a Chapter V transfer mechanism? The proposal names \"the chat vendor\" but neither the processor nor the transfer.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Helply is a new processor with no stated agreement or transfer location"
       },
       {
         "awaiting": "author",
@@ -108,46 +135,19 @@
             "to": null
           }
         ],
-        "id": "R-privacy-3",
+        "id": "R-privacy-4",
         "line": 74,
         "location": "src/support.ts:16",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "State which fields an agent needs to recognise the customer and return only those from `/support/customers/lookup`; the proposal's purpose is that agents stop asking customers \"who they are\", which the id, name and e-mail may already serve. Birth date and postal address are kept only if the team confirms a need (e.g. identity verification) — a question for the controller (GDPR Art. 5(1)(c)).",
+        "recommendation": "The stated purpose is that agents stop asking customers \"to repeat who they are\"; `POST /support/customers/lookup` returns the whole record, birth date and postal address included, to every support agent. Return only the fields agents need to identify the customer (id, name, e-mail), or state in the plan why the others are needed — GDPR Art. 5(1)(c). Confidence low: what agents need was not visible in the plan.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Support lookup returns birth date, address and phone with no stated need"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "/** What the Helply chat widget is started with, for the signed-in customer. */\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-4",
-        "line": 94,
-        "location": "src/support.ts:37",
-        "raisedBy": [
-          "privacy"
-        ],
-        "recommendation": "Ask the team to confirm that Helply is covered by a processing agreement (GDPR Art. 28), listed in the record of processing (Art. 30), and where it stores the data (Chapter V if outside the EEA), and how erasure requests reach the copy Helply keeps. The plan only says \"the chat vendor receives who is chatting\".",
-        "reported": false,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Helply not identified as a processor, nor its data location"
+        "title": "Support lookup returns birth date, phone and address beyond identifying the customer"
       }
     ],
     "format": 1,

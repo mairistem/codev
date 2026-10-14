@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-code-serde-rename-all",
   "error": null,
-  "costUsd": 0.31910700000000003,
-  "durationMs": 25208,
+  "costUsd": 0.320743,
+  "durationMs": 25151,
   "consumption": {
-    "durationApiMs": 24893,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 24623,
+    "turns": 9,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 26970,
-      "cacheRead": 285515,
-      "output": 2262
+      "input": 1176,
+      "cacheCreation": 26843,
+      "cacheRead": 281130,
+      "output": 2439
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (rename_all = \"camelCase\" renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (camelCase rename silently renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Existing config.toml files without default_currency stop loading) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Existing config files without `default_currency` no longer load) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -44,7 +44,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "#[derive(Serialize)]\n#[serde(rename_all = \"camelCase\")]\n",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\npub struct OrderResponse {\n    pub order_id: i64,\n    pub customer_id: i64,\n    pub total_cents: i64,\n",
         "history": [
           {
             "by": "migration",
@@ -56,17 +56,17 @@
         ],
         "id": "R-migration-1",
         "line": 11,
-        "location": "src/api.rs:5-6",
+        "location": "src/api.rs:6-10",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]`: it turns `order_id`, `customer_id` and `total_cents` into `orderId`, `customerId` and `totalCents`, so every partner integration reading `GET /orders/{id}` today gets missing fields on the first response after the upgrade. docs/api.md still lists the snake_case names and promises \"a field is never renamed or removed without two releases of deprecation\"; the proposal's release note only says \"Added\", with no BREAKING item. Keep the snake_case names (the new field is then `currency`), and add a serialization test pinning the JSON keys. If camelCase is ever wanted, follow the documented two-release deprecation and mark it BREAKING in the release note.",
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `GET /orders/{id}` keeps emitting `order_id`, `customer_id` and `total_cents` and only adds `currency`. Today a partner integration reading `order_id` from the response gets a missing field (`orderId` is sent instead) on the first deploy, with no BREAKING item in the release note and in breach of the rule in docs/api.md (\"a field is never renamed or removed without two releases of deprecation\"); docs/api.md also still documents the snake_case names. If camelCase is wanted, ship it as a separate change that emits both names during two releases of deprecation and marks it **BREAKING** in the release note.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "rename_all = \"camelCase\" renames every existing field of the public order JSON"
+        "title": "camelCase rename silently renames every existing field of the public order JSON"
       },
       {
         "awaiting": "author",
@@ -82,18 +82,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 35,
+        "line": 39,
         "location": "src/config.rs:9-10",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "`default_currency` is required with no `#[serde(default)]`, so every deployed `config.toml` written before this change (holding only `database_url` and `listen`) fails in `toml::from_str` with a \"missing field `default_currency`\" error and the service does not start after the upgrade. Nothing in the release note tells operators to add the key. Give the field a default (e.g. `#[serde(default = \"default_currency\")]` returning \"EUR\", the currency the shop sold in before), add a test loading the old two-key config, or else mark the new required key BREAKING in the release note with the manual step.",
+        "recommendation": "Give the field a default (`#[serde(default = \"default_currency\")]` returning `\"EUR\"`, the currency of every existing order) so a deployed `config.toml` holding only `database_url` and `listen` keeps loading. As written, `config::load` returns a `missing field default_currency` error and the service fails to start on upgrade, with no release-note item telling operators to add the key. Add a test that loads the old two-key config, or, if the key must stay required, mark it **BREAKING** in the release note with the line to add.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Existing config.toml files without default_currency stop loading"
+        "title": "Existing config files without `default_currency` no longer load"
       }
     ],
     "format": 1,
@@ -124,6 +124,12 @@
             "fallback": null,
             "role": "migration",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

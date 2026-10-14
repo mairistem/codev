@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-control-additive-field",
   "error": null,
-  "costUsd": 0.3434966,
-  "durationMs": 22646,
+  "costUsd": 0.3244206,
+  "durationMs": 20296,
   "consumption": {
-    "durationApiMs": 21928,
-    "turns": 9,
+    "durationApiMs": 19999,
+    "turns": 8,
     "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 28572,
-      "cacheRead": 383158,
-      "output": 1865
+      "input": 1162,
+      "cacheCreation": 27963,
+      "cacheRead": 332458,
+      "output": 1662
     }
   },
   "strayed": [],
@@ -48,14 +48,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "migration",
+            "state": "no-finding"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "migration",
-            "state": "no-finding"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

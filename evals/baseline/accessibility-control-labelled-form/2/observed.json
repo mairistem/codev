@@ -2,21 +2,21 @@
   "format": 2,
   "case": "accessibility-control-labelled-form",
   "error": null,
-  "costUsd": 0.29440620000000006,
-  "durationMs": 24496,
+  "costUsd": 0.26974060000000005,
+  "durationMs": 17602,
   "consumption": {
-    "durationApiMs": 23555,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 17741,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 26286,
-      "cacheRead": 237011,
-      "output": 1786
+      "input": 1172,
+      "cacheCreation": 25484,
+      "cacheRead": 189158,
+      "output": 1353
     }
   },
   "strayed": [],

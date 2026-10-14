@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-control-serde-alias",
   "error": null,
-  "costUsd": 0.3486808,
-  "durationMs": 30342,
+  "costUsd": 0.3598228000000001,
+  "durationMs": 32555,
   "consumption": {
-    "durationApiMs": 29743,
-    "turns": 8,
+    "durationApiMs": 32105,
+    "turns": 10,
     "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1189,
-      "cacheCreation": 27946,
-      "cacheRead": 334504,
-      "output": 2860
+      "input": 1180,
+      "cacheCreation": 28139,
+      "cacheRead": 374209,
+      "output": 2943
     }
   },
   "strayed": [],
@@ -52,18 +52,18 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "The migration path for existing `config.toml` files (the `listen` alias) works, but it was only checked by hand on staging (task 1.1); the repository has no test for it, so a later edit that drops the alias would make every pre-4.2 file fail at start-up with a missing-field error and no test would catch it. Add a unit test calling `config::load` with a file that uses `listen` and one that uses `bind_address`, both yielding the same `bind_address`.",
+        "recommendation": "Add a unit test that calls `config::load` on a file holding `listen = \"0.0.0.0:8080\"` and asserts `bind_address`, and one on a file holding `bind_address`, so the compatibility path for existing configuration files stays covered after the manual staging check of task 1.1 (the role asks for a tested migration path). A test that `OrderResponse` still serializes `customer_id` would cover the API side the same way.",
         "reported": true,
         "role": "migration",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "No automated test that a pre-4.2 file with `listen` still loads"
+        "title": "The `listen` alias has no automated test"
       },
       {
         "awaiting": "author",
-        "confidence": "high",
-        "evidence": "#[serde(rename = \"customer_id\")]\npub buyer_id: i64,\n",
+        "confidence": "low",
+        "evidence": "pub bind_address: String,\n",
         "history": [
           {
             "by": "migration",
@@ -74,18 +74,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 32,
-        "location": "src/api.rs:10-11",
+        "line": 26,
+        "location": "src/config.rs:11",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Partners' integrations read `customer_id` (docs/api.md); the rename keeps it, but only a manual before/after comparison on staging checked it (task 1.2). A later edit that removes the `rename` would silently send `buyer_id` and break partners. Add a test serializing an `OrderResponse` with `serde_json` and asserting the `customer_id` key is present and `buyer_id` absent.",
-        "reported": true,
+        "recommendation": "`Config::listen` (src/config.rs) and `OrderResponse::customer_id` (src/api.rs:11, now `pub buyer_id: i64,`) are `pub` fields of the `orders` library crate (`src/lib.rs` exports `pub mod api; pub mod config;`); any crate depending on `orders` that reads or builds these structs stops compiling. If such a consumer exists, mark the rename **BREAKING** in the release note with the new field names; if the crate has no outside consumer, nothing to do. Could not verify whether other crates depend on it.",
+        "reported": false,
         "role": "migration",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "No automated test that the orders JSON still says `customer_id`"
+        "title": "Public Rust fields renamed without deprecation"
       }
     ],
     "format": 1,
@@ -116,6 +116,12 @@
             "fallback": null,
             "role": "migration",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

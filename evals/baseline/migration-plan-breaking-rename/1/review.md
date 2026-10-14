@@ -6,13 +6,9 @@
 
 Mode: inline.
 
-### skeptic
-
-Disabled by configuration.
-
 ### migration
 
-#### R-migration-1 Public field removed in place, with no deprecation or side-by-side period
+#### R-migration-1 Public field removed in the same release, with no deprecation window
 
 ```yaml
 severity: high
@@ -22,23 +18,27 @@ evidence: |
   `OrderResponse.status` becomes `OrderResponse.state`; the old name is not
   kept. The OpenAPI file is regenerated.
 recommendation: >-
-  design.md#Context states that partners' integrations read `status` from the
-  public `GET /orders/{id}` to know when to ship (src/orders.ts:7 and
-  openapi.yaml:18 `required: [id, status]` today). On deploy, every partner
-  integration reads a missing `status` and stops shipping orders, with no
-  warning. Use expand and contract: return both `status` and `state` with the
-  same value for a deprecation period (mark `status` `deprecated: true` in
-  openapi.yaml), announce a removal date, and remove `status` in a later
-  change. Add a requirement and scenario to specs/orders-api/spec.md that the
-  response still holds `status` during the period, and a task in tasks.md
-  with a test that covers it. The "duplication" alternative rejected in the
-  design is exactly this path and should be reconsidered.
+  Use expand then contract. In this change, `GET /orders/{id}` returns both
+  `state` and `status` with the same value. Mark `status` `deprecated: true`
+  in `openapi.yaml` and take it out of `required: [id, status]`. Announce a
+  removal date, and remove `status` in a later change. Add a spec scenario
+  "A paid order still exposes status during deprecation"
+  (`"status": "paid"` next to `"state": "paid"`) and a task that tests it.
+  Today the design calls the dual field "duplication" and rejects it,
+  although a partner integration cannot change at the moment the API does.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Breaking rename not marked BREAKING, release note says nothing about what partners must do
+Today `src/orders.ts:19` builds `{ id: rows[0].id, status: rows[0].state }`.
+The design says partners "read `status` to know when to ship" (`design.md#Context`).
+Once this ships, their integrations read `response.status` and get `undefined`.
+A partner that waits for `status === "shipped"` or `"paid"` never ships, and
+gets no error. A client generated from the current `openapi.yaml`, which
+requires `status`, rejects the response.
+
+#### R-migration-2 Breaking rename not marked BREAKING, no action for consumers
 
 ```yaml
 severity: high
@@ -47,12 +47,21 @@ location: "proposal.md#Release note"
 evidence: |
   - Changed: The order's `status` field is now called `state`.
 recommendation: >-
-  Partners reading the release note see an ordinary "Changed" item and are not
-  told their integration breaks or what to do. Mark the item **BREAKING**,
-  state that clients must read `state` instead of `status` (and, with
-  R-migration-1, until which date `status` is still served), and mark the same
-  item in proposal.md#What Changes.
+  Mark the item **BREAKING** in the release note and in `## What Changes`.
+  Say what partners must do: read `state` instead of `status`, before the
+  removal date. If R-migration-1 is fixed, say also that `status` stays
+  deprecated until then. Add a task to publish the note, and to bump the
+  API version in `openapi.yaml` (`info.version: 1.4.0`) so that the
+  contract change is visible.
 history:
   - status: open
     by: migration
 ```
+
+The rename removes a field from a public response, `GET /orders/{id}`.
+Partners who read this note see only a neutral "Changed" item. Nothing
+tells them their integration will break, or what to change.
+
+### skeptic
+
+Disabled by configuration.

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-code-email-in-logs",
   "error": null,
-  "costUsd": 0.3305718,
-  "durationMs": 27139,
+  "costUsd": 0.29291979999999995,
+  "durationMs": 23698,
   "consumption": {
-    "durationApiMs": 26472,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 22955,
+    "turns": 5,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 28233,
-      "cacheRead": 280729,
-      "output": 2377
+      "input": 1162,
+      "cacheCreation": 26351,
+      "cacheRead": 189324,
+      "output": 2164
     }
   },
   "strayed": [],
@@ -29,11 +29,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (E-mail address and display name written to application logs) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (E-mail address and display name written to the application log) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-2 (E-mail address sent to the third-party analytics processor Beacon) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +60,13 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Log only the opaque id (`log.info(\"new signup id=%s\", user_id)`). As written, every sign-up copies the member's e-mail address and display name into the INFO logs, where they escape the users table's retention and erasure, and reach whoever reads or ships the logs (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 32). Add a test asserting the e-mail does not appear in the captured log records.",
+        "recommendation": "Log only the opaque `user_id` (e.g. `log.info(\"new signup id=%s\", user_id)`). Every sign-up currently copies the member's e-mail address and display name into the application logs, which have no stated purpose, no retention rule and are not reached by an erasure request (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 17 erasure).",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "E-mail address and display name written to application logs"
+        "title": "E-mail address and display name written to the application log"
       },
       {
         "awaiting": "author",
@@ -87,18 +87,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Drop `email` from the event properties: counting sign-ups, the purpose the proposal states (\"Sign-ups are counted in product analytics\"), needs no e-mail address, and `user_id` (or no identifier at all) suffices. As written, each sign-up discloses the member's e-mail to a third-party processor, beacon.example.com (app/analytics.py:5), which the proposal does not identify as a processor nor locate (inside or outside the EEA) (GDPR Art. 5(1)(c), Art. 28, Chapter V). Identify Beacon as a processor in the proposal, and add a test asserting `track` is called without the e-mail.",
+        "recommendation": "Drop `email` from the event: the proposal's purpose is only that \"Sign-ups are counted in product analytics\", which the event name (and at most the opaque `user_id`) already serves. As written, every sign-up posts the member's e-mail address to `https://beacon.example.com/v1/events` (app/analytics.py:5,9), an external processor the proposal never names — beyond what the purpose needs (Art. 5(1)(c)), out of reach of erasure and access requests (Art. 15, 17), and with no processor agreement or transfer location identified (Art. 28, Chapter V). Also list Beacon as a processor in the proposal's Impact, with its hosting region.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "E-mail address sent to the Beacon analytics SaaS"
+        "title": "E-mail address sent to the third-party analytics processor Beacon"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "- [x] personal-data — collects e-mail addresses and display names\n",
+        "evidence": "user_id = insert_user(email=email, display_name=display_name)\n",
         "history": [
           {
             "by": "privacy",
@@ -109,18 +109,18 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 53,
-        "location": "proposal.md#Domains",
+        "line": 55,
+        "location": "app/signup.py:13",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Question for the team: state in the proposal why each field is collected (is the display name needed at sign-up?), the lawful basis, how long a member's row in `users` is kept, and how it is erased (backups included) — `signup()` stores both fields through `insert_user` with no retention or deletion path in the change (GDPR Art. 5(1)(b), 5(1)(e), Art. 6, Art. 17). Only the controller can say what was decided.",
+        "recommendation": "Question for the team: the proposal says the change \"collects e-mail addresses and display names\" but states no purpose per field, no lawful basis, no retention period and no deletion path (backups included) for the stored member record. Only the controller can decide these; record them in the proposal and make sure account deletion removes the record.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "No purpose, lawful basis or retention stated for the collected e-mail and display name"
+        "title": "Purpose, lawful basis and retention of the stored member data not stated"
       }
     ],
     "format": 1,

@@ -18,20 +18,19 @@ evidence: |
   export const bucket = (ps: Price[]) =>
     ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
 recommendation: |
-  Rewrite as plain, named steps: a constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros),
-  a comparison `price.cents >= PREMIUM_THRESHOLD_CENTS`, and a result typed with the two
-  buckets the doc comment promises, e.g. `{ cheap: Price[]; premium: Price[] }` built with
-  two `filter` calls or a simple loop. A reader of line 10 cannot tell, without the
-  proposal, what `(p.cents >> 4) & 0x3e8` means: `0x3e8` is 1000 in hex, which suggests the
-  10-euro threshold, but a shift-and-mask is a bit test, not a comparison — e.g. 999 cents
-  gives `62 & 1000 = 40` (truthy, "hi") and 128 cents gives `8 & 1000 = 8` ("hi"), so the
-  shape hides that the line does not compare against 10 euros at all. The rest of the line
-  compounds it: single-letter names (`ps`, `a`, `p`), a comma expression returning the
-  accumulator, `||=` creating arrays inside an index, and keys `"hi"`/`"lo"` that the doc
-  comment calls "cheap" and "premium", typed as an open `Record<string, …>` so a caller
-  cannot know which keys exist or that a bucket may be missing. The simple version makes the
-  threshold visible and its correctness checkable; whether the current result is wrong is
-  for the developer to confirm and fix.
+  Rewrite as a plain function a reader can follow without the plan: a named
+  constant for the threshold (`const PREMIUM_THRESHOLD_CENTS = 1000; // 10 euros`),
+  a named predicate (`price.cents >= PREMIUM_THRESHOLD_CENTS`), descriptive names
+  instead of `ps`, `a`, `p`, and a typed result whose keys match the doc comment
+  (`{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with
+  "hi"/"lo"), built with a simple loop or two `filter` calls rather than a
+  comma-expression inside `reduce` with `||=`. A newcomer cannot tell from
+  `(p.cents >> 4) & 0x3e8` what the rule is: 0x3e8 is 1000, which suggests
+  "10 euros", but a shift-and-mask is not a comparison — 500 cents (31 & 1000 = 8)
+  and 128 cents land in "hi", while 16384 cents (1024 & 1000 = 0) lands in "lo".
+  The shape hides this; the readable version makes the intended `>= 1000` check
+  explicit. Since the result also has no "hi"/"lo" key when a band is empty, the
+  typed version should initialise both arrays.
 history:
   - status: open
     by: newcomer

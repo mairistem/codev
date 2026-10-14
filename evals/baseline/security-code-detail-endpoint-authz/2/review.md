@@ -13,49 +13,62 @@ Mode: inline.
 ```yaml
 severity: high
 confidence: high
-location: "src/invoices.ts:32-35"
+location: "src/invoices.ts:32-40"
 evidence: |
   const rows = await query<InvoiceRow>(
     "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
     [id],
   );
 recommendation: >-
-  Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of
-  organization 7 who sends `GET /invoices/42` receives invoice 42 even when it
-  belongs to another organization: the query selects by `id` alone and the
-  handler never compares `org_id` with `currentUser(req).orgId`, unlike the
-  list route. Scope the lookup to the caller's organization
-  (`WHERE id = $1 AND org_id = $2`, `[id, currentUser(req).orgId]`) and answer
-  404 when nothing matches, so the existence of other organizations' invoices
-  is not revealed; add a test asserting the org filter on the detail route,
-  as the list route's test does.
+  Insecure direct object reference (CWE-639 / CWE-862). Any authenticated user of
+  organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs
+  to another organization, and can enumerate every invoice by iterating ids. Scope the
+  query to the caller, as the list route does — `WHERE id = $1 AND org_id = $2` with
+  `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so existence in
+  another organization is not revealed. Add a test that a caller of another
+  organization gets 404.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 Error handler sends error messages and stack traces to clients
+#### R-security-2 The error handler sends the error message and stack trace to the client
 
 ```yaml
 severity: medium
 confidence: high
 location: "src/server.ts:15-18"
 evidence: |
-  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err);
-    res.status(500).json({ error: err.message, stack: err.stack });
-  });
+  res.status(500).json({ error: err.message, stack: err.stack });
 recommendation: >-
-  Information exposure through error messages (CWE-209). A signed-in user who
-  sends `GET /invoices/99999999999` passes the `Number.isInteger` check, the
-  database rejects the value as out of range for an integer column, and the
-  500 response carries the PostgreSQL error message and the server's stack
-  trace (file paths, module layout, driver internals); any other failure —
-  connection errors naming the host, for instance — leaks the same way. Log
-  the error server-side only and answer a generic `{ error: "internal error" }`;
-  also bound the id at the boundary (positive, within the column's range) so
-  such input gets a 400.
+  Information exposure through an error message (CWE-209). Any request whose handler
+  throws — a database failure in `query`, a driver error quoting the SQL or the
+  connection details — returns the raw message and the full stack trace (file paths,
+  module layout, library versions) to the caller. Keep `console.error(err)` on the
+  server and answer a generic body such as `{ error: "internal error" }`.
 history:
   - status: open
     by: security
 ```
+
+#### R-security-3 An empty or zero id passes the id validation
+
+```yaml
+severity: low
+confidence: high
+location: "src/invoices.ts:27-31"
+evidence: |
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+recommendation: >-
+  `Number(" ")` is 0 and `Number("1e3")` is 1000, so whitespace or exponent forms pass
+  the integer check. No data is exposed by it, but an allow-list at the boundary is
+  stricter: accept only `/^[1-9]\d*$/` and answer 400 otherwise.
+history:
+  - status: open
+    by: security
+```
+
+### newcomer
+
+Disabled by configuration.

@@ -2,10 +2,10 @@
   "format": 2,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.294038,
-  "durationMs": 21567,
+  "costUsd": 0.2789388,
+  "durationMs": 23450,
   "consumption": {
-    "durationApiMs": 20698,
+    "durationApiMs": 23160,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1185,
-      "cacheCreation": 26360,
-      "cacheRead": 236410,
-      "output": 1744
+      "input": 1170,
+      "cacheCreation": 26722,
+      "cacheRead": 143969,
+      "output": 1770
     }
   },
   "strayed": [],

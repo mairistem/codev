@@ -2,21 +2,21 @@
   "format": 2,
   "case": "skeptic-control-small-flag",
   "error": null,
-  "costUsd": 0.4071026,
-  "durationMs": 34310,
+  "costUsd": 0.3978978,
+  "durationMs": 45199,
   "consumption": {
-    "durationApiMs": 33632,
-    "turns": 12,
-    "permissionDenials": 4,
+    "durationApiMs": 44807,
+    "turns": 8,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1179,
-      "cacheCreation": 31191,
-      "cacheRead": 487573,
-      "output": 2952
+      "input": 1162,
+      "cacheCreation": 30496,
+      "cacheRead": 337924,
+      "output": 4268
     }
   },
   "strayed": [],
@@ -32,7 +32,89 @@
     },
     "changeName": "add-quiet-flag",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`src/main.rs` accepts `--quiet` before the file and passes it to\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "State in the spec where `--quiet` may appear and add a scenario for the other position (`ledger import data.csv --quiet`): either accept it, or name the outcome (today `src/main.rs:6-10` falls to the usage error, exit code 2, and nothing is imported). A nightly script that appends the flag would otherwise stop importing, which is worse than the noise the Why complains about.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Flag position is unspecified; the design rejects `--quiet` after the file"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] 1.1 `--quiet` read by `src/main.rs`, added to `FLAGS` in `src/cli/import.rs` and passed to `Progress::new(quiet)`\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 30,
+        "location": "tasks.md#1. Flag",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "`src/main.rs:8` prints `usage: ledger import <file>`; no task or decision changes it, so the CLI's own help would keep hiding the new flag while `docs/cli.md` documents it. Add the update of the usage line to task 1.1.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The usage line is not updated to mention `--quiet`"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [ ] user-interface\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 47,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The change alters the command line's user-visible output and the output of scheduled jobs (the Why: \"Nightly scripts run `ledger import`\"). Either tick `user-interface` / `operations`, or keep them unticked with the reason on their line (`- [ ] <domain> — <reason>`), so that no expert's domain is left to nobody silently.",
+        "reported": false,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Domains all unticked with no reason"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-quiet-flag/review.md",
@@ -49,7 +131,7 @@
             "credited": [],
             "fallback": null,
             "role": "skeptic",
-            "state": "no-finding"
+            "state": "findings"
           }
         ],
         "step": "plan.challenge",

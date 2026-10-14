@@ -2,21 +2,21 @@
   "format": 2,
   "case": "migration-control-serde-alias",
   "error": null,
-  "costUsd": 0.2688856,
-  "durationMs": 16716,
+  "costUsd": 0.2985782,
+  "durationMs": 20844,
   "consumption": {
-    "durationApiMs": 16327,
-    "turns": 6,
+    "durationApiMs": 21487,
+    "turns": 8,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1183,
-      "cacheCreation": 25331,
-      "cacheRead": 186523,
-      "output": 1398
+      "input": 1174,
+      "cacheCreation": 26518,
+      "cacheRead": 237646,
+      "output": 1896
     }
   },
   "strayed": [],
@@ -61,6 +61,12 @@
             "fallback": null,
             "role": "migration",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

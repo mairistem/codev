@@ -2,21 +2,21 @@
   "format": 2,
   "case": "performance-plan-unbounded-export",
   "error": null,
-  "costUsd": 0.427272,
-  "durationMs": 33817,
+  "costUsd": 0.35814080000000004,
+  "durationMs": 31545,
   "consumption": {
-    "durationApiMs": 33746,
+    "durationApiMs": 31767,
     "turns": 9,
-    "permissionDenials": 2,
+    "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1173,
-      "cacheCreation": 37817,
-      "cacheRead": 352200,
-      "output": 2665
+      "input": 1164,
+      "cacheCreation": 27752,
+      "cacheRead": 380534,
+      "output": 2952
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (Export loads the whole audit log into memory and builds the CSV synchronously) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (The export loads the whole audit log and builds the CSV in memory on the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,13 +56,40 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "Stream the export instead of materializing it: read `audit_events` through a server-side cursor (or keyset pages on `created_at`, id) in bounded batches, convert each batch to CSV lines and write them to the response stream with backpressure, so memory stays constant and the event loop is yielded between batches. Keep the order (oldest first) and the \"every event\" result the spec requires. Select only the exported columns rather than `SELECT *`. Record the rejected \"load everything\" alternative in the design, and back the choice with a measurement on a seven-year organization (memory peak, event-loop lag). Also check that an index on `audit_events (org_id, created_at)` exists — the schema is not in the repository — and confirm with `EXPLAIN`.",
+        "recommendation": "The result set grows with the organization's history: the design's own Context gives about 40 000 events per organization and per month, kept seven years, so up to about 3.4 million rows per request. All of them are held in one array, then mapped to a second array of lines, then joined into one string — memory and CPU grow linearly with the log, and the `map`/`join` runs synchronously on the single event loop (\"one event loop per instance\"), stalling every other request on the instance for the duration; a few concurrent exports can exhaust the heap. The spec requires every event, so keep the full export but stream it: read the rows in batches (a server-side cursor or keyset pagination on `created_at, id`), write each batch's CSV lines to the response as a stream honouring backpressure, and keep the order oldest first. Record the alternative in the decision instead of \"none\".",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Export loads the whole audit log into memory and builds the CSV synchronously"
+        "title": "The export loads the whole audit log and builds the CSV in memory on the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 40,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so the index could not be checked. Confirm with `EXPLAIN` that an index on `(org_id, created_at)` serves both the filter and the sort; without it the query scans the table and sorts millions of rows per export, a cost growing with every organization's data. Add the index to the plan if it is missing.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is shown for the export's filter and sort"
       }
     ],
     "format": 1,

@@ -1098,6 +1098,7 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
     if outcome.roles.is_empty() {
         let _ = writeln!(out);
         let _ = writeln!(out, "No role is active at {step}: skip this step.");
+        disabled_line(&mut out, outcome);
         return out;
     }
     for role in &outcome.roles {
@@ -1119,7 +1120,23 @@ pub fn roles(outcome: &crate::commands::RolesOutcome) -> String {
             }
         }
     }
+    disabled_line(&mut out, outcome);
     out
+}
+
+/// The last line at a step: the roles the configuration turned off there,
+/// each with the file whose setting did it.
+fn disabled_line(out: &mut String, outcome: &crate::commands::RolesOutcome) {
+    if outcome.disabled.is_empty() {
+        return;
+    }
+    let names: Vec<String> = outcome
+        .disabled
+        .iter()
+        .map(|role| format!("{} ({})", role.role.id, role.when_origin.as_str()))
+        .collect();
+    let _ = writeln!(out);
+    let _ = writeln!(out, "Disabled by configuration: {}", names.join(", "));
 }
 
 /// The review mode, and the material of a reviewing step when measured.
@@ -1790,6 +1807,7 @@ apply:
             schema_name: "spec-driven".into(),
             at: None,
             language: "en".into(),
+            disabled: Vec::new(),
             roles: vec![
                 spec_driven_role("product"),
                 builtin("security", Activation::OnDomain),
@@ -1827,6 +1845,7 @@ apply:
             schema_name: "spec-driven".into(),
             at: Some("plan.challenge".into()),
             language: "en".into(),
+            disabled: Vec::new(),
             roles: vec![{
                 let mut skeptic = spec_driven_role("architect");
                 skeptic.role = codev_core::roles::builtin_step_roles()
@@ -1898,6 +1917,7 @@ apply:
             schema_name: "spec-driven".into(),
             at: Some("plan.trace".into()),
             language: "en".into(),
+            disabled: Vec::new(),
             roles: Vec::new(),
             knowledge: false,
             stacks: crate::commands::Stacks::default(),
@@ -1940,6 +1960,7 @@ apply:
             schema_name: "spec-driven".into(),
             at: Some("plan.write".into()),
             language: "fr".into(),
+            disabled: Vec::new(),
             roles: vec![spec_driven_role("architect")],
             knowledge: false,
             stacks: crate::commands::Stacks::default(),

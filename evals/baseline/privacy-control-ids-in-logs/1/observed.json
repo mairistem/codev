@@ -2,10 +2,10 @@
   "format": 2,
   "case": "privacy-control-ids-in-logs",
   "error": null,
-  "costUsd": 0.26138000000000006,
-  "durationMs": 16846,
+  "costUsd": 0.26836820000000006,
+  "durationMs": 17923,
   "consumption": {
-    "durationApiMs": 16488,
+    "durationApiMs": 17764,
     "turns": 5,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1199,
-      "cacheCreation": 25823,
-      "cacheRead": 142115,
-      "output": 1271
+      "input": 1187,
+      "cacheCreation": 24920,
+      "cacheRead": 188006,
+      "output": 1523
     }
   },
   "strayed": [],
@@ -61,6 +61,18 @@
             "fallback": null,
             "role": "privacy",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

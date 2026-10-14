@@ -9,3 +9,7 @@ Mode: inline.
 ### migration
 
 No finding.
+
+### skeptic
+
+Disabled by configuration.

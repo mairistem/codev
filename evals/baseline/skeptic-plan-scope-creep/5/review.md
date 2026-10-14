@@ -8,7 +8,7 @@ Mode: inline.
 
 ### skeptic
 
-#### R-skeptic-1 Plugin registry for formats nobody asked for
+#### R-skeptic-1 Plugin system for export formats nobody asked for
 
 ```yaml
 severity: medium
@@ -18,21 +18,20 @@ evidence: |
   - A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.
 recommendation: >-
   The Why is only "Accountants copy invoices one by one into their spreadsheet
-  at the end of each month." — a single CSV export answers it. Nothing in the
-  proposal asks for PDF, XLSX, XML or JSON; the design rejects the simple
-  solution only as "a single CSV function (not extensible)", which is
-  speculative. Drop the plugin system from What Changes, replace
-  "design.md#Decision: Exports go through a plugin registry" with a plain CSV
-  renderer behind `GET /invoices.csv`, and remove task 1.2 ("Plugin registry
-  discovering `src/export/plugins/`"), which no spec requirement backs. A
-  registry can come in its own change when a second format is actually
-  requested.
+  at the end of each month." — a single CSV export answers it. Drop the plugin
+  system from What Changes, drop "Decision: Exports go through a plugin
+  registry" from design.md (its only alternative, "a single CSV function", is
+  rejected as "not extensible", an extensibility no requirement asks for), and
+  drop task 1.2 "Plugin registry discovering `src/export/plugins/`", which no
+  requirement of spec.md backs. Keep `src/export/` to the CSV renderer and the
+  route; a registry can come in its own change when a second format is
+  actually requested.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 Settings page for a preferred export format is out of scope
+#### R-skeptic-2 Settings page for a preferred export format nobody asked for
 
 ```yaml
 severity: medium
@@ -41,21 +40,20 @@ location: "specs/invoice-export/spec.md#Requirement: Users choose their export f
 evidence: |
   The settings page SHALL let a user choose their preferred export format among the installed plugins.
 recommendation: >-
-  The Why gives no need for a per-user format preference, and with CSV as the
-  only format the choice is empty. The requirement is also unverifiable as
-  written: "**THEN** exports use CSV" while the route is `/invoices.csv`
-  itself, so the preference changes nothing observable; and "**WHEN** no plugin
-  is installed" contradicts the design, where CSV is always "the first plugin".
-  Remove the requirement and its scenarios, the "A settings page where each
-  user picks their preferred export format." line of What Changes, the
-  sentence "A settings page stores each user's preferred format." of the
-  design, `web/src/settings/` from Impact, and task 2.1.
+  Nothing in the Why asks for a per-user format preference, and with CSV as the
+  only format there is nothing to choose. The requirement also cannot be
+  verified as written: its scenario "WHEN a user picks CSV THEN exports use
+  CSV" holds whatever the preference is, since the only route is
+  `GET /invoices.csv`. Remove this requirement and its scenarios, the
+  "A settings page where each user picks their preferred export format."
+  line of proposal.md, the settings sentence of design.md, task 2.1, and
+  `web/src/settings/` from Impact.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-3 Domains all unticked though the plan exposes invoices and changes a UI page
+#### R-skeptic-3 Domains the plan touches are all unticked with no reason
 
 ```yaml
 severity: medium
@@ -66,15 +64,13 @@ evidence: |
   - [ ] personal-data
   - [ ] user-interface
 recommendation: >-
-  The plan adds `GET /invoices.csv`, a new endpoint returning every invoice of
-  a month with its customer, yet `security` and `personal-data` are unticked
-  with no reason, and no spec scenario says who may export (the spec only
-  names "an accountant"; `src/server.ts` has no authentication). The plan also
-  edits `web/src/settings/` (Impact) with `user-interface` unticked. Tick
-  `security` and `personal-data` so their experts review who can call the
-  endpoint and what customer data it returns; tick `user-interface` too if the
-  settings page survives R-skeptic-2, otherwise remove it from Impact. Give a
-  reason on the line of any domain left unticked.
+  The new `GET /invoices.csv?month=YYYY-MM` route exposes a month's invoices
+  with customer names and totals, yet `security` and `personal-data` are
+  unticked with no reason, so no expert reviews who may call it — and the spec
+  has no scenario for an unauthenticated or unauthorized caller. The settings
+  page adds UI under `web/src/settings/` with `user-interface` unticked. Tick
+  `security` and `personal-data` (or give a reason on each line), and tick
+  `user-interface` unless the settings page is removed per R-skeptic-2.
 history:
   - status: open
     by: skeptic

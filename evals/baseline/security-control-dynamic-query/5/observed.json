@@ -2,10 +2,10 @@
   "format": 2,
   "case": "security-control-dynamic-query",
   "error": null,
-  "costUsd": 0.2722788,
-  "durationMs": 16014,
+  "costUsd": 0.2624484,
+  "durationMs": 16049,
   "consumption": {
-    "durationApiMs": 15646,
+    "durationApiMs": 16042,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,10 +13,10 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1183,
-      "cacheCreation": 26002,
-      "cacheRead": 189174,
-      "output": 1272
+      "input": 1170,
+      "cacheCreation": 25602,
+      "cacheRead": 143317,
+      "output": 1400
     }
   },
   "strayed": [],
@@ -61,6 +61,12 @@
             "fallback": null,
             "role": "security",
             "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

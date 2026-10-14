@@ -2,21 +2,21 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.4195196000000001,
-  "durationMs": 42426,
+  "costUsd": 0.3975747999999999,
+  "durationMs": 48707,
   "consumption": {
-    "durationApiMs": 40648,
-    "turns": 10,
+    "durationApiMs": 48198,
+    "turns": 7,
     "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1193,
-      "cacheCreation": 31962,
-      "cacheRead": 453378,
-      "output": 3606
+      "input": 1176,
+      "cacheCreation": 31275,
+      "cacheRead": 290809,
+      "output": 4411
     }
   },
   "strayed": [],
@@ -48,17 +48,44 @@
         ],
         "id": "R-ops-1",
         "line": 11,
-        "location": "src/worker.rs:46-50",
+        "location": "src/worker.rs:46-48",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Make sure the mailer reports a timeout that happens after the message was handed to the relay differently from a refused connection, or send each job with a stable Message-ID so the relay drops duplicates. Otherwise a slow relay makes the worker resend the same e-mail up to twelve times. This depends on how `Mailer::send` maps a timeout, which this change does not show.",
+        "recommendation": "An SMTP send is not idempotent: when the relay accepts the message but its answer arrives after SEND_TIMEOUT, the mailer gives up and, if it reports that as `Unavailable`, the job is released and the recipient gets the e-mail twice (up to twelve times while the relay stays slow — the very situation this change is for). Give each job a stable Message-ID derived from `job.id` so retries are recognisable downstream, or have the mailer distinguish a timeout after DATA from a refused connection and not retry it blindly. Confidence is low: the mailer implementation, which decides how a timeout is reported, is not part of the diff.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "A send that times out after the relay accepted it is retried and duplicates the e-mail"
+        "title": "A send that times out after the relay accepted it is sent again"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "match mailer.send(&job.message, SEND_TIMEOUT) {\n    Ok(()) => {\n        queue.ack(job.id);\n        health.count(Outcome::Sent);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 36,
+        "location": "src/worker.rs:30-34",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "The worker exports only outcome counters (`notifier_jobs_total{outcome}`) and a liveness beat. When it falls behind — a slow relay taking close to SEND_TIMEOUT per message, or more e-mails queued than one worker sends — `/healthz` stays green and the counters keep rising, so an operator sees nothing until users report late e-mails. Record the send duration (a histogram) and expose the queue depth or the age of the oldest pending job. Confidence is low: such a gauge may already be exported outside the diff.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No metric shows the backlog or the send latency"
       }
     ],
     "format": 1,

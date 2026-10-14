@@ -8,7 +8,7 @@ Mode: inline.
 
 ### performance
 
-#### R-performance-1 The export loads the whole audit log into memory and builds the CSV on the event loop
+#### R-performance-1 The export loads the whole audit log into memory and builds one CSV string
 
 ```yaml
 severity: high
@@ -19,46 +19,26 @@ evidence: |
   created_at`, loads the rows into an array, builds the whole CSV string with
   `rows.map(toCsvLine).join("\n")`, and sends it.
 recommendation: >-
-  Cost grows linearly with the organization's history, per request. The design's own
-  context gives about 40 000 events per organization per month, kept seven years:
-  up to about 3.4 million rows for one export. `query()` in `src/db.ts` returns
-  `result.rows` as one array, so the handler holds every row, then an array of CSV
-  lines, then the joined string, all at once — hundreds of megabytes per request,
-  enough to exhaust the heap or hit V8's maximum string length. `rows.map(...).join`
-  is synchronous: on a service with "one event loop per instance" it blocks every
-  other request of the instance for the whole build. Stream instead: read the rows
-  through a server-side cursor (`pg-cursor` or `pg-query-stream`) in batches, write
-  each batch's CSV lines to the response as they come, and respect backpressure.
-  Replace "Alternatives considered: none" with this alternative and why it is or is
-  not chosen. Ordering (oldest first) and the set of rows stay unchanged.
+  The design's own volumes (about 40 000 events per organization and per month,
+  kept seven years) mean up to about 3.4 million rows per request: the query has
+  no bound, every row is held in an array, then a second full copy is made as
+  CSV lines and a third as the joined string, all synchronously on the
+  instance's single event loop. Cost grows linearly with the organization's
+  history, per request: memory spikes can kill the instance, and the
+  synchronous map/join blocks every other request on that instance for the
+  duration. Stream instead: read with a server-side cursor (or keyset batches on
+  created_at, id), format each batch, and write it to the response stream with
+  backpressure (`Content-Type: text/csv`, chunked), so memory stays bounded by
+  the batch size and the event loop yields between batches. This keeps the
+  spec's "every audit event … oldest first" requirement and its ordering
+  unchanged. Optionally offer a date-range filter, but do not drop events from
+  the default export.
 history:
   - status: open
     by: performance
 ```
 
-#### R-performance-2 The requirement exports every event with no bound on the result set
-
-```yaml
-severity: medium
-confidence: high
-location: "specs/audit-export/spec.md#Requirement: Administrators export the audit log"
-evidence: |
-  `GET /admin/audit-events.csv` SHALL return every audit event of the organization as CSV, oldest first.
-recommendation: >-
-  The result set grows without limit — up to seven years of events per request — and
-  the requirement allows no way to ask for less: an auditor wanting one quarter still
-  pulls the whole history, holding a database connection and a full scan of the
-  organization's rows for the length of the transfer, and any administrator can
-  repeat it at will. Bound it: add `from` / `to` date parameters (with a default or
-  maximum range) and a scenario for them, or state explicitly that the unbounded
-  export is intended and rely on streaming (R-performance-1) plus a rate limit. This
-  is a separate fix from streaming: streaming bounds memory, not the work per request.
-history:
-  - status: open
-    by: performance
-```
-
-#### R-performance-3 No index is stated for the export's filter and sort
+#### R-performance-2 No index is known to serve the export's filter and sort
 
 ```yaml
 severity: medium
@@ -68,13 +48,19 @@ evidence: |
   The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
   created_at`
 recommendation: >-
-  The schema of `audit_events` is not in the repository, so the index cannot be
-  checked. Without an index on `(org_id, created_at)` the query scans the whole table
-  (every organization's events) and sorts the result, a cost that grows with the
-  total table size, not just the organization's. Check the existing indexes with
-  `EXPLAIN` on a production-sized table, and add a task to create the composite
-  index if it is missing.
+  The audit_events schema is not in the repository, so the index could not be
+  checked. Verify with EXPLAIN that an index on (org_id, created_at) exists;
+  without it the query scans and sorts the whole table, across all
+  organizations, on each export. Add the index in this change if it is missing.
 history:
   - status: open
     by: performance
 ```
+
+### skeptic
+
+Disabled by configuration.
+
+### security
+
+Disabled by configuration.

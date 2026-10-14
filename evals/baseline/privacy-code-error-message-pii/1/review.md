@@ -6,116 +6,77 @@
 
 Mode: inline.
 
+### newcomer
+
+Disabled by configuration.
+
 ### privacy
 
-#### R-privacy-1 Looked-up e-mail address written to the error log
+#### R-privacy-1 Customer e-mail address written to the error log on a failed lookup
 
 ```yaml
 severity: high
 confidence: high
-location: "src/support.ts:20"
+location: "src/support.ts:19-21"
 evidence: |
-  throw new NotFoundError(`no customer with e-mail ${email}`);
+  if (rows.length === 0) {
+    throw new NotFoundError(`no customer with e-mail ${email}`);
+  }
 recommendation: >-
-  Keep the e-mail address out of the error message (for example
-  `throw new NotFoundError("no customer for this e-mail")`). As it stands,
-  every lookup that matches no customer reaches `errorHandler` in
-  src/server.ts, which runs `logger.error("request failed", { path: req.path,
-  error: err.message })`, so the address an agent typed — a customer's or a
-  mistyped one — lands in the application logs with no retention rule
-  (GDPR Art. 5(1)(c) data minimisation, Art. 32).
+  Keep the e-mail address out of the error message (e.g. `throw new NotFoundError("no customer with this e-mail")`). Every lookup of an unknown address reaches `errorHandler` in src/server.ts, which runs `logger.error("request failed", { path: req.path, error: err.message })`, so the typed address — personal data, and possibly a third person's address mistyped by the agent — lands in the application logs with no retention rule tied to it (GDPR Art. 5(1)(c) data minimisation, Art. 32). Add a test that a not-found lookup logs no e-mail address.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 Chat vendor receives phone, birth date and address it does not need
+#### R-privacy-2 Phone, birth date, address and e-mail sent to the Helply chat vendor when only the name is needed
 
 ```yaml
 severity: high
 confidence: high
-location: "src/support.ts:42-47"
+location: "src/support.ts:38-49"
 evidence: |
-  id: String(customer.id),
-  name: customer.name,
-  email: customer.email,
-  phone: customer.phone,
-  birthDate: customer.birth_date,
-  address: customer.address,
-recommendation: >-
-  Send Helply only what the stated purpose needs — greeting the signed-in
-  customer by name so the agent knows who they talk to: the opaque id and
-  the name (the e-mail only if the agent console needs it to match the
-  account). Drop `phone`, `birthDate` and `address`; also stop selecting
-  them in `customerById` (src/support.ts:28) since nothing else uses them.
-  Today `GET /chat/settings` hands the full record to the browser and the
-  widget forwards it to the third-party processor (GDPR Art. 5(1)(c), Art. 25,
-  Art. 28).
+  user: {
+    id: String(customer.id),
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone,
+    birthDate: customer.birth_date,
+    address: customer.address,
+  },
+recommendation: The proposal's purpose is that the widget "greets the signed-in customer by name, so that the agent knows who they talk to"; send only `id` and `name` to Helply (an opaque id lets the agent use the support lookup for the rest). Every signed-in customer who opens the chat today has their phone number, birth date, postal address and e-mail address handed to a third-party processor beyond what the purpose needs (GDPR Art. 5(1)(c), Art. 25, Art. 28). Also select only the needed columns in `customerById` for this route.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-3 Support lookup returns the whole customer record
+#### R-privacy-3 Support lookup returns birth date, phone and postal address the identification purpose may not need
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/support.ts:16"
+location: "src/support.ts:15-18"
 evidence: |
   "SELECT id, email, name, phone, birth_date, address FROM customers WHERE lower(email) = lower($1)",
-recommendation: >-
-  The proposal's purpose is that agents stop asking customers who they are;
-  confirm with the team which fields an agent needs to identify the
-  customer and return only those from `POST /support/customers/lookup`
-  (src/routes.ts:7). Birth date, phone and postal address go to every
-  support agent on each lookup without a stated need (GDPR Art. 5(1)(c)).
-  Low confidence: the agents' actual need is not stated in the plan.
+recommendation: The proposal states agents look a customer up so they stop asking "who they are"; returning the full record (birth date, phone, postal address) to every agent with the `support` role goes beyond identification unless the team states why agents need each field. Confirm which fields the support screen uses and return only those (GDPR Art. 5(1)(c)).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-4 Helply as processor: transfer, retention and erasure not identified
+#### R-privacy-4 Helply not identified as a processor, nor its hosting location
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/support.ts:37-40"
+location: "src/support.ts:37-41"
 evidence: |
   /** What the Helply chat widget is started with, for the signed-in customer. */
   export function chatWidgetSettings(customer: Customer) {
     return {
       appId: process.env.HELPLY_APP_ID,
-recommendation: >-
-  A question for the team, not a code fix: state in the plan whether Helply
-  is covered by a processor agreement (GDPR Art. 28), where it stores data
-  (Chapter V if outside the EEA), how long it keeps chat users' data, and
-  how a customer's erasure or access request reaches the copy Helply holds
-  (Art. 15–17). Only the controller can say what was decided.
+recommendation: Question for the team — the change starts sharing customer data with Helply, but the plan does not state the lawful basis, that a processor agreement (GDPR Art. 28) is in place, nor whether Helply transfers data outside the EEA (Chapter V). Record it in the proposal or a decision; only the controller can answer.
 history:
   - status: open
     by: privacy
 ```
-
-#### R-privacy-5 Customer id written to the error log
-
-```yaml
-severity: low
-confidence: high
-location: "src/support.ts:32"
-evidence: |
-  throw new NotFoundError(`no customer ${id}`);
-recommendation: >-
-  Use a message without the identifier ("no customer for this session");
-  `errorHandler` logs `err.message`, so the signed-in customer's id ends up
-  in the logs. The impact is limited to a session whose customer no longer
-  exists.
-history:
-  - status: open
-    by: privacy
-```
-
-### newcomer
-
-Disabled by configuration.

@@ -2,21 +2,21 @@
   "format": 2,
   "case": "newcomer-code-clever-one-liner",
   "error": null,
-  "costUsd": 0.30265960000000003,
-  "durationMs": 22897,
+  "costUsd": 0.2705238,
+  "durationMs": 19577,
   "consumption": {
-    "durationApiMs": 22355,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 19285,
+    "turns": 5,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1175,
-      "cacheCreation": 25829,
-      "cacheRead": 280828,
-      "output": 1942
+      "input": 1162,
+      "cacheCreation": 24613,
+      "cacheRead": 185814,
+      "output": 1773
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "A developer who has not seen the plan cannot answer \"what makes a price premium?\" from this line: the rule is hidden in `(p.cents >> 4) & 0x3e8`, a shift and a bitmask with no name and no comment, while the docstring talks of \"cheap\" and \"premium\" and the keys say \"lo\" and \"hi\". The reader is likely to assume a threshold comparison, but a bitwise AND of selected bits is not one (e.g. 16000 cents gives 1000 & 1000 → \"hi\", 16384 cents gives 1024 & 1000 → 0 → \"lo\"), so the shape hides what the code actually does. On top of that the line combines a `reduce` with a comma-operator return, `||=` lazy init inside an index expression, single-letter names (`ps`, `a`, `p`) and an untyped `Record<string, …>` result whose keys only appear as string literals. Rewrite it as a named function with a named threshold constant in cents and an explicit comparison (`const PREMIUM_THRESHOLD_CENTS = …; const isPremium = (p: Price) => p.cents >= PREMIUM_THRESHOLD_CENTS;`), a plain loop or two `filter` calls, and a typed result such as `{ cheap: Price[]; premium: Price[] }` whose keys match the docstring; if the bitmask really is the intended rule, a comment must say why.",
+        "recommendation": "Rewrite it as a plain function a newcomer can read: a named constant for the premium threshold (e.g. `PREMIUM_THRESHOLD_CENTS`), a plain comparison `price.cents >= PREMIUM_THRESHOLD_CENTS` instead of the shift-and-mask, a loop or two `filter` calls instead of the `reduce` with a comma expression and `||=`, descriptive names (`prices`, `price`, `groups`) instead of `ps`, `a`, `p`, and a return type such as `{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with the magic keys \"hi\"/\"lo\". The docstring says \"cheap and premium\", but the code never says where the line is: a reader takes `0x3e8` (1000) for a threshold, while `(cents >> 4) & 0x3e8` tests bits, not a magnitude — e.g. 128 cents gives `8 & 1000 = 8`, so \"hi\", while 16384 cents gives `1024 & 1000 = 0`, so \"lo\". The density of the line is what hides this; the readable version makes the intended threshold explicit and lets the developer confirm it.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`bucket` packs its rule into an unreadable one-liner with a magic bitmask"
+        "title": "`bucket` packs its whole rule into an unreadable one-liner"
       }
     ],
     "format": 1,

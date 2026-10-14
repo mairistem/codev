@@ -13,8 +13,9 @@ Mode: inline.
 ```yaml
 severity: medium
 confidence: high
-location: "src/import.rs:14-39"
+location: "src/import.rs:12-42"
 evidence: |
+            match db.find_account(&row.email)? {
                 Some(account) => {
                     if account.plan != row.plan {
                         for seat in &row.seats {
@@ -23,20 +24,21 @@ evidence: |
                                     db.add_seat(account.id, seat)?;
                                     created += 1;
 recommendation: >-
-  The seat insertion sits five levels deep (for / if / match / if / for / if / if),
-  so a reader joining the project must hold every enclosing condition in mind to
-  know when a seat is added, and cannot answer without the plan: why seats are
-  only added to an existing account when its plan differs from the row's
-  (`account.plan != row.plan` reads like a filter for plan changes, while the
-  doc comment says the function returns the seats created), why a seat without
-  `'@'` is silently dropped, and why a row with an empty email is silently
-  skipped. The seat loop is also duplicated between the `Some` and `None` arms.
-  Flatten it: `continue` early on an empty email, extract one helper such as
-  `add_new_seats(db, account_id, existing_seats, &row.seats) -> Result<usize, DbError>`
-  used by both arms, name the `'@'` test (e.g. `is_email_seat(seat)`), and give
-  the plan-comparison and skip rules a one-line comment stating why — or, if the
-  plan comparison is not intended, raise it with the developer, as it decides
-  which seats get created. Behavior must not change in the refactor.
+  Flatten the function: skip rows with an empty email with an early
+  `continue` (and say why such rows are dropped); resolve the account id
+  first (existing or newly created) and then run a single seat loop,
+  extracted into a helper such as `add_missing_seats(db, account_id,
+  existing_seats, &row.seats)`, instead of the two copies of the
+  `seat.contains('@')` / `add_seat` / `created += 1` block (lines 21-24 and
+  32-35). Name the unexplained filters: replace `seat.contains('@')` by a
+  named predicate (e.g. `is_seat_email`) with a comment on why seats
+  without `@` are silently ignored, and comment why seats are only added
+  to an existing account when its plan differs from the row's
+  (`account.plan != row.plan`) — a newcomer reading line 18 cannot tell
+  whether that condition is a business rule or an inverted test, and
+  would likely misread that an existing account on the same plan never
+  gets its new seats. The doc comment should also say that existing
+  accounts' plans are not updated and which rows are skipped.
 history:
   - status: open
     by: newcomer

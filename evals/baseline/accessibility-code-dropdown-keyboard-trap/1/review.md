@@ -8,7 +8,7 @@ Mode: inline.
 
 ### accessibility
 
-#### R-accessibility-1 Open sort menu traps keyboard focus: Tab is captured and Escape does nothing
+#### R-accessibility-1 Open sort menu traps keyboard focus: Tab is swallowed and Escape does nothing
 
 ```yaml
 severity: high
@@ -20,27 +20,20 @@ evidence: |
     if (event.key === "ArrowDown" || event.key === "Tab") {
       event.preventDefault();
       items.current[(index + 1) % SORT_OPTIONS.length]?.focus();
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      items.current[(index - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length]?.focus();
-    }
-  }
 recommendation: >
-  Keyboard users (WCAG 2.1.2 No Keyboard Trap, 2.1.1 Keyboard). A keyboard user opens the menu
-  with Enter on "Sort: …"; focus moves to "Newest". Pressing Tab (or Shift+Tab) is prevented and
-  only cycles focus among the four options, and Escape has no handler, so the menu cannot be
-  dismissed and focus cannot leave it to reach the product list or the rest of the page; the only
-  way out is to pick an option, which changes (or re-confirms) the sort. Clicking outside does not
-  close it either. Follow the APG menu button pattern: stop handling Tab (let it close the menu and
-  move focus on naturally), add Escape to close the menu and return focus to the button, and close
-  the menu on blur/outside click. Alternatively, use a native `<select>` with a `<label>`, which
-  brings all of this for free.
+  Keyboard users (WCAG 2.1.2 No Keyboard Trap, 2.1.1 Keyboard). Once the menu opens, focus
+  moves into it (line 12); pressing Tab or Shift+Tab is prevented and only cycles focus among
+  the four items, and Escape has no handler, so a keyboard user cannot leave the menu or move
+  on to the product list without picking an option. Follow the APG menu button pattern:
+  handle Escape to close the menu and return focus to the "Sort" button, and on Tab let the
+  default focus move happen while closing the menu (do not call preventDefault). Keep
+  ArrowDown/ArrowUp for moving between items. A native <select> would avoid the whole issue.
 history:
   - status: open
     by: accessibility
 ```
 
-#### R-accessibility-2 Menu button always announces "collapsed": aria-expanded is hard-coded to false
+#### R-accessibility-2 Menu button always announces aria-expanded="false"
 
 ```yaml
 severity: medium
@@ -49,11 +42,15 @@ location: "src/components/SortMenu.tsx:34"
 evidence: |
   <button ref={button} type="button" aria-haspopup="menu" aria-expanded="false" onClick={() => setOpen(!open)}>
 recommendation: >
-  Screen reader users (WCAG 4.1.2 Name, Role, Value). When the menu is open, the button still
-  reports `aria-expanded="false"`, so a screen reader announces "Sort: Newest, menu button,
-  collapsed" while the menu is shown, misleading the user about the state of the control. Bind the
-  attribute to the state: `aria-expanded={open}`.
+  Screen reader users (WCAG 4.1.2 Name, Role, Value). aria-expanded is hard-coded to "false",
+  so when the user activates the "Sort" button and the menu opens, the button still announces
+  "collapsed"; the state never matches the actual behavior. Bind it to the state:
+  aria-expanded={open}.
 history:
   - status: open
     by: accessibility
 ```
+
+### newcomer
+
+Disabled by configuration.

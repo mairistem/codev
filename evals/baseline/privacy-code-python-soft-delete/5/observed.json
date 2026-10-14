@@ -2,21 +2,21 @@
   "format": 2,
   "case": "privacy-code-python-soft-delete",
   "error": null,
-  "costUsd": 0.3485666,
-  "durationMs": 28763,
+  "costUsd": 0.4269432,
+  "durationMs": 59247,
   "consumption": {
-    "durationApiMs": 28305,
-    "turns": 7,
-    "permissionDenials": 0,
+    "durationApiMs": 58512,
+    "turns": 13,
+    "permissionDenials": 4,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1187,
-      "cacheCreation": 29576,
-      "cacheRead": 287173,
-      "output": 2676
+      "input": 1186,
+      "cacheCreation": 29917,
+      "cacheRead": 520271,
+      "output": 4126
     }
   },
   "strayed": [],
@@ -29,7 +29,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (Account deletion keeps the member's personal data in `users`) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (Account deletion keeps the member's e-mail, name, phone and postal address) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,18 +56,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The proposal promises that the button \"erases the member's personal data\" and that orders are kept \"without personal data\", but `delete_account` only soft-deletes: `email`, `display_name`, `phone` and `postal_address` (app/schema.sql:3-6) stay in the `users` row, which `orders.user_id` still references, so the orders remain linked to an identified person. Scenario: member 1 (ada@example.org, Ada) clicks \"Delete my account\"; afterwards `SELECT email, display_name, phone, postal_address FROM users WHERE id = 1` still returns all four — the right to erasure (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Because `email` is UNIQUE, the kept address also blocks the person from signing up again. Overwrite or NULL these columns in the same UPDATE (e.g. email replaced by a non-identifying placeholder such as `deleted-<id>@invalid`, display_name by a neutral value, phone and postal_address NULL), keeping only the id the orders need, and add a test asserting the row no longer holds any of them.",
+        "recommendation": "The proposal promises that the button \"erases the member's personal data\" and keeps orders \"without personal data\", but `delete_account` only soft-deletes: it sets `deleted_at` and clears `password_hash`, while `users.email`, `users.display_name`, `users.phone` and `users.postal_address` (app/schema.sql) stay in the table, still joined to the kept `orders` rows through `orders.user_id`. Scenario: a member clicks \"Delete my account\"; their row still holds their e-mail, name, phone and address, indefinitely, linked to their order history — the erasure right (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met, and the `UNIQUE` e-mail also blocks them from signing up again. Overwrite or null those columns in the same UPDATE (e.g. `email` set to a non-identifying placeholder such as `'deleted-' || id`, `display_name` to a fixed label, `phone` and `postal_address` to NULL), so the row that `orders` references carries no personal data, and add a test asserting the columns are erased.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Account deletion keeps the member's personal data in `users`"
+        "title": "Account deletion keeps the member's e-mail, name, phone and postal address"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "def analytics_id(user_id: int) -> str:\n    \"\"\"The pseudonymous id analytics events carry instead of the user id.\"\"\"\n    return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
+        "evidence": "return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
         "history": [
           {
             "by": "privacy",
@@ -78,23 +78,23 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 37,
-        "location": "app/account.py:11-13",
+        "line": 39,
+        "location": "app/account.py:13",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The salted hash is pseudonymous, not anonymous: anyone holding `ANALYTICS_SALT` can recompute it from the kept user id, so analytics events carrying it stay personal data after deletion. `delete_account` neither purges nor detaches those events, and the change does not say where they are stored or for how long. Confirm with the team where analytics events live and either delete the member's events on account deletion or state why the pseudonymous id is acceptable; the analytics store was not visible in this repository.",
+        "recommendation": "The change adds a pseudonymous `analytics_id` that analytics events carry, derived deterministically from the user id and a fixed salt. Since the `users` row and its `id` are kept after deletion, anyone holding the salt can recompute the id and re-link the member's analytics events to them, and `delete_account` does nothing about those events. Nothing in the change calls `analytics_id`, and the analytics store is not visible here, so this depends on how it is used: either remove the function until a use needs it, or make deletion reach the analytics data (delete the member's events, or break the link, e.g. a random per-user analytics id stored in `users` and cleared on deletion). The analytics recipient should also be identified as a processor if it is a third party.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Erasure does not reach analytics events keyed by `analytics_id`"
+        "title": "Erasure does not reach analytics data keyed by `analytics_id`"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "- A \"Delete my account\" button erases the member's personal data and signs them out everywhere; their orders are kept for accounting, without personal data.\n",
+        "evidence": "def delete_account(user_id: int) -> None:\n    \"\"\"Deletes the member's account; their orders are kept for accounting.\"\"\"\n",
         "history": [
           {
             "by": "privacy",
@@ -105,18 +105,18 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 60,
-        "location": "proposal.md#What Changes",
+        "line": 64,
+        "location": "app/account.py:16-17",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Neither the plan nor the code says how long backups of `members.db` keep a deleted member's data or how a restore avoids bringing it back. Ask the team to state the backup retention period and the rule for re-applying deletions after a restore; nothing about backups was visible in the repository.",
+        "recommendation": "Deleted accounts stay in `users` with `deleted_at` set and no rule says when the row (or what is left of it) is purged, nor how deleted members' data is removed from database backups of `members.db`. State the retention period for kept orders (the accounting obligation) and for the deleted `users` row, and how backups age out the erased data; this is a question for the team, as only the controller can set the periods.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Retention and erasure in backups are not defined"
+        "title": "No retention or purge defined for deleted accounts, backups included"
       }
     ],
     "format": 1,
@@ -147,6 +147,12 @@
             "fallback": null,
             "role": "privacy",
             "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

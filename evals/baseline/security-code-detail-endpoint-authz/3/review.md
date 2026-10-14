@@ -20,35 +20,42 @@ evidence: |
     [id],
   );
 recommendation: >-
-  Scope the lookup to the caller's organization, as the list route does:
-  read `currentUser(req)` and query `WHERE id = $1 AND org_id = $2` with
-  `[id, user.orgId]`, answering 404 when no row matches (so another
-  organization's ids are not confirmed). Add a test where a user of org 7
-  asks for an invoice of org 8 and gets 404. Insecure direct object
-  reference, CWE-639 / CWE-862: any signed-in user of the accounting app
-  sends `GET /invoices/1`, `/invoices/2`, … and reads every other
-  organization's invoice numbers and totals.
+  Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of
+  organization A sends `GET /invoices/42` (or iterates ids 1, 2, 3…) and gets
+  the number, total and date of organization B's invoices: the query selects
+  by `id` alone, with no check against the caller's organization, while
+  `GET /invoices` scopes by `org_id`. Scope the query to the caller —
+  `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and
+  answer 404 (not 403) when no row matches, so ids of other organizations
+  cannot be probed. Add a test asserting the query carries the caller's
+  `orgId`, alongside the existing list test.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 Error handler sends the error message and stack trace to the client
+#### R-security-2 Error handler sends error messages and stack traces to the client
 
 ```yaml
 severity: medium
 confidence: high
 location: "src/server.ts:15-18"
 evidence: |
-  res.status(500).json({ error: err.message, stack: err.stack });
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(err);
+    res.status(500).json({ error: err.message, stack: err.stack });
+  });
 recommendation: >-
-  Keep the details in the server log (`console.error(err)` already does)
-  and answer a generic body such as `{ error: "internal error" }`. Any
-  caller who triggers a failure — e.g. a database error raised by `query`
-  in an invoices route — receives the stack trace (file paths, module
-  layout, dependency versions) and the raw `pg` error message, which can
-  carry SQL fragments, table and column names or connection details.
-  CWE-209.
+  Information exposure through an error message (CWE-209). Any client, even
+  without a session — `express.json()` runs before `requireUser` — sends a
+  request with `Content-Type: application/json` and a malformed body; the
+  body parser's error reaches this handler and the response carries its
+  message and full stack trace, revealing the server's file paths, module
+  layout and dependency versions. Database errors forwarded here would
+  likewise expose `pg` messages (table, column, constraint names). Answer a
+  generic body (`{ error: "internal error" }`, with the client-error status
+  for parser errors such as `err.status` 400) and keep the details in the
+  server log only.
 history:
   - status: open
     by: security

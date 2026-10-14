@@ -8,24 +8,22 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 A send that times out after the relay took the message is retried and may be delivered twice
+#### R-ops-1 A send that times out after the relay accepted it may be retried and duplicated
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/worker.rs:46-48"
+location: "src/worker.rs:46-50"
 evidence: |
-            Err(SendError::Unavailable) => {
-                let delay = RETRY_STEP * job.attempts;
-                queue.release(job.id, delay);
-recommendation: >-
-  Sending an e-mail is not idempotent. `SendError::Unavailable` covers both "the relay could not be
-  reached" and a temporary failure; if the mailer also returns it when `SEND_TIMEOUT` expires after
-  the message data was transmitted, the relay may still deliver it while the job is released and sent
-  again, up to MAX_ATTEMPTS times. Confirm how the mailer classifies a timeout after DATA; if it maps
-  to `Unavailable`, give the message a stable Message-ID derived from the job id so duplicates can be
-  recognised, or distinguish "outcome unknown" from "not sent" before retrying.
+  Err(SendError::Unavailable) => {
+      let delay = RETRY_STEP * job.attempts;
+      queue.release(job.id, delay);
+recommendation: Confirm how the mailer maps a send that exceeds `SEND_TIMEOUT` after the message data was transmitted. If it returns `SendError::Unavailable`, the job is released and sent again, so the recipient gets a duplicate e-mail. Either map an ambiguous timeout to a distinct outcome that is not retried blindly, or document that delivery is at-least-once. This is low confidence because the mailer implementation was not visible.
 history:
   - status: open
     by: ops
 ```
+
+### newcomer
+
+Disabled by configuration.

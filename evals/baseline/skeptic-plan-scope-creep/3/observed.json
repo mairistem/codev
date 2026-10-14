@@ -2,21 +2,21 @@
   "format": 2,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.4252132,
-  "durationMs": 44962,
+  "costUsd": 0.3576414,
+  "durationMs": 30567,
   "consumption": {
-    "durationApiMs": 44225,
-    "turns": 11,
-    "permissionDenials": 3,
+    "durationApiMs": 30338,
+    "turns": 8,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1177,
-      "cacheCreation": 32341,
-      "cacheRead": 440566,
-      "output": 3868
+      "input": 1162,
+      "cacheCreation": 28996,
+      "cacheRead": 334142,
+      "output": 2893
     }
   },
   "strayed": [],
@@ -52,13 +52,13 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month\"; a CSV export answers it, and no PDF, XLSX, XML or JSON need is stated. Drop the plugin system from What Changes, replace design.md's \"Decision: Exports go through a plugin registry\" with a single CSV renderer behind the route (the rejected alternative's only flaw, \"not extensible\", serves no stated need), remove task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"), and remove `src/export/plugins/` from Impact. Discovering modules at start-up from a source folder also rests on an unchecked assumption: the project builds with `tsc -p .`, so the plugins would have to be found in the compiled output, not in `src/`.",
+        "recommendation": "The Why only names accountants copying invoices into a spreadsheet one by one (\"Accountants copy invoices one by one into their spreadsheet at the end of each month.\"); a single CSV route answers it. Drop the plugin system from the proposal, the design decision \"Exports go through a plugin registry\" (whose only rejected alternative, \"a single CSV function (not extensible)\", is rejected for an extensibility nobody requested) and task 1.2 (\"Plugin registry discovering `src/export/plugins/`, verified by `npm test -- registry`\", which names no observable behaviour to verify). Move PDF/XLSX/XML/JSON formats to a later change if a need appears.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A plugin system for export formats nobody asked for"
+        "title": "Plugin system for future export formats is scope nobody asked for"
       },
       {
         "awaiting": "author",
@@ -74,23 +74,23 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 32,
+        "line": 34,
         "location": "proposal.md#What Changes",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "Nothing in the Why asks users to choose a format, and with CSV as the only format the choice is empty. Drop this item, the requirement \"Users choose their export format\" in specs/invoice-export/spec.md, task 2.1, and `web/src/settings/` from Impact. The requirement is also not verifiable as written: scenario \"A preference\" says \"exports use CSV\" although the route is fixed at `GET /invoices.csv`, and scenario \"No plugin\" contradicts the design, where \"CSV is the first plugin\" and so is always installed.",
+        "recommendation": "Nothing in the Why asks for a per-user format choice, and with CSV as the only format the choice has nothing to choose from. The requirement \"Users choose their export format\" is also not verifiable as written: its scenario \"**THEN** exports use CSV\" cannot be observed differently from today, since the only route is `GET /invoices.csv`, whose format is fixed by its path. Remove the requirement, its scenarios \"A preference\" and \"No plugin\", task 2.1 and `web/src/settings/` from Impact. If it were kept, the `user-interface` domain would have to be ticked since `web/src/settings/SettingsPage.tsx` changes.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A per-user settings page nobody asked for"
+        "title": "Settings page for a preferred export format is scope nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "evidence": "- [ ] security\n- [ ] personal-data\n",
         "history": [
           {
             "by": "skeptic",
@@ -101,18 +101,18 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 51,
+        "line": 56,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The plan adds `GET /invoices.csv?month=YYYY-MM`, which serves every invoice of a month \"with number, date, customer and total\": a new endpoint exposing customer names, so security (who may export) and personal-data concern it, and the settings page touches user-interface. Tick the domains the plan touches so their experts review it, or keep each unticked with its reason on its line (`- [ ] <domain> — <reason>`). The spec has no scenario for an unauthenticated or unauthorized caller; whether it needs one is for the security expert once the domain is ticked.",
+        "recommendation": "The change exposes every invoice of a month, with its customer, through the new route `GET /invoices.csv?month=YYYY-MM`, yet every domain is unticked with no reason, so no expert reviews who may call the route or what customer data leaves the system. The spec has no unauthorized scenario either: it only covers \"An invalid month\" (400). Tick `security` and `personal-data` (or give a reason on their line), and add a scenario for an unauthenticated or unauthorized caller.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Every domain unticked with no reason, though the plan exposes customer data and adds a page"
+        "title": "New endpoint exposing invoice and customer data with security and personal-data unticked"
       }
     ],
     "format": 1,

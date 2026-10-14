@@ -12,7 +12,7 @@ Disabled by configuration.
 
 ### migration
 
-#### R-migration-1 Public field removed in place, no compatibility period for partners
+#### R-migration-1 Public field removed in one step, with no transition for partners
 
 ```yaml
 severity: high
@@ -23,39 +23,38 @@ evidence: |
   kept. The OpenAPI file is regenerated.
 recommendation: >-
   The design's own context says "partners' integrations read `status` to know
-  when to ship": on the deploy that ships this, every partner reading
-  `response.status` from `GET /orders/{id}` gets `undefined` and stops
-  shipping, with no warning (today `src/orders.ts:19` sends `status`, and
-  `openapi.yaml:18` lists it as required). Use expand and contract: return
-  both `status` and `state` with the same value, mark `status` as
-  `deprecated: true` in `openapi.yaml` (and drop it from `required` only when
-  it is removed), announce a removal date, and remove `status` in a later
-  change once partners have moved. Add a task and a scenario checking that a
-  paid order holds both `"status": "paid"` and `"state": "paid"` during the
-  deprecation period. The rejected alternative "keeping both fields
-  (duplication)" is exactly this migration path; its cost is temporary.
+  when to ship"; on the day this deploys, every partner reading
+  `GET /orders/{id}` today (`src/orders.ts:19` builds `status: rows[0].state`,
+  `openapi.yaml:18` lists `required: [id, status]`) gets no `status` field,
+  reads undefined and stops shipping orders, with no warning. Use expand and
+  contract: return both `status` and `state` with the same value in this
+  change, mark `status` `deprecated: true` in `openapi.yaml`, and remove it
+  in a later change after a stated deprecation period. Reflect it in the
+  spec (a requirement or scenario that `status` is still returned, equal to
+  `state`, while deprecated) and in tasks.md (a task that keeps `status`,
+  verified by a test that a paid order holds both `"status": "paid"` and
+  `"state": "paid"`). The alternative rejected as "duplication" is the
+  migration path, not a cost to avoid.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Breaking rename not marked BREAKING, release note gives no action
+#### R-migration-2 Breaking rename not marked BREAKING, no action for consumers
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
 location: "proposal.md#Release note"
 evidence: |
   - Changed: The order's `status` field is now called `state`.
 recommendation: >-
-  Renaming a field of the public order JSON breaks partners' integrations,
-  yet the release note files it under "Changed" with no **BREAKING** marker
-  and does not tell consumers what to do. A partner reading the note cannot
-  tell that their integration needs an update, nor by when. Mark the item
-  **BREAKING** (or, with R-migration-1's fix, announce `status` as
-  deprecated with its removal date) and state the action: read `state`
-  instead of `status` in `GET /orders/{id}` responses. Also mark the item
-  in proposal.md's `## What Changes` as **BREAKING**.
+  A partner reading the release note sees an ordinary "Changed" item, not a
+  break, and is not told to act, so their integration fails in production
+  when the field disappears. Mark the item **BREAKING** (also in
+  `## What Changes`), and say what consumers must do and by when: read
+  `state` instead of `status`, `status` kept until the announced removal
+  date (see R-migration-1).
 history:
   - status: open
     by: migration
