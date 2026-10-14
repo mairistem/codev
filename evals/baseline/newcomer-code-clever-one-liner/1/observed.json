@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.31524280000000005,
+  "durationMs": 26708,
+  "consumption": {
+    "durationApiMs": 26548,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 26122,
+      "cacheRead": 280624,
+      "output": 2456
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/pricing.ts:9-10",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "A developer who has not seen the plan cannot answer \"at what price is a price premium?\": the rule is hidden in `(p.cents >> 4) & 0x3e8`, a shift and a bitmask with a magic hex value, which reads as a threshold but is not one (for example 128 cents gives 8 & 1000 = 8, \"hi\", while 256 cents gives 16 & 1000 = 0, \"lo\" — the grouping is not monotonic in price). The comma operator, `||=` inside an index expression and the reduce accumulator fold all of this into one line, and the names `bucket`, `ps`, `a`, `p`, \"hi\"/\"lo\" and the `Record<string, Price[]>` return type do not match the doc comment's \"cheap and premium\". Rewrite it as a named function with a named constant for the threshold (e.g. `PREMIUM_THRESHOLD_CENTS`), a plain comparison (`p.cents >= PREMIUM_THRESHOLD_CENTS`), a loop or two `filter` calls, and an explicit return type such as `{ cheap: Price[]; premium: Price[] }`; if the bit arithmetic is intended, a comment must say why — otherwise the developer should check the rule against the spec, since the shape hides what it computes.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`bucket` packs an unexplained bitmask threshold into a dense one-liner"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

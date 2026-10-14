@@ -1,0 +1,84 @@
+{
+  "format": 2,
+  "case": "privacy-control-ids-in-logs",
+  "error": null,
+  "costUsd": 0.3479794,
+  "durationMs": 28683,
+  "consumption": {
+    "durationApiMs": 28164,
+    "turns": 10,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1209,
+      "cacheCreation": 27684,
+      "cacheRead": 374672,
+      "output": 2529
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "log-fulfilment-batches",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/log-fulfilment-batches/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

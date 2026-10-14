@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "security-control-docs-only",
+  "error": null,
+  "costUsd": 0.31712260000000003,
+  "durationMs": 25184,
+  "consumption": {
+    "durationApiMs": 24546,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 26314,
+      "cacheRead": 325493,
+      "output": 2025
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "document-token-rotation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "3. Revoke the old token from the same page. Requests that still carry it\n   are refused with `401 Unauthorized`.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "README.md:19-20",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Confirm that revoking a token is enforced server-side on every request (the token is checked against its revoked state, not only hidden in the Settings page), and point the README at that behaviour. The repository holds no token issuance, revocation or 401 path (src/api.rs, src/db.rs, src/lib.rs), so the claim cannot be verified here. If revocation were not enforced, an integrator following step 3 after an exposure would believe the leaked token dead while an attacker holding it keeps full API access. If the token logic lives in another service, cite it; otherwise drop the guarantee until it exists.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Revocation guarantee documented without enforcing code in the repository"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/document-token-rotation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

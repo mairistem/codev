@@ -1,0 +1,164 @@
+{
+  "format": 2,
+  "case": "accessibility-code-dropdown-keyboard-trap",
+  "error": null,
+  "costUsd": 0.3701239999999999,
+  "durationMs": 32982,
+  "consumption": {
+    "durationApiMs": 31977,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 30077,
+      "cacheRead": 346080,
+      "output": 2964
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Tab is captured inside the open sort menu) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-sort-menu",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n  event.preventDefault();\n  items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SortMenu.tsx:23-25",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Do not intercept Tab (or Shift+Tab, which reaches this branch too since only event.key is tested): let it move focus out of the menu and close the menu, as the WAI-ARIA APG menu button pattern requires. Today a keyboard user who opens \"Sort\" and presses Tab or Shift+Tab only cycles through the four options forever; the only way out is to pick an option, which changes the sort. WCAG 2.1.2 No Keyboard Trap and 2.4.3 Focus Order. A native <select> would avoid the whole custom key handling.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Tab is captured inside the open sort menu"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 34,
+        "location": "src/components/SortMenu.tsx:21-30",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Handle Escape in onKeyDown: close the menu without calling onChange and return focus to the \"Sort\" button (button.current?.focus()). Today a keyboard or screen reader user who opens the menu by mistake and presses Escape stays in it; they cannot dismiss it without choosing an option. WCAG 2.1.1 Keyboard; WAI-ARIA APG menu button pattern.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Escape does not close the sort menu"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<button ref={button} type=\"button\" aria-haspopup=\"menu\" aria-expanded=\"false\" onClick={() => setOpen(!open)}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-3",
+        "line": 53,
+        "location": "src/components/SortMenu.tsx:34",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Bind it to the state: aria-expanded={open}. Today a screen reader user who activates \"Sort\" hears the button announced as collapsed while the menu is open, so the announced state contradicts what happened. WCAG 4.1.2 Name, Role, Value.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "aria-expanded is hard-coded to \"false\""
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-sort-menu/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

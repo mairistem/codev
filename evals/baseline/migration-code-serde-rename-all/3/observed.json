@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.3293716,
+  "durationMs": 28233,
+  "consumption": {
+    "durationApiMs": 27351,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 26557,
+      "cacheRead": 328118,
+      "output": 2514
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (camelCase renaming silently renames every existing order field) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (New required `default_currency` key makes existing config files fail to load) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so the existing fields keep serializing as `order_id`, `customer_id` and `total_cents`; the new `currency` field is the same in both casings and needs no attribute. If camelCase is ever wanted, follow docs/api.md's rule — emit both names for two releases of deprecation, mark the change **BREAKING** in the release note, and tell partners what to change.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "camelCase renaming silently renames every existing order field"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 27,
+        "location": "src/config.rs:9-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the field a default, with `#[serde(default = \"...\")]` returning \"EUR\" (the shop's currency before this change), so that existing `config.toml` files keep loading. Add a test that loads a config without the key. Otherwise, mark the change **BREAKING** and state in the release note that operators must add `default_currency` before upgrading.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "New required `default_currency` key makes existing config files fail to load"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

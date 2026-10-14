@@ -1,0 +1,131 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.3480924,
+  "durationMs": 27884,
+  "consumption": {
+    "durationApiMs": 27275,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1191,
+      "cacheCreation": 27779,
+      "cacheRead": 377102,
+      "output": 2471
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (rename_all camelCase silently renames the existing public JSON fields) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\npub struct OrderResponse {\n    pub order_id: i64,\n    pub customer_id: i64,\n    pub total_cents: i64,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `GET /orders/{id}` keeps emitting `order_id`, `customer_id` and `total_cents` (the new `currency` field is a single word and needs no rename). Today partners' integrations read `order_id`; after this change the JSON carries `orderId`, `customerId` and `totalCents`, so every partner reading the documented names gets a missing field on the first response after deploy. This is an unmarked breaking change: the release note only says \"Added\", and docs/api.md still lists the snake_case names and promises \"a field is never renamed or removed without two releases of deprecation\". If camelCase is really wanted, it needs a deprecation period (emit both names) and a **BREAKING** release note item.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "rename_all camelCase silently renames the existing public JSON fields"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 39,
+        "location": "src/config.rs:9-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the field a default (`#[serde(default = \"...\")]` returning \"EUR\", the currency orders had before this change) so every deployed `config.toml` written for the previous version keeps loading. As written, `config::load` on an existing file with only `database_url` and `listen` fails with a missing-field error and the service does not start after the upgrade. Only config.example.toml was updated, and the release note does not tell operators to add the key. Add a test that loads the old two-key configuration.",
+        "reported": true,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Existing config.toml files without default_currency no longer load"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

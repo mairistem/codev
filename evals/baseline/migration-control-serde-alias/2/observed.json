@@ -1,0 +1,72 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.28597700000000004,
+  "durationMs": 22192,
+  "consumption": {
+    "durationApiMs": 21764,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1183,
+      "cacheCreation": 26342,
+      "cacheRead": 186465,
+      "output": 1848
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "no-finding"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,72 @@
+{
+  "format": 2,
+  "case": "security-control-dynamic-query",
+  "error": null,
+  "costUsd": 0.2597964,
+  "durationMs": 15409,
+  "consumption": {
+    "durationApiMs": 14996,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1181,
+      "cacheCreation": 25351,
+      "cacheRead": 142742,
+      "output": 1373
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-ticket-filters",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-ticket-filters/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "no-finding"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

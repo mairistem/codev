@@ -1,0 +1,104 @@
+{
+  "format": 2,
+  "case": "security-code-sql-injection",
+  "error": null,
+  "costUsd": 0.289691,
+  "durationMs": 19971,
+  "consumption": {
+    "durationApiMs": 19630,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 26380,
+      "cacheRead": 234475,
+      "output": 1538
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (SQL injection through the search term) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-user-search",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\nreturn query<UserRow>(sql);\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/users.ts:10-11",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "CWE-89. Any caller holding the `support` role sends `GET /users/search?q=x' UNION SELECT ...--` (or `q=x'; DROP TABLE users;--`): `q` is only trimmed and length-checked in src/server.ts:13-14, then concatenated into the SQL string, and `query` is called without `params`, so node-postgres uses the simple query protocol and also runs stacked statements. The attacker reads any table of the database (the 100-char cap does not prevent it) and can modify or drop data. Bind the term as a parameter, as `query` in src/db.ts:5-6 documents (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + escaped + \"%\"])`, escaping `%`, `_` and `\\` in the term so it matches literally; add a test that a term containing a quote returns rows instead of failing or leaking.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "SQL injection through the search term"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-user-search/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

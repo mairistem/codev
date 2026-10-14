@@ -1,0 +1,100 @@
+{
+  "format": 2,
+  "case": "ops-control-bounded-retries",
+  "error": null,
+  "costUsd": 0.3659286,
+  "durationMs": 35063,
+  "consumption": {
+    "durationApiMs": 34133,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 29356,
+      "cacheRead": 340543,
+      "output": 3098
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "fetch-exchange-rates",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(error) => return Err(format!(\"rates feed {url}: {error} after {ATTEMPTS} attempts\")),\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/rates.rs:28-37",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "When the feed fails on its last attempt or returns a body that does not parse, the function returns an `Err` string without emitting any event: only the intermediate retries produce a `warn!`, and an invalid body produces nothing at all. Since the proposal says the caller silently keeps the previous day's rates, an outage of the central bank feed (or a format change) can leave stale rates in use for days with no error-level event an operator could alert on. Emit an `error!` with fields (attempts, error, stage such as \"http\" or \"decode\") before returning the error, so stale rates are visible. Confidence is low because no caller exists yet in the diff: a caller that logs the error at error level would cover it.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Final fetch failure leaves no log or signal of its own"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/fetch-exchange-rates/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

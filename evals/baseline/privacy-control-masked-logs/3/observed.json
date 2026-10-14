@@ -1,0 +1,158 @@
+{
+  "format": 2,
+  "case": "privacy-control-masked-logs",
+  "error": null,
+  "costUsd": 0.4186488,
+  "durationMs": 49456,
+  "consumption": {
+    "durationApiMs": 48823,
+    "turns": 10,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1203,
+      "cacheCreation": 31427,
+      "cacheRead": 376629,
+      "output": 4546
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Addresses with non-ASCII or percent-encoded characters reach the logs unmasked) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "mask-emails-in-logs",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/logger.ts:3",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The pattern requires the character right before `@` to be ASCII and the domain to be ASCII, and needs a literal `@`. `logInfo(\"signup\", { email: \"josé@example.fr\" })`, `\"ada@exämple.de\"` or a logged URL holding `ada%40example.org` match nothing and are written in full to the logs the hosting provider keeps 90 days — the very leak the change promises to stop (GDPR Art. 5(1)(c) and 32). Match any non-space, non-`@` run around `@` (e.g. `/([^\\s@<>\"'])[^\\s@<>\"']*(?:@|%40)([^\\s@<>\"']+\\.[^\\s@<>\"'.]{2,})/giu`) and add test cases for a Unicode local part, an IDN domain and a percent-encoded `@`.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Addresses with non-ASCII or percent-encoded characters reach the logs unmasked"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\nexport function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 34,
+        "location": "src/logger.ts:5-7",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "`a***@example.org` is still personal data when the domain is a small company or a personal domain: with the 90-day retention and the other fields of the log line, the customer can be re-identified (GDPR Art. 5(1)(c), Art. 25). Whether this matters depends on the customers' domains, which the reviewer could not see; if no log reader needs the domain, replace the whole address with a fixed token or a keyed hash, and ask the team whether the first letter and domain have a stated purpose.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The masked form keeps the first letter and the full domain"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (const [key, value] of Object.entries(fields)) {\n  safe[key] = typeof value === \"string\" ? maskEmails(value) : value;\n}\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 57,
+        "location": "src/logger.ts:12-15",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Only the values pass through `maskEmails`; a field map keyed by address, such as `logInfo(\"quota\", { [user.email]: 3 })`, writes the full address as a JSON key. Mask the key too (`safe[maskEmails(key)] = …`) so the module keeps its promise of never writing a full e-mail address.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Field names are logged without masking"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/mask-emails-in-logs/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

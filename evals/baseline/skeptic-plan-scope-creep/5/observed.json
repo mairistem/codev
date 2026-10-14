@@ -1,0 +1,153 @@
+{
+  "format": 2,
+  "case": "skeptic-plan-scope-creep",
+  "error": null,
+  "costUsd": 0.44151940000000006,
+  "durationMs": 58991,
+  "consumption": {
+    "durationApiMs": 58419,
+    "turns": 11,
+    "permissionDenials": 4,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 32312,
+      "cacheRead": 488392,
+      "output": 4217
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-csv-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a single CSV export answers it. Nothing in the proposal asks for PDF, XLSX, XML or JSON; the design rejects the simple solution only as \"a single CSV function (not extensible)\", which is speculative. Drop the plugin system from What Changes, replace \"design.md#Decision: Exports go through a plugin registry\" with a plain CSV renderer behind `GET /invoices.csv`, and remove task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"), which no spec requirement backs. A registry can come in its own change when a second format is actually requested.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Plugin registry for formats nobody asked for"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 35,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The Why gives no need for a per-user format preference, and with CSV as the only format the choice is empty. The requirement is also unverifiable as written: \"**THEN** exports use CSV\" while the route is `/invoices.csv` itself, so the preference changes nothing observable; and \"**WHEN** no plugin is installed\" contradicts the design, where CSV is always \"the first plugin\". Remove the requirement and its scenarios, the \"A settings page where each user picks their preferred export format.\" line of What Changes, the sentence \"A settings page stores each user's preferred format.\" of the design, `web/src/settings/` from Impact, and task 2.1.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Settings page for a preferred export format is out of scope"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 58,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The plan adds `GET /invoices.csv`, a new endpoint returning every invoice of a month with its customer, yet `security` and `personal-data` are unticked with no reason, and no spec scenario says who may export (the spec only names \"an accountant\"; `src/server.ts` has no authentication). The plan also edits `web/src/settings/` (Impact) with `user-interface` unticked. Tick `security` and `personal-data` so their experts review who can call the endpoint and what customer data it returns; tick `user-interface` too if the settings page survives R-skeptic-2, otherwise remove it from Impact. Give a reason on the line of any domain left unticked.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Domains all unticked though the plan exposes invoices and changes a UI page"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-csv-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

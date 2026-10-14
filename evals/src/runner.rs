@@ -3,7 +3,7 @@
 //! strayed — come first and are unit-tested; the shell parts below them
 //! touch the disk and start processes, and are exercised by real runs.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -11,7 +11,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
-use crate::observed::{FORMAT, Observed, RunInfo};
+use crate::observed::{Consumption, FORMAT, Observed, RunInfo, Tokens};
+use crate::suite::{Recorded, RunState};
 
 /// The `change.yaml` the runner writes: every role in `disable` set to
 /// `never`, so the evaluated role reviews alone.
@@ -139,9 +140,24 @@ impl ClaudeSettings {
     }
 }
 
-/// The tools the agent may use. git by read-only subcommand only:
-/// `Bash(git:*)` would let it run any program through git's configuration.
-pub const ALLOWED_TOOLS: &str = "Bash(codev:*) Bash(git diff:*) Bash(git log:*) Bash(git show:*) Bash(git status:*) Read Write Edit Glob Grep Skill";
+/// Claude Code's sandbox, as a user who works with it would set it: every
+/// shell command is approved without a prompt — compound ones included —
+/// and runs where it can write only in the working directory and the
+/// temporary directory, reach no host but the API, and not read the key.
+/// `failIfUnavailable`: a machine without the sandbox fails the case
+/// rather than run it unconfined. The file tools are outside the sandbox;
+/// `acceptEdits` accepts their edits inside the working directory only.
+pub const SANDBOX_SETTINGS: &str = r#"{"sandbox":{"enabled":true,"autoAllowBashIfSandboxed":true,"allowUnsandboxedCommands":false,"failIfUnavailable":true,"network":{"allowedDomains":["api.anthropic.com"]},"credentials":{"envVars":["ANTHROPIC_API_KEY"]}}}"#;
+
+/// Tools that reach the network outside the sandbox's reach.
+pub const DISALLOWED_TOOLS: &str = "WebFetch WebSearch";
+
+/// What the skills grant in their `allowed-tools`: the sandbox approves
+/// only the commands Claude Code knows (`ls`, `git`, `cat`…) without a
+/// prompt, and a user's session approves `codev` through the skill. The
+/// evaluation's agent reads the skill file instead of invoking the skill,
+/// so the runner grants it the same.
+pub const ALLOWED_TOOLS: &str = "Bash(codev:*)";
 
 /// The arguments of `claude` for one case.
 pub fn claude_args(prompt: &str, settings: &ClaudeSettings) -> Vec<String> {
@@ -153,8 +169,12 @@ pub fn claude_args(prompt: &str, settings: &ClaudeSettings) -> Vec<String> {
         "--no-session-persistence",
         "--permission-mode",
         "acceptEdits",
+        "--settings",
+        SANDBOX_SETTINGS,
         "--allowedTools",
         ALLOWED_TOOLS,
+        "--disallowedTools",
+        DISALLOWED_TOOLS,
         "--max-budget-usd",
     ]
     .iter()
@@ -168,12 +188,31 @@ pub fn claude_args(prompt: &str, settings: &ClaudeSettings) -> Vec<String> {
     args
 }
 
-/// The cases still to run: those without an observation, or all of them
+/// One run of a case: its repetition `n`, from 1.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Job<'a> {
+    pub case: &'a Case,
+    pub n: u32,
+}
+
+/// The runs still to make for `repeat` repetitions of each case: those
+/// without an observation or whose observation is in error, or all of them
 /// with `rerun`.
-pub fn pending<'a>(cases: &'a [Case], recorded: &BTreeSet<String>, rerun: bool) -> Vec<&'a Case> {
+pub fn pending<'a>(
+    cases: &'a [Case],
+    recorded: &Recorded,
+    repeat: u32,
+    rerun: bool,
+) -> Vec<Job<'a>> {
     cases
         .iter()
-        .filter(|c| rerun || !recorded.contains(&c.id))
+        .flat_map(|case| (1..=repeat).map(move |n| Job { case, n }))
+        .filter(|job| {
+            rerun
+                || recorded
+                    .get(&(job.case.id.clone(), job.n))
+                    .is_none_or(|state| *state == RunState::InError)
+        })
         .collect()
 }
 
@@ -206,18 +245,27 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     out
 }
 
-/// What Claude Code's `--output-format json` reports: cost, duration, and
-/// whether it ended in error.
-pub fn parse_claude_output(stdout: &str) -> (Option<f64>, Option<u64>, Option<String>) {
+/// What Claude Code's `--output-format json` reports about a run.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ClaudeOutput {
+    pub cost_usd: Option<f64>,
+    pub duration_ms: Option<u64>,
+    pub consumption: Option<Consumption>,
+    /// Why the run ended in error, if it did.
+    pub error: Option<String>,
+}
+
+/// What Claude Code's `--output-format json` reports: cost, duration, what
+/// the run consumed, and whether it ended in error.
+pub fn parse_claude_output(stdout: &str) -> ClaudeOutput {
     let Ok(value) = serde_json::from_str::<serde_json::Value>(stdout.trim()) else {
-        return (
-            None,
-            None,
-            Some(format!(
+        return ClaudeOutput {
+            error: Some(format!(
                 "Claude Code's output is not JSON: {}",
                 excerpt(stdout)
             )),
-        );
+            ..ClaudeOutput::default()
+        };
     };
     let cost = value.get("total_cost_usd").and_then(|v| v.as_f64());
     let duration = value.get("duration_ms").and_then(|v| v.as_u64());
@@ -232,7 +280,53 @@ pub fn parse_claude_output(stdout: &str) -> (Option<f64>, Option<u64>, Option<St
             excerpt(result)
         )
     });
-    (cost, duration, error)
+    ClaudeOutput {
+        cost_usd: cost,
+        duration_ms: duration,
+        consumption: Some(consumption(&value)),
+        error,
+    }
+}
+
+/// The tokens, summed over `modelUsage` — every model the run used, the
+/// housekeeping one included, as the cost is — or read from `usage` when
+/// `modelUsage` is absent; the turns, the API duration and the denials.
+fn consumption(value: &serde_json::Value) -> Consumption {
+    let u64_at = |v: &serde_json::Value, key: &str| v.get(key).and_then(|x| x.as_u64());
+    let by_model = value.get("modelUsage").and_then(|m| m.as_object());
+    let (tokens, models) = match by_model {
+        Some(models) if !models.is_empty() => {
+            let mut sum = Tokens::default();
+            for usage in models.values() {
+                sum.input += u64_at(usage, "inputTokens").unwrap_or(0);
+                sum.cache_creation += u64_at(usage, "cacheCreationInputTokens").unwrap_or(0);
+                sum.cache_read += u64_at(usage, "cacheReadInputTokens").unwrap_or(0);
+                sum.output += u64_at(usage, "outputTokens").unwrap_or(0);
+            }
+            (Some(sum), models.keys().cloned().collect())
+        }
+        _ => {
+            let tokens = value.get("usage").map(|usage| Tokens {
+                input: u64_at(usage, "input_tokens").unwrap_or(0),
+                cache_creation: u64_at(usage, "cache_creation_input_tokens").unwrap_or(0),
+                cache_read: u64_at(usage, "cache_read_input_tokens").unwrap_or(0),
+                output: u64_at(usage, "output_tokens").unwrap_or(0),
+            });
+            (tokens, Vec::new())
+        }
+    };
+    let mut models: Vec<String> = models;
+    models.sort();
+    Consumption {
+        duration_api_ms: u64_at(value, "duration_api_ms"),
+        turns: u64_at(value, "num_turns"),
+        permission_denials: value
+            .get("permission_denials")
+            .and_then(|d| d.as_array())
+            .map(|d| d.len() as u64),
+        models,
+        tokens,
+    }
 }
 
 fn excerpt(text: &str) -> String {
@@ -299,7 +393,50 @@ pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
     let claude = version(&tools.claude, "claude")?;
     version(&tools.git, "git")?;
     let codev = version(&tools.codev, "codev")?;
+    let runs = |program: &str, arg: &str| {
+        Command::new(program)
+            .arg(arg)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+    };
+    if let Some(missing) = sandbox_missing(std::env::consts::OS, &runs) {
+        return Err(missing);
+    }
     Ok((claude, codev))
+}
+
+/// What Claude Code's sandbox needs and this machine lacks, by operating
+/// system, so that a run is refused once rather than every case failing
+/// one by one; `None` when nothing is missing. `runs(program, arg)` says
+/// whether the program runs.
+pub fn sandbox_missing(os: &str, runs: &dyn Fn(&str, &str) -> bool) -> Option<String> {
+    match os {
+        "linux" => {
+            let missing: Vec<&str> = [
+                ("bwrap", "--version", "bubblewrap"),
+                ("socat", "-V", "socat"),
+            ]
+            .into_iter()
+            .filter(|(program, arg, _)| !runs(program, arg))
+            .map(|(_, _, package)| package)
+            .collect();
+            (!missing.is_empty()).then(|| {
+                format!(
+                    "Claude Code's sandbox needs {} on Linux (`sudo apt-get install bubblewrap socat`, \
+                     and on Ubuntu 24.04 the AppArmor profile for bwrap, see CONTRIBUTING.md); \
+                     the suite does not run the agent without it",
+                    missing.join(" and ")
+                )
+            })
+        }
+        "macos" => None,
+        other => Some(format!(
+            "Claude Code's sandbox does not run on {other}; run the suite on macOS, Linux or WSL2"
+        )),
+    }
 }
 
 /// Reads a directory into a map of relative `/`-separated paths to bytes.
@@ -341,13 +478,29 @@ fn write_tree(root: &Path, files: &BTreeMap<String, Vec<u8>>) -> std::io::Result
     Ok(())
 }
 
-fn run_tool(tool: &Path, args: &[&str], dir: &Path, codev_dir: &Path) -> Result<String, String> {
-    let output = Command::new(tool)
-        .args(args)
+/// A command the runner starts itself, outside the sandbox: once the agent
+/// has run, the case's directory is untrusted, so the command gets neither
+/// the API key nor any git configuration but the repository's own.
+fn tool_command(tool: &Path, dir: &Path, codev_dir: &Path) -> Command {
+    let mut command = Command::new(tool);
+    command
         .current_dir(dir)
         .env("CODEV_NO_UPDATE_CHECK", "1")
         .env("PATH", path_with(codev_dir))
-        .stdin(Stdio::null())
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_GLOBAL", null_device())
+        .env_remove("ANTHROPIC_API_KEY")
+        .stdin(Stdio::null());
+    command
+}
+
+fn null_device() -> &'static str {
+    if cfg!(windows) { "NUL" } else { "/dev/null" }
+}
+
+fn run_tool(tool: &Path, args: &[&str], dir: &Path, codev_dir: &Path) -> Result<String, String> {
+    let output = tool_command(tool, dir, codev_dir)
+        .args(args)
         .output()
         .map_err(|e| format!("cannot run {}: {e}", tool.display()))?;
     if !output.status.success() {
@@ -371,7 +524,10 @@ fn path_with(dir: &Path) -> std::ffi::OsString {
     std::env::join_paths(paths).unwrap_or_default()
 }
 
-fn git(tools: &Tools, dir: &Path, args: &[&str]) -> Result<String, String> {
+/// The arguments of every git call: no hook, no file-system monitor — the
+/// two settings of a repository's configuration that make git run a
+/// program — and a fixed identity.
+pub fn git_args<'a>(args: &[&'a str]) -> Vec<&'a str> {
     let mut all = vec![
         "-c",
         "user.name=codev-evals",
@@ -381,9 +537,25 @@ fn git(tools: &Tools, dir: &Path, args: &[&str]) -> Result<String, String> {
         "commit.gpgsign=false",
         "-c",
         "core.hooksPath=.git/no-hooks",
+        "-c",
+        "core.fsmonitor=false",
     ];
     all.extend_from_slice(args);
-    run_tool(&tools.git, &all, dir, codev_dir(tools))
+    all
+}
+
+fn git(tools: &Tools, dir: &Path, args: &[&str]) -> Result<String, String> {
+    run_tool(&tools.git, &git_args(args), dir, codev_dir(tools))
+}
+
+/// Why a run cannot be trusted when its agent changed the repository's
+/// configuration, which git would read afterwards outside the sandbox.
+pub fn config_tampered(before: &[u8], after: Option<&[u8]>) -> Option<String> {
+    (after != Some(before)).then(|| {
+        "the run modified .git/config, which the runner reads outside the sandbox; \
+         its observation is not trusted"
+            .to_string()
+    })
 }
 
 fn codev_dir(tools: &Tools) -> &Path {
@@ -537,12 +709,13 @@ fn terminate(child: &mut std::process::Child) {
     let _ = child.wait();
 }
 
-/// Runs one case and returns its observation; never fails, a failure is
-/// the observation's `error`.
+/// Runs one repetition of a case in `work_dir`, its working copy, set up
+/// from the fixture in `case_dir`; returns its observation and never fails:
+/// a failure is the observation's `error`.
 pub fn run_case(
     case: &Case,
     case_dir: &Path,
-    work: &Path,
+    work_dir: &Path,
     log: &Path,
     tools: &Tools,
     settings: &ClaudeSettings,
@@ -554,35 +727,41 @@ pub fn run_case(
         error: None,
         cost_usd: None,
         duration_ms: None,
+        consumption: None,
         strayed: Vec::new(),
         review: None,
         files: BTreeMap::new(),
     };
-    let dir = work.join(&case.id);
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    if let Err(e) = setup(case, case_dir, &dir, tools, date) {
+    if let Err(e) = setup(case, case_dir, work_dir, tools, date) {
         observed.error = Some(e);
         return observed;
     }
+    let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
     let args = claude_args(&prompt(case), settings);
-    match run_claude(&dir, tools, &args, settings.timeout, log) {
+    match run_claude(work_dir, tools, &args, settings.timeout, log) {
         Err(e) => observed.error = Some(e),
         Ok(stdout) => {
-            let (cost, duration, error) = parse_claude_output(&stdout);
-            observed.cost_usd = cost;
-            observed.duration_ms = duration;
-            observed.error = error;
+            let output = parse_claude_output(&stdout);
+            observed.cost_usd = output.cost_usd;
+            observed.duration_ms = output.duration_ms;
+            observed.consumption = output.consumption;
+            observed.error = output.error;
         }
+    }
+    if observed.error.is_none() {
+        let after = fs::read(work_dir.join(".git").join("config")).ok();
+        observed.error = config_tampered(&config_before, after.as_deref());
     }
     if observed.error.is_some() {
         return observed;
     }
     if let Ok(status) = git(
         tools,
-        &dir,
+        work_dir,
         &["status", "--porcelain", "-z", "--untracked-files=all"],
     ) {
         observed.strayed = strayed(&status, case);
@@ -590,10 +769,8 @@ pub fn run_case(
     if case.step.records_findings() {
         // codev exits with 1 when the record has an error: its JSON is
         // still the observation, only output that is not JSON is an error.
-        let output = Command::new(&tools.codev)
+        let output = tool_command(&tools.codev, work_dir, codev_dir(tools))
             .args(["review", "--change", &case.change, "--json"])
-            .current_dir(&dir)
-            .env("CODEV_NO_UPDATE_CHECK", "1")
             .output();
         match output {
             Ok(out) => match serde_json::from_slice::<serde_json::Value>(&out.stdout) {
@@ -602,12 +779,12 @@ pub fn run_case(
             },
             Err(e) => observed.error = Some(format!("cannot run codev review: {e}")),
         }
-        if let Ok(record) = fs::read(dir.join(case.change_dir()).join("review.md")) {
+        if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
             let _ = fs::write(log.join("review.md"), record);
         }
     }
     for path in case.checked_paths() {
-        let content = fs::read_to_string(dir.join(&path)).ok();
+        let content = fs::read_to_string(work_dir.join(&path)).ok();
         observed.files.insert(path, content);
     }
     observed
@@ -624,25 +801,28 @@ pub struct RunOptions {
     pub settings: ClaudeSettings,
 }
 
-/// Runs `cases` `jobs` at a time, writing each `observed.json` as soon as
-/// it is known, so an interrupted run keeps what it measured.
-pub fn run_cases(cases: &[&Case], options: &RunOptions, date: &str) {
-    let queue: Arc<Mutex<Vec<&Case>>> = Arc::new(Mutex::new(cases.iter().rev().copied().collect()));
+/// Runs the repetitions `jobs` at a time, each case's repetition `n` set up
+/// in `<work>/<case>-<n>` and logged in `<out>/<case>/<n>/`, writing each
+/// `observed.json` as soon as it is known, so an interrupted run keeps what
+/// it measured.
+pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
+    let queue: Arc<Mutex<Vec<Job>>> = Arc::new(Mutex::new(pending.iter().rev().copied().collect()));
     std::thread::scope(|scope| {
         for _ in 0..options.jobs.max(1) {
             let queue = Arc::clone(&queue);
             scope.spawn(move || {
                 loop {
-                    let Some(case) = queue.lock().expect("queue lock").pop() else {
+                    let Some(Job { case, n }) = queue.lock().expect("queue lock").pop() else {
                         break;
                     };
-                    eprintln!("[codev-evals] {} — running", case.id);
+                    eprintln!("[codev-evals] {} #{n} — running", case.id);
                     let case_dir = options.repo.join("evals").join("cases").join(&case.id);
-                    let log = options.out.join(&case.id);
+                    let log = options.out.join(&case.id).join(n.to_string());
+                    let work = options.work.join(format!("{}-{n}", case.id));
                     let observed = run_case(
                         case,
                         &case_dir,
-                        &options.work,
+                        &work,
                         &log,
                         &options.tools,
                         &options.settings,
@@ -651,17 +831,17 @@ pub fn run_cases(cases: &[&Case], options: &RunOptions, date: &str) {
                     let text = serde_json::to_string_pretty(&observed).expect("serializes") + "\n";
                     if let Err(e) = fs::write(log.join("observed.json"), text) {
                         eprintln!(
-                            "[codev-evals] {} — cannot write observed.json: {e}",
+                            "[codev-evals] {} #{n} — cannot write observed.json: {e}",
                             case.id
                         );
                     }
                     eprintln!(
-                        "[codev-evals] {} — {}",
+                        "[codev-evals] {} #{n} — {}",
                         case.id,
                         observed.error.as_deref().unwrap_or("done")
                     );
                     if !options.keep {
-                        let _ = fs::remove_dir_all(options.work.join(&case.id));
+                        let _ = fs::remove_dir_all(&work);
                     }
                 }
             });
@@ -787,28 +967,155 @@ mod tests {
     }
 
     #[test]
-    fn git_is_allowed_by_read_only_subcommand_only() {
-        assert!(!ALLOWED_TOOLS.contains("Bash(git:*)"));
-        assert!(ALLOWED_TOOLS.contains("Bash(git diff:*)"));
+    fn git_runs_no_hook_and_no_file_system_monitor() {
+        let args = git_args(&["status"]);
+        let config: Vec<&str> = args
+            .windows(2)
+            .filter(|w| w[0] == "-c")
+            .map(|w| w[1])
+            .collect();
+        assert!(config.contains(&"core.hooksPath=.git/no-hooks"), "{args:?}");
+        assert!(config.contains(&"core.fsmonitor=false"), "{args:?}");
+        assert_eq!(args.last(), Some(&"status"));
     }
 
     #[test]
-    fn a_resumed_run_runs_only_unrecorded_cases() {
-        let cases: Vec<Case> = ["a", "b", "c", "d", "e"]
-            .iter()
+    fn the_runner_starts_its_tools_without_the_key_or_a_global_configuration() {
+        let command = tool_command(Path::new("git"), Path::new("."), Path::new("."));
+        let envs: Vec<(String, Option<String>)> = command
+            .get_envs()
+            .map(|(k, v)| {
+                (
+                    k.to_string_lossy().into_owned(),
+                    v.map(|v| v.to_string_lossy().into_owned()),
+                )
+            })
+            .collect();
+        assert!(
+            envs.contains(&("ANTHROPIC_API_KEY".into(), None)),
+            "{envs:?}"
+        );
+        assert!(envs.contains(&("GIT_CONFIG_NOSYSTEM".into(), Some("1".into()))));
+        assert!(
+            envs.iter()
+                .any(|(k, v)| k == "GIT_CONFIG_GLOBAL" && v.is_some())
+        );
+    }
+
+    #[test]
+    fn a_modified_git_config_is_an_error() {
+        let before = b"[core]\n\tbare = false\n";
+        assert_eq!(config_tampered(before, Some(before)), None);
+        let after = b"[core]\n\tbare = false\n\tfsmonitor = curl evil\n";
+        assert!(
+            config_tampered(before, Some(after))
+                .unwrap()
+                .contains(".git/config")
+        );
+        assert!(
+            config_tampered(before, None).is_some(),
+            "a removed config too"
+        );
+    }
+
+    #[test]
+    fn claude_runs_in_the_sandbox() {
+        let args = claude_args("p", &ClaudeSettings::from_env(&|_| None).unwrap());
+        let after = |flag: &str| {
+            args.iter()
+                .position(|a| a == flag)
+                .map(|i| args[i + 1].clone())
+        };
+        assert_eq!(
+            after("--allowedTools").as_deref(),
+            Some("Bash(codev:*)"),
+            "exactly what the skills grant"
+        );
+        assert!(!args.iter().any(|a| a.contains("bypassPermissions")));
+        assert_eq!(after("--permission-mode").as_deref(), Some("acceptEdits"));
+        assert_eq!(
+            after("--disallowedTools").as_deref(),
+            Some("WebFetch WebSearch")
+        );
+        let settings: serde_json::Value =
+            serde_json::from_str(&after("--settings").unwrap()).unwrap();
+        let sandbox = &settings["sandbox"];
+        assert_eq!(sandbox["enabled"], true);
+        assert_eq!(sandbox["autoAllowBashIfSandboxed"], true);
+        assert_eq!(sandbox["allowUnsandboxedCommands"], false);
+        assert_eq!(sandbox["failIfUnavailable"], true);
+        assert_eq!(
+            sandbox["network"]["allowedDomains"],
+            json!(["api.anthropic.com"])
+        );
+        assert_eq!(
+            sandbox["credentials"]["envVars"],
+            json!(["ANTHROPIC_API_KEY"])
+        );
+    }
+
+    fn cases(ids: &[&str]) -> Vec<Case> {
+        ids.iter()
             .map(|id| {
                 let mut c = a_case("security", Kind::Control, &[]);
                 c.id = (*id).into();
                 c
             })
-            .collect();
-        let recorded: BTreeSet<String> = ["a", "c", "e"].iter().map(|s| s.to_string()).collect();
-        let ids: Vec<&str> = pending(&cases, &recorded, false)
+            .collect()
+    }
+
+    fn jobs(pending: &[Job]) -> Vec<String> {
+        pending
             .iter()
-            .map(|c| c.id.as_str())
+            .map(|j| format!("{}#{}", j.case.id, j.n))
+            .collect()
+    }
+
+    #[test]
+    fn a_resumed_run_runs_only_unrecorded_cases() {
+        let cases = cases(&["a", "b", "c", "d", "e"]);
+        let recorded: Recorded = ["a", "c", "e"]
+            .iter()
+            .map(|s| ((s.to_string(), 1), RunState::Done))
             .collect();
-        assert_eq!(ids, ["b", "d"]);
-        assert_eq!(pending(&cases, &recorded, true).len(), 5);
+        assert_eq!(jobs(&pending(&cases, &recorded, 1, false)), ["b#1", "d#1"]);
+        assert_eq!(pending(&cases, &recorded, 1, true).len(), 5);
+    }
+
+    #[test]
+    fn each_case_is_repeated() {
+        let cases = cases(&["a", "b"]);
+        let all = pending(&cases, &Recorded::new(), 3, false);
+        assert_eq!(jobs(&all), ["a#1", "a#2", "a#3", "b#1", "b#2", "b#3"]);
+    }
+
+    #[test]
+    fn pending_runs_only_missing_repetitions() {
+        let cases = cases(&["a"]);
+        let recorded: Recorded = [
+            (("a".to_string(), 1), RunState::Done),
+            (("a".to_string(), 2), RunState::Done),
+        ]
+        .into();
+        assert_eq!(
+            jobs(&pending(&cases, &recorded, 5, false)),
+            ["a#3", "a#4", "a#5"]
+        );
+    }
+
+    #[test]
+    fn a_repetition_in_error_is_pending() {
+        let cases = cases(&["ops-code-no-timeout"]);
+        let recorded: Recorded = [
+            (("ops-code-no-timeout".to_string(), 1), RunState::Done),
+            (("ops-code-no-timeout".to_string(), 2), RunState::InError),
+            (("ops-code-no-timeout".to_string(), 3), RunState::Done),
+        ]
+        .into();
+        assert_eq!(
+            jobs(&pending(&cases, &recorded, 3, false)),
+            ["ops-code-no-timeout#2"]
+        );
     }
 
     #[test]
@@ -819,6 +1126,8 @@ mod tests {
             date: "2026-10-13".into(),
             claude_version: None,
             codev_version: None,
+            repeat: None,
+            jobs: None,
         };
         assert!(check_resume(&recorded, None).is_ok());
         let err = check_resume(&recorded, Some("claude-sonnet-4-5")).unwrap_err();
@@ -843,11 +1152,81 @@ mod tests {
     #[test]
     fn claude_output_gives_cost_duration_and_errors() {
         let ok = r#"{"type":"result","subtype":"success","is_error":false,"duration_ms":81234,"total_cost_usd":0.42,"result":"done"}"#;
-        assert_eq!(parse_claude_output(ok), (Some(0.42), Some(81234), None));
+        let output = parse_claude_output(ok);
+        assert_eq!(
+            (output.cost_usd, output.duration_ms, output.error),
+            (Some(0.42), Some(81234), None)
+        );
         let budget = r#"{"subtype":"error_max_budget_usd","is_error":true,"total_cost_usd":3.01}"#;
-        let (_, _, error) = parse_claude_output(budget);
-        assert!(error.unwrap().contains("error_max_budget_usd"));
-        assert!(parse_claude_output("oops").2.unwrap().contains("not JSON"));
+        assert!(
+            parse_claude_output(budget)
+                .error
+                .unwrap()
+                .contains("error_max_budget_usd")
+        );
+        assert!(
+            parse_claude_output("oops")
+                .error
+                .unwrap()
+                .contains("not JSON")
+        );
+    }
+
+    /// The figures of the baseline's `security-code-sql-injection` run.
+    const SQL_INJECTION_OUTPUT: &str = r#"{"type":"result","subtype":"success","is_error":false,
+        "duration_ms":28004,"duration_api_ms":27747,"num_turns":9,"total_cost_usd":0.3511748,
+        "usage":{"input_tokens":14,"cache_creation_input_tokens":29349,"cache_read_input_tokens":304094,"output_tokens":2713},
+        "modelUsage":{
+          "claude-haiku-4-5-20251001":{"inputTokens":1173,"outputTokens":15,"cacheReadInputTokens":0,"cacheCreationInputTokens":0},
+          "claude-opus-5-5":{"inputTokens":14,"outputTokens":2713,"cacheReadInputTokens":304094,"cacheCreationInputTokens":29349}},
+        "permission_denials":[{"tool_name":"Bash"}],"result":"done"}"#;
+
+    #[test]
+    fn claude_output_gives_consumption() {
+        let c = parse_claude_output(SQL_INJECTION_OUTPUT)
+            .consumption
+            .unwrap();
+        assert_eq!(c.turns, Some(9));
+        assert_eq!(c.duration_api_ms, Some(27747));
+        assert_eq!(c.permission_denials, Some(1));
+        assert_eq!(
+            c.tokens,
+            Some(Tokens {
+                input: 1187,
+                cache_creation: 29349,
+                cache_read: 304094,
+                output: 2728,
+            })
+        );
+        assert_eq!(c.models, ["claude-haiku-4-5-20251001", "claude-opus-5-5"]);
+    }
+
+    #[test]
+    fn consumption_sums_every_model_or_falls_back_on_usage() {
+        let only_usage = r#"{"is_error":false,"num_turns":2,
+            "usage":{"input_tokens":3,"cache_creation_input_tokens":4,"cache_read_input_tokens":5,"output_tokens":6}}"#;
+        let c = parse_claude_output(only_usage).consumption.unwrap();
+        assert_eq!(
+            c.tokens,
+            Some(Tokens {
+                input: 3,
+                cache_creation: 4,
+                cache_read: 5,
+                output: 6,
+            })
+        );
+        assert!(c.models.is_empty());
+    }
+
+    #[test]
+    fn a_missing_usage_is_absent_not_zero() {
+        let c = parse_claude_output(r#"{"is_error":true,"subtype":"error_during_execution"}"#)
+            .consumption
+            .unwrap();
+        assert_eq!(c.tokens, None);
+        assert_eq!(c.turns, None);
+        assert_eq!(c.permission_denials, None);
+        assert_eq!(parse_claude_output("oops").consumption, None);
     }
 
     #[test]
@@ -855,6 +1234,23 @@ mod tests {
         assert_eq!(civil_date(0), "1970-01-01");
         assert_eq!(civil_date(20_739), "2026-10-13");
         assert_eq!(civil_date(11_016), "2000-02-29");
+    }
+
+    #[test]
+    fn a_machine_without_the_sandbox_is_refused_once() {
+        let none = |_: &str, _: &str| false;
+        let all = |_: &str, _: &str| true;
+        let err = sandbox_missing("linux", &none).unwrap();
+        assert!(err.contains("bubblewrap and socat"), "{err}");
+        let only_bwrap = |p: &str, _: &str| p == "bwrap";
+        let err = sandbox_missing("linux", &only_bwrap).unwrap();
+        assert!(
+            err.contains("needs socat") && !err.contains("bubblewrap and"),
+            "{err}"
+        );
+        assert_eq!(sandbox_missing("linux", &all), None);
+        assert_eq!(sandbox_missing("macos", &none), None);
+        assert!(sandbox_missing("windows", &all).unwrap().contains("WSL2"));
     }
 
     #[test]

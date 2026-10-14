@@ -1,0 +1,135 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.3061908,
+  "durationMs": 22096,
+  "consumption": {
+    "durationApiMs": 21780,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 26250,
+      "cacheRead": 284034,
+      "output": 1919
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (rename_all = \"camelCase\" renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (New required default_currency key makes existing config.toml fail to load) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `order_id`, `customer_id` and `total_cents` keep their names and only `currency` is added. Today `GET /orders/{id}` serializes them as `orderId`, `customerId` and `totalCents`, so every partner integration reading `order_id`/`customer_id`/`total_cents` gets missing fields right after the release, without any BREAKING item, contrary to docs/api.md (\"a field is never renamed or removed without two releases of deprecation\") and to the docs, which still list the snake_case names. If camelCase is wanted, emit both names during the deprecation period and announce it as BREAKING in the release note.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "rename_all = \"camelCase\" renames every existing order JSON field"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "pub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 25,
+        "location": "src/config.rs:10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the field a default (`#[serde(default = \"default_currency\")]` returning \"EUR\", the currency orders had before) and test that a config without the key still loads. Today every deployed `config.toml`, which holds only `database_url` and `listen`, makes `toml::from_str` return a \"missing field `default_currency`\" error at start-up, so the upgraded service does not start; the release note names no manual step. Otherwise mark it BREAKING in the release note with the key operators must add.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "New required default_currency key makes existing config.toml fail to load"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

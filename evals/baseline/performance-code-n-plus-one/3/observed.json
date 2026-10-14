@@ -1,0 +1,104 @@
+{
+  "format": 2,
+  "case": "performance-code-n-plus-one",
+  "error": null,
+  "costUsd": 0.30318480000000003,
+  "durationMs": 26545,
+  "consumption": {
+    "durationApiMs": 25783,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1195,
+      "cacheCreation": 25670,
+      "cacheRead": 327309,
+      "output": 1568
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (One query per order to load its lines (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-summaries",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for order in orders {\n    let lines = db.lines_of_order(order.id)?;\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "api/src/orders.rs:14-15",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "`order_summaries` runs one query for the orders, then one `lines_of_order` query per order: up to 101 round trips on every customer page view (the proposal's Domains line), growing with the number of orders shown. Collect the order ids and load every line in one query with the existing `db.lines_of_orders(&ids)` (`api/src/db.rs:31`, `WHERE order_id = ANY($1)`), then sum the totals per `order_id` (e.g. into a `HashMap<i64, i64>`), and build the summaries in the orders' original order so the result is unchanged — orders with no line keep a total of 0.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "One query per order to load its lines (N+1)"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-summaries/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -554,9 +554,12 @@ role.
 
 The reference scores are the committed baseline,
 [`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md):
-one run per case, on Claude Code's default model at the date it names. One
-run is a noisy point, not a proof; a change to a role file is judged by
-its scores before and after, on the same model. The suite never runs in
+five runs of every case, on Claude Code's default model at the date it
+names, each score the median of the five runs. A model does not answer the
+same way twice, so a change to a role file is judged with
+`codev-evals compare --quality-only` against the baseline, on the same
+model: each role's median must stay within the range the baseline's runs
+spanned. The suite never runs in
 regular CI and is not part of the `codev` binary.
 
 [Reliability of the roles](reliability.md) shows those scores, role by

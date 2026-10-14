@@ -14,10 +14,9 @@
 use std::fmt::Write as _;
 
 use serde::Deserialize;
-use serde::de::IgnoredAny;
 
 use crate::observed::{RunInfo, check_format, parse_run_info};
-use crate::score::{EvidenceCounts, Thresholds};
+use crate::score::{EvidenceCounts, Spread, SuiteFigures, Thresholds, number};
 
 /// The repository's baseline, on GitHub: the page links to it.
 const BASELINE_URL: &str = "https://github.com/mairistem/codev/tree/main/evals/baseline";
@@ -100,22 +99,22 @@ pub struct RoleRow {
     pub cases: u32,
     pub seeded: u32,
     pub controls: u32,
-    pub expected: u32,
-    pub true_positives: u32,
-    pub misses: u32,
-    pub false_positives: u32,
-    pub severity_agreement: u32,
+    pub expected: f64,
+    pub true_positives: f64,
+    pub misses: f64,
+    pub false_positives: f64,
+    pub severity_agreement: f64,
     pub evidence: EvidenceCounts,
     pub recall: Option<f64>,
     pub evidence_validity: Option<f64>,
 }
 
 impl RoleRow {
-    fn checked(&self) -> u32 {
+    fn checked(&self) -> f64 {
         self.evidence.found + self.evidence.moved + self.evidence.invalid
     }
 
-    fn valid(&self) -> u32 {
+    fn valid(&self) -> f64 {
         self.evidence.found + self.evidence.moved
     }
 
@@ -125,7 +124,7 @@ impl RoleRow {
         if self.recall.is_some_and(|r| r < t.min_recall) {
             out.push(Measure::Recall);
         }
-        if self.false_positives > t.max_false_positives {
+        if self.false_positives > f64::from(t.max_false_positives) {
             out.push(Measure::FalsePositives);
         }
         if self.evidence_validity.is_some_and(|v| v < t.min_evidence) {
@@ -157,8 +156,16 @@ impl Measure {
 pub struct Baseline {
     pub run: RunInfo,
     pub thresholds: Thresholds,
+    /// What one run of the suite costs: the sum of the cases' median costs.
     pub cost_usd: f64,
+    /// What the whole baseline cost, every repetition included.
+    pub total_cost_usd: f64,
+    /// The distinct cases.
     pub cases: usize,
+    pub repetitions: u32,
+    /// The suite-level medians; `None` in a report of format 1, whose
+    /// headline figures are then summed over the roles.
+    pub figures: Option<SuiteFigures>,
     pub roles: Vec<RoleRow>,
 }
 
@@ -168,8 +175,32 @@ struct ReportFile {
     run: RunInfo,
     thresholds: Thresholds,
     cost_usd: f64,
+    #[serde(default)]
+    total_cost_usd: Option<f64>,
+    #[serde(default)]
+    repetitions: Option<u32>,
+    #[serde(default)]
+    figures: Option<SuiteFigures>,
     roles: Vec<RoleRow>,
-    cases: Vec<IgnoredAny>,
+    cases: Vec<CaseId>,
+}
+
+#[derive(Deserialize)]
+struct CaseId {
+    id: String,
+}
+
+/// The headline figures of the page.
+struct Headline {
+    expected: f64,
+    found: f64,
+    valid: f64,
+    checked: f64,
+    false_positives: f64,
+    recall: Option<f64>,
+    validity: Option<f64>,
+    per_case: Option<f64>,
+    recall_range: Option<Spread>,
 }
 
 impl Baseline {
@@ -192,17 +223,87 @@ impl Baseline {
                 run.claude_version.as_deref().unwrap_or("unknown"),
             ));
         }
+        let mut ids: Vec<String> = report.cases.into_iter().map(|c| c.id).collect();
+        ids.sort();
+        ids.dedup();
         Ok(Baseline {
             run,
             thresholds: report.thresholds,
             cost_usd: report.cost_usd,
-            cases: report.cases.len(),
+            total_cost_usd: report.total_cost_usd.unwrap_or(report.cost_usd),
+            cases: ids.len(),
+            repetitions: report.repetitions.unwrap_or(1),
+            figures: report.figures,
             roles: report.roles,
         })
     }
 
-    fn sum(&self, f: impl Fn(&RoleRow) -> u32) -> u32 {
+    fn sum(&self, f: impl Fn(&RoleRow) -> f64) -> f64 {
         self.roles.iter().map(f).sum()
+    }
+
+    fn sum_u32(&self, f: impl Fn(&RoleRow) -> u32) -> u32 {
+        self.roles.iter().map(f).sum()
+    }
+
+    /// The report's suite-level medians, or, for a report of format 1,
+    /// the sums over the roles.
+    fn headline(&self) -> Headline {
+        match &self.figures {
+            Some(f) => Headline {
+                expected: f.expected,
+                found: f.true_positives.map_or(0.0, |s| s.median),
+                valid: f.valid,
+                checked: f.checked,
+                false_positives: f.false_positives.map_or(0.0, |s| s.median),
+                recall: f.recall.map(|s| s.median),
+                validity: f.evidence_validity.map(|s| s.median),
+                per_case: f.false_positives_per_case.map(|s| s.median),
+                // A range only when the runs disagreed, as in the report.
+                recall_range: f.recall.filter(|s| self.repetitions > 1 && s.min != s.max),
+            },
+            None => {
+                let expected = self.sum(|r| r.expected);
+                let found = self.sum(|r| r.true_positives);
+                let valid = self.sum(RoleRow::valid);
+                let checked = self.sum(RoleRow::checked);
+                let fps = self.sum(|r| r.false_positives);
+                Headline {
+                    expected,
+                    found,
+                    valid,
+                    checked,
+                    false_positives: fps,
+                    recall: (expected > 0.0).then(|| found / expected),
+                    validity: (checked > 0.0).then(|| valid / checked),
+                    per_case: (self.cases > 0).then(|| fps / self.cases as f64),
+                    recall_range: None,
+                }
+            }
+        }
+    }
+}
+
+/// The cost line: the whole run, and one run of the suite when the cases
+/// were repeated.
+fn cost(b: &Baseline, lang: Lang) -> String {
+    if b.repetitions > 1 {
+        match lang {
+            Lang::En => format!(
+                "{} for the {} runs of each case ({} for one run of the suite)",
+                lang.usd(b.total_cost_usd),
+                b.repetitions,
+                lang.usd(b.cost_usd)
+            ),
+            Lang::Fr => format!(
+                "{} pour les {} exécutions de chaque cas ({} pour une exécution de la suite)",
+                lang.usd(b.total_cost_usd),
+                b.repetitions,
+                lang.usd(b.cost_usd)
+            ),
+        }
+    } else {
+        lang.usd(b.total_cost_usd)
     }
 }
 
@@ -227,12 +328,12 @@ fn version(raw: Option<&str>, name: &str) -> String {
         .to_string()
 }
 
-/// A fraction, or `—` when the denominator is zero.
-fn fraction(num: u32, den: u32) -> String {
-    if den == 0 {
+/// A fraction of medians, or `—` when the denominator is zero.
+fn fraction(num: f64, den: f64) -> String {
+    if den == 0.0 {
         "—".into()
     } else {
-        format!("{num}/{den}")
+        format!("{}/{}", number(num), number(den))
     }
 }
 
@@ -245,13 +346,16 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     let mut out = String::new();
     let c = lang.colon();
     let t = &b.thresholds;
-    let seeded = b.sum(|r| r.seeded);
-    let controls = b.sum(|r| r.controls);
-    let expected = b.sum(|r| r.expected);
-    let found = b.sum(|r| r.true_positives);
-    let fps = b.sum(|r| r.false_positives);
-    let valid = b.sum(RoleRow::valid);
-    let checked = b.sum(RoleRow::checked);
+    let seeded = b.sum_u32(|r| r.seeded);
+    let controls = b.sum_u32(|r| r.controls);
+    let h = b.headline();
+    let (expected, found, fps, valid, checked) = (
+        number(h.expected),
+        number(h.found),
+        number(h.false_positives),
+        number(h.valid),
+        number(h.checked),
+    );
     let failing: Vec<&RoleRow> = b.roles.iter().filter(|r| !r.fails(t).is_empty()).collect();
     let roles = b.roles.len();
 
@@ -343,7 +447,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     );
     let _ = writeln!(
         out,
-        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {})\n- {}{c}{}\n",
+        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {})\n- {}{c}{}\n- {}{c}{}\n",
         lang.pick("Date", "Date"),
         b.run.date,
         lang.pick("Model", "Modèle"),
@@ -355,27 +459,41 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         lang.pick("seeded", "ensemencés"),
         controls,
         lang.pick("clean controls", "témoins propres"),
+        lang.pick("Repetitions of each case", "Répétitions de chaque cas"),
+        b.repetitions,
         lang.pick("Cost", "Coût"),
-        lang.usd(b.cost_usd),
+        cost(b, lang),
     );
 
     // At a glance.
     let _ = writeln!(out, "## {}\n", lang.pick("At a glance", "En bref"));
-    let per_case = if b.cases == 0 {
-        "—".to_string()
-    } else {
-        lang.decimal(format!("{:.1}", f64::from(fps) / b.cases as f64))
-    };
-    let recall_all = (expected > 0).then(|| f64::from(found) / f64::from(expected));
-    let validity_all = (checked > 0).then(|| f64::from(valid) / f64::from(checked));
+    let per_case = h
+        .per_case
+        .map_or_else(|| "—".to_string(), |v| lang.decimal(format!("{v:.1}")));
+    let recall_all = h.recall;
+    let validity_all = h.validity;
+    let range = h.recall_range.map_or_else(String::new, |s| match lang {
+        Lang::En => format!(
+            "; from {} to {} over the {} runs",
+            lang.ratio(s.min),
+            lang.ratio(s.max),
+            b.repetitions
+        ),
+        Lang::Fr => format!(
+            "{NBSP}; de {} à {} sur les {} exécutions",
+            lang.ratio(s.min),
+            lang.ratio(s.max),
+            b.repetitions
+        ),
+    });
     let within = roles - failing.len();
     let tiles = [
         Tile {
             label: lang.pick("Recall", "Rappel"),
             value: opt_ratio(lang, recall_all),
             note: match lang {
-                Lang::En => format!("{found} of {expected} seeded defects found"),
-                Lang::Fr => format!("{found} défauts ensemencés trouvés sur {expected}"),
+                Lang::En => format!("{found} of {expected} seeded defects found{range}"),
+                Lang::Fr => format!("{found} défauts ensemencés trouvés sur {expected}{range}"),
             },
             flagged: false,
         },
@@ -390,7 +508,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         },
         Tile {
             label: lang.pick("False positives", "Faux positifs"),
-            value: fps.to_string(),
+            value: fps.clone(),
             note: match lang {
                 Lang::En => format!(
                     "{per_case} per case; a role fails above {}",
@@ -513,8 +631,8 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             r.seeded,
             r.controls,
             fraction(r.true_positives, r.expected),
-            r.misses,
-            r.false_positives,
+            number(r.misses),
+            number(r.false_positives),
             evidence,
             fraction(r.severity_agreement, r.true_positives),
             status
@@ -575,7 +693,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                     Measure::FalsePositives => format!(
                         "{} {} > {}",
                         m.name(lang),
-                        r.false_positives,
+                        number(r.false_positives),
                         t.max_false_positives
                     ),
                     Measure::Evidence => format!(
@@ -616,10 +734,19 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     let _ = writeln!(out, "## {}\n", lang.pick("The limits", "Les limites"));
     let limits = match lang {
         Lang::En => vec![
-            "**One run per case.** A model does not answer the same way twice: each score is \
-             one noisy point. A role is compared before and after a change on the same model, \
-             not across days or models."
-                .to_string(),
+            if b.repetitions > 1 {
+                format!(
+                    "**{} runs per case.** A model does not answer the same way twice: each \
+                     score is the median of {} runs of every case, and a change is compared \
+                     with the range they span, on the same model, not across days or models.",
+                    b.repetitions, b.repetitions
+                )
+            } else {
+                "**One run per case.** A model does not answer the same way twice: each score is \
+                 one noisy point. A role is compared before and after a change on the same model, \
+                 not across days or models."
+                    .to_string()
+            },
             format!(
                 "**Only what the cases cover.** {} cases, {seeded} of them seeded with {expected} \
                  defects. A kind of defect that no case seeds is not measured: a recall of 1.00 \
@@ -636,11 +763,21 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                 .to_string(),
         ],
         Lang::Fr => vec![
-            format!(
-                "**Une exécution par cas.** Un modèle ne répond pas deux fois de la même \
-                 façon{c}chaque score est un point bruité. Un rôle se compare avant et après une \
-                 modification avec le même modèle, pas d'un jour ou d'un modèle à l'autre."
-            ),
+            if b.repetitions > 1 {
+                format!(
+                    "**{} exécutions par cas.** Un modèle ne répond pas deux fois de la même \
+                     façon{c}chaque score est la médiane de {} exécutions de chaque cas, et une \
+                     modification se compare à l'écart qu'elles couvrent, avec le même modèle, \
+                     pas d'un jour ou d'un modèle à l'autre.",
+                    b.repetitions, b.repetitions
+                )
+            } else {
+                format!(
+                    "**Une exécution par cas.** Un modèle ne répond pas deux fois de la même \
+                     façon{c}chaque score est un point bruité. Un rôle se compare avant et après une \
+                     modification avec le même modèle, pas d'un jour ou d'un modèle à l'autre."
+                )
+            },
             format!(
                 "**Seulement ce que les cas couvrent.** {} cas, dont {seeded} ensemencés de \
                  {expected} défauts. Un type de défaut qu'aucun cas n'ensemence n'est pas \
@@ -676,12 +813,12 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             Lang::En => format!(
                 "From a clone of the repository, with Claude Code installed and signed in. A run \
                  calls a model: this one cost {}.",
-                lang.usd(b.cost_usd)
+                cost(b, lang)
             ),
             Lang::Fr => format!(
                 "Depuis un clone du dépôt, avec Claude Code installé et connecté. Une exécution \
                  appelle un modèle{c}celle-ci a coûté {}.",
-                lang.usd(b.cost_usd)
+                cost(b, lang)
             ),
         }
     );
@@ -900,20 +1037,20 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
     let mut rows: Vec<&RoleRow> = b.roles.iter().collect();
     rows.sort_by(|a, z| {
         z.false_positives
-            .cmp(&a.false_positives)
+            .total_cmp(&a.false_positives)
             .then(a.role.cmp(&z.role))
     });
-    let max = rows
+    let max = (rows
         .iter()
         .map(|r| r.false_positives)
-        .max()
-        .unwrap_or(0)
+        .fold(0.0, f64::max)
+        .ceil() as u32)
         .max(t.max_false_positives)
         .max(1);
     let step = tick_step(max);
     let top = step * max.div_ceil(step);
     let (x0, plot) = (100.0, 200.0);
-    let x = |v: u32| x0 + plot * f64::from(v) / f64::from(top);
+    let x = |v: f64| x0 + plot * v / f64::from(top);
     let (row_h, bar_h, first) = (26.0, 14.0, 24.0);
     let bottom = first + row_h * rows.len() as f64;
     let height = bottom + 22.0;
@@ -935,23 +1072,24 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
     for (i, r) in rows.iter().enumerate() {
         let y = first + row_h * i as f64;
         let cy = y + row_h / 2.0;
-        let over = r.false_positives > t.max_false_positives;
+        let over = r.false_positives > f64::from(t.max_false_positives);
+        let fp = number(r.false_positives);
         let tip = match (lang, over) {
             (Lang::En, true) => format!(
                 "{}: {} false positives, over the threshold of {}",
-                r.role, r.false_positives, t.max_false_positives
+                r.role, fp, t.max_false_positives
             ),
             (Lang::En, false) => format!(
                 "{}: {} false positives, within the threshold of {}",
-                r.role, r.false_positives, t.max_false_positives
+                r.role, fp, t.max_false_positives
             ),
             (Lang::Fr, true) => format!(
                 "{}{c}{} faux positifs, au-delà du seuil de {}",
-                r.role, r.false_positives, t.max_false_positives
+                r.role, fp, t.max_false_positives
             ),
             (Lang::Fr, false) => format!(
                 "{}{c}{} faux positifs, dans le seuil de {}",
-                r.role, r.false_positives, t.max_false_positives
+                r.role, fp, t.max_false_positives
             ),
         };
         let _ = write!(desc, "{tip}. ");
@@ -962,21 +1100,14 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
         );
         marks.push_str(&text("rel-label", INK, LABEL_END, cy + 4.0, "end", &r.role));
         let end = x(r.false_positives);
-        if r.false_positives > 0 {
+        if r.false_positives > 0.0 {
             let _ = write!(
                 marks,
                 "<path class=\"rel-bar\" fill=\"{SERIES}\" d=\"{}\"/>",
                 bar_path(x0, cy - bar_h / 2.0, end - x0, bar_h)
             );
         }
-        marks.push_str(&text(
-            "rel-value",
-            INK,
-            end + 6.0,
-            cy + 4.0,
-            "start",
-            &r.false_positives.to_string(),
-        ));
+        marks.push_str(&text("rel-value", INK, end + 6.0, cy + 4.0, "start", &fp));
         if over {
             marks.push_str(&over_triangle(340.0, cy));
             marks.push_str(&text("rel-label", INK, 352.0, cy + 4.0, "start", over_word));
@@ -993,7 +1124,7 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
     // Gridlines and their round ticks, then the baseline.
     let mut v = 0;
     while v <= top {
-        let gx = x(v);
+        let gx = x(f64::from(v));
         let _ = write!(
             svg,
             "<line class=\"rel-grid\" stroke=\"{GRID}\" x1=\"{gx:.1}\" y1=\"{first:.1}\" x2=\"{gx:.1}\" y2=\"{bottom:.1}\"/>"
@@ -1014,7 +1145,7 @@ fn false_positive_chart(b: &Baseline, lang: Lang) -> String {
     );
     svg.push_str(&marks);
     // The threshold, over the bars, labeled above the plot.
-    let tx = x(t.max_false_positives);
+    let tx = x(f64::from(t.max_false_positives));
     let _ = write!(
         svg,
         "<line class=\"rel-threshold\" stroke=\"{INK}\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\" x1=\"{tx:.1}\" y1=\"{:.1}\" x2=\"{tx:.1}\" y2=\"{bottom:.1}\"/>",
@@ -1087,8 +1218,7 @@ fn meter_chart(b: &Baseline, lang: Lang) -> String {
         let y = first + row_h * i as f64;
         let cy = y + row_h / 2.0;
         let my = cy - meter_h / 2.0;
-        let severity = (r.true_positives > 0)
-            .then(|| f64::from(r.severity_agreement) / f64::from(r.true_positives));
+        let severity = (r.true_positives > 0.0).then(|| r.severity_agreement / r.true_positives);
         let under = r.recall.is_some_and(|v| v < t.min_recall);
         let recall_text = match r.recall {
             None => lang
@@ -1251,16 +1381,16 @@ mod tests {
             cases: 3,
             seeded: u32::from(expected > 0) * 2,
             controls: 1,
-            expected,
-            true_positives: found,
-            misses: expected - found,
-            false_positives: fps,
-            severity_agreement: found,
+            expected: f64::from(expected),
+            true_positives: f64::from(found),
+            misses: f64::from(expected - found),
+            false_positives: f64::from(fps),
+            severity_agreement: f64::from(found),
             evidence: EvidenceCounts {
-                found: found + fps,
-                moved: 0,
-                invalid: 0,
-                unchecked: 0,
+                found: f64::from(found + fps),
+                moved: 0.0,
+                invalid: 0.0,
+                unchecked: 0.0,
             },
             recall: (expected > 0).then(|| f64::from(found) / f64::from(expected)),
             evidence_validity: (found + fps > 0).then_some(1.0),
@@ -1275,10 +1405,15 @@ mod tests {
                 date: "2026-10-13".into(),
                 claude_version: Some("2.1.289 (Claude Code)".into()),
                 codev_version: Some("codev 0.6.1".into()),
+                repeat: None,
+                jobs: None,
             },
             thresholds: Thresholds::default(),
             cost_usd: 15.1836,
+            total_cost_usd: 15.1836,
             cases: 9,
+            repetitions: 1,
+            figures: None,
             roles,
         }
     }
@@ -1301,7 +1436,7 @@ mod tests {
             "thresholds":{{"minRecall":0.5,"maxFalsePositives":2,"minEvidence":0.8}},"pass":false,"costUsd":1.5,"failures":[],
             "roles":[{{"role":"ops","cases":2,"seeded":1,"controls":1,"expected":4,"truePositives":1,"misses":3,"falsePositives":0,
             "unreported":0,"duplicates":0,"crossRole":0,"severityAgreement":1,"evidence":{{"found":1,"moved":0,"invalid":0,"unchecked":0}},
-            "recall":0.25,"evidenceValidity":1.0,"costUsd":1.5,"failures":[],"aFieldAddedLater":true}}],"cases":[{{}},{{}}]}}"#
+            "recall":0.25,"evidenceValidity":1.0,"costUsd":1.5,"failures":[],"aFieldAddedLater":true}}],"cases":[{{"id":"a"}},{{"id":"b"}},{{"id":"b"}}]}}"#
         )
     }
 
@@ -1317,9 +1452,9 @@ mod tests {
     }
 
     #[test]
-    fn a_newer_report_format_is_refused() {
-        let e = Baseline::parse(&report_json("2026-10-13", 2), RUN_JSON).unwrap_err();
-        assert!(e.contains("report.json") && e.contains("format 2"), "{e}");
+    fn a_report_of_format_3_is_refused() {
+        let e = Baseline::parse(&report_json("2026-10-13", 3), RUN_JSON).unwrap_err();
+        assert!(e.contains("report.json") && e.contains("format 3"), "{e}");
     }
 
     #[test]
@@ -1327,6 +1462,54 @@ mod tests {
         let e = Baseline::parse(&report_json("2026-11-02", 1), RUN_JSON).unwrap_err();
         assert!(e.contains("report.json") && e.contains("run.json"), "{e}");
         assert!(e.contains("2026-11-02") && e.contains("2026-10-13"), "{e}");
+    }
+
+    #[test]
+    fn the_reliability_page_names_the_repetitions() {
+        let mut b = baseline(vec![role("ops", 4, 4, 1)]);
+        b.repetitions = 5;
+        b.total_cost_usd = 75.0;
+        b.figures = Some(SuiteFigures {
+            expected: 39.0,
+            true_positives: Some(Spread {
+                median: 38.0,
+                min: 36.0,
+                max: 39.0,
+            }),
+            recall: Some(Spread {
+                median: 0.974,
+                min: 0.923,
+                max: 1.0,
+            }),
+            checked: 80.0,
+            valid: 80.0,
+            evidence_validity: Some(Spread {
+                median: 1.0,
+                min: 1.0,
+                max: 1.0,
+            }),
+            false_positives: Some(Spread {
+                median: 7.0,
+                min: 5.0,
+                max: 9.0,
+            }),
+            false_positives_per_case: Some(Spread {
+                median: 0.175,
+                min: 0.125,
+                max: 0.225,
+            }),
+        });
+        let en = page(&b, Lang::En);
+        assert!(en.contains("**5 runs per case.**"), "{en}");
+        assert!(en.contains("Repetitions of each case: 5"), "{en}");
+        assert!(
+            en.contains("38 of 39 seeded defects found; from 0.92 to 1.00 over the 5 runs"),
+            "{en}"
+        );
+        assert!(en.contains("75.00 USD for the 5 runs of each case"), "{en}");
+        let fr = page(&b, Lang::Fr);
+        assert!(fr.contains("**5 exécutions par cas.**"), "{fr}");
+        assert!(fr.contains("Répétitions de chaque cas"), "{fr}");
     }
 
     #[test]

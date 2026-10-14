@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "migration-code-drop-and-rename",
+  "error": null,
+  "costUsd": 0.390776,
+  "durationMs": 37909,
+  "consumption": {
+    "durationApiMs": 36538,
+    "turns": 10,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1193,
+      "cacheCreation": 29709,
+      "cacheRead": 423680,
+      "output": 3367
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Irreversible column drop with no down migration or backup step) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Public JSON field renamed user_name → userName with no BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "drop-legacy-email",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "-- Drop the column left from the 2023 import.\nALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "migrations/0005_drop_legacy_email.sql:1-2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Running migration 0005 on production permanently deletes every value still stored in `users.legacy_email` (rows from the 2023 import); unlike 0004, which ships `0004_accounts.down.sql`, 0005 has no `0005_drop_legacy_email.down.sql`, and neither the proposal nor tasks.md plans a backup or says why the data is not needed, so a rollback cannot restore it. Add a backup step before the drop (e.g. copy `id, legacy_email` to an archive table or export), add a down migration that re-adds the nullable column (and restores from the backup if kept), or state in the plan why the data is disposable and how to recover.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Irreversible column drop with no down migration or backup step"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"userName\")]\npub user_name: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 34,
+        "location": "src/api.rs:8-9",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "`Account` is a type of the public HTTP API; every existing client that reads `user_name` from the account endpoint gets a missing field (null/undefined or a deserialization error) as soon as this ships. The proposal's release note lists it only as \"Changed: Account JSON uses camelCase.\" — not marked **BREAKING**, with no instruction for consumers and no deprecation period. Mark it **BREAKING** in the release note with what clients must do, and give consumers time: serialize both keys for a release (e.g. a deprecated `user_name` alongside `userName`) or version the endpoint, then remove the old key later.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Public JSON field renamed user_name → userName with no BREAKING mark or transition"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/drop-legacy-email/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

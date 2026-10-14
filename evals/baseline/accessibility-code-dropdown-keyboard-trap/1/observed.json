@@ -1,0 +1,131 @@
+{
+  "format": 2,
+  "case": "accessibility-code-dropdown-keyboard-trap",
+  "error": null,
+  "costUsd": 0.35617719999999997,
+  "durationMs": 31024,
+  "consumption": {
+    "durationApiMs": 30539,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 30095,
+      "cacheRead": 290166,
+      "output": 2819
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Open sort menu traps keyboard focus: Tab is captured and Escape does nothing) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-sort-menu",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n  const index = items.current.findIndex((item) => item === document.activeElement);\n  if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n    event.preventDefault();\n    items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n  } else if (event.key === \"ArrowUp\") {\n    event.preventDefault();\n    items.current[(index - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length]?.focus();\n  }\n}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SortMenu.tsx:21-30",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Keyboard users (WCAG 2.1.2 No Keyboard Trap, 2.1.1 Keyboard). A keyboard user opens the menu with Enter on \"Sort: …\"; focus moves to \"Newest\". Pressing Tab (or Shift+Tab) is prevented and only cycles focus among the four options, and Escape has no handler, so the menu cannot be dismissed and focus cannot leave it to reach the product list or the rest of the page; the only way out is to pick an option, which changes (or re-confirms) the sort. Clicking outside does not close it either. Follow the APG menu button pattern: stop handling Tab (let it close the menu and move focus on naturally), add Escape to close the menu and return focus to the button, and close the menu on blur/outside click. Alternatively, use a native `<select>` with a `<label>`, which brings all of this for free.\n",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Open sort menu traps keyboard focus: Tab is captured and Escape does nothing"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<button ref={button} type=\"button\" aria-haspopup=\"menu\" aria-expanded=\"false\" onClick={() => setOpen(!open)}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 43,
+        "location": "src/components/SortMenu.tsx:34",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Screen reader users (WCAG 4.1.2 Name, Role, Value). When the menu is open, the button still reports `aria-expanded=\"false\"`, so a screen reader announces \"Sort: Newest, menu button, collapsed\" while the menu is shown, misleading the user about the state of the control. Bind the attribute to the state: `aria-expanded={open}`.\n",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Menu button always announces \"collapsed\": aria-expanded is hard-coded to false"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-sort-menu/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

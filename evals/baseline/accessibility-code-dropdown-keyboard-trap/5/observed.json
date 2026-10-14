@@ -1,0 +1,164 @@
+{
+  "format": 2,
+  "case": "accessibility-code-dropdown-keyboard-trap",
+  "error": null,
+  "costUsd": 0.3544154,
+  "durationMs": 30875,
+  "consumption": {
+    "durationApiMs": 30194,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 29644,
+      "cacheRead": 292297,
+      "output": 2890
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Tab is captured inside the open sort menu: keyboard trap) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-sort-menu",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n  event.preventDefault();\n  items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SortMenu.tsx:23-25",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "WCAG 2.1.2 No Keyboard Trap, 2.1.1 Keyboard. A keyboard user opens the menu (Enter on \"Sort: …\"), focus moves to \"Newest\"; pressing Tab or Shift+Tab is swallowed by preventDefault and only cycles through the four options, so focus can never leave the menu except by choosing an option — the user cannot reach the product list or the rest of the page without changing the sort. Remove \"Tab\" from this branch; on Tab, close the menu (setOpen(false)) and let the browser move focus naturally, as the WAI-ARIA APG menu button pattern requires.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Tab is captured inside the open sort menu: keyboard trap"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n  const index = items.current.findIndex((item) => item === document.activeElement);\n  if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n    event.preventDefault();\n    items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n  } else if (event.key === \"ArrowUp\") {\n    event.preventDefault();\n    items.current[(index - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length]?.focus();\n  }\n}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 34,
+        "location": "src/components/SortMenu.tsx:21-30",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "WCAG 2.1.1 Keyboard, 2.1.2 No Keyboard Trap; APG menu button pattern. A keyboard or screen reader user who opens the menu and decides not to change the sort presses Escape: nothing happens, the menu stays open with focus inside it. The handler knows only ArrowDown, ArrowUp and Tab. Add an \"Escape\" branch that calls setOpen(false) and returns focus to the \"Sort\" button (button.current?.focus()), without calling onChange.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The open menu cannot be closed with Escape"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<button ref={button} type=\"button\" aria-haspopup=\"menu\" aria-expanded=\"false\" onClick={() => setOpen(!open)}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-3",
+        "line": 63,
+        "location": "src/components/SortMenu.tsx:34",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "WCAG 4.1.2 Name, Role, Value. When the menu is open, a screen reader still announces the \"Sort\" button as \"collapsed\", so its users are told the menu is closed while it is open, and after closing it get no change of state. Bind the attribute to the state: aria-expanded={open}.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "aria-expanded is hard-coded to \"false\" on the menu button"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-sort-menu/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

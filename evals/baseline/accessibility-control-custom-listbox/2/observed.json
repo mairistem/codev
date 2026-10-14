@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "accessibility-control-custom-listbox",
+  "error": null,
+  "costUsd": 0.3508004,
+  "durationMs": 34683,
+  "consumption": {
+    "durationApiMs": 33632,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 29083,
+      "cacheRead": 283162,
+      "output": 3025
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-size-picker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SizePicker.tsx:92",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The keyboard interaction follows the APG select-only combobox (arrows, Home/End, Enter/Space, Escape, Tab, aria-activedescendant), but the only visual cue of the highlighted option is the `option--active` class, and no stylesheet in the repository defines it. Check that `.option--active` gives a visible indicator with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast), that the combobox keeps a visible focus outline, and that options are at least 24 by 24 CSS pixels (2.5.8 Target Size, the proposal's mis-tap problem); otherwise sighted keyboard users cannot see which size Enter or Tab will choose.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Highlighted option relies on a stylesheet the change does not include"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-size-picker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

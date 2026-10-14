@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "skeptic-control-small-flag",
+  "error": null,
+  "costUsd": 0.4504142000000001,
+  "durationMs": 42179,
+  "consumption": {
+    "durationApiMs": 41077,
+    "turns": 14,
+    "permissionDenials": 5,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1183,
+      "cacheCreation": 32192,
+      "cacheRead": 576286,
+      "output": 3830
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-quiet-flag",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`src/main.rs` accepts `--quiet` before the file and passes it to\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "design.md#Decision: The progress reporter takes a `quiet` switch",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "State in the spec what `ledger import data.csv --quiet` does — accepted like `ledger import --quiet data.csv`, or rejected with the usage message and exit code 2 — and add a scenario for it. Today `src/main.rs` matches only `[command, path]`, so a script appending the flag after the file gets the usage error, a behavior users see that neither the requirement nor its scenarios decide.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The position of `--quiet` after the file is left unspecified"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-quiet-flag/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

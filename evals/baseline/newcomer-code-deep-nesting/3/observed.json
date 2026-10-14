@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-deep-nesting",
+  "error": null,
+  "costUsd": 0.2747576,
+  "durationMs": 17078,
+  "consumption": {
+    "durationApiMs": 17053,
+    "turns": 5,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 26001,
+      "cacheRead": 187818,
+      "output": 1409
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "import-accounts",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if account.plan != row.plan {\n    for seat in &row.seats {\n        if !account.seats.contains(seat) {\n            if seat.contains('@') {\n                db.add_seat(account.id, seat)?;\n                created += 1;\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/import.rs:12-42",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Flatten the function and name its rules. A newcomer reading line 18 cannot tell, without the plan, why seats of an existing account are only added when the row's plan differs from the stored one (and that the stored plan is never updated), nor why a seat without '@' (lines 21 and 32) or a row with an empty email (line 15) is silently skipped. The seat loop is also duplicated between the `Some` and `None` arms (lines 19-26 and 31-36). Suggested shape: `if row.email.is_empty() { continue; }` as an early return; extract `fn is_valid_seat(seat: &str) -> bool` (or a named constant/comment explaining the '@' check); extract one helper such as `fn add_new_seats(db, account_id, existing: &[String], seats: &[String]) -> Result<usize, DbError>` used by both arms; and a comment stating why the plan comparison gates seat creation. Behavior stays the same.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`import` nests six levels deep and hides its seat rules in unexplained conditions"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/import-accounts/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

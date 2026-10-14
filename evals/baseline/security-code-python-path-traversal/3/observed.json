@@ -1,0 +1,137 @@
+{
+  "format": 2,
+  "case": "security-code-python-path-traversal",
+  "error": null,
+  "costUsd": 0.32125299999999996,
+  "durationMs": 26202,
+  "consumption": {
+    "durationApiMs": 25176,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1193,
+      "cacheCreation": 27360,
+      "cacheRead": 285290,
+      "output": 2216
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (Path traversal in read_attachment bypasses the ticket check) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-ticket-attachments",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "path = os.path.join(UPLOAD_DIR, str(ticket_id), name)\nwith open(path, \"rb\") as f:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "app/attachments.py:30-32",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The client-supplied `name` is joined to the ticket directory unvalidated (CWE-22). An agent allowed to read ticket 1 asks for `name=\"../2/invoice.pdf\"` and gets ticket 2's attachment, defeating `may_read_ticket`; `name=\"../../../../etc/passwd\"` or an absolute `name=\"/etc/passwd\"` (which makes `os.path.join` discard the base) reads any file the service can read. Reduce `name` with `os.path.basename` as `save_attachment` does, or better look it up in the `attachments` table for that `ticket_id`, then resolve the path with `os.path.realpath` and refuse it unless it lies under `UPLOAD_DIR/<ticket_id>/`. Add a test with `../` and absolute names.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Path traversal in read_attachment bypasses the ticket check"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 36,
+        "location": "app/attachments.py:11-17",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Unlike `read_attachment`, the upload takes no `agent_id` and calls no authorization check, so whatever entry point exposes it lets any caller write files into any ticket's directory (and silently overwrite an existing attachment of the same name). The caller was not visible in the change, so this depends on it enforcing access; take `agent_id` and check `may_read_ticket` (or a write permission) here, on the server.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "save_attachment checks no authorization"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-ticket-attachments/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

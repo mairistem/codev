@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.30265960000000003,
+  "durationMs": 22897,
+  "consumption": {
+    "durationApiMs": 22355,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1175,
+      "cacheCreation": 25829,
+      "cacheRead": 280828,
+      "output": 1942
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/pricing.ts:9-10",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "A developer who has not seen the plan cannot answer \"what makes a price premium?\" from this line: the rule is hidden in `(p.cents >> 4) & 0x3e8`, a shift and a bitmask with no name and no comment, while the docstring talks of \"cheap\" and \"premium\" and the keys say \"lo\" and \"hi\". The reader is likely to assume a threshold comparison, but a bitwise AND of selected bits is not one (e.g. 16000 cents gives 1000 & 1000 → \"hi\", 16384 cents gives 1024 & 1000 → 0 → \"lo\"), so the shape hides what the code actually does. On top of that the line combines a `reduce` with a comma-operator return, `||=` lazy init inside an index expression, single-letter names (`ps`, `a`, `p`) and an untyped `Record<string, …>` result whose keys only appear as string literals. Rewrite it as a named function with a named threshold constant in cents and an explicit comparison (`const PREMIUM_THRESHOLD_CENTS = …; const isPremium = (p: Price) => p.cents >= PREMIUM_THRESHOLD_CENTS;`), a plain loop or two `filter` calls, and a typed result such as `{ cheap: Price[]; premium: Price[] }` whose keys match the docstring; if the bitmask really is the intended rule, a comment must say why.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`bucket` packs its rule into an unreadable one-liner with a magic bitmask"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,141 @@
+{
+  "format": 2,
+  "case": "migration-plan-breaking-rename",
+  "error": null,
+  "costUsd": 0.39521159999999994,
+  "durationMs": 36644,
+  "consumption": {
+    "durationApiMs": 35990,
+    "turns": 10,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 33137,
+      "cacheRead": 340273,
+      "output": 3054
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Public field removed in place, with no transition for partner integrations) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Release note does not mark the rename BREAKING nor say what partners must do) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-order-status",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`OrderResponse.status` becomes `OrderResponse.state`; the old name is not\nkept. The OpenAPI file is regenerated.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 15,
+        "location": "design.md#Decision: The field is renamed in place",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Partners' integrations read `status` from `GET /orders/{id}` \"to know when to ship\" (design.md#Context); on the day this deploys, `status` is absent from the response (src/orders.ts:19 today sets `status: rows[0].state`), so their code reads `undefined` and stops shipping orders, with no error from the API. Use expand and contract: return both `status` and `state` with the same value, mark `status` `deprecated: true` in openapi.yaml, announce a removal date, and remove `status` only in a later change. Add a task and a scenario that check a response still holds `\"status\": \"paid\"` during the deprecation window, so the migration path is tested. Revisit the rejected alternative: the duplication is temporary and is the migration path.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Public field removed in place, with no transition for partner integrations"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Changed: The order's `status` field is now called `state`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 40,
+        "location": "proposal.md#Release note",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The rename breaks every consumer of the public `GET /orders/{id}` response, yet the note files it as a plain \"Changed\" item. A partner reading it does not learn that their integration breaks nor what to do. Mark it **BREAKING**, name the endpoint, and state the action: read `state` instead of `status`, by the removal date if a deprecation window is kept (see R-migration-1). Bump the API's major version in openapi.yaml (`info.version: 1.4.0`) if the project versions its public API semantically.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Release note does not mark the rename BREAKING nor say what partners must do"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-order-status/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

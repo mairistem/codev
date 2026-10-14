@@ -1,0 +1,162 @@
+{
+  "format": 2,
+  "case": "security-plan-tokens-in-clear",
+  "error": null,
+  "costUsd": 0.35090340000000003,
+  "durationMs": 31462,
+  "consumption": {
+    "durationApiMs": 31605,
+    "turns": 7,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 29833,
+      "cacheRead": 285457,
+      "output": 2708
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-2 (The Authorization header, holding the bearer token, is logged) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-api-tokens",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The `api_tokens` table holds `user_id`, `token` and `created_at`; the\nmiddleware looks a request's token up with `WHERE token = $1`. Storing the\ntoken as given keeps the lookup a simple indexed equality.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "design.md#Decision: Tokens are stored as given",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for high-entropy tokens; no bcrypt needed) in a `token_hash` column, and look a request up with `WHERE token_hash = $1` on the hash of the presented token — still a simple indexed equality, so the stated reason for storing it as given does not hold. Show the clear token only once at creation, as the spec requires. Anyone who reads the `api_tokens` table — a SQL injection elsewhere, a leaked backup or dump, a read-only DB account — otherwise gets bearer credentials usable at once against the API for every user (CWE-312 / CWE-256), unlike passwords which are bcrypt-hashed. Hashing also removes the timing side channel of comparing the secret itself in the lookup. Update task 1.1 accordingly.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "API tokens are stored in clear in the database"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "To diagnose integration problems, the middleware logs each request's\nmethod, path and headers at `info` level, including `Authorization`, so\nsupport can see which token an integration sent.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 38,
+        "location": "design.md#Decision: Every request is logged with its headers",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Never log the `Authorization` header (nor `Cookie`); redact it, or log only a non-secret token identifier (a token id or a short prefix of the token's hash) so support can still tell which token was used. As written, every request writes a live bearer token into the logs at `info`, so anyone with access to the logs or the log pipeline (support staff, a log aggregator, a leaked log archive) can replay any integration's token and act as its user (CWE-532); the same line also logs session cookies and Basic credentials for password-based integrations. Adjust task 1.3 and its test `logs_requests` to assert the header is redacted.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The Authorization header, holding the bearer token, is logged"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Non-Goals:** OAuth, scopes, revocation (a later change).\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 63,
+        "location": "design.md#Goals / Non-Goals",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The proposal's motivation is that \"a leaked integration exposes the account\"; with no revocation and no expiry, a leaked token (from logs, see R-security-2, or from the integration's host) grants full, unscoped access to the account forever, and the user's only remedy listed — creating another token — leaves the leaked one valid. Either ship at least deletion of a token by its owner in this change, or give tokens an expiry, or record explicitly that the change must not be released before the revocation change.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A leaked token cannot be invalidated: revocation is deferred"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-api-tokens/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

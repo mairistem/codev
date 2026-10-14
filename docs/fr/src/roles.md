@@ -587,10 +587,12 @@ jamais comptée contre le rôle.
 
 Les scores de référence sont la ligne de base versionnée,
 [`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md) :
-une exécution par cas, avec le modèle par défaut de Claude Code à la date
-qu'elle indique. Une exécution est un point bruité, pas une preuve ; une
-modification d'un fichier de rôle se juge sur ses scores avant et après,
-avec le même modèle. La suite ne tourne jamais dans la CI habituelle et ne
+cinq exécutions de chaque cas, avec le modèle par défaut de Claude Code à
+la date qu'elle indique, chaque score étant la médiane des cinq. Un modèle
+ne répond pas deux fois de la même façon : une modification d'un fichier
+de rôle se juge donc avec `codev-evals compare --quality-only` face à la
+ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
+dans l'écart couvert par les exécutions de la ligne de base. La suite ne tourne jamais dans la CI habituelle et ne
 fait pas partie du binaire `codev`.
 
 [Fiabilité des rôles](reliability.md) présente ces scores, rôle par rôle,

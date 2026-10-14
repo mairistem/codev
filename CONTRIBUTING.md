@@ -73,10 +73,16 @@ and decision seals must stay valid.
 
 The built-in roles (`assets/roles/`) are prompts: their effect is measured,
 not guessed. A pull request that modifies a file of `assets/roles/` runs
-the role evaluations before and after the change and pastes both scores —
-recall, false positives and evidence validity of the roles concerned — in
-its description. The reference is the committed baseline,
-`evals/baseline/report.md`.
+the role evaluations of the roles concerned and pastes the output of
+`cargo run -p codev-evals -- compare --quality-only` against the committed
+baseline, `evals/baseline/`, in its description: each role's recall,
+false positives and evidence validity must stay within the range the
+baseline's repetitions spanned. A pull request meant to make the skills
+consume less pastes the output of `cargo run -p codev-evals -- compare`,
+without `--quality-only`: the quality must hold and the cost must fall
+under the baseline's floor, each case at its cheapest run. Record the
+candidate with `--repeat 3` at least, and with the baseline's `--jobs`
+(4), so that both runs share the prompt cache alike.
 
 The suite needs [Claude Code](https://claude.com/claude-code) installed and
 signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a full run of the
@@ -85,15 +91,33 @@ signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a full run of the
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # the cases
-cargo run -p codev-evals -- run --role security        # the cases of one role
-cargo run -p codev-evals -- run --out target/evals/mine  # all of them
+cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- score target/evals/mine    # score again, no model
+cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
+
+The agent runs in Claude Code's sandbox, as a user working with it would:
+the shell commands Claude Code knows, and `codev`, run without a prompt,
+but they can write only in the case's directory and the system's
+temporary directory — which holds the other cases' directories too —
+reach no host but the Anthropic API, and not read the API key; the file
+tools, outside the sandbox, edit only inside the case's directory. Any
+other call is denied and counted in the report, and a run that modifies
+its repository's `.git/config` is recorded in error. The sandbox bounds
+an agent, it is not an isolation: run the suite on a machine or in a
+container you can throw away. On macOS the sandbox is built in. On
+Linux it needs `bubblewrap` and `socat` (`sudo apt-get install bubblewrap
+socat`) and, on Ubuntu 24.04, an AppArmor profile that lets `bwrap` create
+user namespaces, as `.github/workflows/evals.yml` installs it; without
+them each case stops in error rather than run unconfined.
 
 `run` writes `report.md` and `report.json` in its output directory and
 exits with 1 when a role is under a threshold (`--min-recall`,
-`--max-false-positives`, `--min-evidence`) or a case stopped; a directory
-that already holds observations is resumed. `CODEV_EVAL_MODEL` picks the
+`--max-false-positives`, `--min-evidence`) or a run stopped. `--repeat N`
+runs each case N times; the report gives each measure's median over the
+runs, with its range, and what the runs consumed (cost, durations, turns,
+tokens, permission denials). A directory that already holds observations
+is resumed: only the missing runs, and those in error, are made. `CODEV_EVAL_MODEL` picks the
 model (default: Claude Code's), `CODEV_EVAL_BUDGET_USD` and
 `CODEV_EVAL_TIMEOUT_SECS` bound each case. Compare on the same model as the
 baseline. Maintainers can also start the **Role evaluations** workflow by
@@ -131,9 +155,14 @@ findings it re-classifies.
 
 Do not tune a role and its cases in the same pull request: a case states
 what a reviewer should find, independently of the role's wording. When the
-scoring rules or the cases change, record the baseline again — remove `evals/baseline/`, then
-`cargo run -p codev-evals -- run --out evals/baseline` — which the tests
-check.
+scoring rules or the cases change, record the baseline again, locally,
+with the Claude Code version `.github/workflows/evals.yml` pins
+(`npm install -g @anthropic-ai/claude-code@<that version>`; a test checks
+`evals/baseline/run.json` against the pin) — remove `evals/baseline/`, then
+`cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
+(about 75 dollars) — which the tests check: five runs of every case, none
+in error. Claude Code's raw output of each run (`claude.json`,
+`claude.stderr`) stays out of version control.
 
 ## Commits
 

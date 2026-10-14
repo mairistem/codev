@@ -1,0 +1,181 @@
+{
+  "format": 2,
+  "case": "privacy-plan-birth-date-retention",
+  "error": null,
+  "costUsd": 0.3911664,
+  "durationMs": 37722,
+  "consumption": {
+    "durationApiMs": 37091,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 30452,
+      "cacheRead": 387422,
+      "output": 3454
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-birthday-greetings",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Two columns, `birthday` (month and day, no year) and `phone`, are added to `profiles`, filled only for members who opt in. They are\nkept as long as the profile exists, and copied with the rest of the\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Tie retention to the purpose, not to the profile (GDPR Art. 5(1)(e), Art. 17). Add a requirement and a scenario to specs/birthday-greetings/spec.md: when a member opts out, `birthday` and `phone` are cleared on their profile. Today the spec only covers opting in, so a member who withdraws keeps both fields stored for the life of the profile with no purpose left. Add the matching task in tasks.md.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Opting out does not erase the birthday and phone number"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 32,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "State how long the nightly backups holding `birthday` and `phone` are kept and how an erasure (opt-out or account deletion) reaches them — for instance a bounded backup rotation after which erased values are gone, documented in the design (GDPR Art. 5(1)(e), Art. 17). As written, a member's birthday and phone number erased from `profiles` survive in every backup with no stated expiry.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No retention or purge rule for the copies in nightly backups"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 52,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: record Textly as a processor (Art. 28 contract) and the Chapter V mechanism for the transfer to the United States (adequacy decision / Data Privacy Framework certification or standard contractual clauses), and add Textly to the records of processing (Art. 30). Also confirm the display name is needed in the message; if the text can be generic, send the phone number only.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Transfer of phone numbers and names to Textly in the United States has no stated safeguard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Members enjoy being remembered; marketing wants birthday messages.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 72,
+        "location": "proposal.md#Why",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: state the purpose and lawful basis of the processing (presumably consent given by the opt-in, Art. 6(1)(a) and Art. 7) and whether these texts count as direct marketing under the ePrivacy Directive; if so, the opt-in wording must say so and withdrawal must be as easy as giving consent (see R-privacy-1).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Lawful basis for marketing text messages not stated"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

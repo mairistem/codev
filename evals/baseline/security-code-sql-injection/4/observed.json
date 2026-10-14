@@ -1,0 +1,110 @@
+{
+  "format": 2,
+  "case": "security-code-sql-injection",
+  "error": null,
+  "costUsd": 0.31806199999999996,
+  "durationMs": 23957,
+  "consumption": {
+    "durationApiMs": 23262,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 27844,
+      "cacheRead": 285205,
+      "output": 1864
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (SQL injection in user search through the `q` query parameter) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-user-search",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/users.ts:10",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Bind the term as a parameter instead of concatenating it (CWE-89): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + term + \"%\"])`, as `query` in src/db.ts already supports (\"values go in `params`, never in `sql`\"). Escape `%`, `_` and `\\` in the term (with an `ESCAPE` clause) so they match literally. The length check in src/server.ts:14 is not a defence: 100 characters are enough for a payload. Add a test that a term containing a quote returns no extra rows and raises no SQL error.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "SQL injection in user search through the `q` query parameter"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-user-search/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

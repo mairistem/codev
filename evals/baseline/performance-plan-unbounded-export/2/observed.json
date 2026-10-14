@@ -1,0 +1,116 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.427272,
+  "durationMs": 33817,
+  "consumption": {
+    "durationApiMs": 33746,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 37817,
+      "cacheRead": 352200,
+      "output": 2665
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (Export loads the whole audit log into memory and builds the CSV synchronously) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Stream the export instead of materializing it: read `audit_events` through a server-side cursor (or keyset pages on `created_at`, id) in bounded batches, convert each batch to CSV lines and write them to the response stream with backpressure, so memory stays constant and the event loop is yielded between batches. Keep the order (oldest first) and the \"every event\" result the spec requires. Select only the exported columns rather than `SELECT *`. Record the rejected \"load everything\" alternative in the design, and back the choice with a measurement on a seven-year organization (memory peak, event-loop lag). Also check that an index on `audit_events (org_id, created_at)` exists — the schema is not in the repository — and confirm with `EXPLAIN`.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Export loads the whole audit log into memory and builds the CSV synchronously"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

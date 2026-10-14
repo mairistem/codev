@@ -1,0 +1,195 @@
+{
+  "format": 2,
+  "case": "accessibility-code-icon-button",
+  "error": null,
+  "costUsd": 0.3603862000000001,
+  "durationMs": 33871,
+  "consumption": {
+    "durationApiMs": 33497,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1177,
+      "cacheCreation": 28520,
+      "cacheRead": 338581,
+      "output": 3174
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable with the keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-2 (Icon-only delete control has no accessible name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-toolbar",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/Toolbar.tsx:13-15",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Keyboard users cannot delete a document: the div has no tabindex, no role and no key handler, so Tab never lands on it and Enter/Space do nothing (WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value). Render a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`, which is focusable, announced as a button and activated by Enter and Space; make sure the `.icon-button` style keeps a visible focus indicator (2.4.7 Focus Visible).",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete action is a clickable div, unreachable with the keyboard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 34,
+        "location": "src/components/Toolbar.tsx:13-15",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The only content is `TrashIcon`, whose svg is `aria-hidden=\"true\"` (src/components/icons.tsx:3), so the control has no text at all: a screen reader user reaching it hears nothing, or just \"button\" once it becomes a button, and cannot tell it deletes the document (WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value). Give the button a name, e.g. `aria-label=\"Delete document\"`, or visually hidden text inside it.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Icon-only delete control has no accessible name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<img className=\"avatar\" src={avatarUrl} />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-3",
+        "line": 56,
+        "location": "src/components/Toolbar.tsx:12",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The avatar conveys who owns the document, but the img has no `alt`: screen readers announce the image URL or file name instead, or nothing useful (WCAG 1.1.1 Non-text Content). Pass the owner's name to the component and render `alt={ownerName}` (or `alt=\"\"` only if the name is shown as text next to it).",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Owner avatar image has no text alternative"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-4",
+        "line": 75,
+        "location": "src/components/Toolbar.tsx:13-14",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The trash icon is 16 by 16 pixels and the `.icon-button` stylesheet is not in the change, so the target may be smaller than 24 by 24 CSS pixels (WCAG 2.5.8 Target Size (Minimum)) and its focus style and icon contrast (2.4.7, 1.4.11) cannot be verified. Check the stylesheet: at least 24x24 hit area (padding), a visible focus outline, and 3:1 contrast for the icon.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete target size and focus style to check"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-toolbar/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

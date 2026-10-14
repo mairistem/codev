@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "ops-control-graceful-shutdown",
+  "error": null,
+  "costUsd": 0.4195196000000001,
+  "durationMs": 42426,
+  "consumption": {
+    "durationApiMs": 40648,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1193,
+      "cacheCreation": 31962,
+      "cacheRead": 453378,
+      "output": 3606
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-mail-worker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/worker.rs:46-50",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Make sure the mailer reports a timeout that happens after the message was handed to the relay differently from a refused connection, or send each job with a stable Message-ID so the relay drops duplicates. Otherwise a slow relay makes the worker resend the same e-mail up to twelve times. This depends on how `Mailer::send` maps a timeout, which this change does not show.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay accepted it is retried and duplicates the e-mail"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-mail-worker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

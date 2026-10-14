@@ -1,0 +1,222 @@
+{
+  "format": 2,
+  "case": "privacy-code-error-message-pii",
+  "error": null,
+  "costUsd": 0.4300242,
+  "durationMs": 43512,
+  "consumption": {
+    "durationApiMs": 41855,
+    "turns": 11,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 34590,
+      "cacheRead": 353061,
+      "output": 4084
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Typed e-mail address written to the log platform through the error message) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (Chat vendor receives phone, birth date, address and e-mail when greeting needs a name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-support-lookup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "throw new NotFoundError(`no customer with e-mail ${email}`);\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/support.ts:20",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Keep the e-mail address out of the error message (for example `throw new NotFoundError(\"no customer for this e-mail\")`). Every lookup that misses reaches `errorHandler` (src/server.ts:14), which runs `logger.error(\"request failed\", { path: req.path, error: err.message })`, and the logger ships each line to the log platform. Each failed support search therefore stores the searched person's e-mail address in the logs (GDPR Art. 5(1)(c) minimisation, Art. 32), including addresses of people who are not customers or were mistyped.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Typed e-mail address written to the log platform through the error message"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "user: {\n  id: String(customer.id),\n  name: customer.name,\n  email: customer.email,\n  phone: customer.phone,\n  birthDate: customer.birth_date,\n  address: customer.address,\n},\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 33,
+        "location": "src/support.ts:41-48",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Send Helply only what the stated purpose needs — the proposal says the widget \"greets the signed-in customer by name, so that the agent knows who they talk to\": an opaque id and the name. Drop `email`, `phone`, `birthDate` and `address` from the widget settings (and from the `customerById` select if nothing else uses them). As written, every signed-in customer who loads `/chat/settings` hands their phone number, date of birth and postal address to the third-party chat processor (GDPR Art. 5(1)(b)-(c), Art. 25, Art. 28).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Chat vendor receives phone, birth date, address and e-mail when greeting needs a name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"SELECT id, email, name, phone, birth_date, address FROM customers WHERE lower(email) = lower($1)\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 62,
+        "location": "src/support.ts:16",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal says only \"Agents look a customer up by e-mail address.\", without saying which fields an agent needs. Confirm with the team which fields the support screen uses and select only those; birth date and postal address are likely beyond the purpose (GDPR Art. 5(1)(c)). Confidence low: the support front-end that consumes this endpoint is not visible.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Support lookup returns birth date, phone and address with no stated need"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [x] personal-data — customers' records are read and the chat vendor receives who is chatting\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 82,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "A question for the team: record Helply as a processor (data processing agreement, GDPR Art. 28, record of processing Art. 30) and state where it hosts the data — if outside the EEA, the Chapter V transfer mechanism. Only the controller can confirm what was decided.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Helply processor and its location not identified in the plan"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "throw new NotFoundError(`no customer ${id}`);\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-5",
+        "line": 100,
+        "location": "src/support.ts:32",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The message reaches the logs through `errorHandler` (src/server.ts:14); the customer identifier is personal data. Drop the id from the message, or log it deliberately as a structured field if operations need it.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Customer id written to the log platform on a missing record"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-support-lookup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

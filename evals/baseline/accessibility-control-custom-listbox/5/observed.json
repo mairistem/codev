@@ -1,0 +1,106 @@
+{
+  "format": 2,
+  "case": "accessibility-control-custom-listbox",
+  "error": null,
+  "costUsd": 0.3706418,
+  "durationMs": 38019,
+  "consumption": {
+    "durationApiMs": 37086,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 29628,
+      "cacheRead": 330929,
+      "output": 3321
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-size-picker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SizePicker.tsx:92",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Check that a stylesheet styles `.option--active` (and the `.size-picker` combobox's `:focus-visible`) with an indicator that meets 1.4.11 Non-text Contrast. No stylesheet in the repository defines `option--active`, and focus stays on the combobox while ArrowDown/ArrowUp/Home/End move the highlight through `aria-activedescendant`, so the browser draws no focus ring on the options: without that class styled, a sighted keyboard user pressing ArrowDown sees nothing change and cannot tell which size Enter or Tab will choose (WCAG 2.4.7 Focus Visible). Add the style with this change if it does not exist elsewhere.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Highlighted option and combobox focus rely on styles that are not in the repository"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-size-picker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

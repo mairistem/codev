@@ -6,7 +6,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use codev_evals::case::coverage_gaps;
-use codev_evals::checks::{missing_from_baseline, missing_mention};
+use codev_evals::checks::{
+    missing_from_baseline, missing_mention, repetitions_in_error, too_few_repetitions,
+};
 use codev_evals::reliability::{self, Baseline, Lang};
 use codev_evals::report;
 use codev_evals::score::Thresholds;
@@ -66,7 +68,10 @@ fn every_case_has_a_baseline_observation() {
         .into_iter()
         .map(|c| c.id)
         .collect();
-    let observed: BTreeSet<String> = suite::recorded(&repo().join("evals").join("baseline"));
+    let observed: BTreeSet<String> = suite::recorded(&repo().join("evals").join("baseline"))
+        .into_keys()
+        .map(|(id, _)| id)
+        .collect();
     assert_eq!(
         missing_from_baseline(&cases, &observed),
         Vec::<String>::new()
@@ -164,5 +169,128 @@ fn contributing_and_roles_chapters_name_the_baseline() {
     let mut gaps = missing_mention(&files, "evals/baseline");
     gaps.extend(missing_mention(&files[..2], "assets/roles/"));
     gaps.extend(missing_mention(&files[..2], "codev-evals -- docs"));
+    gaps.extend(missing_mention(&files, "codev-evals"));
+    gaps.extend(missing_mention(&files[..2], "codev-evals -- compare"));
+    gaps.extend(missing_mention(&files[2..], "codev-evals compare"));
+    gaps.extend(missing_mention(&files[..2], "--repeat 3"));
     assert_eq!(gaps, Vec::<String>::new());
+}
+
+/// The `run:` scripts of a workflow, each with its following indented lines.
+fn scripts(workflow: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut lines = workflow.lines().peekable();
+    while let Some(line) = lines.next() {
+        let trimmed = line.trim_start();
+        if let Some(rest) = trimmed.strip_prefix("run:") {
+            let indent = line.len() - trimmed.len();
+            let mut script = rest.to_string();
+            while let Some(next) = lines.peek() {
+                let next_indent = next.len() - next.trim_start().len();
+                if !next.trim().is_empty() && next_indent <= indent {
+                    break;
+                }
+                script.push('\n');
+                script.push_str(next);
+                lines.next();
+            }
+            out.push(script);
+        }
+    }
+    out
+}
+
+#[test]
+fn no_workflow_input_is_interpolated_in_a_script() {
+    let workflow = read(".github/workflows/evals.yml");
+    for script in scripts(&workflow) {
+        assert!(
+            !script.contains("${{"),
+            "a script interpolates an expression: {script}"
+        );
+    }
+}
+
+#[test]
+fn the_workflow_passes_repeat_through_the_environment() {
+    let workflow = read(".github/workflows/evals.yml");
+    assert!(workflow.contains("EVAL_REPEAT: ${{ inputs.repeat }}"));
+    assert!(workflow.contains("--repeat \"$EVAL_REPEAT\" --jobs 4"));
+    let bound = workflow
+        .find("^[1-3]$")
+        .expect("the run step bounds repeat");
+    let run = workflow.find("codev-evals -- run").unwrap();
+    assert!(bound < run, "repeat is checked before the suite runs");
+}
+
+#[test]
+fn the_workflow_installs_the_sandbox() {
+    let workflow = read(".github/workflows/evals.yml");
+    let install = workflow
+        .find("apt-get install -y bubblewrap socat")
+        .expect("the workflow installs the sandbox");
+    assert!(workflow.contains("profile bwrap /usr/bin/bwrap"));
+    let run = workflow.find("codev-evals -- run").unwrap();
+    assert!(
+        install < run,
+        "the sandbox is installed before the suite runs"
+    );
+}
+
+#[test]
+fn no_raw_log_is_tracked_in_the_baseline() {
+    let output = std::process::Command::new("git")
+        .args(["ls-files", "evals/baseline"])
+        .current_dir(repo())
+        .output()
+        .expect("git runs");
+    let tracked = String::from_utf8_lossy(&output.stdout);
+    let raw: Vec<&str> = tracked
+        .lines()
+        .filter(|l| l.ends_with("/claude.json") || l.ends_with("/claude.stderr"))
+        .collect();
+    assert_eq!(raw, Vec::<&str>::new(), "raw Claude Code logs are tracked");
+    let ignored = std::process::Command::new("git")
+        .args([
+            "check-ignore",
+            "-q",
+            "evals/baseline/some-case/2/claude.json",
+        ])
+        .current_dir(repo())
+        .status()
+        .expect("git runs");
+    assert!(ignored.success(), "a repetition's raw log is ignored");
+}
+
+#[test]
+fn every_baseline_case_has_five_repetitions() {
+    let recorded = suite::recorded(&repo().join("evals").join("baseline"));
+    assert_eq!(too_few_repetitions(&recorded, 5), Vec::<String>::new());
+}
+
+#[test]
+fn no_baseline_repetition_is_in_error() {
+    let recorded = suite::recorded(&repo().join("evals").join("baseline"));
+    assert_eq!(repetitions_in_error(&recorded), Vec::<String>::new());
+}
+
+#[test]
+fn the_baseline_is_recorded_with_the_pinned_claude_code() {
+    let workflow = read(".github/workflows/evals.yml");
+    let marker = "@anthropic-ai/claude-code@";
+    let at = workflow
+        .find(marker)
+        .expect("the workflow pins Claude Code")
+        + marker.len();
+    let pin: String = workflow[at..]
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '.')
+        .collect();
+    let run: serde_json::Value = serde_json::from_str(&read("evals/baseline/run.json")).unwrap();
+    let recorded = run["claudeVersion"].as_str().unwrap_or("");
+    assert!(
+        recorded.starts_with(&format!("{pin} ")),
+        "the baseline was recorded with Claude Code `{recorded}`, the workflow pins {pin}: \
+         raise the pin and record the baseline again together"
+    );
 }

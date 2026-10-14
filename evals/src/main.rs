@@ -3,6 +3,7 @@
 //! Exit codes: 0 every role passes, 1 a role fails or a case stopped,
 //! 2 usage (invalid case, threshold or observation, missing tool).
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -14,7 +15,7 @@ use codev_evals::observed::{self, FORMAT, RunInfo};
 use codev_evals::reliability::{self, Baseline, Lang};
 use codev_evals::runner::{self, ClaudeSettings, RunOptions, Tools};
 use codev_evals::score::{self, SuiteScore, ThresholdFlags, Thresholds};
-use codev_evals::{case, report, suite};
+use codev_evals::{case, compare, report, suite};
 
 #[derive(Parser)]
 #[command(
@@ -40,6 +41,21 @@ enum Commands {
     /// Write the documentation's reliability chapter, in English and
     /// French, from a baseline's report
     Docs(DocsArgs),
+    /// Compare a candidate run with a baseline: quality within the
+    /// baseline's range, cost under its floor
+    Compare(CompareArgs),
+}
+
+#[derive(Args)]
+struct CompareArgs {
+    /// The baseline's output directory
+    baseline: PathBuf,
+    /// The candidate's output directory
+    candidate: PathBuf,
+    /// Leave the consumption out of the verdict (a role change), still
+    /// reporting it
+    #[arg(long)]
+    quality_only: bool,
 }
 
 #[derive(Args)]
@@ -84,6 +100,9 @@ struct RunArgs {
     /// Run again the cases already observed in the output directory
     #[arg(long)]
     rerun: bool,
+    /// Run each case this many times, each repetition recorded apart
+    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u32).range(1..))]
+    repeat: u32,
     /// Cases run at the same time
     #[arg(long, default_value_t = 2)]
     jobs: usize,
@@ -170,6 +189,7 @@ fn main() -> ExitCode {
             }
         }
         Commands::Run(args) => run(&repo, &cases, args),
+        Commands::Compare(args) => compare_runs(&cases, &args),
         Commands::Docs(_) => unreachable!("handled before the cases are loaded"),
     }
 }
@@ -220,11 +240,65 @@ fn now() -> (u64, String) {
     (secs, runner::civil_date((secs / 86_400) as i64))
 }
 
+/// Scores both directories on the cases they share and prints the
+/// comparison; refuses two models, an unreadable directory or no case in
+/// common, printing no report.
+fn compare_runs(cases: &[case::Case], args: &CompareArgs) -> ExitCode {
+    let ids = |dir: &Path| -> Result<BTreeSet<String>, String> {
+        suite::read_run(dir)?;
+        Ok(suite::load_observations(dir)?
+            .into_keys()
+            .map(|(id, _)| id)
+            .collect())
+    };
+    let (base_ids, cand_ids) =
+        match ids(&args.baseline).and_then(|b| Ok((b, ids(&args.candidate)?))) {
+            Ok(pair) => pair,
+            Err(e) => return usage(e),
+        };
+    let common: BTreeSet<String> = base_ids.intersection(&cand_ids).cloned().collect();
+    if common.is_empty() {
+        return usage("the baseline and the candidate have no case in common");
+    }
+    let not_compared: Vec<String> = base_ids.symmetric_difference(&cand_ids).cloned().collect();
+    let score =
+        |dir: &Path| suite::score_dir_only(cases, dir, score::Thresholds::default(), Some(&common));
+    let (baseline, candidate) =
+        match score(&args.baseline).and_then(|b| Ok((b, score(&args.candidate)?))) {
+            Ok(pair) => pair,
+            Err(e) => return usage(e),
+        };
+    if let Some(e) = compare::models_differ(
+        &baseline.run,
+        &compare::models_used(&baseline),
+        &candidate.run,
+        &compare::models_used(&candidate),
+    ) {
+        return usage(e);
+    }
+    let mode = if args.quality_only {
+        compare::Mode::QualityOnly
+    } else {
+        compare::Mode::QualityAndCost
+    };
+    let result = compare::compare(&baseline, &candidate, &not_compared, mode);
+    print!("{}", result.report);
+    for f in &result.failures {
+        eprintln!("fail: {f}");
+    }
+    if result.pass {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    }
+}
+
 fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     let thresholds = match thresholds(&args.thresholds) {
         Ok(t) => t,
         Err(e) => return usage(e),
     };
+    let repeat = args.repeat;
     let settings = match ClaudeSettings::from_env(&env) {
         Ok(s) => s,
         Err(e) => return usage(e),
@@ -270,6 +344,8 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         date,
         claude_version: Some(claude_version),
         codev_version: Some(codev_version),
+        repeat: Some(repeat),
+        jobs: Some(args.jobs as u32),
     };
     if let Ok(text) = fs::read_to_string(out.join("run.json")) {
         let resumed = match observed::parse_run_info(&text) {
@@ -284,11 +360,11 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         return usage(format!("{}: {e}", out.display()));
     }
     let recorded = suite::recorded(&out);
-    let pending = runner::pending(&selected, &recorded, args.rerun);
+    let pending = runner::pending(&selected, &recorded, repeat, args.rerun);
     eprintln!(
-        "[codev-evals] {} case(s) to run, {} already recorded in {}",
+        "[codev-evals] {} run(s) to make, {} already recorded in {}",
         pending.len(),
-        selected.len() - pending.len(),
+        selected.len() * repeat as usize - pending.len(),
         out.display()
     );
     let options = RunOptions {

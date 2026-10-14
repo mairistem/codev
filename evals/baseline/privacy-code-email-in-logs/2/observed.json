@@ -1,0 +1,195 @@
+{
+  "format": 2,
+  "case": "privacy-code-email-in-logs",
+  "error": null,
+  "costUsd": 0.3698698,
+  "durationMs": 36406,
+  "consumption": {
+    "durationApiMs": 35315,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1177,
+      "cacheCreation": 29245,
+      "cacheRead": 329399,
+      "output": 3450
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (E-mail address and display name written to application logs) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-signup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "log.info(\"new signup email=%s name=%s id=%s\", email, display_name, user_id)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/signup.py:14",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Log only the opaque member id (`log.info(\"new signup id=%s\", user_id)`). As written, every sign-up copies the member's e-mail address and display name into the application logs, where they escape the users table's access control, retention and erasure (GDPR Art. 5(1)(c) data minimisation, 5(1)(e) storage limitation, Art. 17 erasure): deleting the member leaves their e-mail in every log file and log backup.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "E-mail address and display name written to application logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "track(\"signup\", {\"user_id\": user_id, \"email\": email})\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 31,
+        "location": "app/signup.py:15",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Drop `email` from the event properties. The stated purpose is that \"Sign-ups are counted in product analytics\" (proposal.md#What Changes), which needs no e-mail address; yet every sign-up posts the member's e-mail to the third party at https://beacon.example.com/v1/events (app/analytics.py:5), beyond what the purpose needs (GDPR Art. 5(1)(c), Art. 25), and out of reach of the member's erasure request (Art. 17).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "E-mail address sent to the Beacon analytics SaaS"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"\"\"Product analytics, sent to the Beacon SaaS (beacon.example.com).\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 51,
+        "location": "app/analytics.py:1-5",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change introduces Beacon as a recipient of member data (at least the member id, a pseudonymous identifier) but the proposal's Impact and Domains name no processor. Question for the team: is a processing agreement in place with Beacon (GDPR Art. 28), where does it host the data (Chapter V, transfers outside the EEA), and is it listed in the records of processing (Art. 30)? State it in the proposal.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Beacon is a new processor not identified in the plan"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def signup(email: str, display_name: str) -> int:\n    \"\"\"Creates the member and returns their id.\"\"\"\n    user_id = insert_user(email=email, display_name=display_name)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 71,
+        "location": "app/signup.py:11-13",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal only says the change \"collects e-mail addresses and display names\" (proposal.md#Domains). Question for the team: state the purpose and lawful basis of each field (Art. 6), how long a member's row in `users` is kept and how it is deleted, backups included (Art. 5(1)(e), Art. 17). Only the controller can tell what was decided.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No purpose, lawful basis or retention stated for the collected e-mail and display name"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-signup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,135 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.3559014,
+  "durationMs": 35732,
+  "consumption": {
+    "durationApiMs": 35294,
+    "turns": 10,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1193,
+      "cacheCreation": 27467,
+      "cacheRead": 423587,
+      "output": 2521
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (camelCase renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Existing config.toml files fail to load without default_currency) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\npub struct OrderResponse {\n    pub order_id: i64,\n    pub customer_id: i64,\n    pub total_cents: i64,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so the existing fields keep their snake_case names (`order_id`, `customer_id`, `total_cents`) and only `currency` is added. Today `GET /orders/{id}` returns `orderId`, `customerId` and `totalCents` instead: every partner integration that reads `order_id`, `customer_id` or `total_cents` gets a missing field on the first response after deploy, with no **BREAKING** item in the release note (which only says \"Added: Orders carry their `currency`\") and in breach of docs/api.md's promise of two releases of deprecation before any rename. Add a test that serializes an `OrderResponse` and asserts the exact keys.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "camelCase renames every existing order JSON field"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 38,
+        "location": "src/config.rs:9-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the new key a default, e.g. `#[serde(default = \"default_currency\")]` returning `\"EUR\"` (the currency the shop sold in before this change), and test that a config holding only `database_url` and `listen` still loads. As written the field is required: every deployed `config.toml`, which holds only `database_url` and `listen` like the previous config.example.toml, makes `load` return a `missing field `default_currency`` error and the service no longer starts after the upgrade. Nothing in the release note tells operators to add the key; if a default is not wanted, mark it **BREAKING** with the manual step.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Existing config.toml files fail to load without default_currency"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

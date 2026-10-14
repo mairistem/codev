@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.29565179999999996,
+  "durationMs": 22196,
+  "consumption": {
+    "durationApiMs": 22109,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 26066,
+      "cacheRead": 231549,
+      "output": 1990
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/pricing.ts:9-10",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Rewrite as plain, named steps: a constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros),\na comparison `price.cents >= PREMIUM_THRESHOLD_CENTS`, and a result typed with the two\nbuckets the doc comment promises, e.g. `{ cheap: Price[]; premium: Price[] }` built with\ntwo `filter` calls or a simple loop. A reader of line 10 cannot tell, without the\nproposal, what `(p.cents >> 4) & 0x3e8` means: `0x3e8` is 1000 in hex, which suggests the\n10-euro threshold, but a shift-and-mask is a bit test, not a comparison — e.g. 999 cents\ngives `62 & 1000 = 40` (truthy, \"hi\") and 128 cents gives `8 & 1000 = 8` (\"hi\"), so the\nshape hides that the line does not compare against 10 euros at all. The rest of the line\ncompounds it: single-letter names (`ps`, `a`, `p`), a comma expression returning the\naccumulator, `||=` creating arrays inside an index, and keys `\"hi\"`/`\"lo\"` that the doc\ncomment calls \"cheap\" and \"premium\", typed as an open `Record<string, …>` so a caller\ncannot know which keys exist or that a bucket may be missing. The simple version makes the\nthreshold visible and its correctness checkable; whether the current result is wrong is\nfor the developer to confirm and fix.\n",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`bucket` packs the premium rule into an unreadable bitwise one-liner"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

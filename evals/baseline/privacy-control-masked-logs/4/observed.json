@@ -1,0 +1,195 @@
+{
+  "format": 2,
+  "case": "privacy-control-masked-logs",
+  "error": null,
+  "costUsd": 0.472915,
+  "durationMs": 57793,
+  "consumption": {
+    "durationApiMs": 56939,
+    "turns": 13,
+    "permissionDenials": 5,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1209,
+      "cacheCreation": 31638,
+      "cacheRead": 525425,
+      "output": 5685
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Addresses with a non-ASCII character are logged in full) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (Percent-encoded addresses in URLs are not masked) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "mask-emails-in-logs",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/logger.ts:3",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The local part and the domain only accept ASCII letters, so an internationalized address does not match at all and passes through unmasked: `logInfo(\"signup\", { user: \"josé@example.fr\" })` writes `josé@example.fr` (the character before `@` is `é`, outside the class), and `ada@exämple.de` is likewise left whole. The customer's e-mail address then reaches the hosting provider's logs, kept 90 days — the very leak the proposal removes (GDPR Art. 5(1)(c), Art. 25). Match any non-space, non-`@` characters around the `@` (e.g. Unicode-aware `[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}` with the `u` flag), and add a test with a non-ASCII local part and domain.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Addresses with a non-ASCII character are logged in full"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "export function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n}\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 35,
+        "location": "src/logger.ts:6-8",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The pattern requires a literal `@`, so an address carried in a URL or query string, such as `/reset?email=ada.lovelace%40example.org`, is logged in full when a caller logs a request path or URL. No caller exists in this diff, hence the low confidence. Also match the encoded `%40` form (case-insensitive), or decode before masking, and cover it with a test.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Percent-encoded addresses in URLs are not masked"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "for (const [key, value] of Object.entries(fields)) {\n  safe[key] = typeof value === \"string\" ? maskEmails(value) : value;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 57,
+        "location": "src/logger.ts:12-13",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Only values go through `maskEmails`; the keys are copied as they are. A caller that builds fields keyed by an address (e.g. a per-user counter `{ [email]: count }`) writes the full address to the log. It depends on callers not in this diff. Mask the keys too, or document that keys must be constant identifiers.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Field names are written to the log without masking"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 77,
+        "location": "src/logger.ts:5",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "`a***@example.org` is pseudonymised, not anonymous: for a customer on a personal or small-company domain, the first letter plus the domain is enough to re-identify them in the 90-day logs. Whether that matters depends on the customer base, which the review could not see. If the domain is not needed for diagnosis, mask it too (e.g. `a***@***`) or log an opaque user id instead.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "The masked form keeps the domain and first letter"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/mask-emails-in-logs/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

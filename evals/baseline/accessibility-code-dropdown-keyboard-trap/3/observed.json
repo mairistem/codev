@@ -1,0 +1,131 @@
+{
+  "format": 2,
+  "case": "accessibility-code-dropdown-keyboard-trap",
+  "error": null,
+  "costUsd": 0.32064000000000004,
+  "durationMs": 22335,
+  "consumption": {
+    "durationApiMs": 21742,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 28681,
+      "cacheRead": 244280,
+      "output": 2067
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Open sort menu traps keyboard focus: Tab cycles inside and Escape does nothing) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-sort-menu",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n  event.preventDefault();\n  items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SortMenu.tsx:21-30",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "WCAG 2.1.2 No Keyboard Trap (and 2.1.1 Keyboard). Once a keyboard user opens the menu, focus moves to the first item; pressing Tab (or Shift+Tab) is cancelled and wraps back to an item, and there is no Escape handler nor any close on blur, so the only way out is to pick an option — the user cannot leave the menu without changing the sort, nor reach the product list. Stop intercepting Tab (let it move on and close the menu), add Escape that closes the menu and returns focus to the button, as the APG menu button pattern requires; or use a native <select> with a <label>, which needs none of this.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Open sort menu traps keyboard focus: Tab cycles inside and Escape does nothing"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<button ref={button} type=\"button\" aria-haspopup=\"menu\" aria-expanded=\"false\" onClick={() => setOpen(!open)}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 35,
+        "location": "src/components/SortMenu.tsx:34",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "WCAG 4.1.2 Name, Role, Value. aria-expanded is hard-coded to \"false\", so when a screen reader user activates the button and the menu opens, the button is still announced as \"collapsed\" — the state contradicts the behaviour. Bind it to the state: aria-expanded={open}.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Menu button always announces aria-expanded=\"false\""
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-sort-menu/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

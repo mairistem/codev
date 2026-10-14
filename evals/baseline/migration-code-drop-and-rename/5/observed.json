@@ -1,0 +1,168 @@
+{
+  "format": 2,
+  "case": "migration-code-drop-and-rename",
+  "error": null,
+  "costUsd": 0.35047680000000003,
+  "durationMs": 49351,
+  "consumption": {
+    "durationApiMs": 48721,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 28531,
+      "cacheRead": 328584,
+      "output": 2775
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Renamed public JSON field breaks existing API consumers without warning) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (DROP COLUMN is irreversible, with no down migration and no backup step) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "drop-legacy-email",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"userName\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:8",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "`Account` is a type of the public HTTP API: every existing client that reads `user_name` from the account endpoint gets a missing field after deploy (null/undefined, or a deserialization error for strict clients). Mark the change **BREAKING** in the proposal's release note with what clients must do (read `userName`), and give consumers a transition: e.g. emit both keys for a deprecation period (keep `user_name` alongside `userName`, or version the endpoint) before removing the old one. The release note line \"Changed: Account JSON uses camelCase.\" is neither marked BREAKING nor says what users must do.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Renamed public JSON field breaks existing API consumers without warning"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 34,
+        "location": "migrations/0005_drop_legacy_email.sql:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Running migration 0005 deletes every value still stored in `users.legacy_email` (the 2023 import data); the column is unwritten, not empty. Unlike `0004_accounts.down.sql`, there is no `0005_drop_legacy_email.down.sql`, and neither the proposal nor tasks.md plans a backup or explains how to recover. Add a down migration that re-creates the column (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`), and a backup step (copy the column to an archive table or dump it) before the drop — or state in the plan why the data can be lost and how to recover it.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "DROP COLUMN is irreversible, with no down migration and no backup step"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-3",
+        "line": 57,
+        "location": "migrations/0005_drop_legacy_email.sql:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "No reader of `legacy_email` is visible in this repository, but the plan does not say that no running service, report or `SELECT *` consumer still reads it. If one does, it fails as soon as the migration runs during a rolling deploy. Confirm no consumer reads the column (or stop reading it in a release before the one that drops it — expand/contract), and note the rollout order in the plan.",
+        "reported": false,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Column dropped in the same release as code, while old instances may still read it"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/drop-legacy-email/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

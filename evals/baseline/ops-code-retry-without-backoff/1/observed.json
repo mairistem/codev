@@ -1,0 +1,127 @@
+{
+  "format": 2,
+  "case": "ops-code-retry-without-backoff",
+  "error": null,
+  "costUsd": 0.34251200000000004,
+  "durationMs": 33876,
+  "consumption": {
+    "durationApiMs": 33115,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1195,
+      "cacheCreation": 27578,
+      "cacheRead": 335325,
+      "output": 2691
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-merchant-webhooks",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/webhooks.ts:9-23",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Wait between attempts with an exponential backoff and jitter (for example 1s, 2s, 4s, 8s), or hand failed deliveries to a queue that retries later. As written, when a merchant's server returns 503 or is briefly down, the five attempts fire back to back within milliseconds (or every 5s on timeouts), hammering an endpoint that is already failing and exhausting every attempt before a short outage ends, so the event is dropped. Retrying is safe here since merchants deduplicate on `x-event-id`; only the spacing is missing.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Webhook delivery retries immediately, with no backoff"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 33,
+        "location": "src/webhooks.ts:17-24",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Use the project's structured `logger` (as `src/events.ts` does) and log the drop at `error` (attempt failures at `warn`) with fields: eventId, merchant or paymentId, attempt, HTTP status or error. Today a merchant answering 500 or 404 produces no log at all (only thrown errors reach the `catch`), and a webhook given up after five attempts is a `console.debug` prose line that debug-filtered production logs hide and that cannot be queried or alerted on: a merchant who never received a payment notification leaves the operator nothing to find. Consider a metric or counter of dropped deliveries as well.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Failed and dropped deliveries are logged as free text at debug level, HTTP failures not at all"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

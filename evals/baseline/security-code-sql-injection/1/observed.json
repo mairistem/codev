@@ -1,0 +1,104 @@
+{
+  "format": 2,
+  "case": "security-code-sql-injection",
+  "error": null,
+  "costUsd": 0.28568059999999995,
+  "durationMs": 18199,
+  "consumption": {
+    "durationApiMs": 17384,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 25988,
+      "cacheRead": 232803,
+      "output": 1511
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (SQL injection through the search term) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-user-search",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/users.ts:10",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The `q` query-string parameter of `GET /users/search` (src/server.ts:13) is only trimmed and length-checked (2 to 100 characters), then concatenated into the SQL text. Any caller holding the `support` role can send `q=' UNION SELECT id, password_hash FROM users --` (or any other table) and read arbitrary data, or alter the query, through the endpoint (CWE-89). Bind the term as a parameter through the existing helper, which `src/db.ts` documents as \"values go in `params`, never in `sql`\": `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ESCAPE '\\\\' ORDER BY name LIMIT 50\", [\"%\" + escaped + \"%\"])`, where `escaped` escapes `\\`, `%` and `_` in the term so that user wildcards match literally. Add a test showing that a term containing a quote is matched literally and does not break the query.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "SQL injection through the search term"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-user-search/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

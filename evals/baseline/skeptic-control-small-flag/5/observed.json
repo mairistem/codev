@@ -1,0 +1,71 @@
+{
+  "format": 2,
+  "case": "skeptic-control-small-flag",
+  "error": null,
+  "costUsd": 0.4071026,
+  "durationMs": 34310,
+  "consumption": {
+    "durationApiMs": 33632,
+    "turns": 12,
+    "permissionDenials": 4,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 31191,
+      "cacheRead": 487573,
+      "output": 2952
+    }
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-quiet-flag",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-quiet-flag/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "no-finding"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}
