@@ -178,9 +178,16 @@ Options:
 
 Regenerates the skills listed by `workflows:` in the configuration (all eight
 when the key is absent), for example after upgrading codev or changing the
-`mcp:` configuration. A skill whose content differs from what this version
-generates, but which carries this version's stamp, was edited by hand: it is
-left in place and reported, unless you pass `--force`. Skills removed from
+`mcp:` configuration. `codev update` rewrites a skill stamped with another
+version; among the skills stamped with its own version, it rewrites one whose
+content still hashes to its `checksum` — codev's rendering, from an earlier
+build or for the other review mode — and preserves one that no longer does,
+edited by hand, unless you pass `--force`. A skill without a checksum,
+rendered before checksums existed, is preserved when it carries this version's
+stamp and differs from the rendering by more than the review mode: run `codev
+update --force` once to bring such skills under the checksum — it also
+overwrites a skill you really edited, so check `git diff` first and apply your
+edits again after. A preserved skill is reported. Skills removed from
 `workflows:` are not deleted. An unknown workflow name is ignored with a
 warning `unknown_workflow`. Missing `_codev/` folders and a missing
 `_codev/config.yaml` are recreated; existing files are never overwritten.

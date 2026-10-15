@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "3fab3ebe691ed14f658419fc4c707aaea07dcebfefd8664805bafc82c7e2fef5"
 ---
 
 Create a change and write its planning artifacts, in one pass.

@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "02e4e51c93612a79e7c71ed8714e45897485e7c0c653e765087b7232ffe90373"
 ---
 
 Explore an idea, investigate a problem, clarify a need — without committing

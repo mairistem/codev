@@ -187,11 +187,18 @@ Options:
 
 Régénère les skills listées par `workflows:` dans la configuration (les huit
 en l'absence de la clé), par exemple après une mise à jour de codev ou une
-modification de la configuration `mcp:`. Une skill dont le contenu diffère de
-ce que génère cette version, mais qui porte la marque de cette version, a été
-modifiée à la main : elle est laissée en place et signalée, sauf si vous
-passez `--force`. Les skills retirées de `workflows:` ne sont pas
-supprimées. Un nom de workflow inconnu est ignoré avec un avertissement
+modification de la configuration `mcp:`. `codev update` réécrit une skill
+marquée d'une autre version ; parmi les skills marquées de sa propre version,
+il réécrit celle dont le contenu correspond encore à son `checksum` — un rendu
+de codev, d'une compilation antérieure ou pour l'autre mode de revue — et
+préserve celle qui n'y correspond plus, modifiée à la main, sauf si vous
+passez `--force`. Une skill sans checksum, rendue avant leur existence, est
+préservée quand elle porte la marque de cette version et diffère du rendu par
+plus que le mode de revue : lancez une fois `codev update --force` pour la
+doter d'un checksum — il écrase aussi une skill que vous avez réellement
+modifiée : vérifiez d'abord `git diff`, puis réappliquez vos modifications.
+Une skill préservée est signalée. Les skills retirées de `workflows:` ne sont
+pas supprimées. Un nom de workflow inconnu est ignoré avec un avertissement
 `unknown_workflow`. Les dossiers manquants de `_codev/` et un
 `_codev/config.yaml` manquant sont recréés ; aucun fichier existant n'est
 jamais écrasé.

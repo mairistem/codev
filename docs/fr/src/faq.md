@@ -103,9 +103,12 @@ la racine du projet que vous avez ouvert.
   Left in place because edited by hand — rerun with --force to overwrite:
 ```
 
-Cette skill a été modifiée à la main, et codev ne supprime pas votre travail.
-Conservez la modification et ignorez le message, ou lancez
-`codev update --force` pour la régénérer (vérifiez d'abord `git diff`).
+Cette skill a été modifiée à la main — son contenu ne correspond plus à son
+empreinte —, et codev ne supprime pas votre travail. Conservez la
+modification et ignorez le message, ou lancez `codev update --force` pour la
+régénérer (vérifiez d'abord `git diff`). Une skill générée avant les
+empreintes est préservée de la même façon, jusqu'à ce qu'un
+`codev update --force` lui en donne une.
 
 ### Le sous-agent d'un relecteur échoue
 
@@ -163,6 +166,19 @@ refuse avec le même code une décision qui n'est pas `accepted`.
 
 Chaque fichier `.md` de `_codev/decisions/` est analysé comme une décision.
 Sortez de ce dossier les autres fichiers Markdown, un README par exemple.
+
+### Une spec archivée avec un codev antérieur contient une exigence coupée
+
+Avec codev 0.6.1 et les versions antérieures — les compilations faites avant
+ce correctif —, archiver un change qui modifiait la dernière exigence d'une
+spec et ajoutait des exigences pouvait écrire les ajouts au milieu d'une ligne
+de l'exigence modifiée : la spec contient alors le début de cette exigence,
+les ajouts, puis sa fin collée derrière eux. `codev validate` ne le détecte
+pas, et synchroniser ou archiver à nouveau le change ne le répare pas. Pour
+vérifier, regardez le diff de chaque archivage d'un change dont le delta
+modifiait la dernière exigence d'une spec et ajoutait des exigences ; pour
+réparer, remettez l'exigence entière à la main, ou par un nouveau change dont
+le delta `MODIFIED` en donne le texte complet.
 
 ### La synchronisation ou l'archivage refuse un change
 

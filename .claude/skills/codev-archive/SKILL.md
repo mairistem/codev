@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "b1a68bb134507ac90ce32fadd6a1f634307873d47b8e7d0463d69c146af7ab83"
 ---
 
 Close a codev change: merge its deltas into the main specs and move the

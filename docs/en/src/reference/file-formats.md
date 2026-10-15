@@ -468,15 +468,25 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "8d676b09…"
 ---
 
 <workflow instructions>
 ```
 
-`metadata.version` is how `codev update` tells a skill from an older version
-(regenerated) from a skill edited by hand (preserved unless `--force`). A
-skill this version rendered for the other [review mode](configuration.md#review)
-— with or without `Agent` in `allowed-tools` — is regenerated too.
+`metadata.checksum` is the SHA-256 of the whole skill without that line. With
+`metadata.version`, it is how `codev update` tells codev's renderings from
+your edits. `codev update` rewrites a skill stamped with another version;
+among the skills stamped with its own version, it rewrites one whose content
+still hashes to its `checksum` — codev's rendering, from an earlier build or
+for the other [review mode](configuration.md#review) — and preserves one that
+no longer does, edited by hand, unless you pass `--force`. A skill without a
+checksum, rendered before checksums existed, is preserved when it carries this
+version's stamp and differs from the rendering by more than the review mode:
+run `codev update --force` once to bring such skills under the checksum — it
+also overwrites a skill you really edited, so check `git diff` first and apply
+your edits again after; an edit made then is preserved, since it no longer
+matches the checksum.
 
 ## Validation codes
 
