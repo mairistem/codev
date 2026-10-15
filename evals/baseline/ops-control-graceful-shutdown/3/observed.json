@@ -2,22 +2,98 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3660336,
-  "durationMs": 39385,
+  "costUsd": 0.3737627999999999,
+  "durationMs": 38664,
   "consumption": {
-    "durationApiMs": 38927,
-    "turns": 7,
-    "permissionDenials": 0,
+    "durationApiMs": 39125,
+    "turns": 8,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 30083,
-      "cacheRead": 246123,
-      "output": 3758
-    }
+      "input": 1176,
+      "cacheCreation": 30066,
+      "cacheRead": 295309,
+      "output": 3659
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 15960,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4597,
+          "skill": 11363
+        }
+      },
+      {
+        "cacheCreation": 2391,
+        "cacheRead": 45492,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2391
+        }
+      },
+      {
+        "cacheCreation": 767,
+        "cacheRead": 47883,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 767
+        }
+      },
+      {
+        "cacheCreation": 1156,
+        "cacheRead": 48650,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1156
+        }
+      },
+      {
+        "cacheCreation": 2001,
+        "cacheRead": 49806,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2001
+        }
+      },
+      {
+        "cacheCreation": 398,
+        "cacheRead": 51807,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 364,
+          "output": 34
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -48,17 +124,17 @@
         ],
         "id": "R-ops-1",
         "line": 11,
-        "location": "src/worker.rs:46-50",
+        "location": "src/worker.rs:46-48",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Confirm how the mailer maps a send that exceeds `SEND_TIMEOUT` after the message data was transmitted. If it returns `SendError::Unavailable`, the job is released and sent again, so the recipient gets a duplicate e-mail. Either map an ambiguous timeout to a distinct outcome that is not retried blindly, or document that delivery is at-least-once. This is low confidence because the mailer implementation was not visible.",
+        "recommendation": "Confirm how the mailer maps a timeout reached after the message data was handed to the relay; if it returns `Unavailable`, the job is released and sent again, so the recipient gets the e-mail twice. Either have the mailer distinguish \"not delivered\" from \"outcome unknown\", or send with a stable Message-ID the relay can deduplicate on.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "A send that times out after the relay accepted it may be retried and duplicated"
+        "title": "A send that times out after the relay accepted it is retried and may duplicate the e-mail"
       }
     ],
     "format": 1,

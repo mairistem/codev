@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-code-hidden-n-plus-one",
   "error": null,
-  "costUsd": 0.3344024,
-  "durationMs": 28423,
+  "costUsd": 0.3478636,
+  "durationMs": 33663,
   "consumption": {
-    "durationApiMs": 27967,
+    "durationApiMs": 33597,
     "turns": 9,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,96 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1176,
-      "cacheCreation": 27638,
-      "cacheRead": 283327,
-      "output": 2782
-    }
+      "input": 1178,
+      "cacheCreation": 27673,
+      "cacheRead": 332093,
+      "output": 2953
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 13747,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13747
+        }
+      },
+      {
+        "cacheCreation": 1968,
+        "cacheRead": 43284,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1968
+        }
+      },
+      {
+        "cacheCreation": 983,
+        "cacheRead": 45252,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 983
+        }
+      },
+      {
+        "cacheCreation": 1603,
+        "cacheRead": 46235,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1603
+        }
+      },
+      {
+        "cacheCreation": 587,
+        "cacheRead": 47838,
+        "input": 2,
+        "output": 47,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 587
+        }
+      },
+      {
+        "cacheCreation": 958,
+        "cacheRead": 48425,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 818,
+          "output": 140
+        }
+      },
+      {
+        "cacheCreation": 429,
+        "cacheRead": 49383,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 429
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -40,7 +125,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "for invoice in &invoices {\n        lines.push(ReportLine {\n            number: invoice.number.clone(),\n            customer: customer_label(db, invoice)?,\n",
+        "evidence": "for invoice in &invoices {\n    lines.push(ReportLine {\n        number: invoice.number.clone(),\n        customer: customer_label(db, invoice)?,\n",
         "history": [
           {
             "by": "performance",
@@ -56,7 +141,7 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "N+1 queries: `monthly_report` runs `invoices_of_month` once, then `customer_label` (`src/report.rs:39`, `db.customer(invoice.customer_id)?`) runs `SELECT id, name, country FROM customers WHERE id = $1` once per invoice — about 3 000 round trips for a month of finance's data (proposal: 3 000 invoices from 800 customers), growing linearly with the month's invoices, and fetching the same customer many times. The `Db` trait already offers the batch `customers(&self, ids: &[i64])` (`WHERE id = ANY($1)`): collect the distinct `customer_id`s, call `db.customers(&ids)` once, build a `HashMap<i64, Customer>`, and look each invoice's customer up in it. Keep the invoice-number order and return the same error as today when a customer is missing.",
+        "recommendation": "N+1 queries: through `customer_label` (`db.customer(invoice.customer_id)?`, src/report.rs:39), `monthly_report` runs `SELECT ... FROM customers WHERE id = $1` once per invoice, so a month of ~3 000 invoices (proposal) costs ~3 000 round trips for ~800 customers, growing linearly with invoice volume on the report finance reads. Collect the distinct `customer_id`s, load them in one call with the existing `Db::customers(&[i64])` (`WHERE id = ANY($1)`), index them in a `HashMap<i64, Customer>` and build each label from the map. Keep the current error behaviour for a missing customer (return a `DbError` rather than silently skipping the line).",
         "reported": true,
         "role": "performance",
         "severity": "high",
@@ -67,7 +152,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "fn purchase_order(notes: &str) -> Option<String> {\n    let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\n",
+        "evidence": "let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\npattern.find(notes).map(|m| m.as_str().to_string())\n",
         "history": [
           {
             "by": "performance",
@@ -78,18 +163,18 @@
           }
         ],
         "id": "R-performance-2",
-        "line": 38,
-        "location": "src/report.rs:44-46",
+        "line": 36,
+        "location": "src/report.rs:45-46",
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "`purchase_order` is called once per invoice from the loop at `src/report.rs:28`, and each call compiles `PO-\\d{4}-\\d{4}` anew — a pattern compilation per item (about 3 000 per monthly report), far costlier than the match itself. Compile it once, in a `static PATTERN: std::sync::LazyLock<Regex>` (or `OnceLock`), or compile it in `monthly_report` before the loop and pass it in.",
+        "recommendation": "`purchase_order` is called for every invoice of the month and recompiles the same pattern each time; compiling a regex is far more expensive than matching it against a short notes string, so the cost grows with the ~3 000 invoices per report. Compile it once, e.g. `static PO_PATTERN: std::sync::LazyLock<Regex> = LazyLock::new(|| ...)` (or `once_cell`), or compile it in `monthly_report` and pass it in.",
         "reported": true,
         "role": "performance",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Regex compiled again for every invoice"
+        "title": "Purchase-order regex compiled once per invoice"
       }
     ],
     "format": 1,

@@ -8,7 +8,7 @@ Mode: inline.
 
 ### skeptic
 
-#### R-skeptic-1 The plan assumes one e-mail is one person, which its own context contradicts
+#### R-skeptic-1 The merge key rests on an assumption the design's own context contradicts
 
 ```yaml
 severity: high
@@ -16,27 +16,24 @@ confidence: high
 location: "design.md#Decision: Customers are merged by e-mail"
 evidence: |
   Since an e-mail address identifies exactly one person, the job groups
-  customers by lower-cased e-mail, keeps the oldest record of each group,
-  moves the others' orders to it and deletes the others.
 recommendation: >-
-  The design's own Context says the opposite: "Business customers often
-  share a purchasing mailbox (`orders@acme.example`) between several buyers,
-  each with their own customer record and billing address." Under the
-  decision as written, the nightly job merges those distinct buyers into the
-  oldest one, moves every buyer's orders to that one person and deletes the
-  others' records along with their names and billing addresses — the wrong
-  thing built, and data lost. Drop the assumption or ground it: choose a
-  matching key that separates shared mailboxes (e.g. e-mail plus name and
-  billing address, or only records created by guest checkout with identical
-  details), or exclude known shared mailboxes. Then add a spec scenario
-  "Shared mailbox, different buyers" whose THEN is that both records remain,
-  and cover it in task 1.1.
+  The design's Context states that "Business customers often share a purchasing
+  mailbox (`orders@acme.example`) between several buyers, each with their own
+  customer record and billing address". Scenario that fails: three buyers of Acme
+  each have a record with `orders@acme.example`; the nightly job keeps the oldest,
+  moves the other two buyers' orders to it and deletes their records, so their
+  billing addresses are lost and their orders are attributed to the wrong person.
+  The Why only concerns guest checkouts ("Guest checkouts create a new customer
+  each time"), yet the decision merges every customer sharing an e-mail. Restrict
+  the merge to what the Why needs (e.g. guest records only, or e-mail plus another
+  matching attribute), state the rule in the spec, and add a scenario
+  "two distinct customers share a mailbox → both records remain".
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 Merged records are deleted with no way back
+#### R-skeptic-2 Customer records are deleted with no way back
 
 ```yaml
 severity: high
@@ -45,13 +42,12 @@ location: "design.md#Decision: Customers are merged by e-mail"
 evidence: |
   moves the others' orders to it and deletes the others.
 recommendation: >-
-  The deletion is a one-way door: the deleted records' `name` and
-  `billing_address` (app/schema.sql, NOT NULL columns) are gone, and a wrong
-  merge cannot be undone because nothing records which orders belonged to
-  which customer. Add a way back before deleting — a merge log of the moved
-  order ids and the removed rows, or a soft delete / `merged_into` column —
-  and a staged rollout (a dry-run mode reporting the groups it would merge
-  before the first real run). Add the corresponding requirement and task.
+  The merge is a one-way door: once the duplicates are deleted and their orders
+  moved, a wrong merge (see R-skeptic-1) cannot be undone, and the plan has no
+  Migration Plan, rollback, dry run or staged rollout. Keep a trace of each merge
+  (merged-into link or soft delete, original order ownership) so a merge can be
+  reverted, consider a dry-run report before the first real run, and add a task
+  that verifies the revert.
 history:
   - status: open
     by: skeptic
@@ -66,19 +62,19 @@ location: "specs/customer-merge/spec.md#Requirement: Duplicate customers are mer
 evidence: |
   A nightly job SHALL merge customer records that share an e-mail address into the oldest one, moving their orders to it.
 recommendation: >-
-  The only scenarios are "Two records, one e-mail" and "No duplicate". The
-  design matches on "lower-cased e-mail", but no scenario says that
-  `Ada@Example.org` and `ada@example.org` are merged, so the case rule is
-  not verifiable. Missing too: a group of three or more records, two records
-  with the same `created_at` (which one is "the oldest"), and a guest
-  checkout that inserts a customer or an order while the job runs. Add a
-  scenario for each case the job must handle, and list them in task 1.1.
+  The scenarios are only "Two records, one e-mail" and "No duplicate". Missing
+  cases: e-mails differing only by case (the design groups by "lower-cased
+  e-mail", the spec does not say so, so `Ada@example.org` and `ada@example.org`
+  are untested), customers with no or empty e-mail (grouping them would merge
+  unrelated guests into one record), a group of more than two records, and a
+  checkout creating a record while the job runs. Add a scenario per case and
+  extend task 1.1 to test them.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-4 Operations is unticked although the plan adds a scheduled job
+#### R-skeptic-4 Operations and migration are unticked with no reason
 
 ```yaml
 severity: medium
@@ -86,12 +82,14 @@ confidence: high
 location: "proposal.md#Domains"
 evidence: |
   - [ ] operations
+  - [ ] migration
 recommendation: >-
-  The What Changes adds "A nightly job merges customers that share an
-  e-mail address." — something that must be scheduled, monitored and
-  stopped if it misbehaves — yet the operations box is unticked with no
-  reason, so no expert reviews how it runs. Tick it, or keep it unticked
-  with the reason on its line.
+  The plan adds a scheduled job ("A nightly job merges customers that share an
+  e-mail address") and rewrites existing production data (moves orders, deletes
+  customer records), yet operations and migration are unticked with no reason, so
+  no expert reviews scheduling, monitoring and failure handling of the job, nor
+  the bulk data change on existing records. Tick both, or give the reason on each
+  line.
 history:
   - status: open
     by: skeptic

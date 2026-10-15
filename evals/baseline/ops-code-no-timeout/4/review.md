@@ -8,7 +8,7 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 Provider call has no timeout and can hang checkout forever
+#### R-ops-1 Charge call to the payment provider has no timeout
 
 ```yaml
 severity: high
@@ -16,13 +16,15 @@ confidence: high
 location: "app/payments.py:14"
 evidence: |
   response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
-recommendation: Pass an explicit `timeout=(connect, read)` to `requests.post` so a provider that accepts the connection but never answers raises `requests.Timeout` instead of blocking the checkout worker indefinitely; without it, a stalled provider freezes every checkout with nothing in the logs.
+recommendation: Pass an explicit `timeout=` (connect and read) to `requests.post`, so a provider that accepts the connection but never answers raises `requests.Timeout` instead of blocking the checkout worker forever; handle that timeout as an outcome of unknown status (see R-ops-2), not as a plain failure.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Charge is retried forever, at a fixed 1 s pace, even on permanent errors
+Scenario: the provider accepts the TCP connection and stalls (overload, network partition). `requests` waits indefinitely, the checkout request hangs with no log and no error, and the worker is lost until restart — the operator sees stuck checkouts and nothing that names the provider.
+
+#### R-ops-2 Unbounded retry of a non-idempotent charge can duplicate payments
 
 ```yaml
 severity: high
@@ -36,44 +38,32 @@ evidence: |
           return response.json()
       except requests.RequestException:
           time.sleep(1)
-recommendation: Bound the retries (a small maximum number of attempts) with exponential backoff and jitter, retry only transient failures (connection errors, timeouts, 429/5xx), and raise on 4xx. Today `raise_for_status()` turns a 400/402 (declined card, invalid amount) into an `HTTPError`, a `RequestException`, so `charge()` never returns and hammers the provider once a second; during a provider outage every pending checkout does the same, a retry storm the operator cannot stop short of killing the process.
+recommendation: Bound the retries (a few attempts with exponential backoff and jitter) and make the charge idempotent before retrying it — send an idempotency key derived from `order_id` (if the provider supports one) or check the charge status before re-posting; retry only errors where the charge is known not to have happened (connection refused, 429/503 before processing), never a 4xx such as a declined card; after the last attempt, raise an error naming the order.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-3 Non-idempotent charge is retried without an idempotency key, risking duplicate charges
+Scenario 1: the provider processes the charge but the connection drops or a 502 comes back from a proxy before the response — `RequestException` is caught and the same POST is sent again a second later, charging the customer twice (and again each second while the failure lasts). Scenario 2: the provider rejects the request permanently (400 invalid amount, 402 card declined) — `raise_for_status()` raises `HTTPError`, a `RequestException`, so the loop retries forever at a fixed 1-second pace, hammering the provider and never returning to the caller.
+
+#### R-ops-3 Charge failures are swallowed without any log
 
 ```yaml
 severity: high
-confidence: high
-location: "app/payments.py:14"
-evidence: |
-  response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
-recommendation: >-
-  Send an idempotency key derived from the order (for example an `Idempotency-Key: <order_id>` header, or whatever the provider supports) on every attempt, so a retry after a read timeout, a dropped connection or a 5xx returned after the provider already captured the payment does not charge the customer a second time. Until the provider deduplicates, retry only when the request is known not to have reached it (connect errors).
-history:
-  - status: open
-    by: ops
-```
-
-#### R-ops-4 Payment failures are swallowed with no log
-
-```yaml
-severity: medium
 confidence: high
 location: "app/payments.py:17-18"
 evidence: |
   except requests.RequestException:
       time.sleep(1)
-recommendation: >-
-  Log each failed attempt with structured fields (`order_id`, attempt number, HTTP status, provider error code, exception type — never the payload's secrets), and log/raise a final error naming the order once retries are exhausted. As written, when the provider rejects or is down, the operator sees no error, no metric and no order id: only a checkout that never completes.
+recommendation: Log each failed attempt with structured fields — `order_id`, attempt number, HTTP status or exception type, provider error code — without the request body beyond what is safe, and surface the final failure to the caller as an actionable error naming the order and the provider status, instead of discarding the exception.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-5 Provider URL is hard-coded instead of read from configuration
+Scenario: the provider is down or rejects every charge. The exception is dropped and nothing is logged, so the operator on call sees no error, no failing order id and no provider status — only checkouts that never complete — and cannot tell a provider outage from a bug.
+
+#### R-ops-4 Payment provider URL is hard-coded
 
 ```yaml
 severity: medium
@@ -81,11 +71,13 @@ confidence: high
 location: "app/payments.py:7"
 evidence: |
   PAYMENT_URL = "https://payments.example.com/v2/charges"
-recommendation: Read the provider URL from the environment or the project's configuration (e.g. `PAYMENT_URL = os.environ["PAYMENT_URL"]`). The task was verified against the provider's sandbox, yet the code points at a single fixed host, so test or staging environments either hit production and charge real money, or need a code change to switch hosts.
+recommendation: Read the provider URL (and any credentials added later) from the environment or the application configuration, so staging and tests can point at the provider's sandbox and production at the live endpoint without a code change.
 history:
   - status: open
     by: ops
 ```
+
+Scenario: the code is deployed to staging or run in tests — every charge goes to the single hard-coded production endpoint, so a test checkout either charges real money or fails, and switching to the sandbox or a new provider host requires a new release.
 
 ### newcomer
 

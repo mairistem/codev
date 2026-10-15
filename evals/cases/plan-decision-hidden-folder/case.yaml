@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Renommer le dossier de planification _codev en .codev pour qu'il soit caché."
+summary: "A request written against decision 0003."
+expected:
+  modified: []
+  collateral: []
+  decisions:
+    - { id: "0003", expect: follow }

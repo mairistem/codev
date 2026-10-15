@@ -294,3 +294,20 @@ fn compare_with_a_format_1_baseline_compares_costs() {
         assert!(stdout.contains("| Turns | — | 10 |"), "{stdout}");
     }
 }
+
+#[test]
+fn an_unknown_step_exits_with_two() {
+    let output = evals(&[
+        "run",
+        "--step",
+        "plan.writ",
+        "--claude",
+        "codev-evals-no-such-claude",
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("plan.writ") && stderr.contains("plan.write"),
+        "{stderr}"
+    );
+}

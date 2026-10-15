@@ -6,6 +6,10 @@
 
 Mode: inline.
 
+### skeptic
+
+Disabled by configuration.
+
 ### ops
 
 #### R-ops-1 The switch to Paylane has no way back
@@ -18,23 +22,23 @@ evidence: |
   The Stripe client is deleted and replaced by the Paylane client in the same
   release. There is no switch between the two: keeping both would double the
   code to maintain. The Stripe account is closed the day after the release.
-recommendation: >-
-  Keep a way back until Paylane has proven itself in production: either keep
-  the Stripe client behind a configuration switch (provider selected per
-  environment, flippable without a release), or at least keep the Stripe
-  account open for a stated rollback window (several weekly release cycles)
-  so that deploying the previous version still processes payments. Close the
-  account in a later change, once the window has passed. Say in the design how
-  a rollback is done and who decides it. Scenario that fails: on day 2 Paylane
-  rejects or times out on a share of authorizations; the previous release
-  still calls Stripe, but the Stripe account is closed, so a redeploy cannot
-  restore card payments, and the next fix waits for the weekly release.
+recommendation: >
+  Keep a way back until Paylane is proven in production: keep the Stripe
+  client behind a configuration switch (provider selected per environment,
+  flipped without a release), and keep the Stripe account open until a
+  stated exit criterion is met (for example N days of Paylane payments with
+  an error rate under a threshold). Write the rollback procedure in the
+  design. Failure scenario: Paylane starts failing authorizations or
+  captures after the release (outage, integration bug, account suspended);
+  the next deploy is about a week away, and redeploying the previous blue
+  version sends payments to a Stripe account already closed — so no card
+  payment can be taken at all, and the operator has no switch to flip.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Nobody sees the settlement worker fail or not run
+#### R-ops-2 The nightly settlement worker fails unseen
 
 ```yaml
 severity: high
@@ -44,22 +48,18 @@ evidence: |
   A new worker, `settlement-worker`, runs at 02:00, fetches the day's Paylane
   payments and matches them to orders. It runs as a Kubernetes CronJob and
   writes its result to the database.
-recommendation: >-
-  Decide in the design how an operator learns that a run failed or never
-  happened: alert on a failed CronJob (or on the absence of a successful run
-  by a set hour), log a structured start and end of each run with the counts
-  fetched, matched and unmatched, and expose the last successful run time.
-  Add a requirement and a scenario for a failed run (Paylane unreachable,
-  database error) next to "A payment without order". Scenario that fails:
-  the Paylane API is down at 02:00 or the job crashes; the CronJob fails, no
-  row is written and no alert is sent — the finance alert only fires for a
-  payment without order in a successful run — so unsettled payments go
-  unnoticed for days.
+recommendation: >
+  Decide in the design how an operator learns that a run failed or did not
+  run: a structured log at start and end of each run (run date, payments
+  fetched, matched, unmatched), a metric or heartbeat for the last
+  successful run, and an alert when a run fails or no successful run is
+  recorded by a deadline. Add the matching task to tasks.md. Failure
+  scenario: the Paylane API is unreachable at 02:00, or the CronJob is
+  never scheduled (bad manifest, suspended job); the worker exits or never
+  starts, nothing is written, and the only alert the spec defines — the
+  finance-channel alert for an unmatched payment — never fires, so a
+  missed settlement looks exactly like a night where everything matched.
 history:
   - status: open
     by: ops
 ```
-
-### skeptic
-
-Disabled by configuration.

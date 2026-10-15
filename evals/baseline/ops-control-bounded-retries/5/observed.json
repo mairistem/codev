@@ -2,22 +2,89 @@
   "format": 2,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.2726986,
-  "durationMs": 19644,
+  "costUsd": 0.3324806,
+  "durationMs": 32524,
   "consumption": {
-    "durationApiMs": 19221,
-    "turns": 6,
+    "durationApiMs": 32309,
+    "turns": 9,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1172,
-      "cacheCreation": 25425,
-      "cacheRead": 187908,
-      "output": 1537
-    }
+      "input": 1174,
+      "cacheCreation": 27929,
+      "cacheRead": 239318,
+      "output": 3010
+    },
+    "toolCalls": 8,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7407,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7407
+        }
+      },
+      {
+        "cacheCreation": 14332,
+        "cacheRead": 29546,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14332
+        }
+      },
+      {
+        "cacheCreation": 2463,
+        "cacheRead": 43878,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 2463
+        }
+      },
+      {
+        "cacheCreation": 1839,
+        "cacheRead": 46341,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1310,
+          "edit": 529
+        }
+      },
+      {
+        "cacheCreation": 1054,
+        "cacheRead": 48180,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 783,
+          "edit": 271
+        }
+      },
+      {
+        "cacheCreation": 834,
+        "cacheRead": 49234,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 564,
+          "edit": 270
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,7 +99,35 @@
     },
     "changeName": "fetch-exchange-rates",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(error) => return Err(format!(\"rates feed {url}: {error} after {ATTEMPTS} attempts\")),\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/rates.rs:28-37",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "The last failed attempt and an invalid body only return a `String`; only the intermediate attempts are logged (`warn!` at line 33). Since the proposal has the caller silently keep the previous day's rates, a feed that stays down or changes its format leaves prices on stale rates with nothing an operator can see, unless the caller logs the error. No caller is in the diff, hence the low confidence. Emit an `error!` with fields (`attempts`, the error) on both final failure paths, or make sure the caller does, and consider logging or exposing the date of the last successful fetch so staleness is visible.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Final failure of the rates fetch emits no log or signal of its own"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/fetch-exchange-rates/review.md",
@@ -60,7 +155,7 @@
             "credited": [],
             "fallback": null,
             "role": "ops",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

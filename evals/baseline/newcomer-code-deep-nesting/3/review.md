@@ -8,31 +8,38 @@ Mode: inline.
 
 ### newcomer
 
-#### R-newcomer-1 `import` nests six levels deep and hides its two unexplained filters
+#### R-newcomer-1 `import` nests five levels deep and hides its rules in unexplained filters
 
 ```yaml
 severity: medium
 confidence: high
 location: "src/import.rs:14-40"
 evidence: |
-                Some(account) => {
-                    if account.plan != row.plan {
-                        for seat in &row.seats {
-                            if !account.seats.contains(seat) {
-                                if seat.contains('@') {
+      for row in rows {
+          if !row.email.is_empty() {
+              match db.find_account(&row.email)? {
+                  Some(account) => {
+                      if account.plan != row.plan {
+                          for seat in &row.seats {
+                              if !account.seats.contains(seat) {
+                                  if seat.contains('@') {
 recommendation: >-
-  Flatten `import` and name its rules. Skip an empty email with an early
-  `continue` instead of wrapping the whole body in `if !row.email.is_empty()`.
-  Extract the per-seat loop, which is written twice (lines 19-26 and 31-36),
-  into one helper such as `add_new_seats(db, account_id, existing, &row.seats)`
-  that filters `seat.contains('@')` once, behind a named predicate such as
-  `is_email_seat`, with a comment saying why a seat without `@` is dropped
-  silently. Turn `if account.plan != row.plan` into a guard with a comment or
-  a named condition saying why seats are added to an existing account only
-  when its plan changed: a newcomer reading line 18 cannot tell, without the
-  plan, whether it is a rule or a mistake, and would likely read the import as
-  "add the missing seats to every existing account", which it does not do.
-  The doc comment on `import` should also say that rows with an empty email
+  Flatten and name the rules. Skip empty emails with an early
+  `continue` (`if row.email.is_empty() { continue; }`). Extract the seat
+  loop, which is duplicated in the `Some` and `None` arms (lines 19-26
+  and 31-36), into one helper such as
+  `add_new_seats(db, account_id, &row.seats, &existing_seats) -> Result<usize, DbError>`
+  that filters with `.filter(|s| !existing.contains(s)).filter(|s| is_seat_email(s))`.
+  Give the two bare filters a name or a comment saying why:
+  `seat.contains('@')` (line 21, 32) — a reader cannot tell whether it
+  validates an email or drops some other kind of seat — and
+  `account.plan != row.plan` (line 18), which means an existing account
+  gets its new seats only when the CSV's plan differs from the stored one
+  and is otherwise silently skipped; a newcomer reads it as inverted and
+  cannot answer why without the plan, which does not say either. Note
+  also that the plan itself is never updated in that branch, so the
+  condition reads like a missing step. The doc comment "returns how many
+  seats were created" should say that seats of unchanged-plan accounts
   and seats without `@` are skipped.
 history:
   - status: open

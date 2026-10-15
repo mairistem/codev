@@ -38,6 +38,9 @@ jobs:
         os: [ubuntu-24.04, macos-14, windows-latest]
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The evaluation suite's planning cases pin commits of the history.
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --workspace --locked

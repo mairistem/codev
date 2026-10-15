@@ -8,24 +8,23 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 Public JSON field renamed without a BREAKING mark or transition
+#### R-migration-1 Account JSON field renamed with no BREAKING mark or transition
 
 ```yaml
 severity: high
 confidence: high
 location: "src/api.rs:8-9"
 evidence: |
-    #[serde(rename = "userName")]
-    pub user_name: String,
+  #[serde(rename = "userName")]
+  pub user_name: String,
 recommendation: >-
-  The public account JSON (src/api.rs is "The JSON types of the public HTTP API")
-  now emits `userName` instead of `user_name`; every existing client that reads
-  `user_name` gets a missing field after deploy, with no warning. The release note
-  lists it as "Changed: Account JSON uses camelCase." with no **BREAKING** marker
-  and no instruction for consumers. Mark it **BREAKING** in the release note with
-  what clients must do, and give consumers a transition: emit both names for a
-  deprecation period (or version the endpoint), then drop `user_name` in a later
-  release; add a test asserting the serialized field names.
+  Every existing consumer of the public HTTP API that reads `user_name` from an
+  Account response gets a missing field after deploy (deserialization error or
+  silent empty value) with no warning. Mark the rename **BREAKING** in the
+  proposal's release note, with what consumers must do (read `userName`), and
+  give them time: serve both names for one release (e.g. a deprecated
+  `user_name` alongside `userName`) or version the endpoint, then remove the old
+  name in a later change.
 history:
   - status: open
     by: migration
@@ -40,14 +39,13 @@ location: "migrations/0005_drop_legacy_email.sql:2"
 evidence: |
   ALTER TABLE users DROP COLUMN legacy_email;
 recommendation: >-
-  Running migration 0005 destroys every value of `users.legacy_email` left from
-  the 2023 import; there is no `0005_drop_legacy_email.down.sql` (0004 has one)
-  and the plan names no backup or recovery, so a rollback cannot restore the data.
-  Add a backup step (copy the column to an archive table or export it) before the
-  drop, add a down migration that re-adds the column and restores from the
-  backup, or state in the plan why the data can be lost and how to recover. Also
-  ship the drop only once no running instance still selects the column
-  (expand/contract order).
+  Running 0005 on production deletes every value still held in
+  `users.legacy_email` (rows imported in 2023), and there is no
+  `0005_drop_legacy_email.down.sql` although 0004 has one, so a rollback cannot
+  restore the column or its data. Add a down migration that re-adds the nullable
+  column, and add a backup step before the drop (copy the column to an archive
+  table or take a dump), or state in the plan why the data can be lost and how
+  to recover.
 history:
   - status: open
     by: migration

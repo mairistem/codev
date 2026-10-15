@@ -8,7 +8,7 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 A send that timed out is retried and may deliver the e-mail twice
+#### R-ops-1 A send that times out after the relay accepted it is retried and may be delivered twice
 
 ```yaml
 severity: medium
@@ -19,34 +19,13 @@ evidence: |
       let delay = RETRY_STEP * job.attempts;
       queue.release(job.id, delay);
 recommendation: >-
-  `SendError::Unavailable` covers both "the relay could not be reached" and a
-  send that hit `SEND_TIMEOUT`; if the relay accepted the message before the
-  timeout fired, releasing the job sends it again (up to 11 times while the
-  relay is slow). Check that the mailer returns `Unavailable` only when the
-  relay provably did not accept the message, or make the send idempotent
-  (e.g. a stable Message-ID per job that the relay deduplicates).
-  Confidence is low: the mailer implementation is not in the change.
-history:
-  - status: open
-    by: ops
-```
-
-#### R-ops-2 Registering the stop flag disables the default kill on a second signal
-
-```yaml
-severity: low
-confidence: low
-location: "src/worker.rs:60-61"
-evidence: |
-  for signal in [signal_hook::consts::SIGTERM, signal_hook::consts::SIGINT] {
-      signal_hook::flag::register(signal, Arc::clone(&stop))?;
-recommendation: >-
-  `flag::register` replaces the default disposition, so a second SIGTERM or
-  Ctrl-C no longer terminates the process; if a send ever outlives its
-  timeout, the worker can only be stopped by SIGKILL. Also register
-  `signal_hook::flag::register_conditional_shutdown` so a second signal exits
-  immediately. Confidence is low: shutdown stays bounded (POLL + SEND_TIMEOUT)
-  as long as the mailer honours its timeout, which is not visible here.
+  Check how the mailer maps a timeout that happens after the relay received the
+  message (after DATA): if it returns `SendError::Unavailable`, the job is handed
+  out again and the recipient gets the e-mail twice, with nothing in the logs or
+  `notifier_jobs_total` to tell the operator. Send a stable Message-ID derived from
+  `job.id` so the relay or the recipient can deduplicate, or map a post-DATA
+  timeout to its own outcome. Confidence is low: the mailer implementation is not
+  part of this change and could not be checked.
 history:
   - status: open
     by: ops

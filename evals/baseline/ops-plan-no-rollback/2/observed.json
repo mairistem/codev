@@ -2,11 +2,11 @@
   "format": 2,
   "case": "ops-plan-no-rollback",
   "error": null,
-  "costUsd": 0.3208082,
-  "durationMs": 27464,
+  "costUsd": 0.33239520000000006,
+  "durationMs": 27833,
   "consumption": {
-    "durationApiMs": 27587,
-    "turns": 7,
+    "durationApiMs": 27728,
+    "turns": 8,
     "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,10 +14,86 @@
     ],
     "tokens": {
       "input": 1160,
-      "cacheCreation": 27371,
-      "cacheRead": 283516,
-      "output": 2208
-    }
+      "cacheCreation": 27882,
+      "cacheRead": 283911,
+      "output": 2579
+    },
+    "toolCalls": 7,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 15407,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15407
+        }
+      },
+      {
+        "cacheCreation": 278,
+        "cacheRead": 44932,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 278
+        }
+      },
+      {
+        "cacheCreation": 266,
+        "cacheRead": 45210,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 266
+        }
+      },
+      {
+        "cacheCreation": 2063,
+        "cacheRead": 45476,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2063
+        }
+      },
+      {
+        "cacheCreation": 1551,
+        "cacheRead": 47539,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1551
+        }
+      },
+      {
+        "cacheCreation": 931,
+        "cacheRead": 49090,
+        "input": 2,
+        "output": 191,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 681,
+          "edit": 173,
+          "output": 77
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -33,7 +109,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Nobody sees the settlement worker fail or not run) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (The nightly settlement worker fails unseen) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,12 +131,12 @@
           }
         ],
         "id": "R-ops-1",
-        "line": 11,
+        "line": 15,
         "location": "design.md#Decision: All traffic moves at deploy",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Keep a way back until Paylane has proven itself in production: either keep the Stripe client behind a configuration switch (provider selected per environment, flippable without a release), or at least keep the Stripe account open for a stated rollback window (several weekly release cycles) so that deploying the previous version still processes payments. Close the account in a later change, once the window has passed. Say in the design how a rollback is done and who decides it. Scenario that fails: on day 2 Paylane rejects or times out on a share of authorizations; the previous release still calls Stripe, but the Stripe account is closed, so a redeploy cannot restore card payments, and the next fix waits for the weekly release.",
+        "recommendation": "Keep a way back until Paylane is proven in production: keep the Stripe client behind a configuration switch (provider selected per environment, flipped without a release), and keep the Stripe account open until a stated exit criterion is met (for example N days of Paylane payments with an error rate under a threshold). Write the rollback procedure in the design. Failure scenario: Paylane starts failing authorizations or captures after the release (outage, integration bug, account suspended); the next deploy is about a week away, and redeploying the previous blue version sends payments to a Stripe account already closed — so no card payment can be taken at all, and the operator has no switch to flip.\n",
         "reported": true,
         "role": "ops",
         "severity": "high",
@@ -82,18 +158,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 37,
+        "line": 41,
         "location": "design.md#Decision: A worker settles payments nightly",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Decide in the design how an operator learns that a run failed or never happened: alert on a failed CronJob (or on the absence of a successful run by a set hour), log a structured start and end of each run with the counts fetched, matched and unmatched, and expose the last successful run time. Add a requirement and a scenario for a failed run (Paylane unreachable, database error) next to \"A payment without order\". Scenario that fails: the Paylane API is down at 02:00 or the job crashes; the CronJob fails, no row is written and no alert is sent — the finance alert only fires for a payment without order in a successful run — so unsettled payments go unnoticed for days.",
+        "recommendation": "Decide in the design how an operator learns that a run failed or did not run: a structured log at start and end of each run (run date, payments fetched, matched, unmatched), a metric or heartbeat for the last successful run, and an alert when a run fails or no successful run is recorded by a deadline. Add the matching task to tasks.md. Failure scenario: the Paylane API is unreachable at 02:00, or the CronJob is never scheduled (bad manifest, suspended job); the worker exits or never starts, nothing is written, and the only alert the spec defines — the finance-channel alert for an unmatched payment — never fires, so a missed settlement looks exactly like a night where everything matched.\n",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Nobody sees the settlement worker fail or not run"
+        "title": "The nightly settlement worker fails unseen"
       }
     ],
     "format": 1,
@@ -111,14 +187,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "ops",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "ops",
+            "state": "findings"
           }
         ],
         "step": "plan.challenge",

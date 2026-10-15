@@ -1,0 +1,378 @@
+{
+  "format": 2,
+  "case": "plan-requirement-skill-edited",
+  "error": null,
+  "costUsd": 1.5873698000000005,
+  "durationMs": 237409,
+  "consumption": {
+    "durationApiMs": 234453,
+    "turns": 42,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1123,
+      "cacheCreation": 82126,
+      "cacheRead": 2399334,
+      "output": 22474
+    },
+    "toolCalls": 41,
+    "orientationCalls": 18,
+    "calls": [
+      {
+        "cacheCreation": 7735,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7735
+        }
+      },
+      {
+        "cacheCreation": 17591,
+        "cacheRead": 29874,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3941,
+          "skill": 13650
+        }
+      },
+      {
+        "cacheCreation": 2230,
+        "cacheRead": 47465,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2230
+        }
+      },
+      {
+        "cacheCreation": 1203,
+        "cacheRead": 49695,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1203
+        }
+      },
+      {
+        "cacheCreation": 3524,
+        "cacheRead": 50898,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "search": 3524
+        }
+      },
+      {
+        "cacheCreation": 4730,
+        "cacheRead": 54422,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4730
+        }
+      },
+      {
+        "cacheCreation": 2742,
+        "cacheRead": 59152,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2632,
+          "output": 110
+        }
+      },
+      {
+        "cacheCreation": 3542,
+        "cacheRead": 61894,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3542
+        }
+      },
+      {
+        "cacheCreation": 2048,
+        "cacheRead": 65436,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2048
+        }
+      },
+      {
+        "cacheCreation": 339,
+        "cacheRead": 67484,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 339
+        }
+      },
+      {
+        "cacheCreation": 712,
+        "cacheRead": 67823,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 712
+        }
+      },
+      {
+        "cacheCreation": 812,
+        "cacheRead": 68535,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 812
+        }
+      },
+      {
+        "cacheCreation": 1935,
+        "cacheRead": 69347,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1840,
+          "output": 95
+        }
+      },
+      {
+        "cacheCreation": 455,
+        "cacheRead": 71282,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 455
+        }
+      },
+      {
+        "cacheCreation": 2830,
+        "cacheRead": 71737,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2830
+        }
+      },
+      {
+        "cacheCreation": 3026,
+        "cacheRead": 74567,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3026
+        }
+      },
+      {
+        "cacheCreation": 1907,
+        "cacheRead": 77593,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1907
+        }
+      },
+      {
+        "cacheCreation": 2381,
+        "cacheRead": 79500,
+        "input": 2,
+        "output": 60,
+        "toolCalls": 2,
+        "sources": {
+          "search": 2381
+        }
+      },
+      {
+        "cacheCreation": 1549,
+        "cacheRead": 81881,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 185,
+          "file": 1288,
+          "output": 75
+        }
+      },
+      {
+        "cacheCreation": 1126,
+        "cacheRead": 83430,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1126
+        }
+      },
+      {
+        "cacheCreation": 1718,
+        "cacheRead": 84556,
+        "input": 2,
+        "output": 52,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1718
+        }
+      },
+      {
+        "cacheCreation": 3921,
+        "cacheRead": 86274,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3414,
+          "output": 507
+        }
+      },
+      {
+        "cacheCreation": 3362,
+        "cacheRead": 90195,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3362
+        }
+      },
+      {
+        "cacheCreation": 504,
+        "cacheRead": 93557,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 504
+        }
+      },
+      {
+        "cacheCreation": 611,
+        "cacheRead": 94061,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 611
+        }
+      },
+      {
+        "cacheCreation": 463,
+        "cacheRead": 94672,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 463
+        }
+      },
+      {
+        "cacheCreation": 3136,
+        "cacheRead": 95135,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3136
+        }
+      },
+      {
+        "cacheCreation": 857,
+        "cacheRead": 98271,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 3,
+        "sources": {
+          "output": 57,
+          "search": 800
+        }
+      },
+      {
+        "cacheCreation": 2667,
+        "cacheRead": 99128,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2203,
+          "output": 464
+        }
+      },
+      {
+        "cacheCreation": 1731,
+        "cacheRead": 101795,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1524,
+          "edit": 207
+        }
+      },
+      {
+        "cacheCreation": 484,
+        "cacheRead": 103526,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 484
+        }
+      },
+      {
+        "cacheCreation": 255,
+        "cacheRead": 104010,
+        "input": 2,
+        "output": 668,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 255
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/preserve-hand-edited-skills-on-upgrade/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/preserve-hand-edited-skills-on-upgrade/design.md": "# Design: Hand-edited skills survive a codev upgrade, and the user is told\n\n## Context\n\nThree places are involved, across three crates:\n\n- **The hand-edit decision** — `ClaudeCode::is_hand_edited` in\n  `crates/codev-agents/src/claude.rs`. Today it returns `false` first when\n  the skill is identical to the rendering **or stamped with another\n  version** (`stamped_version(current) != Some(version)`), and only then\n  consults `matches_its_checksum`. `plan_skills` uses it to either push the\n  path to `preserved` or plan an overwrite; `--force` bypasses it. Both\n  `codev update` and `codev init` on an existing project go through\n  `plan_skills`.\n- **The project refresh after a self-update** — `refresh_project` in\n  `crates/codev-engine/src/update.rs` runs the *new* binary's `update`\n  through the `ProcessRunner` port and only looks at the exit status; its\n  stdout is dropped. It must run the new binary, not plan in-process: the\n  running process is still the old version and would render old skills.\n- **The doctor's `skills` check** — `crates/codev-core/src/doctor.rs`\n  gives `skills_review_mode` the fix\n  `codev update (codev update --force for a skill it preserves as edited by hand)`,\n  as the `doctor` spec's table says for the whole check, but gives\n  `skills_outdated` plain `codev update`.\n\nThe checksum (`metadata.checksum`, SHA-256 of the skill without that\nline) exists since the change `fix-merge-and-skill-refresh`, 0.6.1.\n\nDecisions in force: [0001](../../decisions/0001-functional-core-imperative-shell.md)\n(deciding is not executing — `plan_skills` returns a plan, the shell\nwrites) and [0002](../../decisions/0002-crate-graph-as-dependency-rule.md)\n(the crate graph; effects through the four ports, including the process\nrunner). This change follows both and introduces no new port.\n\n## Goals / Non-Goals\n\n**Goals**: a checksummed skill edited by hand is never overwritten\nwithout `--force`, whatever version it carries; every command that\nrefreshes skills tells the user which ones it left in place.\n\n**Non-Goals**: merging a hand edit into the new rendering; backing up a\nskill before overwriting it; detecting edits to skills rendered before\nchecksums when they carry another version (their content cannot be\ncompared to an older rendering this binary does not have); interactive\nconfirmation.\n\n## Decisions\n\n### Decision: The checksum decides, before the version stamp\n\n`is_hand_edited` becomes, in order:\n\n1. identical to the rendering → not edited;\n2. carries a checksum → edited if and only if the content no longer\n   matches it, **whatever the version stamp**;\n3. no checksum, stamped with another version → not edited (rewritten, as\n   before checksums);\n4. no checksum, stamped with the running version → today's comparison\n   with the other review mode's rendering.\n\nThe checksum is the only evidence of authorship codev has; the version\nstamp only says *which* codev rendered the file, not *whether* someone\nchanged it since. Rules 3 and 4 are exactly today's behavior for\nunchecksummed skills, so the change only moves checksummed skills of\nanother version from \"rewrite\" to \"decide by checksum\".\n\n**Alternatives considered**:\n\n- *Overwrite and keep a backup (`SKILL.md.bak`)*: the user is still\n  surprised, Claude Code may load a stray file next to the skill, and the\n  backup accumulates in the repository. Rejected.\n- *Ask interactively*: `codev update` is also run by `self-update` and in\n  scripts with `--json`; a prompt does not fit, and preserving is already\n  the established answer within a version. Rejected.\n- *Treat every unchecksummed skill of another version as edited*: every\n  project upgrading from ≤ 0.6.0 would see all its skills preserved and\n  need `--force` — the very friction the previous change removed.\n  Rejected.\n\n### Decision: The checksum is computed on `\\n` line endings\n\n`matches_its_checksum` hashes `without_checksum(contents).as_bytes()` as\nthey are on disk. A Windows checkout with `core.autocrlf=true` turns every\n`\\n` into `\\r\\n`, so an untouched skill no longer matches its checksum.\nToday that only matters within a version; once the checksum decides\nacross versions, every skill of such a project would be preserved — stale\n— on every upgrade. Both `seal` and `matches_its_checksum` therefore hash\nthe content with `\\r\\n` replaced by `\\n`. codev writes skills with `\\n`,\nso the checksums of skills already on disk are unchanged: the\nnormalization only widens what counts as \"codev's rendering\".\n\n**Alternatives considered**: comparing the version-stripped content with\nthe rendering of the stamped version — impossible, this binary cannot\nrender an older version. Ignoring all whitespace — would hide real edits\nsuch as a re-indented list. Rejected.\n\n### Decision: `self-update` reads the refresh's `preserved` list from `update --json`\n\n`refresh_project` runs the new binary with `[\"update\", \"--json\"]` instead\nof `[\"update\"]`, parses stdout with `serde_json::Value` (already a\ndependency of `codev-engine`) and reads only the `preserved` array of\nstrings. When it is non-empty, it pushes one `Warning`\n`update_skills_preserved` whose message lists the paths and whose fix is\n`codev update --force` (check `git diff` first). Exit-status handling is\nunchanged: success still sets `project_updated`, failure still yields\n`update_project_refresh_failed`. If stdout is not the expected document\n(an unparsable output, a missing field), no warning is added: the refresh\ndid succeed, and inventing a warning from garbage would be worse.\n\n`preserved` is a field of contract v1 of `codev update --json`, a public\nAPI that does not change shape within v1, so reading it from another\ncrate is relying on the published contract, not on `codev-cli` internals\n— `codev-engine` does not depend on `codev-cli`, respecting 0002.\n\nThe CLI renders the new warning like any other `Outcome` warning in both\nthe human and the JSON outputs; `SelfUpdateV1` gains no field.\n\n**Alternatives considered**:\n\n- *Parse the human output's \"Left in place\" block*: wording is not a\n  contract and changes with translations of the docs. Rejected.\n- *Add a `preservedSkills` field to `codev self-update --json`*: a new\n  field in contract v1 for something the `status` array already carries\n  as a warning with a fix; the warning also reaches the human output for\n  free. Rejected.\n\n### Decision: `skills_outdated` takes the same fix as `skills_review_mode`\n\nThe fix text of `skills_outdated` in `doctor.rs` becomes\n`codev update (codev update --force for a skill it preserves as edited by hand)`.\nIt aligns the code with the `doctor` spec's table, which already gives\nthis fix to the whole `skills` check. `codev-core` stays pure: no new\nfact is gathered.\n\n**Alternatives considered**: computing, per outdated skill, whether\n`codev update` would preserve it, to name `--force` only then. It needs\nthe agent target's decision in `codev-core`'s facts, for a hint the\nstatic text already conveys. Rejected for now.\n\n## Risks / Trade-offs\n\n- [A preserved skill stays stamped with the old version, so it misses the\n  new skill text and `codev doctor` keeps reporting `skills_outdated`] →\n  intended: the warning and the doctor's fix both point to `--force`\n  after `git diff`; the docs explain re-applying the edit after.\n- [A user who edited a skill long ago and forgot it now gets a stale skill\n  after every upgrade] → the warning is printed on every `update` and\n  `self-update` until resolved, so it cannot go unnoticed.\n- [`update --json` output of the new binary is not parsable] → no warning,\n  the refresh is still reported as run; covered by a test with the\n  in-memory runner.\n\n## Migration Plan\n\nNo data migration. Projects whose skills were rendered by 0.6.1 or later\nget the new protection on their next upgrade; projects on ≤ 0.6.0 keep\nbeing regenerated once (no checksum), after which they are protected.\nRollback: reverting the change restores \"rewritten on upgrade\".\n",
+    "_codev/changes/preserve-hand-edited-skills-on-upgrade/proposal.md": "# Proposal: Hand-edited skills survive a codev upgrade, and the user is told\n\n## Why\n\nA user who retouches a generated skill loses that work, silently, on the\nnext codev upgrade: `codev update` preserves a hand edit only while the\nskill is stamped with the running version, and rewrites any skill stamped\nwith another version — the spec even says so (\"A hand edit survives no\nupgrade\"). Worse, `codev self-update` runs `codev update` itself and\ndiscards its output, so even a preserved skill goes unnoticed. Since\n0.6.1 every skill carries a checksum of its own content, so codev can now\ntell a hand edit apart from its own rendering whatever the version stamp:\nthe old rule has no reason left to exist.\n\n## What Changes\n\n- `codev update` (and `codev init` on an existing project, which plans\n  skills the same way) preserves a skill whose content no longer matches\n  its `metadata.checksum`, **whatever version it is stamped with**, and\n  lists it in `preserved` with the existing hint to rerun with `--force`.\n  A checksummed skill that still matches its checksum is rewritten, as\n  today; `--force` still rewrites everything.\n- A skill stamped with another version and carrying no checksum — rendered\n  before checksums existed — is still rewritten: an edit to it cannot be\n  told apart from an older rendering. This is unchanged.\n- A skill's checksum ignores line endings (`\\r\\n` counts as `\\n`), so a\n  git checkout that converts them, as `core.autocrlf` does on Windows, is\n  not mistaken for a hand edit — otherwise every such skill would now be\n  preserved, stale, on every upgrade. Checksums already written stay\n  valid.\n- `codev self-update`, after replacing the binary, relays the skills the\n  project refresh preserved: a warning `update_skills_preserved` naming\n  each one, with the fix `codev update --force` (after checking\n  `git diff`). The exit code stays 0.\n- `codev doctor`: the `doctor` spec already gives the `skills` check the\n  fix \"`codev update` (`codev update --force` for a skill it preserves as\n  edited by hand)\", but the code only gives it to `skills_review_mode`;\n  `skills_outdated` says `codev update` alone, which would now change\n  nothing for a preserved skill. The code is aligned with the spec; the\n  `doctor` requirements do not change.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- \"Prévenir\" means *preserve and report*, the behavior `codev update`\n  already has within a version, rather than overwrite with a backup copy\n  or ask interactively: it is non-destructive, scriptable, and consistent\n  with the existing `preserved` list and `--force` escape hatch.\n- A preserved skill stays stamped with its old version and therefore stale;\n  merging the user's edit into the new rendering is out of scope. The user\n  decides with `git diff` and `--force`.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- skills\n- self-update\n\n### Removed Capabilities\n\n## Impact\n\n- `crates/codev-agents/src/claude.rs`: the hand-edit decision\n  (`is_hand_edited`) and its unit tests.\n- `crates/codev-engine/src/update.rs`: the project refresh after a\n  self-update reads the refresh's `preserved` list and turns it into a\n  warning; its tests with the in-memory runner.\n- `crates/codev-core/src/doctor.rs`: the fix text of `skills_outdated`.\n- JSON contract: one new warning code in the `status` array of\n  `codev self-update --json`; no field added or removed.\n- Documentation, en and fr: \"Editing a generated skill\" in\n  `docs/{en,fr}/src/skills.md`, `codev update` and `codev self-update` in\n  `docs/{en,fr}/src/reference/cli.md`, and the warning code wherever the\n  reference lists codes.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Changed: `codev update` and `codev self-update` no longer overwrite a skill you edited by hand when codev is upgraded: the skill is left in place and listed as preserved, and `codev update --force` regenerates it. This applies to skills generated by codev 0.6.1 or later, which carry a checksum; older skills are still regenerated on upgrade.\n- Fixed: A skill whose line endings git converted (`core.autocrlf` on Windows) is no longer mistaken for a hand edit.\n- Added: `codev self-update` warns (`update_skills_preserved`) about the skills its project refresh left in place because they were edited by hand.\n",
+    "_codev/changes/preserve-hand-edited-skills-on-upgrade/specs/self-update/spec.md": "## ADDED Requirements\n\n### Requirement: `codev self-update` reports the skills its project refresh preserves\n\nWhen the project refresh that follows a successful replacement leaves\nskills in place because they were edited by hand, `codev self-update`\nSHALL report a warning `update_skills_preserved` in its `status` array,\nwhose message names each preserved skill's path and whose fix is\n`codev update --force`, after checking the skills' `git diff`. The human\noutput SHALL print that warning. The refresh still counts as run\n(`projectUpdated` is `true`) and the exit code stays 0. When the refresh\npreserves no skill, no such warning is reported.\n\n#### Scenario: A hand-edited skill is named after an upgrade\n\n- **GIVEN** codev 0.6.1 installed inside a codev project whose\n  `codev-apply` skill was rendered by codev 0.6.1 with its checksum, then\n  edited by hand, and a published release 0.7.0\n- **WHEN** the user runs `codev self-update --json`\n- **THEN** `action` is `updated` and `projectUpdated` is `true`\n- **AND** `status` holds a warning `update_skills_preserved` naming\n  `.claude/skills/codev-apply/SKILL.md` with the fix `codev update --force`\n- **AND** the skill file is unchanged\n- **AND** the exit code is 0\n\n#### Scenario: No warning when nothing is preserved\n\n- **GIVEN** codev 0.6.1 installed inside a codev project whose skills\n  are all as codev 0.6.1 rendered them, and a published release 0.7.0\n- **WHEN** the user runs `codev self-update --json`\n- **THEN** `status` holds no warning `update_skills_preserved`\n- **AND** every skill carries the 0.7.0 version stamp\n",
+    "_codev/changes/preserve-hand-edited-skills-on-upgrade/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: Frontmatter contract of a codev skill\n\nEvery skill shipped by codev MUST carry a valid YAML frontmatter whose\n`name` matches the name of the `.claude/skills/<name>/` directory, whose\n`allowed-tools` field includes at least `Bash(codev:*)`, and whose\n`metadata.version` matches the version of the binary that generated it,\nand whose `metadata.checksum` is the SHA-256, in hexadecimal, of the\nskill's whole content with that `checksum` line left out and its line\nendings normalized to `\\n`. A skill whose content no longer matches its\nchecksum has been edited by hand; a skill whose line endings alone were\nchanged, as a git checkout with `core.autocrlf` does, has not.\n\n#### Scenario: Frontmatter parsed by a third-party YAML reader\n\n- **GIVEN** a skill shipped by the current version of the binary\n- **WHEN** its frontmatter is extracted and passed to a standard YAML parser\n- **THEN** the parser returns `name`, `allowed-tools`, `metadata.version`\n  and `metadata.checksum` without error\n- **AND** `metadata.version` equals the version the binary reports\n\n#### Scenario: Hand edit detected on update\n\n- **GIVEN** a skill whose body a user has edited by hand, without\n  changing its version\n- **WHEN** the user runs `codev update` again without `--force`\n- **THEN** the skill is not overwritten\n- **AND** the update report flags it as preserved\n\n#### Scenario: The checksum matches the content\n\n- **GIVEN** a skill as the binary renders it\n- **WHEN** the SHA-256 of its content without the `checksum` line is\n  computed\n- **THEN** it equals `metadata.checksum`\n\n#### Scenario: Line endings converted by git are not a hand edit\n\n- **GIVEN** a skill rendered by an earlier codev version with its\n  checksum, whose `\\n` line endings were all converted to `\\r\\n`\n- **WHEN** the user runs `codev update --json` with a newer codev\n- **THEN** `updated` lists the skill and `preserved` does not\n\n### Requirement: `codev update` regenerates the skills of the configured workflows\n\n`codev update` SHALL write one skill per workflow listed by `workflows:` in\n`_codev/config.yaml`, or per workflow of the default catalog when the key is\nabsent, at `.claude/skills/codev-<workflow>/SKILL.md`, rendered by the\nrunning codev:\n\n- a missing skill is created;\n- a skill identical to the rendering is left untouched;\n- a skill carrying a checksum, whatever codev version it is stamped with,\n  is rewritten when its content matches its own checksum — codev's\n  rendering, by another version, another build or for the other review\n  mode — and is preserved as edited by hand when its content no longer\n  matches its checksum;\n- a skill without a checksum, rendered before checksums, is rewritten\n  when it is stamped with another codev version; stamped with the running\n  version, it is preserved as edited by hand unless it differs from\n  codev's rendering only by the review mode, as the review-mode\n  requirement says, the checksum line left out of the comparison;\n- with `--force`, every skill is rewritten.\n\n`codev update` MUST NOT overwrite a skill it preserves: the file is left\nbyte for byte as it was, version stamp included.\n\nAn unknown workflow name SHALL be ignored with a warning `unknown_workflow`\nlisting the workflows this codev provides; the other skills are written.\nThe skill of a workflow no longer listed SHALL be left in place: `codev\nupdate` deletes no skill. `codev update` SHALL also recreate the missing\nfolders of `_codev/` and a missing `_codev/config.yaml`, without\noverwriting any existing file. Its handling of codev's managed sections is\nspecified by the `init` capability. Outside a codev project it fails with\n`no_codev_root` and writes nothing.\n\nThe human output SHALL start with `codev updated in <project root>`, list\nthe installed skills, then say how many files were created and updated, or\n`Nothing to do, everything is already in place.`, and finally list the\npreserved skills with a hint to rerun with `--force`. With `--json`, the\ndocument SHALL carry `root`, `created`, `updated`, `untouched`,\n`preserved`, `skills` (the names of the configured skills), `integration`\nand `status` (warnings). The command exits with code 0.\n\n#### Scenario: Missing and outdated skills are written\n\n- **GIVEN** an initialized project whose `codev-explore` skill was deleted\n  and whose `codev-sync` skill is stamped with an earlier codev version\n- **WHEN** the user runs `codev update --json`\n- **THEN** `created` lists the `codev-explore` skill and `updated` the\n  `codev-sync` skill\n- **AND** both carry the running codev's version stamp\n\n#### Scenario: A second run changes nothing\n\n- **GIVEN** a project where `codev update` just ran\n- **WHEN** the user runs `codev update`\n- **THEN** `created` and `updated` are empty\n- **AND** the human output says `Nothing to do, everything is already in\n  place.`\n\n#### Scenario: `--force` rewrites a hand-edited skill\n\n- **GIVEN** a project whose `codev-apply` skill was edited by hand without\n  changing its version stamp\n- **WHEN** the user runs `codev update --force --json`\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is empty\n- **AND** the skill is back to what codev renders\n\n#### Scenario: An unknown workflow is ignored with a warning\n\n- **GIVEN** a configuration with `workflows: [propose, bogus]`\n- **WHEN** the user runs `codev update --json`\n- **THEN** `skills` is `[\"codev-propose\"]`\n- **AND** `status` holds a warning `unknown_workflow` naming `bogus`\n\n#### Scenario: A workflow removed from the configuration keeps its skill\n\n- **GIVEN** a project where every default skill is installed, then\n  `workflows: [propose]` in the configuration\n- **WHEN** the user runs `codev update`\n- **THEN** `.claude/skills/codev-apply/SKILL.md` still exists, unchanged\n\n#### Scenario: A deleted `_codev/` folder is recreated\n\n- **GIVEN** an initialized project whose `_codev/specs/` folder was deleted\n- **WHEN** the user runs `codev update --json`\n- **THEN** `created` lists `_codev/specs/.gitkeep`\n- **AND** `_codev/config.yaml` is listed in `untouched`, unchanged\n\n#### Scenario: Outside a project\n\n- **GIVEN** a folder with no `_codev/` in it or its parents\n- **WHEN** the user runs `codev update --json`\n- **THEN** the exit code is 1 and `status[0].code` is `no_codev_root`\n- **AND** `root` is `null` and `skills` is empty\n\n#### Scenario: A skill rendered by an earlier build of the same version\n\n- **GIVEN** a project whose `codev-apply` skill was rendered by a build\n  of the same version whose skill text differed, untouched since, with a\n  `checksum` line matching its content\n- **WHEN** the user runs `codev update --json`\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is\n  empty\n\n#### Scenario: A hand edit of a checksummed skill\n\n- **GIVEN** a project whose `codev-apply` skill a user edited by hand\n  after codev rendered it with its checksum\n- **WHEN** the user runs `codev update --json`\n- **THEN** `preserved` lists the `codev-apply` skill, left as edited\n\n#### Scenario: An untouched skill of an earlier version is upgraded\n\n- **GIVEN** a project whose `codev-apply` skill was rendered by an\n  earlier codev version, with a `checksum` line matching its content\n- **WHEN** the user runs `codev update --json` with a newer codev\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is\n  empty\n- **AND** the skill carries the running codev's version stamp\n\n#### Scenario: A hand edit survives an upgrade\n\n- **GIVEN** a project whose `codev-apply` skill was rendered with its\n  checksum by an earlier codev version, then edited by hand\n- **WHEN** the user runs `codev update --json` with a newer codev\n- **THEN** `preserved` lists the `codev-apply` skill and `updated` does\n  not\n- **AND** the file is unchanged, still stamped with the earlier version\n- **AND** the human output lists it among the preserved skills with the\n  hint to rerun with `--force`\n\n#### Scenario: `--force` upgrades a hand-edited skill of an earlier version\n\n- **GIVEN** a project whose `codev-apply` skill was rendered with its\n  checksum by an earlier codev version, then edited by hand\n- **WHEN** the user runs `codev update --force --json` with a newer codev\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is\n  empty\n\n#### Scenario: A skill of an earlier version rendered before checksums\n\n- **GIVEN** a project whose `codev-apply` skill has no `checksum` line\n  and is stamped with an earlier codev version\n- **WHEN** the user runs `codev update --json` with a newer codev\n- **THEN** `updated` lists the `codev-apply` skill, as before checksums\n\n#### Scenario: A skill rendered before checksums\n\n- **GIVEN** a project whose `codev-apply` skill has no `checksum` line,\n  is stamped with the running version and differs from its rendering\n- **WHEN** the user runs `codev update --json`\n- **THEN** `preserved` lists it, as before checksums existed\n"
+  },
+  "validate": {
+    "preserve-hand-edited-skills-on-upgrade": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "preserve-hand-edited-skills-on-upgrade",
+          "path": "_codev/changes/preserve-hand-edited-skills-on-upgrade"
+        }
+      ],
+      "status": []
+    }
+  }
+}

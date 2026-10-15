@@ -2,22 +2,77 @@
   "format": 2,
   "case": "performance-control-preloaded-helper",
   "error": null,
-  "costUsd": 0.3139138,
-  "durationMs": 32534,
+  "costUsd": 0.284984,
+  "durationMs": 21098,
   "consumption": {
-    "durationApiMs": 32157,
-    "turns": 8,
+    "durationApiMs": 20969,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 27157,
-      "cacheRead": 238364,
-      "output": 2400
-    }
+      "input": 1172,
+      "cacheCreation": 25834,
+      "cacheRead": 187375,
+      "output": 1993
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7389,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7389
+        }
+      },
+      {
+        "cacheCreation": 14031,
+        "cacheRead": 29528,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14031
+        }
+      },
+      {
+        "cacheCreation": 2064,
+        "cacheRead": 43559,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2064
+        }
+      },
+      {
+        "cacheCreation": 903,
+        "cacheRead": 45623,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 903
+        }
+      },
+      {
+        "cacheCreation": 1447,
+        "cacheRead": 46526,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 838,
+          "edit": 609
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,35 +87,7 @@
     },
     "changeName": "add-monthly-report",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "let invoices = db.invoices_of_month(month)?;\n",
-        "history": [
-          {
-            "by": "performance",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-performance-1",
-        "line": 11,
-        "location": "src/report.rs:25",
-        "raisedBy": [
-          "performance"
-        ],
-        "recommendation": "The report runs two queries filtering `invoices` on `month` (`invoices_of_month` and `month_total`, see `src/db.rs:21` and `src/db.rs:27`); the schema is not in the repository, so check with `EXPLAIN` that `invoices` has an index on `month` (ideally `(month, number)` to serve the `ORDER BY number`). Without it, each report scans the whole invoices table, a cost that grows with every month of history rather than with the month's ~3 000 invoices.",
-        "reported": false,
-        "role": "performance",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "Index on invoices.month not verifiable"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/add-monthly-report/review.md",
@@ -88,7 +115,7 @@
             "credited": [],
             "fallback": null,
             "role": "performance",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "credited": [],

@@ -2,22 +2,109 @@
   "format": 2,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.3854112,
-  "durationMs": 39160,
+  "costUsd": 0.407567,
+  "durationMs": 41906,
   "consumption": {
-    "durationApiMs": 39037,
-    "turns": 12,
-    "permissionDenials": 1,
+    "durationApiMs": 41953,
+    "turns": 17,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
       "input": 1162,
-      "cacheCreation": 30195,
-      "cacheRead": 340031,
-      "output": 3743
-    }
+      "cacheCreation": 32219,
+      "cacheRead": 336450,
+      "output": 4077
+    },
+    "toolCalls": 16,
+    "orientationCalls": 14,
+    "calls": [
+      {
+        "cacheCreation": 7384,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7384
+        }
+      },
+      {
+        "cacheCreation": 3909,
+        "cacheRead": 29523,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 3909
+        }
+      },
+      {
+        "cacheCreation": 14057,
+        "cacheRead": 33432,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3089,
+          "skill": 10968
+        }
+      },
+      {
+        "cacheCreation": 314,
+        "cacheRead": 47489,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 6,
+        "sources": {
+          "codev review": 314
+        }
+      },
+      {
+        "cacheCreation": 2573,
+        "cacheRead": 47803,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 4,
+        "sources": {
+          "codev review": 177,
+          "file": 2396
+        }
+      },
+      {
+        "cacheCreation": 1386,
+        "cacheRead": 50376,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1387
+        }
+      },
+      {
+        "cacheCreation": 2164,
+        "cacheRead": 51762,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1760,
+          "output": 404
+        }
+      },
+      {
+        "cacheCreation": 432,
+        "cacheRead": 53926,
+        "input": 2,
+        "output": 148,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 432
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,18 +139,18 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a single CSV export answers it. No PDF, XLSX, XML or JSON export is requested, yet the plan builds a start-up module discovery (design.md#Decision: Exports go through a plugin registry, which dismisses \"a single CSV function (not extensible)\" on speculative extensibility alone) and task 1.2, whose check \"verified by `npm test -- registry`\" names no observable behaviour. Drop the plugin system from What Changes, replace the design decision by a single CSV serializer next to `invoicesOfMonth` (src/invoices.ts), and remove task 1.2. A registry can come with the second format, when one is asked for.",
+        "recommendation": "The Why is accountants copying invoices one by one into a spreadsheet; a single CSV route answers it. Drop the plugin system from What Changes, the \"Exports go through a plugin registry\" decision in design.md (whose only rejected alternative, \"a single CSV function (not extensible)\", is dismissed for an extensibility no requirement needs) and task 1.2. As it stands, task 1.2 is verified by `npm test -- registry` while no spec requirement describes the registry, so its done state has nothing to be checked against; and discovering modules from `src/export/plugins/` at start-up is an unverified assumption on how the TypeScript build ships those files. Add the plugin system in its own change when a second format is actually requested.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Plugin system for export formats nobody asked for"
+        "title": "A plugin system for formats nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- A settings page where each user picks their preferred export format.\n",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
         "history": [
           {
             "by": "skeptic",
@@ -74,23 +161,23 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 32,
-        "location": "proposal.md#What Changes",
+        "line": 36,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "Nothing in the Why asks for a per-user format choice, and with a single format the choice is empty. The requirement it brings is not verifiable either: specs/invoice-export/spec.md \"A preference\" says \"**THEN** exports use CSV\", but the only export is `GET /invoices.csv`, CSV by its URL, so the preference changes nothing observable; and the design (\"A settings page stores each user's preferred format\") never says where the preference is stored — src/db.ts and the existing SettingsPage.tsx hold no such field, so a schema change is implied but unplanned. Remove the bullet, the requirement \"Users choose their export format\" with its two scenarios, task 2.1, and `web/src/settings/` from Impact.",
+        "recommendation": "Nothing in the Why asks for a format preference, and with CSV as the only format there is nothing to choose. Remove this requirement, the settings page item of What Changes, the sentence \"A settings page stores each user's preferred format.\" in design.md and task 2.1. If it were kept, its scenario \"WHEN a user picks CSV / THEN exports use CSV\" cannot be told apart from no preference, since `GET /invoices.csv` is CSV whatever is stored; the plan does not say where the preference is stored (a new column or table, i.e. a migration); and the `user-interface` and `migration` domains would have to be ticked in proposal.md#Domains.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Settings page for a preferred export format nobody asked for"
+        "title": "A per-user export-format setting nobody asked for"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "evidence": "- [ ] security\n",
         "history": [
           {
             "by": "skeptic",
@@ -101,45 +188,18 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 53,
+        "line": 59,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The plan adds an endpoint returning every invoice of a month with its customer (spec: \"with number, date, customer and total\"), and src/server.ts has no authentication middleware — only `app.use(express.json());` and `/health` — so who may call `GET /invoices.csv` is decided nowhere, and the spec has no unauthorized-caller scenario. Tick `security` and `personal-data` so their experts review the exposure, or give the reason on each line. If the settings page stays (see R-skeptic-2), tick `user-interface` too, and `migration` for the stored preference.",
+        "recommendation": "The change adds `GET /invoices.csv?month=YYYY-MM`, which returns every invoice of a month with customer and total, and the spec has no scenario for a caller who is not authenticated or not an accountant. Tick `security` (and decide on `personal-data` for customer names) so that its expert reviews who may call the route, and add an unauthorized-caller scenario to \"Invoices are exported as CSV\".",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Domains all unticked while the plan exposes invoices and changes the UI"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "- **THEN** the CSV holds every invoice of September 2026\n",
-        "history": [
-          {
-            "by": "skeptic",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-skeptic-4",
-        "line": 75,
-        "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
-        "raisedBy": [
-          "skeptic"
-        ],
-        "recommendation": "The scenario does not say which date decides the month, nor in which time zone; src/invoices.ts uses `to_char(issued_on, 'YYYY-MM')`, so the plan probably means the issue date in the database's zone. State it (\"invoices issued in the month\") so the test of \"A month\" can be written without guessing, and say whether `invoicesOfMonth` is reused.",
-        "reported": false,
-        "role": "skeptic",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Which date places an invoice in a month is not stated"
+        "title": "security left unticked for a route exposing invoices"
       }
     ],
     "format": 1,

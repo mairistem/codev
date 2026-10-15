@@ -2,22 +2,108 @@
   "format": 2,
   "case": "migration-code-serde-rename-all",
   "error": null,
-  "costUsd": 0.2919614,
-  "durationMs": 21216,
+  "costUsd": 0.3398908,
+  "durationMs": 25603,
   "consumption": {
-    "durationApiMs": 20802,
-    "turns": 6,
-    "permissionDenials": 0,
+    "durationApiMs": 25536,
+    "turns": 9,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 25815,
-      "cacheRead": 231082,
-      "output": 1912
-    }
+      "input": 1178,
+      "cacheCreation": 27853,
+      "cacheRead": 329929,
+      "output": 2504
+    },
+    "toolCalls": 8,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 13654,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13654
+        }
+      },
+      {
+        "cacheCreation": 2211,
+        "cacheRead": 43186,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2211
+        }
+      },
+      {
+        "cacheCreation": 222,
+        "cacheRead": 45397,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 222
+        }
+      },
+      {
+        "cacheCreation": 1527,
+        "cacheRead": 45619,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1527
+        }
+      },
+      {
+        "cacheCreation": 691,
+        "cacheRead": 47146,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "file": 691
+        }
+      },
+      {
+        "cacheCreation": 1236,
+        "cacheRead": 47837,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1020,
+          "output": 216
+        }
+      },
+      {
+        "cacheCreation": 919,
+        "cacheRead": 49073,
+        "input": 2,
+        "output": 300,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 740,
+          "edit": 179
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +115,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (rename_all = \"camelCase\" renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (`rename_all = \"camelCase\"` renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Existing config.toml files without default_currency no longer load) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Required `default_currency` makes existing `config.toml` files fail to load) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,18 +141,18 @@
           }
         ],
         "id": "R-migration-1",
-        "line": 11,
-        "location": "src/api.rs:6-12",
+        "line": 15,
+        "location": "src/api.rs:6-10",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `order_id`, `customer_id` and `total_cents` keep their snake_case names and only `currency` is added. Today a partner integration reading `order_id` from `GET /orders/{id}` gets nothing after this change: the JSON now holds `orderId`, `customerId`, `totalCents`. This breaks the contract in docs/api.md (\"a field is never renamed or removed without two releases of deprecation\"), is marked nowhere as BREAKING, is absent from the release note (\"Added: Orders carry their `currency`.\"), and contradicts docs/api.md itself, which still lists the snake_case names. If camelCase is wanted, emit both names for two releases and announce it as BREAKING; add a test pinning the serialized field names.",
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `order_id`, `customer_id` and `total_cents` keep their snake_case names, and add `currency` as a purely additive field. If a camelCase API is wanted, it is a separate, **BREAKING** change with two releases of deprecation (per docs/api.md), serving both names in the meantime and announced in the release note. Add a test that serializes an `OrderResponse` and asserts the existing field names are unchanged.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "rename_all = \"camelCase\" renames every existing field of the public order JSON"
+        "title": "`rename_all = \"camelCase\"` renames every existing order JSON field"
       },
       {
         "awaiting": "author",
@@ -82,18 +168,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 39,
+        "line": 48,
         "location": "src/config.rs:9-10",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Give the field a default (`#[serde(default = \"default_currency\")]` returning \"EUR\", the currency sold before this change) so existing files keep loading. As written, every deployed `config.toml` — which today holds only `database_url` and `listen`, as config.example.toml did on main — makes `toml::from_str` fail with a missing-field error at start-up after the upgrade, and the service does not start; nothing in the proposal or release note tells operators to add the key. Add a test loading the old two-key file. If the key must stay required, mark it BREAKING with the step to take in the release note.",
+        "recommendation": "Give the field a default so existing files keep loading — e.g. `#[serde(default = \"default_currency\")]` returning `\"EUR\"`, the currency the shop sold in before this change — and add a test that `load` accepts the previous `config.example.toml` (without `default_currency`). Otherwise mark the new key **BREAKING** in the release note with the line operators must add.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Existing config.toml files without default_currency no longer load"
+        "title": "Required `default_currency` makes existing `config.toml` files fail to load"
       }
     ],
     "format": 1,
@@ -122,14 +208,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "migration",
-            "state": "findings"
+            "role": "newcomer",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "newcomer",
-            "state": "disabled"
+            "role": "migration",
+            "state": "findings"
           }
         ],
         "step": "code.review",

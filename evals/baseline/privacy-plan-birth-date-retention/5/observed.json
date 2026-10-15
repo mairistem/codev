@@ -2,22 +2,99 @@
   "format": 2,
   "case": "privacy-plan-birth-date-retention",
   "error": null,
-  "costUsd": 0.436594,
-  "durationMs": 39898,
+  "costUsd": 0.3912232,
+  "durationMs": 37962,
   "consumption": {
-    "durationApiMs": 39247,
-    "turns": 12,
-    "permissionDenials": 2,
+    "durationApiMs": 37753,
+    "turns": 9,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1176,
-      "cacheCreation": 33576,
-      "cacheRead": 441925,
-      "output": 3931
-    }
+      "input": 1170,
+      "cacheCreation": 32287,
+      "cacheRead": 284151,
+      "output": 3757
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7402,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7402
+        }
+      },
+      {
+        "cacheCreation": 5924,
+        "cacheRead": 29541,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 5924
+        }
+      },
+      {
+        "cacheCreation": 12250,
+        "cacheRead": 35465,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12250
+        }
+      },
+      {
+        "cacheCreation": 285,
+        "cacheRead": 47715,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 285
+        }
+      },
+      {
+        "cacheCreation": 2162,
+        "cacheRead": 48000,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 363,
+          "shell": 1799
+        }
+      },
+      {
+        "cacheCreation": 967,
+        "cacheRead": 50162,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 967
+        }
+      },
+      {
+        "cacheCreation": 3297,
+        "cacheRead": 51129,
+        "input": 2,
+        "output": 142,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 2616,
+          "edit": 552,
+          "output": 129
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -36,7 +113,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "filled only for members who opt in. They are\nkept as long as the profile exists, and copied with the rest of the\n",
+        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
         "history": [
           {
             "by": "privacy",
@@ -47,45 +124,18 @@
           }
         ],
         "id": "R-privacy-1",
-        "line": 15,
+        "line": 11,
         "location": "design.md#Decision: Birth dates live on the profile",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The only purpose of `profiles.birthday` and `profiles.phone` is the greeting, but the design ties their retention to the profile, not to the opt-in. A member who turns the option off keeps both values in `profiles` for as long as the account lives, with no purpose left (GDPR Art. 5(1)(c) and (e), Art. 7(3) withdrawal of consent). The spec only covers opting in (\"Members opt in to birthday greetings\"). Add a requirement and a scenario \"WHEN a member opts out THEN their birthday and phone are erased\", state in the design that opting out clears both columns, and add the matching task and test.",
+        "recommendation": "Define retention and deletion for `profiles.birthday` and `profiles.phone` (storage limitation, GDPR Art. 5(1)(e); withdrawal of consent, Art. 7(3)): a member who opts out still has both columns kept for the profile's whole life, since the plan ties retention to the profile, not to the opt-in. Clear both columns when the member opts out, add a spec scenario \"A member opts out\" (THEN birthday and phone are erased), and state how long the nightly backups holding them are kept and when they are purged.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Birthday and phone are kept after the member opts out"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "copied with the rest of the\ndatabase into the nightly backups.\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-2",
-        "line": 39,
-        "location": "design.md#Decision: Birth dates live on the profile",
-        "raisedBy": [
-          "privacy"
-        ],
-        "recommendation": "Birth dates and phone numbers are copied into the nightly backups, but nothing says how long those backups are kept, so a value erased on opt-out or account deletion survives there for an undefined time (GDPR Art. 5(1)(e), Art. 17). State the backup retention period in the design (or point to the existing backup policy) and how an erasure reaches restored backups.",
-        "reported": true,
-        "role": "privacy",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "No retention or purge rule for the copies in nightly backups"
+        "title": "Birthday and phone kept after opt-out and in backups with no expiry"
       },
       {
         "awaiting": "author",
@@ -100,19 +150,46 @@
             "to": null
           }
         ],
-        "id": "R-privacy-3",
-        "line": 59,
+        "id": "R-privacy-2",
+        "line": 33,
         "location": "design.md#Decision: Greetings are sent by SMS through Textly",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The processor and the transfer outside the EEA are named, but the plan does not say whether a processing agreement (GDPR Art. 28) and a transfer mechanism (Chapter V: adequacy decision, e.g. the EU-US Data Privacy Framework, or standard contractual clauses) cover Textly, nor whether Textly keeps the numbers and messages it receives, and for how long. Question for the team: record the agreement, the transfer basis and Textly's retention in the design.",
+        "recommendation": "Question for the team: the plan names Textly as a new processor and a transfer outside the EEA, but states no processor agreement (GDPR Art. 28) nor transfer mechanism (Chapter V — adequacy decision or standard contractual clauses), nor how long Textly keeps the numbers and messages. Record the decision in the design, or pick an EEA-hosted provider.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Transfer of phone numbers and names to Textly in the United States has no stated safeguard"
+        "title": "Transfer of phone numbers to Textly in the United States has no stated safeguard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 54,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Data minimisation (GDPR Art. 5(1)(c)): the spec only requires \"a greeting is sent to their phone\", so the phone number is the only detail the processor needs. Send a generic message, or state in the spec that the greeting is personalised by name if that is the intended purpose.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Display name sent to Textly though the greeting does not need it"
       },
       {
         "awaiting": "author",
@@ -128,18 +205,18 @@
           }
         ],
         "id": "R-privacy-4",
-        "line": 81,
+        "line": 72,
         "location": "proposal.md#Why",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The purpose is stated (birthday messages, wanted by marketing), but not the lawful basis (GDPR Art. 6). The opt-in suggests consent; if so, say it in the proposal, together with how consent is recorded and withdrawn. Question for the team: only the controller can tell what was decided.",
+        "recommendation": "Question for the team: the proposal gives a marketing purpose but no lawful basis (GDPR Art. 6) for collecting birthday and phone and sending promotional-style SMS. If it is the opt-in consent, say so in the proposal, and make sure the opt-in wording covers the SMS sending (ePrivacy Directive) and the transfer to Textly.",
         "reported": false,
         "role": "privacy",
-        "severity": "low",
+        "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Lawful basis of the processing is not stated"
+        "title": "Lawful basis for the birthday and phone processing is not stated"
       }
     ],
     "format": 1,
@@ -157,14 +234,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "privacy",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "privacy",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

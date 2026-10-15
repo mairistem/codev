@@ -8,7 +8,8 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 SQL injection through the search term
+#### R-security-1 SQL injection through the search term of GET /users/search
+
 ```yaml
 severity: high
 confidence: high
@@ -17,18 +18,14 @@ evidence: |
   const sql = "SELECT id, name FROM users WHERE name LIKE '%" + term + "%' ORDER BY name LIMIT 50";
   return query<UserRow>(sql);
 recommendation: >-
-  CWE-89. Any caller holding the `support` role sends
-  `GET /users/search?q=x' UNION SELECT ...--` (src/server.ts:13-18 only trims
-  and checks the length, 2 to 100 characters) and the term is concatenated
-  into the SQL text, so they read any table of the database and, since the
-  query runs without parameters (pg simple protocol allows several
-  statements), can chain `; UPDATE ...` / `; DROP ...`. Bind the term as a
-  parameter, as `query` in src/db.ts is documented to require ("values go in
-  `params`, never in `sql`"): `query<UserRow>("SELECT id, name FROM users
-  WHERE name LIKE $1 ESCAPE '\\' ORDER BY name LIMIT 50", ['%' +
-  term.replace(/[\\%_]/g, '\\$&') + '%'])`, escaping `%`, `_` and `\` so the
-  term is matched literally as the proposal's "name contains the term"
-  requires. Add a test sending a quote in `q`.
+  The query-string value `q` (src/server.ts:13, only trimmed and length-checked)
+  is concatenated into the SQL text. A caller with the `support` role sends
+  `GET /users/search?q=' UNION SELECT 1, password FROM users --` (under 100
+  characters) and gets columns of any table the database user can read, or
+  alters the query at will (CWE-89). `src/db.ts` already offers parameters:
+  use `query<UserRow>("SELECT id, name FROM users WHERE name LIKE $1 ESCAPE '\\'
+  ORDER BY name LIMIT 50", ["%" + escaped + "%"])`, escaping `\`, `%` and `_` in
+  the term so it matches literally, and add a test sending a quote in `q`.
 history:
   - status: open
     by: security

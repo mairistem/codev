@@ -6,6 +6,10 @@
 
 Mode: inline.
 
+### skeptic
+
+Disabled by configuration.
+
 ### security
 
 #### R-security-1 API tokens are stored in clear in the database
@@ -20,21 +24,20 @@ evidence: |
   token as given keeps the lookup a simple indexed equality.
 recommendation: >-
   Store only a hash of the token (SHA-256 of the 32 random bytes is enough
-  for high-entropy tokens; no bcrypt needed) in a `token_hash` column, and
-  look a request up with `WHERE token_hash = $1` on the hash of the bearer
-  value — still a single indexed equality, so the lookup stays fast. The
-  clear token exists only in the creation response, shown once. As it
-  stands, anyone who reads the `api_tokens` table — a database backup, a
-  read replica, a support query, an SQL injection elsewhere — gets every
-  user's live credential and can call the API as them (CWE-312 / CWE-256),
-  while passwords in the same database are bcrypt-hashed. Update the
-  design's alternatives and task 1.1 accordingly.
+  for a high-entropy secret, no bcrypt needed), and look it up with
+  `WHERE token_hash = $1` on the hash of the presented token: the lookup stays
+  a single indexed equality, so the "lookup must be fast" argument does not
+  require the clear value. As written, anyone who reads the `api_tokens`
+  table — a database backup, a read replica, a support SQL console, a later
+  injection — obtains working bearer credentials for every integration of
+  every user, and since revocation is a Non-Goal they cannot be invalidated
+  (CWE-312, CWE-522). Update tasks 1.1 and 1.2 to match.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 The Authorization header, holding the bearer token, is logged
+#### R-security-2 The Authorization header is logged at info level
 
 ```yaml
 severity: high
@@ -45,43 +48,36 @@ evidence: |
   method, path and headers at `info` level, including `Authorization`, so
   support can see which token an integration sent.
 recommendation: >-
-  Never log `Authorization` (nor `Cookie`, `Proxy-Authorization` or any
-  other credential header): redact it with an allow-list of loggable
-  headers, and to identify the token log a non-secret identifier instead
-  — the token row's id or a short prefix of its hash. As designed, every
-  request writes a usable bearer token to the `info` log, so anyone with
-  log access (support, the log pipeline, a log aggregation vendor) can
-  replay it and act as the user (CWE-532); passwords sent through the same
-  middleware by today's integrations would be logged too. Combined with
-  the absence of revocation, a token leaked through the logs cannot be
-  stopped. Change task 1.3 so `logs_requests` asserts the header is
-  redacted.
+  Redact secret headers before logging: drop or mask `Authorization` and
+  `Cookie` (the middleware already reads the session from `Cookie`), and log
+  instead a non-secret token identifier (a token id or a short prefix of the
+  token's hash) so support can still tell which token an integration sent.
+  As written, every bearer token and every session cookie lands in the logs:
+  anyone with access to the log pipeline or a log export replays them and
+  acts as the user, with no revocation to stop it (CWE-532). Update task 1.3
+  so `logs_requests` asserts the secret headers are absent.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-3 A leaked token cannot be invalidated until a later change
+#### R-security-3 A leaked token cannot be invalidated
 
 ```yaml
 severity: medium
-confidence: low
+confidence: high
 location: "design.md#Risks / Trade-offs"
 evidence: |
   - [A user loses a token] → they create another one; revoking the old one comes with the later revocation change.
 recommendation: >-
-  The proposal's own motive is that "a leaked integration exposes the
-  account", yet a leaked token stays valid forever: creating another one
-  does not stop the old one, and tokens have no expiry. Ship at least a
-  minimal delete of a user's own token (server-side ownership check), or
-  an expiry date on each token, with this change; or have a person accept
-  the risk explicitly until the revocation change lands. Confidence is
-  low because the impact depends on when that later change ships.
+  The proposal's motivation is that "a leaked integration exposes the
+  account", yet with revocation deferred and no expiry a leaked token keeps
+  working forever: an attacker holding it keeps full API access to the
+  account and the user has no way to cut it off — creating another token does
+  not disable the old one. Either ship a minimal revocation (delete the
+  token's row) in this change, or give tokens an expiry until the revocation
+  change lands, and state the residual risk in the design.
 history:
   - status: open
     by: security
 ```
-
-### skeptic
-
-Disabled by configuration.

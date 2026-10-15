@@ -2,22 +2,86 @@
   "format": 2,
   "case": "privacy-code-error-message-pii",
   "error": null,
-  "costUsd": 0.34759320000000005,
-  "durationMs": 43828,
+  "costUsd": 0.334121,
+  "durationMs": 29585,
   "consumption": {
-    "durationApiMs": 43555,
-    "turns": 7,
+    "durationApiMs": 30012,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1176,
-      "cacheCreation": 28912,
-      "cacheRead": 289821,
-      "output": 2867
-    }
+      "input": 1174,
+      "cacheCreation": 29027,
+      "cacheRead": 241900,
+      "output": 2627
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 13813,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13813
+        }
+      },
+      {
+        "cacheCreation": 4553,
+        "cacheRead": 43342,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 4553
+        }
+      },
+      {
+        "cacheCreation": 590,
+        "cacheRead": 47895,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 590
+        }
+      },
+      {
+        "cacheCreation": 2025,
+        "cacheRead": 48485,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2025
+        }
+      },
+      {
+        "cacheCreation": 656,
+        "cacheRead": 50510,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 656
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +93,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (Looked-up e-mail address written to the logs through the error message) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (Looked-up e-mail address written to the error log) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-2 (Chat vendor Helply receives phone, birth date, address and e-mail when the purpose needs the name) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-2 (Chat vendor receives phone, birth date and address it does not need) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +124,13 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Keep personal data out of the error message: throw `new NotFoundError(\"no customer\")` (or any constant text). `errorHandler` in `src/server.ts` logs `err.message` (`logger.error(\"request failed\", { path: req.path, error: err.message })`), and `src/logger.ts` ships every line to the log platform, so each lookup of an unknown address by a support agent stores that typed e-mail address — of a customer or of anyone — in the logs with no retention rule (GDPR Art. 5(1)(c), 5(1)(e), 32). The same applies, with less impact, to `no customer ${id}` at `src/support.ts:32`, which logs the customer identifier: drop it too.",
+        "recommendation": "Keep the e-mail address out of the error message, e.g. `throw new NotFoundError(\"no customer with this e-mail\")`. As written, every lookup that matches no customer (a typo, or an address that is not a customer's) reaches `errorHandler` in src/server.ts, which runs `logger.error(\"request failed\", { path: req.path, error: err.message })`, so the typed address lands in the application logs and wherever they are shipped (GDPR Art. 5(1)(c) and 5(1)(f), Art. 32). The 404 body itself stays generic; only the log leaks.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Looked-up e-mail address written to the logs through the error message"
+        "title": "Looked-up e-mail address written to the error log"
       },
       {
         "awaiting": "author",
@@ -87,18 +151,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Send Helply only what the stated purpose needs — the proposal says the widget \"greets the signed-in customer by name, so that the agent knows who they talk to\": `id` (opaque) and `name`. Remove `email`, `phone`, `birthDate` and `address`; the agent can look the rest up internally by id. As written, every signed-in customer who opens a page with the chat has their full record shared with a third-party processor and returned to the browser by `GET /chat/settings` (GDPR Art. 5(1)(c), Art. 25, Art. 28). Load only the needed columns in `customerById` for this route.",
+        "recommendation": "The proposal's stated purpose is that the Helply widget \"greets the signed-in customer by name, so that the agent knows who they talk to\"; the opaque id and the name serve it. Drop `phone`, `birthDate` and `address` (and `email` unless the team states why Helply needs it) from the settings, and select only the columns needed in `customerById`. Today every signed-in customer who opens the chat sends their full record through GET /chat/settings to the browser and on to Helply, a third-party processor (GDPR Art. 5(1)(c) data minimisation, Art. 25, Art. 28).",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Chat vendor Helply receives phone, birth date, address and e-mail when the purpose needs the name"
+        "title": "Chat vendor receives phone, birth date and address it does not need"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "/** What the Helply chat widget is started with, for the signed-in customer. */\n",
+        "evidence": "- [x] personal-data — customers' records are read and the chat vendor receives who is chatting\n",
         "history": [
           {
             "by": "privacy",
@@ -109,18 +173,18 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 61,
-        "location": "src/support.ts:37",
+        "line": 63,
+        "location": "proposal.md#Domains",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Question for the team: is Helply covered by a processor agreement (GDPR Art. 28), recorded in the records of processing (Art. 30), and where does it store data — a transfer outside the EEA needs Chapter V safeguards? State the lawful basis of sharing chat identity with it, and how erasure and access requests reach the copies Helply keeps. Only the controller can answer; nothing in the change or the repository says.",
+        "recommendation": "Question for the team: name Helply as a processor in the plan, confirm a data processing agreement (GDPR Art. 28), where it stores the data (Chapter V if outside the EEA), the lawful basis for sharing (Art. 6), and how Helply's copy is retained and erased when a customer is deleted or exercises their rights (Art. 15–17). The code cannot show any of this; only the controller can.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Helply is a new processor with no stated legal basis, contract or transfer location"
+        "title": "Helply as processor: contract, location and lawful basis not identified"
       },
       {
         "awaiting": "author",
@@ -136,18 +200,18 @@
           }
         ],
         "id": "R-privacy-4",
-        "line": 80,
+        "line": 83,
         "location": "src/support.ts:16",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The proposal's purpose is that agents stop asking customers who they are; it does not say agents need the birth date, postal address or phone of every customer they look up. Return only the fields the support console shows (likely `id`, `name`, `email`), or state in the proposal why each further field is needed (e.g. identity checks) — GDPR Art. 5(1)(c). Whether the console uses them could not be verified from the repository.",
+        "recommendation": "The lookup exists so that agents stop asking customers who they are; the route returns the whole record, birth date and address included, to every `support` user. Unless the team states that agents need those fields, return only id, name and e-mail (GDPR Art. 5(1)(c), Art. 25). Recorded with low confidence: what agents actually need is not stated in the plan.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Support lookup returns birth date, address and phone without a stated need"
+        "title": "Support lookup returns birth date and address to agents by default"
       }
     ],
     "format": 1,

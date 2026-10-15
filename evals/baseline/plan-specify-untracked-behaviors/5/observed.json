@@ -1,0 +1,349 @@
+{
+  "format": 2,
+  "case": "plan-specify-untracked-behaviors",
+  "error": null,
+  "costUsd": 1.4015354,
+  "durationMs": 191751,
+  "consumption": {
+    "durationApiMs": 189354,
+    "turns": 35,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1192,
+      "cacheCreation": 82557,
+      "cacheRead": 2111717,
+      "output": 15882
+    },
+    "toolCalls": 34,
+    "orientationCalls": 21,
+    "calls": [
+      {
+        "cacheCreation": 7716,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7716
+        }
+      },
+      {
+        "cacheCreation": 13528,
+        "cacheRead": 29855,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1512,
+          "skill": 12016
+        }
+      },
+      {
+        "cacheCreation": 1351,
+        "cacheRead": 43383,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1351
+        }
+      },
+      {
+        "cacheCreation": 659,
+        "cacheRead": 44734,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 43,
+          "shell": 616
+        }
+      },
+      {
+        "cacheCreation": 2005,
+        "cacheRead": 45393,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 2005
+        }
+      },
+      {
+        "cacheCreation": 12166,
+        "cacheRead": 47398,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12166
+        }
+      },
+      {
+        "cacheCreation": 2698,
+        "cacheRead": 59564,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "output": 217,
+          "search": 2481
+        }
+      },
+      {
+        "cacheCreation": 1602,
+        "cacheRead": 62262,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1602
+        }
+      },
+      {
+        "cacheCreation": 1398,
+        "cacheRead": 63864,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1398
+        }
+      },
+      {
+        "cacheCreation": 1190,
+        "cacheRead": 65262,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1190
+        }
+      },
+      {
+        "cacheCreation": 2384,
+        "cacheRead": 66452,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2384
+        }
+      },
+      {
+        "cacheCreation": 2123,
+        "cacheRead": 68836,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2123
+        }
+      },
+      {
+        "cacheCreation": 1653,
+        "cacheRead": 70959,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 65,
+          "search": 1588
+        }
+      },
+      {
+        "cacheCreation": 1935,
+        "cacheRead": 72612,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1935
+        }
+      },
+      {
+        "cacheCreation": 1728,
+        "cacheRead": 74547,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1728
+        }
+      },
+      {
+        "cacheCreation": 3727,
+        "cacheRead": 76275,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3727
+        }
+      },
+      {
+        "cacheCreation": 1163,
+        "cacheRead": 80002,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1163
+        }
+      },
+      {
+        "cacheCreation": 964,
+        "cacheRead": 81165,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 940,
+          "output": 24
+        }
+      },
+      {
+        "cacheCreation": 3633,
+        "cacheRead": 82129,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3633
+        }
+      },
+      {
+        "cacheCreation": 2379,
+        "cacheRead": 85762,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2379
+        }
+      },
+      {
+        "cacheCreation": 1760,
+        "cacheRead": 88141,
+        "input": 2,
+        "output": 25,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1760
+        }
+      },
+      {
+        "cacheCreation": 2538,
+        "cacheRead": 89901,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2530,
+          "output": 8
+        }
+      },
+      {
+        "cacheCreation": 1236,
+        "cacheRead": 92439,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 3,
+        "sources": {
+          "file": 1236
+        }
+      },
+      {
+        "cacheCreation": 3377,
+        "cacheRead": 93675,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3377
+        }
+      },
+      {
+        "cacheCreation": 2814,
+        "cacheRead": 97052,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2807,
+          "output": 7
+        }
+      },
+      {
+        "cacheCreation": 838,
+        "cacheRead": 99866,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 838
+        }
+      },
+      {
+        "cacheCreation": 2753,
+        "cacheRead": 100704,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2016,
+          "edit": 737
+        }
+      },
+      {
+        "cacheCreation": 432,
+        "cacheRead": 103457,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 432
+        }
+      },
+      {
+        "cacheCreation": 807,
+        "cacheRead": 103889,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 320,
+          "edit": 487
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/specify-untracked-behaviors/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/specify-untracked-behaviors/design.md": "# Design: Specify behaviors that shipped without a spec\n\n## Context\n\nThe four behaviors are implemented and, for three of them, tested. What\nthe code does today, which the deltas describe:\n\n| Behavior | Code | Test |\n|---|---|---|\n| CRLF ADR parsed like LF | `codev-core/src/decisions/parser.rs` (`extract_frontmatter`) | `a_crlf_adr_is_parsed_like_an_lf_one` |\n| Seal hashes the raw body, CRLF included | `codev-core/src/decisions/seal.rs` (`body_slice`, `body_hash`) | `hash_with_crlf_is_supported` |\n| Status rewrite keeps CRLF and the body bytes | `codev-engine/src/decisions_actions.rs` (`rewrite_frontmatter_status`) | `rewriting_the_status_keeps_a_crlf_body_byte_for_byte` |\n| Warning callouts | `codev-cli/src/docs.rs` (`mark_warning_callouts`), `codev-cli/assets/docs.css` (`blockquote.warning`) | `warning_callouts_get_their_own_class` |\n| Silent exit on a closed pipe | `codev-cli/src/main.rs`, `Command::Docs` with `--print` | none found |\n| Forward slashes in `init --inherit` paths | `codev-cli/src/commands.rs` (`resolve_inherits`, `portable`) | `init_writes_inherits_and_pins_git_sources`, run on the Windows CI job |\n\nThe constraint is that this change modifies no code (proposal, What\nChanges). Specs are written against the code; where the code has a limit,\nthe spec states the limit rather than an ideal.\n\n## Goals / Non-Goals\n\nGoals: each behavior has a requirement with scenarios, so that removing\nit breaks a spec; the specs stay observable (no function names).\n\nNon-Goals: changing any behavior, normalizing seals, covering the\nrelative local git URL that `init --inherit` also makes absolute (see\nthe proposal), editing the user documentation.\n\n## Decisions\n\n### Decision: ADDED requirements only, no MODIFIED blocks\n\nEvery behavior is a new concern next to an existing requirement (`ADR\nformat recognized`, `Body seal recorded by the CLI`, `decision accept\naccepts and seals…`, `codev init --inherit declares inherited sources`,\n`codev docs --print prints the markdown source…`). Adding a requirement\nleaves those blocks untouched, so archiving cannot lose detail from\nthem, and a reader still finds the line-ending rule in one place.\n\n**Alternatives considered**: extending each existing requirement through\n`## MODIFIED Requirements`. Rejected: five blocks copied in full for a\nparagraph each, with a real risk of drift at archive time, and the CRLF\nrule would be split across three requirements.\n\n### Decision: Specify the seal as not normalizing line endings\n\nThe seal hashes the bytes on disk; the existing test's comment calls the\nLF/CRLF difference \"documented as a risk\". The spec states it, with a\nscenario where converting a sealed body's line endings yields\n`decision_seal_mismatch`. This is consistent with the `decision accept`\nrequirement (\"the recorded hash is the hash of the text the user\nwrote\") and with ADR 0001: the core hashes, the shell does not touch the\nbytes.\n\n**Alternatives considered**: specifying a normalized seal. Rejected for\nthis change: it is a behavior change (and a migration of every existing\nseal), so it needs its own codev change.\n\n### Decision: The forward-slash rule covers only paths codev makes absolute\n\n`init` rewrites a relative path with `/`; a path given absolute or with\n`~` is written as given, so `--inherit C:\\shared` keeps its backslashes.\nThe requirement says so explicitly instead of promising forward slashes\nfor every `path:` value, which the code does not do.\n\n**Alternatives considered**: a general \"every inherited path uses `/`\"\nrequirement. Rejected: false for absolute input today.\n\n## Risks / Trade-offs\n\n- [The closed-pipe behavior has no automated test; the spec becomes its\n  only guard] → Recorded here; a test (spawn `codev docs --print`, close\n  the read end, assert exit 0 and empty stderr) belongs in a follow-up\n  change, since this one touches no code. This contradicts the request's\n  premise that tests already exist for all four behaviors.\n- [The \"another write failure\" scenario of the closed-pipe requirement is\n  hard to reproduce portably (e.g. `/dev/full` exists only on Linux)] →\n  It describes the code path that already exists (`error:` on stderr,\n  exit 1); a test, if added, can be Linux-only.\n- [A Git checkout with `core.autocrlf` converts sealed ADR bodies and\n  makes `validate` fail] → Now explicit in the spec; a fix\n  (`.gitattributes` or a normalized seal) is a separate change.\n- [The Windows scenario of `init` relies on the Windows CI job running\n  the in-memory test with Unix-looking paths] → Acceptable: it is the\n  coverage the code already has.\n",
+    "_codev/changes/specify-untracked-behaviors/proposal.md": "# Proposal: Specify behaviors that shipped without a spec\n\n## Why\n\nFour behaviors reached the code through ordinary pull requests, with their\ntests, but no spec describes them: Windows (CRLF) line endings in ADRs,\nwarning callouts in the offline HTML docs, the silent exit when the reader\nof `codev docs --print` closes the pipe, and forward slashes in the paths\n`codev init --inherit` writes. Since `_codev/specs/` is authoritative, a\nlater change could remove any of them without breaking a requirement.\n\n## What Changes\n\nThis change documents existing behavior only; no code changes.\n\n- `decisions`: an ADR whose lines end in `\\r\\n` is parsed like one in\n  `\\n`; its seal hashes the body byte for byte, with no line-ending\n  normalization; `codev decision accept` rewrites its frontmatter with\n  `\\r\\n` and leaves the body untouched.\n- `docs`: in the HTML, a blockquote that opens on a bold `Warning` or\n  `Attention` title is rendered as a warning callout, styled apart from\n  other blockquotes.\n- `docs`: when stdout is closed before `codev docs --print` has finished\n  writing (`codev docs --print | head`), the command exits 0 and prints\n  no error.\n- `init`: the absolute path `codev init --inherit` writes for a relative\n  local path uses `/` as separator on every platform, Windows included.\n\nAssumptions, made without being able to ask:\n\n- \"Slashes in inheritance paths\" means the `path:` value `codev init\n  --inherit` writes into `_codev/config.yaml`. The forward-slash JSON\n  contract (`to_slash`) is not about inheritance and stays out of scope.\n- The requirements describe the code as it is, including its limits: the\n  seal is not normalized, so converting an ADR body between CRLF and LF\n  changes its hash. That is what the code and its test\n  (`hash_with_crlf_is_supported`) do; changing it would be a new change,\n  not this one.\n- Only the `**Warning**` and `**Attention**` titles are covered, the set\n  the code and the website theme recognize.\n\nObserved but out of scope: `codev init --inherit` also makes a relative\nlocal *git* URL absolute (with forward slashes). No spec covers it and no\ntest exercises it; it is left for a separate change rather than specified\nhere without a test.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `decisions`\n- `docs`\n- `init`\n\n### Removed Capabilities\n\n## Impact\n\n- Specs only: `_codev/specs/decisions/spec.md`, `_codev/specs/docs/spec.md`,\n  `_codev/specs/init/spec.md` gain requirements once archived.\n- No code, API, JSON contract, dependency or user documentation changes.\n  The existing behavior lives in `crates/codev-core/src/decisions/parser.rs`,\n  `crates/codev-core/src/decisions/seal.rs`,\n  `crates/codev-engine/src/decisions_actions.rs`,\n  `crates/codev-cli/src/docs.rs`, `crates/codev-cli/assets/docs.css`,\n  `crates/codev-cli/src/main.rs` and `crates/codev-cli/src/commands.rs`.\n\n- Domains below are ticked by judgement: the diff holds only this\n  planning folder, so there is no code diff to go by.\n\n## Domains\n\n- [ ] security — no input, authorization or dependency change\n- [ ] personal-data\n- [ ] user-interface — the callout rendering already ships; only its spec is added\n- [ ] performance\n- [ ] operations — the broken-pipe exit code already ships; only its spec is added\n- [ ] migration — no behavior, data or configuration changes\n\n## Release note\n\nNone\n",
+    "_codev/changes/specify-untracked-behaviors/specs/decisions/spec.md": "## ADDED Requirements\n\n### Requirement: ADRs saved with Windows line endings\n\nAn ADR whose lines end in `\\r\\n` (a file saved or checked out on\nWindows) SHALL be read exactly like the same ADR with lines ending in\n`\\n`: same frontmatter fields, and a body that starts after the closing\n`---` line and its own line ending.\n\nThe body seal MUST hash the body bytes as they are on disk, without\nnormalizing line endings: an ADR body converted from `\\n` to `\\r\\n`, or\nthe reverse, after it was sealed no longer matches its seal.\n\nWhen a command rewrites the `status` of a decision whose file starts\nwith `---\\r\\n` (`codev decision accept`, for the accepted decision and\nfor each decision it supersedes), the rewritten frontmatter MUST use\n`\\r\\n` line endings, and the body MUST stay byte for byte identical, its\n`\\r\\n` line endings included.\n\n#### Scenario: A CRLF ADR is parsed like an LF one\n\n- **GIVEN** an ADR `0001` with `id`, `title`, `status: accepted` and\n  `date`, whose every line ends in `\\r\\n`\n- **WHEN** codev reads the decisions (`codev decision list`,\n  `codev validate`)\n- **THEN** `0001` is listed with the same identifier, title and status\n  as the same file with `\\n` line endings\n- **AND** no `decision_missing_frontmatter` finding is reported for it\n\n#### Scenario: Accepting a CRLF decision keeps its line endings\n\n- **GIVEN** a local ADR `0002` with `status: proposed`, whose every line\n  ends in `\\r\\n`\n- **WHEN** the user runs `codev decision accept 0002`\n- **THEN** the frontmatter of `0002` carries `status: accepted` followed\n  by `\\r\\n`\n- **AND** no line of the file mixes `\\n` and `\\r\\n` endings\n- **AND** the body of `0002` is byte for byte identical to the body\n  before the command\n- **AND** `codev validate` reports no `decision_seal_mismatch` for `0002`\n\n#### Scenario: Converting the line endings of a sealed body breaks the seal\n\n- **GIVEN** a sealed ADR `0003` whose body uses `\\n` line endings\n- **AND** its body is then rewritten with `\\r\\n` line endings, without\n  any other edit\n- **WHEN** the user runs `codev validate`\n- **THEN** a `decision_seal_mismatch` error names `0003`\n",
+    "_codev/changes/specify-untracked-behaviors/specs/docs/spec.md": "## ADDED Requirements\n\n### Requirement: Warning callouts stand out in the HTML documentation\n\nIn the HTML that `codev docs` generates (opened by default or written\nwith `--write`), a blockquote whose first paragraph opens on the bold\ntitle `Warning` (`> **Warning**`) or `Attention` (`> **Attention**`, its\nFrench equivalent) SHALL be rendered as a warning callout: marked with\nthe class `warning`, and styled by the inline stylesheet with its own\nbackground, rule color and title color, in both the light and the dark\ncolor scheme. Any other blockquote, including one that opens on another\nbold title such as `**Note**`, MUST stay a plain blockquote.\n\n`codev docs --print` is not affected: it prints the markdown source\nunchanged.\n\n#### Scenario: Warning and Attention become callouts\n\n- **GIVEN** documentation containing a blockquote opening on\n  `**Warning**` and another opening on `**Attention**`\n- **WHEN** the user runs `codev docs --write out.html`\n- **THEN** both blockquotes carry `class=\"warning\"` in `out.html`\n- **AND** `out.html` styles `blockquote.warning` inline, with no\n  external request\n\n#### Scenario: A note stays a plain blockquote\n\n- **GIVEN** documentation containing a blockquote opening on `**Note**`\n- **WHEN** the user runs `codev docs --write out.html`\n- **THEN** that blockquote is rendered without the `warning` class\n\n### Requirement: `codev docs --print` exits quietly when its reader leaves\n\nWhen the standard output of `codev docs --print` is closed before the\nwhole documentation has been written — its reader exited, as in\n`codev docs --print | head` — the command SHALL stop writing, print\nnothing on stderr, and exit with code 0. Any other write failure on\nstdout MUST still print an `error:` line on stderr and exit with\ncode 1.\n\n#### Scenario: Piping into `head`\n\n- **GIVEN** the current binary\n- **WHEN** the user runs `codev docs --print | head -n 5`\n- **THEN** the first five lines of the documentation are shown\n- **AND** `codev` prints nothing on stderr\n- **AND** the exit code of `codev` is 0\n\n#### Scenario: Another write failure is reported\n\n- **GIVEN** a standard output that rejects writes for a reason other\n  than a closed pipe (for example a full device)\n- **WHEN** the user runs `codev docs --print`\n- **THEN** stderr carries a line starting with `error:`\n- **AND** the exit code is 1\n",
+    "_codev/changes/specify-untracked-behaviors/specs/init/spec.md": "## ADDED Requirements\n\n### Requirement: Inherited paths written by `codev init` use forward slashes\n\nWhen `codev init --inherit` turns a relative local path into an absolute\none to write it under `inherits:`, the written `path:` value SHALL use\n`/` as its only separator, on every platform — Windows included, where\nthe native separator is `\\`. The value MUST be written without escaped\nbackslashes, so that `_codev/config.yaml` stays identical whatever\nmachine ran `codev init`, and MUST resolve to the given folder when the\nother codev commands read it back.\n\nA path given as absolute or starting with `~` is written as given.\n\n#### Scenario: A relative path is written absolute with forward slashes\n\n- **GIVEN** a new project at `/home/you/project` and an existing folder\n  `/home/you/conventions`\n- **WHEN** the user runs `codev init --yes --inherit ../conventions`\n  from `/home/you/project`\n- **THEN** `_codev/config.yaml` declares `path: /home/you/conventions`\n- **AND** `codev status` reads the file without error\n\n#### Scenario: A relative path on Windows\n\n- **GIVEN** a new project at `C:\\Users\\you\\project` and an existing\n  folder `C:\\Users\\you\\conventions`\n- **WHEN** the user runs `codev init --yes --inherit ..\\conventions`\n  from `C:\\Users\\you\\project`\n- **THEN** `_codev/config.yaml` declares `path: C:/Users/you/conventions`\n- **AND** the file contains no `\\` in that value\n- **AND** `codev sources list` resolves the source to that folder\n\n#### Scenario: A path starting with `~` is kept as given\n\n- **GIVEN** an existing folder `~/shared`\n- **WHEN** the user runs `codev init --yes --inherit ~/shared`\n- **THEN** `_codev/config.yaml` declares `path: ~/shared`\n"
+  },
+  "validate": {
+    "specify-untracked-behaviors": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "specify-untracked-behaviors",
+          "path": "_codev/changes/specify-untracked-behaviors"
+        }
+      ],
+      "status": []
+    }
+  }
+}

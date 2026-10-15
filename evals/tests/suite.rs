@@ -82,6 +82,7 @@ fn every_case_has_a_baseline_observation() {
 fn the_baseline_agrees_with_the_scoring() {
     let cases = suite::load_cases(&repo()).unwrap();
     let score = suite::score_dir(
+        &repo(),
         &cases,
         &repo().join("evals").join("baseline"),
         Thresholds::default(),
@@ -168,6 +169,7 @@ fn contributing_and_roles_chapters_name_the_baseline() {
         .collect();
     let mut gaps = missing_mention(&files, "evals/baseline");
     gaps.extend(missing_mention(&files[..2], "assets/roles/"));
+    gaps.extend(missing_mention(&files[..2], "assets/workflows/"));
     gaps.extend(missing_mention(&files[..2], "codev-evals -- docs"));
     gaps.extend(missing_mention(&files, "codev-evals"));
     gaps.extend(missing_mention(&files[..2], "codev-evals -- compare"));
@@ -221,6 +223,64 @@ fn the_workflow_passes_repeat_through_the_environment() {
         .expect("the run step bounds repeat");
     let run = workflow.find("codev-evals -- run").unwrap();
     assert!(bound < run, "repeat is checked before the suite runs");
+}
+
+/// The jobs of a workflow, each from its `  <id>:` line to the next.
+fn jobs(workflow: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let body = workflow.split_once("\njobs:\n").map_or("", |(_, b)| b);
+    for line in body.lines() {
+        let is_job = line.starts_with("  ") && !line.starts_with("   ") && line.ends_with(':');
+        if is_job || out.is_empty() {
+            out.push(String::new());
+        }
+        let job = out.last_mut().expect("a job");
+        job.push_str(line);
+        job.push('\n');
+    }
+    out
+}
+
+#[test]
+fn the_workflows_check_out_the_full_history() {
+    for path in [".github/workflows/evals.yml", ".github/workflows/ci.yml"] {
+        let workflow = read(path);
+        // Every job that runs `cargo test` or the suite checks out with
+        // `fetch-depth: 0` before it.
+        let running: Vec<String> = jobs(&workflow)
+            .into_iter()
+            .filter(|j| j.contains("cargo test") || j.contains("codev-evals -- run"))
+            .collect();
+        assert!(!running.is_empty(), "{path}: no job runs the suite");
+        for job in &running {
+            let checkout = job.find("actions/checkout").expect("a checkout");
+            let depth = job.find("fetch-depth: 0").unwrap_or_else(|| {
+                panic!("{path}: a job checks out without the full history: {job}")
+            });
+            assert!(
+                checkout < depth,
+                "{path}: fetch-depth belongs to the checkout"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_workflow_passes_step_through_the_environment() {
+    let workflow = read(".github/workflows/evals.yml");
+    assert!(workflow.contains("EVAL_STEP: ${{ inputs.step }}"));
+    assert!(workflow.contains("--step \"$EVAL_STEP\""));
+    assert!(workflow.contains("default: \"review\""));
+}
+
+#[test]
+fn the_workflow_bounds_a_planning_run() {
+    let workflow = read(".github/workflows/evals.yml");
+    let bound = workflow
+        .find("[ \"$EVAL_STEP\" = \"plan.write\" ] && [ \"$EVAL_REPEAT\" != \"1\" ]")
+        .expect("the run step bounds a planning run to one repetition");
+    let run = workflow.find("codev-evals -- run").unwrap();
+    assert!(bound < run, "the bound is checked before the suite runs");
 }
 
 #[test]
@@ -293,4 +353,122 @@ fn the_baseline_is_recorded_with_the_pinned_claude_code() {
         "the baseline was recorded with Claude Code `{recorded}`, the workflow pins {pin}: \
          raise the pin and record the baseline again together"
     );
+}
+
+#[test]
+fn the_planning_suite_covers_past_changes_and_decisions() {
+    use codev_evals::case::{DecisionExpect, Step};
+    let cases = suite::load_cases(&repo()).unwrap();
+    assert!(
+        cases.iter().any(|c| c.step.is_review()) && cases.iter().any(|c| c.step == Step::PlanWrite),
+        "review and planning cases load side by side"
+    );
+    let plans: Vec<_> = cases.iter().filter_map(|c| c.plan.as_ref()).collect();
+    let historical = plans
+        .iter()
+        .filter(|p| p.decisions.is_empty() && !p.modified.is_empty())
+        .count();
+    let with_decision = plans.iter().filter(|p| !p.decisions.is_empty()).count();
+    let to_supersede = plans
+        .iter()
+        .flat_map(|p| &p.decisions)
+        .filter(|d| d.expect == DecisionExpect::Supersede)
+        .count();
+    assert!(
+        historical >= 17,
+        "{historical} planning cases with a modified requirement, 17 needed"
+    );
+    assert!(
+        with_decision >= 4,
+        "{with_decision} planning cases with a decision, 4 needed"
+    );
+    assert!(
+        to_supersede >= 1,
+        "no planning case expects a decision to be superseded"
+    );
+}
+
+/// A run of this many words shared with an archived proposal is a copy,
+/// not a coincidence: "more than twelve words", as the spec says.
+const COPIED_RUN: usize = 13;
+
+/// Every run of `n` consecutive words of `text`, lowercased.
+fn word_runs(text: &str, n: usize) -> BTreeSet<String> {
+    let words: Vec<String> = text
+        .split(|c: char| !c.is_alphanumeric() && c != '\'')
+        .filter(|w| !w.is_empty())
+        .map(str::to_lowercase)
+        .collect();
+    words.windows(n).map(|w| w.join(" ")).collect()
+}
+
+#[test]
+fn no_request_copies_its_proposal() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    let archive = repo().join("_codev").join("changes").join("archive");
+    let mut proposals = BTreeSet::new();
+    for entry in fs::read_dir(&archive).unwrap().filter_map(|e| e.ok()) {
+        if let Ok(text) = fs::read_to_string(entry.path().join("proposal.md")) {
+            proposals.extend(word_runs(&text, COPIED_RUN));
+        }
+    }
+    let copied: Vec<String> = cases
+        .iter()
+        .filter_map(|c| c.plan.as_ref().map(|p| (c, p)))
+        .filter(|(_, p)| {
+            word_runs(&p.request, COPIED_RUN)
+                .iter()
+                .any(|r| proposals.contains(r))
+        })
+        .map(|(c, _)| c.id.clone())
+        .collect();
+    assert_eq!(
+        copied,
+        Vec::<String>::new(),
+        "requests copied from an archived proposal"
+    );
+}
+
+/// The main spec of role evaluations as the next sync leaves it: with this
+/// change's delta merged while the change is active, as it stands after.
+fn role_evaluation_spec() -> String {
+    use codev_core::merge::{apply_edits, merge_into_existing};
+    use codev_core::parser::{parse_delta, parse_spec};
+    let main = read("_codev/specs/role-evaluation/spec.md");
+    let delta = repo().join("_codev/changes/evaluate-planning/specs/role-evaluation/spec.md");
+    let Ok(delta) = fs::read_to_string(delta) else {
+        return main;
+    };
+    let spec = parse_spec(&main).value;
+    let plan = merge_into_existing(&main, &spec, &parse_delta(&delta).value, false)
+        .unwrap_or_else(|e| panic!("the delta merges: {e}"));
+    apply_edits(&main, &plan.edits)
+}
+
+#[test]
+fn the_role_evaluation_spec_has_no_cut_scenario() {
+    let text = role_evaluation_spec();
+    let spec = codev_core::parser::parse_spec(&text).value;
+    let mut cut = Vec::new();
+    for requirement in &spec.requirements {
+        for scenario in &requirement.scenarios {
+            let body = &scenario.body;
+            let starts = body.contains("**GIVEN**") || body.contains("**WHEN**");
+            if !starts || !body.contains("**THEN**") {
+                cut.push(format!("{} / {}", requirement.name, scenario.name));
+            }
+        }
+    }
+    assert_eq!(
+        cut,
+        Vec::<String>::new(),
+        "scenarios without GIVEN/WHEN and THEN"
+    );
+    let stray: Vec<&str> = text.lines().filter(|l| l.starts_with("` ")).collect();
+    assert_eq!(
+        stray,
+        Vec::<&str>::new(),
+        "lines starting with a stray backquote"
+    );
+    assert!(text.contains("#### Scenario: A report of another run"));
 }

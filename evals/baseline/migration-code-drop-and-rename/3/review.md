@@ -8,7 +8,7 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 Account JSON field renamed with no BREAKING mark and no path for consumers
+#### R-migration-1 Account field renamed in the public API without a BREAKING mark or transition
 
 ```yaml
 severity: high
@@ -18,22 +18,21 @@ evidence: |
   #[serde(rename = "userName")]
   pub user_name: String,
 recommendation: >-
-  The public HTTP API's `Account` JSON now emits `userName` instead of
-  `user_name` (src/api.rs is "The JSON types of the public HTTP API").
-  Every existing client reading `user_name` gets a missing field (undefined,
-  or a deserialization error in strict clients) on the first response after
-  deploy, with no warning: the proposal's release note lists it as
-  "Changed: Account JSON uses camelCase." with no **BREAKING** item and no
-  action for users. Mark it **BREAKING** in the release note with what
-  clients must do, and give consumers a transition: emit both `user_name`
-  and `userName` for a deprecation period (or version the endpoint), then
-  remove `user_name` in a later release.
+  Every existing consumer of the public HTTP API that reads `user_name` from the
+  Account JSON gets a missing field (null/undefined or a deserialization error)
+  the moment this ships, with no warning: the release note only says
+  "Changed: Account JSON uses camelCase." Mark the item **BREAKING** in the
+  release note and say what consumers must do (read `userName`); and, since
+  consumers need time, give them a transition — serialize both `user_name`
+  (deprecated) and `userName` for a release, or version the endpoint — then
+  remove the old name in a later change. Add a test of the serialized Account
+  JSON covering the field names.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Irreversible DROP COLUMN with no down migration and no backup step
+#### R-migration-2 Irreversible DROP COLUMN with no down migration or backup
 
 ```yaml
 severity: high
@@ -42,15 +41,15 @@ location: "migrations/0005_drop_legacy_email.sql:2"
 evidence: |
   ALTER TABLE users DROP COLUMN legacy_email;
 recommendation: >-
-  Running migration 0005 deletes every value of `users.legacy_email` (the
-  data from the 2023 import, per the migration's comment) with no way back:
-  there is no `0005_drop_legacy_email.down.sql`, while 0004 has one, and
-  neither the proposal nor tasks.md mention a backup or a recovery plan.
-  A rollback after deploy cannot restore the column or its data. Before
-  dropping, export the column (e.g. copy `id, legacy_email` to an archive
-  table or dump), add a down migration that re-adds `legacy_email TEXT`
-  (and restores from the archive if kept), or state in the plan why the
-  data can be lost and how to recover.
+  Running migration 0005 deletes every value stored in `users.legacy_email`
+  (the column still holds the data from the 2023 import, even if it is no
+  longer written) and there is no way back: unlike 0004, which ships
+  `0004_accounts.down.sql`, there is no `0005_drop_legacy_email.down.sql`,
+  and the plan names no backup step. Add a down migration that re-adds the
+  column (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`), and either copy
+  the data out first (e.g. into an archive table, or a documented
+  `pg_dump` of the column) before dropping it, or state in the plan why the
+  data can be lost and how to recover it.
 history:
   - status: open
     by: migration

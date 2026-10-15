@@ -8,7 +8,7 @@ Mode: inline.
 
 ### newcomer
 
-#### R-newcomer-1 `bucket` packs the premium rule into an unreadable bitwise one-liner
+#### R-newcomer-1 `bucket` hides its premium threshold in a bit-twiddling one-liner
 
 ```yaml
 severity: medium
@@ -17,20 +17,23 @@ location: "src/pricing.ts:9-10"
 evidence: |
   export const bucket = (ps: Price[]) =>
     ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
-recommendation: |
+recommendation: >-
   Rewrite as a plain function a reader can follow without the plan: a named
-  constant for the threshold (`const PREMIUM_THRESHOLD_CENTS = 1000; // 10 euros`),
-  a named predicate (`price.cents >= PREMIUM_THRESHOLD_CENTS`), descriptive names
-  instead of `ps`, `a`, `p`, and a typed result whose keys match the doc comment
-  (`{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with
-  "hi"/"lo"), built with a simple loop or two `filter` calls rather than a
-  comma-expression inside `reduce` with `||=`. A newcomer cannot tell from
-  `(p.cents >> 4) & 0x3e8` what the rule is: 0x3e8 is 1000, which suggests
-  "10 euros", but a shift-and-mask is not a comparison — 500 cents (31 & 1000 = 8)
-  and 128 cents land in "hi", while 16384 cents (1024 & 1000 = 0) lands in "lo".
-  The shape hides this; the readable version makes the intended `>= 1000` check
-  explicit. Since the result also has no "hi"/"lo" key when a band is empty, the
-  typed version should initialise both arrays.
+  constant for the premium threshold (e.g. `PREMIUM_THRESHOLD_CENTS`) with a
+  comparison `price.cents >= PREMIUM_THRESHOLD_CENTS` instead of
+  `(p.cents >> 4) & 0x3e8`, two explicit arrays (or a `{ cheap, premium }`
+  result type instead of `Record<string, Price[]>` with "hi"/"lo" keys),
+  a simple loop instead of the comma-expression reducer with `||=`, and
+  descriptive names instead of `ps`, `a`, `p`. A newcomer reading the doc
+  comment "Splits prices into the cheap and the premium ones" cannot tell
+  from line 10 where "premium" starts: `>> 4` divides by 16 and the mask
+  `0x3e8` (1000) tests scattered bits rather than a threshold, so they will
+  likely read it as "cents above some value" when it is not a monotonic
+  comparison (e.g. 16000 cents gives 1000 & 1000 → "hi", but 16384 cents
+  gives 1024 & 1000 = 0 → "lo"). The developer should confirm the intended
+  rule; the readable version makes it visible. Also a bucket key is missing
+  entirely when no price falls in it, which the `Record<string, …>` type
+  does not tell the caller.
 history:
   - status: open
     by: newcomer

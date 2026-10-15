@@ -17,67 +17,43 @@ location: "app/account.py:18-21"
 evidence: |
   "UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?",
 recommendation: >-
-  The proposal promises that the button "erases the member's personal data" and
-  that orders are kept "without personal data", but delete_account only sets
-  deleted_at and clears password_hash: after a deletion, the users row still holds
-  email, display_name, phone and postal_address (app/schema.sql:3-6), and every
-  orders row still points at it through orders.user_id, so the kept orders remain
-  linked to the member's identity. This breaks the right to erasure (GDPR Art. 17)
-  and storage limitation (Art. 5(1)(e)). Overwrite the personal columns in the same
-  UPDATE — phone and postal_address to NULL, display_name to a neutral value, email
-  to a unique non-personal placeholder such as 'deleted-<id>' since the column is
-  NOT NULL UNIQUE — keeping the row only as the anonymous anchor of the orders; and
-  add a test that reads the row back after delete_account and asserts no personal
-  column is left (the current tests only check sign-in and sessions).
+  The proposal promises that the button "erases the member's personal data", but
+  delete_account only soft-deletes: it sets deleted_at and clears password_hash,
+  while the users row keeps email, display_name, phone and postal_address
+  (app/schema.sql:3-6). Scenario: a member clicks "Delete my account"; their
+  e-mail, name, phone and postal address stay in the users table indefinitely,
+  still joined to their orders through orders.user_id — the right to erasure
+  (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Overwrite or
+  NULL every personal column (e.g. set email to a unique non-identifying
+  placeholder such as 'deleted-<id>' since it is NOT NULL UNIQUE, display_name to
+  a fixed value, phone and postal_address to NULL) so orders keep only the opaque
+  user id, add a test asserting those columns no longer hold the member's data,
+  and state how long backups keep the erased data before they expire.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 No retention or purge rule for deleted accounts, backups included
+#### R-privacy-2 Analytics events keyed by analytics_id are not reached by the erasure
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/account.py:16-23"
+location: "app/account.py:11-13"
 evidence: |
-  def delete_account(user_id: int) -> None:
-      """Deletes the member's account; their orders are kept for accounting."""
-recommendation: >-
-  The change keeps the users row of a deleted member indefinitely (soft delete) and
-  says nothing about how long it stays, nor about the copies of the erased data in
-  database backups of members.db. State the retention of the soft-deleted row and
-  of backups (how long until the erasure reaches them, or how a restore re-applies
-  past deletions), per GDPR Art. 5(1)(e) and Art. 17. Recorded with low confidence:
-  the backup setup is not visible in the repository.
-history:
-  - status: open
-    by: privacy
-```
-
-#### R-privacy-3 analytics_id is added with no use, and deletion does not reach the events it keys
-
-```yaml
-severity: medium
-confidence: low
-location: "app/account.py:8-13"
-evidence: |
-  _SALT = os.environ["ANALYTICS_SALT"]
-
-
   def analytics_id(user_id: int) -> str:
       """The pseudonymous id analytics events carry instead of the user id."""
       return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()
 recommendation: >-
-  analytics_id is new in this change but nothing in the change or the repository
-  calls it, and the proposal does not mention analytics: either drop it from this
-  change or state its purpose (data minimisation, GDPR Art. 5(1)(c)). It is a
-  pseudonymous identifier, still personal data: with a fixed salt and a kept users
-  row, events keyed by it stay linkable to the member after delete_account, which
-  neither deletes those events nor breaks the link. If analytics events are kept,
-  make erasure reach them (delete the member's events, or derive the id from a
-  per-user random value erased at deletion). Recorded with low confidence: the
-  analytics store and its callers are not visible in the repository.
+  The change adds a pseudonymous analytics identifier derived deterministically
+  from the user id and a fixed salt, but delete_account does nothing about the
+  analytics events it keys: after deletion, anyone holding the salt can still
+  link those events back to the kept users row (pseudonymised data is still
+  personal data). The analytics store and its callers are not visible in this
+  repository, so this depends on what it holds. Either erase or detach the
+  member's analytics events on deletion, or document that they are anonymised
+  (e.g. salt rotation) and their retention period; also state its purpose and
+  lawful basis, since nothing in the change uses it yet.
 history:
   - status: open
     by: privacy

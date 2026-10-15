@@ -8,7 +8,8 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 `rename_all = "camelCase"` renames every existing order JSON field
+#### R-migration-1 camelCase renames every existing order JSON field
+
 ```yaml
 severity: high
 confidence: high
@@ -16,38 +17,38 @@ location: "src/api.rs:6"
 evidence: |
   #[serde(rename_all = "camelCase")]
 recommendation: >-
-  Remove `#[serde(rename_all = "camelCase")]` so `order_id`, `customer_id` and
-  `total_cents` keep their snake_case names and only `currency` is added. Today
-  `GET /orders/{id}` serializes `orderId`, `customerId` and `totalCents`, so every
-  partner integration reading `order_id`, `customer_id` or `total_cents` gets a
-  missing field on the first response after deployment, with no warning. This
-  breaks the documented contract in docs/api.md ("a field is never renamed or
-  removed without two releases of deprecation"), is not marked **BREAKING**,
-  and is absent from the release note, which only announces the added
-  `currency`. If camelCase is ever wanted, emit both names during two releases
-  of deprecation and announce it as BREAKING.
+  Remove `#[serde(rename_all = "camelCase")]` so `order_id`, `customer_id`,
+  `total_cents` and `status` keep their snake_case names and only `currency`
+  is added. Today `GET /orders/{id}` returns `order_id`, `customer_id` and
+  `total_cents`; after this change it returns `orderId`, `customerId` and
+  `totalCents`, so every partner integration reading those fields gets a
+  missing field on the first response after deploy. `docs/api.md` promises
+  that "a field is never renamed or removed without two releases of
+  deprecation", the proposal only announces an added field, and the release
+  note has no **BREAKING** item. If camelCase is wanted, it needs its own
+  change: emit both names for two releases, then mark the removal BREAKING.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Existing `config.toml` files without `default_currency` no longer load
+#### R-migration-2 Existing config.toml without default_currency no longer loads
+
 ```yaml
 severity: high
 confidence: high
-location: "src/config.rs:9-10"
+location: "src/config.rs:10"
 evidence: |
-      /// The currency of orders that do not name one (ISO 4217).
-      pub default_currency: String,
+  pub default_currency: String,
 recommendation: >-
-  Give the new key a default that matches today's behavior, e.g.
-  `#[serde(default = "default_currency")]` returning `"EUR"`, and add a test
-  loading a config without the key. As written, `Config` derives `Deserialize`
-  with a required `default_currency`, so every deployed `config.toml` written
-  before this change (only `database_url` and `listen`) makes `config::load`
-  fail with "missing field `default_currency`" and the service does not start
-  after the upgrade. Only config.example.toml was updated; no migration step or
-  release-note item tells operators to add the key.
+  Give the field a default — `#[serde(default = "...")]` returning `"EUR"`,
+  the currency every existing order is in — so a deployed `config.toml`
+  holding only `database_url` and `listen` keeps loading. As written,
+  `toml::from_str` fails with a missing-field error on such a file and the
+  service refuses to start after the upgrade; neither the release note nor
+  the docs tell operators to add the key. If the key must stay required,
+  announce it as a **BREAKING** item in the release note with the line to
+  add, and add a test that loads the pre-change `config.example.toml`.
 history:
   - status: open
     by: migration

@@ -8,28 +8,29 @@ Mode: inline.
 
 ### performance
 
-#### R-performance-1 One customer query per invoice (N+1)
+#### R-performance-1 One customer query per invoice in the monthly report
 
 ```yaml
-severity: high
+severity: medium
 confidence: high
 location: "src/report.rs:39"
 evidence: |
   let customer = db.customer(invoice.customer_id)?;
 recommendation: >-
-  The loop runs `SELECT ... FROM customers WHERE id = $1` once per invoice: with the
-  proposal's ~3 000 invoices a month that is ~3 000 sequential round trips (for only
-  ~800 distinct customers), growing linearly with invoice volume on the report finance
-  reads. Collect the distinct `customer_id`s, load them in one call with the existing
-  `db.customers(&ids)` (`WHERE id = ANY($1)`), index them in a `HashMap<i64, Customer>`,
-  and build each label from the map. Keep the current error behavior for an invoice
-  whose customer is missing (return a `DbError` rather than skipping the line).
+  `monthly_report` calls `customer_label` once per invoice, and each call runs
+  `SELECT ... FROM customers WHERE id = $1`: a month of about 3 000 invoices
+  (proposal) runs about 3 000 customer queries for 800 distinct customers, and
+  the count grows linearly with the month's invoices. Collect the distinct
+  `customer_id`s of `invoices`, load them in one call with the existing
+  `Db::customers(&ids)` (`WHERE id = ANY($1)`), index them in a `HashMap` by
+  id, and build each label from the map. Keep the current error when a
+  customer is missing and the invoice-number order of the lines.
 history:
   - status: open
     by: performance
 ```
 
-#### R-performance-2 The purchase-order regex is compiled once per invoice
+#### R-performance-2 Purchase-order regex compiled once per invoice
 
 ```yaml
 severity: medium
@@ -38,11 +39,11 @@ location: "src/report.rs:45"
 evidence: |
   let pattern = Regex::new(r"PO-\d{4}-\d{4}").expect("a valid pattern");
 recommendation: >-
-  `purchase_order` is called for every invoice and calls `Regex::new` each time, so the
-  pattern is parsed and compiled ~3 000 times per report, a cost far larger than the
-  match itself and growing with invoice volume. Compile it once — a
-  `static PATTERN: std::sync::LazyLock<Regex>` (or `once_cell::sync::Lazy`), or build
-  it in `monthly_report` before the loop and pass `&Regex` in.
+  `purchase_order` is called for every invoice of the month and compiles the
+  same pattern each time: about 3 000 regex compilations per report, a cost
+  that grows with the month's invoices and dwarfs the match itself. Compile
+  it once, in a `static` `std::sync::LazyLock<Regex>` (or `once_cell`), and
+  reuse it in `purchase_order`; the results stay the same.
 history:
   - status: open
     by: performance

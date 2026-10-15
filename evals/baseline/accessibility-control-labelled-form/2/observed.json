@@ -2,10 +2,10 @@
   "format": 2,
   "case": "accessibility-control-labelled-form",
   "error": null,
-  "costUsd": 0.26974060000000005,
-  "durationMs": 17602,
+  "costUsd": 0.2714174,
+  "durationMs": 17440,
   "consumption": {
-    "durationApiMs": 17741,
+    "durationApiMs": 17472,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,57 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1172,
-      "cacheCreation": 25484,
-      "cacheRead": 189158,
-      "output": 1353
-    }
+      "input": 1170,
+      "cacheCreation": 26257,
+      "cacheRead": 144662,
+      "output": 1573
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 16258,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4880,
+          "skill": 11378
+        }
+      },
+      {
+        "cacheCreation": 1396,
+        "cacheRead": 45795,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1396
+        }
+      },
+      {
+        "cacheCreation": 1205,
+        "cacheRead": 47191,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 701,
+          "edit": 504
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

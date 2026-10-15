@@ -2,10 +2,10 @@
   "format": 2,
   "case": "newcomer-code-deep-nesting",
   "error": null,
-  "costUsd": 0.270168,
-  "durationMs": 20429,
+  "costUsd": 0.26849739999999994,
+  "durationMs": 19517,
   "consumption": {
-    "durationApiMs": 20191,
+    "durationApiMs": 19494,
     "turns": 5,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,64 @@
     ],
     "tokens": {
       "input": 1162,
-      "cacheCreation": 25111,
-      "cacheRead": 187615,
-      "output": 1538
-    }
+      "cacheCreation": 25183,
+      "cacheRead": 187882,
+      "output": 1423
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7387,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7387
+        }
+      },
+      {
+        "cacheCreation": 13747,
+        "cacheRead": 29526,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13747
+        }
+      },
+      {
+        "cacheCreation": 2670,
+        "cacheRead": 43273,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2670
+        }
+      },
+      {
+        "cacheCreation": 1058,
+        "cacheRead": 45943,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1058
+        }
+      },
+      {
+        "cacheCreation": 321,
+        "cacheRead": 47001,
+        "input": 2,
+        "output": 188,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 321
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -36,7 +90,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "match db.find_account(&row.email)? {\n    Some(account) => {\n        if account.plan != row.plan {\n            for seat in &row.seats {\n                if !account.seats.contains(seat) {\n                    if seat.contains('@') {\n                        db.add_seat(account.id, seat)?;\n                        created += 1;\n",
+        "evidence": "if account.plan != row.plan {\n    for seat in &row.seats {\n        if !account.seats.contains(seat) {\n            if seat.contains('@') {\n                db.add_seat(account.id, seat)?;\n                created += 1;\n",
         "history": [
           {
             "by": "newcomer",
@@ -48,17 +102,17 @@
         ],
         "id": "R-newcomer-1",
         "line": 11,
-        "location": "src/import.rs:12-42",
+        "location": "src/import.rs:14-40",
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Flatten the function: skip rows with an empty email with an early `continue` (and say why such rows are dropped); resolve the account id first (existing or newly created) and then run a single seat loop, extracted into a helper such as `add_missing_seats(db, account_id, existing_seats, &row.seats)`, instead of the two copies of the `seat.contains('@')` / `add_seat` / `created += 1` block (lines 21-24 and 32-35). Name the unexplained filters: replace `seat.contains('@')` by a named predicate (e.g. `is_seat_email`) with a comment on why seats without `@` are silently ignored, and comment why seats are only added to an existing account when its plan differs from the row's (`account.plan != row.plan`) — a newcomer reading line 18 cannot tell whether that condition is a business rule or an inverted test, and would likely misread that an existing account on the same plan never gets its new seats. The doc comment should also say that existing accounts' plans are not updated and which rows are skipped.",
+        "recommendation": "Flatten and name the rules so the function reads without the plan. (1) Replace `if !row.email.is_empty() { ... }` with an early `if row.email.is_empty() { continue; }`. (2) Extract the seat loop, duplicated at lines 19-26 and 31-36, into one helper such as `add_new_seats(db, account_id, seats, existing) -> Result<usize, DbError>` so both branches call it. (3) Name the unexplained filter `seat.contains('@')` (e.g. `fn is_seat_email(seat: &str) -> bool`) or comment why a seat without `@` is skipped silently. (4) Say why seats are only added to an existing account when `account.plan != row.plan`: a reader of line 18 cannot tell whether that condition is the intended rule or a mistake, and would likely assume an existing account on the same plan still gets its new seats. A comment giving the reason, or a well-named guard (`if account.plan == row.plan { continue; }` with its why), answers it. The doc comment on line 11 should also say which seats count (new, email-shaped) so the returned number is not misread.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`import` nests five levels deep and hides its rules in unexplained conditions"
+        "title": "`import` nests five levels deep, duplicates the seat loop and hides its filters"
       }
     ],
     "format": 1,

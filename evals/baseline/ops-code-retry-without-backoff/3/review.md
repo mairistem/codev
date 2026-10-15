@@ -6,13 +6,9 @@
 
 Mode: inline.
 
-### newcomer
-
-Disabled by configuration.
-
 ### ops
 
-#### R-ops-1 Webhook retries fire back to back, with no backoff
+#### R-ops-1 Webhook retries fire back-to-back with no backoff
 
 ```yaml
 severity: medium
@@ -24,43 +20,47 @@ evidence: |
       const response = await fetch(url, {
 recommendation: >-
   Wait between attempts with an exponential backoff and jitter (for example
-  1s, 2s, 4s, 8s), so retries are spaced as the operations criterion
-  requires. Today, when a merchant's server is down or overloaded (a 503 or
-  a connection refused), the five attempts land within a few hundred
-  milliseconds: they hammer a server that is already failing, and an outage
-  of even a few seconds exhausts every attempt and drops the event for good.
-  The retry is bounded and idempotent (x-event-id), so only the spacing is
-  missing. Consider also not retrying 4xx responses other than 408/429.
+  1 s, 2 s, 4 s, 8 s, capped), and do not retry responses that will not change
+  on a retry (4xx other than 408/429). Scenario: a merchant endpoint returns
+  503 during a 10-second restart; each non-ok response loops straight into the
+  next attempt, so all five POSTs are spent within the outage and the event is
+  dropped, while a merchant under load receives five requests in a burst. The
+  retries are bounded and deduplicated by `x-event-id`, but the step's
+  criterion requires them to be spaced.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Failed and dropped deliveries are logged with console.debug in free text, and HTTP errors not at all
+#### R-ops-2 A dropped webhook is only logged at debug level, as free text
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
-location: "src/webhooks.ts:17-24"
-evidence: |2
-      if (response.ok) {
-        return true;
-      }
-    } catch (error) {
-      console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
-    }
+location: "src/webhooks.ts:20-25"
+evidence: |
+  console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
+  }
   }
   console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
+  return false;
 recommendation: >-
-  Use the project's structured logger (src/logger.ts, as src/events.ts
-  does) instead of console.debug: log each failed attempt with fields
-  (eventId, paymentId, attempt, status or error) — including non-ok HTTP
-  responses, which today produce no log line at all — and log the final
-  drop at error level with the event id, payment id and last status. When a
-  merchant endpoint answers 500 five times, the operator today sees only a
-  debug-level prose line with no status and no merchant, and cannot query
-  or alert on dropped webhooks.
+  Log the final drop at error (and each failed attempt at warn) through the
+  service's structured logger, with fields such as `eventId`, `paymentId`,
+  merchant id, `attempt`, the HTTP status or error, and the outcome, and count
+  drops in a metric an alert can watch. Scenario: a merchant's endpoint is down
+  for an hour; every settlement notification is permanently lost, but the only
+  trace is a `console.debug` line, which production log levels usually discard,
+  so neither the operator nor the merchant learns the payment was never
+  notified. Non-ok responses (lines 17-19) leave no trace at all: the status
+  code a merchant returned is never logged, so even with debug on an operator
+  cannot tell a 500 from a 404. `deliver` returns `false` but the caller at
+  line 34 ignores it, so the drop is silent end to end.
 history:
   - status: open
     by: ops
 ```
+
+### newcomer
+
+Disabled by configuration.

@@ -1,0 +1,351 @@
+{
+  "format": 2,
+  "case": "plan-review-record",
+  "error": null,
+  "costUsd": 1.805909,
+  "durationMs": 327659,
+  "consumption": {
+    "durationApiMs": 325404,
+    "turns": 32,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1185,
+      "cacheCreation": 89231,
+      "cacheRead": 2164085,
+      "output": 32907
+    },
+    "toolCalls": 31,
+    "orientationCalls": 16,
+    "calls": [
+      {
+        "cacheCreation": 7807,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7807
+        }
+      },
+      {
+        "cacheCreation": 13008,
+        "cacheRead": 29946,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13008
+        }
+      },
+      {
+        "cacheCreation": 2559,
+        "cacheRead": 42954,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2559
+        }
+      },
+      {
+        "cacheCreation": 2034,
+        "cacheRead": 45513,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2034
+        }
+      },
+      {
+        "cacheCreation": 2657,
+        "cacheRead": 47547,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2657
+        }
+      },
+      {
+        "cacheCreation": 4753,
+        "cacheRead": 50204,
+        "input": 2,
+        "output": 52,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4753
+        }
+      },
+      {
+        "cacheCreation": 4577,
+        "cacheRead": 54957,
+        "input": 2,
+        "output": 27,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4534,
+          "output": 43
+        }
+      },
+      {
+        "cacheCreation": 4210,
+        "cacheRead": 59534,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 4200,
+          "output": 10
+        }
+      },
+      {
+        "cacheCreation": 970,
+        "cacheRead": 63744,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 970
+        }
+      },
+      {
+        "cacheCreation": 2771,
+        "cacheRead": 64714,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2771
+        }
+      },
+      {
+        "cacheCreation": 2504,
+        "cacheRead": 67485,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 2504
+        }
+      },
+      {
+        "cacheCreation": 1743,
+        "cacheRead": 69989,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1704,
+          "shell": 39
+        }
+      },
+      {
+        "cacheCreation": 965,
+        "cacheRead": 71732,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 965
+        }
+      },
+      {
+        "cacheCreation": 4444,
+        "cacheRead": 72697,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4370,
+          "output": 74
+        }
+      },
+      {
+        "cacheCreation": 2383,
+        "cacheRead": 77141,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2383
+        }
+      },
+      {
+        "cacheCreation": 717,
+        "cacheRead": 79524,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 717
+        }
+      },
+      {
+        "cacheCreation": 4087,
+        "cacheRead": 80241,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4087
+        }
+      },
+      {
+        "cacheCreation": 2250,
+        "cacheRead": 84328,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2241,
+          "output": 9
+        }
+      },
+      {
+        "cacheCreation": 4356,
+        "cacheRead": 86578,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4356
+        }
+      },
+      {
+        "cacheCreation": 2715,
+        "cacheRead": 90934,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2265,
+          "output": 450
+        }
+      },
+      {
+        "cacheCreation": 1412,
+        "cacheRead": 93649,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1412
+        }
+      },
+      {
+        "cacheCreation": 404,
+        "cacheRead": 95061,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 404
+        }
+      },
+      {
+        "cacheCreation": 353,
+        "cacheRead": 95465,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 353
+        }
+      },
+      {
+        "cacheCreation": 1469,
+        "cacheRead": 95818,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1469
+        }
+      },
+      {
+        "cacheCreation": 6182,
+        "cacheRead": 97287,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4271,
+          "output": 1911
+        }
+      },
+      {
+        "cacheCreation": 1591,
+        "cacheRead": 103469,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1567,
+          "output": 24
+        }
+      },
+      {
+        "cacheCreation": 1236,
+        "cacheRead": 105060,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1236
+        }
+      },
+      {
+        "cacheCreation": 3783,
+        "cacheRead": 106296,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 3,
+        "sources": {
+          "edit": 3783
+        }
+      },
+      {
+        "cacheCreation": 1291,
+        "cacheRead": 110079,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 449,
+          "edit": 843
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/review-record/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/review-record/design.md": "# Design: A review record per change\n\n## Context\n\nToday the review steps exist only in the skills: `plan.challenge` in\n`assets/workflows/propose.md` (step 7) and `code.review` in\n`assets/workflows/apply.md` (step 5). Their output goes to the conversation\nand, for the plan, to `design.md`'s Open Questions. Nothing on disk records\na finding, and the CLI knows nothing of reviews.\n\nThe pieces this change plugs into:\n\n- `codev-engine::validate::validate_change` already aggregates per-change\n  checks (`check_change_metadata`, `check_change_roles`, `check_proposal`)\n  into `LocatedFinding`s; archived changes never reach it.\n- `codev-engine::archive::plan_archive` runs `sync::plan_sync`, whose first\n  act is the validation pre-flight (`EngineError::ValidationFailed`,\n  `validation_failed`). `plan_sync` is shared with `codev sync`.\n- `codev-core::parser::fence::build_fence_mask` is the single place that\n  recognizes code blocks and HTML comments.\n- Change selection (`--change`, inference, `ambiguous_change`…) is shared by\n  the commands of the `changes` capability.\n- Role ids come from the catalog `codev roles` serves.\n\nConstraints in force: decision 0001 (functional core, imperative shell),\n0002 (crate graph and four ports), 0003 (`_codev/` planning root), 0006\n(`serde_norway` for YAML), and the project context (JSON contract in\n`codev-cli::contract::v1`, never derived from the domain).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One parser and one set of rules for the record, used by `codev review`,\n  `codev validate` and the archive pre-flight, so the three never disagree\n  on what blocks.\n- Evidence checked against the files, tolerant of indentation and line\n  endings (CI runs on Windows).\n\n**Non-Goals**\n\n- Writing the record from the CLI (no `codev review add` / `resolve`): the\n  skills and people edit the Markdown.\n- Checking that a role id is in the catalog: a project may add roles, and\n  `codev validate` already reports unknown roles in configuration.\n- Checking the records of archived changes.\n- Blocking `codev sync`.\n\n## Decisions\n\n### Decision: The record is Markdown with one YAML block per finding\n\n`review.md` keeps the headings readers navigate by (`## <step>`,\n`### <role-id>`, `#### R-<role-id>-<n> <title>`) and puts the machine-read\nfields in a fenced `yaml` block under each finding, deserialized with\n`serde_norway` (decision 0006) into a typed struct with\n`deny_unknown_fields` off, so a later format adds fields without breaking\nolder readers. The marker `<!-- codev-review: 1 -->` carries the version;\nan unknown version is `review_malformed` rather than a silent misread.\n\nThe headings are found with the fence mask of\n`codev-core::parser::fence`, so a `#### R-…` quoted inside an `evidence`\nblock or a code sample is never taken for a finding.\n\n**Alternatives considered**: a pure YAML file (`review.yaml`) — easier to\nparse, but unreadable as a review and hostile to the skills that append to\nit; a Markdown table — no room for multi-line evidence or history; one\nfile per finding — loses the step/role overview and multiplies files in\nthe change folder.\n\n### Decision: Parsing and state derivation live in `codev-core`\n\nA new module `codev-core::review` takes the record's source and returns a\n`Parsed<ReviewRecord>` (the record as far as it could be read, plus\n`Finding`s with lines), and pure functions on a finding: `current_status`,\n`waiting_for`, `is_blocking`. It reads nothing from disk (decision 0001,\n0002). Codes go in `codev-core::review::codes`, next to the other code\nmodules.\n\n**Alternatives considered**: deriving the state in the CLI renderer —\nwould duplicate the blocking rule between `codev review` and the archive.\n\n### Decision: Location and evidence are checked in `codev-engine`, through the `FileSystem` port\n\n`codev-engine::validate::check_review` (called from `validate_change`\nafter `check_proposal`) loads `review.md` if present, runs the core parser\nand rules, then, for each finding whose current status is `open` or\n`disputed`, resolves the location:\n\n- `path:line` / `path:start-end` → the file under the project root, read\n  through `FileSystem`; lines beyond its end → `review_location_not_found`;\n- `<file>#<heading>` → the file under the change folder, parsed into its\n  headings with the fence mask; the section runs to the next heading of the\n  same or a higher level.\n\nThe match itself is pure (`codev-core::review::evidence::locate`): both\ntexts are split on `\\n`, a trailing `\\r` is dropped, each line is trimmed,\nblank evidence lines are skipped, and the evidence must appear as\nconsecutive lines. Found inside the range → nothing; found elsewhere in the\nfile → `review_location_stale`; absent → `review_evidence_not_found`.\n\nPaths are joined component by component, never by string concatenation,\nand a location that escapes the project root (`..`, absolute path) is\n`review_location_not_found` rather than a read outside the project.\n\n**Alternatives considered**: checking evidence for every status — a fix\nlegitimately removes the quoted text, so every fixed finding would turn\ninto an error; exact byte match — breaks on re-indentation and on CRLF\ncheckouts.\n\n### Decision: The archive blocks in `plan_archive`, after the validation pre-flight\n\n`plan_archive` calls `plan_sync` (validation first, unchanged), then loads\nthe record and collects the blocking findings with the core rule; any → a\nnew `EngineError::ReviewUnresolved { change, findings: Vec<(id, status)> }`\nwith code `review_unresolved`, before the plan is built. `plan_sync` is not\ntouched, so `codev sync` is not affected, and `validation_failed` keeps\nprecedence by construction.\n\nIn `codev validate`, the same rule yields the `review_unresolved`\n*warning*: a plan with an open `high` finding still validates (and can be\ncommitted, as CLAUDE.md asks), while `--strict` fails on it.\n\n**Alternatives considered**: making `review_unresolved` a validation error\n— would block `sync` and every commit of a change in progress, as soon as\na reviewer raises a `high` finding; a separate `codev archive --force` — a\nperson already has a recorded way out (`accepted-risk`, `deferred`), which\nkeeps the trace.\n\n### Decision: `codev review` is a read-only query with its own v1 contract\n\n`codev-engine::review::query(fs, layout, config, change)` returns the\nparsed record, the derived state of each finding, and the record's\nvalidation findings (the same `check_review` as `codev validate`, so\n**Issues in the record** is exactly what validate reports). The CLI renders\nit in human form (`render.rs`) or maps it to a new `ReviewReport` in\n`contract::v1` (`changeName`, `recordPath`, `findings`, `roles`, `issues`,\n`status`), defined field by field rather than serialized from the domain.\nChange selection reuses the helper the other `--change` commands use.\n\nExit code: 0 whenever the record was read, issues or blockers included —\n`codev review` informs, `validate` and `archive` decide. 1 only for\nselection failures or an unreadable file.\n\n**Alternatives considered**: folding the view into `codev status` — mixes\nartifact progress with review outcome, and `status --json` is already\nconsumed by installed skills; exit 1 on blockers — would make the skills\nthat read the record treat a normal state as a failure.\n\n### Decision: The skills follow the record; the template text is the one in the specs\n\n`propose.md` step 7 and `apply.md` step 5 are rewritten around the record:\nresume from `codev review`, write each finding before acting, author\nanswer, one reviewer re-check, human-only decisions, check the record with\n`codev review` before reporting, and report \"Points to challenge\" / \"Review\nnotes\" / \"To decide\" from it. `archive.md` relays `review_unresolved`. The\nauthor of a planning artifact is the `role.id` that `codev instructions`\nreturns for it; at `code.review` it is `developer`. The person's name for\n`by: human:<name>` comes from `git config user.name`, else `human`.\n`design.md`'s Open Questions stop receiving challenge points.\n\n`codev update` regenerates the installed skills; the bodies are embedded\nwith `include_str!` as today (decision 0004).\n\n## Risks / Trade-offs\n\n- [The skills edit a file the CLI must parse; a malformed edit hides a\n  finding] → `codev review` shows what it could read and lists every defect\n  as an issue; `codev validate` turns them into errors, so the archive\n  stops on a broken record instead of passing it.\n- [A person deletes a `high` finding from the record to unblock the archive]\n  → not prevented: the record is in git, and the diff shows it. The goal is\n  to make the default path honest, not to resist a deliberate edit.\n- [Evidence matching on trimmed lines accepts a quote whose indentation\n  differs] → accepted: indentation is not what makes a quote verifiable.\n- [Every `high` blocks, even with low confidence, though low-confidence\n  findings are not presented in the skills' summaries] → **Blocking\n  archive** in `codev review` lists them regardless of confidence, and the\n  `archive` refusal names them, so a blocker is never invisible.\n- [Large files read for evidence on every `validate`] → only for\n  unresolved findings, once per file per run.\n\n## Migration Plan\n\nNone needed: `review.md` is optional, so existing active and archived\nchanges are unaffected and archive as before. Projects get the new skill\nbodies with `codev update`; a skill from an older codev simply does not\nwrite a record. Rollback is reverting the release; whether an older codev's validator\ntolerates an extra `review.md` in the change folder is to be confirmed by a\ntest during implementation (validation today inspects `change.yaml`, the\nproposal and `specs/`, not arbitrary files).\n\n## Open Questions\n\n- Should a role id absent from the catalog and from the project's `roles:`\n  produce a warning in the record? Deferred: it changes no spec scenario of\n  this change and can be added as a warning later.\n",
+    "_codev/changes/review-record/proposal.md": "# Proposal: A review record per change\n\n## Why\n\nWhat the reviewing roles find at `plan.challenge` and `code.review` only\nlives in the conversation: a finding carries no verifiable evidence, its\nseverity is a judgement call, nothing tracks what became of it, and\n`codev archive` closes a change even when a serious defect is still open.\nThe roles now run on every change (`2026-10-12-built-in-experts`), so their\noutput needs a durable, checkable place before it is trusted.\n\n## What Changes\n\n- A change gains an optional review record, `_codev/changes/<name>/review.md`:\n  sections per step (`## plan.challenge`, `## code.review`) and per role\n  (`### <role-id>`), each finding under a stable id `R-<role-id>-<n>` with a\n  YAML block holding `severity` (`high`/`medium`/`low`), `confidence`\n  (`high`/`low`), `location`, a verbatim `evidence` quote, a\n  `recommendation` and an append-only `history` of statuses (`open`,\n  `fixed`, `disputed`, `rejected`, `accepted-risk`, `deferred`), each with\n  who set it.\n- New command `codev review [--change <name>] [--json]`: shows the record\n  per step and role, the current status of each finding, who it is waiting\n  for (author, reviewer, human), the findings blocking the archive, and\n  the issues found in the record. Read-only.\n- `codev validate` checks the record of every active change: format, unique\n  ids, the location exists, the evidence is found verbatim at it, and only\n  a human accepts a risk or defers a `high` finding. A `high` finding not\n  yet resolved is reported as a warning.\n- `codev archive` refuses a change whose record holds an unresolved `high`\n  finding, with the stable code `review_unresolved`, naming the findings.\n  `codev sync` is not affected.\n- The `propose` skill writes its `plan.challenge` findings to the record\n  instead of `design.md`'s Open Questions, runs the author/reviewer answer\n  loop, and leaves risks and `high` deferrals to the human. The `apply`\n  skill does the same at `code.review`. The `archive` skill relays a\n  `review_unresolved` refusal and points to `codev review`.\n\nAssumptions made without asking (evaluation run):\n\n- The record is written by the skills and by people, as a Markdown file;\n  the CLI only reads and checks it. No `codev review add` subcommand.\n- Only the archive is blocked; `codev validate` reports an unresolved `high`\n  finding as a warning, so a plan or work in progress can still be\n  validated and committed. `--strict` turns it into a failure, as for any\n  warning.\n- Every `high` finding blocks, whatever its confidence.\n- A change without `review.md` is valid and archivable: the record is\n  optional, and existing changes are unaffected.\n\n## Capabilities\n\n### New Capabilities\n\n- `review`\n\n### Modified Capabilities\n\n- `validation`\n- `spec-merge`\n- `changes`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-core`: a parser for the review record (headings, YAML blocks,\n  history) and the pure rules deriving each finding's state, its waiting\n  party and whether it blocks.\n- `codev-engine`: record checks inside `validate_change` (evidence read from\n  the cited files through the `FileSystem` port), the archive pre-flight,\n  and a `review` query.\n- `codev-cli`: the `review` subcommand, its human rendering, and a new\n  `ReviewReport` in `contract::v1`; a new error code `review_unresolved` for\n  `codev archive`; shell completions follow the new subcommand.\n- `assets/workflows/propose.md`, `apply.md`, `archive.md`: the review loop\n  and its record.\n- Documentation, in `docs/en` and `docs/fr`: the CLI reference (`codev\n  review`, the archive refusal), the file formats reference (`review.md`),\n  the JSON output reference, the validation codes, and the Roles chapter\n  (where findings go).\n\n## Domains\n\nNone\n\n## Release note\n\n- Added: Each change can keep a review record, `review.md`, where the\n  reviewing roles log their findings with an id, a severity, a verbatim\n  quote and a status history. `codev review` shows it and what is left to\n  decide.\n- Added: `codev validate` checks the review record — its format, and that\n  every quoted evidence is really at the cited location.\n- Changed: `codev archive` refuses a change whose review record still holds\n  an unresolved high-severity finding, until it is fixed, rejected, or a\n  person accepts or defers the risk.\n- Changed: `/codev-propose` and `/codev-apply` record their review findings\n  in the change's review record instead of only reporting them in the\n  conversation.\n",
+    "_codev/changes/review-record/specs/changes/spec.md": "## MODIFIED Requirements\n\n### Requirement: The commands taking `--change` pick the change predictably\n\n`codev status`, `codev instructions`, `codev review`, `codev sync` and\n`codev archive` SHALL act on the change named by `--change` when it is\ngiven. A name that is not a valid change name — the reserved `archive`\nincluded — fails with `invalid_change_id`; a valid name with no folder fails\nwith `unknown_change`, whose message points to `codev list`. Without\n`--change`:\n\n- with exactly one active change, that change is used;\n- with none, the command fails with `no_active_change` and the fix\n  `create one with `codev new change <name>``;\n- with several, the command fails with `ambiguous_change`, a message\n  listing every active change, and a fix suggesting `--change` with the\n  first one — it never picks one.\n\nThe archive folder is never an active change: it is never inferred nor\ncounted among the candidates.\n\nA failure exits with code 1; with `--json`, the document keeps the\ncommand's fields, set to `null` or empty, and carries the code in `status`.\n\n#### Scenario: The single active change is inferred\n\n- **GIVEN** one active change `add-auth`\n- **WHEN** the user runs `codev status`\n- **THEN** the status of `add-auth` is shown\n\n#### Scenario: The review record of the single active change is shown\n\n- **GIVEN** one active change `add-auth` holding a `review.md`\n- **WHEN** the user runs `codev review`\n- **THEN** the review record of `add-auth` is shown\n\n#### Scenario: The archive folder is not an active change\n\n- **GIVEN** one active change `add-auth` and an archived change\n- **WHEN** the user runs `codev status`\n- **THEN** the status of `add-auth` is shown\n\n#### Scenario: No active change\n\n- **GIVEN** a project without active change\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with `no_active_change` and the help names\n  `codev new change`\n\n#### Scenario: Several active changes\n\n- **GIVEN** the active changes `add-auth` and `fix-bug`\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 1\n- **AND** `status[0].code` is `ambiguous_change`, its message names\n  `add-auth` and `fix-bug`, and `changeName` is `null`\n\n#### Scenario: Several active changes for the review\n\n- **GIVEN** the active changes `add-auth` and `fix-bug`\n- **WHEN** the user runs `codev review`\n- **THEN** the command fails with `ambiguous_change` and shows no record\n\n#### Scenario: A named change that does not exist\n\n- **WHEN** the user runs `codev status --change ghost`\n- **THEN** the command fails with `unknown_change` and a message naming\n  `codev list`\n\n#### Scenario: A named change with an invalid name\n\n- **WHEN** the user runs `codev instructions --change Bad`\n- **THEN** the command fails with `invalid_change_id`\n\n#### Scenario: The archive folder named as a change\n\n- **GIVEN** a project with archived changes\n- **WHEN** the user runs `codev status --change archive --json`\n- **THEN** the exit code is 1\n- **AND** `status[0].code` is `invalid_change_id`, its message says\n  `archive` is reserved, and `changeName` is `null`\n",
+    "_codev/changes/review-record/specs/review/spec.md": "## Purpose\n\nKeep what the reviewing roles find about a change in a durable, checkable\nrecord — each finding identified, graded, backed by a verbatim quote and\nfollowed through an append-only status history — and show what is left to\ndecide before the change can be archived.\n\n## ADDED Requirements\n\n### Requirement: A change may hold a review record in a fixed format\n\nA change MAY hold a review record at `_codev/changes/<name>/review.md`. The\nrecord is optional: a change without one SHALL be treated as having no\nfinding. When present, the record SHALL be read with this format:\n\n- a first heading `# Review record: <name>` and the marker line\n  `<!-- codev-review: 1 -->`, which states the format version;\n- one `## <step>` section per review step, `<step>` being `plan.challenge`\n  or `code.review`, each step at most once;\n- under a step, one `### <role-id>` section per role, each role at most once\n  per step, holding the line `No finding.`, the line\n  `Disabled by configuration.`, or findings; it MAY start with a\n  `Mode: inline.` or `Mode: isolated.` line, `Summarized: <path> — <why>.`\n  lines and a `Fallback: <what failed>.` line, which are kept as written;\n- each finding a heading `#### R-<role-id>-<n> <title>`, where `<role-id>` is\n  the role of the enclosing `###` section and `<n>` a positive integer,\n  followed by one fenced `yaml` block.\n\nThe YAML block of a finding SHALL hold:\n\n- `severity`: `high`, `medium` or `low`;\n- `confidence`: `high` or `low`;\n- `location`: `path:line` or `path:start-end`, relative to the project\n  root, for code; `<file>#<heading>`, relative to the change folder, for a\n  planning artifact;\n- `evidence`: the text quoted from the location;\n- `recommendation`: the fix proposed;\n- `history`: a non-empty list of entries, oldest first, each with `status`\n  among `open`, `fixed`, `disputed`, `rejected`, `accepted-risk`,\n  `deferred`, and `by` — a role id, or `human` / `human:<name>` for a\n  person — plus, depending on the status, `note`, `ref` or `to`;\n- optionally `raised_by`: the list of role ids that raised the same defect,\n  the finding's own role first.\n\nAn id SHALL be unique in the whole record, across steps. The finding's\ncurrent status SHALL be the status of the last `history` entry.\n\n#### Scenario: A well-formed record is read\n\n- **GIVEN** a change `add-auth` whose `review.md` holds the title, the marker,\n  `## plan.challenge`, `### skeptic` and a finding `#### R-skeptic-1 The\n  token is never rotated` with every field and one history entry\n  `status: open`, `by: skeptic`\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** the output lists `R-skeptic-1` under `plan.challenge` and\n  `skeptic`, with its severity, confidence and status `open`\n- **AND** no issue in the record is reported\n\n#### Scenario: A change without a record\n\n- **GIVEN** a change `add-auth` with no `review.md`\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** the output says that `add-auth` has no review record yet\n- **AND** the exit code is 0\n\n#### Scenario: The current status is the last history entry\n\n- **GIVEN** a finding whose history is `open` by `security`, then `fixed`\n  by `developer`, then `fixed` by `security`\n- **WHEN** the record is read\n- **THEN** the finding's current status is `fixed`, last set by `security`\n\n#### Scenario: A finding whose id names another role\n\n- **GIVEN** a finding `#### R-security-1 …` placed under `### skeptic`\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** an issue in the record names `R-security-1`, its line, and the\n  role `skeptic` of its section\n\n### Requirement: Who is expected to act on a finding is derived from its history\n\nFor each finding, codev SHALL derive who it is waiting for, from its role\n(the enclosing `### <role-id>`) and its history:\n\n- `author` — the history holds a single entry, with status `open`;\n- `reviewer` — the last entry is `fixed` or `disputed`, set by someone other\n  than the finding's role and other than a person;\n- `human` — the last entry is `open` or `disputed`, set by the finding's\n  role, after at least one answer: the reviewer reopened the fix or\n  maintained its point, and only a person can decide;\n- nobody — in every other case: `rejected`, `accepted-risk`, `deferred`, or\n  a `fixed` confirmed by the finding's role.\n\nA finding SHALL be **blocking** when its severity is `high`, whatever its\nconfidence, and it is not resolved. A `high` finding is resolved only when\nits current status is `fixed` set by its own role, `rejected`,\n`accepted-risk` set by a person, or `deferred` set by a person.\n\n#### Scenario: A new finding waits for its author\n\n- **GIVEN** a finding whose only history entry is `open` by `skeptic`\n- **WHEN** the record is read\n- **THEN** the finding is waiting for `author`\n\n#### Scenario: A fix waits for the reviewer\n\n- **GIVEN** a finding of the `skeptic` whose history is `open` by `skeptic`,\n  then `fixed` by `architect`\n- **WHEN** the record is read\n- **THEN** the finding is waiting for `reviewer`\n\n#### Scenario: A maintained dispute goes to a person\n\n- **GIVEN** a finding of the `skeptic` whose history is `open` by\n  `skeptic`, `disputed` by `architect`, then `disputed` by `skeptic`\n- **WHEN** the record is read\n- **THEN** the finding is waiting for `human`\n\n#### Scenario: A high finding fixed by its author but not re-checked blocks\n\n- **GIVEN** a `high` finding of `security` whose history is `open` by\n  `security`, then `fixed` by `developer`\n- **WHEN** the record is read\n- **THEN** the finding is blocking\n\n#### Scenario: A high finding whose risk a person accepted does not block\n\n- **GIVEN** a `high` finding whose last entry is `accepted-risk` by\n  `human:Ludovic` with a `note`\n- **WHEN** the record is read\n- **THEN** the finding is not blocking and waits for nobody\n\n#### Scenario: A low-confidence high finding still blocks\n\n- **GIVEN** a `high` finding with confidence `low` whose only entry is\n  `open`\n- **WHEN** the record is read\n- **THEN** the finding is blocking\n\n### Requirement: `codev review` shows the record and what is left to decide\n\n`codev review [--change <name>]` SHALL print, for the selected change:\n\n- the findings, grouped by step then by role, in the record's order, one\n  line each with the id, the severity, the confidence, the current status\n  and who set it, and the title; a finding with confidence `low` is marked\n  `(low confidence)`; a role section holding `No finding.` or\n  `Disabled by configuration.` says so;\n- a **Waiting for an answer** block listing, under `author`, `reviewer` and\n  `human`, the ids waiting for each, or the line `Nothing waiting` when no\n  finding waits;\n- a **Blocking archive** block listing the blocking findings, or the line\n  `Nothing blocks the archive`;\n- an **Issues in the record** block listing every finding `codev validate`\n  reports on the record, with its code, line and message, or the line\n  `No issue in the record`.\n\nThe command SHALL NOT modify any file. It SHALL exit with code 0 whether or\nnot the record holds findings, blocking findings or issues; it SHALL exit\nwith code 1 only when the change cannot be selected or the record cannot be\nread, with the code of that failure. A record whose content is malformed\nSHALL still be shown as far as it can be read, its defects listed as issues.\n\n#### Scenario: Findings, waits and blockers are shown\n\n- **GIVEN** a record with `R-skeptic-1` (`medium`, waiting for `author`)\n  and `R-security-1` (`high`, waiting for `human`)\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** both findings are listed under their step and role\n- **AND** **Waiting for an answer** lists `R-skeptic-1` under `author` and\n  `R-security-1` under `human`\n- **AND** **Blocking archive** lists `R-security-1`\n\n#### Scenario: A resolved record\n\n- **GIVEN** a record whose findings are all `rejected` or `fixed` by their\n  own role\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** the output says `Nothing waiting` and `Nothing blocks the\n  archive`\n\n#### Scenario: A malformed finding is shown as an issue\n\n- **GIVEN** a record in which `R-skeptic-2` has `severity: critical`\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** **Issues in the record** names `R-skeptic-2`, its line and the\n  code `review_malformed`\n- **AND** the other findings are still listed\n- **AND** the exit code is 0\n\n#### Scenario: The review command writes nothing\n\n- **GIVEN** a change with a record\n- **WHEN** the user runs `codev review --change add-auth`\n- **THEN** no file of the project is created, modified or deleted\n\n### Requirement: `codev review --json` follows a stable contract\n\nWith `--json`, `codev review` SHALL write exactly one JSON document to\nstdout, whose shape is frozen per version, with:\n\n- `changeName` and `recordPath` — the record's path relative to the project\n  root, `null` when the change has no record;\n- `findings` — one object per finding, in the record's order, with `id`,\n  `title`, `step`, `role`, `raisedBy`, `severity`, `confidence`,\n  `location`, `status`, `statusBy`, `waitingFor` (`author`, `reviewer`,\n  `human` or `null`) and `blocking`;\n- `roles` — one object per role section, with `step`, `role` and `state`\n  (`findings`, `no-finding` or `disabled`);\n- `issues` — the record's validation findings, each with `code`,\n  `severity`, `path`, `line` and `message`, as `codev validate` reports\n  them;\n- `status` — execution errors.\n\nPaths SHALL use `/` separators on every OS.\n\n#### Scenario: JSON output of a record\n\n- **GIVEN** a record with one finding `R-skeptic-1` waiting for `author`\n- **WHEN** the user runs `codev review --change add-auth --json`\n- **THEN** stdout carries a single JSON document whose `recordPath` is\n  `_codev/changes/add-auth/review.md`\n- **AND** `findings[0].id` is `R-skeptic-1`, `waitingFor` is `author` and\n  `blocking` is `false`, and `status` is empty\n\n#### Scenario: JSON output without a record\n\n- **GIVEN** a change `add-auth` with no `review.md`\n- **WHEN** the user runs `codev review --change add-auth --json`\n- **THEN** `recordPath` is `null`, `findings`, `roles` and `issues` are\n  empty, and the exit code is 0\n\n#### Scenario: JSON output for an unknown change\n\n- **WHEN** the user runs `codev review --change ghost --json`\n- **THEN** the exit code is 1\n- **AND** `status[0].code` is `unknown_change`, `changeName` is `null` and\n  `findings` is empty\n",
+    "_codev/changes/review-record/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The `archive` skill closes a change with a strict pre-flight\n\nThe catalog SHALL expose an `archive` workflow — installed under\n`.claude/skills/codev-archive/SKILL.md`, invocable as `/codev-archive` —\nwhose role is to merge the delta and then move the change to\n`_codev/changes/archive/<date>-<name>/`. The skill MUST refuse to act if\n`codev archive` reports a failed validation pre-flight, or a blocking\nfinding in the review record (`review_unresolved`). It MUST NOT edit the\nreview record to unblock the archive.\n\n#### Scenario: Archiving a validated change\n\n- **GIVEN** a change whose planning is complete and which passes\n  `codev validate`\n- **WHEN** the user types `/codev-archive`\n- **THEN** the skill runs `codev archive <name>`\n- **AND** summarizes for the user the main specs touched\n- **AND** names the dated archive destination\n\n#### Scenario: Archive refused because of a validation error\n\n- **GIVEN** a change in which a delta contains an error reported by\n  `codev validate` (for example, a duplicate requirement)\n- **WHEN** the user types `/codev-archive`\n- **THEN** the skill does not insist\n- **AND** explicitly invites the user to run `codev validate <name>`\n  to see the details\n- **AND** does not attempt to guess or fix the error\n\n#### Scenario: Archive refused because of an unresolved high finding\n\n- **GIVEN** a change that passes `codev validate` and whose review record\n  holds an open `high` finding `R-security-1`\n- **WHEN** the user types `/codev-archive`\n- **THEN** the skill does not insist and names `R-security-1`\n- **AND** invites the user to run `codev review --change <name>` and to fix\n  the finding, or to accept or defer the risk\n- **AND** the review record is left unchanged\n\n### Requirement: The `propose` skill challenges the plan and reports points to challenge\n\nAfter the traceability check, the `propose` skill SHALL re-read the\nartifacts as reviewers who did not write them: every role\n`codev roles --at plan.challenge --change <name> --json` returns — the\n`skeptic` and the experts the change's domains activate — each along its\ncriteria, the project's extra criteria included, and using its\n`knowledge` when it has one. The `skeptic`'s grid covers the need (does\nthe change solve the Why, is there a simpler solution or one without\ncode), the scope (anything nobody asked for, an obvious case missing), the\nspecs (error and edge cases, each requirement verifiable), the decisions\n(a silent contradiction with a decision in effect), the assumptions (the\none that would bring the plan down if wrong) and the tasks (each one\nverifiable). It MUST also apply, only when the proposal's Impact touches\nthem, the lenses security & privacy, compatibility & migration,\noperability, performance, and accessibility & UX, as well as the project's\n`rules:` received through `codev instructions`. An expert asks whether\nthe design addresses its domain.\n\nEvery finding of the pass MUST be written to the change's review record,\nunder `## plan.challenge` and its role, in the format the `review`\ncapability describes, before it is fixed or reported: a severity and a\nconfidence on the record's scales, a location in a planning artifact, the\nevidence copied verbatim from it, a recommendation, and a first history\nentry `open` by the role. A role with nothing to raise writes\n`No finding.`; a role disabled by configuration writes\n`Disabled by configuration.`. Before raising anything, the skill MUST read\nthe record through `codev review` and never raise again a finding already\nrecorded.\n\nThe author of the cited artifact then answers each open finding, appending\nto its history: `fixed` when the fix is unambiguous and within the\nchange's scope, `disputed` with a `note`, or nothing when only a person can\ndecide. The finding's role re-checks each answer once — confirming or\nreopening a fix, accepting (`rejected`) or maintaining a dispute. The\nskill MUST NOT write `accepted-risk`, nor defer a `high` finding, on its\nown: these are recorded only once a person decided, with `by` naming them.\nThe pass MUST NOT add scope. Before presenting the plan, the skill MUST run\n`codev review --change <name>` and correct every issue it lists in the\nrecord's format, location or evidence, without changing what a finding\nsays.\n\nThe final summary of the skill MUST end with a \"Points to challenge\" block,\ndrawn from the record's `plan.challenge` findings that are not `rejected`\nand not of confidence `low`: at most five items in total across the roles,\nranked by severity, each on one line tagged with the id of the role that\nraised it and giving the finding's id and status, what, why it matters and\nthe artifact concerned. When the pass finds nothing worth raising, the\nblock MUST say \"No point to challenge found\" instead of inventing points.\nA \"To decide\" block MUST follow, listing every finding waiting for a\nperson and every `high` finding still open, with the choices to fix it,\naccept the risk with a justification, or defer it to a change or an issue;\nor \"Nothing to decide\".\n\nWhen no role is active at `plan.challenge`, the skill MUST skip the pass,\nand the \"Points to challenge\" block MUST say that the skeptic is disabled\nby configuration instead of listing points.\n\n#### Scenario: Points to challenge are reported\n\n- **GIVEN** a plan whose design rests on an unverified assumption\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary contains a \"Points to challenge\" block naming the\n  assumption, why it matters and the artifact concerned, tagged `skeptic`\n- **AND** the same point is recorded in `review.md` as a finding\n  `R-skeptic-<n>` whose evidence is quoted from `design.md`\n\n#### Scenario: At most five points\n\n- **GIVEN** a plan in which the skeptic finds four weak points and the\n  `security` expert four more\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the \"Points to challenge\" block lists at most five items in\n  total, the most severe first, each tagged with its role id\n- **AND** all eight findings are in the review record\n\n#### Scenario: An active expert challenges the design\n\n- **GIVEN** a change whose proposal ticks `personal-data` and whose design\n  stores a new e-mail field with no retention rule\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the missing retention rule is recorded as a finding of\n  `privacy`, then fixed or raised as a point to challenge tagged `privacy`\n\n#### Scenario: Nothing to challenge\n\n- **GIVEN** a plan in which the contrarian pass finds nothing worth raising\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary says \"No point to challenge found\"\n- **AND** lists no invented point\n- **AND** each role's section of the record says `No finding.`\n\n#### Scenario: A high risk is left to a person\n\n- **GIVEN** a plan in which `security` raises a `high` finding the author\n  disputes and `security` maintains\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the finding's last status is `disputed` by `security`, never\n  `accepted-risk`\n- **AND** the \"To decide\" block lists it with the author's argument, the\n  reviewer's answer and the three choices\n\n#### Scenario: A resumed challenge does not raise a finding twice\n\n- **GIVEN** a change whose record already holds `R-skeptic-1` under\n  `plan.challenge`\n- **WHEN** `/codev-propose` challenges the plan again\n- **THEN** no new finding repeats `R-skeptic-1`, and new findings of the\n  skeptic start at `R-skeptic-2`\n\n#### Scenario: A conditional lens outside the Impact is not applied\n\n- **GIVEN** a plan whose Impact touches no user interface\n- **WHEN** the contrarian pass runs\n- **THEN** no accessibility & UX point is raised\n\n#### Scenario: The pass does not add scope\n\n- **GIVEN** a plan for which the reviewer thinks of a useful but unrequested\n  feature\n- **WHEN** the contrarian pass runs\n- **THEN** the feature is not added to the artifacts\n\n#### Scenario: The skeptic disabled by configuration\n\n- **GIVEN** a configuration with `roles: { skeptic: never }` and a change\n  that ticks no domain\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** no contrarian pass has run\n- **AND** the \"Points to challenge\" block says the skeptic is disabled by\n  configuration\n\n#### Scenario: A project criterion joins the grid\n\n- **GIVEN** a configuration where `skeptic` has the extra criterion\n  `The rollback plan is stated`\n- **WHEN** the contrarian pass runs on a plan with no rollback plan\n- **THEN** the missing rollback plan is fixed or raised as a point to\n  challenge\n\n#### Scenario: Outside a project\n\n- **GIVEN** a folder with no `_codev/` in it or its parents\n- **WHEN** the user runs `codev update --json`\n- **THEN** the exit code is 1 and `status[0].code` is `no_codev_root`\n- **AND** `root` is `null` and `skills` is empty\n\n### Requirement: The `apply` skill reviews the change's code as a newcomer\n\nOnce every task is checked and before running the full test suite, the\n`apply` skill SHALL re-read only the code the change added or modified,\nwith every role `codev roles --at code.review --change <name> --json`\nreturns — the `newcomer` and the experts the change's domains activate —\neach along its criteria, the project's extra criteria included, and using\nits `knowledge` when it has one. The `newcomer` reads as a developer\njoining the project who has seen neither the plan nor the conversation:\neach changed function makes sense without the plan or the conversation;\nnames say what things do, with no obscure abbreviation; a function too\nlong or too nested is split when it splits simply; dense one-liners,\npremature genericity and single-use abstractions give way to the simple\nversion unless the clever one is justified; comments explain the why where\nit is not obvious and never paraphrase the code; tests read as a\ndescription of the behavior. It MUST also apply the project's `rules`\nreceived through `codev instructions`. An expert asks whether the\nimplementation respects its domain.\n\nEvery finding of the review MUST be written to the change's review record,\nunder `## code.review` and its role, in the format the `review` capability\ndescribes, before it is fixed or reported, with a code location and the\nevidence copied verbatim from it. The `developer` answers each open\nfinding and the finding's role re-checks the answer once, as the `propose`\nskill does at `plan.challenge`; a fix records the file change it made in\n`ref`. The skill MUST NOT write `accepted-risk`, nor defer a `high`\nfinding, on its own.\n\nThe skill MUST simplify directly what is unambiguous and re-run the affected\ntests. The review MUST NOT widen the change's scope and MUST NOT modify code\nthe change did not add or modify. The `newcomer` MUST NOT change behavior.\nAn expert MUST NOT change behavior silently: a fix that changes behavior is\nreported as a note, unless it is a clear defect within the change's scope,\nwhich is then fixed with a test and named in the summary.\n\nThe final summary MUST carry a \"Review notes\" block, drawn from the\nrecord's `code.review` findings that are not `rejected`, not of confidence\n`low`, and not confirmed `fixed`: at most five items in total across the\nroles, each tagged with the id of the role that raised it and giving the\nfinding's id, what, where and why. A high-severity `security` or `privacy`\nfinding MUST always be listed, even beyond five. When the review finds\nnothing worth raising, the block MUST say \"No review concern found\" instead\nof inventing notes. When the record holds a blocking finding, the summary\nMUST say that `codev archive` will refuse the change until it is resolved.\n\nWhen no role is active at `code.review`, the skill MUST skip the review,\nand the \"Review notes\" block MUST say that the review is disabled by\nconfiguration.\n\n#### Scenario: A needlessly clever construction is simplified\n\n- **GIVEN** a change whose tasks are all checked, and whose code contains a\n  dense one-liner with a simple equivalent\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the one-liner is replaced by the simple version\n- **AND** the affected tests are run again and pass\n- **AND** the record holds a `newcomer` finding for it, whose last status is\n  `fixed` by `newcomer`\n\n#### Scenario: The review keeps behavior and scope\n\n- **GIVEN** a change whose code could be simplified by also changing an edge\n  case's behavior, or by adding an unrequested helper\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the behavior and the scope of the change stay as implemented\n- **AND** the tests that passed before the review still pass\n\n#### Scenario: At most five review notes\n\n- **GIVEN** a review that finds seven concerns it does not fix alone, none\n  of them a high-severity security or privacy finding\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the \"Review notes\" block lists at most five items, each tagged\n  with its role id and giving what, where and why\n- **AND** all seven findings are in the review record\n\n#### Scenario: A high-severity security finding is never dropped\n\n- **GIVEN** a review with five readability notes and a `security` finding\n  of high severity\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the `security` finding is listed in the \"Review notes\" block\n\n#### Scenario: An unresolved high finding is announced as blocking\n\n- **GIVEN** a review whose `security` finding of high severity stays open\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the summary says `codev archive` will refuse the change until the\n  finding is resolved\n- **AND** the finding's history holds no `accepted-risk` entry\n\n#### Scenario: An expert reports a behavior-changing fix\n\n- **GIVEN** a change whose proposal ticks `performance`, and whose code\n  could be made faster by changing the order of its results\n- **WHEN** `/codev-apply` reviews the change\n- **THEN** the order of results is unchanged\n- **AND** the suggestion appears as a review note tagged `performance`\n\n#### Scenario: An expert fixes a clear defect within scope\n\n- **GIVEN** a change whose proposal ticks `security`, and whose new\n  endpoint builds an SQL query by concatenating a request parameter\n- **WHEN** `/codev-apply` reviews the change\n- **THEN** the query is parameterized, a test covers the hostile input,\n  and the summary names the fix\n- **AND** the record's finding ends with `fixed` by `security`, with a `ref`\n\n#### Scenario: Nothing to note\n\n- **GIVEN** a change whose code raises no review concern\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the summary says \"No review concern found\"\n- **AND** lists no invented note\n\n#### Scenario: Code outside the change is untouched\n\n- **GIVEN** a change that calls an obscure function it did not modify\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** that function is left unchanged\n- **AND** it appears, at most, as a review note\n\n#### Scenario: The review disabled by configuration\n\n- **GIVEN** a change whose `change.yaml` holds `roles: { newcomer: never }`\n  and whose proposal ticks no domain\n- **WHEN** `/codev-apply` has checked every task\n- **THEN** no review runs and the full test suite runs next\n- **AND** the \"Review notes\" block says the review is disabled by\n  configuration\n",
+    "_codev/changes/review-record/specs/spec-merge/spec.md": "## ADDED Requirements\n\n### Requirement: Archive refuses a change with an unresolved high finding\n\nAfter its validation pre-flight passes, `codev archive` MUST refuse to act\nwhen the change's review record holds at least one blocking finding, as the\n`review` capability defines it. It MUST do so without merging, without\nwriting and without moving anything, exit with code 1, and report the\nstable code `review_unresolved`, whose message names every blocking\nfinding with its id and current status and invites the user to run\n`codev review --change <name>`; the fix it suggests is to fix the finding,\nreject it, or have a person accept or defer the risk.\n\nWhen the validation pre-flight fails, `validation_failed` SHALL be reported\nand the record SHALL NOT be checked for blocking findings. A change without\na review record, or whose record holds no blocking finding, is archived as\nbefore. `codev sync` MUST NOT check for blocking findings: it leaves the\nchange active.\n\n#### Scenario: An open high finding blocks the archive\n\n- **GIVEN** a change `add-auth` that passes `codev validate`, whose record\n  holds `R-security-1`, `high`, current status `open`\n- **WHEN** the user runs `codev archive add-auth`\n- **THEN** no main spec is modified and the change remains active at its\n  original location\n- **AND** the error carries the code `review_unresolved`, names\n  `R-security-1` and `open`, and invites the user to run\n  `codev review --change add-auth`\n\n#### Scenario: JSON refusal\n\n- **GIVEN** the same change\n- **WHEN** the user runs `codev archive add-auth --json`\n- **THEN** the exit code is 1\n- **AND** `status[0].code` is `review_unresolved` and `movedTo` is `null`\n\n#### Scenario: An accepted risk lets the change be archived\n\n- **GIVEN** a change whose only `high` finding ends with `accepted-risk` by\n  `human:Ludovic`, with a `note`\n- **WHEN** the user runs `codev archive add-auth`\n- **THEN** the change is merged and moved to the dated archive, with its\n  `review.md`\n\n#### Scenario: A medium finding left open does not block\n\n- **GIVEN** a change whose record holds only `medium` and `low` findings,\n  some of them `open`\n- **WHEN** the user runs `codev archive add-auth`\n- **THEN** the change is archived\n\n#### Scenario: A validation error takes precedence\n\n- **GIVEN** a change with a `duplicate_requirement` in a delta and an open\n  `high` finding\n- **WHEN** the user runs `codev archive add-auth`\n- **THEN** the error carries the code `validation_failed`, not\n  `review_unresolved`\n\n#### Scenario: Sync ignores blocking findings\n\n- **GIVEN** a change that passes `codev validate` and whose record holds an\n  open `high` finding\n- **WHEN** the user runs `codev sync --change add-auth`\n- **THEN** the deltas are merged into the main specs and the change stays\n  active\n",
+    "_codev/changes/review-record/specs/validation/spec.md": "## ADDED Requirements\n\n### Requirement: The review record of an active change is checked\n\nFor each active change holding a `review.md`, validation SHALL check the\nrecord against the format the `review` capability describes and report,\nwith the record's path and the line concerned:\n\n- the error `review_malformed` — a missing title or marker, an unsupported\n  format version, an unknown step, a step or role section repeated, a\n  finding heading without a valid id or not followed by a `yaml` block, a\n  block that is not valid YAML, a missing field, a value outside its scale\n  (`severity`, `confidence`, `status`), an empty `history`, or an id whose\n  role differs from its section's role;\n- the error `review_duplicate_id` — an id used twice in the record, naming\n  both lines;\n- the error `review_entry_incomplete` — a `disputed` or `accepted-risk`\n  entry without `note`, or a `deferred` entry without `to`;\n- the error `review_decision_not_human` — an `accepted-risk` entry, or a\n  `deferred` entry on a `high` finding, whose `by` is not `human` or\n  `human:<name>`;\n- the error `review_location_not_found` — a code location whose file does\n  not exist, lies outside the project root, or whose lines are beyond its\n  end, or a plan location whose file or heading does not exist in the change\n  folder;\n- the error `review_evidence_not_found` — for a finding whose current status\n  is `open` or `disputed`, an `evidence` that does not appear in the cited\n  file;\n- the warning `review_location_stale` — for the same findings, an\n  `evidence` that appears in the cited file but not within the cited lines\n  or heading;\n- the warning `review_unresolved` — a blocking finding, as the `review`\n  capability defines it, naming its id and its current status.\n\nThe evidence matches when its non-blank lines appear as consecutive lines\nof the file, each compared after removing leading and trailing whitespace;\nline endings are not significant. The evidence of a finding that is\n`fixed`, `rejected`, `accepted-risk` or `deferred` SHALL NOT be checked: the\nquoted text may legitimately have gone. A change without `review.md` SHALL\nget no review finding. Archived changes MUST NOT be checked: their history\nis not rewritten.\n\n#### Scenario: A well-formed record with present evidence\n\n- **GIVEN** an active change whose record holds an `open` finding located at\n  `src/auth.rs:42-44`, whose evidence is line 43 of that file\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no review finding is reported\n\n#### Scenario: Evidence that is not in the cited file\n\n- **GIVEN** an active change whose record holds an `open` finding located at\n  `src/auth.rs:42`, whose evidence appears nowhere in `src/auth.rs`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_evidence_not_found` error names the finding's id and\n  the line of its block\n- **AND** the exit code is 1\n\n#### Scenario: Evidence that moved\n\n- **GIVEN** an `open` finding located at `src/auth.rs:42` whose evidence is\n  now at line 57 of that file\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_location_stale` warning is reported\n- **AND** the exit code is 0 without `--strict`\n\n#### Scenario: The evidence of a fixed finding is not checked\n\n- **GIVEN** a finding whose current status is `fixed` and whose evidence no\n  longer appears in the cited file\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `review_evidence_not_found` is reported\n\n#### Scenario: A plan location whose heading does not exist\n\n- **GIVEN** a finding located at `\"design.md#Decision: Tokens in memory\"`\n  while `design.md` has no such heading\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_location_not_found` error names the location\n\n#### Scenario: A severity outside the scale\n\n- **GIVEN** a finding with `severity: critical`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_malformed` error names the finding and the field\n  `severity`\n\n#### Scenario: The same id twice\n\n- **GIVEN** a record in which `R-skeptic-1` heads two findings\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_duplicate_id` error names `R-skeptic-1` and both lines\n\n#### Scenario: A role accepts a risk on its own\n\n- **GIVEN** a finding whose last entry is `accepted-risk` by `architect`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_decision_not_human` error is reported\n\n#### Scenario: A deferral without destination\n\n- **GIVEN** a `medium` finding whose last entry is `deferred` by\n  `developer` with no `to`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_entry_incomplete` error is reported\n\n#### Scenario: An unresolved high finding is a warning\n\n- **GIVEN** a record holding a `high` finding whose current status is `open`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_unresolved` warning names the finding's id\n- **AND** the exit code is 0 without `--strict`, and 1 with `--strict`\n\n#### Scenario: A change without a record\n\n- **GIVEN** an active change with no `review.md`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no review finding is reported\n\n#### Scenario: Archived records are not checked\n\n- **GIVEN** a project whose only `review.md` with a missing evidence belongs\n  to an archived change\n- **WHEN** the user runs `codev validate`\n- **THEN** no review finding is reported\n"
+  },
+  "validate": {
+    "review-record": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "review-record",
+          "path": "_codev/changes/review-record"
+        }
+      ],
+      "status": []
+    }
+  }
+}

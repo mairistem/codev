@@ -8,61 +8,79 @@ Mode: inline.
 
 ### privacy
 
-#### R-privacy-1 Addresses with non-ASCII characters are logged unmasked
+#### R-privacy-1 Addresses with a non-ASCII character are logged in full
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
 location: "src/logger.ts:3"
 evidence: |
   const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
-recommendation: >-
-  The local part and the domain only accept ASCII, while the proposal promises to mask
-  "every e-mail address". `logInfo("signup", { email: "josé@exemple.fr" })` writes
-  `josé@exemple.fr` in full to the logs kept 90 days by the hosting provider (GDPR Art. 5(1)(c),
-  Art. 32), since the character before `@` is outside the class and nothing matches; an
-  internationalised domain (`ada@exämple.fr`) is missed the same way, and
-  `andré.dupont@example.fr` only becomes `andré.***@example.fr`, keeping the first name.
-  Match the address on its structure instead — e.g. `/([^\s@<>"'(),;:])[^\s@<>"'(),;:]*@([^\s@<>"'(),;:]+\.[^\s@<>"'(),;:]{2,})/gu` —
-  and add tests for an accented local part and an IDN domain.
+recommendation: >
+  The pattern only accepts ASCII letters on both sides of the `@`, and its first group needs
+  an ASCII character right before the `@`. `logInfo("signup", { user: "josé@exemple.fr" })`
+  finds no match (the character before `@` is `é`) and writes `josé@exemple.fr` whole to the
+  logs the hosting provider keeps 90 days — the very leak the proposal promises to stop
+  (GDPR Art. 5(1)(c), Art. 32). Same for an internationalized domain (`ada@exämple.org`).
+  Match on `\S+@\S+` (or Unicode classes with the `u` flag, `[\p{L}\p{N}._%+-]`) and add
+  tests with an accented local part and an IDN domain.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 URL-encoded addresses escape the mask
+#### R-privacy-2 Field keys are written to the log without masking
+
+```yaml
+severity: medium
+confidence: high
+location: "src/logger.ts:12-13"
+evidence: |
+  for (const [key, value] of Object.entries(fields)) {
+    safe[key] = typeof value === "string" ? maskEmails(value) : value;
+recommendation: >
+  Only the values go through `maskEmails`; the keys are copied as they are. A caller that
+  indexes fields by address — `logInfo("quota", { [user.email]: 3 })` — writes
+  `{"ada.lovelace@example.org":3}` to the logs, against the module's own promise ("never
+  writes a full e-mail address") and GDPR Art. 5(1)(c). Mask the key too
+  (`safe[maskEmails(key)] = …`) and cover it with a test.
+history:
+  - status: open
+    by: privacy
+```
+
+#### R-privacy-3 URL-encoded addresses escape the mask
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/logger.ts:7"
+location: "src/logger.ts:3"
 evidence: |
-  return text.replace(EMAIL, "$1***@$2");
-recommendation: >-
-  Only a literal `@` is recognised, so a logged URL or query string such as
-  `/reset?email=ada.lovelace%40example.org` reaches the logs unmasked. No caller logs URLs yet
-  (the logger has no caller in the diff), hence the low confidence; if request paths are to be
-  logged through `logInfo`, also match `%40` (case-insensitive) or decode before masking, and
-  test it.
+  const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+recommendation: >
+  The pattern requires a literal `@`. A logged URL or query string such as
+  `/reset?email=ada.lovelace%40example.org` keeps the address in full. Whether callers log
+  request URLs could not be checked in this change. Also match the encoded form `%40`
+  (case-insensitive), or decode before masking.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-3 The kept first letter and full domain may still identify the person
+#### R-privacy-4 The kept domain and first letter can still identify the person
 
 ```yaml
 severity: low
 confidence: low
-location: "src/logger.ts:5"
+location: "src/logger.ts:7"
 evidence: |
-  /** `ada.lovelace@example.org` becomes `a***@example.org`. */
-recommendation: >-
-  For a personal or small-company domain (`a***@lovelace.family`), the first letter plus the
-  domain can be enough to single out the customer, so the logs would still hold personal data
-  (GDPR Art. 4(1), Art. 25). Whether this is acceptable depends on the domains in the customer
-  base, which the review could not see; if the domain is not needed for support, mask it too or
-  replace the address with a keyed hash.
+  return text.replace(EMAIL, "$1***@$2");
+recommendation: >
+  `a***@example.org` keeps the full domain. For a personal or small company domain
+  (`l***@nicaise.fr`) the masked value still points to one person, so the logs keep
+  personal data (GDPR Art. 4(1), Art. 5(1)(c)). Depends on the customer base, which could not
+  be seen. If re-identification matters, mask the domain too or replace the address with a
+  keyed hash.
 history:
   - status: open
     by: privacy

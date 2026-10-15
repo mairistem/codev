@@ -2,22 +2,88 @@
   "format": 2,
   "case": "performance-code-n-plus-one",
   "error": null,
-  "costUsd": 0.2858668,
-  "durationMs": 28242,
+  "costUsd": 0.2840014,
+  "durationMs": 29937,
   "consumption": {
-    "durationApiMs": 27818,
-    "turns": 7,
+    "durationApiMs": 29765,
+    "turns": 8,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1181,
-      "cacheCreation": 24742,
-      "cacheRead": 276339,
-      "output": 1584
-    }
+      "input": 1179,
+      "cacheCreation": 25346,
+      "cacheRead": 231992,
+      "output": 1693
+    },
+    "toolCalls": 7,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7388,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7388
+        }
+      },
+      {
+        "cacheCreation": 13875,
+        "cacheRead": 29527,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13875
+        }
+      },
+      {
+        "cacheCreation": 1362,
+        "cacheRead": 43402,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1362
+        }
+      },
+      {
+        "cacheCreation": 729,
+        "cacheRead": 44764,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "file": 729
+        }
+      },
+      {
+        "cacheCreation": 1174,
+        "cacheRead": 45493,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 846,
+          "edit": 328
+        }
+      },
+      {
+        "cacheCreation": 818,
+        "cacheRead": 46667,
+        "input": 2,
+        "output": 175,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 590,
+          "edit": 228
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +95,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (One query per order to load its lines (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (One order-lines query per order (N+1)) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,13 +122,13 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "Load every line in one query with the existing batch method `db.lines_of_orders(&ids)` (`api/src/db.rs:31`, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (a `HashMap<i64, i64>` of totals) and build the summaries in the order `orders_of_customer` returned, keeping orders with no line at a total of 0. This turns up to 101 queries per customer page view into 2, without changing results or ordering.",
+        "recommendation": "Collect the ids of the fetched orders and load every line in one query with the existing `Db::lines_of_orders(&ids)` (`WHERE order_id = ANY($1)`, api/src/db.rs:30-33), then sum the lines per `order_id` (e.g. into a HashMap) and build the summaries in the original order of `orders`, keeping a 0 total for an order without lines. As written, each customer page view runs 1 + N queries — up to 101 for a customer with 100 orders — so the cost grows linearly with the customer's order count on a user-facing path that the proposal says runs on every customer page view; the batch version runs 2 queries whatever N is.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "One query per order to load its lines (N+1)"
+        "title": "One order-lines query per order (N+1)"
       }
     ],
     "format": 1,

@@ -19,14 +19,15 @@ evidence: |
   release. There is no switch between the two: keeping both would double the
   code to maintain. The Stripe account is closed the day after the release.
 recommendation: >-
-  Keep a way back until Paylane is proven in production: a configuration
-  switch selecting Stripe or Paylane at runtime (or a gradual rollout behind
-  it), with the Stripe client kept for that period, and the Stripe account
-  kept open until a stated exit criterion is met (e.g. a full settlement
-  cycle with no unmatched payments). Today, if Paylane fails or misbehaves
-  after the release, the operator has no switch, and redeploying the previous
-  version no longer works once the Stripe account is closed the next day:
-  card payments stay down until a new release against a reopened account.
+  Keep a way back until Paylane is proven in production: keep the Stripe
+  client behind a configuration switch (or a gradual rollout) for a defined
+  period, and keep the Stripe account open until that period ends. Failure
+  scenario: Paylane has an outage, rejects valid cards or a defect appears in
+  the new client a few days after the release; redeploying the previous
+  version brings back the Stripe client, but the Stripe account is already
+  closed, so card payments stop entirely with no rollback, and the next
+  release is up to a week away. State the rollback procedure and the date
+  the Stripe account may be closed in the design.
 history:
   - status: open
     by: ops
@@ -43,14 +44,14 @@ evidence: |
   payments and matches them to orders. It runs as a Kubernetes CronJob and
   writes its result to the database.
 recommendation: >-
-  Decide in the design how an operator sees the worker fail or not run:
-  an alert on a failed or missed CronJob run (e.g. on the time of the last
-  successful run), metrics for payments fetched, matched and unmatched, and
-  a log at start and end of each run. Today, if the Paylane API is down at
-  02:00 or the job crashes or is never scheduled, no settlement happens and
-  nothing reports it — the finance alert of the spec fires only for unmatched
-  payments of a run that succeeded — so payments go unreconciled for days
-  unnoticed.
+  Decide how an operator learns that a run failed or did not run: a log at
+  start and end with the run's counts, a metric or last-success timestamp,
+  and an alert when the CronJob fails or no successful run is recorded for
+  the day. Failure scenario: the Paylane API is unreachable at 02:00 or the
+  job crashes; the CronJob fails, nothing is written and, since the only
+  alert planned (spec "A payment without order") fires from a successful
+  run, finance is never told that the day's payments were not settled.
+  Add a scenario for a failed run to the spec and a task for it.
 history:
   - status: open
     by: ops

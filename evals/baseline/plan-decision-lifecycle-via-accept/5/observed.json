@@ -1,0 +1,276 @@
+{
+  "format": 2,
+  "case": "plan-decision-lifecycle-via-accept",
+  "error": null,
+  "costUsd": 1.6697862,
+  "durationMs": 224201,
+  "consumption": {
+    "durationApiMs": 222957,
+    "turns": 25,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1181,
+      "cacheCreation": 104631,
+      "cacheRead": 1873276,
+      "output": 22852
+    },
+    "toolCalls": 24,
+    "orientationCalls": 13,
+    "calls": [
+      {
+        "cacheCreation": 7315,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7315
+        }
+      },
+      {
+        "cacheCreation": 14348,
+        "cacheRead": 29454,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14348
+        }
+      },
+      {
+        "cacheCreation": 1085,
+        "cacheRead": 43802,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1085
+        }
+      },
+      {
+        "cacheCreation": 885,
+        "cacheRead": 44887,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 885
+        }
+      },
+      {
+        "cacheCreation": 17376,
+        "cacheRead": 45772,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 17376
+        }
+      },
+      {
+        "cacheCreation": 2436,
+        "cacheRead": 63148,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2436
+        }
+      },
+      {
+        "cacheCreation": 4062,
+        "cacheRead": 65584,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 33,
+          "shell": 4029
+        }
+      },
+      {
+        "cacheCreation": 18610,
+        "cacheRead": 69646,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 16629,
+          "search": 1981
+        }
+      },
+      {
+        "cacheCreation": 3249,
+        "cacheRead": 88256,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3249
+        }
+      },
+      {
+        "cacheCreation": 1785,
+        "cacheRead": 91505,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1785
+        }
+      },
+      {
+        "cacheCreation": 757,
+        "cacheRead": 93290,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 757
+        }
+      },
+      {
+        "cacheCreation": 1858,
+        "cacheRead": 94047,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1858
+        }
+      },
+      {
+        "cacheCreation": 5137,
+        "cacheRead": 95905,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 5090,
+          "output": 47
+        }
+      },
+      {
+        "cacheCreation": 2291,
+        "cacheRead": 101042,
+        "input": 2,
+        "output": 25,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2291
+        }
+      },
+      {
+        "cacheCreation": 2544,
+        "cacheRead": 103333,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2536,
+          "output": 8
+        }
+      },
+      {
+        "cacheCreation": 7807,
+        "cacheRead": 105877,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 7807
+        }
+      },
+      {
+        "cacheCreation": 2654,
+        "cacheRead": 113684,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "output": 8,
+          "search": 2646
+        }
+      },
+      {
+        "cacheCreation": 2440,
+        "cacheRead": 116338,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 2440
+        }
+      },
+      {
+        "cacheCreation": 799,
+        "cacheRead": 118778,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 138,
+          "edit": 661
+        }
+      },
+      {
+        "cacheCreation": 1833,
+        "cacheRead": 119577,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1833
+        }
+      },
+      {
+        "cacheCreation": 4392,
+        "cacheRead": 121410,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 4158,
+          "output": 234
+        }
+      },
+      {
+        "cacheCreation": 968,
+        "cacheRead": 125802,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 506,
+          "edit": 462
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/decision-drafts-via-accept/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/decision-drafts-via-accept/design.md": "# Design: Supersede, deviate and promote create drafts, sealed on accept\n\n## Context\n\nAll decision actions live in `crates/codev-engine/src/decisions_actions.rs`\nas pure planners returning a `Plan` that `apply::execute` runs (ADR 0001):\n\n- `plan_new` already branches on the status: `status_needs_seal` decides\n  whether the seal write joins the plan; a `proposed` ADR gets none.\n- `plan_supersede` (l. 342) renders the new ADR `Accepted`, rewrites the\n  old one to `Superseded` through `rewrite_frontmatter_status`, and adds a\n  seal entry for the new one — three writes.\n- `plan_deviate` (l. 759) renders through `render_new_deviate_adr`, which\n  hard-codes `Accepted`, and seals.\n- `plan_promote` (l. 630) renders through `render_promoted_adr`, which\n  hard-codes `Accepted`, seals, and rewrites the design block.\n- `plan_accept` (l. 545) refuses non-local and non-`proposed` targets,\n  rewrites the status to `Accepted`, adds the seal entry (or refuses with\n  `SealConflict` on a stale entry with another hash). It reads exactly one\n  file through an `FnOnce` reader.\n\nThe index (`crates/codev-engine/src/decisions.rs`) already only honours\n`supersedes` and `deviates_from` carried by `Accepted` ADRs\n(`resolve_in_effect` l. 321-340, `resolve_deviations` l. 237), and so does\n`build_summaries` in `crates/codev-cli/src/commands.rs` (l. 959-970) for\n`supersededBy`. A `proposed` draft therefore already leaves its target in\neffect: the index needs no change, only tests pinning the behaviour.\n\n`apply::execute` runs writes sequentially with no rollback: \"all or\nnothing\" in this codebase means every refusal is decided while planning,\nbefore the first write.\n\nConstraining decisions: ADR 0001 (planning is pure, the shell executes),\nADR 0002 (engine stays behind ports; the CLI owns the JSON contract),\nADR 0005 (inherited sources are read-only — accepting a deviation never\nwrites the inherited ADR).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- `supersede`, `deviate`, `promote` create `proposed`, unsealed drafts and\n  touch neither the old decision nor `seal.yaml`.\n- `accept` becomes the single place where a decision is sealed and where\n  the decisions it supersedes are retired, in one plan.\n- Refusals that would leave the decision set inconsistent\n  (`supersession_target_not_accepted`, `deviation_target_taken`) are\n  decided at planning time.\n\n**Non-Goals**\n\n- No opt-out flag to keep the one-shot behaviour (proposal, Assumptions).\n- No change to the index, to `codev validate` findings, to\n  `decision new`, or to `decision seal`.\n- No new `reject`/`withdraw` command for an abandoned draft: deleting the\n  file remains the way, as for any `proposed` ADR.\n\n## Decisions\n\n### Decision: Drafts reuse the existing renderers with a `Proposed` status\n\n`render_new_deviate_adr` and `render_promoted_adr` take the status as a\nparameter (like `render_new_adr` already does) and the three planners pass\n`DecisionStatus::Proposed`. The three planners drop their\n`seal::plan_seal_new` call and their `seal.yaml` write; `plan_supersede`\nalso drops the rewrite of the old ADR, so its plan is a single\n`CreateOnly` write, and its `source_content` reader is no longer needed —\nthe parameter is removed. `plan_supersede` keeps its existing refusals\n(`empty_title`, `unknown_decision_id`, `ambiguous_decision_id`,\n`cannot_supersede_inherited`).\n\n`existing_seal` becomes unused in `plan_supersede`, `plan_deviate` and\n`plan_promote`: it is removed from their signatures, and the CLI stops\nreading `seal.yaml` for these three commands — so a corrupt `seal.yaml`\nno longer blocks drafting, only accepting.\n\n`body_sha256` disappears from `SupersedePlan`, `DeviatePlan` and\n`PromotePlan`: nothing is sealed, and reporting a hash for a body the\nuser is about to rewrite would be misleading.\n\n**Alternatives considered**:\n\n- *Keep the seal parameter and branch on a `status` argument* (as\n  `plan_new` does): it would preserve a one-shot path nobody asked for and\n  keep two code paths to test per command.\n- *Route the three commands through `plan_new` with extra frontmatter*:\n  `promote` has its own body and design rewrite, and `deviate` its target\n  resolution; the shared part is already `render_frontmatter`.\n\n### Decision: `plan_accept` retires superseded targets in the same plan\n\n`plan_accept` reads the draft's `supersedes`. For each identifier it\nlooks up the **local** index entry with that short id (supersedes ids are\nlocal short ids, as written by `plan_supersede` and resolved by the\nindex):\n\n- no entry → skipped (lost link; `validate` already reports\n  `decision_supersedes_unknown`, and the index keeps the decision in\n  effect — the spec mirrors that rule);\n- entry whose status is not `Accepted` → refuse with\n  `ActionError::SupersessionTargetNotAccepted { id, target, status }`\n  (code `supersession_target_not_accepted`);\n- `Accepted` entry → read its source and add an `Overwrite` write of\n  `rewrite_frontmatter_status(.., Superseded)`.\n\nAll targets are checked before any write is added, so one refused target\nrefuses the whole acceptance. The seal entries of the targets are left as\nthey are: `rewrite_frontmatter_status` already preserves the body\nbyte-for-byte via `seal::body_slice` (CRLF included, covered by\n`rewriting_the_status_keeps_a_crlf_body_byte_for_byte`).\n\nThe reader becomes `FnMut(&Path) -> io::Result<String>` so it can be\ncalled for the draft and each target; a read failure maps to\n`unknown_decision_id` on the file concerned, as today.\n\n`AcceptPlan` gains `superseded: Vec<String>` (qualified ids), which the\nCLI maps to the additive `superseded` field of `DecisionAcceptedV1`\n(always serialized, empty array when none).\n\n**Alternatives considered**:\n\n- *Retire the old decision at `supersede` time and only seal at accept*:\n  contradicts the request — the old decision must stay in effect while the\n  new text is written.\n- *Let the index derive `superseded` and never rewrite the old file*: the\n  index already computes the effect, but the file's `status` would lie\n  (`accepted` while superseded), and `decision_unsealed`/list rendering\n  rely on the frontmatter status. The rewrite keeps files truthful.\n- *Silently skip non-accepted targets*: would let a second draft\n  \"supersede\" an already-superseded decision and produce a fork in the\n  chain without the user noticing.\n\n### Decision: `plan_accept` refuses a deviation whose target is taken\n\nFor each entry of the draft's `deviates_from`, `plan_accept` checks\nwhether another local `Accepted` entry already lists the same target in\nits `deviates_from`; if so it refuses with\n`ActionError::DeviationTargetTaken { id, target, by }` (code\n`deviation_target_taken`). Nothing is written to the inherited source\n(ADR 0005): the index hides the target once the draft is accepted.\n\nA `deviates_from` target that no longer exists is not refused — it stays\nthe `decision_dangling_deviation` warning of `validate`, consistent with\nthe lost-supersession rule.\n\n**Alternatives considered**:\n\n- *Rely on `codev validate`'s `decision_conflicting_deviations` error*:\n  that would let `accept` write a state that `validate` immediately\n  rejects; refusing earlier costs one lookup.\n\n### Decision: Write order inside the accept plan\n\nThe accept plan writes, in order: the draft's new content, the seal\nfile, then each superseded target. `apply::execute` has no rollback, so\nthe order is chosen so that an I/O failure midway degrades gracefully:\nonce the draft is `accepted`, the index already treats its targets as\nsuperseded (effect is computed from the accepting ADR), so a failure on a\ntarget leaves only a stale `status: accepted` label on it — visible in\n`decision list`, where the target shows `inEffect: false` with a\n`supersededBy` — that the user corrects by hand. The draft-then-seal order is the\nexisting one and is kept.\n\n**Alternatives considered**:\n\n- *Targets first*: a failure after retiring the old decision but before\n  accepting the new one would leave no decision in effect — worse.\n\n### Decision: Human output and help point to `accept`\n\n`render.rs` drops \"The ADR is sealed…\" for the three commands and prints,\nafter the created path: \"Draft created (`proposed`, not sealed). Write its\nbody, then run `codev decision accept <id>`.\" The `accept` rendering adds\none line per superseded decision (`↳ <qualified-id> → superseded`). The\nclap `about`/`long_about` of `supersede`, `deviate` and `promote` in\n`main.rs` describe the draft; `docs/en` and `docs/fr` (`reference/cli.md`,\n`reference/json-output.md`, `concepts.md`, `faq.md`,\n`guides/inherited-sources.md`, `reference/file-formats.md`) are updated\nin both editions.\n\n**Alternatives considered**: none worth noting — the wording mirrors what\n`decision new` already prints for a `proposed` decision.\n\n## Risks / Trade-offs\n\n- [Scripts or skills read `bodySha256` from `supersede`/`deviate`/`promote`\n  output, or expect the old ADR `superseded` right after `supersede`] →\n  marked **BREAKING** in the release note; the field is optional\n  (`skip_serializing_if`) in `DecisionDeviatedV1`/`DecisionPromotedV1`, so\n  its absence is already a valid v1 shape; `DecisionSupersededV1` never\n  had it. The installed codev skills do not call these commands (checked:\n  no occurrence under `crates/codev-agents`).\n- [A draft whose target is superseded by someone else in the meantime\n  can never be accepted] → `supersession_target_not_accepted` names the\n  target and its status; the user re-targets the draft by editing its\n  `supersedes` (or supersedes the newer decision).\n- [Partial write in `accept` (no rollback in `apply::execute`)] → write\n  order above; same exposure as today's two-write accept.\n- [Forgotten drafts accumulate as `proposed` ADRs] → they are visible in\n  `decision list` (marker `–`, status `proposed`) and never take effect.\n\n## Migration Plan\n\nNo data migration: existing ADRs and seals are untouched, and drafts\ncreated by `decision new` already follow this lifecycle. Users who\nsuperseded with the old version keep a consistent state. Rollback is a\nbinary downgrade; drafts created in between are plain `proposed` ADRs that\nthe old `accept` can still accept (without retiring the target — the old\n`supersede` had already done it).\n",
+    "_codev/changes/decision-drafts-via-accept/proposal.md": "# Proposal: Supersede, deviate and promote create drafts, sealed on accept\n\n## Why\n\n`codev decision new` already creates a `proposed`, unsealed draft that\n`codev decision accept` seals once its body is written. `supersede`,\n`deviate` and `promote` still create an `accepted` ADR sealed on the spot —\nwith an empty template body (or, for `promote`, placeholders to fill in) —\nso writing the actual text always ends in `codev decision seal --force`,\nwhich defeats the purpose of the seal. `supersede` also retires the old\ndecision before its replacement is even written.\n\n## What Changes\n\n- **BREAKING** `codev decision supersede <old-id> <title>` creates a\n  `proposed`, unsealed ADR carrying `supersedes: [\"<old-id>\"]`. The old\n  decision is no longer touched: it keeps its status and stays in effect\n  until the new one is accepted.\n- **BREAKING** `codev decision deviate <qualified-id> <title>` creates a\n  `proposed`, unsealed ADR carrying `deviates_from`. The inherited decision\n  stays in effect until the deviation is accepted.\n- **BREAKING** `codev decision promote <change> <title>` creates a\n  `proposed`, unsealed ADR from the design block. The design block is still\n  replaced by its reference line at promotion time, as today.\n- `codev decision accept <id>` completes the lifecycle: in the same\n  all-or-nothing operation it seals the draft, sets it to `accepted` and,\n  when the draft supersedes local decisions, sets each of them to\n  `superseded` (their body and their seal entry stay untouched).\n- `codev decision accept` refuses, without writing anything:\n  - a supersession whose target is no longer `accepted` (already\n    superseded by another accepted decision, deprecated, rejected or still\n    proposed) — new stable code `supersession_target_not_accepted`;\n  - a deviation whose inherited target is already deviated from by another\n    local `accepted` decision — new stable code `deviation_target_taken`\n    (the rule \"one target, one deviation\" is otherwise only caught by\n    `codev validate`).\n- The JSON output of `supersede`, `deviate` and `promote` reports the new\n  decision with `status: \"proposed\"` and no longer carries `bodySha256`;\n  the JSON output of `accept` gains a `superseded` array listing the\n  qualified identifiers moved to `superseded` (empty when none).\n- The human output of the three commands tells the user to write the body,\n  then run `codev decision accept <id>`.\n\n### Assumptions (no user available to ask)\n\n- No opt-out flag (such as `--accept`) is added to the three commands: the\n  request is that they *always* create a draft; `decision new --status\n  accepted` remains the only one-shot path.\n- `promote` keeps rewriting the design block at promotion time: the text\n  has moved into the ADR draft, and the reference line points to it\n  whatever its status.\n- `supersede` keeps accepting any existing local target, as today; a draft\n  whose target cannot be superseded any more is refused at `accept`, the\n  moment the old decision would change.\n- An unknown identifier in a draft's `supersedes` (written by hand) does\n  not block `accept` — consistent with the index, where a lost link does\n  not disqualify the decision; `codev validate` keeps reporting it.\n- Drafts already on disk are unaffected; ADRs created `accepted` by\n  previous versions keep their seal.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `decisions`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-engine::decisions_actions`: `plan_supersede`, `plan_deviate`,\n  `plan_promote` and `plan_accept`, plus `ActionError` (two new refusals).\n- `codev-cli`: the outcomes, human rendering and help text of the four\n  commands; `contract::v1` (`DecisionSupersededV1`, `DecisionDeviatedV1`,\n  `DecisionPromotedV1`, `DecisionAcceptedV1`).\n- Consumers of the JSON contract that relied on `bodySha256` being present\n  after `supersede`, `deviate` or `promote`, or on the old decision being\n  `superseded` right after `supersede`.\n- Documentation, in `docs/en` and `docs/fr`: `reference/cli.md`,\n  `reference/json-output.md`, `concepts.md`, `faq.md`,\n  `guides/inherited-sources.md`, `reference/file-formats.md` where they\n  describe these commands; `CHANGELOG.md` through the release note.\n\n## Domains\n\n<!-- No code diff yet (only planning files): domains ticked by judgement. -->\n\n- [ ] security\n- [ ] personal-data\n- [x] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Changed: **BREAKING** `codev decision supersede`, `codev decision deviate`\n  and `codev decision promote` now create a `proposed`, unsealed draft.\n  Write its body, then run `codev decision accept <id>`: only then is it\n  sealed, and the decision it supersedes marked `superseded`. Until then,\n  the old (or inherited) decision stays in effect. Their JSON output no\n  longer carries `bodySha256`.\n- Changed: `codev decision accept` now completes a supersession, and its\n  JSON output lists the decisions it marked `superseded`. It refuses a\n  draft whose target is no longer accepted, or whose inherited target is\n  already deviated from.\n",
+    "_codev/changes/decision-drafts-via-accept/specs/decisions/spec.md": "## MODIFIED Requirements\n\n### Requirement: Superseding a decision through the CLI\n\n`codev decision supersede <old-id> <new-title>` MUST create a new local\ndecision with `status: proposed` that references the old one in its\n`supersedes`. The new decision is a draft: it is created unsealed, so that\nits body can be written before it is accepted with\n`codev decision accept`. The command MUST NOT modify the old decision —\nneither its file nor its seal entry: the old decision keeps its status\nand stays in effect until the new one is accepted.\n\nWith `--json`, the command MUST write a document carrying the new\ndecision with `status: \"proposed\"`, its `path`, and the qualified\nidentifier and `path` of the old one, without any `bodySha256`.\n\n#### Scenario: Local supersession creates a draft\n\n- **GIVEN** a project containing an ADR `0003 accepted` titled \"Old\n  choice\"\n- **WHEN** the user runs `codev decision supersede 0003 \"New\n  choice\"`\n- **THEN** a new ADR `0007-new-choice.md` (or the next available `id`)\n  is created with `supersedes: [\"0003\"]` and `status: proposed`\n- **AND** `_codev/decisions/seal.yaml` carries no entry for the new ADR\n- **AND** the `0003` file is identical, down to the character, to what it\n  was before the command — its frontmatter still carries `status:\n  accepted`\n- **AND** the `0003` entry of `seal.yaml`, if any, is unchanged\n\n#### Scenario: The output points to acceptance\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision supersede 0003 \"New choice\"`\n- **THEN** the human output names the created draft and tells the user to\n  write its body, then run `codev decision accept <new-id>`\n\n#### Scenario: JSON output of a supersession\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision supersede 0003 \"New choice\"\n  --json`\n- **THEN** stdout carries a JSON document whose `newDecision` carries\n  `status: \"proposed\"`, with `newPath`, `oldQualifiedId:\n  \"project/0003\"`, `oldPath` and `status: []`\n- **AND** the document carries no `bodySha256`\n\n#### Scenario: Superseding an unknown id rejects everything\n\n- **GIVEN** a project in which `9999` does not exist\n- **WHEN** the user runs `codev decision supersede 9999 \"X\"`\n- **THEN** no file is written\n- **AND** the `unknown_decision_id` error message names `9999`\n\n#### Scenario: Superseding an inherited decision rejected\n\n- **GIVEN** a project inheriting from a source containing `path:~/shared/0100`\n- **WHEN** the user runs `codev decision supersede path:~/shared/0100\n  \"Our alternative\"`\n- **THEN** no file is written\n- **AND** the `cannot_supersede_inherited` error message explains that an\n  inherited decision is read-only and suggests deviating from it with\n  `codev decision deviate`\n\n### Requirement: The `codev decision deviate` command creates a deviation ADR\n\n`codev decision deviate <qualified-id> <title>` MUST create a local ADR\nwith `status: proposed`, `deviates_from: [\"<qualified-id>\"]` and a valid\nfrontmatter (`id`, `title`, `status`, `date`). The new ADR is a draft: it\nis created unsealed, and the inherited decision stays in effect until the\ndeviation is accepted with `codev decision accept`. With `--json`, the\ndocument carries the new decision with `status: \"proposed\"`, its `path`\nand the `targetQualifiedId`, without any `bodySha256`.\n\nThe command MUST refuse:\n\n- if `<qualified-id>` designates a local decision (`project/…`): stable\n  code `cannot_deviate_from_local`, with a message pointing to\n  `codev decision supersede`.\n- if `<qualified-id>` matches no indexed decision: stable code\n  `unknown_decision_id` (already existing).\n- if `<title>` is empty: stable code `empty_title` (already existing).\n\n#### Scenario: Deviation from an inherited `path:` decision\n\n- **GIVEN** a project inheriting from a source `path: ~/shared` containing\n  an ADR `path:~/shared/0100`\n- **WHEN** the user runs\n  `codev decision deviate path:~/shared/0100 \"Our local alternative\"`\n- **THEN** a new local ADR is created under\n  `_codev/decisions/NNNN-our-local-alternative.md` with\n  `deviates_from: [\"path:~/shared/0100\"]` and `status: proposed`\n- **AND** `_codev/decisions/seal.yaml` is neither created nor modified\n- **AND** `path:~/shared/0100` is still among the decisions in effect\n- **AND** the human output tells the user to write the body, then run\n  `codev decision accept <new-id>`\n\n#### Scenario: JSON output of a deviation\n\n- **GIVEN** the same project\n- **WHEN** the user runs\n  `codev decision deviate path:~/shared/0100 \"Our local alternative\" --json`\n- **THEN** stdout carries a JSON document whose `decision` carries\n  `status: \"proposed\"`, with `path`, `targetQualifiedId:\n  \"path:~/shared/0100\"` and `status: []`\n- **AND** the document carries no `bodySha256`\n\n#### Scenario: Refusal to deviate from a local decision\n\n- **GIVEN** a project containing a local ADR `0003 accepted`\n- **WHEN** the user runs `codev decision deviate project/0003 \"…\"`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `cannot_deviate_from_local` and suggests `codev decision supersede`\n\n#### Scenario: Refusal of an unknown target\n\n- **GIVEN** a project without any inherited source\n- **WHEN** the user runs\n  `codev decision deviate path:~/unknown/0100 \"…\"`\n- **THEN** no file is written\n- **AND** the error message names the stable code `unknown_decision_id`\n\n### Requirement: The `codev decision promote` command extracts a design block into an ADR\n\n`codev decision promote <change> <title>` MUST create a new local ADR\nunder `_codev/decisions/NNNN-<slug>.md`, with `status: proposed` and no\nseal entry — a draft, to be completed then accepted with\n`codev decision accept` — whose body reproduces **verbatim** the content\nof the `### Decision: <title>` block found under the `## Decisions`\nsection of the change's `design.md`. The new ADR contains a `## Decision`\nsection carrying that body, and the `## Context`, `## Consequences` and\n`## Alternatives considered` sections are emitted with a\n`<!-- placeholder -->` inviting the author to fill them in. With\n`--json`, the document carries the new decision with `status:\n\"proposed\"`, its `path`, the `sourceChange` and the `designPath`, without\nany `bodySha256`.\n\nThe \"verbatim\" body of the block means: all the text that follows the\n`### Decision: <title>` line up to the next line starting with `### ` or\n`## ` (excluded), without normalization.\n\nExplicit refusals — stable codes:\n\n- `unknown_change`: the change is not in `codev list`.\n- `cannot_promote_from_archived`: the target points to a directory under\n  `changes/archive/` — an archived design is history.\n- `design_missing`: the change has no `design.md`.\n- `decision_heading_not_found`: no `### Decision: <title>` block matches\n  in the design.\n- `ambiguous_decision_heading`: several blocks carry the same title —\n  the user disambiguates by editing.\n\n#### Scenario: Successful promotion\n\n- **GIVEN** a change `add-auth` whose `design.md` contains, under\n  `## Decisions`, a `### Decision: Use JWT` block with two\n  paragraphs of rationale\n- **WHEN** the user runs `codev decision promote add-auth\n  \"Use JWT\"`\n- **THEN** a new ADR is created under\n  `_codev/decisions/NNNN-use-jwt.md` with `status: proposed`, the current\n  `date`, and a valid frontmatter\n- **AND** its body contains a `## Decision` section with the two\n  paragraphs of rationale, byte for byte\n- **AND** `_codev/decisions/seal.yaml` is neither created nor modified\n- **AND** the human output tells the user to complete the ADR, then run\n  `codev decision accept <new-id>`\n\n#### Scenario: JSON output of a promotion\n\n- **GIVEN** the same change\n- **WHEN** the user runs `codev decision promote add-auth \"Use JWT\"\n  --json`\n- **THEN** stdout carries a JSON document whose `decision` carries\n  `status: \"proposed\"`, with `path`, `sourceChange: \"add-auth\"`,\n  `designPath` and `status: []`\n- **AND** the document carries no `bodySha256`\n\n#### Scenario: Refusal of an archived change\n\n- **GIVEN** a change that lives under `_codev/changes/archive/…-<name>/`\n- **WHEN** the user runs `codev decision promote <name> \"...\"`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `cannot_promote_from_archived`\n\n#### Scenario: Title not found\n\n- **GIVEN** a change `add-auth` whose `design.md` does not mention a\n  \"Use Kerberos\" block\n- **WHEN** the user runs `codev decision promote add-auth\n  \"Use Kerberos\"`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `decision_heading_not_found`\n\n#### Scenario: Ambiguous title\n\n- **GIVEN** a `design.md` containing **two**\n  `### Decision: Library choice` blocks (for example a revised version\n  of the first block written during the discussion)\n- **WHEN** the user runs `codev decision promote <c> \"Library\n  choice\"`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `ambiguous_decision_heading` and invites the user to edit one of the\n  two titles\n\n### Requirement: `decision accept` accepts and seals a proposed decision\n\n`codev decision accept <id>` SHALL turn a local decision whose status is\n`proposed` into an `accepted` decision and seal its body. When the\ndecision carries a `supersedes`, the same operation MUST also set the\nstatus of each local decision it names to `superseded` (see \"Accepting a\nsupersession retires the superseded decisions\"). The operation MUST\nproduce a single effect plan that rewrites the frontmatter `status` of\nthe accepted decision to `accepted`, writes its entry in\n`_codev/decisions/seal.yaml`, and rewrites the status of every superseded\ndecision; if the plan cannot be computed, none of them is written. The\nbody of the accepted ADR — everything after the frontmatter — MUST stay\nbyte for byte identical, so the recorded hash is the hash of the text the\nuser wrote. The command MUST refuse, without writing anything:\n\n- an unknown identifier, with the stable code `unknown_decision_id`;\n- an inherited decision, with the stable code `cannot_accept_inherited`,\n  since inherited decisions are read-only;\n- a decision whose status is not `proposed`, with the stable code\n  `decision_not_proposed`; for an `accepted` decision the message says\n  there is nothing to do and points to `codev decision supersede` to\n  replace it;\n- a decision whose `supersedes` names a local decision whose status is\n  not `accepted`, with the stable code `supersession_target_not_accepted`\n  naming that decision and its status;\n- a decision whose `deviates_from` names a target already deviated from\n  by another local `accepted` decision, with the stable code\n  `deviation_target_taken` naming the target and that other decision.\n\nWith `--json`, the command MUST write a document carrying the accepted\n`decision`, the `path` of its file, its `bodySha256`, and a `superseded`\narray holding the qualified identifier of each decision moved to\n`superseded` — empty when there is none.\n\n#### Scenario: A proposed decision is accepted and sealed\n\n- **GIVEN** a project containing a local ADR `0007` with `status:\n  proposed` whose body has been written, and no seal entry for `0007`\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** the ADR now carries `status: accepted`\n- **AND** its body is identical to what it was before the command\n- **AND** `seal.yaml` carries an entry for `0007` whose `bodySha256`\n  matches that body\n- **AND** `codev validate` reports neither `decision_seal_mismatch` nor\n  `decision_unsealed` for `0007`\n\n#### Scenario: JSON output of an acceptance\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision accept 0007 --json`\n- **THEN** stdout carries a JSON document with `decision.id: \"0007\"`,\n  `decision.status: \"accepted\"`, the `path` of the file, a `bodySha256`\n  prefixed with `sha256:`, `superseded: []`, and `status: []`\n\n#### Scenario: Refusal to accept an inherited decision\n\n- **GIVEN** a project inheriting from a source containing\n  `path:~/shared/0100` with `status: proposed`\n- **WHEN** the user runs `codev decision accept path:~/shared/0100`\n- **THEN** no write takes place\n- **AND** the error names the stable code `cannot_accept_inherited`\n\n#### Scenario: Refusal to accept a decision that is already accepted\n\n- **GIVEN** a project containing a local ADR `0003` with `status:\n  accepted`\n- **WHEN** the user runs `codev decision accept 0003`\n- **THEN** neither the ADR nor `seal.yaml` is modified\n- **AND** the error names the stable code `decision_not_proposed` and\n  points to `codev decision supersede`\n\n#### Scenario: Refusal to accept a decision with another status\n\n- **GIVEN** a project containing a local ADR `0004` with `status:\n  rejected`\n- **WHEN** the user runs `codev decision accept 0004`\n- **THEN** no write takes place\n- **AND** the error names the stable code `decision_not_proposed`\n\n#### Scenario: Status and seal are written together or not at all\n\n- **GIVEN** a project containing a local `proposed` ADR `0007`\n- **AND** a `_codev/decisions/seal.yaml` that cannot be read as a seal\n  file\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** the command fails\n- **AND** the ADR still carries `status: proposed`\n- **AND** `seal.yaml` is unchanged\n\n#### Scenario: Accepting a deviation hides the inherited decision\n\n- **GIVEN** a project inheriting `path:~/shared/0100 accepted`, and a\n  local ADR `0007 proposed` with `deviates_from: [\"path:~/shared/0100\"]`\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** `0007` carries `status: accepted` and is sealed\n- **AND** no file of the inherited source is written\n- **AND** `path:~/shared/0100` is no longer among the decisions in effect\n  and carries `deviatedBy: \"project/0007\"` in `codev decision list --json`\n\n#### Scenario: Refusal to accept a second deviation from the same target\n\n- **GIVEN** a project inheriting `path:~/shared/0100`, a local ADR\n  `0007 accepted` and a local ADR `0008 proposed`, both with\n  `deviates_from: [\"path:~/shared/0100\"]`\n- **WHEN** the user runs `codev decision accept 0008`\n- **THEN** no write takes place\n- **AND** the error names the stable code `deviation_target_taken`,\n  the target `path:~/shared/0100` and `project/0007`\n\n## ADDED Requirements\n\n### Requirement: Accepting a supersession retires the superseded decisions\n\nWhen `codev decision accept <id>` accepts a decision whose `supersedes`\nnames local decisions, the operation MUST set the frontmatter `status`\nof each of them to `superseded`, in the same effect plan as the\nacceptance and the seal. The body of each superseded decision MUST stay\nidentical down to the character, and its seal entry MUST NOT be\nmodified — since its body is unchanged, its seal remains valid. An\nidentifier of `supersedes` that matches no indexed decision does not\nblock the acceptance (the lost link is reported by `codev validate`, as\nbefore) and is not listed in `superseded`.\n\n#### Scenario: Accepting a supersession retires the old decision\n\n- **GIVEN** a project containing a sealed ADR `0003 accepted`, and a\n  local ADR `0007 proposed` with `supersedes: [\"0003\"]` whose body has\n  been written\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** `0007` carries `status: accepted` and `seal.yaml` carries an\n  entry for `0007` matching its body\n- **AND** the frontmatter of `0003` now carries `status: superseded`\n- **AND** the body of `0003` is identical down to the character\n- **AND** the `0003` entry of `seal.yaml` has exactly the same\n  `bodySha256` and `sealedAt` as before\n- **AND** `0003` is no longer among the decisions in effect, while `0007`\n  is\n\n#### Scenario: JSON output lists the superseded decisions\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision accept 0007 --json`\n- **THEN** the document carries `superseded: [\"project/0003\"]`\n\n#### Scenario: Refusal when the target was already superseded\n\n- **GIVEN** a project containing `0003 superseded`, `0008 accepted` with\n  `supersedes: [\"0003\"]`, and a draft `0009 proposed` with\n  `supersedes: [\"0003\"]`\n- **WHEN** the user runs `codev decision accept 0009`\n- **THEN** no write takes place — `0009` stays `proposed` and unsealed\n- **AND** the error names the stable code\n  `supersession_target_not_accepted`, the decision `0003` and its status\n  `superseded`\n\n#### Scenario: Refusal when one of several targets cannot be superseded\n\n- **GIVEN** a project containing `0003 accepted`, `0004 deprecated`, and\n  a draft `0009 proposed` with `supersedes: [\"0003\", \"0004\"]`\n- **WHEN** the user runs `codev decision accept 0009`\n- **THEN** no file is written — `0003` keeps `status: accepted`\n- **AND** the error names `supersession_target_not_accepted` and `0004`\n\n#### Scenario: A lost supersession link does not block acceptance\n\n- **GIVEN** a draft `0009 proposed` with `supersedes: [\"9999\"]`, while\n  `9999` does not exist\n- **WHEN** the user runs `codev decision accept 0009`\n- **THEN** `0009` is accepted and sealed\n- **AND** the JSON document carries `superseded: []`\n\n### Requirement: A draft does not take effect before it is accepted\n\nAs long as a decision created by `supersede`, `deviate` or `promote` is\n`proposed`, the decision index MUST treat it like any other proposed\ndecision: it is not in effect, and its `supersedes` or `deviates_from`\nMUST NOT remove its target from the decisions in effect, nor mark it\n`supersededBy` or `deviatedBy`.\n\n#### Scenario: The superseded decision stays in effect while the draft is written\n\n- **GIVEN** a project where `codev decision supersede 0003 \"New choice\"`\n  has created the draft `0007`\n- **WHEN** the user runs `codev instructions design --change <name>\n  --json`\n- **THEN** the `decisions` array contains `0003` and does not contain\n  `0007`\n\n#### Scenario: `decision list` shows the draft next to the decision in effect\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision list --json`\n- **THEN** the `0003` entry carries `inEffect: true` and no\n  `supersededBy`\n- **AND** the `0007` entry carries `status: \"proposed\"` and\n  `inEffect: false`\n\n## REMOVED Requirements\n\n### Requirement: `decision supersede` seals the new ADR without touching the old one's seal\n\n**Reason**: `codev decision supersede` no longer seals anything: it\ncreates an unsealed draft. Sealing the new decision, and keeping the old\none's seal untouched, now happen at acceptance — see \"Accepting a\nsupersession retires the superseded decisions\".\n**Migration**: after `codev decision supersede`, write the draft's body\nthen run `codev decision accept <new-id>`. A consumer reading\n`bodySha256` from the output of `supersede` reads it from the output of\n`accept` instead.\n"
+  },
+  "validate": {
+    "decision-drafts-via-accept": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "decision-drafts-via-accept",
+          "path": "_codev/changes/decision-drafts-via-accept"
+        }
+      ],
+      "status": []
+    }
+  }
+}

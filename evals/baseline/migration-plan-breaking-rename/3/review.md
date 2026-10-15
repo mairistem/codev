@@ -8,7 +8,7 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 Public `status` field removed in the same release, with no compatibility window
+#### R-migration-1 Public field removed with no compatibility period
 
 ```yaml
 severity: high
@@ -18,36 +18,37 @@ evidence: |
   `OrderResponse.status` becomes `OrderResponse.state`; the old name is not
   kept. The OpenAPI file is regenerated.
 recommendation: >-
-  The design's own context says "partners' integrations read `status` to know
-  when to ship": on deploy, every partner calling `GET /orders/{id}` gets no
-  `status` field (undefined) and stops shipping, with no warning. Use expand
-  and contract: return both `status` and `state` with the same value, mark
-  `status` as `deprecated: true` in `openapi.yaml` and keep `state` optional
-  or both required during the window, announce a removal date, and remove
-  `status` in a later change. Add to tasks.md a test that the response still
-  holds `status` equal to `state`, and amend the spec's requirement so the
-  deprecated field is part of the contract until its removal. The rejected
-  alternative "keeping both fields (duplication)" should be revisited on these
-  grounds.
+  Partners' integrations read `status` from the public `GET /orders/{id}`
+  (design.md#Context: "partners' integrations read `status` to know when to
+  ship"). On the day this ships, that field disappears: their code reads
+  `undefined`, never sees `paid`, and stops shipping orders, with no error
+  on either side. Use expand and contract instead: return both `status`
+  and `state` with the same value, mark `status` deprecated in
+  `openapi.yaml` (`deprecated: true`) with a removal date, and remove it in
+  a later change once partners have moved. Add a requirement and a
+  scenario to specs/orders-api/spec.md that a paid order still holds
+  `"status": "paid"` during the deprecation period, and a task in tasks.md
+  with a test for it; list partner integrations in proposal.md#Impact.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Release note does not mark the rename as BREAKING nor say what partners must do
+#### R-migration-2 Breaking rename not marked BREAKING in the release note
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
 location: "proposal.md#Release note"
 evidence: |
   - Changed: The order's `status` field is now called `state`.
 recommendation: >-
-  A partner reading this release note sees an ordinary "Changed" item and
-  gets no instruction, while their integration reading `status` breaks. Mark
-  the item **BREAKING** (or, with R-migration-1's fix, "Deprecated"), state
-  what consumers must do — read `state` instead of `status` — and by when
-  `status` will be removed.
+  Removing or renaming the `status` field of a public response breaks every
+  consumer reading it, yet the release note files it as a plain "Changed"
+  item: a partner reading it gets no signal that action is required before
+  upgrading. Mark it **BREAKING** (or **Deprecated**, if R-migration-1 is
+  fixed with a compatibility period), say what partners must do — read
+  `state` instead of `status` — and by when `status` will be removed.
 history:
   - status: open
     by: migration

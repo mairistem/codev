@@ -2,10 +2,10 @@
   "format": 2,
   "case": "accessibility-code-dropdown-keyboard-trap",
   "error": null,
-  "costUsd": 0.3070668,
-  "durationMs": 24618,
+  "costUsd": 0.3284856,
+  "durationMs": 25757,
   "consumption": {
-    "durationApiMs": 24856,
+    "durationApiMs": 25589,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,66 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 26521,
-      "cacheRead": 236769,
-      "output": 2328
-    }
+      "input": 1172,
+      "cacheCreation": 29469,
+      "cacheRead": 196483,
+      "output": 2623
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7417,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7417
+        }
+      },
+      {
+        "cacheCreation": 15716,
+        "cacheRead": 29556,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4180,
+          "skill": 11536
+        }
+      },
+      {
+        "cacheCreation": 3606,
+        "cacheRead": 45272,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3606
+        }
+      },
+      {
+        "cacheCreation": 1760,
+        "cacheRead": 48878,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1760
+        }
+      },
+      {
+        "cacheCreation": 970,
+        "cacheRead": 50638,
+        "input": 2,
+        "output": 286,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 970
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +84,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Keyboard trap: Tab cycles inside the open sort menu and Escape does not close it) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Open sort menu traps keyboard focus: Tab is captured and Escape does nothing) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +95,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n  event.preventDefault();\n  items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n",
+        "evidence": "function onKeyDown(event: React.KeyboardEvent) {\n  const index = items.current.findIndex((item) => item === document.activeElement);\n  if (event.key === \"ArrowDown\" || event.key === \"Tab\") {\n    event.preventDefault();\n    items.current[(index + 1) % SORT_OPTIONS.length]?.focus();\n  } else if (event.key === \"ArrowUp\") {\n    event.preventDefault();\n    items.current[(index - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length]?.focus();\n  }\n}\n",
         "history": [
           {
             "by": "accessibility",
@@ -56,13 +111,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 2.1.2 No Keyboard Trap and 2.1.1 Keyboard. A keyboard user opens the menu (focus moves to the first item), then presses Tab to leave: the handler cancels Tab and wraps focus back among the four items; Shift+Tab is cancelled too, and no Escape handler exists, so the only way out is to choose an option, which changes the sort. Remove \"Tab\" from the handler and close the menu when Tab moves focus out (APG menu button pattern); handle Escape to close the menu and return focus to the button (button.current?.focus()). Alternatively use a native <select> with a <label>, which has none of these problems.",
+        "recommendation": "WCAG 2.1.2 No Keyboard Trap (and 2.1.1 Keyboard). A keyboard user who opens \"Sort: …\" gets focus moved into the menu (line 12); pressing Tab (or Shift+Tab) is prevented and only cycles to the next item, and Escape has no handler, so the only way out is to pick an option — the user cannot leave the menu without changing the sort, nor reach the product list or the rest of the page. Per the APG menu button pattern, handle Escape (close the menu, return focus to the menu button without calling onChange) and stop intercepting Tab: let it close the menu and move focus on naturally. Also close the menu when focus leaves it, and add a test pressing Tab and Escape in the open menu.",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Keyboard trap: Tab cycles inside the open sort menu and Escape does not close it"
+        "title": "Open sort menu traps keyboard focus: Tab is captured and Escape does nothing"
       },
       {
         "awaiting": "author",
@@ -78,18 +133,18 @@
           }
         ],
         "id": "R-accessibility-2",
-        "line": 36,
+        "line": 44,
         "location": "src/components/SortMenu.tsx:34",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 4.1.2 Name, Role, Value. aria-expanded is hard-coded to \"false\": when a screen reader user activates the button and the menu opens, the button still reports \"collapsed\", so its state contradicts what is on screen. Bind it to the state: aria-expanded={open}.",
+        "recommendation": "WCAG 4.1.2 Name, Role, Value. aria-expanded is hard-coded to \"false\": after a screen reader user presses Enter on \"Sort: Newest\", the menu opens but the button still reports \"collapsed\", so the state change is misreported. Bind it to the state: aria-expanded={open}.",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "The menu button always announces \"collapsed\""
+        "title": "Menu button always announces \"collapsed\", even when the menu is open"
       }
     ],
     "format": 1,

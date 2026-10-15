@@ -8,51 +8,36 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 A send that times out after the relay accepted it is sent again
+#### R-ops-1 A send that times out after the relay accepted it is retried, duplicating the e-mail
 
 ```yaml
 severity: medium
 confidence: low
 location: "src/worker.rs:46-48"
 evidence: |
-  Err(SendError::Unavailable) => {
-      let delay = RETRY_STEP * job.attempts;
-      queue.release(job.id, delay);
+              Err(SendError::Unavailable) => {
+                  let delay = RETRY_STEP * job.attempts;
+                  queue.release(job.id, delay);
 recommendation: >-
-  An SMTP send is not idempotent: when the relay accepts the message but its
-  answer arrives after SEND_TIMEOUT, the mailer gives up and, if it reports
-  that as `Unavailable`, the job is released and the recipient gets the
-  e-mail twice (up to twelve times while the relay stays slow — the very
-  situation this change is for). Give each job a stable Message-ID derived
-  from `job.id` so retries are recognisable downstream, or have the mailer
-  distinguish a timeout after DATA from a refused connection and not retry
-  it blindly. Confidence is low: the mailer implementation, which decides
-  how a timeout is reported, is not part of the diff.
+  Check how the `Mailer` implementation maps a timeout reached after DATA was sent. If it returns `Unavailable`, the relay may already have accepted the message and the release sends it again (up to 12 times during an outage with slow answers). Either distinguish an ambiguous timeout from a refused connection in the worker's handling, or make the send idempotent (a stable Message-ID per job that the relay deduplicates). Not verified: the mailer implementation is not in the change.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 No metric shows the backlog or the send latency
+#### R-ops-2 The health beat does not depend on the queue being reachable
 
 ```yaml
 severity: medium
 confidence: low
-location: "src/worker.rs:30-34"
+location: "src/worker.rs:26-29"
 evidence: |
-  match mailer.send(&job.message, SEND_TIMEOUT) {
-      Ok(()) => {
-          queue.ack(job.id);
-          health.count(Outcome::Sent);
+          health.beat();
+          let Some(job) = queue.next(POLL) else {
+              continue;
+          };
 recommendation: >-
-  The worker exports only outcome counters (`notifier_jobs_total{outcome}`)
-  and a liveness beat. When it falls behind — a slow relay taking close to
-  SEND_TIMEOUT per message, or more e-mails queued than one worker sends —
-  `/healthz` stays green and the counters keep rising, so an operator sees
-  nothing until users report late e-mails. Record the send duration (a
-  histogram) and expose the queue depth or the age of the oldest pending
-  job. Confidence is low: such a gauge may already be exported outside the
-  diff.
+  `Queue::next` returns `None` both for an empty queue and, depending on its implementation, for a database it cannot reach; the worker beats before polling, so `/healthz` stays green and no log is written while no job can be taken. If the implementation swallows database errors, beat only after a successful poll (or have `next` return a `Result` and log the error with fields). Not verified: the queue implementation is not in the change.
 history:
   - status: open
     by: ops

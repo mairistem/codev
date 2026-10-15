@@ -1,0 +1,297 @@
+{
+  "format": 2,
+  "case": "plan-update-notice-and-self-update",
+  "error": null,
+  "costUsd": 1.7246390000000005,
+  "durationMs": 294905,
+  "consumption": {
+    "durationApiMs": 293233,
+    "turns": 30,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1158,
+      "cacheCreation": 104697,
+      "cacheRead": 2067680,
+      "output": 23624
+    },
+    "toolCalls": 29,
+    "orientationCalls": 17,
+    "calls": [
+      {
+        "cacheCreation": 7687,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7687
+        }
+      },
+      {
+        "cacheCreation": 2409,
+        "cacheRead": 29826,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2409
+        }
+      },
+      {
+        "cacheCreation": 29236,
+        "cacheRead": 32235,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 15720,
+          "skill": 13516
+        }
+      },
+      {
+        "cacheCreation": 781,
+        "cacheRead": 61471,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev --version": 781
+        }
+      },
+      {
+        "cacheCreation": 2057,
+        "cacheRead": 62252,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2057
+        }
+      },
+      {
+        "cacheCreation": 3062,
+        "cacheRead": 64309,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "search": 3062
+        }
+      },
+      {
+        "cacheCreation": 12143,
+        "cacheRead": 67371,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12084,
+          "output": 58
+        }
+      },
+      {
+        "cacheCreation": 474,
+        "cacheRead": 79514,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 474
+        }
+      },
+      {
+        "cacheCreation": 3784,
+        "cacheRead": 79988,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2556,
+          "search": 1228
+        }
+      },
+      {
+        "cacheCreation": 6909,
+        "cacheRead": 83772,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 6909
+        }
+      },
+      {
+        "cacheCreation": 1098,
+        "cacheRead": 90681,
+        "input": 2,
+        "output": 67,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1073,
+          "output": 25
+        }
+      },
+      {
+        "cacheCreation": 3591,
+        "cacheRead": 91779,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3529,
+          "output": 62
+        }
+      },
+      {
+        "cacheCreation": 2167,
+        "cacheRead": 95370,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2167
+        }
+      },
+      {
+        "cacheCreation": 2971,
+        "cacheRead": 97537,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2971
+        }
+      },
+      {
+        "cacheCreation": 543,
+        "cacheRead": 100508,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 543
+        }
+      },
+      {
+        "cacheCreation": 1900,
+        "cacheRead": 101051,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1900
+        }
+      },
+      {
+        "cacheCreation": 2289,
+        "cacheRead": 102951,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2274,
+          "output": 15
+        }
+      },
+      {
+        "cacheCreation": 4877,
+        "cacheRead": 105240,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4877
+        }
+      },
+      {
+        "cacheCreation": 2795,
+        "cacheRead": 110117,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2781,
+          "output": 14
+        }
+      },
+      {
+        "cacheCreation": 2413,
+        "cacheRead": 112912,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 2413
+        }
+      },
+      {
+        "cacheCreation": 1167,
+        "cacheRead": 115325,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 442,
+          "shell": 725
+        }
+      },
+      {
+        "cacheCreation": 3311,
+        "cacheRead": 116492,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3311
+        }
+      },
+      {
+        "cacheCreation": 5234,
+        "cacheRead": 119803,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 3,
+        "sources": {
+          "edit": 5234
+        }
+      },
+      {
+        "cacheCreation": 1799,
+        "cacheRead": 125037,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 1227,
+          "edit": 572
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/update-notice-and-self-update/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/update-notice-and-self-update/design.md": "# Design: Update notice and `codev self-update`\n\n## Context\n\nWhat exists today, observed in the code:\n\n- `codev-cli/src/main.rs` builds one `Ctx` (`RealFileSystem`, `SystemEnv`,\n  `SystemClock`, `RealProcessRunner`, `VERSION`) and dispatches a `match` on\n  `Command`; `main` calls `std::process::exit(run(cli))`. There is no hook\n  that runs after every command.\n- The only network access is `codev sources update`, which drives `git`\n  through the `ProcessRunner` port (`codev-engine/src/ports.rs`); tests use\n  `MockProcessRunner`, keyed by `(program, args prefix)`. There is no HTTP\n  crate in the workspace.\n- A per-user cache root already exists for inherited sources:\n  `$XDG_CACHE_HOME/codev/` or `~/.cache/codev/`\n  (`codev-engine/src/sources/cache.rs::root`).\n- The `FileSystem` port is text-only (`read_to_string`, `write(&str)`) and has\n  no permission or directory-removal operation. `Clock` only gives\n  `today()` as `YYYY-MM-DD`. `Env` gives variables, the current and the home\n  directory, not the path of the running executable.\n- Releases publish `codev-<version>-<target>.tar.gz|zip` and a `SHA256SUMS`\n  in `sha256sum` format; `install.sh` and `install.ps1` resolve the latest\n  version through `https://api.github.com/repos/mairistem/codev/releases/latest`\n  (`_codev/specs/distribution/spec.md`).\n- `codev doctor` MUST NOT access the network (`_codev/specs/doctor/spec.md`);\n  `codev status --json` MUST NOT change shape. Both are honored by keeping\n  the notice off for `doctor` and for `--json`.\n- `codev update` already exists and regenerates skills; the new command is\n  therefore named `self-update` to avoid any confusion.\n\nConstraining decisions: [0001](../../decisions/0001-functional-core-imperative-shell.md)\n(pure decisions, effects executed by the shell) and\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md) (crate graph,\nfour ports, no new port without need).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Every decision of the flow — is a check due, is the notice eligible, which\n  asset to fetch, does the checksum match, what is the replacement plan — is\n  a pure function, testable without network or disk.\n- No new crate dependency; no change to any existing JSON shape.\n\n**Non-Goals**\n\n- Snoozing a version, a project-level minimum codev version, a `--json`\n  output for `self-update` (it touches no project, like `docs` and\n  `completions`, which have none either).\n- Detecting the installation method (cargo, installer, manual).\n- Signature verification beyond the published SHA-256 (see Risks).\n- Changing the skills to relay the notice.\n\n## Decisions\n\n### Decision: Pure logic in `codev-core::release`, effects in `codev-engine::self_update`\n\n`codev-core` gains a `release` module with no I/O\n([0001](../../decisions/0001-functional-core-imperative-shell.md)):\n\n- `Version` (strict `X.Y.Z` parse, ordering); a tag that does not match\n  `vX.Y.Z` is \"no information\", which covers pre-releases defensively.\n- `target_triple()` — the release target of the running binary, chosen at\n  compile time with `cfg!(target_os, target_arch)` among the four published\n  targets, `None` otherwise — and `asset_name(version, target)`.\n- `parse_latest_release(json) -> Option<Version>` (the `tag_name` of the\n  GitHub API answer, via `serde_json`, already a dependency of the core).\n- `parse_sha256sums(text, file_name) -> Option<[u8; 32]>` and\n  `verify(expected, actual) -> Result<(), ChecksumMismatch>`.\n- `CheckState { checked_at: u64, latest: Option<Version> }` (serialized as\n  JSON) and `check_due(state, now) -> bool` (missing, unreadable or older\n  than 24 h).\n- `notice_eligible(NoticeContext { stderr_tty, json, ci, opted_out,\n  command })` and `notice_line(running, latest) -> Option<String>`.\n- `ReplacePlan` — the ordered steps of a replacement for a platform\n  (`Unix`: rename new over current; `Windows`: rename current to\n  `codev.exe.old`, rename new to `codev.exe`), so both orders are tested on\n  every OS.\n\n`codev-engine` gains `self_update` with the executors: `check_for_update`\n(cache read, maybe one request, cache write) and `install(version_choice)`\n(resolve, preflight, download, verify, extract, smoke-test, replace,\nclean up). `codev-cli` only wires the subcommand, the confirmation prompt and\nthe notice hook.\n\n**Alternatives considered**: putting everything in `codev-cli` — quicker,\nbut the checksum and replacement logic would only be testable by running the\nbinary; a new crate `codev-update` — rejected by the promotion rule of\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md): no own heavy\ntest cycle, no external consumer.\n\n### Decision: Network through `curl` behind the `ProcessRunner` port\n\nAll requests run\n`curl -fsSL --proto =https --proto-redir =https --max-time <s> -o <file> <url>`\n(or to stdout\nfor the API answer) through `ProcessRunner`: 2 s for the background check,\na longer limit (60 s) for the explicit `self-update` downloads. Archive\nextraction runs `tar -xzf` (macOS, Linux) or `tar -xf` on the `.zip`\n(Windows 10+ ships bsdtar as `tar.exe`, which reads zip). A missing `curl`\nor `tar` (exit `127` from `RealProcessRunner`) is a clear `self-update`\nerror and a silent skip for the check.\n\nFor `--version X.Y.Z`, existence is established by downloading the\nrelease's `SHA256SUMS`: an HTTP 404 (`curl -f` fails) means \"no such\nrelease\", without a second API call.\n\n**Alternatives considered**: an HTTP client crate (`ureq` + `rustls`) —\nself-contained and with real timeouts, but adds a TLS stack and dozens of\ntransitive crates to a binary that today has no network code, and would need\na fifth port to stay testable, against\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md);\n`git ls-remote --tags` for the latest version — works without the API rate\nlimit but needs `git` and still leaves the download to another tool.\n`curl` and `tar` are exactly what `install.sh` already requires, and\n`MockProcessRunner` makes every scenario testable offline.\n\n### Decision: Small extensions of existing ports, no new port\n\n- `FileSystem` gains `read_bytes(path)` (to hash the archive),\n  `remove_dir_all(path)` (staging cleanup) and `set_executable(path)`\n  (`0o755` on Unix, no-op on Windows). `MemoryFileSystem` implements them,\n  storing bytes alongside text.\n- `Clock` gains `now_unix() -> u64`; the fixed clock used in tests can be\n  built with an instant.\n- `Env` gains `current_exe() -> io::Result<PathBuf>`, so the replaced path is\n  injectable in tests.\n\nThese keep the four ports of\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md); they widen\nthem only where the existing operations cannot express the need.\n\n**Alternatives considered**: calling `std::fs` directly from the CLI for the\nbinary bits — breaks in-memory testing of the most dangerous step; a\ndedicated `BinaryStore` port — a fifth port for three methods.\n\n### Decision: Stage next to the binary, verify, smoke-test, then rename\n\n`install` runs, in order, stopping at the first failure:\n\n1. **Preflight**: `current_exe()`, resolve symlinks; create the staging\n   directory `<exe dir>/.codev-self-update-<version>/`. Failure → \"directory\n   not writable\" error naming it and the installer, before any download.\n2. **Resolve** the version (API or `--version`); equal to running → \"up to\n   date\", clean up, exit `0`.\n3. **Download** the archive and `SHA256SUMS` into the staging directory.\n4. **Verify**: SHA-256 of `read_bytes(archive)` against the entry for the\n   exact asset name; mismatch → error with both digests.\n5. **Extract** with `tar`; **smoke-test** by running the extracted binary\n   with `--version` and requiring `codev <version>` on stdout.\n6. **Replace** following `ReplacePlan`: a `rename` inside one directory is\n   atomic on Unix, so the path holds the old or the new binary, never a\n   partial one. On Windows the running `codev.exe` cannot be overwritten but\n   can be renamed: it becomes `codev.exe.old`, then the new binary takes its\n   name; if the second rename fails, the first is undone.\n7. **Clean up** the staging directory on every exit path (a guard that runs\n   on drop as well as on error).\n\nOn Windows, every start of codev removes a `codev.exe.old` next to the\nrunning executable, silently ignoring failures (it may still be locked by\nthe process that just finished).\n\nStaging in the executable's directory, rather than in the system temp\ndirectory, guarantees the final `rename` stays on one volume (no\ncopy+remove fallback) and doubles as the writability check.\n\n**Alternatives considered**: overwrite in place with `copy` — not atomic, a\ncrash leaves a truncated binary; the `self-replace` crate — handles Windows\nwell but is a new dependency for ten lines of renames; staging in the\nsystem temp directory — risks a cross-device rename.\n\n### Decision: The notice runs after the command, from `run`, on cached state\n\n`run` computes the command's exit code, then, if\n`notice_eligible(...)` holds, calls `check_for_update` and prints\n`notice_line` to stderr before returning. Eligibility is decided once from\nthe parsed `Command` (excluded: `Doctor`, `Completions`, `Docs`,\n`SelfUpdate`; any `json: true`), `std::io::stderr().is_terminal()`, and the\nvariables `CI` and `CODEV_NO_UPDATE_CHECK` (set and non-empty).\n\nThe state lives in `<cache root>/update-check.json`, the cache root of\n`sources::cache::root`. A due check writes the state even when the request\nfails (`latest: null`), so an offline machine retries once a day, not on\nevery command. Any error reading or writing the state is swallowed: the\nnotice is never worth a failure.\n\nRunning after the command means the 2 s worst case is paid once a day,\nafter the user already has their result.\n\n**Alternatives considered**: a detached background process — no latency at\nall, but leaves orphan processes, races on the state file and is harder to\ntest; checking before the command — delays the output the user asked for;\nshowing the notice in `codev status --json` for skills — changes a frozen\ncontract and is out of scope.\n\n## Risks / Trade-offs\n\n- [The SHA-256 and the archive come from the same release: whoever can\n  publish a release can publish a matching checksum] → It still detects\n  corruption and tampering in transit or on a mirror, matching the\n  guarantee of `install.sh`; downloads and redirects are HTTPS-only\n  (`--proto =https --proto-redir =https`). Signed releases are a separate change.\n- [The archive layout and names become a contract for installed binaries:\n  renaming a target or the archive folder breaks `self-update` of older\n  versions] → The design reads the asset name and the in-archive path\n  (`codev-<version>-<target>/codev[.exe]`) from the distribution spec; the\n  CLI reference documents that `install.sh` remains the fallback.\n- [GitHub API rate limit (60 unauthenticated requests per hour per IP), for\n  example behind a shared NAT] → One request per user per day; a rate-limit\n  answer is just a failed check, silent and retried the next day.\n- [`curl`/`tar` missing or too old (Windows before 10 1803)] → The check\n  skips silently; `self-update` fails with a message pointing to\n  `install.ps1`/`install.sh`.\n- [Replacing a binary the user did not install with the installer, e.g. a\n  `cargo install` build] → The confirmation shows the path being replaced;\n  the user explicitly asked; refusal when the directory is not writable.\n- [The smoke-test runs a downloaded binary] → It runs only after the SHA-256\n  matched, with `--version` only, which reads nothing and writes nothing.\n- [A stale `update-check.json` after a manual upgrade shows a notice for a\n  version already installed] → The notice compares with the running\n  version, so it disappears as soon as the new binary runs.\n- [2 s added once a day on a slow network] → Hard `--max-time`; opt-out via\n  `CODEV_NO_UPDATE_CHECK`; disabled in CI and when stderr is not a terminal.\n\n## Migration Plan\n\nNo migration: nothing existing changes shape. The first release that ships\nthis feature can only notify users once they have it, so the CHANGELOG and\nREADME tell current users to upgrade once with the installer. Rollback: a\nrelease without the feature simply stops checking; the cache file is\nharmless and ignored.\n\n## Open Questions\n\n- The exact wording of the notice and of the confirmation prompt can be\n  settled during implementation, within the constraints of the spec (one\n  line, both versions, `codev self-update`).\n",
+    "_codev/changes/update-notice-and-self-update/proposal.md": "# Proposal: Update notice and `codev self-update`\n\n## Why\n\nUsers stay on old codev versions without knowing it: nothing tells them a\nrelease exists, and upgrading means finding and re-running the installer\none-liner by hand. Each release now changes the skills and the JSON contract\nthey consume, so a stale binary costs more than it used to.\n\n## What Changes\n\n- **Update notice.** At most once a day, codev asks GitHub Releases for the\n  latest version. When it is newer than the running one, a human-mode\n  command ends with a one-line notice on stderr naming both versions and\n  `codev self-update`. The check never installs anything, never changes a\n  command's stdout, its JSON output or its exit status, and stays silent when\n  the network is unavailable.\n- The notice is off in `--json` mode, when stderr is not a terminal, in CI\n  (`CI` set), and when `CODEV_NO_UPDATE_CHECK` is set. `codev doctor`,\n  `codev completions`, `codev docs` and `codev self-update` never trigger the\n  check, so `doctor` stays offline as its spec requires.\n- **New command `codev self-update`.** Explicitly replaces the running binary\n  with the latest release (or `--version <x.y.z>`): it downloads the archive\n  of the current platform and `SHA256SUMS` from the GitHub Release, verifies\n  the SHA-256, checks that the new binary runs and reports the expected\n  version, then swaps it in place of the running binary. Any failure leaves\n  the installed binary untouched.\n- `codev self-update` asks for confirmation on a terminal; `--yes` skips it.\n  `--check` only reports whether an update is available and installs nothing.\n  After a successful update, it reminds the user to run `codev update` in\n  each project so the skills match the new binary.\n- Works outside a codev project, like `docs` and `completions`.\n\n## Capabilities\n\n### New Capabilities\n\n- `self-update`\n\n### Modified Capabilities\n\n### Removed Capabilities\n\n## Impact\n\n- **Code**: a new update-check and self-update flow in `codev-engine`\n  (release resolution, version comparison, checksum verification,\n  replacement plan) driven by `codev-cli` (new `self-update` subcommand, the\n  notice hook after each command). Network access goes through the existing\n  `ProcessRunner` port; today `codev sources update` (via `git`) is the only\n  command that contacts a remote service.\n- **State**: a small per-user cache file (time of the last check, latest\n  version seen) outside any project.\n- **Dependencies**: no new crate expected; `sha2` is already used. Relies on\n  `curl` and `tar`, already required by `install.sh` and shipped with\n  Windows 10+.\n- **Releases**: relies on the existing release layout (archive names,\n  `SHA256SUMS`) defined in `_codev/specs/distribution/spec.md`; that layout\n  becomes a contract for already installed binaries.\n- **Documentation**: `docs/en` and `docs/fr` — CLI reference (new\n  `codev self-update` section, `codev --help` listing), installation chapter\n  (upgrading, disabling the notice), FAQ entry; README mention of\n  `codev self-update`.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- The check interval is 24 hours and the request times out after about two\n  seconds, so a slow network costs at most that, once a day.\n- Opt-out is per user through the environment (`CODEV_NO_UPDATE_CHECK`), not\n  per project in `_codev/config.yaml`: the binary is per machine, not per\n  repository.\n- Pre-release tags are ignored; only `vX.Y.Z` releases count.\n- `--version` may install an older version (an explicit downgrade); the\n  notice only ever points upward.\n- Binaries built with `cargo install` are replaced like any other: the\n  command does not try to detect how codev was installed, and refuses only\n  when the binary's directory is not writable, pointing to the installer.\n- Snoozing a given version and a project-level minimum codev version are out\n  of scope.\n\n## Domains\n\n- [x] security\n- [ ] personal-data — the check sends no identifier beyond what an HTTP request to GitHub carries\n- [x] user-interface\n- [x] performance\n- [x] operations\n- [ ] migration — no existing behavior, configuration or JSON output changes\n\n## Release note\n\n- Added: codev now tells you, at most once a day, when a newer release is available. Set `CODEV_NO_UPDATE_CHECK=1` to turn the notice off.\n- Added: `codev self-update` downloads the latest release, verifies its SHA-256 checksum and replaces the installed binary; `--check` only reports whether an update exists.\n",
+    "_codev/changes/update-notice-and-self-update/specs/self-update/spec.md": "## Purpose\n\nKeep users on a current codev: tell them, unobtrusively, when a newer\nrelease exists, and give them one explicit command that installs it safely\n— never an automatic installation.\n\n## ADDED Requirements\n\n### Requirement: codev checks for a newer release at most once a day, without side effects\n\nAfter a command eligible for the notice (see the next requirement) has done\nits work, codev SHALL determine the latest published release of codev, the\nhighest `vX.Y.Z` GitHub Release of the codev repository, pre-releases\nexcluded. It MUST contact the network for this at most once every 24 hours\nper user; in between, it reuses the last result it recorded, kept outside\nany project. When the request takes more than about two seconds, fails, or\nreturns something unreadable, codev MUST give up silently and try again at\nthe next interval.\n\nThe check MUST NOT install, download or modify any binary, MUST NOT write\ninside the project, and MUST NOT change the command's stdout, its JSON\noutput or its exit status.\n\n#### Scenario: First command of the day records the latest release\n\n- **GIVEN** codev `0.5.0` and no check during the last 24 hours\n- **AND** the latest release is `v0.6.0`\n- **WHEN** the user runs `codev list` in a terminal\n- **THEN** codev queries the latest release once\n- **AND** records `0.6.0` with the time of the check\n\n#### Scenario: A second command within 24 hours stays offline\n\n- **GIVEN** a check recorded two hours ago that saw `0.6.0`\n- **WHEN** the user runs `codev status`\n- **THEN** codev does not contact the network\n- **AND** it uses the recorded `0.6.0`\n\n#### Scenario: Network unavailable\n\n- **GIVEN** no check during the last 24 hours and no network access\n- **WHEN** the user runs `codev list`\n- **THEN** the command prints exactly what it prints without the check\n- **AND** its exit status is unchanged\n- **AND** no error or warning about the check is printed\n\n#### Scenario: Pre-releases are ignored\n\n- **GIVEN** codev `0.5.0`, and published releases `v0.5.0` and\n  `v0.6.0-rc.1`\n- **WHEN** the check runs\n- **THEN** the latest release is `0.5.0`\n- **AND** no notice is printed\n\n### Requirement: A newer release is announced in one line on stderr, only to a human\n\nWhen the latest known release is strictly newer than the running version,\nan eligible command SHALL end with one line on stderr naming the running\nversion, the latest version, and the command `codev self-update`. The line\nMUST be printed at most once per command run.\n\nA command is eligible only when all of these hold; otherwise codev MUST\nneither check nor print the notice:\n\n- stderr is a terminal;\n- `--json` was not requested;\n- the `CI` environment variable is not set;\n- the `CODEV_NO_UPDATE_CHECK` environment variable is not set;\n- the command is none of `codev doctor`, `codev completions`, `codev docs`\n  and `codev self-update`.\n\n#### Scenario: Notice after a command on an outdated version\n\n- **GIVEN** codev `0.5.0` and a recorded latest release `0.6.0`\n- **WHEN** the user runs `codev list` in a terminal\n- **THEN** the last line of stderr names `0.5.0`, `0.6.0` and\n  `codev self-update`\n- **AND** stdout is the same as without the notice\n\n#### Scenario: No notice when up to date\n\n- **GIVEN** codev `0.6.0` and a recorded latest release `0.6.0`\n- **WHEN** the user runs `codev list` in a terminal\n- **THEN** no line names `codev self-update`\n\n#### Scenario: No notice in JSON mode\n\n- **GIVEN** codev `0.5.0` and a recorded latest release `0.6.0`\n- **WHEN** the user runs `codev status --json`\n- **THEN** stdout is one JSON document identical in shape to the one\n  printed without the notice\n- **AND** stderr names no `codev self-update`\n\n#### Scenario: Opt-out and CI disable the check entirely\n\n- **GIVEN** `CODEV_NO_UPDATE_CHECK=1` or `CI=true` in the environment\n- **AND** no check during the last 24 hours\n- **WHEN** the user runs `codev list`\n- **THEN** codev does not contact the network\n- **AND** no notice is printed\n\n#### Scenario: `codev doctor` stays offline\n\n- **GIVEN** no check during the last 24 hours\n- **WHEN** the user runs `codev doctor` in a terminal\n- **THEN** codev does not contact the network for a release check\n- **AND** no notice is printed\n\n#### Scenario: Output redirected\n\n- **GIVEN** codev `0.5.0` and a recorded latest release `0.6.0`\n- **WHEN** a script runs `codev list 2> log.txt`\n- **THEN** `log.txt` names no `codev self-update`\n\n### Requirement: `codev self-update` installs a release only on explicit request\n\n`codev self-update` SHALL resolve the version to install — the latest\nrelease, or the one given by `--version <x.y.z>` — and compare it with the\nrunning version. It MUST work outside a codev project.\n\n- When the version to install equals the running version, it MUST say that\n  codev is up to date, change nothing, and exit `0`.\n- With `--check`, it MUST print the running and the latest versions and\n  whether an update is available, install nothing, and exit `0`, even when\n  an update is available.\n- Otherwise, on a terminal, it MUST show both versions and ask for\n  confirmation before downloading; `--yes` skips the question. When stdin is\n  not a terminal and `--yes` is absent, it MUST refuse with a non-zero exit\n  status, naming `--yes`. A declined confirmation changes nothing and exits\n  `0`.\n- `--version` MAY name an older version: that is an explicit downgrade.\n  A version with no published release MUST be refused with a non-zero exit\n  status, naming the version.\n\nWhen the latest release cannot be resolved (network failure, timeout), the\ncommand MUST fail with a non-zero exit status and a message that says the\nrelease could not be reached, without touching the installed binary.\n\n#### Scenario: Update to the latest release, confirmed\n\n- **GIVEN** codev `0.5.0` and a latest release `v0.6.0`\n- **WHEN** the user runs `codev self-update` in a terminal and confirms\n- **THEN** the installed binary is replaced by the `0.6.0` one\n- **AND** `codev --version` then prints `0.6.0`\n\n#### Scenario: Already up to date\n\n- **GIVEN** codev `0.6.0` and a latest release `v0.6.0`\n- **WHEN** the user runs `codev self-update`\n- **THEN** it reports that codev `0.6.0` is up to date\n- **AND** downloads nothing and exits `0`\n\n#### Scenario: `--check` installs nothing\n\n- **GIVEN** codev `0.5.0` and a latest release `v0.6.0`\n- **WHEN** the user runs `codev self-update --check`\n- **THEN** it reports that `0.6.0` is available\n- **AND** the installed binary is unchanged and the exit status is `0`\n\n#### Scenario: Non-interactive run without `--yes`\n\n- **GIVEN** codev `0.5.0` and a latest release `v0.6.0`\n- **WHEN** a script runs `codev self-update < /dev/null`\n- **THEN** the command exits with a non-zero status\n- **AND** its message names `--yes`\n- **AND** the installed binary is unchanged\n\n#### Scenario: Unknown version\n\n- **WHEN** the user runs `codev self-update --version 9.9.9 --yes`\n- **AND** no `v9.9.9` release exists\n- **THEN** the command exits with a non-zero status naming `9.9.9`\n- **AND** the installed binary is unchanged\n\n#### Scenario: Release unreachable\n\n- **GIVEN** no network access\n- **WHEN** the user runs `codev self-update --yes`\n- **THEN** the command exits with a non-zero status\n- **AND** its message says the release could not be reached\n\n### Requirement: `codev self-update` refuses any archive whose SHA-256 does not match\n\n`codev self-update` SHALL download, from the GitHub Release of the version\nto install, the archive of the running platform — named as the release\npublishes it, `codev-<version>-<target>.<ext>` — and the release's\n`SHA256SUMS` file. It MUST compute the SHA-256 of the archive and compare it\nwith the entry of `SHA256SUMS` for that exact file name before extracting\nanything. It MUST refuse, with a non-zero exit status, a message naming the\ncause, and the installed binary unchanged, when:\n\n- `SHA256SUMS` cannot be downloaded;\n- `SHA256SUMS` has no entry for the archive;\n- the computed SHA-256 differs from the entry;\n- the release has no archive for the running platform.\n\nDownloaded files MUST NOT remain on disk after the command ends, whatever\nits outcome.\n\n#### Scenario: Checksum verified\n\n- **GIVEN** a release `v0.6.0` whose archive matches its `SHA256SUMS` entry\n- **WHEN** `codev self-update --yes` runs\n- **THEN** the output says the SHA-256 checksum was verified\n- **AND** the installation proceeds\n\n#### Scenario: Tampered archive\n\n- **GIVEN** a release `v0.6.0` whose downloaded archive does not match its\n  `SHA256SUMS` entry\n- **WHEN** `codev self-update --yes` runs\n- **THEN** the command exits with a non-zero status\n- **AND** its message gives the expected and the computed SHA-256\n- **AND** the installed binary is unchanged\n\n#### Scenario: Missing checksum entry\n\n- **GIVEN** a release whose `SHA256SUMS` lists no archive for the running\n  platform\n- **WHEN** `codev self-update --yes` runs\n- **THEN** the command exits with a non-zero status and installs nothing\n\n#### Scenario: Platform without a prebuilt binary\n\n- **GIVEN** codev built from source on a platform the releases do not cover\n- **WHEN** the user runs `codev self-update --yes`\n- **THEN** the command exits with a non-zero status\n- **AND** its message points to `cargo install --path crates/codev-cli`\n\n### Requirement: `codev self-update` replaces the binary all at once, or not at all\n\nOnce the archive is verified, `codev self-update` SHALL check that the\nextracted binary runs and reports the version being installed, then put it\nin place of the running binary, at the same path, keeping it executable.\nAt no point MAY the path of the installed binary hold a partial or missing\nbinary: an interruption or a failure leaves either the old binary or the\nnew one, complete. On Windows, where a running binary cannot be\noverwritten, a leftover copy of the previous binary MAY remain next to it\nuntil the next run of codev removes it.\n\nWhen the directory of the installed binary is not writable, the command\nMUST refuse before downloading, with a non-zero exit status and a message\nnaming the directory and pointing to the installer.\n\nOn success, it MUST print the previous and the new version, and remind the\nuser to run `codev update` in each project so the skills match the new\nversion.\n\n#### Scenario: Successful replacement\n\n- **GIVEN** codev `0.5.0` installed at `~/.local/bin/codev`\n- **WHEN** `codev self-update --yes` installs `0.6.0`\n- **THEN** `~/.local/bin/codev` is the `0.6.0` binary and is executable\n- **AND** the output names `0.5.0`, `0.6.0` and `codev update`\n\n#### Scenario: The new binary does not run\n\n- **GIVEN** a verified archive whose binary fails to run or reports a\n  version other than the one requested\n- **WHEN** `codev self-update --yes` runs\n- **THEN** the command exits with a non-zero status\n- **AND** the installed binary is still the previous one\n\n#### Scenario: Install directory not writable\n\n- **GIVEN** codev installed in a directory the user cannot write to\n- **WHEN** the user runs `codev self-update --yes`\n- **THEN** the command exits with a non-zero status before downloading\n- **AND** its message names the directory and the installer\n\n#### Scenario: Leftover previous binary on Windows is cleaned up\n\n- **GIVEN** a Windows installation just updated, with the previous binary\n  left next to `codev.exe`\n- **WHEN** the user runs any codev command\n- **THEN** the leftover previous binary is removed\n"
+  },
+  "validate": {
+    "update-notice-and-self-update": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "update-notice-and-self-update",
+          "path": "_codev/changes/update-notice-and-self-update"
+        }
+      ],
+      "status": []
+    }
+  }
+}

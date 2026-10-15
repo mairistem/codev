@@ -1,0 +1,809 @@
+{
+  "format": 2,
+  "case": "plan-read-french-keywords",
+  "error": null,
+  "costUsd": 2.9399507999999996,
+  "durationMs": 270875,
+  "consumption": {
+    "durationApiMs": 474259,
+    "turns": 37,
+    "permissionDenials": 6,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1238,
+      "cacheCreation": 199886,
+      "cacheRead": 3825499,
+      "output": 43646
+    },
+    "toolCalls": 73,
+    "orientationCalls": 40,
+    "calls": [
+      {
+        "cacheCreation": 7822,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7822
+        }
+      },
+      {
+        "cacheCreation": 14347,
+        "cacheRead": 29961,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14347
+        }
+      },
+      {
+        "cacheCreation": 2824,
+        "cacheRead": 44308,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "codev roles": 2824
+        }
+      },
+      {
+        "cacheCreation": 12499,
+        "cacheRead": 0,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 7572,
+          "shell": 4927
+        }
+      },
+      {
+        "cacheCreation": 1803,
+        "cacheRead": 47132,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1803
+        }
+      },
+      {
+        "cacheCreation": 3178,
+        "cacheRead": 12499,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3178
+        }
+      },
+      {
+        "cacheCreation": 8590,
+        "cacheRead": 48935,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 8590
+        }
+      },
+      {
+        "cacheCreation": 11513,
+        "cacheRead": 57525,
+        "input": 2,
+        "output": 67,
+        "toolCalls": 0,
+        "sources": {
+          "file": 11513
+        }
+      },
+      {
+        "cacheCreation": 1133,
+        "cacheRead": 15677,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1133
+        }
+      },
+      {
+        "cacheCreation": 11513,
+        "cacheRead": 57525,
+        "input": 2,
+        "output": 67,
+        "toolCalls": 1,
+        "sources": {
+          "search": 11513
+        }
+      },
+      {
+        "cacheCreation": 1483,
+        "cacheRead": 16810,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "search": 1483
+        }
+      },
+      {
+        "cacheCreation": 304,
+        "cacheRead": 69038,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 304
+        }
+      },
+      {
+        "cacheCreation": 1483,
+        "cacheRead": 16810,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1483
+        }
+      },
+      {
+        "cacheCreation": 785,
+        "cacheRead": 18293,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 785
+        }
+      },
+      {
+        "cacheCreation": 2551,
+        "cacheRead": 19078,
+        "input": 2,
+        "output": 39,
+        "toolCalls": 4,
+        "sources": {
+          "search": 2551
+        }
+      },
+      {
+        "cacheCreation": 13879,
+        "cacheRead": 21629,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 13857,
+          "output": 23
+        }
+      },
+      {
+        "cacheCreation": 4740,
+        "cacheRead": 35508,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4740
+        }
+      },
+      {
+        "cacheCreation": 2320,
+        "cacheRead": 40248,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2320
+        }
+      },
+      {
+        "cacheCreation": 3153,
+        "cacheRead": 69342,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 3153
+        }
+      },
+      {
+        "cacheCreation": 2700,
+        "cacheRead": 72495,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2700
+        }
+      },
+      {
+        "cacheCreation": 873,
+        "cacheRead": 75195,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "file": 873
+        }
+      },
+      {
+        "cacheCreation": 2320,
+        "cacheRead": 40248,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2320
+        }
+      },
+      {
+        "cacheCreation": 873,
+        "cacheRead": 75195,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 873
+        }
+      },
+      {
+        "cacheCreation": 1181,
+        "cacheRead": 42568,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 1181
+        }
+      },
+      {
+        "cacheCreation": 693,
+        "cacheRead": 76068,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 693
+        }
+      },
+      {
+        "cacheCreation": 1181,
+        "cacheRead": 42568,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1181
+        }
+      },
+      {
+        "cacheCreation": 5195,
+        "cacheRead": 43749,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 5195
+        }
+      },
+      {
+        "cacheCreation": 994,
+        "cacheRead": 76761,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 994
+        }
+      },
+      {
+        "cacheCreation": 5195,
+        "cacheRead": 43749,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 5195
+        }
+      },
+      {
+        "cacheCreation": 3536,
+        "cacheRead": 77755,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3536
+        }
+      },
+      {
+        "cacheCreation": 6595,
+        "cacheRead": 48944,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 6595
+        }
+      },
+      {
+        "cacheCreation": 726,
+        "cacheRead": 81291,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 726
+        }
+      },
+      {
+        "cacheCreation": 1820,
+        "cacheRead": 55539,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1820
+        }
+      },
+      {
+        "cacheCreation": 4195,
+        "cacheRead": 82017,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 4195
+        }
+      },
+      {
+        "cacheCreation": 2092,
+        "cacheRead": 57359,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2092
+        }
+      },
+      {
+        "cacheCreation": 3810,
+        "cacheRead": 86212,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 3810
+        }
+      },
+      {
+        "cacheCreation": 2383,
+        "cacheRead": 59451,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2383
+        }
+      },
+      {
+        "cacheCreation": 873,
+        "cacheRead": 61834,
+        "input": 2,
+        "output": 30,
+        "toolCalls": 1,
+        "sources": {
+          "file": 873
+        }
+      },
+      {
+        "cacheCreation": 2667,
+        "cacheRead": 62707,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2648,
+          "output": 19
+        }
+      },
+      {
+        "cacheCreation": 311,
+        "cacheRead": 65374,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 195,
+          "search": 116
+        }
+      },
+      {
+        "cacheCreation": 3810,
+        "cacheRead": 86212,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3810
+        }
+      },
+      {
+        "cacheCreation": 2412,
+        "cacheRead": 90022,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 2412
+        }
+      },
+      {
+        "cacheCreation": 3616,
+        "cacheRead": 65685,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 3616
+        }
+      },
+      {
+        "cacheCreation": 2412,
+        "cacheRead": 90022,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2412
+        }
+      },
+      {
+        "cacheCreation": 3842,
+        "cacheRead": 69301,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 3842
+        }
+      },
+      {
+        "cacheCreation": 2358,
+        "cacheRead": 92434,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev roles": 2358
+        }
+      },
+      {
+        "cacheCreation": 3842,
+        "cacheRead": 69301,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 3842
+        }
+      },
+      {
+        "cacheCreation": 2358,
+        "cacheRead": 92434,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2358
+        }
+      },
+      {
+        "cacheCreation": 3004,
+        "cacheRead": 73143,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3004
+        }
+      },
+      {
+        "cacheCreation": 8098,
+        "cacheRead": 76147,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8098
+        }
+      },
+      {
+        "cacheCreation": 1562,
+        "cacheRead": 84245,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1562
+        }
+      },
+      {
+        "cacheCreation": 1475,
+        "cacheRead": 94792,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "search": 1475
+        }
+      },
+      {
+        "cacheCreation": 998,
+        "cacheRead": 85807,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 998
+        }
+      },
+      {
+        "cacheCreation": 1092,
+        "cacheRead": 86805,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1092
+        }
+      },
+      {
+        "cacheCreation": 576,
+        "cacheRead": 87897,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "file": 576
+        }
+      },
+      {
+        "cacheCreation": 887,
+        "cacheRead": 88473,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "file": 790,
+          "search": 97
+        }
+      },
+      {
+        "cacheCreation": 1475,
+        "cacheRead": 94792,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1475
+        }
+      },
+      {
+        "cacheCreation": 887,
+        "cacheRead": 88473,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 887
+        }
+      },
+      {
+        "cacheCreation": 870,
+        "cacheRead": 89360,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 870
+        }
+      },
+      {
+        "cacheCreation": 1475,
+        "cacheRead": 94792,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1475
+        }
+      },
+      {
+        "cacheCreation": 1032,
+        "cacheRead": 90230,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1032
+        }
+      },
+      {
+        "cacheCreation": 3056,
+        "cacheRead": 91262,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "search": 3056
+        }
+      },
+      {
+        "cacheCreation": 1475,
+        "cacheRead": 94792,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1475
+        }
+      },
+      {
+        "cacheCreation": 3056,
+        "cacheRead": 91262,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3056
+        }
+      },
+      {
+        "cacheCreation": 5151,
+        "cacheRead": 94318,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 5151
+        }
+      },
+      {
+        "cacheCreation": 1475,
+        "cacheRead": 94792,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "output": 1475
+        }
+      },
+      {
+        "cacheCreation": 9834,
+        "cacheRead": 96267,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 9834
+        }
+      },
+      {
+        "cacheCreation": 2394,
+        "cacheRead": 106101,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2229,
+          "edit": 165
+        }
+      },
+      {
+        "cacheCreation": 421,
+        "cacheRead": 108495,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 421
+        }
+      },
+      {
+        "cacheCreation": 1298,
+        "cacheRead": 108916,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 1298
+        }
+      },
+      {
+        "cacheCreation": 5151,
+        "cacheRead": 94318,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 5151
+        }
+      },
+      {
+        "cacheCreation": 1298,
+        "cacheRead": 108916,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1298
+        }
+      },
+      {
+        "cacheCreation": 9752,
+        "cacheRead": 110214,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 3,
+        "sources": {
+          "edit": 9752
+        }
+      },
+      {
+        "cacheCreation": 2212,
+        "cacheRead": 119966,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2010,
+          "output": 203
+        }
+      },
+      {
+        "cacheCreation": 378,
+        "cacheRead": 122178,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 378
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/localized-structural-keywords/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/localized-structural-keywords/design.md": "# Design: Localized structural keywords\n\n## Context\n\nThe structural keywords are string literals spread across `codev-core`:\n\n- `parser/shared.rs` — `section_header`, `delta_section_kind` (matches\n  `ADDED` / `MODIFIED` / `REMOVED` / `RENAMED` after stripping a\n  `REQUIREMENTS` suffix, with `to_ascii_uppercase`), `requirement_header`\n  (`### Requirement:`), `scenario_header` (`#### Scenario:`),\n  `wrong_level_scenario` (`### Scenario:`);\n- `parser/spec.rs` and `parser/delta.rs` — `Purpose`, `Requirements`,\n  `FROM:` / `TO:`, `**Reason**` / `**Migration**`, and the messages of the\n  structural defects;\n- `validate/rules.rs` — `req.description.contains(\"SHALL\") ||\n  contains(\"MUST\")` and its message;\n- `merge/render.rs` — `\"### Requirement: \"`, `\"#### Scenario: \"`, and the\n  new-spec skeleton (`# <Title> Specification`, `## Purpose`,\n  `## Requirements`) in `merge/mod.rs`;\n- `parser/section.rs`, `domains.rs` (`HEADING = \"## Domains\"`),\n  `triggers.rs`, `changelog/release_note.rs` (`HEADING = \"## Release\n  note\"`) — the proposal sections, plus the \"no `## Release note` /\n  `## Domains` section\" messages in `codev-engine/src/validate/mod.rs`;\n- `parser/delta.rs` — the `delta_unexpected_heading` check, whose message\n  says \"the keyword stays in English whatever the artifact language\",\n  which becomes false for `fr` projects;\n- the generated `_codev/config.yaml` comment (`config/mod.rs`) and the\n  `codev instructions` text line (`codev-cli/src/render.rs`), which say\n  keywords always stay in English.\n\nScenario step markers (`**WHEN**`…) are parsed nowhere today: a scenario\nbody is free text. Translating them in the merge is new behavior.\n\nThe parser entry points are `parse_spec(source)` and\n`parse_delta(source)`; they take no configuration. The merge already\nre-renders every added or replaced requirement from the parsed AST\n(`merge::render::requirement`) and splices it at the parsed span through\nbyte-range edits (`merge/edits.rs`); `RENAMED` rewrites the heading line\nwith `format!(\"### Requirement: {}\", …)` (`merge/mod.rs`), and a new\ncapability is generated whole by `build_new_spec`. That re-rendering is\nwhat lets the merge choose the keywords it writes. `language:` is already\nresolved into `ResolvedConfig.language` (`codev-engine/src/config.rs`) and\nexposed by `codev instructions`; nothing else reads it.\n\nConstraints: decision 0001 (the core is pure and returns plans; the\ncatalog is data, the core never reads the configuration file itself) and\ndecision 0002 (closed sets are `enum`s; traits only at open boundaries;\n`codev-core` stays at the bottom of the crate graph).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One place that defines every structural keyword, per language.\n- Byte-identical behavior for projects whose `language:` is `en`, absent,\n  or a language without a catalog.\n- A merge whose output language is decided by the target file, never by\n  the delta.\n\n**Non-Goals**\n\n- A user-defined catalog in `_codev/config.yaml`.\n- Localized templates in `codev instructions`, and skills that write\n  French keywords — the `skills` spec still requires English; a follow-up\n  change can switch the templates once reading is in place.\n- Localizing `review.md`, the proposal headings codev does not read\n  (`## Why`, `## What Changes`, `## Capabilities`, `## Impact`), design and\n  tasks headings, or identifiers (domains, categories, `None`, codes).\n- Translating prose: names, descriptions and scenario text are copied\n  verbatim.\n\n## Decisions\n\n### Decision: The catalog is a static table in `codev-core`\n\nA new module `codev_core::keywords` holds a `KeywordLang` enum (`En`,\n`Fr`) — a closed set, per decision 0002 — and a `Keywords` struct of\n`&'static str` fields, one per row of the `keyword-catalog` spec table,\nreturned by `KeywordLang::keywords()`. `KeywordLang::from_code(&str)`\nmaps a configured code by its primary subtag and returns `None` for a\nlanguage without a catalog.\n\nA `KeywordSet` value carries the languages a project reads: always `En`,\nplus the configured language when it has a catalog, in that order. It is\nbuilt by the engine from the loaded configuration and passed down; the core\nnever reads `language:` from disk (decision 0001).\n\n**Alternatives considered**: a YAML/TOML catalog embedded with\n`include_str!` and parsed at start-up — rejected: it adds a parse error\npath for data that never changes at run time, and loses compile-time\nchecking that every language defines every keyword. A `trait\nKeywordCatalog` — rejected per decision 0002: the set of languages is\nclosed and ships with the binary.\n\n### Decision: The parser takes the keyword set; every match goes through it\n\n`parse_spec` and `parse_delta` gain a `&KeywordSet` parameter. Each\nrecognizer in `parser/shared.rs` iterates the set's languages and returns\nthe matched language with its result (e.g. `requirement_header` →\n`Option<(String, KeywordLang)>`). Matching rules:\n\n- headings with a ` :` suffix in French also match `:` without the space;\n- delta sections compare with Unicode `to_uppercase` (not\n  `to_ascii_uppercase`, which would leave `é` unchanged), and the French\n  form is `EXIGENCES <OP>` rather than `<OP> REQUIREMENTS`, so each\n  language defines the full section title per operation rather than a\n  shared suffix;\n- step markers are matched only at the start of a scenario line after the\n  list marker (`- `), never elsewhere in prose.\n\n`Spec` and `Delta` gain a `lang: KeywordLang` field: the language of the\nfirst structural heading, `En` if none. The parser also records, per\nheading, its language, so the validator can find mixed files without a\nsecond scan.\n\nExisting call sites that have no configuration at hand (tests, golden\nfixtures) use `KeywordSet::english()`, which keeps every current test\nmeaningful unchanged.\n\n**Alternatives considered**: auto-detecting every catalog language in\nevery project — rejected because it would turn `### Exigence : …` in an\nEnglish project into structure, silently changing the existing\n`delta_unexpected_heading` behavior that the spec keeps for `en` projects.\n\n### Decision: Defect messages quote the file's keywords\n\nParser and validator messages that quote a keyword\n(`#### Scenario:`, `SHALL`/`MUST`, `## Purpose` in\n`new_capability_without_purpose`) take it from `Keywords` of the file's\n`lang`. The message text around the keyword stays in English, as the\nproject context requires; finding codes are unchanged. The\n`delta_unexpected_heading` message names the requirement and scenario\nkeywords of the languages the project reads instead of claiming they must\nbe English; the generated config comment and the `codev instructions`\ntext line say the templates use English keywords and that the configured\nlanguage's keywords are also read.\n\n### Decision: The merge renders with the target's language\n\n`merge::render::requirement` and `scenario_str` take a `&Keywords` — the\ntarget main spec's (`spec.lang.keywords()`), or the delta's when creating\na new spec. Rendering a scenario body rewrites only a leading step marker\non each line: a line whose trimmed start is `- **<marker>**` in the\ndelta's language gets the target language's marker; every other byte is\ncopied. `RENAMED` builds its new heading with the target's\n`requirement` keyword. The new-spec skeleton (`# <Title> Specification`\nvs `# Spécification <Title>`, Purpose and Requirements headings) comes\nfrom the delta's keywords.\n\nBecause an English-to-English merge maps every marker to itself, the\noutput for `en` projects is byte-identical; the existing golden tests are\nthe proof.\n\n**Alternatives considered**: copying the delta's block verbatim (no\ntranslation) — rejected: it would produce a mixed-language main spec,\nexactly what the request forbids. Translating normative keywords in\ndescriptions — rejected: `SHALL`/`DOIT` sit inside prose whose grammar\ndiffers per language; the validator reads both, so the result stays valid.\n\n### Decision: Mixed-language warning lives in the validator\n\nA new rule in `validate/rules.rs` emits `keyword_language_mixed`\n(severity warning) from the per-heading languages recorded by the parser.\nIt is a `Rule` implementation like the others (decision 0002). Being a\nwarning, it fails only `--strict`, and the pre-flight of `sync`/`archive`,\nwhich refuses on errors only, is unaffected.\n\n### Decision: Proposal readers share one section lookup\n\n`parser/section.rs` gains a lookup by catalog role (`DomainsSection`,\n`ReleaseNoteSection`) over a `KeywordSet`; `domains.rs`, `triggers.rs`,\n`changelog/release_note.rs` and the validation checks use it instead of\ntheir literals. This also makes `codev roles` and the domain suggestions\nread a `## Domaines` section, which keeps them consistent with\nvalidation.\n\n### Decision: The engine resolves the set once per command\n\n`codev-engine` builds the `KeywordSet` from the configuration it already\nloads and passes it to validate, sync, archive, changelog and roles. The\nJSON contract (`codev-cli::contract::v1`) is untouched: the new code\n`keyword_language_mixed` travels in the existing `findings` array.\n\n## Risks / Trade-offs\n\n- [A French word in prose matches a keyword, e.g. `ET` or `DOIT` in a\n  sentence] → step markers are matched only as `- **ET**` at a scenario\n  line start; normative keywords only make a requirement *pass*, so a\n  false match cannot produce an error.\n- [Changing the `parse_*` signatures touches many call sites] →\n  `KeywordSet::english()` keeps the old behavior at every call site that\n  is not yet wired; the engine wiring is one task.\n- [A project switches `language:` from `fr` to `en` after writing French\n  specs] → its French headings stop being read and validation fails\n  loudly; documented in the configuration chapter rather than handled.\n- [A French delta's description with `DOIT` merged into an English spec]\n  → the spec is still valid while `language: fr`; the mixed-language\n  warning ignores normative keywords on purpose, so it does not fire.\n- [Unicode upper-casing of `Exigences ajoutées`] → covered by the\n  lower-case scenario of `keyword-catalog`.\n\n## Migration Plan\n\nNo data migration: English keywords stay valid everywhere and `en`\nprojects behave byte-for-byte as before (golden tests unchanged). The\ndocumentation chapters on the spec format and on configuration, in\n`docs/en` and `docs/fr`, list the French keywords and state that\n`language:` now also selects the keywords read. Rollback is a plain\nrevert: no file format written by codev changes for `en` projects.\n",
+    "_codev/changes/localized-structural-keywords/proposal.md": "# Proposal: Localized structural keywords\n\n## Why\n\nA team that writes its specs in French (`language: fr`) must still write\nevery structural keyword in English — `## Purpose`, `### Requirement:`,\n`## ADDED Requirements`, `**WHEN**`, `SHALL` — or `codev validate` rejects\nthe file, and the merge ignores what it does not recognize. These keywords\nare hard-coded in several places (parser, validator, merge, proposal\nchecks), so no language other than English can be supported without\ntouching each of them. Now that `language:` already drives the prose of the\nartifacts, the structure is the last part that forces a language mix.\n\n## What Changes\n\n- A **catalog of structural keywords per language** becomes the single\n  source of every keyword codev recognizes or writes. It ships with two\n  languages: English (`en`) and French (`fr`).\n- codev **reads** the keywords of English **and** of the project's\n  `language:`: with `language: fr`, `## Objectif`, `## Exigences`,\n  `### Exigence :`, `#### Scénario :`, `## Exigences AJOUTÉES` /\n  `MODIFIÉES` / `SUPPRIMÉES` / `RENOMMÉES`, `DE :` / `VERS :`,\n  `**Raison**`, `**ÉTANT DONNÉ**` / `**QUAND**` / `**ALORS**` / `**ET**`\n  and `DOIT` / `DOIVENT` are accepted by the parser, the validator, sync\n  and archive, exactly like their English equivalents.\n- English keywords **stay valid in every project**: existing specs, deltas\n  and installed skills keep working unchanged.\n- A language without a catalog (for example `language: de`) is read with\n  the English keywords only, as today.\n- Each spec file is written in **one** keyword language. Validation\n  reports a warning when a file mixes keywords of two languages.\n- The **merge keeps the language of the spec it modifies**: a requirement\n  added, modified or renamed by a French delta in an English main spec is\n  written with English keywords, and the reverse. Only keywords change;\n  names, descriptions and scenario prose are copied as written. A new\n  main spec takes the language of the delta that creates it.\n- The proposal sections validation reads — `## Domains` and\n  `## Release note` — are also recognized in French (`## Domaines`,\n  `## Note de version`); `codev changelog` reads the French release note\n  heading too.\n- Finding and error messages that quote a keyword quote it in the\n  language of the file they are about.\n\nAssumptions made without asking (this run has no user to ask):\n\n- Only `en` and `fr` are in the catalog; a project-defined catalog in\n  `_codev/config.yaml` is out of scope.\n- Values that are identifiers rather than keywords stay in English in\n  every language: domain names (`security`…), release note categories\n  (`Added`…), the line `None`, and the stable finding codes.\n- The skills keep writing English keywords, as the `skills` spec\n  requires; their output stays valid. Letting them write the localized\n  keywords is a follow-up change.\n- The review record (`review.md`) and the other proposal, design and\n  tasks headings, which codev does not validate, are not localized here.\n\n## Capabilities\n\n### New Capabilities\n\n- `keyword-catalog`\n\n### Modified Capabilities\n\n- `spec-parsing`\n- `spec-merge`\n- `validation`\n- `changelog`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-core`: new keyword catalog module (pure data); the parser\n  (`parser/shared.rs`, `parser/delta.rs`, `parser/spec.rs`), the\n  validation rules (`validate/rules.rs`), the merge rendering\n  (`merge/render.rs`, `merge/mod.rs`), the proposal checks for domains and\n  release note, and the changelog reader take the keyword languages as\n  input instead of literals.\n- `codev-engine`: resolves the keyword languages from `language:` and\n  passes them to validate, sync, archive and changelog.\n- No change to the JSON contract (`contract.rs`): finding codes and report\n  shapes are unchanged; one new warning code is added to the existing\n  findings list.\n- Documentation, in `docs/en` and `docs/fr`: the chapter on the spec\n  format lists the French keywords, and the configuration chapter says\n  what `language:` now also governs.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration — existing specs and deltas must read and merge exactly as before\n\n## Release note\n\n- Added: Specs, deltas and proposals can use French structural keywords\n  (`## Objectif`, `### Exigence :`, `## Exigences AJOUTÉES`, `**QUAND**`,\n  `DOIT`…) when the project sets `language: fr`; English keywords remain\n  accepted everywhere.\n- Changed: `codev sync` and `codev archive` write merged requirements with\n  the keywords of the main spec they modify, so a French delta merged into\n  an English spec stays in English, and the reverse.\n",
+    "_codev/changes/localized-structural-keywords/specs/changelog/spec.md": "## ADDED Requirements\n\n### Requirement: The release note is read under its localized heading\n\n`codev changelog` SHALL read an archived change's release note under the\n`## Release note` heading or under the heading of the project's configured\nkeyword language (`## Note de version` for `fr`), as the `keyword-catalog`\ncapability defines them. A change whose proposal holds the section under\neither heading MUST NOT be treated as lacking a release note.\n\n#### Scenario: French release note heading\n\n- **GIVEN** a project with `language: fr` and an archived change in range\n  whose proposal holds `## Note de version` with\n  `- Fixed: un plantage au démarrage.`\n- **WHEN** the user runs `codev changelog --format json`\n- **THEN** the entries hold a `Fixed` item with the text\n  `un plantage au démarrage.`\n- **AND** no warning says the change has no release note\n",
+    "_codev/changes/localized-structural-keywords/specs/keyword-catalog/spec.md": "## Purpose\n\nGive codev a single catalog of the structural keywords it reads and\nwrites, one entry per language, so that a team can write its specs,\ndeltas and proposals with the keywords of its own language instead of\nEnglish.\n\n## ADDED Requirements\n\n### Requirement: Built-in catalog for English and French\n\ncodev SHALL ship a catalog of structural keywords for the languages `en`\nand `fr`. Each language MUST define every keyword below; the French\nkeyword is the equivalent of the English one on the same row:\n\n| Role | `en` | `fr` |\n|---|---|---|\n| Purpose section | `## Purpose` | `## Objectif` |\n| Requirements section | `## Requirements` | `## Exigences` |\n| Requirement heading | `### Requirement: <name>` | `### Exigence : <name>` |\n| Scenario heading | `#### Scenario: <name>` | `#### Scénario : <name>` |\n| Added section | `## ADDED Requirements` | `## Exigences AJOUTÉES` |\n| Modified section | `## MODIFIED Requirements` | `## Exigences MODIFIÉES` |\n| Removed section | `## REMOVED Requirements` | `## Exigences SUPPRIMÉES` |\n| Renamed section | `## RENAMED Requirements` | `## Exigences RENOMMÉES` |\n| Rename source / target | `FROM:` / `TO:` | `DE :` / `VERS :` |\n| Removal reason / migration | `**Reason**` / `**Migration**` | `**Raison**` / `**Migration**` |\n| Scenario steps | `**GIVEN**` `**WHEN**` `**THEN**` `**AND**` | `**ÉTANT DONNÉ**` `**QUAND**` `**ALORS**` `**ET**` |\n| Normative keywords | `SHALL`, `MUST` | `DOIT`, `DOIVENT` |\n| Proposal domains section | `## Domains` | `## Domaines` |\n| Proposal release note section | `## Release note` | `## Note de version` |\n| Main spec title | `# <Title> Specification` | `# Spécification <Title>` |\n\nIn a French keyword ending with ` :`, the space before the colon MAY be\nomitted when reading (`### Exigence: <name>` is accepted); codev MUST\nwrite it with the space. Delta section headings MUST be recognized\nwhatever their letter case, as English ones are today.\n\n#### Scenario: French requirement heading with and without the space\n\n- **GIVEN** a project whose `_codev/config.yaml` sets `language: fr`\n- **AND** a main spec holding `### Exigence : Connexion` and\n  `### Exigence: Déconnexion`, each with a `#### Scénario :`\n- **WHEN** the user runs `codev validate --specs --json`\n- **THEN** both requirements, `Connexion` and `Déconnexion`, are read\n- **AND** no finding is reported\n\n#### Scenario: Lower-case French delta heading\n\n- **GIVEN** a project with `language: fr`\n- **AND** a delta whose section heading is `## Exigences ajoutées`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** the section is read as an added-requirements section\n\n### Requirement: The keyword languages read follow the configuration\n\ncodev SHALL read the English keywords in every project, and SHALL also\nread the keywords of the language set by `language:` in\n`_codev/config.yaml` when the catalog has an entry for it. Only the\nprimary subtag of the language code is considered (`fr-CA` reads the\n`fr` keywords). A language the catalog does not have MUST NOT fail any\ncommand: codev reads the English keywords only, as when `language:` is\nabsent. The keywords of a catalog language that is neither English nor\nthe configured language MUST NOT be read.\n\n#### Scenario: English keywords stay valid in a French project\n\n- **GIVEN** a project with `language: fr` whose main specs and active\n  deltas use only English keywords\n- **WHEN** the user runs `codev validate`\n- **THEN** the report is the same as with `language: en`\n\n#### Scenario: French keywords in an English project are not structure\n\n- **GIVEN** a project with `language: en`\n- **AND** a delta whose only section is `## Exigences AJOUTÉES`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** the section is not read as a delta section, as before this\n  change\n\n#### Scenario: A language without a catalog\n\n- **GIVEN** a project with `language: de` and main specs using English\n  keywords\n- **WHEN** the user runs `codev validate`\n- **THEN** the command succeeds as with `language: en`\n- **AND** no finding nor warning names the language\n\n### Requirement: Identifiers are not keywords\n\nValues that name things rather than structure them SHALL stay identical in\nevery language: the domain names (`security`, `personal-data`, …), the\nrelease note categories (`Added`, `Changed`, …), the single line `None`,\nand the stable finding and error codes. codev MUST NOT accept a translated\nform of them.\n\n#### Scenario: A French release note keeps English categories\n\n- **GIVEN** a project with `language: fr` and an active change whose\n  proposal has `## Note de version` with the bullet\n  `- Added: un nouveau drapeau.`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `release_note_*` finding is reported\n- **AND** a bullet `- Ajouté: un drapeau.` is reported as\n  `release_note_invalid`\n",
+    "_codev/changes/localized-structural-keywords/specs/spec-merge/spec.md": "## ADDED Requirements\n\n### Requirement: The merge keeps the keyword language of the main spec\n\nA sync or an archive SHALL write every block it adds or replaces in a main\nspec with the keywords of that main spec's keyword language, whatever the\nlanguage of the delta: the `### Requirement:` heading, the\n`#### Scenario:` headings, and the scenario step markers (`**GIVEN**`,\n`**WHEN**`, `**THEN**`, `**AND**`) that start a line of a scenario. A\n`RENAMED` MUST retitle the heading with the main spec's requirement\nkeyword. Names, descriptions — normative keywords included — and the rest\nof the scenario text MUST be copied as the delta wrote them. When the delta\ncreates a new main spec, the new file SHALL take the delta's keyword\nlanguage for its title, its Purpose section, its Requirements section and\nits blocks. Everything the delta does not mention stays identical down to\nthe character, as for any merge.\n\n#### Scenario: French delta added to an English main spec\n\n- **GIVEN** a project with `language: fr` and an English main spec\n  `user-auth` holding the requirement `Login`\n- **AND** a delta with `## Exigences AJOUTÉES` carrying\n  `### Exigence : Double authentification` and a `#### Scénario : Inscription`\n  whose lines start with `- **QUAND**` and `- **ALORS**`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the main spec holds `### Requirement: Double authentification`\n  after `Login`, with `#### Scenario: Inscription` and lines starting with\n  `- **WHEN**` and `- **THEN**`\n- **AND** the French text after each step marker is unchanged\n- **AND** the `Login` block is identical down to the character\n\n#### Scenario: English delta modifying a French main spec\n\n- **GIVEN** a project with `language: fr` and a French main spec holding\n  `### Exigence : Connexion`\n- **AND** a delta with `## MODIFIED Requirements` carrying\n  `### Requirement: Connexion` and a `#### Scenario: Jeton` with\n  **WHEN** / **THEN** lines\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the block is written `### Exigence : Connexion` with\n  `#### Scénario : Jeton` and **QUAND** / **ALORS** lines\n\n#### Scenario: Rename in a French main spec\n\n- **GIVEN** a French main spec holding `### Exigence : Expiration`\n- **AND** a delta renaming `Expiration` to `Délai d'inactivité`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the heading becomes `### Exigence : Délai d'inactivité`\n- **AND** the description and scenarios are identical down to the\n  character\n\n#### Scenario: New capability created from a French delta\n\n- **GIVEN** no main spec under `_codev/specs/authentification/`\n- **AND** a French delta carrying `## Objectif` and an\n  `## Exigences AJOUTÉES` with the requirement `Connexion`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** `_codev/specs/authentification/spec.md` starts with\n  `# Spécification Authentification`, then the delta's `## Objectif`\n  section\n- **AND** it holds `### Exigence : Connexion` under `## Exigences`\n\n#### Scenario: English project merges are unchanged\n\n- **GIVEN** a project with `language: en`, English main specs and English\n  deltas\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the main specs written are identical down to the character to\n  what the same sync wrote before this change\n",
+    "_codev/changes/localized-structural-keywords/specs/spec-parsing/spec.md": "## ADDED Requirements\n\n### Requirement: Structure read in the project's keyword languages\n\nThe parser SHALL recognize every structure it extracts — Purpose and\nRequirements sections, requirement and scenario headings, the four delta\nsections, `FROM:` / `TO:`, `**Reason**` / `**Migration**` — in each\nkeyword language the project reads, as the `keyword-catalog` capability\ndefines them, with the same results, positions and defects as in English.\nEach extracted file SHALL carry its keyword language: the language of its\nfirst structural heading, or English when it has none.\n\n#### Scenario: French main spec\n\n- **GIVEN** a project with `language: fr`\n- **AND** a main spec containing `## Objectif`, a sentence, then\n  `## Exigences`, then `### Exigence : Expiration de session` followed by\n  `#### Scénario : Inactivité` with **QUAND** / **ALORS** lines\n- **WHEN** the parser reads the file\n- **THEN** the result exposes the Purpose text\n- **AND** exposes a requirement named `Expiration de session` carrying its\n  scenario named `Inactivité`\n- **AND** the file's keyword language is `fr`\n\n#### Scenario: French delta with every operation\n\n- **GIVEN** a project with `language: fr`\n- **AND** a delta containing `## Exigences AJOUTÉES` with\n  `### Exigence : Double authentification`, `## Exigences SUPPRIMÉES` with\n  `### Exigence : Se souvenir de moi`, `**Raison**: <texte>` and\n  `**Migration**: <texte>`, and `## Exigences RENOMMÉES` with\n  `- DE : Ancien nom` and `- VERS : Nouveau nom`\n- **WHEN** the parser reads the delta\n- **THEN** the `ADDED` operation carries `Double authentification`\n- **AND** the `REMOVED` operation carries `Se souvenir de moi`, its reason\n  and its migration\n- **AND** the `RENAMED` operation associates `Ancien nom` with `Nouveau nom`\n\n#### Scenario: Scenario written with three hashes in French\n\n- **GIVEN** a project with `language: fr` and a requirement whose scenario\n  is written `### Scénario :` instead of `#### Scénario :`\n- **WHEN** the parser reads the file\n- **THEN** a structural defect reports the line and indicates that the\n  scenario must carry four hashes, quoting `#### Scénario :`\n\n## MODIFIED Requirements\n\n### Requirement: Localized structural defects\n\nWhen faced with a malformed file, the parser MUST produce a report naming the\nline concerned, the defect type, and a readable message; it SHALL NOT\nfail wholesale on a partially recoverable file.\n\n#### Scenario: Scenario written with three hashes\n\n- **GIVEN** a requirement whose scenario is written `### Scenario:` instead of\n  `#### Scenario:`\n- **WHEN** the parser reads the file\n- **THEN** a structural defect reports the line and indicates that the\n  scenario must carry four hashes\n- **AND** the requirement still appears in the result, without that scenario\n\n#### Scenario: Duplicate requirement within the same section\n\n- **GIVEN** an `## ADDED Requirements` delta containing two requirements with\n  exactly the same name\n- **WHEN** the parser reads the delta\n- **THEN** a defect reports both lines of the duplicate requirements\n- **AND** names the `ADDED` section as the location of the conflict\n\n#### Scenario: Delta header in a main spec\n\n- **GIVEN** a main spec file that mistakenly contains an\n  `## ADDED Requirements`\n- **WHEN** the parser reads the file\n- **THEN** a defect reports the line and specifies that delta headers\n  belong only in change files\n\n#### Scenario: Unexpected heading inside a delta section\n\n- **GIVEN** a project whose `language:` is `en`\n- **AND** an `## ADDED Requirements` section containing a heading\n  `### Exigence : Mode sombre` instead of `### Requirement: …`\n- **WHEN** the parser reads the delta\n- **THEN** an error `delta_unexpected_heading` reports the line\n- **AND** the section is also reported as empty with the warning\n  `delta_section_empty`\n\n#### Scenario: French delta header in a French main spec\n\n- **GIVEN** a project with `language: fr`\n- **AND** a main spec file that mistakenly contains an\n  `## Exigences AJOUTÉES`\n- **WHEN** the parser reads the file\n- **THEN** a defect reports the line and specifies that delta headers\n  belong only in change files\n",
+    "_codev/changes/localized-structural-keywords/specs/validation/spec.md": "## MODIFIED Requirements\n\n### Requirement: Structural rules beyond the parser\n\nThe validator MUST reject as errors the defects that the parser lets\nthrough because they require inspecting the content of a requirement or a\nspec: a requirement without a normative keyword in its description, a\nrequirement with no scenario, a main spec with no extractable\nrequirement. The normative keywords are those of every keyword language\nthe project reads — `SHALL` or `MUST` in English, `DOIT` or `DOIVENT` in\nFrench — and the finding's message names the keywords of the file's\nkeyword language.\n\n#### Scenario: Requirement without SHALL or MUST\n\n- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: X`\n  whose descriptive text is \"The system does something\"\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_shall` reports the line of\n  the header and names the requirement `X`\n\n#### Scenario: Requirement with no scenario at all\n\n- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: Y`\n  followed by its descriptive text but no `#### Scenario:`\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_scenario` reports the line\n  of the requirement\n\n#### Scenario: Main spec with no requirement\n\n- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`\n  but whose `## Requirements` is empty\n- **WHEN** the validator inspects the spec\n- **THEN** a finding with code `spec_no_requirement` reports that the spec\n  has no extractable requirement\n\n#### Scenario: French requirement with DOIT\n\n- **GIVEN** a project with `language: fr` and an `## Exigences AJOUTÉES`\n  delta with a `### Exigence : X` whose descriptive text is\n  \"Le système DOIT émettre un jeton\" and a `#### Scénario :`\n- **WHEN** the validator inspects the file\n- **THEN** no `requirement_no_shall` finding is reported\n\n#### Scenario: French requirement without a normative keyword\n\n- **GIVEN** a project with `language: fr` and a `### Exigence : X` whose\n  descriptive text is \"Le système émet un jeton\"\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_shall` names the\n  requirement `X` and the keywords `DOIT` and `DOIVENT`\n\n## ADDED Requirements\n\n### Requirement: A file mixing keyword languages is reported\n\nFor each main spec and each delta, validation SHALL report the warning\n`keyword_language_mixed` when the file's structural headings — Purpose\nand Requirements sections, delta sections, requirement and scenario\nheadings — use keywords of more than one language. The warning MUST be\nlocated at the first heading whose language differs from the file's\nkeyword language, and name both languages. Scenario step markers and\nnormative keywords are not considered.\n\n#### Scenario: English heading in a French spec\n\n- **GIVEN** a project with `language: fr` and a main spec starting with\n  `## Objectif` that holds `### Exigence : A` and, on line 30,\n  `### Requirement: B`\n- **WHEN** the user runs `codev validate --specs`\n- **THEN** a `keyword_language_mixed` warning is reported at line 30,\n  naming `fr` and `en`\n- **AND** the exit code is 0, and 1 with `--strict`\n\n#### Scenario: Single-language files\n\n- **GIVEN** a project with `language: fr` whose every file uses the\n  keywords of one language only, some English and some French\n- **WHEN** the user runs `codev validate`\n- **THEN** no `keyword_language_mixed` warning is reported\n\n### Requirement: Proposal sections read in the project's keyword languages\n\nThe checks of an active change's `## Release note` and `## Domains`\nsections SHALL find them under their heading in any keyword language the\nproject reads: `## Note de version` and `## Domaines` in French. The\nfindings `release_note_missing` and `domains_missing` MUST be reported only\nwhen the section is absent in every language read, and their message names\nthe heading of the configured language.\n\n#### Scenario: French proposal sections\n\n- **GIVEN** a project with `language: fr` and an active change whose\n  proposal holds `## Domaines` with the single line `None`, and\n  `## Note de version` with the single line `None`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `domains_*` nor `release_note_*` finding is reported\n\n#### Scenario: Missing section in a French project\n\n- **GIVEN** a project with `language: fr` and an active change whose\n  proposal has neither `## Note de version` nor `## Release note`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `release_note_missing` warning is reported, naming\n  `## Note de version`\n"
+  },
+  "validate": {
+    "localized-structural-keywords": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "localized-structural-keywords",
+          "path": "_codev/changes/localized-structural-keywords"
+        }
+      ],
+      "status": []
+    }
+  }
+}

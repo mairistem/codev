@@ -1,0 +1,324 @@
+{
+  "format": 2,
+  "case": "plan-requirement-session-hook",
+  "error": null,
+  "costUsd": 1.5808846,
+  "durationMs": 238493,
+  "consumption": {
+    "durationApiMs": 234502,
+    "turns": 29,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1117,
+      "cacheCreation": 90371,
+      "cacheRead": 2157463,
+      "output": 21267
+    },
+    "toolCalls": 28,
+    "orientationCalls": 16,
+    "calls": [
+      {
+        "cacheCreation": 7740,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7740
+        }
+      },
+      {
+        "cacheCreation": 15222,
+        "cacheRead": 29879,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15222
+        }
+      },
+      {
+        "cacheCreation": 10783,
+        "cacheRead": 45101,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 10783
+        }
+      },
+      {
+        "cacheCreation": 3522,
+        "cacheRead": 55884,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3522
+        }
+      },
+      {
+        "cacheCreation": 461,
+        "cacheRead": 59406,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 461
+        }
+      },
+      {
+        "cacheCreation": 1853,
+        "cacheRead": 59867,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1813,
+          "shell": 40
+        }
+      },
+      {
+        "cacheCreation": 2337,
+        "cacheRead": 61720,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "output": 43,
+          "shell": 2294
+        }
+      },
+      {
+        "cacheCreation": 1037,
+        "cacheRead": 64057,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1037
+        }
+      },
+      {
+        "cacheCreation": 1216,
+        "cacheRead": 65094,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 1216
+        }
+      },
+      {
+        "cacheCreation": 14742,
+        "cacheRead": 66310,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "file": 14742
+        }
+      },
+      {
+        "cacheCreation": 2021,
+        "cacheRead": 81052,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "codev --help": 2021
+        }
+      },
+      {
+        "cacheCreation": 1734,
+        "cacheRead": 83073,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1734
+        }
+      },
+      {
+        "cacheCreation": 1389,
+        "cacheRead": 84807,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 59,
+          "search": 1330
+        }
+      },
+      {
+        "cacheCreation": 1772,
+        "cacheRead": 86196,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1772
+        }
+      },
+      {
+        "cacheCreation": 1973,
+        "cacheRead": 87968,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1973
+        }
+      },
+      {
+        "cacheCreation": 424,
+        "cacheRead": 89941,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "search": 424
+        }
+      },
+      {
+        "cacheCreation": 1915,
+        "cacheRead": 90365,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1772,
+          "output": 143
+        }
+      },
+      {
+        "cacheCreation": 2646,
+        "cacheRead": 92280,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2646
+        }
+      },
+      {
+        "cacheCreation": 816,
+        "cacheRead": 94926,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 816
+        }
+      },
+      {
+        "cacheCreation": 5200,
+        "cacheRead": 95742,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5200
+        }
+      },
+      {
+        "cacheCreation": 2465,
+        "cacheRead": 100942,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2465
+        }
+      },
+      {
+        "cacheCreation": 661,
+        "cacheRead": 103407,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 661
+        }
+      },
+      {
+        "cacheCreation": 1764,
+        "cacheRead": 104068,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 207,
+          "file": 1498,
+          "output": 59
+        }
+      },
+      {
+        "cacheCreation": 1623,
+        "cacheRead": 105832,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1623
+        }
+      },
+      {
+        "cacheCreation": 567,
+        "cacheRead": 107455,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 567
+        }
+      },
+      {
+        "cacheCreation": 3908,
+        "cacheRead": 108022,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3908
+        }
+      },
+      {
+        "cacheCreation": 580,
+        "cacheRead": 111930,
+        "input": 2,
+        "output": 696,
+        "toolCalls": 0,
+        "sources": {
+          "file": 580
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/init-session-start-hook/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/init-session-start-hook/design.md": "# Design: Install a Claude Code session start hook at init\n\n## Context\n\n`codev init` already runs three integration steps after installing the\nskills (`crates/codev-cli/src/commands.rs`, `plan_integration`): `CLAUDE.md`\n(planned by the Claude Code target, `ClaudeCode::plan_claude_md` in\n`crates/codev-agents/src/claude.rs`), the CI workflow and the pull request\ntemplate (`crates/codev-engine/src/integration.rs`). Each step returns an\n`IntegrationPlan` — a `Plan` of file writes, the `IntegrationStep`s to\nreport, and the warnings — that the shell executes; the text splicing itself\nis pure (`crates/codev-core/src/managed.rs`, `splice` with `SpliceMode::Init`\nor `SpliceMode::Refresh`). The JSON report exposes the steps through\n`IntegrationStepV1` in `crates/codev-cli/src/contract.rs`, where `step` is a\n`&'static str` from `Step::as_str`.\n\n`.claude/settings.json` is a JSON file with no comment syntax, so the\nmarker-based managed sections used for `CLAUDE.md` do not apply. The\nworkspace already depends on `serde_json = \"1\"` (default features: objects\nare `BTreeMap`s, so keys come back sorted, which would reorder the user's\nfile). `indexmap` is already in `Cargo.lock`. `codev init` already reads\n`.claude/settings.json` during detection (`crates/codev-engine/src/detect.rs`)\nbut only for `mcpServers`.\n\nConstraining decisions:\n[0001](../../decisions/0001-functional-core-imperative-shell.md) (the\nmerge is a pure function returning what to write; only the shell writes) and\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md) (layers are\ncrates; Claude Code specifics belong to the `codev-agents` target).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- A pure, fully unit-tested merge of codev's hook into any settings text.\n- A byte-identical file whenever codev has nothing to add or cannot merge.\n- The new step reported like the others, in the human summary and in JSON.\n\n**Non-Goals**\n\n- Keeping the user's whitespace: only keys, values and their order are\n  preserved (the spec allows whitespace to change).\n- A `codev doctor` check for the hook, or any refresh by `codev update`.\n- Removing the hook (`codev` has no uninstall); the user deletes the entry\n  by hand.\n- Supporting JSON with comments (JSONC): such a file is reported as\n  malformed and left alone.\n\n## Decisions\n\n### Decision: A pure merge function in `codev-core`, planned by the Claude Code target\n\nAdd `codev-core::claude_settings` (next to `managed`) with:\n\n```rust\npub const SESSION_HOOK_COMMAND: &str = \"codev list\";\n\npub enum SettingsMerge {\n    Write { contents: String, action: SpliceAction }, // Created | Appended\n    Unchanged,\n    Malformed(String), // the reason, for the warning and the step\n}\n\npub fn merge_session_hook(existing: Option<&str>) -> SettingsMerge;\n```\n\nIt parses, checks the shape (top-level object, `hooks` object,\n`SessionStart` array), looks for any hook of type `command` whose `command`\nequals `SESSION_HOOK_COMMAND` in any entry, and otherwise appends\n`{\"hooks\":[{\"type\":\"command\",\"command\":\"codev list\"}]}`, then serializes\nwith two-space indentation and a trailing newline. No disk access, as\ndecision 0001 requires.\n\n`ClaudeCode::plan_session_hook(fs, project_root, mode)` in\n`codev-agents/src/claude.rs` reads the file through the `FileSystem` port\nand turns the result into an `IntegrationPlan` with a new\n`Step::SessionHook` (`as_str` → `session_hook`): `Write` →\n`plan.write(.., WriteMode::CreateOnly)` for a new file and\n`WriteMode::Overwrite` otherwise (the same rule as `plan_managed_markdown`:\na file that appears after the probe wins); `Unchanged` → an `unchanged`\nstep and no write; `Malformed` → a `settings_malformed` warning and a\n`skipped` step with the reason. With `SpliceMode::Refresh` (`codev update`)\nit returns an empty plan with no step, so `update` never touches the file\nand reports nothing.\n\n**Alternatives considered**:\n\n- *Put the step in `codev-engine::integration`* with CI and the PR\n  template — rejected: `.claude/settings.json` is Claude Code's file, like\n  `CLAUDE.md`, and decision 0002 puts tool specifics behind the\n  `AgentTarget` boundary in `codev-agents`.\n- *Merge inside the agents crate directly* — rejected: the merge is the\n  part with every edge case; in `codev-core` it is tested without any port,\n  like `managed::splice`.\n\n### Decision: Preserve key order with `serde_json`'s `preserve_order` feature\n\nEnable `features = [\"preserve_order\"]` on the workspace `serde_json`\ndependency so that `serde_json::Value` objects keep insertion order\n(`IndexMap`, already in the lock file through other dependencies). The\nmerge then re-serializes the user's keys in their original order, as the\nspec requires.\n\n**Alternatives considered**:\n\n- *Textual insertion* (find the `SessionStart` array in the raw text and\n  splice an element in) — rejected: it keeps whitespace, but needs a\n  hand-written JSON scanner for strings, escapes and nesting, which is\n  exactly the fragile code decision 0001's \"plan, then execute\" is meant to\n  keep simple; the spec only requires keys, values and order.\n- *A format-preserving JSON crate* (a CST editor) — rejected: a new\n  dependency for one file, when whitespace preservation is not required.\n- *Default `serde_json`* — rejected: `BTreeMap` sorts keys, which reorders\n  the user's file and breaks the \"Existing settings are kept\" scenario.\n\n### Decision: Recognize codev's hook by its command, without a marker\n\nJSON has no comments, and an extra key such as `\"_codev\": true` inside a\nhook entry risks being rejected by Claude Code's settings validation. The\ncommand string `codev list` is specific enough: a user who wrote that exact\nhook already has the behavior, so treating it as installed is correct.\n\n**Alternatives considered**:\n\n- *A marker key in the entry* — rejected for the validation risk above.\n- *Recognize only an entry without matcher* — rejected: a user who\n  narrowed codev's hook to `startup` would get a duplicate at every\n  `codev init`.\n\n### Decision: The hook runs `codev list`, with no matcher\n\n`codev list` prints the active changes on stdout and nothing else; Claude\nCode adds a `SessionStart` hook's stdout to the session context. It reads\nonly `_codev/` and spawns no process. No matcher means it also runs after\n`/clear` and compaction, the moments the agent loses track of the plan.\n\n**Alternatives considered**:\n\n- *`codev status`* — rejected: without `--change` it is about one change,\n  and it maintains the update-check cache, which may reach the network.\n- *`codev doctor`* — rejected: setup diagnostics every session are noise\n  for the agent; they belong to the human.\n- *A wrapper such as `codev list || true`* — rejected: shell-specific, and\n  Claude Code already treats a failing `SessionStart` hook as non-blocking.\n\n### Decision: A flag and a JSON step, like the other integration steps\n\n`--no-session-hook` is added to `codev init` in `crates/codev-cli/src/main.rs`\nand `init_prompts.rs`, folded into `--no-integration`, and carried in\n`IntegrationFlags { session_hook }`. `Step::SessionHook` reaches the\ncontract through the existing `IntegrationStepV1::from`; only the doc\ncomment of `step` changes (`claude_md`, `ci`, `pr_template` or\n`session_hook`). No field is added, so the contract stays v1.\n\n**Alternatives considered**:\n\n- *An interactive question* — rejected: the init spec caps interactive mode\n  at two questions; the other steps are opt-out flags too.\n\n## Risks / Trade-offs\n\n- [`preserve_order` is unified across the workspace: every\n  `serde_json::Map` in codev now iterates in insertion order instead of\n  sorted order — `detect/mcp.rs` (`mcpServers`, which feeds the Jira\n  candidate list), `detect/stack.rs` (`dependencies`), and the `json!`\n  values built in `contract.rs`, `commands.rs`, `main.rs`, `core/update.rs`]\n  → Audit each of those uses in a task; sort explicitly wherever an output\n  or a choice depended on the sorted order (the MCP candidate list at\n  least), and run the existing golden and contract tests, which pin those\n  outputs.\n- [The user's whitespace is normalized when codev appends its entry: a\n  reviewer sees a larger diff than one entry] → The file is rewritten only\n  when the entry is missing; two-space indentation matches Claude Code's\n  own writes; the guide says so.\n- [A teammate without codev on their `PATH` sees a hook error at each\n  session start, since the file is committed] → The hook is non-blocking in\n  Claude Code; the repository integration guide says the hook needs codev\n  installed and how to remove it, and `--no-session-hook` opts out.\n- [The file changes between the read and the write (Claude Code itself\n  writes `.claude/settings.json` when the user accepts a permission)] →\n  Same window as `CLAUDE.md` today; `CreateOnly` protects a file that\n  appears; the read and write are milliseconds apart within one command.\n- [Security: codev installs an auto-executed command in a committed file]\n  → The command is a fixed constant, never built from input; it is\n  read-only; the summary names the file written so the user sees it before\n  committing.\n\n## Migration Plan\n\nAdditive. Projects initialized earlier get nothing until the user runs\n`codev init` again (which is idempotent for the rest) — `codev update`\ndeliberately does not add the hook. Consumers of `codev init --json` that\nswitch on `integration[].step` see a new value; the JSON output reference\nlists it. Rollback: remove codev's entry from `.claude/settings.json`, or\nre-run with `--no-session-hook` on new projects.\n",
+    "_codev/changes/init-session-start-hook/proposal.md": "# Proposal: Install a Claude Code session start hook at init\n\n## Why\n\nA Claude Code session opened on a codev project starts blind to the work in\nprogress: `CLAUDE.md` says how to work, but not which changes are active, so\nthe agent has to be told, or guess, before it can resume a plan. Claude Code\nruns a project's `SessionStart` hooks and hands their output to the agent;\n`codev init` already integrates codev into the repository (`CLAUDE.md`, CI,\npull request template) and is the natural place to install that hook too.\n\n## What Changes\n\n- `codev init` adds a fourth integration step, `session_hook`: it installs,\n  in the project's `.claude/settings.json`, a Claude Code `SessionStart` hook\n  that runs `codev list`, so every new, resumed, cleared or compacted session\n  starts with the list of active changes in the agent's context.\n- The file is merged, never overwritten: every key, value and hook the user\n  already has is kept, codev's entry is appended to the `SessionStart` list,\n  and the file is created only when it does not exist.\n- Running `codev init` again is idempotent: when codev's hook is already\n  there, the file is not rewritten.\n- A `.claude/settings.json` codev cannot merge safely (not valid JSON, or a\n  `hooks` / `SessionStart` of an unexpected shape) is left untouched, with a\n  warning and the step reported as skipped.\n- New flag `--no-session-hook`; `--no-integration` also skips this step.\n- The human summary and the JSON report's `integration` array list the new\n  step (`step: \"session_hook\"`). The array gains an entry: additive within\n  the v1 contract, but a script that counts its entries sees four instead of\n  three on a GitHub project.\n- `codev update` never creates nor modifies `.claude/settings.json`: a\n  project initialized before this change, or with `--no-session-hook`, does\n  not get the hook behind its back.\n\nAssumptions made without the user (recorded here, to confirm at review):\n\n- **The hook's command is `codev list`** — the active changes are the\n  context a session lacks; it is read-only, fast and offline. The request\n  did not name a command.\n- **Target file: `.claude/settings.json`** (shared, committed), as the\n  request says — not `settings.local.json` nor the user's `~/.claude`.\n- **No matcher**: the hook runs on every `SessionStart` source (startup,\n  resume, clear, compact), so the context is restored after a compaction.\n- **No `codev doctor` check** for the hook: not requested; it can come in a\n  later change.\n- **No interactive question**: like the other integration steps, the hook is\n  on by default and opted out by flag, in line with \"Interactive `codev init`\n  asks at most two questions\".\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `init`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev init`: a new integration step, a new flag, a new warning code\n  (`settings_malformed`), a new summary line.\n- JSON contract (`codev init --json`, `codev update --json`): `integration[].step`\n  gains the value `session_hook`; no field added or removed.\n- Code: the Claude Code target (`codev-agents`), which already owns\n  `CLAUDE.md`; the CLI wiring of the integration flags; the JSON contract's\n  documentation of `step`. The workspace's `serde_json` dependency gains a\n  feature to keep the user's key order (see design).\n- Users' repositories: `.claude/settings.json` is created or edited; that\n  file is usually committed, so the hook reaches every teammate who opens\n  the project in Claude Code.\n- Documentation, in `docs/en` and `docs/fr`: the repository integration\n  guide, the CLI reference (`--no-session-hook`), the JSON output reference\n  (`session_hook`), and the quickstart's list of what `codev init` writes.\n\n## Domains\n\n- [x] security — installs a command Claude Code runs automatically at every session start, in a file committed for the whole team.\n- [ ] personal-data — no personal data is read, stored or sent.\n- [ ] user-interface — only a new line in the CLI summary; no graphical or interactive interface.\n- [ ] performance — one local, read-only command per session start.\n- [ ] operations — no service, deployment or runtime component.\n- [x] migration — the public JSON contract's `integration` array gains a step, and an existing user file is edited in place.\n\n## Release note\n\n- Added: `codev init` installs a Claude Code session start hook in\n  `.claude/settings.json` that lists the active changes at the start of each\n  session, merged with your existing settings, never overwriting them. Opt\n  out with `--no-session-hook` (or `--no-integration`).\n",
+    "_codev/changes/init-session-start-hook/specs/init/spec.md": "## ADDED Requirements\n\n### Requirement: `codev init` installs a Claude Code session start hook\n\nUnless opted out, `codev init` SHALL make sure the project's\n`.claude/settings.json` declares a Claude Code `SessionStart` hook of type\n`command` whose command is `codev list`, with no matcher, so that it runs\nwhatever the session's source (startup, resume, clear, compact). In\nthe JSON this entry reads:\n\n```json\n{ \"hooks\": [ { \"type\": \"command\", \"command\": \"codev list\" } ] }\n```\n\nas one element of the `hooks.SessionStart` array.\n\ncodev's hook is recognized by its command alone: any hook of type\n`command` whose command is exactly `codev list`, in any element of\n`hooks.SessionStart`, matcher or not, counts as installed.\n\n- When `.claude/settings.json` does not exist, `codev init` MUST create it\n  holding only that hook.\n- When it exists without codev's hook, `codev init` MUST add the entry at\n  the end of `hooks.SessionStart`, creating `hooks` and `SessionStart` when\n  they are missing.\n- When codev's hook is already installed, `codev init` MUST NOT rewrite the\n  file.\n\n`.claude/settings.local.json` and the user's settings outside the project\nMUST never be read or written for this step.\n\n`codev update` MUST NOT create nor modify `.claude/settings.json`: a project\ninitialized before this step existed, or with `--no-session-hook`, keeps the\nsettings it has.\n\n#### Scenario: A new project gets the hook\n\n- **GIVEN** a new project without `.claude/settings.json`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `.claude/settings.json` exists and is valid JSON\n- **AND** `hooks.SessionStart` holds exactly one entry, without a matcher,\n  whose only hook runs the command `codev list`\n\n#### Scenario: Running `codev init` twice installs the hook once\n\n- **GIVEN** a project where `codev init --yes` already installed the hook\n- **WHEN** the user runs `codev init --yes` again\n- **THEN** `.claude/settings.json` is identical byte for byte\n- **AND** the summary reports the step as unchanged\n\n#### Scenario: A hook the user moved under a matcher still counts\n\n- **GIVEN** a `.claude/settings.json` whose `hooks.SessionStart` holds an\n  entry with the matcher `startup` and a hook running `codev list`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `.claude/settings.json` is identical byte for byte\n\n#### Scenario: `codev update` adds no hook\n\n- **GIVEN** a codev project without `.claude/settings.json`\n- **WHEN** the user runs `codev update`\n- **THEN** `.claude/settings.json` does not exist\n\n### Requirement: The session start hook never overwrites the user's settings\n\nWhen `codev init` adds its hook to an existing `.claude/settings.json`, it\nSHALL keep everything the file already declares: every key at every level,\nwith its value and in its order — `permissions`, `env`, other hook events,\nand the user's own `SessionStart` entries, which stay before codev's. The\nwritten file MUST be valid JSON, indented with two spaces, and end with a\nnewline; whitespace is the only thing that MAY differ from the user's file\noutside codev's entry.\n\nWhen the file cannot be merged safely, `codev init` MUST leave it identical\nbyte for byte, report the step as skipped with the reason, and emit a\nwarning with the stable code `settings_malformed` naming\n`.claude/settings.json`. The file cannot be merged safely when:\n\n- it is not valid JSON, or its top level is not an object;\n- `hooks` exists and is not an object;\n- `hooks.SessionStart` exists and is not an array.\n\nA failure to merge MUST NOT fail `codev init`: the skills and the other\nintegration files are written, and the command exits with code 0.\n\n#### Scenario: Existing settings are kept\n\n- **GIVEN** a `.claude/settings.json` declaring `permissions.allow`, an\n  `env` map, a `PreToolUse` hook and a `SessionStart` entry running\n  `./scripts/welcome.sh`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `permissions`, `env` and `PreToolUse` hold the same values, in\n  the same key order\n- **AND** `hooks.SessionStart` holds the `./scripts/welcome.sh` entry first,\n  then codev's entry\n\n#### Scenario: Settings without hooks get a `hooks` key\n\n- **GIVEN** a `.claude/settings.json` holding only `{\"model\": \"opus\"}`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the file holds `model` with the value `opus`, then `hooks` with\n  codev's `SessionStart` entry\n\n#### Scenario: Invalid JSON is left alone\n\n- **GIVEN** a `.claude/settings.json` that is not valid JSON (a trailing\n  comma)\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the file is identical byte for byte\n- **AND** a warning `settings_malformed` names `.claude/settings.json`\n- **AND** the summary reports the session hook step as skipped, with the\n  reason\n- **AND** the command exits with code 0 and the skills are installed\n\n#### Scenario: An unexpected shape is left alone\n\n- **GIVEN** a `.claude/settings.json` whose `hooks.SessionStart` is an\n  object instead of an array\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the file is identical byte for byte\n- **AND** a warning `settings_malformed` names `.claude/settings.json`\n\n## MODIFIED Requirements\n\n### Requirement: `codev init` integrates codev into the repository\n\nUnless opted out, `codev init` SHALL write four integration files, after\nthe skills:\n\n- **`CLAUDE.md`** at the project root, created if missing, holding a codev\n  section that tells Claude Code, in English: the repository follows\n  spec-driven development with codev; `_codev/specs/` describes the current\n  behavior and is authoritative; `_codev/decisions/` holds accepted\n  decisions that are not re-debated; any change of behavior starts with\n  `/codev-propose` and is implemented with `/codev-apply` (or by following\n  the change's `tasks.md` when `/codev-apply` is not installed), never\n  without a codev change; trivial fixes (typos, documentation wording) are\n  exempt; `codev validate` runs before committing. The section lists the\n  installed skills.\n- **A CI workflow**, for a GitHub repository only — one that has a\n  `.github/` folder, or a git remote on `github.com`:\n  `.github/workflows/codev.yml`, which checks out the repository, installs\n  codev with the official installer pinned to the version of the running\n  binary (`CODEV_VERSION=<version>`), and runs `codev validate --strict`.\n  It is not written when that file exists without the codev marker, nor\n  when another workflow of `.github/workflows/` already runs\n  `codev validate`; no other workflow file is ever modified. For a GitLab\n  repository — a `.gitlab-ci.yml` file or a remote on `gitlab.com` —\n  `.gitlab-ci.yml` is never modified and the human output prints a\n  ready-to-paste job running `codev validate --strict`. Otherwise the CI\n  step is skipped with a hint.\n- **A pull request template section**, for a GitHub repository only: in the\n  first existing template among `.github/`, the project root and `docs/`\n  (file name `pull_request_template.md`, in any case), or in a new\n  `.github/PULL_REQUEST_TEMPLATE.md` holding only the section. The section\n  has a \"codev change\" line, to fill with the folder under\n  `_codev/changes/` or \"trivial fix, no change\", and a checkbox\n  \"`codev validate --strict` passes\".\n- **A Claude Code session start hook** in `.claude/settings.json`, for every\n  project whatever its forge, as the requirement \"`codev init` installs a\n  Claude Code session start hook\" describes.\n\nThe flags `--no-claude-md`, `--no-ci`, `--no-pr-template` and\n`--no-session-hook` MUST skip the corresponding file, and\n`--no-integration` MUST skip all four. No interactive question is added.\n`--no-detect` does not affect integration.\n\n#### Scenario: A new GitHub project gets the four files\n\n- **GIVEN** a new project with a `.github/` folder, no `CLAUDE.md`, no\n  pull request template and no `.claude/settings.json`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `CLAUDE.md` holds the codev section and names\n  `/codev-propose` and `/codev-apply`\n- **AND** `.github/workflows/codev.yml` runs `codev validate --strict`\n  after installing codev with `CODEV_VERSION=<running version>`\n- **AND** `.github/PULL_REQUEST_TEMPLATE.md` holds the \"codev change\" line\n  and the `codev validate --strict` checkbox\n- **AND** `.claude/settings.json` declares the `SessionStart` hook running\n  `codev list`\n\n#### Scenario: A project outside GitHub gets `CLAUDE.md` and the hook\n\n- **GIVEN** a new project with no `.github/` folder, no `.gitlab-ci.yml`\n  and no git remote\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `CLAUDE.md` is written\n- **AND** `.claude/settings.json` declares the `SessionStart` hook\n- **AND** no `.github/` folder is created\n- **AND** the summary reports the CI and pull request template steps as\n  skipped, with the reason\n\n#### Scenario: GitLab CI gets a snippet, not an edit\n\n- **GIVEN** a project with a `.gitlab-ci.yml` file and no `.github/`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `.gitlab-ci.yml` is identical byte for byte\n- **AND** the human output prints a job that installs codev and runs\n  `codev validate --strict`\n\n#### Scenario: An existing workflow already runs `codev validate`\n\n- **GIVEN** a GitHub project whose `.github/workflows/ci.yml` runs\n  `codev validate --strict`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `.github/workflows/codev.yml` is not created\n- **AND** the summary names `ci.yml` as the reason\n\n#### Scenario: A hand-written `codev.yml` is left alone\n\n- **GIVEN** a GitHub project whose `.github/workflows/codev.yml` exists\n  without the codev marker\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the file is identical byte for byte\n- **AND** the summary says it is not managed by codev\n\n#### Scenario: Opting out\n\n- **GIVEN** a new GitHub project\n- **WHEN** the user runs `codev init --yes --no-integration`\n- **THEN** neither `CLAUDE.md`, nor `.github/workflows/codev.yml`, nor a\n  pull request template, nor `.claude/settings.json` is created\n- **AND WHEN** the user runs `codev init --yes --no-ci` on another new\n  GitHub project\n- **THEN** `CLAUDE.md`, the pull request template and the session start\n  hook are written, and no workflow is\n\n#### Scenario: Opting out of the session hook only\n\n- **GIVEN** a new project with a `.claude/settings.json` holding the user's\n  own settings\n- **WHEN** the user runs `codev init --yes --no-session-hook`\n- **THEN** `.claude/settings.json` is identical byte for byte\n- **AND** `CLAUDE.md` is written\n- **AND** the summary reports the session hook step as skipped, with the\n  reason\n\n### Requirement: The init summary reports each integration step\n\nThe human output of `codev init` and `codev update` SHALL list each\nintegration file with what happened to it — written, refreshed, unchanged\nor skipped — and, when skipped, why. `codev init` MUST end with a one-line\nhint to run `codev doctor` when `codev doctor` would report a missing\ncheck.\n\nThe JSON report of `codev init` and `codev update` MUST carry an\n`integration` array, one entry per step, with the stable fields `step`\n(`claude_md`, `ci`, `pr_template`, `session_hook`), `action` (`created`,\n`appended`, `refreshed`, `unchanged`, `skipped`), `path` (relative to the\nproject, or `null`) and `reason` (or `null`). The `session_hook` step uses\n`created` when it creates `.claude/settings.json`, `appended` when it adds\nits entry to an existing file, `unchanged` when the hook is already\ninstalled, and `skipped` when opted out or when the file cannot be merged;\nits `path` is `.claude/settings.json`. `codev update` reports no\n`session_hook` entry. The doctor hint is human output only.\n\n#### Scenario: The summary explains a skipped step\n\n- **GIVEN** a project outside GitHub\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the summary reports `CLAUDE.md` and the session start hook as\n  written and the CI step as skipped, with the reason\n- **AND** the last line suggests `codev doctor`\n\n#### Scenario: The JSON report lists the integration steps\n\n- **WHEN** the user runs `codev init --yes --json` on a new GitHub project\n- **THEN** `integration` holds four entries with `action: \"created\"`, one\n  of them with `step: \"session_hook\"` and\n  `path: \".claude/settings.json\"`\n- **AND** no entry mentions `codev doctor`\n\n#### Scenario: The hook appended to existing settings is reported as such\n\n- **GIVEN** a project whose `.claude/settings.json` holds the user's own\n  settings and no codev hook\n- **WHEN** the user runs `codev init --yes --json`\n- **THEN** the `session_hook` entry has `action: \"appended\"`\n\n#### Scenario: `codev update` reports no session hook step\n\n- **GIVEN** a project initialized with the session start hook\n- **WHEN** the user runs `codev update --json`\n- **THEN** no entry of `integration` has `step: \"session_hook\"`\n"
+  },
+  "validate": {
+    "init-session-start-hook": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "init-session-start-hook",
+          "path": "_codev/changes/init-session-start-hook"
+        }
+      ],
+      "status": []
+    }
+  }
+}

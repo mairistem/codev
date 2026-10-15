@@ -13,26 +13,26 @@ Mode: inline.
 ```yaml
 severity: high
 confidence: high
-location: "src/invoices.ts:32-40"
+location: "src/invoices.ts:32-35"
 evidence: |
-  const rows = await query<InvoiceRow>(
     "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
     [id],
-  );
 recommendation: >-
-  Insecure direct object reference (CWE-639 / CWE-862). Any authenticated user of
-  organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs
-  to another organization, and can enumerate every invoice by iterating ids. Scope the
-  query to the caller, as the list route does — `WHERE id = $1 AND org_id = $2` with
-  `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so existence in
-  another organization is not revealed. Add a test that a caller of another
-  organization gets 404.
+  Scope the lookup to the caller's organization — `WHERE id = $1 AND org_id = $2`
+  with `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so the
+  endpoint does not reveal which ids exist in other organizations. Add a test that
+  asserts the detail query is bound to the caller's `orgId`, like the list test does.
+  Insecure direct object reference / missing authorization (CWE-639, CWE-862): any
+  signed-in user of organization A sends `GET /invoices/42` (or iterates ids) and
+  receives organization B's invoice number, total and date; the handler never calls
+  `currentUser`, while the proposal states the API serves "the caller's
+  organization's invoices".
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 The error handler sends the error message and stack trace to the client
+#### R-security-2 The JSON error handler sends the exception message and stack trace to the client
 
 ```yaml
 severity: medium
@@ -41,29 +41,15 @@ location: "src/server.ts:15-18"
 evidence: |
   res.status(500).json({ error: err.message, stack: err.stack });
 recommendation: >-
-  Information exposure through an error message (CWE-209). Any request whose handler
-  throws — a database failure in `query`, a driver error quoting the SQL or the
-  connection details — returns the raw message and the full stack trace (file paths,
-  module layout, library versions) to the caller. Keep `console.error(err)` on the
-  server and answer a generic body such as `{ error: "internal error" }`.
-history:
-  - status: open
-    by: security
-```
-
-#### R-security-3 An empty or zero id passes the id validation
-
-```yaml
-severity: low
-confidence: high
-location: "src/invoices.ts:27-31"
-evidence: |
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) {
-recommendation: >-
-  `Number(" ")` is 0 and `Number("1e3")` is 1000, so whitespace or exponent forms pass
-  the integer check. No data is exposed by it, but an allow-list at the boundary is
-  stricter: accept only `/^[1-9]\d*$/` and answer 400 otherwise.
+  Log the error server-side and answer a generic body such as
+  `{ error: "internal error" }`; keep `err.message` only for errors explicitly
+  marked as safe to expose (and honour `err.status`/`err.expose` for body-parser
+  errors). Information exposure through an error message (CWE-209): anyone, even
+  unauthenticated since `express.json()` runs before `requireUser`, sends a
+  malformed JSON body with `Content-Type: application/json`; the parser's
+  SyntaxError reaches this handler and the response carries the stack trace with
+  server file paths and dependency versions — and a database failure would leak
+  the `pg` error text (table, column, constraint names).
 history:
   - status: open
     by: security

@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-control-preloaded-helper",
   "error": null,
-  "costUsd": 0.287241,
-  "durationMs": 20924,
+  "costUsd": 0.28381599999999996,
+  "durationMs": 17643,
   "consumption": {
-    "durationApiMs": 20545,
+    "durationApiMs": 17489,
     "turns": 7,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,66 @@
     ],
     "tokens": {
       "input": 1172,
-      "cacheCreation": 26418,
-      "cacheRead": 190000,
-      "output": 1846
-    }
+      "cacheCreation": 26397,
+      "cacheRead": 190315,
+      "output": 1680
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 15058,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3431,
+          "skill": 11627
+        }
+      },
+      {
+        "cacheCreation": 1944,
+        "cacheRead": 44592,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1944
+        }
+      },
+      {
+        "cacheCreation": 978,
+        "cacheRead": 46536,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "file": 978
+        }
+      },
+      {
+        "cacheCreation": 1022,
+        "cacheRead": 47514,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 622,
+          "edit": 400
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

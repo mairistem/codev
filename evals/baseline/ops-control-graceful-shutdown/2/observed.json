@@ -2,22 +2,98 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3975747999999999,
-  "durationMs": 48707,
+  "costUsd": 0.3982014,
+  "durationMs": 45704,
   "consumption": {
-    "durationApiMs": 48198,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 45558,
+    "turns": 9,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
       "input": 1176,
-      "cacheCreation": 31275,
-      "cacheRead": 290809,
-      "output": 4411
-    }
+      "cacheCreation": 31469,
+      "cacheRead": 297182,
+      "output": 4301
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 14664,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14664
+        }
+      },
+      {
+        "cacheCreation": 3527,
+        "cacheRead": 44196,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3527
+        }
+      },
+      {
+        "cacheCreation": 1398,
+        "cacheRead": 47723,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1398
+        }
+      },
+      {
+        "cacheCreation": 2869,
+        "cacheRead": 49121,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2869
+        }
+      },
+      {
+        "cacheCreation": 491,
+        "cacheRead": 51990,
+        "input": 2,
+        "output": 47,
+        "toolCalls": 3,
+        "sources": {
+          "codev review": 491
+        }
+      },
+      {
+        "cacheCreation": 1127,
+        "cacheRead": 52481,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 631,
+          "edit": 438,
+          "output": 57
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,18 +128,18 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "An SMTP send is not idempotent: when the relay accepts the message but its answer arrives after SEND_TIMEOUT, the mailer gives up and, if it reports that as `Unavailable`, the job is released and the recipient gets the e-mail twice (up to twelve times while the relay stays slow — the very situation this change is for). Give each job a stable Message-ID derived from `job.id` so retries are recognisable downstream, or have the mailer distinguish a timeout after DATA from a refused connection and not retry it blindly. Confidence is low: the mailer implementation, which decides how a timeout is reported, is not part of the diff.",
+        "recommendation": "Check how the `Mailer` implementation maps a timeout reached after DATA was sent. If it returns `Unavailable`, the relay may already have accepted the message and the release sends it again (up to 12 times during an outage with slow answers). Either distinguish an ambiguous timeout from a refused connection in the worker's handling, or make the send idempotent (a stable Message-ID per job that the relay deduplicates). Not verified: the mailer implementation is not in the change.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "A send that times out after the relay accepted it is sent again"
+        "title": "A send that times out after the relay accepted it is retried, duplicating the e-mail"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "match mailer.send(&job.message, SEND_TIMEOUT) {\n    Ok(()) => {\n        queue.ack(job.id);\n        health.count(Outcome::Sent);\n",
+        "evidence": "health.beat();\nlet Some(job) = queue.next(POLL) else {\n    continue;\n};\n",
         "history": [
           {
             "by": "ops",
@@ -74,18 +150,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 36,
-        "location": "src/worker.rs:30-34",
+        "line": 28,
+        "location": "src/worker.rs:26-29",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "The worker exports only outcome counters (`notifier_jobs_total{outcome}`) and a liveness beat. When it falls behind — a slow relay taking close to SEND_TIMEOUT per message, or more e-mails queued than one worker sends — `/healthz` stays green and the counters keep rising, so an operator sees nothing until users report late e-mails. Record the send duration (a histogram) and expose the queue depth or the age of the oldest pending job. Confidence is low: such a gauge may already be exported outside the diff.",
+        "recommendation": "`Queue::next` returns `None` both for an empty queue and, depending on its implementation, for a database it cannot reach; the worker beats before polling, so `/healthz` stays green and no log is written while no job can be taken. If the implementation swallows database errors, beat only after a successful poll (or have `next` return a `Result` and log the error with fields). Not verified: the queue implementation is not in the change.",
         "reported": false,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "No metric shows the backlog or the send latency"
+        "title": "The health beat does not depend on the queue being reachable"
       }
     ],
     "format": 1,

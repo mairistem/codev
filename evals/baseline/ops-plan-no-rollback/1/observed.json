@@ -2,22 +2,97 @@
   "format": 2,
   "case": "ops-plan-no-rollback",
   "error": null,
-  "costUsd": 0.30453840000000004,
-  "durationMs": 22261,
+  "costUsd": 0.31809960000000004,
+  "durationMs": 22232,
   "consumption": {
-    "durationApiMs": 22571,
-    "turns": 6,
-    "permissionDenials": 1,
+    "durationApiMs": 22224,
+    "turns": 7,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1158,
-      "cacheCreation": 26816,
-      "cacheRead": 237007,
-      "output": 2082
-    }
+      "input": 1160,
+      "cacheCreation": 27258,
+      "cacheRead": 283593,
+      "output": 2117
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7384,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7384
+        }
+      },
+      {
+        "cacheCreation": 15410,
+        "cacheRead": 29523,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15410
+        }
+      },
+      {
+        "cacheCreation": 268,
+        "cacheRead": 44933,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 268
+        }
+      },
+      {
+        "cacheCreation": 257,
+        "cacheRead": 45201,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 257
+        }
+      },
+      {
+        "cacheCreation": 2006,
+        "cacheRead": 45458,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2006
+        }
+      },
+      {
+        "cacheCreation": 1411,
+        "cacheRead": 47464,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1411
+        }
+      },
+      {
+        "cacheCreation": 522,
+        "cacheRead": 48875,
+        "input": 2,
+        "output": 143,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 491,
+          "output": 31
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -60,7 +135,7 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Keep a way back until Paylane is proven in production: a configuration switch selecting Stripe or Paylane at runtime (or a gradual rollout behind it), with the Stripe client kept for that period, and the Stripe account kept open until a stated exit criterion is met (e.g. a full settlement cycle with no unmatched payments). Today, if Paylane fails or misbehaves after the release, the operator has no switch, and redeploying the previous version no longer works once the Stripe account is closed the next day: card payments stay down until a new release against a reopened account.",
+        "recommendation": "Keep a way back until Paylane is proven in production: keep the Stripe client behind a configuration switch (or a gradual rollout) for a defined period, and keep the Stripe account open until that period ends. Failure scenario: Paylane has an outage, rejects valid cards or a defect appears in the new client a few days after the release; redeploying the previous version brings back the Stripe client, but the Stripe account is already closed, so card payments stop entirely with no rollback, and the next release is up to a week away. State the rollback procedure and the date the Stripe account may be closed in the design.",
         "reported": true,
         "role": "ops",
         "severity": "high",
@@ -82,12 +157,12 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 35,
+        "line": 36,
         "location": "design.md#Decision: A worker settles payments nightly",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Decide in the design how an operator sees the worker fail or not run: an alert on a failed or missed CronJob run (e.g. on the time of the last successful run), metrics for payments fetched, matched and unmatched, and a log at start and end of each run. Today, if the Paylane API is down at 02:00 or the job crashes or is never scheduled, no settlement happens and nothing reports it — the finance alert of the spec fires only for unmatched payments of a run that succeeded — so payments go unreconciled for days unnoticed.",
+        "recommendation": "Decide how an operator learns that a run failed or did not run: a log at start and end with the run's counts, a metric or last-success timestamp, and an alert when the CronJob fails or no successful run is recorded for the day. Failure scenario: the Paylane API is unreachable at 02:00 or the job crashes; the CronJob fails, nothing is written and, since the only alert planned (spec \"A payment without order\") fires from a successful run, finance is never told that the day's payments were not settled. Add a scenario for a failed run to the spec and a task for it.",
         "reported": true,
         "role": "ops",
         "severity": "high",

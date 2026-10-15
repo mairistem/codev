@@ -1,0 +1,315 @@
+{
+  "format": 2,
+  "case": "plan-harder-eval-cases",
+  "error": null,
+  "costUsd": 1.6887778000000004,
+  "durationMs": 318091,
+  "consumption": {
+    "durationApiMs": 316824,
+    "turns": 31,
+    "permissionDenials": 4,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 90894,
+      "cacheRead": 2040954,
+      "output": 27620
+    },
+    "toolCalls": 30,
+    "orientationCalls": 14,
+    "calls": [
+      {
+        "cacheCreation": 13857,
+        "cacheRead": 19692,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 13857
+        }
+      },
+      {
+        "cacheCreation": 11620,
+        "cacheRead": 33549,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1887,
+          "skill": 9733
+        }
+      },
+      {
+        "cacheCreation": 8311,
+        "cacheRead": 45169,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 8311
+        }
+      },
+      {
+        "cacheCreation": 5436,
+        "cacheRead": 53480,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5436
+        }
+      },
+      {
+        "cacheCreation": 2714,
+        "cacheRead": 58916,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2714
+        }
+      },
+      {
+        "cacheCreation": 1703,
+        "cacheRead": 61630,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1703
+        }
+      },
+      {
+        "cacheCreation": 368,
+        "cacheRead": 63333,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 196,
+          "search": 172
+        }
+      },
+      {
+        "cacheCreation": 2644,
+        "cacheRead": 63701,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2644
+        }
+      },
+      {
+        "cacheCreation": 7958,
+        "cacheRead": 66345,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7958
+        }
+      },
+      {
+        "cacheCreation": 1078,
+        "cacheRead": 74303,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1078
+        }
+      },
+      {
+        "cacheCreation": 5806,
+        "cacheRead": 75381,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 5806
+        }
+      },
+      {
+        "cacheCreation": 691,
+        "cacheRead": 81187,
+        "input": 2,
+        "output": 47,
+        "toolCalls": 1,
+        "sources": {
+          "search": 691
+        }
+      },
+      {
+        "cacheCreation": 587,
+        "cacheRead": 81878,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 52,
+          "search": 535
+        }
+      },
+      {
+        "cacheCreation": 661,
+        "cacheRead": 82465,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 661
+        }
+      },
+      {
+        "cacheCreation": 1888,
+        "cacheRead": 83126,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1888
+        }
+      },
+      {
+        "cacheCreation": 2238,
+        "cacheRead": 85014,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2238
+        }
+      },
+      {
+        "cacheCreation": 6723,
+        "cacheRead": 87252,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 6723
+        }
+      },
+      {
+        "cacheCreation": 1373,
+        "cacheRead": 93975,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1374
+        }
+      },
+      {
+        "cacheCreation": 1762,
+        "cacheRead": 95348,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1740,
+          "output": 22
+        }
+      },
+      {
+        "cacheCreation": 3043,
+        "cacheRead": 97110,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 3043
+        }
+      },
+      {
+        "cacheCreation": 1841,
+        "cacheRead": 100153,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1842
+        }
+      },
+      {
+        "cacheCreation": 5616,
+        "cacheRead": 101994,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5616
+        }
+      },
+      {
+        "cacheCreation": 886,
+        "cacheRead": 107610,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "search": 886
+        }
+      },
+      {
+        "cacheCreation": 1240,
+        "cacheRead": 108496,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 369,
+          "edit": 439,
+          "search": 432
+        }
+      },
+      {
+        "cacheCreation": 375,
+        "cacheRead": 109736,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 199,
+          "output": 176
+        }
+      },
+      {
+        "cacheCreation": 475,
+        "cacheRead": 110111,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "search": 475
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/discriminating-role-evals/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/discriminating-role-evals/design.md": "# Design: Make the role evaluation discriminate\n\n## Context\n\n`codev-evals` (workspace member `evals/`, not shipped in the `codev`\nbinary) loads cases in `evals/src/case.rs` — a pure function `case::load`\nover a `Fixture` (the `base/` and `change/` trees as bytes) — and scores\nrecorded observations in `evals/src/score.rs`. Matching today is\n`score::review`: role equality plus `Location::matched_by`; unmatched\nfindings go through `classify_unmatched` (duplicate, cross-role,\nunreported, false positive). `case.yaml` is parsed with `serde_norway`\nand `deny_unknown_fields` (decision 0006), so every new key must be\ndeclared or it is refused.\n\nObserved facts that shape the approach:\n\n- The recorded `codev review --json` already carries each finding's\n  `recommendation` and `evidence` (see\n  `evals/baseline/security-code-sql-injection/observed.json`), but\n  `observed::ReviewFinding` only deserializes `title`. Matching by words\n  therefore needs no new observation format and no re-run of old\n  observations.\n- Of the 18 done tasks across the cases, most cite a test command whose\n  test file is absent from the fixture (`pytest tests/test_payments.py`,\n  `npm test -- pricing`, `cargo test rates`); only\n  `privacy-control-masked-logs` ships its test (`src/logger.test.ts`).\n- Plans cite files the fixture does not hold: `src/cli/import.rs`,\n  `src/cli/progress.rs`, `docs/cli.md` in `skeptic-control-small-flag`,\n  whose `base/` holds only `src/lib.rs`, `src/db.rs`, `src/api.rs`.\n\n## Goals / Non-Goals\n\n**Goals**: a true positive means the role named the seeded defect; a\nfalse positive means the role invented something, not that the fixture\nlied; the suite contains defects some runs will miss and clean code some\nruns will flag.\n\n**Non-Goals**: changing the roles, the review record format or the\n`codev review --json` contract; gating on subtle recall or decoy hits;\njudging the prose of a plan beyond paths and test names; running the\nsuite in regular CI.\n\n## Decisions\n\n### Decision: The defect type is recognised by terms, not by a category field of the record\n\nEach expected finding lists `terms` (two to four: the usual name of the\ndefect and its common synonyms — `injection`, `parameter`/`bind` for SQL\ninjection; `alt`, `text alternative` for a missing image alternative).\nA finding matches when its title or recommendation contains one of them,\ncompared ignoring case and runs of whitespace. The evidence is excluded:\nit quotes the fixture's code, so it would match the defect's own\nidentifiers whatever the finding claims.\n\nThe check is added to the hit predicate in `score::review` and to the\n`matching` closure of `classify_unmatched`, so duplicates and cross-role\nfindings also mean \"the same defect\", not \"the same place\".\n`observed::ReviewFinding` gains `recommendation` with `#[serde(default)]`:\nolder observations stay readable, the format marker stays at its value.\n\n**Alternatives considered**: a `category` field in the review record that\nroles fill from a fixed taxonomy — exact, but it changes the record\nformat, every role file and the `codev review --json` contract (a\nmigration concern under `crates/codev-cli/src/contract.rs`) to serve a\ntest harness; rejected. An LLM judge deciding whether a finding\ndescribes the defect — closer to meaning, but it costs a model call per\nfinding, breaks the \"score again without a model\" requirement and makes\nthe baseline non-reproducible; rejected.\n\n### Decision: The coherence check is part of loading a case, pure, over the fixture\n\n`case::load` already receives the whole `Fixture` and refuses cases with\na `CaseError`; the coherence check becomes one more pure step there,\nafter the locations are checked: extract inline code spans from the\nchange's planning `.md` files, keep those that read as paths, resolve\nthem against `Fixture::merged()` (a file, or a prefix ending in `/` for a\ndirectory), then read the `- [x]` task lines for \"verified by\" spans.\nTest files are recognised by path (`test`, `spec`) or content\n(`#[test]`, `#[cfg(test)]`). This follows decision 0001 in spirit — the\nfile reading stays in `suite::load_cases`, deciding stays pure — and\nkeeps the check in the existing test `every_case_of_the_suite_loads`,\nwhich already runs in `cargo test --workspace`.\n\n**Alternatives considered**: a separate `codev-evals lint` command — one\nmore thing to remember to run, and an incoherent case would still be\nscored; rejected. A check at run time, on the generated git repository —\ntoo late: the money is already spent.\n\n### Decision: `absent` is the escape hatch, and it is checked both ways\n\nSome seeded cases need a plan that cites something absent — it is their\ndefect (`skeptic-plan-scope-creep` cites `web/src/settings/`). They list\nthe path under `absent` with a reason. An `absent` path the fixture does\nhold is refused, so the list cannot rot into a blanket waiver.\n\n### Decision: Difficulty and decoys are case metadata; their measures are reported, not gated\n\n`difficulty: subtle` and `decoys` are declared in `case.yaml` and\nvalidated like expected findings (`Location` parsing and existence).\n`RoleScore` gains `subtle_expected`, `subtle_true_positives` (subtle\nrecall = their ratio, `None` without subtle cases) and `decoy_hits`.\nA decoy hit is computed when a finding is classified a false positive:\nits location is tested against the case's decoys with\n`Location::matched_by`. At `plan.trace`, a decoy whose file changed is a\nhit. `report.md` adds two columns, `report.json` two fields; neither\nenters `exit_code`.\n\nThresholds stay as they are: one baseline is not enough to know where a\nsubtle-recall threshold belongs, and gating too early would make every\nrole change fail on noise.\n\n**Alternatives considered**: a third `kind` (`decoy`) — it would\nduplicate the control rules everywhere `Kind` is matched; a control with\ndecoys is still a control. Weighting subtle cases in the main recall —\nhides the information the user asked for.\n\n### Decision: The existing false positives are triaged case by case\n\nEach high-confidence false positive of the 2026-10-13 baseline gets one\nof three outcomes; the triage is part of the change, not left to the\nimplementation:\n\n| Case | Finding | Outcome |\n|---|---|---|\n| `skeptic-control-small-flag` | R-skeptic-1 CLI files absent | Fixture: add `src/cli/import.rs`, `src/cli/progress.rs`, `docs/cli.md` to `base/` |\n| `skeptic-control-small-flag` | R-skeptic-2 unverified description of paths | Fixture: resolved by the same files |\n| `skeptic-control-small-flag` | R-skeptic-3 test no task creates | Fixture: task 1.2 says it adds `docs_mention_every_flag` |\n| `skeptic-control-small-flag` | R-skeptic-4 scenario broader than requirement | Over-reach: stays a false positive |\n| `skeptic-plan-scope-creep` | R-skeptic-4 `web/src/settings/` absent | Fixture: add the directory to `base/` (the defect is scope creep, not a missing path) |\n| `skeptic-plan-scope-creep` | R-skeptic-8 happy path only | Over-reach |\n| `skeptic-plan-unsupported-assumption` | R-skeptic-4 no domain ticked | Fixture: tick `personal-data` (a real inconsistency, not the seeded defect) |\n| `skeptic-plan-unsupported-assumption` | R-skeptic-6 happy-path tests only | Over-reach |\n| `newcomer-code-clever-one-liner` | R-newcomer-3 cited test absent | Fixture: add `src/pricing.test.ts` |\n| `newcomer-code-clever-one-liner` | R-newcomer-4 comment placement | Over-reach |\n| `accessibility-control-labelled-form` | R-accessibility-1 hidden error in the description | Fixture: real defect in a control — reference `newsletter-error` only once shown |\n| `accessibility-control-labelled-form` | R-accessibility-3 form without name | Over-reach |\n| `accessibility-plan-colour-only` | R-accessibility-2 error summary removed | Fixture: keep the summary in the plan; the seeded defect is colour alone |\n| `privacy-control-masked-logs` | R-privacy-1, R-privacy-2 partial masking | Fixture: replace each address by `[email]` — a control must be clean beyond debate |\n| `privacy-control-masked-logs` | R-privacy-4 no test of log fields | Fixture: add a `logInfo` test |\n| `privacy-code-email-in-logs` | R-privacy-5 purpose not stated | Over-reach |\n| `privacy-plan-birth-date-retention` | R-privacy-3, R-privacy-4 lawful basis, full date | Fixture: state the basis and collect day and month only |\n| `ops-code-no-timeout` | R-ops-4 hard-coded URL | Over-reach |\n| `ops-control-bounded-retries` | R-ops-2, R-ops-3, R-ops-5 | Over-reach (low-severity preferences) |\n| `ops-plan-no-rollback` | R-ops-4 unwatched table | Over-reach |\n| `migration-plan-breaking-rename` | R-migration-3 no migration path | Over-reach: duplicate of the seeded defect by another name; the new `terms` decide |\n| `performance-control-batched-query` | R-performance-1 unmeasured claim | Fixture: drop the speed claim from the release note |\n| `security-control-docs-only` | R-security-2 no rotation advice | Over-reach |\n| `security-plan-tokens-in-clear` | R-security-3 revocation unplanned | Fixture: remove the revocation mention, out of the change's scope |\n\n\"Over-reach\" means the role should not have raised it: it stays a false\npositive and is a target for role tuning, not for the fixtures. The rule\nfor \"fixture\" is that a reasonable reviewer would raise it on the code\nor plan as written.\n\n### Decision: Eighteen new cases, one subtle seeded case and one decoy control per role\n\nEach defect is real but needs reading beyond one line; each decoy looks\nlike the role's typical defect and is sound for a stated reason. Stacks\nare spread so that Rust, TypeScript and Python each appear on both\nsides.\n\n| Role | Subtle seeded case | Decoy control |\n|---|---|---|\n| security | `security-code-timing-unsafe-compare` (Python, HMAC compared with `==`) | `security-control-format-placeholders` (TS, SQL built with `format` but only of `$n` placeholders) |\n| privacy | `privacy-code-hashed-email-unsalted` (Rust, unsalted SHA-256 of e-mails sent to analytics) | `privacy-control-email-to-mailer` (Python, the address goes to the transactional mailer, its stated purpose) |\n| accessibility | `accessibility-code-focus-lost-on-close` (TS, dialog closes without returning focus) | `accessibility-control-decorative-empty-alt` (TS, `alt=\"\"` on a decorative image) |\n| performance | `performance-code-quadratic-dedup` (Python, `in list` inside a loop over all rows) | `performance-control-bounded-loop-query` (Rust, a query in a loop over at most three fixed currencies) |\n| ops | `ops-code-retry-without-backoff` (TS, bounded retries with no pause on a rate-limited API) | `ops-control-infinite-worker-loop` (Python, `while True` worker with timeouts and shutdown signal) |\n| migration | `migration-code-default-changes-meaning` (Rust, new non-null column whose default flips existing behavior) | `migration-control-rename-with-alias` (TS, field renamed with the old name kept as a deprecated alias) |\n| newcomer | `newcomer-code-misleading-name` (Python, `is_valid` that also mutates) | `newcomer-control-commented-bit-trick` (Rust, a bit trick with a comment and a named constant) |\n| skeptic | `skeptic-plan-metric-without-baseline` (plan promising \"faster\" with no measure) | `skeptic-control-justified-new-dependency` (plan adding a dependency with the decision that allows it) |\n| tracer | `tracer-plan-error-scenario-without-task` (only the nominal scenario has a task) | `tracer-control-task-in-other-words` (a scenario covered by a task worded differently) |\n\nThe exact names may change at implementation; the table fixes the\nintent: each defect and each decoy is stated before its fixture is\nwritten, so the fixture is built to it.\n\n## Risks / Trade-offs\n\n- [Terms too narrow, so a role that names the defect differently misses\n  it] → each expected finding gets two to four terms; after rescoring the\n  old baseline observations with the new matching, every expected finding\n  that loses its match is inspected, and its terms widened when the\n  finding did describe the defect.\n- [Terms too wide, so the matching stays loose] → terms are the defect's\n  name, never a word of the fixture's code (`users`, `query`); the\n  scenario \"The right place, another defect\" is a unit test on the real\n  `accessibility-code-icon-button` case.\n- [The path heuristic flags a word that is not a path, refusing a sound\n  case] → the rule is narrow (a `/` or a file extension, no whitespace,\n  no URL, no option); `absent` covers the remaining cases explicitly.\n- [Re-recording the baseline costs money and its scores are not\n  comparable with the old one] → about 44 cases at ≈ 0.37 USD each, about\n  16 USD; the report names the model and date, and the old report stays\n  in git history for comparison.\n- [Subtle recall on one case per role is very noisy] → it is reported,\n  never gated, and the report already warns that one run is a noisy point.\n\n## Migration Plan\n\nEvery `case.yaml` of the repository gains `terms` in the same change,\nsince the key becomes required. The committed baseline is recorded again\nafter the fixtures are repaired and the new cases added; the test\n`the_baseline_agrees_with_the_scoring` then holds on the new report.\nThere is no user-facing migration: `codev-evals` is used only in this\nrepository.\n",
+    "_codev/changes/discriminating-role-evals/proposal.md": "# Proposal: Make the role evaluation discriminate\n\n## Why\n\nThe committed baseline (`evals/baseline/report.md`, 2026-10-13) gives every\nrole a recall of 1.00, so the suite cannot tell a better role file from a\nworse one. Several of its false positives come from the fixtures, not the\nroles: plans that cite files absent from the project (`src/cli/import.rs` in\n`skeptic-control-small-flag`, `web/src/settings/` in\n`skeptic-plan-scope-creep`) or done tasks verified by tests that do not exist\n(`npm test -- pricing` in `newcomer-code-clever-one-liner`). And a finding\nmatches a seeded defect by location alone, so a finding about another defect\ntwo lines away counts as found (`R-accessibility-1`, a clickable `div`,\nmatched `image-without-alt`). Roles are about to be tuned against this suite,\nso its scores must mean something first.\n\n## What Changes\n\n- **Fixture coherence.** Loading a case also checks that its planning\n  artifacts agree with its fixture: every project path a plan cites exists\n  in `base/` or `change/`, and every test a done task cites as its\n  verification exists in the fixture. A reference that is absent on purpose\n  is declared in `case.yaml` under `absent`, with its reason. An incoherent\n  case is refused, naming the artifact and the reference.\n- **Matching by defect type.** An expected finding declares `terms`, the\n  words that name its defect; a finding matches it only when it is at its\n  location, by its role, **and** its title or recommendation contains one of\n  those terms. A finding at the right place about another defect is no\n  longer a true positive nor a duplicate.\n- **Subtle seeded cases.** A seeded case declares its `difficulty`,\n  `obvious` (the default) or `subtle`. The suite holds, for each role, at\n  least one subtle seeded case, and the report gives each role's recall on\n  subtle cases apart.\n- **Decoy controls.** A control may declare `decoys`: locations that look\n  like a defect of the role and are not one, each with the reason it is\n  sound. The suite holds, for each role, at least one control with a decoy,\n  and the report counts each role's **decoy hits** — false positives at a\n  decoy.\n- **The existing fixtures repaired.** Every false positive of the baseline\n  is triaged: an incoherent fixture is fixed, a control that holds a real\n  defect is made clean, and genuine over-reach stays a false positive.\n- **A new baseline**, recorded on the whole suite after these changes.\n\nAll of this is confined to `codev-evals`, the repository's evaluation suite;\nthe `codev` binary, the roles and the review record format do not change.\nThe new `terms` key is required in every `expected` entry: every case of the\nrepository is updated in the same change.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `role-evaluation`\n\n### Removed Capabilities\n\n## Impact\n\n- `evals/src/case.rs` — the `case.yaml` schema (`terms`, `difficulty`,\n  `decoys`, `absent`), the coherence check, the coverage check.\n- `evals/src/observed.rs` — reads each finding's `recommendation`, already\n  present in the recorded `codev review --json`.\n- `evals/src/score.rs`, `evals/src/report.rs` — matching by terms, subtle\n  recall, decoy hits.\n- `evals/cases/` — every existing case gains `terms`; fixtures repaired;\n  eighteen new cases (one subtle seeded case and one decoy control per\n  role).\n- `evals/baseline/` — recorded again (about 16 USD on the default model).\n- `docs/en/src/roles.md`, `docs/fr/src/roles.md` — the evaluation section\n  describes matching by defect type, subtle cases and decoys.\n\nAssumptions made without a user to ask (evaluation run):\n\n- The defect type is recognised from words of the finding (`terms`), not\n  from a new `category` field of the review record: the roles and the\n  record format stay as they are, and the existing `category` stays a label\n  for the report.\n- The coherence check is static and deterministic, at case loading; it does\n  not try to judge whether a plan's prose is plausible. What it cannot see\n  (an unchecked task citing a test no task creates) is handled by the\n  triage of the existing fixtures.\n- The thresholds keep their defaults; subtle recall and decoy hits are\n  reported, not gated, until a baseline shows where to put a threshold.\n- One subtle seeded case and one decoy control per role is the minimum,\n  tracer included.\n\n## Domains\n\nNone\n\n## Release note\n\nNone\n",
+    "_codev/changes/discriminating-role-evals/specs/role-evaluation/spec.md": "## RENAMED Requirements\n\n- FROM: `### Requirement: A finding matches an expected finding by role and location`\n- TO: `### Requirement: A finding matches an expected finding by role, location and defect`\n\n## MODIFIED Requirements\n\n### Requirement: A case declares its fixture, its step, its role and what it expects\n\nThe repository SHALL hold an evaluation suite under `evals/cases/`, one\ndirectory per case, named by the case's id. A case holds:\n\n- `case.yaml` — `role` (the role evaluated), `step` (`plan.challenge`,\n  `code.review` or `plan.trace`), `change` (the change's name), `stacks`\n  (the fixture's languages), `kind` (`seeded` or `control`), a one-line\n  `summary`, and either `expected` (for `plan.challenge` and\n  `code.review`) or `checks` (for `plan.trace`); optionally `difficulty`,\n  `decoys` and `absent`;\n- `base/` — the fixture project as it is on its default branch;\n- `change/` — the files the change adds or modifies, its planning\n  artifacts under `_codev/changes/<change>/` included.\n\nAn expected finding states its `id`, `severity`, `category`, one or more\n`locations`, in the review record's location syntax: `path:line` or\n`path:start-end` relative to the project for code, `<file>#<heading>` or\n`<file>` relative to the change's directory for the plan, and one or more\n`terms`: the words or phrases that name its defect, any one of which a\nfinding about that defect is expected to use. A `plan.trace` case states\n`checks`: `fixed` entries (a file of the fixture and a text it must\ncontain after the run) and `unchanged` paths (files the run must leave as\nthey were).\n\n`difficulty` is `obvious` or `subtle`, and is `obvious` when absent; only\na `seeded` case declares it. `decoys` lists, for a `control` case only,\nthe places that look like a defect of the role and are not one: each\nstates a `location`, in the same syntax as an expected location, and the\n`reason` it is sound. `absent` lists the paths the case's planning\nartifacts cite on purpose although the fixture does not hold them, each\nwith its `reason`.\n\nA case SHALL be refused, naming the case and the reason, when: a key is\nunknown; the role does not serve the step; a `seeded` case expects\nnothing or a `control` expects something; an expected finding has no\nterm, or an empty one; a `control` declares a `difficulty` or a `seeded`\ncase declares `decoys`; an expected or decoy location names a file absent\nfrom the fixture, a line beyond its end or a heading it does not have; a\nfixture file is not UTF-8 text or is larger than 64 KiB.\n\n#### Scenario: The repository's suite is well formed\n\n- **GIVEN** the cases under `evals/cases/`\n- **WHEN** the test suite of `codev-evals` runs\n- **THEN** every case loads, and every expected and decoy location exists\n  in its fixture\n\n#### Scenario: An unknown key\n\n- **GIVEN** a `case.yaml` with the key `expect` instead of `expected`\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `expect`\n\n#### Scenario: A location beyond the end of the file\n\n- **GIVEN** a seeded case expecting `src/users.ts:120` and a fixture\n  whose `src/users.ts` has 40 lines\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names the file and the line\n\n#### Scenario: A binary fixture file\n\n- **GIVEN** a case whose `change/` holds a file that is not UTF-8 text\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names the file\n\n#### Scenario: An expected finding without terms\n\n- **GIVEN** a seeded case whose expected finding `sql-injection` has no\n  `terms`\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `sql-injection` and\n  `terms`\n\n#### Scenario: A decoy on a seeded case\n\n- **GIVEN** a seeded case that declares `decoys`\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `decoys` and the kind\n  `seeded`\n\n#### Scenario: A decoy that points nowhere\n\n- **GIVEN** a control declaring a decoy at `src/rates.rs:90` and a\n  fixture whose `src/rates.rs` has 45 lines\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names the file and the line\n\n### Requirement: The suite covers every reviewing role\n\nThe suite SHALL hold, for each expert (`security`, `privacy`,\n`accessibility`, `performance`, `ops`, `migration`), at least two seeded\ncases and one control; for the `newcomer` and the `skeptic`, at least two\nseeded cases and one control; for the `tracer`, at least one seeded case\nand one control. For every role, at least one of its seeded cases SHALL\nbe `subtle`, and at least one of its controls SHALL declare a decoy.\nAmong the cases, the stacks SHALL include Rust, TypeScript and Python.\n\n#### Scenario: The repository's suite meets the minimum\n\n- **GIVEN** the cases under `evals/cases/`\n- **WHEN** the test suite of `codev-evals` runs\n- **THEN** it passes\n\n#### Scenario: A role without a control\n\n- **GIVEN** a suite where the `ops` role has two seeded cases and no\n  control\n- **WHEN** its coverage is checked\n- **THEN** the check fails and names `ops` and the missing control\n\n#### Scenario: A role with only obvious defects\n\n- **GIVEN** a suite where every seeded case of `privacy` is `obvious`\n- **WHEN** its coverage is checked\n- **THEN** the check fails and names `privacy` and the missing subtle\n  case\n\n#### Scenario: A role whose controls hold no decoy\n\n- **GIVEN** a suite where the only control of `performance` declares no\n  decoy\n- **WHEN** its coverage is checked\n- **THEN** the check fails and names `performance` and the missing decoy\n\n### Requirement: A finding matches an expected finding by role, location and defect\n\nA finding of the review record SHALL match an expected finding when it\nwas written by the expected finding's role (its `### <role-id>` section),\nits location matches one of the expected locations, and its title or its\nrecommendation contains one of the expected finding's terms, compared\nignoring case and runs of whitespace. The finding's evidence is not\nsearched for terms: it quotes the fixture, which names the defect's code\nwhatever the finding says about it. Locations match as follows:\n\n- code: the same path — `\\` read as `/`, a leading `./` ignored — and\n  line ranges that overlap once the expected range is widened by two\n  lines on each side;\n- plan: the same file and, when the expected location names a heading,\n  the same heading, compared ignoring case and runs of whitespace; an\n  expected location without a heading matches any location in that file.\n\nEach expected finding is matched at most once, by the first matching\nfinding in record order, expected findings taken in case order. A\nmatched expected finding is a **true positive**; one left unmatched is a\n**miss**. The severity of a true positive is compared with the expected\none and counted as **severity agreement**; it does not decide the match.\n\n#### Scenario: Overlapping lines\n\n- **GIVEN** an expected `security` finding at `src/users.ts:12-14` with\n  the term `injection`, and a `security` finding at `src/users.ts:15`\n  titled \"SQL injection through the search query\"\n- **WHEN** the case is scored\n- **THEN** the expected finding is a true positive\n\n#### Scenario: Lines too far away\n\n- **GIVEN** an expected `security` finding at `src/users.ts:12-14` with\n  the term `injection`, and a `security` finding at `src/users.ts:30`\n  titled \"SQL injection through the search query\"\n- **WHEN** the case is scored\n- **THEN** the expected finding is a miss, and the finding is a false\n  positive\n\n#### Scenario: The right place, another defect\n\n- **GIVEN** an expected `accessibility` finding `image-without-alt` at\n  `src/components/Toolbar.tsx:12` with the terms `alt` and `text\n  alternative`, and an `accessibility` finding of high confidence at\n  `src/components/Toolbar.tsx:13-15` titled \"Delete action is a clickable\n  div, unreachable by keyboard\", whose recommendation uses neither term\n- **WHEN** the case is scored\n- **THEN** `image-without-alt` is not matched by that finding, and the\n  finding, matching no other expected finding, is a false positive\n\n#### Scenario: The term only in the recommendation\n\n- **GIVEN** an expected finding with the term `timeout`, and a finding of\n  its role at its location titled \"The payment call can hang forever\"\n  whose recommendation reads \"Set a timeout on the request\"\n- **WHEN** the case is scored\n- **THEN** the expected finding is a true positive\n\n#### Scenario: The term only in the evidence\n\n- **GIVEN** an expected finding with the term `innerHTML`, and a finding\n  of its role at its location whose evidence quotes `innerHTML` but whose\n  title and recommendation do not use it\n- **WHEN** the case is scored\n- **THEN** the expected finding is a miss\n\n#### Scenario: A plan heading written in another case and spacing\n\n- **GIVEN** an expected finding at\n  `design.md#Decision: Tokens are stored as given` with the term\n  `hash`, and a finding at `design.md#decision:  tokens are stored as\n  given` titled \"Tokens are not hashed at rest\"\n- **WHEN** the case is scored\n- **THEN** the expected finding is a true positive\n\n#### Scenario: A Windows path\n\n- **GIVEN** an expected finding at `src/db/orders.rs:20-24` with the\n  term `N+1`, and a finding at `src\\db\\orders.rs:22` titled \"An N+1\n  query per order line\"\n- **WHEN** the case is scored\n- **THEN** the expected finding is a true positive\n\n### Requirement: The report is per role, in markdown and JSON, and the exit code follows thresholds\n\n`codev-evals run` and `codev-evals score` SHALL write `report.md` and\n`report.json` in their output directory, with, per role: the cases, the\nexpected findings, true positives, misses, false positives, unreported,\nduplicates, cross-role findings, recall (true positives over expected),\nrecall on `subtle` cases alone, decoy hits, evidence validity and\nseverity agreement; and per case: its outcome, its difficulty or its\ndecoys, each finding's classification, the findings whose status is no\nlonger `open` and the files modified outside the step. The model, date\nand versions of the run are those recorded when the run started. The\norder is fixed — roles and cases by id — so that the same observations\ngive the same bytes.\n\nA **decoy hit** is a false positive whose location matches a decoy of\nits case, by the rules that match an expected location; at `plan.trace`,\na decoy whose file changed during the run. A decoy hit is also counted\nas a false positive. A role without a `subtle` seeded case has no subtle\nrecall.\n\nA role SHALL fail when its recall is under `--min-recall` (default 0.5),\nits false positives exceed `--max-false-positives` (default 2), or its\nevidence validity is under `--min-evidence` (default 0.8); each threshold\ncan also be set by `CODEV_EVAL_MIN_RECALL`,\n`CODEV_EVAL_MAX_FALSE_POSITIVES` and `CODEV_EVAL_MIN_EVIDENCE`, the flag\nwinning. Subtle recall and decoy hits SHALL be reported without failing\na role. The command SHALL exit with 0 when every role passes and no case\nis in error, 1 otherwise, naming each failing role and measure, and 2 on\nan invalid threshold, an invalid case or a missing tool.\n\n#### Scenario: Every role passes\n\n- **GIVEN** observations where each role's recall, false positives and\n  evidence validity meet the thresholds\n- **WHEN** the user runs `codev-evals score <dir>`\n- **THEN** it exits with 0 and writes both reports\n\n#### Scenario: A role under the recall threshold\n\n- **GIVEN** observations where `ops` finds one of four expected findings\n- **WHEN** the user runs `codev-evals score <dir> --min-recall 0.5`\n- **THEN** it exits with 1, and the message names `ops`, its recall\n  0.25 and the threshold\n\n#### Scenario: An invalid threshold\n\n- **GIVEN** `CODEV_EVAL_MIN_RECALL=lots`\n- **WHEN** the user runs `codev-evals score <dir>`\n- **THEN** it exits with 2 and names the variable\n\n#### Scenario: Subtle recall apart\n\n- **GIVEN** observations where `security` finds both defects of its\n  obvious case and misses the one defect of its subtle case\n- **WHEN** the case is scored\n- **THEN** the report gives `security` a recall of 0.67 and a subtle\n  recall of 0.00, and the role does not fail for its subtle recall\n\n#### Scenario: A finding on a decoy\n\n- **GIVEN** a `performance` control declaring a decoy at\n  `src/report.rs:18-22`, and a `performance` finding of high confidence\n  at `src/report.rs:20`\n- **WHEN** the case is scored\n- **THEN** `performance` has one false positive and one decoy hit\n\n#### Scenario: A low-confidence finding on a decoy\n\n- **GIVEN** the same control and a finding at `src/report.rs:20` of low\n  confidence\n- **WHEN** the case is scored\n- **THEN** it is unreported, and `performance` has no decoy hit\n\n## ADDED Requirements\n\n### Requirement: A case's plan agrees with its fixture\n\nWhen a case is loaded, its planning artifacts — the files under\n`change/_codev/changes/<change>/` — SHALL be checked against its\nfixture, and the case refused, naming the case, the artifact and the\nreference, when:\n\n- an inline code span of an artifact that reads as a project path — no\n  whitespace, not a URL nor a command-line option, and either holding a\n  `/` or ending in a file extension — names neither a file nor a\n  directory of `base/` or `change/`, and is not listed under `absent`;\n- a task checked as done (`- [x]`) cites, in an inline code span after\n  \"verified by\", a test whose name — the span itself, or the last word\n  of a test command — appears in no test file of the fixture: a file\n  outside `_codev/` whose path holds `test` or `spec`, or whose content\n  holds `#[test]` or `#[cfg(test)]`. A test command without a filter,\n  which runs a whole suite (`npm test`, `pytest`, `cargo test`), and a\n  command that runs no test (`sqlx migrate run`) name no test and are not\n  checked; a path in a command is checked as a path.\n\nA path listed under `absent` that the fixture does hold SHALL also be\nrefused, so that the list stays true. Paths inside the change's own\ndirectory are always resolved, since they are its planning artifacts.\n\n#### Scenario: A plan that cites a file the fixture lacks\n\n- **GIVEN** a control whose `proposal.md` lists `src/cli/import.rs` under\n  Impact, and a fixture without that file\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `proposal.md` and\n  `src/cli/import.rs`\n\n#### Scenario: A directory the plan cites\n\n- **GIVEN** a plan citing `src/db/` and a fixture holding\n  `src/db/orders.rs`\n- **WHEN** the case is loaded\n- **THEN** the reference is resolved and the case loads\n\n#### Scenario: An absence on purpose\n\n- **GIVEN** a seeded `skeptic` case whose defect is a plan citing\n  `web/src/settings/`, which the project does not have, and whose\n  `case.yaml` lists that path under `absent` with its reason\n- **WHEN** the case is loaded\n- **THEN** it loads\n\n#### Scenario: An absence that is not one\n\n- **GIVEN** a case listing `src/lib.rs` under `absent` and a fixture\n  holding `src/lib.rs`\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `absent` and\n  `src/lib.rs`\n\n#### Scenario: A done task verified by a missing test\n\n- **GIVEN** a `code.review` case whose `tasks.md` holds\n  ``- [x] 1.1 `bucket`, verified by `npm test -- pricing` `` and a\n  fixture that holds `src/pricing.ts` but no test file naming `pricing`\n- **WHEN** the case is loaded\n- **THEN** it is refused, and the message names `tasks.md` and `pricing`\n\n#### Scenario: A whole suite as verification\n\n- **GIVEN** a done task verified by `npm test`\n- **WHEN** the case is loaded\n- **THEN** no test name is checked for it\n\n#### Scenario: A task not yet done\n\n- **GIVEN** a `plan.challenge` case whose unchecked task is verified by\n  a test `a_quiet_import_prints_nothing` the fixture does not hold\n- **WHEN** the case is loaded\n- **THEN** the test is not checked and the case loads\n\n#### Scenario: Words that are not paths\n\n- **GIVEN** a plan with the inline code spans `--quiet`,\n  `Progress::new(quiet)`, `ledger import` and `https://example.com/a`\n- **WHEN** the case is loaded\n- **THEN** none of them is checked as a path\n"
+  },
+  "validate": {
+    "discriminating-role-evals": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "discriminating-role-evals",
+          "path": "_codev/changes/discriminating-role-evals"
+        }
+      ],
+      "status": []
+    }
+  }
+}

@@ -8,7 +8,7 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 The provider call has no timeout
+#### R-ops-1 Charge call to the payment provider has no timeout
 
 ```yaml
 severity: high
@@ -17,16 +17,17 @@ location: "app/payments.py:14"
 evidence: |
   response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
 recommendation: >-
-  Pass an explicit `timeout=` (connect and read) to `requests.post`. Without
-  it, when the payment provider accepts the connection but stops answering,
-  `charge()` blocks forever on the checkout path: the request worker hangs,
-  nothing is logged and the operator only sees checkouts piling up.
+  Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it,
+  when the provider accepts the connection but never answers, `requests` waits
+  indefinitely: the checkout request that calls `charge()` hangs, no exception
+  is raised, nothing is logged, and the operator sees stuck workers with no
+  error to diagnose.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Unbounded retry of a non-idempotent charge can duplicate charges
+#### R-ops-2 Unbounded retry of a non-idempotent charge, on every error
 
 ```yaml
 severity: high
@@ -41,24 +42,25 @@ evidence: |
       except requests.RequestException:
           time.sleep(1)
 recommendation: >-
-  Bound the retries (a few attempts, exponential backoff with jitter), then
-  raise an error naming the order. Retry only when the charge is safe to
-  repeat: send an idempotency key derived from `order_id` that the provider
-  honours, and do not retry on 4xx responses. Today, when the provider
-  charges the card but the response is lost (read error, 5xx after
-  processing), the loop posts the charge again every second and charges the
-  customer twice; when the provider is down or rejects the request (e.g. a
-  400 for an invalid amount), the loop never ends and hammers the provider at
-  1 request per second per pending order.
+  Bound the retries (a few attempts, with exponential backoff and jitter) and
+  retry only transient failures (connection errors, 5xx, 429), never 4xx such
+  as a declined card or invalid amount, which today loops forever every second.
+  Make the POST safe to repeat by sending an idempotency key derived from
+  `order_id` (if the provider supports one); otherwise a read timeout or 5xx
+  returned after the provider already charged makes the retry charge the
+  customer twice. During a provider outage, every pending checkout retries
+  every second with no limit, a retry storm that also blocks callers forever.
+  After the last attempt, raise an error carrying the order id and the
+  provider's status.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-3 Failed charge attempts are swallowed without a log
+#### R-ops-3 Charge failures are swallowed without any log
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
 location: "app/payments.py:17-18"
 evidence: |
@@ -66,16 +68,17 @@ evidence: |
       time.sleep(1)
 recommendation: >-
   Log each failed attempt as a structured event (order id, attempt number,
-  HTTP status, error class, no request body or credentials) and emit a
-  metric for charge failures. Today, when the provider returns errors, the
-  exception is dropped: an operator investigating a stuck checkout has no
-  log, no status code and no order id to diagnose from.
+  HTTP status or exception type, never the request body or credentials) and
+  expose a counter of charge failures. Today, when the provider is down or
+  rejects a charge, the exception is dropped: the operator has no log line, no
+  metric and no error, and cannot tell a slow checkout from a provider outage
+  or a declined order.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-4 Provider URL is hard-coded
+#### R-ops-4 Provider URL hard-coded instead of read from configuration
 
 ```yaml
 severity: medium
@@ -84,12 +87,11 @@ location: "app/payments.py:7"
 evidence: |
   PAYMENT_URL = "https://payments.example.com/v2/charges"
 recommendation: >-
-  Read the provider URL from the environment or configuration (e.g.
-  `PAYMENT_URL` env var), with no production default for non-production
-  environments. The task is verified against the provider's sandbox, yet the
-  code only knows the production endpoint: pointing a test or staging
-  environment at the sandbox needs a code edit, and an environment run as is
-  sends real charges to production.
+  Read the provider URL from the environment or the application
+  configuration. The task was verified against the provider's sandbox, while
+  production must call the live endpoint: with the URL baked in, switching
+  between sandbox and production, or pointing a test environment away from
+  real charges, needs a code change and a release.
 history:
   - status: open
     by: ops

@@ -8,12 +8,12 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 `rename_all = "camelCase"` silently renames every existing field of the public order JSON
+#### R-migration-1 camelCase rename silently breaks every existing order JSON field
 
 ```yaml
 severity: high
 confidence: high
-location: "src/api.rs:6-10"
+location: "src/api.rs:6-9"
 evidence: |
   #[serde(rename_all = "camelCase")]
   pub struct OrderResponse {
@@ -21,44 +21,43 @@ evidence: |
       pub customer_id: i64,
       pub total_cents: i64,
 recommendation: >-
-  Remove `#[serde(rename_all = "camelCase")]` so that `GET /orders/{id}` keeps
-  emitting `order_id`, `customer_id` and `total_cents`, and only adds
-  `currency` (single-word, unaffected). Today a partner integration that reads
-  `order["order_id"]` gets nothing after the release: the response now carries
-  `orderId`, `customerId` and `totalCents`, with no **BREAKING** item in the
-  proposal's release note and against docs/api.md, which still lists the
-  snake_case names and promises "a field is never renamed or removed without
-  two releases of deprecation". If camelCase is wanted, it is a separate
-  change that emits both names for two releases, is marked BREAKING and
-  announced. Add a test that serializes an `OrderResponse` and asserts the
-  documented field names.
+  Remove `#[serde(rename_all = "camelCase")]` so `GET /orders/{id}` keeps
+  emitting `order_id`, `customer_id` and `total_cents` (the new `currency`
+  field is a single word and needs no rename). Today partners' integrations
+  read `order_id`, `customer_id` and `total_cents`; after this change the
+  endpoint returns `orderId`, `customerId` and `totalCents`, so every partner
+  reading those keys gets a missing field on the first deploy, with no
+  **BREAKING** item in the release note (which only says "Added: Orders carry
+  their `currency`"), while `docs/api.md` still lists the snake_case names and
+  promises "a field is never renamed or removed without two releases of
+  deprecation". If camelCase is really wanted, it must go through that
+  deprecation (emit both names for two releases), be marked BREAKING in the
+  release note and the docs, and follow semantic versioning for the 4.1.0 crate.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 New required `default_currency` key makes existing `config.toml` files fail to load
+#### R-migration-2 Existing config.toml files fail to load without `default_currency`
 
 ```yaml
 severity: high
 confidence: high
-location: "src/config.rs:5-10"
+location: "src/config.rs:9-10"
 evidence: |
-  #[derive(Deserialize)]
-  pub struct Config {
-      pub database_url: String,
-      pub listen: String,
       /// The currency of orders that do not name one (ISO 4217).
       pub default_currency: String,
 recommendation: >-
-  Give the field a default (`#[serde(default = "default_currency")]` returning
-  `"EUR"`, the currency every existing order was in) so that a deployed
-  `config.toml` holding only `database_url` and `listen` keeps loading. As it
-  stands, `toml::from_str` fails with "missing field `default_currency`" and
-  the service refuses to start after the upgrade; only config.example.toml was
-  updated, and the release note does not tell operators to add the key. If a
-  required key is intended, mark it **BREAKING** in the release note with the
-  line to add. Add a test that loads the pre-change configuration.
+  Give the key a default so existing configuration keeps working, e.g.
+  `#[serde(default = "default_currency")]` returning `"EUR"` (the currency the
+  shop sold in before this change), and add a test that `config::load` accepts
+  a file holding only `database_url` and `listen`. Today every deployed
+  `config.toml` has only `database_url` and `listen` (as `config.example.toml`
+  did on `main`); `Config` derives `Deserialize` with `default_currency` as a
+  required `String`, so `toml::from_str` returns `missing field
+  default_currency` and the service refuses to start on upgrade. Nothing in
+  the release note tells operators to add the key; if it stays required, say
+  so as a BREAKING item with the step to take.
 history:
   - status: open
     by: migration

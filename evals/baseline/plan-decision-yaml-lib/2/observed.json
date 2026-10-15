@@ -1,0 +1,252 @@
+{
+  "format": 2,
+  "case": "plan-decision-yaml-lib",
+  "error": null,
+  "costUsd": 0.7968868,
+  "durationMs": 118593,
+  "consumption": {
+    "durationApiMs": 117495,
+    "turns": 20,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1086,
+      "cacheCreation": 50651,
+      "cacheRead": 921354,
+      "output": 10329
+    },
+    "toolCalls": 19,
+    "orientationCalls": 14,
+    "calls": [
+      {
+        "cacheCreation": 7727,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7727
+        }
+      },
+      {
+        "cacheCreation": 5036,
+        "cacheRead": 29866,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 5036
+        }
+      },
+      {
+        "cacheCreation": 12748,
+        "cacheRead": 34902,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2879,
+          "skill": 9869
+        }
+      },
+      {
+        "cacheCreation": 930,
+        "cacheRead": 47650,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 930
+        }
+      },
+      {
+        "cacheCreation": 2923,
+        "cacheRead": 48580,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2923
+        }
+      },
+      {
+        "cacheCreation": 2209,
+        "cacheRead": 51503,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2209
+        }
+      },
+      {
+        "cacheCreation": 4679,
+        "cacheRead": 53712,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 4593,
+          "output": 86
+        }
+      },
+      {
+        "cacheCreation": 284,
+        "cacheRead": 58391,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 284
+        }
+      },
+      {
+        "cacheCreation": 314,
+        "cacheRead": 58675,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 314
+        }
+      },
+      {
+        "cacheCreation": 374,
+        "cacheRead": 58989,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 374
+        }
+      },
+      {
+        "cacheCreation": 2144,
+        "cacheRead": 59363,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2144
+        }
+      },
+      {
+        "cacheCreation": 727,
+        "cacheRead": 61507,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 105,
+          "search": 622
+        }
+      },
+      {
+        "cacheCreation": 1053,
+        "cacheRead": 62234,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 2,
+        "sources": {
+          "codev roles": 1053
+        }
+      },
+      {
+        "cacheCreation": 5208,
+        "cacheRead": 63287,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 170,
+          "output": 17,
+          "shell": 5021
+        }
+      },
+      {
+        "cacheCreation": 1071,
+        "cacheRead": 68495,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 997,
+          "output": 74
+        }
+      },
+      {
+        "cacheCreation": 2929,
+        "cacheRead": 69566,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2929
+        }
+      },
+      {
+        "cacheCreation": 295,
+        "cacheRead": 72495,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 295
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/switch-yaml-to-serde-yaml/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\nskip_specs: true\n",
+    "_codev/changes/switch-yaml-to-serde-yaml/design.md": "# Design: Switch the YAML library to serde_yaml\n\n## Context\n\nEvery YAML read and write in codev goes through `serde_norway` 0.9.42, a\nworkspace dependency declared once in the root `Cargo.toml` and inherited by\n`codev-core`, `codev-engine`, `codev-agents` and `evals`. `codev-cli` does\nnot use it directly. The crate is used in two ways:\n\n- **Reading**: `from_str` and `from_value` into typed structs, and into\n  `Value`/`Mapping` for the tolerant parsers — unknown-key detection in\n  `codev-engine::config`, decision frontmatter in\n  `codev-core::decisions::parser`, the finding blocks of\n  `codev-core::review::parse`, triggers and roles.\n- **Writing**: `to_string` produces files that codev maintains and that end\n  up in users' repositories — `_codev/decisions/seal.yaml`\n  (`codev-core::decisions::seal`), `change.yaml` (`codev-engine::metadata`)\n  and the YAML rendered by `codev-core::roles`.\n\nParse errors reach users as text: `codev-engine::config` wraps\n`e.to_string()` into `EngineError::Invalid { reason }`, so the library's\nmessage — position and wording — is part of what a user reads.\n\n[ADR 0006](../../decisions/0006-serde-norway-for-yaml.md) is accepted and\nsealed (`_codev/decisions/seal.yaml`): it chose `serde_norway` and rejected\n`serde_yaml` as archived upstream. Its body cannot be edited; it can only be\nsuperseded by a new accepted ADR. ADR 0002 (the crate graph as dependency\nrule) is unaffected: the replacement is a leaf dependency of the same crates.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- `serde_yaml` is the only YAML crate in the dependency tree.\n- Every YAML file codev reads today is read the same way, and every file it\n  writes is byte-identical to what it writes today.\n- The decision record says why the project moved, superseding 0006.\n\n**Non-Goals**\n\n- Changing any YAML format, error code or JSON output.\n- Re-evaluating other YAML crates (`serde-saphyr`, `yaml-rust2`): ADR 0006\n  already weighed them; this change only does what the request asks.\n- Wrapping the YAML crate behind an internal facade. It would make a future\n  switch cheaper, but no requirement calls for it here.\n\n## Decisions\n\n### Decision: serde_yaml for YAML, superseding 0006\n\nUse `serde_yaml` 0.9.34+deprecated, the last release, as the workspace's\nYAML crate, in place of `serde_norway`. This **explicitly deviates from\nADR 0006**, which is accepted: the deviation is legitimate only once this\nblock is promoted with `codev decision promote switch-yaml-to-serde-yaml\n\"serde_yaml for YAML, superseding 0006\"`, given `supersedes: [0006]`, and\naccepted by a person with `codev decision accept`. Until then, 0006 stays\nin effect and the change must not be applied.\n\nRationale given by the request: `serde_yaml` is the name most Rust\ndevelopers know, which the team reads as \"more standard\". The facts that\nweigh against it, and that the person accepting must own:\n\n- `serde_yaml` is archived upstream and publishes itself as `+deprecated`:\n  no bug fix, no security fix, no compatibility update will follow. ADR 0006\n  rejected it for exactly this reason, and nothing has changed since.\n- `serde_norway` *is* `serde_yaml` with maintenance: same API, same\n  syntax, same examples. The \"standard\" API is already what the code uses.\n\nThe swap itself is mechanical: the fork kept every public path, so the\nchange renames `serde_norway::` to `serde_yaml::` and the dependency entries,\nand touches no logic.\n\n**Alternatives considered**:\n\n- **Keep `serde_norway` (ADR 0006 as is)**: the maintained crate with the\n  same API; the recommended outcome if the person reviewing this change does\n  not accept the superseding ADR. Then the change is abandoned, not applied.\n- **Rename the dependency in `Cargo.toml`** (`serde_yaml = { package =\n  \"serde_norway\" }`): the code would read `serde_yaml::` while staying on\n  the maintained crate. Rejected as the default because it does not do what\n  the request asks — the dependency would still be `serde_norway` — and it\n  misleads a reader of the code about which crate is compiled. It is the\n  cheapest compromise if \"standard\" only meant \"the familiar name in the\n  code\".\n- **`serde-saphyr`**: ADR 0006's named candidate for a future change of\n  crate, maintained and panic-free, but outside what this request asks.\n\n## Risks / Trade-offs\n\n- [An unmaintained parser reads untrusted input — inherited decisions,\n  third-party `config.yaml` — and a vulnerability in it, or in\n  `unsafe-libyaml`, would never be fixed upstream] → The superseding ADR\n  states the risk; `cargo audit`/RustSec advisories are checked before\n  accepting it; the ADR names the condition that reopens the question (any\n  advisory against `serde_yaml` or `unsafe-libyaml`).\n- [Serialization drift: `serde_norway` has released fixes since the fork\n  (0.9.34 → 0.9.42), so `serde_yaml` may quote or escape some strings\n  differently; a rewritten `seal.yaml` or `change.yaml` would then show\n  spurious diffs in users' repositories, and the seal's quoted ids\n  (`'0001'`) are the most exposed] → Golden tests compare the output of\n  `seal`, `metadata` and `roles` serialization, byte for byte, before and\n  after the swap; any difference blocks the change.\n- [Parse drift: a file accepted today could be rejected, or a parse error\n  could change wording or position, since `EngineError::Invalid` shows the\n  library's message] → Run the full test suite and the existing\n  config round-trip test (`config_generate_roundtrip`); parse every YAML\n  file of this repository's `_codev/` (configuration, archived changes,\n  decisions, seal) with the new crate and compare the results with today's.\n- [The deprecated crate will eventually stop compiling with newer\n  toolchains or `serde` versions] → No mitigation within this change; the\n  superseding ADR records it as a known cost.\n\n## Migration Plan\n\n1. A person promotes and accepts the superseding ADR; without it, stop here.\n2. Swap the workspace dependency and the four crate manifests, rename the\n   call sites, update `Cargo.lock`.\n3. Update the decision table in `docs/en/src/architecture.md` and\n   `docs/fr/src/architecture.md` (0006 superseded by the new ADR).\n4. Run the byte-identity and parsing checks above, then\n   `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D\n   warnings`, `cargo test --workspace`, and `codev validate`.\n\nRollback: revert the commit. No user file changes format, so nothing\nwritten in between needs converting.\n",
+    "_codev/changes/switch-yaml-to-serde-yaml/proposal.md": "# Proposal: Switch the YAML library to serde_yaml\n\n> **Conflicts with an accepted decision.** This change reverses\n> [ADR 0006 — serde_norway for YAML](../../decisions/0006-serde-norway-for-yaml.md),\n> which chose `serde_norway` *because* `serde_yaml` is archived upstream\n> (published as `0.9.34+deprecated`) and lists `serde_yaml` among its\n> rejected alternatives. The project rules say accepted decisions are\n> followed, not re-debated in a change. This proposal therefore cannot be\n> implemented on its own authority: it carries a superseding decision\n> (see design.md) that a person must accept with `codev decision accept`\n> before `/codev-apply` runs. Until then the change stays a proposal.\n\n## Why\n\nThe team wants to use `serde_yaml`, perceived as the standard YAML crate of\nthe Rust ecosystem, instead of `serde_norway`. Nothing in the code calls for\nit now: the request is a preference for the better-known name, and the\ndecision that settled the question cited a fact — `serde_yaml` receives no\nfurther releases — that still holds.\n\n## What Changes\n\n- Replace the `serde_norway` workspace dependency with `serde_yaml` (last\n  release, `0.9.34+deprecated`) in the root `Cargo.toml` and in every crate\n  that uses it: `codev-core`, `codev-engine`, `codev-agents`, and the\n  `evals` crate.\n- Rename every `serde_norway::` path to `serde_yaml::` (the two crates share\n  the same API, by construction of the fork): about fifty call sites across\n  thirteen source and test files.\n- Record a new ADR that supersedes 0006, and update the decision table of\n  the architecture chapter in `docs/en` and `docs/fr`.\n- No behavior change intended: every YAML file codev reads or writes\n  (`config.yaml`, `schema.yaml`, `change.yaml`, `seal.yaml`, frontmatters,\n  review records) parses and serializes as before.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- \"The YAML library we use\" means `serde_norway`, the only YAML crate in\n  the workspace.\n- The user knows, or accepts, that `serde_yaml` is deprecated; \"more\n  standard\" is read as \"more widely known\", not \"maintained\". If the real\n  goal is a maintained, better-documented crate, `serde_norway` already is\n  one, and ADR 0006 names `serde-saphyr` as the alternative to reconsider.\n- The change does not proceed past planning unless a person accepts the\n  superseding ADR.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n### Removed Capabilities\n\nNo capability changes: the switch is an implementation detail that leaves\nevery observable behavior as specified, so `change.yaml` sets\n`skip_specs: true` rather than inventing a requirement.\n\n## Impact\n\n- Code: `Cargo.toml`, `Cargo.lock`, the `Cargo.toml` of `codev-core`,\n  `codev-engine`, `codev-agents` and `evals`; the YAML call sites in\n  `codev-core` (`schema`, `roles`, `triggers`, `keywords`,\n  `decisions/parser`, `decisions/seal`, `review/parse`), `codev-engine`\n  (`config`, `metadata`, `integration`, and the\n  `config_generate_roundtrip` test), `codev-agents` (`claude`) and\n  `evals` (`case`).\n- Dependencies: `serde_norway 0.9.42` and `unsafe-libyaml-norway` leave the\n  tree; `serde_yaml 0.9.34+deprecated` and `unsafe-libyaml` enter it. Both\n  replacements are archived upstream: no security fix will ever be\n  published for them.\n- Decisions: a new ADR superseding 0006.\n- Documentation: the decision table in `docs/en/src/architecture.md` and\n  `docs/fr/src/architecture.md`.\n- JSON contract, specs, skills: unaffected.\n\n## Domains\n\n- [x] security — the change brings in an unmaintained dependency that parses\n  hand-written and inherited input (`config.yaml`, decisions from an\n  inherited source); a vulnerability in it would never be patched upstream.\n- [ ] personal-data — codev's YAML holds no personal data.\n- [ ] user-interface — no output, command or message changes on purpose.\n- [ ] performance — same parser lineage, negligible difference.\n- [ ] operations — nothing logged, timed or deployed differently.\n- [ ] migration — existing YAML files and the JSON contract stay compatible:\n  `serde_norway` is a fork of `serde_yaml` 0.9 with the same API and syntax;\n  the design checks error messages, the only output that could drift.\n\n## Release note\n\nNone\n"
+  },
+  "validate": {
+    "switch-yaml-to-serde-yaml": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [
+            {
+              "code": "domains_invalid",
+              "line": 80,
+              "message": "line 80: `hand-written and inherited input (`config.yaml`, decisions from an` is neither a `- [x] <domain>` item nor `None`",
+              "path": "_codev/changes/switch-yaml-to-serde-yaml/proposal.md",
+              "severity": "error"
+            },
+            {
+              "code": "domains_invalid",
+              "line": 81,
+              "message": "line 81: `inherited source); a vulnerability in it would never be patched upstream.` is neither a `- [x] <domain>` item nor `None`",
+              "path": "_codev/changes/switch-yaml-to-serde-yaml/proposal.md",
+              "severity": "error"
+            },
+            {
+              "code": "domains_invalid",
+              "line": 87,
+              "message": "line 87: ``serde_norway` is a fork of `serde_yaml` 0.9 with the same API and syntax;` is neither a `- [x] <domain>` item nor `None`",
+              "path": "_codev/changes/switch-yaml-to-serde-yaml/proposal.md",
+              "severity": "error"
+            },
+            {
+              "code": "domains_invalid",
+              "line": 88,
+              "message": "line 88: `the design checks error messages, the only output that could drift.` is neither a `- [x] <domain>` item nor `None`",
+              "path": "_codev/changes/switch-yaml-to-serde-yaml/proposal.md",
+              "severity": "error"
+            }
+          ],
+          "kind": "change",
+          "name": "switch-yaml-to-serde-yaml",
+          "path": "_codev/changes/switch-yaml-to-serde-yaml"
+        }
+      ],
+      "status": []
+    }
+  }
+}

@@ -2,22 +2,77 @@
   "format": 2,
   "case": "performance-code-n-plus-one",
   "error": null,
-  "costUsd": 0.28214180000000005,
-  "durationMs": 17197,
+  "costUsd": 0.260341,
+  "durationMs": 15040,
   "consumption": {
-    "durationApiMs": 16824,
-    "turns": 7,
+    "durationApiMs": 15017,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1181,
-      "cacheCreation": 24642,
-      "cacheRead": 276189,
-      "output": 1440
-    }
+      "input": 1177,
+      "cacheCreation": 24462,
+      "cacheRead": 185290,
+      "output": 1331
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7392,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7392
+        }
+      },
+      {
+        "cacheCreation": 13870,
+        "cacheRead": 29531,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13870
+        }
+      },
+      {
+        "cacheCreation": 1360,
+        "cacheRead": 43401,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1360
+        }
+      },
+      {
+        "cacheCreation": 697,
+        "cacheRead": 44761,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 697
+        }
+      },
+      {
+        "cacheCreation": 1143,
+        "cacheRead": 45458,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 847,
+          "edit": 296
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +84,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (One order-lines query per order (N+1) on every customer page view) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (One order-lines query per order on every customer page view) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,13 +111,13 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "`order_summaries` runs one `orders_of_customer` query, then one `lines_of_order` query per order — up to 101 database round trips per call, on a path the proposal says runs on every customer page view; the cost grows linearly with the number of orders (capped at 100) and with traffic. `Db` already offers `lines_of_orders(&[i64])` (`api/src/db.rs:31`, `WHERE order_id = ANY($1)`): collect the order ids, fetch all lines in one query, sum the totals per `order_id` in a `HashMap`, then build the summaries in the orders' original order (`ORDER BY id DESC`), so the output order and the error behaviour stay the same. Two queries per call whatever the number of orders.",
+        "recommendation": "N+1 queries: `order_summaries` runs one query for the orders, then one `lines_of_order` query per order — up to 101 database round trips per call, growing with the customer's order count, on a path the proposal says runs on every customer page view. `Db` already offers the batch query `lines_of_orders(&[i64])` (`SELECT ... FROM order_lines WHERE order_id = ANY($1)`, api/src/db.rs:31): collect the order ids, fetch all their lines in one call, sum the totals per `order_id` (for example in a `HashMap<i64, i64>`), and build the summaries in the orders' original order, keeping orders without lines at a total of 0 — two queries per call whatever the number of orders.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "One order-lines query per order (N+1) on every customer page view"
+        "title": "One order-lines query per order on every customer page view"
       }
     ],
     "format": 1,

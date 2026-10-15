@@ -2,10 +2,10 @@
   "format": 2,
   "case": "migration-control-serde-alias",
   "error": null,
-  "costUsd": 0.2985782,
-  "durationMs": 20844,
+  "costUsd": 0.325811,
+  "durationMs": 30992,
   "consumption": {
-    "durationApiMs": 21487,
+    "durationApiMs": 30853,
     "turns": 8,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,96 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 26518,
-      "cacheRead": 237646,
-      "output": 1896
-    }
+      "input": 1178,
+      "cacheCreation": 26419,
+      "cacheRead": 327465,
+      "output": 2399
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 13815,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13815
+        }
+      },
+      {
+        "cacheCreation": 1167,
+        "cacheRead": 43347,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1167
+        }
+      },
+      {
+        "cacheCreation": 1502,
+        "cacheRead": 44514,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1502
+        }
+      },
+      {
+        "cacheCreation": 680,
+        "cacheRead": 46016,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 680
+        }
+      },
+      {
+        "cacheCreation": 347,
+        "cacheRead": 46696,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 347
+        }
+      },
+      {
+        "cacheCreation": 1135,
+        "cacheRead": 47043,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 666,
+          "output": 469
+        }
+      },
+      {
+        "cacheCreation": 380,
+        "cacheRead": 48178,
+        "input": 2,
+        "output": 193,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 380
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,7 +117,62 @@
     },
     "changeName": "rename-listen-setting",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Add a unit test calling `config::load` on a file holding only `listen = \"…\"` (as every file written before this change does) and asserting `bind_address` gets its value, next to one with `bind_address`. The alias is correct today; the role's criterion asks for the migration path to be tested, and task 1.1 checked it only by hand on staging, so removing or mistyping the alias later would make old files fail at start-up with a missing-field error and no test would catch it.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No automated test that an old config file with `listen` still loads"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"customer_id\")]\npub buyer_id: i64,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 33,
+        "location": "src/api.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Add a unit test serializing an `OrderResponse` and asserting the JSON key is `customer_id` (and that no `buyer_id` key appears). The rename keeps partners' integrations working today, and docs/api.md promises the field is never renamed without two releases of deprecation; task 1.2 checked it only by comparing staging responses by hand, so dropping the attribute later would silently rename the public field.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No automated test that the order JSON still says `customer_id`"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/rename-listen-setting/review.md",
@@ -60,7 +200,7 @@
             "credited": [],
             "fallback": null,
             "role": "migration",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

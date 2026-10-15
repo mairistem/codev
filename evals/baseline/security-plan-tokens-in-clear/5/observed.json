@@ -2,22 +2,109 @@
   "format": 2,
   "case": "security-plan-tokens-in-clear",
   "error": null,
-  "costUsd": 0.3747134,
-  "durationMs": 28551,
+  "costUsd": 0.3851724000000001,
+  "durationMs": 37549,
   "consumption": {
-    "durationApiMs": 27975,
-    "turns": 9,
+    "durationApiMs": 37637,
+    "turns": 10,
     "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 31016,
-      "cacheRead": 385762,
-      "output": 2422
-    }
+      "input": 1162,
+      "cacheCreation": 31440,
+      "cacheRead": 336937,
+      "output": 3264
+    },
+    "toolCalls": 9,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7389,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7389
+        }
+      },
+      {
+        "cacheCreation": 5918,
+        "cacheRead": 29528,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 5918
+        }
+      },
+      {
+        "cacheCreation": 12380,
+        "cacheRead": 35446,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12380
+        }
+      },
+      {
+        "cacheCreation": 272,
+        "cacheRead": 47826,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 272
+        }
+      },
+      {
+        "cacheCreation": 2138,
+        "cacheRead": 48098,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 182,
+          "file": 1956
+        }
+      },
+      {
+        "cacheCreation": 829,
+        "cacheRead": 50236,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 829
+        }
+      },
+      {
+        "cacheCreation": 1534,
+        "cacheRead": 51065,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1240,
+          "output": 294
+        }
+      },
+      {
+        "cacheCreation": 980,
+        "cacheRead": 52599,
+        "input": 2,
+        "output": 132,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 821,
+          "edit": 159
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +116,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (Bearer tokens are logged at info level with every request) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-2 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-2 (The Authorization header, hence every bearer token, is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,33 +128,6 @@
     "changeName": "add-api-tokens",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "To diagnose integration problems, the middleware logs each request's\nmethod, path and headers at `info` level, including `Authorization`, so\nsupport can see which token an integration sent.\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-1",
-        "line": 11,
-        "location": "design.md#Decision: Every request is logged with its headers",
-        "raisedBy": [
-          "security"
-        ],
-        "recommendation": "Never log credentials (CWE-532). Anyone with read access to the logs (support, a log aggregator, a leaked log file) copies a valid bearer token from any request and calls the API as that user; since revocation is a Non-Goal, the stolen token stays valid indefinitely. The same decision also logs the `Cookie` header, exposing the session cookies `authenticate` reads in `src/http/middleware.rs`. Redact `Authorization` and `Cookie` (and any other credential header) before logging; to let support identify the token, log a non-secret token id or a short prefix instead. Update task 1.3 so `logs_requests` asserts the redaction.",
-        "reported": true,
-        "role": "security",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Bearer tokens are logged at info level with every request"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -81,19 +141,73 @@
             "to": null
           }
         ],
-        "id": "R-security-2",
-        "line": 36,
+        "id": "R-security-1",
+        "line": 15,
         "location": "design.md#Decision: Tokens are stored as given",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Store a hash of the token, not the token (CWE-312 / CWE-256). Anyone who reads the `api_tokens` table — a database backup, a read-only replica, an SQL injection elsewhere — gets every user's working credential and can call the API as them, with no revocation to stop it. Since the tokens are 32 random bytes, a fast SHA-256 of the token is enough: store `token_hash` with a unique index and look up `WHERE token_hash = $1` on the hash of the presented token, which keeps the lookup a simple indexed equality. This also matches the spec's \"shown once\": the plaintext then exists only in the creation response. Update the migration of task 1.1 accordingly.",
+        "recommendation": "Store only a hash of the token (e.g. SHA-256 of the 32 random bytes; a slow hash is not needed for high-entropy values) in a `token_hash` column and look requests up with `WHERE token_hash = $1` on the hash of the presented token — still a single indexed equality, so the lookup stays fast. Attack without it: anyone who reads the `api_tokens` table (a database backup, a read replica, a SQL injection elsewhere, an operator) gets bearer credentials usable as is against the API for every user, unlike `users.password_hash` which is bcrypt (CWE-312, CWE-256). Update tasks 1.1 and 1.2 accordingly, and drop \"none, the lookup must be fast\" from the alternatives, since hashing keeps it fast.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
         "title": "API tokens are stored in clear in the database"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "To diagnose integration problems, the middleware logs each request's\nmethod, path and headers at `info` level, including `Authorization`, so\nsupport can see which token an integration sent.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 41,
+        "location": "design.md#Decision: Every request is logged with its headers",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Never log `Authorization` (nor `Cookie` / `Set-Cookie`): redact it, or log a non-secret identifier instead — the token's row id or a short prefix / fingerprint of its hash — so support can still tell which token was sent. Attack without it: anyone with read access to the logs (support staff, a log aggregation service, a leaked log archive) collects working tokens and calls the API as their owners (CWE-532); it also defeats R-security-1, since the clear tokens end up in the logs even once the table is hashed. Task 1.3 (\"Request logging in the middleware, verified by `cargo test logs_requests`\") should assert that the header is absent from the log line.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The Authorization header, hence every bearer token, is written to the logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Non-Goals:** OAuth, scopes, revocation (a later change).\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 66,
+        "location": "design.md#Goals / Non-Goals",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Either bring a minimal revocation (delete a token by id, owner-checked) into this change, or state in the proposal that it must not be released before the revocation change, and record that dependency. Attack without it: a token leaked from an integration (the very threat the proposal names: \"a leaked integration exposes the account\") stays valid indefinitely; the user cannot invalidate it, and unlike a password it is not changed by a password reset, so the attacker keeps full account access through the API. The Risks section only covers a lost token, not a leaked one.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A leaked token cannot be revoked, so the change ships without a way to cut off a compromised integration"
       }
     ],
     "format": 1,
@@ -111,14 +225,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "security",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "security",
+            "state": "findings"
           }
         ],
         "step": "plan.challenge",

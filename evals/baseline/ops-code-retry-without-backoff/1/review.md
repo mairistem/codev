@@ -8,7 +8,7 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 Failed deliveries are retried immediately, with no backoff
+#### R-ops-1 Webhook retries fire back to back, with no backoff
 
 ```yaml
 severity: medium
@@ -16,29 +16,30 @@ confidence: high
 location: "src/webhooks.ts:9-23"
 evidence: |
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-recommendation: |
-  Space the attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s) before each retry, and do not retry on 4xx responses other than 408/429. The retries are bounded and the POST is deduplicated by `x-event-id`, but with no delay between them, a merchant endpoint that is restarting or returning 503 for a few seconds receives five back-to-back POSTs and the event is given up within that same window, so a short outage on the merchant side loses the webhook. Spacing the retries in the payment listener lengthens its run (see R-ops-3): moving delivery off the publish path fixes both.
+    try {
+      const response = await fetch(url, {
+recommendation: Wait between attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s), ideally from a durable queue rather than an in-process loop, so a merchant endpoint that is briefly down or rate-limiting gets time to recover. Today, when the merchant returns a 503 or resets connections for a few seconds, the five attempts run immediately one after another, all fail inside that window, and the event is dropped; meanwhile every payment event hits the struggling server five times in a burst. Also stop retrying on non-retryable answers (4xx other than 408/429), which the loop currently retries just the same.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Failed and dropped webhooks are logged at debug level, outside the structured logger
+#### R-ops-2 A dropped webhook is invisible to operators
 
 ```yaml
 severity: high
 confidence: high
-location: "src/webhooks.ts:24"
+location: "src/webhooks.ts:24-25"
 evidence: |
   console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
-recommendation: |
-  Log through `logger` from `src/logger.ts` with fields — `logger.warn` per failed attempt and `logger.error` when the event is dropped, with `eventId`, `paymentId`, `merchantId` or host, `attempt` and the HTTP `status` (a non-2xx response is currently not logged at all, only thrown errors are) — and emit a delivered/dropped counter. When a merchant's endpoint returns 500 five times, `deliver` returns `false`, the listener ignores that result (`await deliver(rows[0].webhook_url, event);`), and the only trace is a free-text `console.debug` line that bypasses the project's structured logger shipped to the log platform: the merchant never gets the payment event and no operator can see or query that it was dropped.
+  return false;
+recommendation: When a merchant endpoint fails five times, the payment notification is permanently lost and the only trace is a `console.debug` free-text line, which production log levels usually suppress; a non-2xx response is not logged at all (only thrown errors reach the catch), and the caller at line 34 ignores the `false` return. Log the final drop at error level through a structured logger with fields (event id, merchant id, URL host, attempt, HTTP status or error), emit a metric for delivered/failed/dropped deliveries so an alert can fire, log the status of non-ok responses, and persist dropped events so they can be replayed.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-3 Webhook delivery runs inline in the payment event publish path
+#### R-ops-3 Errors in the payment listener are not handled
 
 ```yaml
 severity: medium
@@ -46,7 +47,8 @@ confidence: low
 location: "src/webhooks.ts:28-36"
 evidence: |
   onPaymentEvent(async (event) => {
-recommendation: "`publish` in `src/events.ts` awaits each listener in turn, so a slow or unreachable merchant holds it for up to five 5-second timeouts (about 25 s, more once backoff is added) before the next listener runs and `publish` resolves. Whether this delays settlement depends on how the payment service awaits `publish`, which the change does not show. Enqueue the delivery (a job or outbox table) and return from the listener at once."
+    const rows = await query<{ webhook_url: string }>(
+recommendation: If `query` rejects (database unavailable), the async handler's promise rejects; depending on how `onPaymentEvent` (not in this diff) treats a returned promise, this becomes an unhandled rejection that can crash the process or be silently lost with no event id in the log. Wrap the handler body in a try/catch that logs the event id and error through the structured logger.
 history:
   - status: open
     by: ops

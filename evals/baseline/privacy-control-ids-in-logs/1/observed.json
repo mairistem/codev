@@ -2,11 +2,11 @@
   "format": 2,
   "case": "privacy-control-ids-in-logs",
   "error": null,
-  "costUsd": 0.26836820000000006,
-  "durationMs": 17923,
+  "costUsd": 0.28230380000000005,
+  "durationMs": 23706,
   "consumption": {
-    "durationApiMs": 17764,
-    "turns": 5,
+    "durationApiMs": 23652,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,10 +14,66 @@
     ],
     "tokens": {
       "input": 1187,
-      "cacheCreation": 24920,
-      "cacheRead": 188006,
-      "output": 1523
-    }
+      "cacheCreation": 26190,
+      "cacheRead": 190884,
+      "output": 1683
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7415,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7415
+        }
+      },
+      {
+        "cacheCreation": 15682,
+        "cacheRead": 29554,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4195,
+          "skill": 11487
+        }
+      },
+      {
+        "cacheCreation": 1366,
+        "cacheRead": 45236,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1366
+        }
+      },
+      {
+        "cacheCreation": 751,
+        "cacheRead": 46602,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 751
+        }
+      },
+      {
+        "cacheCreation": 976,
+        "cacheRead": 47353,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 589,
+          "edit": 387
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

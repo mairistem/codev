@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-plan-unbounded-export",
   "error": null,
-  "costUsd": 0.3556836,
-  "durationMs": 31672,
+  "costUsd": 0.36975099999999994,
+  "durationMs": 34440,
   "consumption": {
-    "durationApiMs": 31105,
+    "durationApiMs": 34471,
     "turns": 9,
     "permissionDenials": 3,
     "models": [
@@ -14,10 +14,105 @@
     ],
     "tokens": {
       "input": 1164,
-      "cacheCreation": 27696,
-      "cacheRead": 380513,
-      "output": 2851
-    }
+      "cacheCreation": 28376,
+      "cacheRead": 381750,
+      "output": 3270
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7380,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7380
+        }
+      },
+      {
+        "cacheCreation": 15360,
+        "cacheRead": 29519,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15360
+        }
+      },
+      {
+        "cacheCreation": 232,
+        "cacheRead": 44879,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 232
+        }
+      },
+      {
+        "cacheCreation": 1514,
+        "cacheRead": 45111,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1514
+        }
+      },
+      {
+        "cacheCreation": 793,
+        "cacheRead": 46625,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 793
+        }
+      },
+      {
+        "cacheCreation": 523,
+        "cacheRead": 47418,
+        "input": 2,
+        "output": 44,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 523
+        }
+      },
+      {
+        "cacheCreation": 320,
+        "cacheRead": 47941,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 100,
+          "search": 220
+        }
+      },
+      {
+        "cacheCreation": 1596,
+        "cacheRead": 48261,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1596
+        }
+      },
+      {
+        "cacheCreation": 658,
+        "cacheRead": 49857,
+        "input": 2,
+        "output": 192,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 658
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +124,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (The export loads the whole audit log into memory and builds one CSV string) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (The export loads an unbounded result set into memory) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-2 (Building the whole CSV synchronously blocks the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +139,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n",
         "history": [
           {
             "by": "performance",
@@ -56,18 +155,18 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "The design's own volumes (about 40 000 events per organization and per month, kept seven years) mean up to about 3.4 million rows per request: the query has no bound, every row is held in an array, then a second full copy is made as CSV lines and a third as the joined string, all synchronously on the instance's single event loop. Cost grows linearly with the organization's history, per request: memory spikes can kill the instance, and the synchronous map/join blocks every other request on that instance for the duration. Stream instead: read with a server-side cursor (or keyset batches on created_at, id), format each batch, and write it to the response stream with backpressure (`Content-Type: text/csv`, chunked), so memory stays bounded by the batch size and the event loop yields between batches. This keeps the spec's \"every audit event … oldest first\" requirement and its ordering unchanged. Optionally offer a date-range filter, but do not drop events from the default export.",
+        "recommendation": "Cost grows linearly with the organization's history on a request path: at about 40 000 events per organization and per month kept seven years (design.md#Context), one export holds up to ~3.4 million rows in an array, then a second full copy as one CSV string, per concurrent request. Stream instead: read the rows with a server-side cursor or keyset batches (`WHERE org_id = $1 AND (created_at, id) > ($2, $3) ORDER BY created_at, id LIMIT n`), select only the exported columns rather than `*`, and write each batch to the response stream as it arrives. Keep the spec's result intact (every event, oldest first). Add a task for it, and a test with a large fixture checking memory stays bounded.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The export loads the whole audit log into memory and builds one CSV string"
+        "title": "The export loads an unbounded result set into memory"
       },
       {
         "awaiting": "author",
-        "confidence": "low",
-        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "confidence": "high",
+        "evidence": "`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
         "history": [
           {
             "by": "performance",
@@ -78,18 +177,72 @@
           }
         ],
         "id": "R-performance-2",
-        "line": 41,
+        "line": 36,
         "location": "design.md#Decision: The export loads every event, then writes the CSV",
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "The audit_events schema is not in the repository, so the index could not be checked. Verify with EXPLAIN that an index on (org_id, created_at) exists; without it the query scans and sorts the whole table, across all organizations, on each export. Add the index in this change if it is missing.",
+        "recommendation": "The service has \"one event loop per instance\" (design.md#Context): mapping and joining millions of rows in one synchronous call stalls every other request on that instance for the whole build, and its cost grows with the audit log. Format and write the CSV per batch (a Transform stream, or `res.write` per batch honouring backpressure via `drain`) so the loop yields between batches. Same streaming rework as R-performance-1, but a distinct defect: a cursor alone would still block if the string is built in one pass.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Building the whole CSV synchronously blocks the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 58,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so the index could not be checked. Confirm an index on `(org_id, created_at)` exists (or add it in this change) and check the plan with `EXPLAIN`; without it each export scans and sorts the whole table across all organizations.",
         "reported": false,
         "role": "performance",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No index is known to serve the export's filter and sort"
+        "title": "No index stated for the export query's filter and sort"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Alternatives considered**: none; the code is the simplest.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-4",
+        "line": 77,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Record the streaming alternative and the expected volume (rows and bytes for a seven-year organization) in the decision, and back the choice with a measurement of memory and event-loop delay on a realistic export.",
+        "reported": true,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "\"Simplest\" is the only rationale, with no measurement"
       }
     ],
     "format": 1,

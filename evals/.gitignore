@@ -1,4 +1,5 @@
 # Raw Claude Code output of a run: kept locally for debugging, never part
 # of the committed baseline (observed.json holds what the scoring reads).
 baseline/**/claude.json
+baseline/**/claude.jsonl
 baseline/**/claude.stderr

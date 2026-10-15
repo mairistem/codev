@@ -2,22 +2,76 @@
   "format": 2,
   "case": "newcomer-code-clever-one-liner",
   "error": null,
-  "costUsd": 0.2946614,
-  "durationMs": 24385,
+  "costUsd": 0.26734800000000003,
+  "durationMs": 19100,
   "consumption": {
-    "durationApiMs": 23871,
-    "turns": 6,
-    "permissionDenials": 1,
+    "durationApiMs": 19167,
+    "turns": 5,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 25299,
-      "cacheRead": 232722,
-      "output": 2236
-    }
+      "input": 1162,
+      "cacheCreation": 24384,
+      "cacheRead": 185495,
+      "output": 1709
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7380,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7380
+        }
+      },
+      {
+        "cacheCreation": 13221,
+        "cacheRead": 29519,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13221
+        }
+      },
+      {
+        "cacheCreation": 2126,
+        "cacheRead": 42740,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2126
+        }
+      },
+      {
+        "cacheCreation": 1365,
+        "cacheRead": 44866,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1365
+        }
+      },
+      {
+        "cacheCreation": 292,
+        "cacheRead": 46231,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 292
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,13 +106,13 @@
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Rewrite as a plain function a reader can follow without the plan: a named\nconstant for the threshold (`const PREMIUM_THRESHOLD_CENTS = 1000; // 10 euros`),\na named predicate (`price.cents >= PREMIUM_THRESHOLD_CENTS`), descriptive names\ninstead of `ps`, `a`, `p`, and a typed result whose keys match the doc comment\n(`{ cheap: Price[]; premium: Price[] }` instead of `Record<string, Price[]>` with\n\"hi\"/\"lo\"), built with a simple loop or two `filter` calls rather than a\ncomma-expression inside `reduce` with `||=`. A newcomer cannot tell from\n`(p.cents >> 4) & 0x3e8` what the rule is: 0x3e8 is 1000, which suggests\n\"10 euros\", but a shift-and-mask is not a comparison — 500 cents (31 & 1000 = 8)\nand 128 cents land in \"hi\", while 16384 cents (1024 & 1000 = 0) lands in \"lo\".\nThe shape hides this; the readable version makes the intended `>= 1000` check\nexplicit. Since the result also has no \"hi\"/\"lo\" key when a band is empty, the\ntyped version should initialise both arrays.\n",
+        "recommendation": "Rewrite as a plain function a reader can follow without the plan: a named constant for the premium threshold (e.g. `PREMIUM_THRESHOLD_CENTS`) with a comparison `price.cents >= PREMIUM_THRESHOLD_CENTS` instead of `(p.cents >> 4) & 0x3e8`, two explicit arrays (or a `{ cheap, premium }` result type instead of `Record<string, Price[]>` with \"hi\"/\"lo\" keys), a simple loop instead of the comma-expression reducer with `||=`, and descriptive names instead of `ps`, `a`, `p`. A newcomer reading the doc comment \"Splits prices into the cheap and the premium ones\" cannot tell from line 10 where \"premium\" starts: `>> 4` divides by 16 and the mask `0x3e8` (1000) tests scattered bits rather than a threshold, so they will likely read it as \"cents above some value\" when it is not a monotonic comparison (e.g. 16000 cents gives 1000 & 1000 → \"hi\", but 16384 cents gives 1024 & 1000 = 0 → \"lo\"). The developer should confirm the intended rule; the readable version makes it visible. Also a bucket key is missing entirely when no price falls in it, which the `Record<string, …>` type does not tell the caller.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`bucket` packs the premium rule into an unreadable bitwise one-liner"
+        "title": "`bucket` hides its premium threshold in a bit-twiddling one-liner"
       }
     ],
     "format": 1,

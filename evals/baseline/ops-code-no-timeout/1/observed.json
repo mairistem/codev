@@ -2,10 +2,10 @@
   "format": 2,
   "case": "ops-code-no-timeout",
   "error": null,
-  "costUsd": 0.2899698,
-  "durationMs": 23648,
+  "costUsd": 0.29516040000000004,
+  "durationMs": 25377,
   "consumption": {
-    "durationApiMs": 23994,
+    "durationApiMs": 25238,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,65 @@
     ],
     "tokens": {
       "input": 1162,
-      "cacheCreation": 25556,
-      "cacheRead": 188524,
-      "output": 2341
-    }
+      "cacheCreation": 26031,
+      "cacheRead": 187277,
+      "output": 2423
+    },
+    "toolCalls": 5,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7378,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7378
+        }
+      },
+      {
+        "cacheCreation": 13599,
+        "cacheRead": 29517,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13599
+        }
+      },
+      {
+        "cacheCreation": 2240,
+        "cacheRead": 43116,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2240
+        }
+      },
+      {
+        "cacheCreation": 1793,
+        "cacheRead": 45356,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1793
+        }
+      },
+      {
+        "cacheCreation": 1021,
+        "cacheRead": 47149,
+        "input": 2,
+        "output": 148,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 864,
+          "edit": 157
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +84,15 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-1 (Payment call has no timeout) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-1 (Unbounded retry of a non-idempotent charge) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (Payment call has no timeout) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Charge failures are swallowed without a log) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,6 +100,33 @@
     "changeName": "charge-orders",
     "exists": true,
     "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "while True:\n    try:\n        response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException:\n        time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 15,
+        "location": "app/payments.py:12-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Bound the retries (a few attempts) with exponential backoff, and retry only failures that are safe to repeat: send an idempotency key derived from order_id so the provider deduplicates a repeated charge, and do not retry 4xx responses. When the provider accepts a charge but the response is lost (connection reset, read error, 5xx after processing), the loop POSTs again every second and charges the customer twice; a definitive 4xx (card declined, invalid amount) is retried forever at a fixed 1 s, holding the checkout request and hammering the provider. After the last attempt, raise an error naming the order_id and the provider status.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded retry of a non-idempotent charge"
+      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -54,13 +140,13 @@
             "to": null
           }
         ],
-        "id": "R-ops-1",
-        "line": 11,
+        "id": "R-ops-2",
+        "line": 44,
         "location": "app/payments.py:14",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it, when the provider accepts the connection but stops answering, `charge()` blocks forever on the checkout path; the operator sees stuck checkouts and worker threads, with no error and no log to point at the provider.",
+        "recommendation": "Pass timeout= (connect and read) to requests.post. Without it, a provider that accepts the connection but never answers blocks the checkout call forever; no RequestException is raised, so even the retry loop never runs, and the operator sees hung workers with nothing in the logs.",
         "reported": true,
         "role": "ops",
         "severity": "high",
@@ -71,34 +157,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "while True:\n        try:\n            response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n            response.raise_for_status()\n            return response.json()\n        except requests.RequestException:\n            time.sleep(1)\n",
-        "history": [
-          {
-            "by": "ops",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-ops-2",
-        "line": 24,
-        "location": "app/payments.py:12-18",
-        "raisedBy": [
-          "ops"
-        ],
-        "recommendation": "Bound the retries (a small maximum, with exponential backoff) and make the POST idempotent before retrying it — send an idempotency key derived from `order_id` if the provider supports one, otherwise do not retry once the request may have reached the provider. As written, a 4xx (declined card, bad amount) is retried every second forever, hammering the provider; and a 5xx or a dropped connection after the provider recorded the charge triggers another POST that charges the customer twice. Re-raise once the retries are exhausted.",
-        "reported": true,
-        "role": "ops",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "Unbounded retry of a non-idempotent charge"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "except requests.RequestException:\n            time.sleep(1)\n",
+        "evidence": "except requests.RequestException:\n    time.sleep(1)\n",
         "history": [
           {
             "by": "ops",
@@ -109,18 +168,18 @@
           }
         ],
         "id": "R-ops-3",
-        "line": 43,
+        "line": 62,
         "location": "app/payments.py:17-18",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Log each failed attempt with structured fields — `order_id`, attempt number, HTTP status, exception type — and never the request body beyond those fields. Today, when the provider fails or rejects a charge, nothing is logged and no error surfaces, so the operator cannot tell which orders are failing nor why.",
+        "recommendation": "Log each failed attempt as structured fields (order_id, attempt, HTTP status or exception type, never the card or credentials) and raise an actionable error when retries are exhausted. Today, when the provider is down or rejects the charge, the exception is dropped and the loop spins silently: an operator at 3 a.m. sees stalled checkouts and no error, metric or log line pointing at the payment provider.",
         "reported": true,
         "role": "ops",
-        "severity": "medium",
+        "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Payment errors are swallowed without a log"
+        "title": "Charge failures are swallowed without a log"
       },
       {
         "awaiting": "author",
@@ -136,12 +195,12 @@
           }
         ],
         "id": "R-ops-4",
-        "line": 57,
+        "line": 83,
         "location": "app/payments.py:7",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Read the provider URL from the environment or configuration. The task was verified against the provider's sandbox, which differs from production; with the URL baked in, pointing an environment at the sandbox or at production requires a code change, and a test or staging deploy can send real charges.",
+        "recommendation": "Read the provider URL from the environment or configuration. The endpoint differs between environments (sandbox vs. production): as written, every environment — tests and staging included — charges against the production endpoint, and switching it requires a new release.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
@@ -176,14 +235,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "ops",
-            "state": "findings"
+            "role": "newcomer",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "newcomer",
-            "state": "disabled"
+            "role": "ops",
+            "state": "findings"
           }
         ],
         "step": "code.review",

@@ -8,7 +8,7 @@ Mode: inline.
 
 ### skeptic
 
-#### R-skeptic-1 The position of `--quiet` on the command line is left unspecified
+#### R-skeptic-1 `--quiet` after the file is a usage error, and no scenario says so
 
 ```yaml
 severity: low
@@ -17,35 +17,14 @@ location: "design.md#Decision: The progress reporter takes a `quiet` switch"
 evidence: |
   `src/main.rs` accepts `--quiet` before the file and passes it to
 recommendation: >-
-  The requirement and its scenarios only cover `ledger import --quiet <file>`.
-  `src/main.rs` matches the arguments by exact shape (`[command, path] if command == "import"`),
-  so a script that writes `ledger import data.csv --quiet` would, as designed, fall
-  into the usage branch and exit 2 without importing anything. Either state in the
-  requirement where the flag is accepted and add a scenario for the other placement
-  (accepted, or rejected with the usage error and exit code 2), or accept it in both
-  positions and say so.
-history:
-  - status: open
-    by: skeptic
-```
-
-#### R-skeptic-2 No domain is ticked or justified in the proposal
-
-```yaml
-severity: low
-confidence: low
-location: "proposal.md#Domains"
-evidence: |
-  - [ ] user-interface
-  - [ ] performance
-  - [ ] operations
-recommendation: >-
-  The change adds a user-visible option to the `ledger import` command line and
-  targets nightly scripts' mail reports, yet every domain is left unticked with
-  no reason on its line. Whether a CLI flag falls under `user-interface` and a
-  scheduled job's output under `operations` depends on how the project defines
-  those domains; tick them so their experts review the plan, or keep them
-  unticked with a reason (`- [ ] operations — <why>`).
+  The design accepts the flag only before the file, and `src/main.rs` matches
+  the arguments by exact position (`[command, path] if command == "import"`),
+  so `ledger import data.csv --quiet` falls to the usage branch and exits 2
+  without importing — a nightly script that writes the flag last fails instead
+  of running quietly. Either accept `--quiet` in any position, or keep the
+  single position and add a scenario to `specs/cli-import/spec.md` stating what
+  happens when it comes after the file (usage error, exit code 2), with the
+  usage line naming `--quiet`.
 history:
   - status: open
     by: skeptic

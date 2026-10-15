@@ -2,22 +2,87 @@
   "format": 2,
   "case": "migration-control-additive-field",
   "error": null,
-  "costUsd": 0.329458,
-  "durationMs": 21414,
+  "costUsd": 0.3014504,
+  "durationMs": 16913,
   "consumption": {
-    "durationApiMs": 20608,
-    "turns": 10,
-    "permissionDenials": 2,
+    "durationApiMs": 16933,
+    "turns": 7,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1162,
-      "cacheCreation": 28121,
-      "cacheRead": 334000,
-      "output": 1836
-    }
+      "input": 1158,
+      "cacheCreation": 27794,
+      "cacheRead": 237847,
+      "output": 1528
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7372,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7372
+        }
+      },
+      {
+        "cacheCreation": 15206,
+        "cacheRead": 29511,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15206
+        }
+      },
+      {
+        "cacheCreation": 272,
+        "cacheRead": 44717,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 272
+        }
+      },
+      {
+        "cacheCreation": 2472,
+        "cacheRead": 44989,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2472
+        }
+      },
+      {
+        "cacheCreation": 1569,
+        "cacheRead": 47461,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1569
+        }
+      },
+      {
+        "cacheCreation": 903,
+        "cacheRead": 49030,
+        "input": 2,
+        "output": 212,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 522,
+          "edit": 381
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

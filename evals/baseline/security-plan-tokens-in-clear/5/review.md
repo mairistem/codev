@@ -6,34 +6,13 @@
 
 Mode: inline.
 
+### skeptic
+
+Disabled by configuration.
+
 ### security
 
-#### R-security-1 Bearer tokens are logged at info level with every request
-
-```yaml
-severity: high
-confidence: high
-location: "design.md#Decision: Every request is logged with its headers"
-evidence: |
-  To diagnose integration problems, the middleware logs each request's
-  method, path and headers at `info` level, including `Authorization`, so
-  support can see which token an integration sent.
-recommendation: >-
-  Never log credentials (CWE-532). Anyone with read access to the logs
-  (support, a log aggregator, a leaked log file) copies a valid bearer
-  token from any request and calls the API as that user; since revocation
-  is a Non-Goal, the stolen token stays valid indefinitely. The same
-  decision also logs the `Cookie` header, exposing the session cookies
-  `authenticate` reads in `src/http/middleware.rs`. Redact `Authorization`
-  and `Cookie` (and any other credential header) before logging; to let
-  support identify the token, log a non-secret token id or a short prefix
-  instead. Update task 1.3 so `logs_requests` asserts the redaction.
-history:
-  - status: open
-    by: security
-```
-
-#### R-security-2 API tokens are stored in clear in the database
+#### R-security-1 API tokens are stored in clear in the database
 
 ```yaml
 severity: high
@@ -44,21 +23,64 @@ evidence: |
   middleware looks a request's token up with `WHERE token = $1`. Storing the
   token as given keeps the lookup a simple indexed equality.
 recommendation: >-
-  Store a hash of the token, not the token (CWE-312 / CWE-256). Anyone who
-  reads the `api_tokens` table — a database backup, a read-only replica, an
-  SQL injection elsewhere — gets every user's working credential and can
-  call the API as them, with no revocation to stop it. Since the tokens are
-  32 random bytes, a fast SHA-256 of the token is enough: store
-  `token_hash` with a unique index and look up `WHERE token_hash = $1` on
-  the hash of the presented token, which keeps the lookup a simple indexed
-  equality. This also matches the spec's "shown once": the plaintext then
-  exists only in the creation response. Update the migration of task 1.1
-  accordingly.
+  Store only a hash of the token (e.g. SHA-256 of the 32 random bytes; a slow
+  hash is not needed for high-entropy values) in a `token_hash` column and look
+  requests up with `WHERE token_hash = $1` on the hash of the presented token —
+  still a single indexed equality, so the lookup stays fast. Attack without it:
+  anyone who reads the `api_tokens` table (a database backup, a read replica, a
+  SQL injection elsewhere, an operator) gets bearer credentials usable as is
+  against the API for every user, unlike `users.password_hash` which is bcrypt
+  (CWE-312, CWE-256). Update tasks 1.1 and 1.2 accordingly, and drop
+  "none, the lookup must be fast" from the alternatives, since hashing keeps it
+  fast.
 history:
   - status: open
     by: security
 ```
 
-### skeptic
+#### R-security-2 The Authorization header, hence every bearer token, is written to the logs
 
-Disabled by configuration.
+```yaml
+severity: high
+confidence: high
+location: "design.md#Decision: Every request is logged with its headers"
+evidence: |
+  To diagnose integration problems, the middleware logs each request's
+  method, path and headers at `info` level, including `Authorization`, so
+  support can see which token an integration sent.
+recommendation: >-
+  Never log `Authorization` (nor `Cookie` / `Set-Cookie`): redact it, or log a
+  non-secret identifier instead — the token's row id or a short prefix /
+  fingerprint of its hash — so support can still tell which token was sent.
+  Attack without it: anyone with read access to the logs (support staff, a log
+  aggregation service, a leaked log archive) collects working tokens and calls
+  the API as their owners (CWE-532); it also defeats R-security-1, since the
+  clear tokens end up in the logs even once the table is hashed. Task 1.3
+  ("Request logging in the middleware, verified by `cargo test
+  logs_requests`") should assert that the header is absent from the log line.
+history:
+  - status: open
+    by: security
+```
+
+#### R-security-3 A leaked token cannot be revoked, so the change ships without a way to cut off a compromised integration
+
+```yaml
+severity: medium
+confidence: high
+location: "design.md#Goals / Non-Goals"
+evidence: |
+  **Non-Goals:** OAuth, scopes, revocation (a later change).
+recommendation: >-
+  Either bring a minimal revocation (delete a token by id, owner-checked) into
+  this change, or state in the proposal that it must not be released before the
+  revocation change, and record that dependency. Attack without it: a token
+  leaked from an integration (the very threat the proposal names: "a leaked
+  integration exposes the account") stays valid indefinitely; the user cannot
+  invalidate it, and unlike a password it is not changed by a password reset,
+  so the attacker keeps full account access through the API. The Risks section
+  only covers a lost token, not a leaked one.
+history:
+  - status: open
+    by: security
+```

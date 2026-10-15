@@ -1,0 +1,336 @@
+{
+  "format": 2,
+  "case": "plan-decision-edit-inherited",
+  "error": null,
+  "costUsd": 1.517289,
+  "durationMs": 198890,
+  "consumption": {
+    "durationApiMs": 195876,
+    "turns": 32,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1109,
+      "cacheCreation": 89927,
+      "cacheRead": 2204230,
+      "output": 17798
+    },
+    "toolCalls": 31,
+    "orientationCalls": 18,
+    "calls": [
+      {
+        "cacheCreation": 7722,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7722
+        }
+      },
+      {
+        "cacheCreation": 14352,
+        "cacheRead": 29861,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14352
+        }
+      },
+      {
+        "cacheCreation": 2697,
+        "cacheRead": 44213,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2697
+        }
+      },
+      {
+        "cacheCreation": 1213,
+        "cacheRead": 46910,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1213
+        }
+      },
+      {
+        "cacheCreation": 330,
+        "cacheRead": 48123,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 330
+        }
+      },
+      {
+        "cacheCreation": 3466,
+        "cacheRead": 48453,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 465,
+          "shell": 3001
+        }
+      },
+      {
+        "cacheCreation": 11727,
+        "cacheRead": 51919,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 11677,
+          "output": 50
+        }
+      },
+      {
+        "cacheCreation": 592,
+        "cacheRead": 63646,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 592
+        }
+      },
+      {
+        "cacheCreation": 1907,
+        "cacheRead": 64238,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1907
+        }
+      },
+      {
+        "cacheCreation": 4884,
+        "cacheRead": 66145,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4884
+        }
+      },
+      {
+        "cacheCreation": 1718,
+        "cacheRead": 71029,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1718
+        }
+      },
+      {
+        "cacheCreation": 1126,
+        "cacheRead": 72747,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1018,
+          "output": 108
+        }
+      },
+      {
+        "cacheCreation": 1231,
+        "cacheRead": 73873,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 1231
+        }
+      },
+      {
+        "cacheCreation": 14751,
+        "cacheRead": 75104,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 14751
+        }
+      },
+      {
+        "cacheCreation": 2279,
+        "cacheRead": 89855,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2279
+        }
+      },
+      {
+        "cacheCreation": 803,
+        "cacheRead": 92134,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 803
+        }
+      },
+      {
+        "cacheCreation": 1498,
+        "cacheRead": 92937,
+        "input": 2,
+        "output": 25,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1387,
+          "output": 111
+        }
+      },
+      {
+        "cacheCreation": 2528,
+        "cacheRead": 94435,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2520,
+          "output": 8
+        }
+      },
+      {
+        "cacheCreation": 3148,
+        "cacheRead": 96963,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3148
+        }
+      },
+      {
+        "cacheCreation": 2411,
+        "cacheRead": 100111,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 9,
+          "search": 2402
+        }
+      },
+      {
+        "cacheCreation": 1202,
+        "cacheRead": 102522,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1202
+        }
+      },
+      {
+        "cacheCreation": 1456,
+        "cacheRead": 103724,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1456
+        }
+      },
+      {
+        "cacheCreation": 681,
+        "cacheRead": 105180,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "file": 681
+        }
+      },
+      {
+        "cacheCreation": 3640,
+        "cacheRead": 105861,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3640
+        }
+      },
+      {
+        "cacheCreation": 552,
+        "cacheRead": 109501,
+        "input": 2,
+        "output": 36,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 552
+        }
+      },
+      {
+        "cacheCreation": 758,
+        "cacheRead": 110053,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 725,
+          "output": 33
+        }
+      },
+      {
+        "cacheCreation": 932,
+        "cacheRead": 110811,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 866,
+          "output": 67
+        }
+      },
+      {
+        "cacheCreation": 323,
+        "cacheRead": 111743,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 323
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/deviate-with-inherited-copy/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/deviate-with-inherited-copy/design.md": "# Design: Correct an inherited decision locally by starting the deviation from its content\n\n## Context\n\nAn inherited decision is read-only for the consuming project (decision\n0005). The only way a project departs from one is a deviation: a local ADR\nwhose frontmatter carries `deviates_from: [\"<qualified-id>\"]`, created\n`proposed` by `codev decision deviate`, and taking effect once `codev\ndecision accept` seals it. The index then marks the inherited entry\n`deviated_by` and drops it from the decisions injected into the `design`\ninstructions.\n\nWhat exists today, observed in the code:\n\n- `plan_deviate` (`crates/codev-engine/src/decisions_actions.rs`) resolves\n  the target with `resolve_old_entry`, refuses a `project/…` target, takes\n  the next local id, and renders the file with `render_new_deviate_adr`,\n  which fills `DECISION_TEMPLATE` (`assets/templates/decision.md`) with a\n  frontmatter from `render_frontmatter`. The plan writes the file\n  `CreateOnly`.\n- `decision_deviate` (`crates/codev-cli/src/commands.rs`) is the shell: it\n  loads the config and the index, calls `plan_deviate`, executes the plan,\n  then reads the index back to build the `DecisionDeviatedOutcome`.\n- The index entry of an inherited decision already carries its parsed\n  `Decision` (title, tags…) and the absolute `path` of its file — for a git\n  source, the file in the cache at the locked SHA. Nothing has to be\n  fetched to read it.\n- `codev_core::decisions::seal::body_slice` already extracts an ADR body\n  (everything after the `---` closing the frontmatter, LF or CRLF), and is\n  what the seal hashes.\n- `codev decision promote` sets the pattern for an ADR whose body comes\n  from another file: the shell reads the source, the engine plans from the\n  string it is given.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- A deviation that starts from the inherited body, so correcting an\n  inherited decision means editing a file, not rewriting it.\n- No change to what a deviation is once created: same frontmatter field,\n  same acceptance, same seal, same index behavior.\n\n**Non-Goals**\n\n- Writing to the inherited source, its cache or the lock file.\n- Keeping the copy in sync with later upstream changes of the inherited\n  decision (see Open Questions).\n- Any change to the JSON contract `DecisionDeviatedV1`.\n- Copying a local decision: `codev decision supersede` remains the way, and\n  its own body copy is not part of this change.\n\n## Decisions\n\n### Decision: A `--copy` option on `codev decision deviate`, not a new command\n\nThe correction is a deviation in every respect but its starting text, so it\nstays the same command with an option. `--copy` is a boolean flag; with\nit, the `new_title` positional becomes optional (`Option<String>` in clap,\nvalidated in the shell: absent without `--copy` is a usage error naming the\ntitle, as clap reports it today). Decision 0005 is followed: the inherited\nsource stays read-only, and the corrected version lives in the project, where\nit belongs to the project and is sealed by it.\n\n**Alternatives considered**:\n\n- *A new command `codev decision edit <inherited-id>`.* It would suggest\n  that the inherited decision itself is edited, which 0005 forbids, and\n  duplicate every refusal and output of `deviate`.\n- *Copying by default in `deviate`.* It changes the behavior of an existing\n  command for users who write their deviation from scratch, and turns a\n  template into a body to delete.\n- *A local ADR with the same id as the inherited one.* The index already\n  lets the project win an id collision, but reports `decision_id_collision`\n  on every validation and loses the explicit link to what is set aside; the\n  deviation records it in `deviates_from`.\n- *Editing the cached file.* The cache is overwritten by `codev sources\n  update`, is not versioned with the project, and is checked against a\n  pinned SHA: the correction would be lost and invisible to the team.\n\n### Decision: The shell reads the inherited file; the engine plans from the text it is given\n\nFollowing decision 0001 (functional core, imperative shell) and the\n`promote` pattern, the planning stays a pure function of its inputs:\n\n1. `plan_deviate`'s target resolution and refusals (`unknown_decision_id`,\n   `ambiguous_decision_id`, `cannot_deviate_from_local`) move into a\n   function `resolve_deviation_target(index, target) -> Result<&IndexEntry,\n   ActionError>` in `decisions_actions.rs`, used by `plan_deviate`.\n2. `plan_deviate` takes the title as `Option<&str>` and a\n   `DeviateBody` enum: `Template`, or `CopyOf { source: &str }` holding the\n   inherited file's full content. `EmptyTitle` is returned for\n   `Some(\"\")`/whitespace, and for `None` with `Template` (unreachable from\n   the CLI, which rejects it earlier, but kept as a guard).\n3. In `decision_deviate`, with `--copy`, the shell calls\n   `resolve_deviation_target`, reads `entry.path` through `ctx.fs` (the\n   in-memory `FileSystem` in tests), and passes the content as `CopyOf`. A\n   resolution error is returned before any read, so no file is touched for\n   a refused target.\n\nNo crate boundary moves (decision 0002): the read is in `codev-cli`, the\nplanning in `codev-engine`, the body extraction in `codev-core`.\n\n**Alternatives considered**:\n\n- *Passing the `FileSystem` port to `plan_deviate`.* It would make the\n  planning effectful for one variant and break the shape every other\n  `plan_*` function has.\n- *Storing the body in the index.* Every command would pay for holding\n  every decision body in memory, for one command's benefit.\n\n### Decision: Build the copied file from a local frontmatter and the inherited body\n\nA new `render_copied_deviate_adr` writes `render_frontmatter(id, title,\nProposed, today, &[], tags, deviates_from)` followed by\n`body_slice(source)` with `\\r\\n` replaced by `\\n`. Title defaults to the\ninherited `Decision.title`, tags to the inherited `Decision.tags`; the\ninherited `id`, `status`, `date`, `supersedes` and `deviates_from` are\ndropped, because they belong to the source's numbering and lifecycle.\n\nLine endings are normalized to LF because the frontmatter codev writes is\nLF, and a file mixing both would be fragile to edit; the text is otherwise\nunchanged. The seal is computed on acceptance, on whatever the user left in\nthe body, so the normalization never conflicts with it. A `body_slice`\nfailure (inherited file without a frontmatter closer) cannot occur for an\nindexed decision — the ADR parser rejects such a file — and is mapped to a\n`write_failed`-style failure rather than a panic.\n\n**Alternatives considered**:\n\n- *Copying the inherited file whole and rewriting its frontmatter.* It\n  risks carrying fields the project does not understand, and duplicates\n  what `render_frontmatter` already does correctly.\n- *Keeping CRLF when the source has it.* Mixed line endings in one file for\n  no benefit; the spec on CRLF ADRs only requires that they be read.\n\n### Decision: Human output names the copy; JSON output unchanged\n\n`DecisionDeviatedOutcome` gains a `copied: bool`, used only by\n`render::decision_deviated`: with it, the first line says the body was\ncopied from `<qualified-id>` and the hint becomes \"edit the copied text,\nthen accept\"; without it, the output is unchanged. `DecisionDeviatedV1` is\nnot touched, so installed skills see the same contract (no `migration`\nconcern).\n\n**Alternatives considered**:\n\n- *A `copiedFrom` field in the JSON.* The `decision.deviatesFrom` already\n  says what the deviation refers to; a new field would be a contract change\n  with no consumer asking for it.\n\n## Risks / Trade-offs\n\n- [Inherited content becomes local content: text controlled by the shared\n  repository's owners is written into the project and, once accepted,\n  sealed as the project's own] → The copy is created `proposed` and is not\n  in effect until a person runs `codev decision accept`; the copied text was\n  already injected into the agent's prompt while inherited, so the copy\n  widens nothing. Only the markdown body of an indexed `.md` decision is\n  copied (decision 0005 safeguard 3 and the \"no inherited executable\n  content\" requirement); nothing is executed, and nothing is written\n  outside `_codev/decisions/`.\n- [The copy freezes the upstream text: a later fix to the inherited decision\n  does not reach the project] → That is the meaning of a deviation; the\n  inherited decision stays listed with `deviatedBy`, and `codev sources\n  update` still shows the inherited diff before moving the pin, where the\n  team sees changes to a decision it deviates from.\n- [Users expect `--copy` on a local decision] → It is refused with\n  `cannot_deviate_from_local`, whose message already points to `codev\n  decision supersede`.\n- [Making the title positional optional changes the CLI parser for\n  `deviate`] → Without `--copy`, an absent title is still rejected before\n  any read or write, with a usage error; a test covers it.\n\n## Open Questions\n\n- Should `codev validate` warn when the inherited decision a copied\n  deviation was taken from has changed at the locked SHA since the copy?\n  It needs the upstream body's hash recorded somewhere, which is a format\n  change; it can wait for a user asking for it without affecting this\n  change's specs or tasks.\n",
+    "_codev/changes/deviate-with-inherited-copy/proposal.md": "# Proposal: Correct an inherited decision locally by starting the deviation from its content\n\n## Why\n\nA project that wants to correct a decision inherited from a shared source\ntoday runs `codev decision deviate`, which creates a deviation with an empty\ntemplate: the user has to reopen the inherited decision and retype or\ncopy-paste its whole body before changing the one sentence that is wrong. The\ninherited source stays read-only by decision 0005, so \"correcting directly in\nthe project\" has to mean a local deviation that starts from the inherited\ntext, ready to edit.\n\n**Assumption (no user available to ask).** The request — « corriger\ndirectement dans mon projet une décision héritée d'un dépôt source partagé »\n— is read as: edit the inherited decision's content from the project and have\nthe edited version take effect there, without touching the shared\nrepository. Writing back into the shared source, or editing the cached copy\nin place, is out of scope: decision 0005 makes inherited sources read-only\nand pinned by SHA, and that decision is followed, not re-debated. The\nexisting deviation mechanism (`deviates_from`, acceptance, seal, index\nhiding) is reused unchanged; only how the deviation's file is started\nchanges.\n\n## What Changes\n\n- `codev decision deviate` gains a `--copy` option: the new local\n  `proposed` ADR starts with the inherited decision's body verbatim, instead\n  of the empty template, so the user corrects it in place.\n- With `--copy`, the title argument becomes optional and defaults to the\n  inherited decision's title; the inherited tags are carried over.\n- The human output of a copied deviation says the body was copied from the\n  inherited decision and names the file to edit.\n- Everything else about a deviation is unchanged: it is `proposed` and\n  unsealed, it takes effect only once accepted with `codev decision\n  accept` (which seals the corrected body), the inherited decision stays\n  listed with `deviatedBy`, and the inherited source and the cache are never\n  written.\n- Without `--copy`, `codev decision deviate` behaves exactly as today.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- decisions\n\n### Removed Capabilities\n\n## Impact\n\n- `codev decision deviate` (CLI arguments, human output). The JSON output\n  `DecisionDeviatedV1` keeps its shape: no field is added or changed.\n- Decision actions in the engine (planning the deviation's file content).\n- Documentation, in both `docs/en` and `docs/fr`: the inherited-sources\n  guide (deviation section), the CLI reference for `codev decision\n  deviate`, and the FAQ if it covers changing an inherited decision.\n\n## Domains\n\n- [x] security — inherited text, controlled by the shared repository and injected into agent prompts, is copied into a local file the project then seals as its own.\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [ ] migration — no change to the JSON contract, to existing files or to `deviate` without `--copy`.\n\n## Release note\n\n- Added: `codev decision deviate --copy` starts the local deviation from the\n  inherited decision's own text, so you can correct a decision inherited from\n  a shared source directly in your project and accept the corrected version.\n  The title is optional with `--copy` and defaults to the inherited title.\n",
+    "_codev/changes/deviate-with-inherited-copy/specs/decisions/spec.md": "## ADDED Requirements\n\n### Requirement: `codev decision deviate --copy` starts the deviation from the inherited content\n\n`codev decision deviate <qualified-id> [<title>] --copy` SHALL create the\nsame local deviation as `codev decision deviate` — a `proposed` ADR,\nwithout a seal entry, whose frontmatter carries `deviates_from:\n[\"<qualified-id>\"]` — except that the body of the new ADR (everything after\nthe `---` closing its frontmatter) SHALL be the body of the inherited\ndecision, with the same text, instead of the empty decision template.\n\nThe frontmatter of the new ADR SHALL remain local: its own `id` (the next\nlocal number), `status: proposed`, the current `date`, and `deviates_from`.\nIts `title` SHALL be `<title>` when given, and otherwise the inherited\ndecision's title; its `tags` SHALL be the inherited decision's tags. The\ninherited `id`, `status`, `date`, `supersedes` and `deviates_from` SHALL NOT\nbe carried over.\n\nThe copied file SHALL use LF line endings, whatever the line endings of the\ninherited file.\n\nThe command SHALL NOT write the inherited source, its cache, the lock file,\nnor `_codev/decisions/seal.yaml`, and SHALL NOT contact the network: the\ncopied body is the one of the inherited content already indexed — for a git\nsource, the content at the locked SHA.\n\nThe command SHALL refuse, without writing anything, with the same stable\ncodes as `codev decision deviate`: `cannot_deviate_from_local` for a local\ndecision, `unknown_decision_id` for an identifier that matches no indexed\ndecision, `ambiguous_decision_id` for an ambiguous short identifier, and\n`empty_title` for a `<title>` given but empty. Without `--copy`, `<title>`\nSHALL remain mandatory and the command SHALL behave as before.\n\nThe human output SHALL say that the body was copied from `<qualified-id>`,\nname the file to edit, and name `codev decision accept <id>` as the next\nstep. The `--json` output SHALL keep the shape of `codev decision deviate\n--json`.\n\n#### Scenario: Deviation copied from an inherited `path:` decision\n\n- **GIVEN** a project inheriting from a source `path: ~/shared` containing\n  an ADR `path:~/shared/0100 accepted` titled \"Services log in JSON\",\n  tagged `logging`, whose body holds the sections Context, Decision and\n  Consequences\n- **AND** a project whose largest local decision id is `0006`\n- **WHEN** the user runs `codev decision deviate path:~/shared/0100 --copy`\n- **THEN** the file `_codev/decisions/0007-services-log-in-json.md` is\n  created\n- **AND** its frontmatter carries `id: \"0007\"`, `title: \"Services log in\n  JSON\"`, `status: proposed`, the current date, `tags: [logging]` and\n  `deviates_from: [\"path:~/shared/0100\"]`\n- **AND** its body is the body of the inherited ADR, with the same text\n- **AND** the inherited file and `_codev/decisions/seal.yaml` are identical\n  down to the character\n- **AND** `path:~/shared/0100` is still in effect and carries no\n  `deviatedBy`\n- **AND** the output says the body was copied from `path:~/shared/0100`\n  and names `codev decision accept 0007` as the next step\n\n#### Scenario: Copy with an explicit title\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision deviate path:~/shared/0100 \"Services\n  log in logfmt\" --copy`\n- **THEN** the created ADR is `_codev/decisions/0007-services-log-in-logfmt.md`\n  with `title: \"Services log in logfmt\"`\n- **AND** its body is the body of the inherited ADR\n\n#### Scenario: The corrected copy takes effect once accepted\n\n- **GIVEN** the same project, after `--copy` created `0007`\n- **AND** the user has edited a sentence of the body of `0007`\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** `0007` carries `status: accepted` and `seal.yaml` has an entry\n  for `0007` whose `bodySha256` matches the edited body\n- **AND** `codev decision list --json` shows `path:~/shared/0100` with\n  `deviatedBy: \"project/0007\"` and `inEffect: false`\n- **AND** the `decisions` array of `codev instructions design --change\n  <name> --json` contains `project/0007` and not `path:~/shared/0100`\n\n#### Scenario: Copy from a locked git source without network\n\n- **GIVEN** a project inheriting from a git source locked in\n  `_codev/codev.lock` and already cached, which exposes an ADR `0100`\n- **AND** the network is unavailable\n- **WHEN** the user runs `codev decision deviate <git-qualified-id>/0100\n  --copy`\n- **THEN** the deviation is created with the body of `0100` at the locked\n  SHA\n- **AND** `_codev/codev.lock` and the cache are unchanged\n\n#### Scenario: Inherited decision with Windows line endings\n\n- **GIVEN** an inherited ADR `path:~/shared/0100` whose file uses CRLF line\n  endings\n- **WHEN** the user runs `codev decision deviate path:~/shared/0100 --copy`\n- **THEN** the created ADR uses LF line endings only\n- **AND** its body has the same text as the inherited body\n\n#### Scenario: Refusal to copy a local decision\n\n- **GIVEN** a project containing a local ADR `0003 accepted`\n- **WHEN** the user runs `codev decision deviate project/0003 --copy`\n- **THEN** no file is written\n- **AND** the error names the stable code `cannot_deviate_from_local` and\n  suggests `codev decision supersede`\n\n#### Scenario: Refusal of an unknown target\n\n- **GIVEN** a project without any inherited source\n- **WHEN** the user runs `codev decision deviate path:~/unknown/0100 --copy`\n- **THEN** no file is written\n- **AND** the error names the stable code `unknown_decision_id`\n\n#### Scenario: Refusal of an empty explicit title\n\n- **GIVEN** a project inheriting `path:~/shared/0100`\n- **WHEN** the user runs `codev decision deviate path:~/shared/0100 \"\"\n  --copy`\n- **THEN** no file is written\n- **AND** the error names the stable code `empty_title`\n\n#### Scenario: Without `--copy`, the title stays mandatory\n\n- **GIVEN** a project inheriting `path:~/shared/0100`\n- **WHEN** the user runs `codev decision deviate path:~/shared/0100`\n- **THEN** no file is written\n- **AND** the command fails with a usage error that names the missing title\n"
+  },
+  "validate": {
+    "deviate-with-inherited-copy": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "deviate-with-inherited-copy",
+          "path": "_codev/changes/deviate-with-inherited-copy"
+        }
+      ],
+      "status": []
+    }
+  }
+}

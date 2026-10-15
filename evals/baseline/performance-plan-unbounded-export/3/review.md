@@ -6,17 +6,9 @@
 
 Mode: inline.
 
-### skeptic
-
-Disabled by configuration.
-
-### security
-
-Disabled by configuration.
-
 ### performance
 
-#### R-performance-1 The export loads the whole audit log and the whole CSV into memory on the event loop
+#### R-performance-1 The export buffers every event of the organization in memory and builds the CSV in one synchronous pass
 
 ```yaml
 severity: high
@@ -27,20 +19,21 @@ evidence: |
   created_at`, loads the rows into an array, builds the whole CSV string with
   `rows.map(toCsvLine).join("\n")`, and sends it.
 recommendation: >-
-  With about 40 000 events per organization and per month kept seven years
-  (design.md#Context), one export reaches about 3.4 million rows. The query
-  has no bound, `src/db.ts` `query()` buffers every row in `result.rows`, and
-  the handler then holds a second copy as one CSV string: memory per request
-  grows linearly with the organization's history, two concurrent exports can
-  exhaust the heap, and the synchronous `map`/`join` over millions of rows
-  blocks the single event loop of the instance (design.md#Context), stalling
-  every other request it serves. Stream the export instead: read the rows
-  with a server-side cursor (e.g. `pg-cursor` or `pg-query-stream`) in
-  batches, write each CSV line to the response as it comes, and respect
-  backpressure; this keeps the requirement "every event, oldest first" while
-  bounding memory per request. Alternatively, bound the export by a date
-  range parameter. Record the chosen approach as a decision and replace
-  "Alternatives considered: none".
+  Cost grows with the organization's history: at "about 40 000 per organization
+  and per month, kept seven years" (design.md#Context), one export reads up to
+  ~3.4 million rows with no LIMIT, holds them all as objects, then as one string
+  of the same size again. Scenario: an administrator of a seven-year-old
+  organization requests the export; the instance allocates hundreds of MB to
+  GB (risking an out-of-memory crash), and `rows.map(...).join(...)` runs
+  synchronously over millions of rows on the instance's single event loop
+  ("one event loop per instance"), stalling every other request it serves.
+  Stream instead: read with a server-side cursor (or keyset pages on
+  `(created_at, id)`), convert each batch to CSV lines and write them to the
+  response through a stream that respects backpressure, so memory stays
+  bounded per batch and the event loop yields between batches. Keep the
+  ordering "oldest first" required by the spec. Also record why no
+  alternative was considered: "none; the code is the simplest" does not
+  weigh the data volume stated in the design's own context.
 history:
   - status: open
     by: performance
@@ -53,15 +46,23 @@ severity: medium
 confidence: low
 location: "design.md#Decision: The export loads every event, then writes the CSV"
 evidence: |
-  The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
+  `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY
+  created_at`
 recommendation: >-
-  The query filters on `org_id` and sorts on `created_at` over a table that
-  grows by about 40 000 rows per organization and per month. The schema of
-  `audit_events` is not in the repository, so the index could not be
-  checked: confirm an index on `(org_id, created_at)` exists (check with
-  `EXPLAIN` that the plan avoids a sort over the organization's rows), or
-  add one, and state it in the design.
+  The schema of `audit_events` is not in the repository, so the index could not
+  be checked. Verify with `EXPLAIN` that an index on `(org_id, created_at)`
+  exists; without it, each export scans and sorts the whole table, whose cost
+  grows with every organization's seven years of events. Say in the design
+  which index serves the query, or add it.
 history:
   - status: open
     by: performance
 ```
+
+### skeptic
+
+Disabled by configuration.
+
+### security
+
+Disabled by configuration.

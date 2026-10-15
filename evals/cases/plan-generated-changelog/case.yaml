@@ -1,0 +1,12 @@
+step: plan.write
+kind: seeded
+ref: da68ef4c62d53ad5282a49d8a71e828577137b0a
+request: "On écrit le changelog et les notes de release à la main alors que chaque changement archivé décrit déjà ce qu'il apporte. J'aimerais que chaque proposition ait une petite note de version catégorisée, vérifiée par la validation, et une commande qui génère le changelog entre deux tags à partir des changements archivés."
+summary: "Replays the change 2026-10-12-generated-changelog (feat(changelog): release notes generated from archived changes (#17))."
+expected:
+  modified:
+    - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
+  collateral:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+    - "skills::The `propose` skill checks traceability before presenting the plan"
+  decisions: []

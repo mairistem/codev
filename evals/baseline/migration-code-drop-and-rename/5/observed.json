@@ -2,22 +2,86 @@
   "format": 2,
   "case": "migration-code-drop-and-rename",
   "error": null,
-  "costUsd": 0.353857,
-  "durationMs": 32063,
+  "costUsd": 0.2918008,
+  "durationMs": 22938,
   "consumption": {
-    "durationApiMs": 31623,
-    "turns": 11,
-    "permissionDenials": 2,
+    "durationApiMs": 22691,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1180,
-      "cacheCreation": 27368,
-      "cacheRead": 373720,
-      "output": 2958
-    }
+      "input": 1174,
+      "cacheCreation": 25239,
+      "cacheRead": 232619,
+      "output": 2119
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7396,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7396
+        }
+      },
+      {
+        "cacheCreation": 14177,
+        "cacheRead": 29535,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14177
+        }
+      },
+      {
+        "cacheCreation": 1236,
+        "cacheRead": 43712,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1236
+        }
+      },
+      {
+        "cacheCreation": 522,
+        "cacheRead": 44948,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 522
+        }
+      },
+      {
+        "cacheCreation": 1345,
+        "cacheRead": 45470,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1345
+        }
+      },
+      {
+        "cacheCreation": 563,
+        "cacheRead": 46815,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 563
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +93,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public JSON field renamed without a BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Account JSON field renamed with no BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
@@ -60,13 +124,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "The public account JSON (src/api.rs is \"The JSON types of the public HTTP API\") now emits `userName` instead of `user_name`; every existing client that reads `user_name` gets a missing field after deploy, with no warning. The release note lists it as \"Changed: Account JSON uses camelCase.\" with no **BREAKING** marker and no instruction for consumers. Mark it **BREAKING** in the release note with what clients must do, and give consumers a transition: emit both names for a deprecation period (or version the endpoint), then drop `user_name` in a later release; add a test asserting the serialized field names.",
+        "recommendation": "Every existing consumer of the public HTTP API that reads `user_name` from an Account response gets a missing field after deploy (deserialization error or silent empty value) with no warning. Mark the rename **BREAKING** in the proposal's release note, with what consumers must do (read `userName`), and give them time: serve both names for one release (e.g. a deprecated `user_name` alongside `userName`) or version the endpoint, then remove the old name in a later change.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Public JSON field renamed without a BREAKING mark or transition"
+        "title": "Account JSON field renamed with no BREAKING mark or transition"
       },
       {
         "awaiting": "author",
@@ -82,12 +146,12 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 34,
+        "line": 33,
         "location": "migrations/0005_drop_legacy_email.sql:2",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Running migration 0005 destroys every value of `users.legacy_email` left from the 2023 import; there is no `0005_drop_legacy_email.down.sql` (0004 has one) and the plan names no backup or recovery, so a rollback cannot restore the data. Add a backup step (copy the column to an archive table or export it) before the drop, add a down migration that re-adds the column and restores from the backup, or state in the plan why the data can be lost and how to recover. Also ship the drop only once no running instance still selects the column (expand/contract order).",
+        "recommendation": "Running 0005 on production deletes every value still held in `users.legacy_email` (rows imported in 2023), and there is no `0005_drop_legacy_email.down.sql` although 0004 has one, so a rollback cannot restore the column or its data. Add a down migration that re-adds the nullable column, and add a backup step before the drop (copy the column to an archive table or take a dump), or state in the plan why the data can be lost and how to recover.",
         "reported": true,
         "role": "migration",
         "severity": "high",

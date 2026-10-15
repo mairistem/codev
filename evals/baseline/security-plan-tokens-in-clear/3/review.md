@@ -19,21 +19,22 @@ evidence: |
   middleware looks a request's token up with `WHERE token = $1`. Storing the
   token as given keeps the lookup a simple indexed equality.
 recommendation: >-
-  Anyone who reads the `api_tokens` table — a leaked backup or SQL dump, a
-  read-only replica, a support account, an SQL injection elsewhere — gets
-  every user's working bearer credential and calls the API as them
-  (CWE-312 / CWE-256); since revocation is a Non-Goal, nothing can cut that
-  access off. Store only a hash of the token (SHA-256 is enough for a 32-byte
-  random value) in a `token_hash` column and look it up with
-  `WHERE token_hash = $1`: the lookup stays a single indexed equality, so the
-  stated reason for storing it as given does not hold. Update task 1.1 and
-  1.2 and the spec accordingly (the token is shown once and never stored).
+  Store only a hash of the token (SHA-256 of the 32 random bytes is enough
+  for high-entropy tokens; no bcrypt needed) in a `token_hash` column, hash
+  the presented bearer token in the middleware and look it up with
+  `WHERE token_hash = $1` — still a single indexed equality, so the stated
+  reason for storing it as given does not hold. Anyone who reads the
+  `api_tokens` table (a database backup, a replica, a read-only SQL access,
+  an injection elsewhere) otherwise obtains every live token and can call
+  the API as every user who created one; with revocation deferred, those
+  tokens stay valid indefinitely (CWE-312, CWE-256). Update tasks 1.1 and
+  1.2 accordingly.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 The Authorization header, and so every token, is written to the logs
+#### R-security-2 The Authorization header, and so every bearer token, is written to the logs
 
 ```yaml
 severity: high
@@ -44,15 +45,36 @@ evidence: |
   method, path and headers at `info` level, including `Authorization`, so
   support can see which token an integration sent.
 recommendation: >-
-  Every request writes its bearer token (and, since all headers are logged,
-  the `Cookie` session too — see `src/http/middleware.rs:21`) into the info
-  logs; anyone with log access — support, a log aggregator, a shipped log
-  archive — replays it and acts as the user until the token is revoked,
-  which this change cannot do (CWE-532, CWE-200). Never log `Authorization`
-  or `Cookie`: redact them (e.g. `Bearer ***`), and if support must identify
-  a token, log a non-secret identifier such as the token's row id or a short
-  prefix of its hash. Change task 1.3 so `logs_requests` asserts the
-  redaction.
+  Redact the `Authorization` header (and `Cookie`) before logging; if
+  support needs to identify the token, log the token's id or a short
+  fingerprint of its hash, never the token itself. As designed, every
+  request with `Authorization: Bearer <token>` puts a working credential in
+  the logs at `info`, so anyone with access to the logs or the log
+  pipeline (support staff, log aggregator, shipped log files) can replay
+  it and act as the token's owner, with no way to revoke it (CWE-532).
+  Adjust task 1.3 so `logs_requests` asserts the header is redacted.
+history:
+  - status: open
+    by: security
+```
+
+#### R-security-3 A leaked token cannot be invalidated: revocation is deferred and tokens never expire
+
+```yaml
+severity: medium
+confidence: high
+location: "design.md#Goals / Non-Goals"
+evidence: |
+  **Non-Goals:** OAuth, scopes, revocation (a later change).
+recommendation: >-
+  Ship at least a minimal way to invalidate a token in this change — a
+  delete of the user's token row, or an expiry date checked by the
+  middleware — or state the risk explicitly and get a human to accept it.
+  The proposal's own motivation is that "a leaked integration exposes the
+  account"; today the user can change the password to cut a leaked
+  integration off, but with this design a token leaked from an
+  integration's configuration keeps full API access to the account for
+  ever, and the Risks section only answers a lost token, not a leaked one.
 history:
   - status: open
     by: security

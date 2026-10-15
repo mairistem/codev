@@ -2,10 +2,10 @@
   "format": 2,
   "case": "accessibility-code-icon-button",
   "error": null,
-  "costUsd": 0.30967580000000006,
-  "durationMs": 26838,
+  "costUsd": 0.3193566,
+  "durationMs": 27918,
   "consumption": {
-    "durationApiMs": 26548,
+    "durationApiMs": 27799,
     "turns": 7,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,76 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1162,
-      "cacheCreation": 26917,
-      "cacheRead": 189214,
-      "output": 2775
-    }
+      "input": 1164,
+      "cacheCreation": 26908,
+      "cacheRead": 237138,
+      "output": 2783
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7384,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7384
+        }
+      },
+      {
+        "cacheCreation": 15445,
+        "cacheRead": 29523,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3836,
+          "skill": 11609
+        }
+      },
+      {
+        "cacheCreation": 894,
+        "cacheRead": 44968,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 894
+        }
+      },
+      {
+        "cacheCreation": 487,
+        "cacheRead": 45862,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 487
+        }
+      },
+      {
+        "cacheCreation": 1948,
+        "cacheRead": 46349,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1948
+        }
+      },
+      {
+        "cacheCreation": 750,
+        "cacheRead": 48297,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 750
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +94,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable by keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable with the keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
@@ -44,7 +109,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n",
         "history": [
           {
             "by": "accessibility",
@@ -60,13 +125,13 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Render the delete action as a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`. A keyboard user pressing Tab never lands on the div (no tabindex), and Enter or Space does nothing (no key handler); a screen reader user hears no role, so the only action of the toolbar cannot be found or triggered without a mouse — WCAG 2.1.1 Keyboard and 4.1.2 Name, Role, Value. The native button brings focus, Enter/Space activation and the button role at once.",
+        "recommendation": "Keyboard users cannot delete a document: the div has no tabindex, no role and no key handler, so Tab never reaches it and Enter or Space do nothing; screen readers do not expose it as a control (WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value). Render a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`, which is focusable, announced as a button and activated by Enter and Space.",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Delete action is a clickable div, unreachable by keyboard"
+        "title": "Delete action is a clickable div, unreachable with the keyboard"
       },
       {
         "awaiting": "author",
@@ -82,12 +147,12 @@
           }
         ],
         "id": "R-accessibility-2",
-        "line": 32,
+        "line": 31,
         "location": "src/components/Toolbar.tsx:13-15",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Give the control a text name, e.g. `aria-label=\"Delete document\"` on the button (or visually hidden text inside it). Its only content is `TrashIcon`, whose `<svg ... aria-hidden=\"true\">` (src/components/icons.tsx:3) hides it from assistive technology, so a screen reader user reaching the control hears nothing that says it deletes the document — WCAG 1.1.1 Non-text Content and 4.1.2 Name, Role, Value.",
+        "recommendation": "The only content is `TrashIcon`, whose svg is `aria-hidden=\"true\"` (src/components/icons.tsx:3), so the control has no text alternative: once it is a button, a screen reader announces just \"button\", and the user cannot tell it deletes the document (WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value). Give the button an accessible name, e.g. `aria-label=\"Delete document\"`, or visually hidden text inside it.",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
@@ -114,7 +179,7 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Add a text alternative naming the owner, e.g. `alt={`${ownerName}'s avatar`}` (the component then needs the owner's name as a prop), or `alt=\"\"` if the owner is named in adjacent text. With no `alt`, screen readers announce the image file name or URL instead of who owns the document, so the information the avatar conveys is lost — WCAG 1.1.1 Non-text Content.",
+        "recommendation": "The avatar conveys who owns the document, but the img has no `alt`: screen readers fall back to announcing the image URL or file name, or \"image\", and the owner is never identified (WCAG 1.1.1 Non-text Content). Pass the owner's name and set `alt={ownerName}` (or `alt=\"\"` if the owner's name is already shown as text next to it).",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
@@ -125,7 +190,7 @@
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n",
         "history": [
           {
             "by": "accessibility",
@@ -136,18 +201,18 @@
           }
         ],
         "id": "R-accessibility-4",
-        "line": 71,
-        "location": "src/components/Toolbar.tsx:13",
+        "line": 72,
+        "location": "src/components/Toolbar.tsx:13-14",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "The `icon-button` class is styled outside the change and the trash icon is 16 by 16 pixels (src/components/icons.tsx:3). Check that the control is at least 24 by 24 CSS pixels or spaced enough (WCAG 2.5.8 Target Size (Minimum)) and that it shows a visible focus indicator once it is a button (WCAG 2.4.7 Focus Visible).",
+        "recommendation": "The icon is 16 by 16 (src/components/icons.tsx:3) and the `.icon-button` stylesheet is not part of the change: check that the clickable target is at least 24 by 24 CSS pixels or spaced accordingly (WCAG 2.5.8 Target Size (Minimum)) and that the button keeps a visible focus indicator (WCAG 2.4.7 Focus Visible).",
         "reported": false,
         "role": "accessibility",
         "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "Delete target size and focus style not verifiable in the diff"
+        "title": "Delete target size and focus style not visible in the change"
       }
     ],
     "format": 1,

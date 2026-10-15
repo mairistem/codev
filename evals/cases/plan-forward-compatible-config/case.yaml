@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+request: "Si un collègue a une version plus ancienne de l'outil que celle du projet, la moindre clé inconnue dans la config fait échouer toutes les commandes. Je préférerais qu'on ignore la clé avec un avertissement qui dit de mettre à jour, et que le diagnostic propose la bonne commande avec une version précise quand l'outil est trop récent."
+summary: "Replays the change 2026-10-12-forward-compatible-config (feat(config): forward-compatible configuration and doctor downgrade fix (#20))."
+expected:
+  modified:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+  collateral: []
+  decisions: []

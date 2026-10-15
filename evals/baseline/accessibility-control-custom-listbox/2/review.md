@@ -8,23 +8,19 @@ Mode: inline.
 
 ### accessibility
 
-#### R-accessibility-1 Focus indicator of the combobox depends on a stylesheet outside the change
+#### R-accessibility-1 Focus indicator of the combobox cannot be checked from the change
 
 ```yaml
 severity: low
 confidence: low
 location: "src/components/SizePicker.tsx:70-73"
 evidence: |
-  <div
-    ref={combo}
-    role="combobox"
-    tabIndex={0}
+      <div
+        ref={combo}
+        role="combobox"
+        tabIndex={0}
 recommendation: >-
-  The combobox is a focusable `div`; its focus indicator comes from the
-  browser default unless a stylesheet removes it, and no stylesheet is in
-  the diff. Check that `.size-picker [role="combobox"]` keeps a visible
-  focus style with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11
-  Non-text Contrast) — keyboard users must see where focus is.
+  The focusable `div` relies on a stylesheet the change does not include. Check that `.size-picker [role="combobox"]:focus-visible` keeps a visible outline (no `outline: none` without replacement) with at least 3:1 contrast against its background (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast); keyboard users otherwise cannot see where focus is.
 history:
   - status: open
     by: accessibility
@@ -37,14 +33,9 @@ severity: low
 confidence: low
 location: "src/components/SizePicker.tsx:92"
 evidence: |
-  className={index === active ? "option option--active" : "option"}
+            className={index === active ? "option option--active" : "option"}
 recommendation: >-
-  With `aria-activedescendant`, DOM focus stays on the combobox, so the
-  only visual cue of the highlighted option is `option--active`. Check
-  that this class gives a visible, non-colour-only highlight with at least
-  3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast), and
-  that options are at least 24 by 24 CSS pixels for the phone users this
-  change targets (2.5.8 Target Size (Minimum)).
+  Focus stays on the combobox and the highlighted option is the only visual cue of the keyboard position (`aria-activedescendant`). Check that `.option--active` is styled with an indicator other than colour alone and with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast, 1.4.1 Use of Color), and that the highlighted option is scrolled into view when the list overflows (WCAG 2.4.11 Focus Not Obscured).
 history:
   - status: open
     by: accessibility

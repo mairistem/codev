@@ -2,22 +2,107 @@
   "format": 2,
   "case": "migration-plan-breaking-rename",
   "error": null,
-  "costUsd": 0.33382,
-  "durationMs": 33351,
+  "costUsd": 0.3504446,
+  "durationMs": 37476,
   "consumption": {
-    "durationApiMs": 33050,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 37435,
+    "turns": 8,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1160,
-      "cacheCreation": 27899,
-      "cacheRead": 285630,
-      "output": 2627
-    }
+      "input": 1162,
+      "cacheCreation": 28555,
+      "cacheRead": 331173,
+      "output": 2740
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7381,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7381
+        }
+      },
+      {
+        "cacheCreation": 15213,
+        "cacheRead": 29520,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15213
+        }
+      },
+      {
+        "cacheCreation": 256,
+        "cacheRead": 44733,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 256
+        }
+      },
+      {
+        "cacheCreation": 233,
+        "cacheRead": 44989,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 233
+        }
+      },
+      {
+        "cacheCreation": 1623,
+        "cacheRead": 45222,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1623
+        }
+      },
+      {
+        "cacheCreation": 1128,
+        "cacheRead": 46845,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1128
+        }
+      },
+      {
+        "cacheCreation": 1779,
+        "cacheRead": 47973,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1445,
+          "output": 334
+        }
+      },
+      {
+        "cacheCreation": 942,
+        "cacheRead": 49752,
+        "input": 2,
+        "output": 156,
+        "toolCalls": 0,
+        "sources": {
+          "file": 942
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +114,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public field removed in the same release, with no deprecation window) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Public field removed in place, with no deprecation or compatibility period) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Breaking rename not marked BREAKING, no action for consumers) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Breaking rename not marked BREAKING in the release note, with no action for consumers) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +145,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Use expand then contract. In this change, `GET /orders/{id}` returns both `state` and `status` with the same value. Mark `status` `deprecated: true` in `openapi.yaml` and take it out of `required: [id, status]`. Announce a removal date, and remove `status` in a later change. Add a spec scenario \"A paid order still exposes status during deprecation\" (`\"status\": \"paid\"` next to `\"state\": \"paid\"`) and a task that tests it. Today the design calls the dual field \"duplication\" and rejects it, although a partner integration cannot change at the moment the API does.",
+        "recommendation": "Use expand and contract. In this change, return both `state` and `status` (same value), mark `status` deprecated in `openapi.yaml`, and add a scenario to `specs/orders-api/spec.md` stating that `status` is still returned during the deprecation period. Add a test task to `tasks.md` that checks an existing consumer reading `status` still gets `\"paid\"`. Remove `status` in a later change, after partners have been notified and given a removal date. The \"duplication\" listed under Alternatives considered is the cost of that compatibility period, not a reason to reject it.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Public field removed in the same release, with no deprecation window"
+        "title": "Public field removed in place, with no deprecation or compatibility period"
       },
       {
         "awaiting": "author",
@@ -87,13 +172,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Mark the item **BREAKING** in the release note and in `## What Changes`. Say what partners must do: read `state` instead of `status`, before the removal date. If R-migration-1 is fixed, say also that `status` stays deprecated until then. Add a task to publish the note, and to bump the API version in `openapi.yaml` (`info.version: 1.4.0`) so that the contract change is visible.",
+        "recommendation": "Mark the item **BREAKING** and tell consumers what to do. For example: \"**BREAKING** (when `status` is removed): read `state` instead of `status` in `GET /orders/{id}`; `status` is deprecated and will be removed on <date>.\" Mention the rename and the deprecation in \"What Changes\" as well.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Breaking rename not marked BREAKING, no action for consumers"
+        "title": "Breaking rename not marked BREAKING in the release note, with no action for consumers"
       }
     ],
     "format": 1,

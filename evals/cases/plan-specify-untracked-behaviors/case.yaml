@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: 68da23b8ec964b46ea78c117bfc540fd306b0d08
+request: "Quelques comportements sont arrivés via des PR classiques et ne sont décrits nulle part dans les specs : les fins de ligne Windows dans les décisions, le rendu des avertissements dans la doc hors ligne, la sortie silencieuse quand on coupe l'affichage de la doc, et les slashs dans les chemins d'héritage. Tu peux juste les documenter dans les specs, le code et les tests existent déjà."
+summary: "Replays the change 2026-10-12-specify-untracked-behaviors (docs(specs): specify behaviors that shipped without a codev change (#14))."
+expected:
+  modified:
+    - "init::`codev init --inherit` declares inherited sources"
+  collateral: []
+  decisions: []

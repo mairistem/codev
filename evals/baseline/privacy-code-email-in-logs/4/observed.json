@@ -2,10 +2,10 @@
   "format": 2,
   "case": "privacy-code-email-in-logs",
   "error": null,
-  "costUsd": 0.29291979999999995,
-  "durationMs": 23698,
+  "costUsd": 0.3018498,
+  "durationMs": 24676,
   "consumption": {
-    "durationApiMs": 22955,
+    "durationApiMs": 24462,
     "turns": 5,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,64 @@
     ],
     "tokens": {
       "input": 1162,
-      "cacheCreation": 26351,
-      "cacheRead": 189324,
-      "output": 2164
-    }
+      "cacheCreation": 26923,
+      "cacheRead": 185044,
+      "output": 2423
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7375,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7375
+        }
+      },
+      {
+        "cacheCreation": 12153,
+        "cacheRead": 29514,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12153
+        }
+      },
+      {
+        "cacheCreation": 1611,
+        "cacheRead": 41667,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1611
+        }
+      },
+      {
+        "cacheCreation": 5168,
+        "cacheRead": 43278,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5168
+        }
+      },
+      {
+        "cacheCreation": 616,
+        "cacheRead": 48446,
+        "input": 2,
+        "output": 200,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 616
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -33,7 +87,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-2 (E-mail address sent to the third-party analytics processor Beacon) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-2 (E-mail address sent to the Beacon analytics SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,7 +114,7 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Log only the opaque `user_id` (e.g. `log.info(\"new signup id=%s\", user_id)`). Every sign-up currently copies the member's e-mail address and display name into the application logs, which have no stated purpose, no retention rule and are not reached by an erasure request (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 17 erasure).",
+        "recommendation": "Log only the opaque id (`log.info(\"new signup id=%s\", user_id)`). As written, every call to `signup(\"ada@example.org\", \"Ada\")` writes the member's e-mail address and display name to the application log, where they escape the members table's retention and erasure (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 17 erasure) and reach whoever or whatever reads or ships the logs.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
@@ -87,18 +141,18 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Drop `email` from the event: the proposal's purpose is only that \"Sign-ups are counted in product analytics\", which the event name (and at most the opaque `user_id`) already serves. As written, every sign-up posts the member's e-mail address to `https://beacon.example.com/v1/events` (app/analytics.py:5,9), an external processor the proposal never names — beyond what the purpose needs (Art. 5(1)(c)), out of reach of erasure and access requests (Art. 15, 17), and with no processor agreement or transfer location identified (Art. 28, Chapter V). Also list Beacon as a processor in the proposal's Impact, with its hosting region.",
+        "recommendation": "Drop `email` from the event properties and send only `user_id` (or no identifier at all, since the proposal only needs sign-ups to be counted). As written, each sign-up posts the member's e-mail address to https://beacon.example.com/v1/events (app/analytics.py:5,9), a third-party processor, although the stated purpose — \"Sign-ups are counted in product analytics\" — does not need it (GDPR Art. 5(1)(b)-(c), Art. 25). The copy at Beacon is also out of reach of the member's access and erasure rights (Art. 15, 17).",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "E-mail address sent to the third-party analytics processor Beacon"
+        "title": "E-mail address sent to the Beacon analytics SaaS"
       },
       {
         "awaiting": "author",
         "confidence": "low",
-        "evidence": "user_id = insert_user(email=email, display_name=display_name)\n",
+        "evidence": "\"\"\"Product analytics, sent to the Beacon SaaS (beacon.example.com).\"\"\"\n",
         "history": [
           {
             "by": "privacy",
@@ -109,18 +163,45 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 55,
-        "location": "app/signup.py:13",
+        "line": 53,
+        "location": "app/analytics.py:1",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Question for the team: the proposal says the change \"collects e-mail addresses and display names\" but states no purpose per field, no lawful basis, no retention period and no deletion path (backups included) for the stored member record. Only the controller can decide these; record them in the proposal and make sure account deletion removes the record.",
+        "recommendation": "Question for the team: the change introduces Beacon as a processor receiving member data (at least `user_id`), but the proposal's Impact and Domains sections do not name it. State whether a processor agreement exists (GDPR Art. 28), where Beacon processes the data (Chapter V transfers outside the EEA) and add it to the record of processing (Art. 30). Could not be verified from the repository.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Purpose, lawful basis and retention of the stored member data not stated"
+        "title": "Beacon is a new processor not identified in the plan"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [x] personal-data — collects e-mail addresses and display names\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 73,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: the proposal says the change collects e-mail addresses and display names but states neither their lawful basis (GDPR Art. 6), nor how long the member record is kept, nor how it is deleted, backups included (Art. 5(1)(e), Art. 17). Only the controller can tell what was decided; record it in the proposal.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Purpose, lawful basis and retention of the sign-up data not stated"
       }
     ],
     "format": 1,

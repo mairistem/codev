@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: d62597a0e32eaa1d20830cb084c374989beaacfb
+request: "D'après la dernière évaluation, presque tous les relecteurs remontent beaucoup trop de faux positifs et noient les vrais problèmes. Il faudrait les rendre plus précis : ne signaler en confiance haute que ce qui est prouvé avec un scénario d'échec, un défaut par remarque, dire à chaque expert ce qu'il ne doit pas remonter, et que le sceptique arrête de faire le travail des experts."
+summary: "Replays the change 2026-10-13-role-precision-from-baseline (feat(roles): fewer false positives, measured against the baseline (#36))."
+expected:
+  modified:
+    - "skills::The `propose` skill challenges the plan and reports points to challenge"
+  collateral: []
+  decisions: []

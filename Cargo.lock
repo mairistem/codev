@@ -207,6 +207,7 @@ name = "codev-evals"
 version = "0.6.1"
 dependencies = [
  "clap",
+ "codev-core",
  "serde",
  "serde_json",
  "serde_norway",

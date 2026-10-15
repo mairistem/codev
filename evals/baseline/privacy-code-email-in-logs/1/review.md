@@ -8,7 +8,7 @@ Mode: inline.
 
 ### privacy
 
-#### R-privacy-1 E-mail address and display name written to the application log
+#### R-privacy-1 E-mail address and display name written to application logs
 
 ```yaml
 severity: high
@@ -16,7 +16,12 @@ confidence: high
 location: "app/signup.py:14"
 evidence: |
   log.info("new signup email=%s name=%s id=%s", email, display_name, user_id)
-recommendation: Log only the opaque `user_id` (e.g. `log.info("new signup id=%s", user_id)`). As written, every sign-up copies the member's e-mail address and display name into the application log and every log sink behind it, where they escape the retention and erasure of the `users` table (GDPR Art. 5(1)(c) data minimisation, Art. 5(1)(e) storage limitation, Art. 17 erasure). Add a test asserting the e-mail does not appear in the captured log records.
+recommendation: >-
+  Log only the opaque id (`log.info("new signup id=%s", user_id)`). As written,
+  every sign-up copies the member's e-mail address and display name into the
+  application logs, which have their own retention, access and shipping, and
+  which account erasure does not reach (GDPR Art. 5(1)(c) data minimisation,
+  Art. 5(1)(e) storage limitation, Art. 17 erasure).
 history:
   - status: open
     by: privacy
@@ -30,13 +35,20 @@ confidence: high
 location: "app/signup.py:15"
 evidence: |
   track("signup", {"user_id": user_id, "email": email})
-recommendation: Drop `email` from the event properties and send only `user_id` (or no identifier at all, since the proposal only needs sign-ups to be "counted in product analytics"). As written, every sign-up posts the member's e-mail address to the third-party processor at https://beacon.example.com/v1/events (app/analytics.py:5), beyond what the stated purpose needs (GDPR Art. 5(1)(b)-(c), Art. 25 privacy by default, Art. 28 processor). Add a test asserting the `track` call carries no e-mail.
+recommendation: >-
+  Drop `email` from the event properties: the stated purpose ("Sign-ups are
+  counted in product analytics", proposal.md#What Changes) needs no e-mail
+  address — a count needs at most an opaque or pseudonymised id. As written,
+  every new member's e-mail address goes to a third-party processor
+  (`https://beacon.example.com/v1/events`, app/analytics.py:5) where account
+  erasure cannot reach it (GDPR Art. 5(1)(c), Art. 17, Art. 28). Consider
+  whether `user_id` itself is needed for a count.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-3 Beacon is a new processor not identified in the plan
+#### R-privacy-3 New processor Beacon not identified in the plan
 
 ```yaml
 severity: medium
@@ -44,13 +56,18 @@ confidence: low
 location: "app/analytics.py:1"
 evidence: |
   """Product analytics, sent to the Beacon SaaS (beacon.example.com)."""
-recommendation: The proposal's Impact and Domains do not name Beacon as a processor receiving member data (at least `user_id`), nor where it hosts that data. Question for the team — confirm a data processing agreement exists (GDPR Art. 28), whether the data leaves the EEA (Chapter V), and record Beacon in the records of processing (Art. 30).
+recommendation: >-
+  Question for the team: the change adds a new processor (Beacon) receiving
+  per-member events, but the proposal names neither the processor, its
+  processing agreement, nor where it hosts the data (possible transfer
+  outside the EEA, GDPR Art. 28, Chapter V). State them in the proposal and
+  the record of processing (Art. 30).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-4 No retention period or erasure path for the collected sign-up data
+#### R-privacy-4 No purpose, lawful basis, retention or erasure stated for the new member data
 
 ```yaml
 severity: medium
@@ -58,7 +75,13 @@ confidence: low
 location: "app/signup.py:13"
 evidence: |
   user_id = insert_user(email=email, display_name=display_name)
-recommendation: The plan states no retention period for the e-mail address and display name now collected by self sign-up, nor how account deletion reaches the `users` row, the logs and the Beacon events (backups included). Question for the team — define the retention and the erasure path (GDPR Art. 5(1)(e), Art. 17), and state the purpose and lawful basis of the collection (Art. 6).
+recommendation: >-
+  Question for the team: the proposal collects e-mail addresses and display
+  names (proposal.md#Domains) but states no lawful basis, no retention period
+  and no deletion path (backups included), and nothing shows that access,
+  erasure and portability reach the stored member (GDPR Art. 5(1)(e), Art. 6,
+  Art. 15–20). `app/db.insert_user` is not in the diff, so the storage could
+  not be checked.
 history:
   - status: open
     by: privacy

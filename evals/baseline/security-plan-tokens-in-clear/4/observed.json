@@ -2,11 +2,11 @@
   "format": 2,
   "case": "security-plan-tokens-in-clear",
   "error": null,
-  "costUsd": 0.3636562,
-  "durationMs": 33710,
+  "costUsd": 0.3957088,
+  "durationMs": 52189,
   "consumption": {
-    "durationApiMs": 33094,
-    "turns": 7,
+    "durationApiMs": 52042,
+    "turns": 14,
     "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,10 +14,88 @@
     ],
     "tokens": {
       "input": 1160,
-      "cacheCreation": 30768,
-      "cacheRead": 284376,
-      "output": 2983
-    }
+      "cacheCreation": 32012,
+      "cacheRead": 298654,
+      "output": 3946
+    },
+    "toolCalls": 13,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 14957,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3448,
+          "skill": 11509
+        }
+      },
+      {
+        "cacheCreation": 3502,
+        "cacheRead": 44491,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "codev review": 3502
+        }
+      },
+      {
+        "cacheCreation": 2311,
+        "cacheRead": 47993,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 173,
+          "file": 2139
+        }
+      },
+      {
+        "cacheCreation": 776,
+        "cacheRead": 50304,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 776
+        }
+      },
+      {
+        "cacheCreation": 2033,
+        "cacheRead": 51080,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2033
+        }
+      },
+      {
+        "cacheCreation": 1038,
+        "cacheRead": 53113,
+        "input": 2,
+        "output": 146,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 805,
+          "edit": 171,
+          "output": 62
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -33,7 +111,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-2 (The Authorization header, holding the bearer token, is logged) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-2 (The Authorization header is logged at info level) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,12 +133,12 @@
           }
         ],
         "id": "R-security-1",
-        "line": 11,
+        "line": 15,
         "location": "design.md#Decision: Tokens are stored as given",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for high-entropy tokens; no bcrypt needed) in a `token_hash` column, and look a request up with `WHERE token_hash = $1` on the hash of the bearer value — still a single indexed equality, so the lookup stays fast. The clear token exists only in the creation response, shown once. As it stands, anyone who reads the `api_tokens` table — a database backup, a read replica, a support query, an SQL injection elsewhere — gets every user's live credential and can call the API as them (CWE-312 / CWE-256), while passwords in the same database are bcrypt-hashed. Update the design's alternatives and task 1.1 accordingly.",
+        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for a high-entropy secret, no bcrypt needed), and look it up with `WHERE token_hash = $1` on the hash of the presented token: the lookup stays a single indexed equality, so the \"lookup must be fast\" argument does not require the clear value. As written, anyone who reads the `api_tokens` table — a database backup, a read replica, a support SQL console, a later injection — obtains working bearer credentials for every integration of every user, and since revocation is a Non-Goal they cannot be invalidated (CWE-312, CWE-522). Update tasks 1.1 and 1.2 to match.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -82,22 +160,22 @@
           }
         ],
         "id": "R-security-2",
-        "line": 37,
+        "line": 40,
         "location": "design.md#Decision: Every request is logged with its headers",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Never log `Authorization` (nor `Cookie`, `Proxy-Authorization` or any other credential header): redact it with an allow-list of loggable headers, and to identify the token log a non-secret identifier instead — the token row's id or a short prefix of its hash. As designed, every request writes a usable bearer token to the `info` log, so anyone with log access (support, the log pipeline, a log aggregation vendor) can replay it and act as the user (CWE-532); passwords sent through the same middleware by today's integrations would be logged too. Combined with the absence of revocation, a token leaked through the logs cannot be stopped. Change task 1.3 so `logs_requests` asserts the header is redacted.",
+        "recommendation": "Redact secret headers before logging: drop or mask `Authorization` and `Cookie` (the middleware already reads the session from `Cookie`), and log instead a non-secret token identifier (a token id or a short prefix of the token's hash) so support can still tell which token an integration sent. As written, every bearer token and every session cookie lands in the logs: anyone with access to the log pipeline or a log export replays them and acts as the user, with no revocation to stop it (CWE-532). Update task 1.3 so `logs_requests` asserts the secret headers are absent.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The Authorization header, holding the bearer token, is logged"
+        "title": "The Authorization header is logged at info level"
       },
       {
         "awaiting": "author",
-        "confidence": "low",
+        "confidence": "high",
         "evidence": "- [A user loses a token] → they create another one; revoking the old one comes with the later revocation change.\n",
         "history": [
           {
@@ -114,13 +192,13 @@
         "raisedBy": [
           "security"
         ],
-        "recommendation": "The proposal's own motive is that \"a leaked integration exposes the account\", yet a leaked token stays valid forever: creating another one does not stop the old one, and tokens have no expiry. Ship at least a minimal delete of a user's own token (server-side ownership check), or an expiry date on each token, with this change; or have a person accept the risk explicitly until the revocation change lands. Confidence is low because the impact depends on when that later change ships.",
-        "reported": false,
+        "recommendation": "The proposal's motivation is that \"a leaked integration exposes the account\", yet with revocation deferred and no expiry a leaked token keeps working forever: an attacker holding it keeps full API access to the account and the user has no way to cut it off — creating another token does not disable the old one. Either ship a minimal revocation (delete the token's row) in this change, or give tokens an expiry until the revocation change lands, and state the residual risk in the design.",
+        "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A leaked token cannot be invalidated until a later change"
+        "title": "A leaked token cannot be invalidated"
       }
     ],
     "format": 1,
@@ -138,14 +216,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "security",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "security",
+            "state": "findings"
           }
         ],
         "step": "plan.challenge",

@@ -2,22 +2,99 @@
   "format": 2,
   "case": "security-plan-tokens-in-clear",
   "error": null,
-  "costUsd": 0.3741237999999999,
-  "durationMs": 40112,
+  "costUsd": 0.3706984,
+  "durationMs": 36205,
   "consumption": {
-    "durationApiMs": 39942,
-    "turns": 8,
-    "permissionDenials": 1,
+    "durationApiMs": 36212,
+    "turns": 12,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
       "input": 1160,
-      "cacheCreation": 31214,
-      "cacheRead": 285174,
-      "output": 3320
-    }
+      "cacheCreation": 30983,
+      "cacheRead": 277387,
+      "output": 3319
+    },
+    "toolCalls": 11,
+    "orientationCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 2440,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2440
+        }
+      },
+      {
+        "cacheCreation": 12255,
+        "cacheRead": 31969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2604,
+          "skill": 9651
+        }
+      },
+      {
+        "cacheCreation": 2314,
+        "cacheRead": 44224,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "codev review": 2314
+        }
+      },
+      {
+        "cacheCreation": 3905,
+        "cacheRead": 46538,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 292,
+          "file": 3613
+        }
+      },
+      {
+        "cacheCreation": 2102,
+        "cacheRead": 50443,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2102
+        }
+      },
+      {
+        "cacheCreation": 577,
+        "cacheRead": 52545,
+        "input": 2,
+        "output": 142,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 554,
+          "output": 23
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -33,7 +110,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-2 (The Authorization header, with the bearer token, is logged at info level) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-2 (The Authorization header, and so every API token, is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -55,12 +132,12 @@
           }
         ],
         "id": "R-security-1",
-        "line": 15,
+        "line": 11,
         "location": "design.md#Decision: Tokens are stored as given",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Store only a hash of the token (SHA-256 is enough for a random 32-byte value; no bcrypt needed) in a `token_hash` column with a unique index, and look it up with `WHERE token_hash = $1` on the hash of the presented token — still an indexed equality, so the stated reason for storing it in clear does not hold. Anyone who reads the table today (a database backup, a replica, a read-only analyst account, an SQL injection elsewhere in the service) gets every user's live bearer credentials and can call the API as them, the same exposure the proposal's Why sets out to remove (CWE-312, CWE-256). Keep a short non-secret prefix if support needs to identify a token. Update task 1.1 and the spec (\"shown once\") accordingly.",
+        "recommendation": "Store only a digest of the token (SHA-256 of the 32 random bytes is enough for high-entropy tokens; no bcrypt needed) in a `token_hash` column with a unique index, hash the presented bearer token in the middleware and look it up with `WHERE token_hash = $1` — still a single indexed equality, so the stated performance reason does not require clear storage. Anyone who reads the `api_tokens` table (a database backup, a replica, a read-only SQL access, an injection elsewhere) otherwise obtains every live bearer credential and can call the API as each user (CWE-312, CWE-256). Show the clear token once at creation, as the spec already requires, and never persist it. Update the design's Alternatives and task 1.1/1.2 accordingly.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -82,18 +159,18 @@
           }
         ],
         "id": "R-security-2",
-        "line": 41,
+        "line": 37,
         "location": "design.md#Decision: Every request is logged with its headers",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Redact `Authorization` (and `Cookie`, `Set-Cookie`, `Proxy-Authorization`) before logging; to let support see which token was sent, log the token's non-secret prefix or its id after lookup. As designed, anyone with access to the logs — support staff, the log aggregation service, a leaked log archive — copies a live token from any request line and replays it in `Authorization: Bearer` to act as that user (CWE-532). Task 1.3's test `logs_requests` should assert the header is redacted.",
+        "recommendation": "Never log the `Authorization` header (nor `Cookie` / other credential headers): redact it to its scheme (`Bearer [redacted]`) or log a non-reversible identifier of the token (its row id or a short prefix of its hash) so support can still tell which token was sent. As designed, anyone with read access to the info-level logs — support staff, the log pipeline, a log aggregation vendor — collects every user's bearer token and can replay it against the API (CWE-532); with revocation deferred, a token leaked this way stays valid forever. Task 1.3's test `logs_requests` should assert that the token value never appears in the log output.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The Authorization header, with the bearer token, is logged at info level"
+        "title": "The Authorization header, and so every API token, is written to the logs"
       },
       {
         "awaiting": "author",
@@ -109,45 +186,18 @@
           }
         ],
         "id": "R-security-3",
-        "line": 64,
+        "line": 62,
         "location": "design.md#Goals / Non-Goals",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Ship at least a way to delete one's own token (or an expiry) with this change, or record the gap under Risks / Trade-offs with who decides it. The proposal's Why is that \"a leaked integration exposes the account\"; with this plan, once a token leaks (for instance through R-security-2's logs) the holder keeps full account access indefinitely and, unlike a password, the user has no way to change or cut it off. The Risks section only covers a lost token, not a leaked one.",
+        "recommendation": "The proposal's own motivation is that \"a leaked integration exposes the account\", yet with revocation deferred and no expiry in the design, a token that leaks (through the logs of R-security-2, a compromised integration, or the table of R-security-1) grants permanent API access as the user, and changing the password does not stop it. Either ship a minimal delete of the user's own tokens with this change, or give tokens an expiry (`expires_at` checked by the middleware) until the revocation change lands; the Risks entry \"revoking the old one comes with the later revocation change\" should state this exposure explicitly if the deferral is kept.",
         "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A leaked token cannot be revoked and never expires"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "The service SHALL let a signed-in user create an API token, shown once, and SHALL accept it in the `Authorization: Bearer` header of later requests.\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-4",
-        "line": 85,
-        "location": "specs/api-tokens/spec.md#Requirement: A user creates an API token",
-        "raisedBy": [
-          "security"
-        ],
-        "recommendation": "State whether \"signed-in\" includes a request authenticated by an API token. If it does, a stolen token can mint further tokens that survive any later revocation of the first one; require a password session (or a re-authentication) for the creation endpoint and add a scenario for it. Recorded with low confidence: the plan does not show the creation endpoint nor how the middleware marks a session as signed in.",
-        "reported": false,
-        "role": "security",
-        "severity": "medium",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "Authorization of token creation is not specified"
+        "title": "A leaked token can never be invalidated: no revocation and no expiry"
       }
     ],
     "format": 1,
@@ -165,14 +215,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "security",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "security",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           }
         ],
         "step": "plan.challenge",

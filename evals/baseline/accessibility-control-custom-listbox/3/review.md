@@ -8,25 +8,23 @@ Mode: inline.
 
 ### accessibility
 
-#### R-accessibility-1 Focus and highlighted-option styles are not in the change
+#### R-accessibility-1 Highlighted option's visible indicator depends on an unshipped style
+
 ```yaml
-severity: low
+severity: medium
 confidence: low
 location: "src/components/SizePicker.tsx:92"
 evidence: |
   className={index === active ? "option option--active" : "option"}
 recommendation: >-
-  The repository holds no stylesheet for `size-picker`, `option` or
-  `option--active`, so it cannot be verified from the change that the
-  combobox shows a visible focus (WCAG 2.4.7 Focus Visible) or that the
-  option highlighted with the arrow keys is visually distinct with enough
-  contrast (WCAG 1.4.11 Non-text Contrast); nor that the button and options
-  meet the target size the proposal's phone users need (WCAG 2.5.8 Target
-  Size (Minimum)). Check the styles where they live: a focus ring on the
-  `role="combobox"` element, a highlight on `.option--active` that does not
-  rely on colour alone, and option rows of at least 24 by 24 CSS pixels. If
-  the list scrolls, keep the active option scrolled into view (WCAG 2.4.11
-  Focus Not Obscured (Minimum)).
+  With aria-activedescendant, DOM focus stays on the combobox, so the class
+  `option--active` is the only thing that shows a sighted keyboard user which
+  size ArrowUp/ArrowDown, Home/End have reached before Enter, Space or Tab
+  commits it. No stylesheet in the repository defines `.option--active` (nor
+  `.size-picker`), so check that the shipped CSS gives it a visible indicator
+  with at least 3:1 contrast against the unhighlighted options, and that the
+  combobox keeps a visible focus outline (WCAG 2.4.7 Focus Visible,
+  1.4.11 Non-text Contrast).
 history:
   - status: open
     by: accessibility

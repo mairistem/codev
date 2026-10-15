@@ -2,22 +2,86 @@
   "format": 2,
   "case": "privacy-control-ids-in-logs",
   "error": null,
-  "costUsd": 0.284116,
-  "durationMs": 29090,
+  "costUsd": 0.3011096,
+  "durationMs": 24450,
   "consumption": {
-    "durationApiMs": 28217,
-    "turns": 7,
-    "permissionDenials": 1,
+    "durationApiMs": 24322,
+    "turns": 6,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
       "input": 1189,
-      "cacheCreation": 25727,
-      "cacheRead": 232525,
-      "output": 1542
-    }
+      "cacheCreation": 26434,
+      "cacheRead": 230913,
+      "output": 2125
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7408,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7408
+        }
+      },
+      {
+        "cacheCreation": 11771,
+        "cacheRead": 29547,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11771
+        }
+      },
+      {
+        "cacheCreation": 1268,
+        "cacheRead": 41318,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1268
+        }
+      },
+      {
+        "cacheCreation": 4547,
+        "cacheRead": 42586,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 4547
+        }
+      },
+      {
+        "cacheCreation": 1057,
+        "cacheRead": 47133,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1057
+        }
+      },
+      {
+        "cacheCreation": 383,
+        "cacheRead": 48190,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 383
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,7 +96,35 @@
     },
     "changeName": "log-fulfilment-batches",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "log.info(\"order shipped order_id=%s parcels=%s\", order_id, parcels)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/fulfilment.py:26",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The log line itself is minimal — an opaque order id and a parcel count, which the stated purpose (telling a customer whether their pickup was booked) needs; no name, address or e-mail is logged. But the order id links each line to a customer, and neither the proposal nor the repository states how long these fulfilment logs are kept or that they are purged (GDPR Art. 5(1)(e), storage limitation). The log sink and its retention are not visible here: confirm the retention period of the logs that receive these lines, and state it in the proposal.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No retention stated for the order ids the new log lines keep"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/log-fulfilment-batches/review.md",
@@ -60,7 +152,7 @@
             "credited": [],
             "fallback": null,
             "role": "privacy",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

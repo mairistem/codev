@@ -2,22 +2,76 @@
   "format": 2,
   "case": "ops-code-retry-without-backoff",
   "error": null,
-  "costUsd": 0.3445578,
-  "durationMs": 35190,
+  "costUsd": 0.29124,
+  "durationMs": 25064,
   "consumption": {
-    "durationApiMs": 34547,
-    "turns": 9,
+    "durationApiMs": 25180,
+    "turns": 5,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1181,
-      "cacheCreation": 27641,
-      "cacheRead": 283734,
-      "output": 3285
-    }
+      "input": 1177,
+      "cacheCreation": 25654,
+      "cacheRead": 187905,
+      "output": 2373
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7411,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7411
+        }
+      },
+      {
+        "cacheCreation": 14017,
+        "cacheRead": 29550,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14017
+        }
+      },
+      {
+        "cacheCreation": 1809,
+        "cacheRead": 43567,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1809
+        }
+      },
+      {
+        "cacheCreation": 1897,
+        "cacheRead": 45376,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1897
+        }
+      },
+      {
+        "cacheCreation": 520,
+        "cacheRead": 47273,
+        "input": 2,
+        "output": 192,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 520
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -26,6 +80,10 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (A dropped webhook is only logged at debug level, as free text) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -47,23 +105,23 @@
           }
         ],
         "id": "R-ops-1",
-        "line": 15,
+        "line": 11,
         "location": "src/webhooks.ts:9-23",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Wait between attempts with an exponential backoff and jitter (for example 1s, 2s, 4s, 8s), so retries are spaced as the operations criterion requires. Today, when a merchant's server is down or overloaded (a 503 or a connection refused), the five attempts land within a few hundred milliseconds: they hammer a server that is already failing, and an outage of even a few seconds exhausts every attempt and drops the event for good. The retry is bounded and idempotent (x-event-id), so only the spacing is missing. Consider also not retrying 4xx responses other than 408/429.",
+        "recommendation": "Wait between attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s, capped), and do not retry responses that will not change on a retry (4xx other than 408/429). Scenario: a merchant endpoint returns 503 during a 10-second restart; each non-ok response loops straight into the next attempt, so all five POSTs are spent within the outage and the event is dropped, while a merchant under load receives five requests in a burst. The retries are bounded and deduplicated by `x-event-id`, but the step's criterion requires them to be spaced.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Webhook retries fire back to back, with no backoff"
+        "title": "Webhook retries fire back-to-back with no backoff"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "    if (response.ok) {\n      return true;\n    }\n  } catch (error) {\n    console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n  }\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
+        "evidence": "console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n}\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\nreturn false;\n",
         "history": [
           {
             "by": "ops",
@@ -74,18 +132,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 39,
-        "location": "src/webhooks.ts:17-24",
+        "line": 35,
+        "location": "src/webhooks.ts:20-25",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Use the project's structured logger (src/logger.ts, as src/events.ts does) instead of console.debug: log each failed attempt with fields (eventId, paymentId, attempt, status or error) — including non-ok HTTP responses, which today produce no log line at all — and log the final drop at error level with the event id, payment id and last status. When a merchant endpoint answers 500 five times, the operator today sees only a debug-level prose line with no status and no merchant, and cannot query or alert on dropped webhooks.",
+        "recommendation": "Log the final drop at error (and each failed attempt at warn) through the service's structured logger, with fields such as `eventId`, `paymentId`, merchant id, `attempt`, the HTTP status or error, and the outcome, and count drops in a metric an alert can watch. Scenario: a merchant's endpoint is down for an hour; every settlement notification is permanently lost, but the only trace is a `console.debug` line, which production log levels usually discard, so neither the operator nor the merchant learns the payment was never notified. Non-ok responses (lines 17-19) leave no trace at all: the status code a merchant returned is never logged, so even with debug on an operator cannot tell a 500 from a 404. `deliver` returns `false` but the caller at line 34 ignores it, so the drop is silent end to end.",
         "reported": true,
         "role": "ops",
-        "severity": "medium",
+        "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Failed and dropped deliveries are logged with console.debug in free text, and HTTP errors not at all"
+        "title": "A dropped webhook is only logged at debug level, as free text"
       }
     ],
     "format": 1,
@@ -114,14 +172,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "newcomer",
-            "state": "disabled"
+            "role": "ops",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "ops",
-            "state": "findings"
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

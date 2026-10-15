@@ -1,0 +1,339 @@
+{
+  "format": 2,
+  "case": "plan-declarative-roles",
+  "error": null,
+  "costUsd": 1.6913406,
+  "durationMs": 282233,
+  "consumption": {
+    "durationApiMs": 280485,
+    "turns": 34,
+    "permissionDenials": 4,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 86867,
+      "cacheRead": 2129518,
+      "output": 28473
+    },
+    "toolCalls": 33,
+    "orientationCalls": 15,
+    "calls": [
+      {
+        "cacheCreation": 7800,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7800
+        }
+      },
+      {
+        "cacheCreation": 14338,
+        "cacheRead": 29939,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14338
+        }
+      },
+      {
+        "cacheCreation": 2389,
+        "cacheRead": 44277,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2389
+        }
+      },
+      {
+        "cacheCreation": 1501,
+        "cacheRead": 46666,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1501
+        }
+      },
+      {
+        "cacheCreation": 6692,
+        "cacheRead": 48167,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6692
+        }
+      },
+      {
+        "cacheCreation": 384,
+        "cacheRead": 54859,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 384
+        }
+      },
+      {
+        "cacheCreation": 2896,
+        "cacheRead": 55243,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 36,
+          "search": 2860
+        }
+      },
+      {
+        "cacheCreation": 4520,
+        "cacheRead": 58139,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4520
+        }
+      },
+      {
+        "cacheCreation": 2136,
+        "cacheRead": 62659,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2136
+        }
+      },
+      {
+        "cacheCreation": 3608,
+        "cacheRead": 64795,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3608
+        }
+      },
+      {
+        "cacheCreation": 2911,
+        "cacheRead": 68403,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2891,
+          "output": 20
+        }
+      },
+      {
+        "cacheCreation": 2204,
+        "cacheRead": 71314,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2204
+        }
+      },
+      {
+        "cacheCreation": 3145,
+        "cacheRead": 73518,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3145
+        }
+      },
+      {
+        "cacheCreation": 2841,
+        "cacheRead": 76663,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2841
+        }
+      },
+      {
+        "cacheCreation": 2969,
+        "cacheRead": 79504,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2969
+        }
+      },
+      {
+        "cacheCreation": 2423,
+        "cacheRead": 82473,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2423
+        }
+      },
+      {
+        "cacheCreation": 3148,
+        "cacheRead": 84896,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3130,
+          "output": 18
+        }
+      },
+      {
+        "cacheCreation": 4467,
+        "cacheRead": 88044,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4467
+        }
+      },
+      {
+        "cacheCreation": 1605,
+        "cacheRead": 92511,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1605
+        }
+      },
+      {
+        "cacheCreation": 1988,
+        "cacheRead": 94116,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1830,
+          "output": 159
+        }
+      },
+      {
+        "cacheCreation": 3151,
+        "cacheRead": 96104,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3151
+        }
+      },
+      {
+        "cacheCreation": 2225,
+        "cacheRead": 99255,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2200,
+          "output": 25
+        }
+      },
+      {
+        "cacheCreation": 4225,
+        "cacheRead": 101480,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 4225
+        }
+      },
+      {
+        "cacheCreation": 907,
+        "cacheRead": 105705,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 712,
+          "file": 195
+        }
+      },
+      {
+        "cacheCreation": 319,
+        "cacheRead": 106612,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 319
+        }
+      },
+      {
+        "cacheCreation": 435,
+        "cacheRead": 106931,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 435
+        }
+      },
+      {
+        "cacheCreation": 374,
+        "cacheRead": 107366,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 4,
+        "sources": {
+          "file": 374
+        }
+      },
+      {
+        "cacheCreation": 1266,
+        "cacheRead": 107740,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 291,
+          "edit": 888,
+          "output": 86
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/declarative-roles/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/declarative-roles/design.md": "# Design: Roles declared once as data, configurable per project and per change\n\n## Context\n\nToday a role exists only as prose, in three kinds of places:\n\n- the four artifact instructions of `assets/schemas/spec-driven/schema.yaml`\n  start with a hand-written `Role:` / `Done when:` block, asserted by\n  `spec_driven_instructions_start_with_a_role_block` in\n  `crates/codev-engine/src/instructions.rs`;\n- the workflow bodies under `assets/workflows/*.md`, embedded with\n  `include_str!` by `crates/codev-agents/src/workflows.rs`, restate each\n  step role's criteria (propose, apply, sync, archive, update, onboard,\n  configure, explore);\n- `docs/en/src/roles.md` and `docs/fr/src/roles.md` (plus `skills.md`,\n  `workflow.md`, `concepts.md`) restate them a third time, in two languages.\n\nConstraints that shape the approach:\n\n- `codev-core` is pure and returns plans; I/O stays in `codev-engine`\n  behind ports ([0001](../../decisions/0001-functional-core-imperative-shell.md),\n  [0002](../../decisions/0002-crate-graph-as-dependency-rule.md)).\n- The JSON contract lives in `codev-cli::contract::v1` and is consumed by\n  skills already installed in other repositories.\n- Inherited sources are read-only and only their context and rules are read\n  ([0005](../../decisions/0005-read-only-inherited-sources.md)).\n- YAML is parsed with `serde_norway`\n  ([0006](../../decisions/0006-serde-norway-for-yaml.md)).\n- `Schema` uses `deny_unknown_fields` on purpose; unknown top-level config\n  keys warn (`unknown_config_key`) while unknown keys in `inherits` and\n  `changelog` fail with `invalid`.\n- Contexts and rules are already merged \"general to specific\" with an\n  `origin` per block; roles reuse that vocabulary.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One declaration per role; every consumer — CLI output, instruction text,\n  skills, documentation — derives from it.\n- Project- and change-level settings to disable optional roles and to add\n  criteria, with visible origins.\n- Installed skills built from earlier versions keep working until\n  `codev update`.\n\n**Non-Goals**\n\n- Removing or rewording built-in criteria from configuration (a project\n  schema does that for artifact roles).\n- Defining new step roles or new steps from configuration.\n- Translating criteria: they stay in English, like the instructions.\n- Review modes, domain experts or sub-agent orchestration.\n\n## Decisions\n\n### Decision: Step roles live in one embedded asset, artifact roles in the schema\n\nA new `assets/roles.yaml` declares the eleven step roles (`id`, `name`,\n`question`, `steps`, `done_when`, `disableable`), embedded in\n`codev-engine` with `include_str!` as the built-in schema already is, and\nparsed by a pure `codev-core::roles` module with `deny_unknown_fields`. The\nfour `spec-driven` roles move from the instruction texts into a `roles:`\nlist of `schema.yaml`, and each artifact gains `role: <id>`. Artifact roles\nbelong to the schema because a project schema replaces the artifacts they\njudge; step roles belong to codev because the steps are codev's workflows.\nThis follows the schema's own principle — workflows are data, not code —\nand its `deny_unknown_fields` discipline.\n\n**Alternatives considered**:\n\n- *Every role in the schema*: a project schema would have to copy eleven\n  step roles to change one artifact, and would silently drop the skeptic\n  if it forgot it. Rejected.\n- *Roles as Rust constants*: the same single source, but editing a\n  criterion would need Rust, and the YAML stays the readable reference for\n  contributors. Rejected.\n\n### Decision: Settings merge in a pure function, by origin\n\n`codev-core::roles::resolve(declared, layers) -> ResolvedRoles` takes the\ndeclared roles and the ordered settings layers — inherited sources (in\ndeclaration order), project, change — and returns, per role, `enabled`\nwith the origin that set it, the criteria with their origins, plus\nwarnings (`unknown_role`) and errors (non-disableable role disabled). It\ntouches no file (decision 0001). `codev-engine` reads the layers: the `roles:` key\nof `_codev/config.yaml`, of each inherited source's configuration (only\n`done_when` is kept, the `enabled` keys are dropped there, in line with\ndecision 0005, which reads only context and rules from a source — criteria are\ntreated as rules), and of the change's `change.yaml`.\n\n`enabled` is \"last layer wins\" (change over project); `done_when`\naccumulates. This is the same model as `context` and `rules`, so the\n`origin` values (`built-in`, `schema:<name>`, `path:…`, `git:…`,\n`project`, `change`) need no new vocabulary.\n\n**Alternatives considered**:\n\n- *A top-level `disabled_roles: [...]` list plus a separate\n  `role_criteria:` map*: two keys for one concept, and a change cannot\n  re-enable. Rejected for a single `roles.<id>.{enabled, done_when}` map.\n- *Letting inherited sources disable roles*: an organization could\n  silently remove a team's skeptic; it also widens what is read from a\n  source beyond decision 0005's intent. Rejected.\n\n### Decision: Configuration errors follow the existing warn/fail split\n\n`roles` becomes a known top-level key. An unknown role id warns\n(`unknown_role`) — like `unknown_config_key`, it may come from a newer\ncodev or another schema, and ignoring it does not weaken the process. A\nmisspelled key inside a role entry, a wrongly typed value, or disabling a\nmandatory role fails with `invalid`, like an unknown `inherits` key,\nbecause ignoring it would silently drop a team criterion or pretend a step\nis off. `codev validate` attaches `unknown_role` findings to the existing\n`config` item and to the change item.\n\n**Alternatives considered**: failing on unknown ids — rejected, it would\nbreak every older codev reading a newer project.\n\n### Decision: `instruction` keeps its role block, rendered; `role` is added\n\n`codev instructions` renders `Role: <name> — <question>` and `Done when:`\nfrom the resolved role and prepends it to the schema's instruction text,\nand adds a structured `role` field (`RoleV1` in `contract::v1`, distinct\nfrom the core type). Skills installed before this change read the role\nblock from `instruction` and keep working — now with team criteria too;\nregenerated skills read `role`. The duplication is in the output, not in\nthe sources.\n\n**Alternatives considered**: dropping the block from `instruction` and\nrelying on `role` alone — cleaner output, but it silently strips criteria\nfrom every skill not yet updated. Rejected.\n\n### Decision: `codev roles` is a read-only command with a v1 document\n\nA new `Command::Roles { at, change, json }` in `codev-cli`, served by an\nengine function returning the resolved roles; the JSON is a new `RolesV1`\ndocument (`changeName`, `schemaName`, `at`, `roles`, `disabled`,\n`status`). An unknown `--at` fails with `unknown_step`, listing the known\nsteps, so a typo in a skill fails loudly instead of returning \"no role\"\nand being read as \"disabled\". Steps are a closed list owned by codev\n(`plan.understand`, `plan.investigate`, `plan.write`, `plan.trace`,\n`plan.challenge`, `code.implement`, `code.review`, `specs.maintain`,\n`update.revise`, `onboard`, `configure`, `explore`).\n\n**Alternatives considered**: folding roles into `codev status` or\n`codev instructions` — neither is called at every step (understand,\nchallenge, review), and the analyst runs before the change exists.\nRejected.\n\n### Decision: Skills call `codev roles --at`; the role prose leaves the workflows\n\nEach workflow body replaces its role paragraph by one shared fragment —\n\"run `codev roles --at <step> [--change <name>] --json`, apply every\ncriterion of every role returned; if `roles` is empty, skip the step and\nsay so in the summary\" — inserted the way `_update-notice.md` already is.\nSkills already have `Bash(codev:*)`, so no frontmatter change. A test in\n`codev-agents` asserts that no generated skill contains a role's\n`done_when` text and that each step name appears in a `codev roles --at`\ncall of its workflow.\n\n**Alternatives considered**: injecting the resolved criteria into\n`SKILL.md` at `codev update` time — the skill would then be stale as soon\nas a change sets its own `roles:`, which is the point of per-change\nsettings. Rejected.\n\n### Decision: The documentation's criteria are generated and checked\n\n`docs/{en,fr}/src/reference/roles.md` is generated from the declared\nroles (built-in and `spec-driven`): one section per role with its\nquestion, steps, whether it can be disabled and its criteria. A test\nregenerates it and compares with the committed file, failing with the\ncommand to refresh it. `roles.md`, `skills.md` and `workflow.md` keep the\nexplanation (what a role is, where you decide) and link to the reference\ninstead of restating criteria; the configuration reference documents\n`roles:`. Headings are localized; the criteria stay in English in both\neditions (stated as an assumption in the proposal).\n\n**Alternatives considered**: a test that only checks each role id appears\nin the docs — catches a missing role, not a drifting criterion. Rejected.\n\n## Risks / Trade-offs\n\n- [Installed skills older than this change keep their own role prose and\n  ignore `enabled: false` for step roles] → the release note asks for\n  `codev update`; the update notice already prompts it; artifact criteria\n  added by teams still reach old skills through the rendered `instruction`.\n- [A project schema that copied the old `spec-driven` instructions keeps\n  their hand-written `Role:` block, and gets a second one if it also\n  declares roles] → the custom schema guide tells authors to move the\n  block into `roles:`; without `roles:` nothing changes for them.\n- [Criteria in English inside a French documentation edition] → localized\n  headings and an explicit note; translation can come later without\n  touching the data model.\n- [Wording drift while moving prose into data — a criterion lost on the\n  way] → the move is a task of its own, verified by diffing the old\n  instruction blocks and workflow role paragraphs against\n  `codev roles --json`; the existing role-block assertions in\n  `instructions.rs` keep passing.\n- [`codev roles` called at every step adds one process per step] →\n  negligible: it reads the same files `codev instructions` reads.\n\n## Migration Plan\n\n- No data migration: a configuration without `roles:` behaves as today,\n  every role enabled with its current criteria.\n- Older codev binaries reading a configuration with `roles:` warn\n  `unknown_config_key` and keep working; projects that rely on it set\n  `codev_version` accordingly.\n- Rollback: removing `roles:` from the configuration and from `change.yaml`\n  files restores the default behavior.\n\n## Open Questions\n\n- Should the French documentation eventually carry translated criteria\n  (for instance a `name_fr` / `done_when_fr` in the declaration)? Deferred:\n  it changes neither the specs nor the shape of the settings.\n",
+    "_codev/changes/declarative-roles/proposal.md": "# Proposal: Roles declared once as data, configurable per project and per change\n\n## Why\n\nEach role — its question and its \"Done when\" criteria — is written in prose\nin several places: the `spec-driven` schema instructions, every workflow\nprompt under `assets/workflows/`, and the role tables of `docs/en` and\n`docs/fr`. Every edit has to be repeated by hand, and the copies already\ndrift. Teams also have no way to adapt roles to their process: they cannot\nturn off a review step they do not want, nor add their own criteria, either\nfor the whole project or for one sensitive change.\n\n## What Changes\n\n- Every role is declared once, as data: an identifier, a name, the question\n  it owns, the workflow steps it covers, its \"Done when\" criteria, and\n  whether a team may disable it. Step roles (analyst, investigator,\n  traceability checker, skeptic, developer, newcomer reviewer, maintainer of\n  the living specs, editor, guide, project setup analyst, thinking partner)\n  are built into codev; the four artifact roles of `spec-driven` (product\n  owner, QA analyst, architect, tech lead) are declared in that schema, and\n  each artifact names its role. A project schema may declare its own roles\n  the same way.\n- New command `codev roles`: lists every role with its effective criteria\n  and whether it is enabled, or, with `--at <step>`, only the roles of one\n  step; `--change <name>` applies that change's settings; `--json` follows\n  the v1 contract.\n- New `roles:` section in `_codev/config.yaml`, and the same section in a\n  change's `change.yaml`: per role id, `enabled: false` disables a role\n  that allows it, and `done_when:` adds criteria. Criteria accumulate from\n  general to specific — built-in or schema, inherited sources, project,\n  change — each tagged with its origin; for `enabled`, the change wins over\n  the project.\n- `codev instructions` gains a `role` field carrying the artifact's\n  effective role. The `Role:` / `Done when:` block at the start of\n  `instruction` is now rendered from that data, team criteria included, so\n  installed skills keep working.\n- The skills stop carrying role prose: at each step that has a role, they\n  ask `codev roles --at <step>` and apply what it returns. A step whose\n  roles are all disabled is skipped, and the skill says so in its summary.\n- Invalid role settings are caught: an unknown role id warns\n  (`unknown_role`), disabling a role that cannot be disabled or an unknown\n  key inside a role entry fails with `invalid`; `codev validate` reports\n  them.\n- The documentation's per-role criteria are replaced by a reference page\n  generated from the declared roles, checked by a test so it cannot drift.\n\n## Capabilities\n\n### New Capabilities\n\n- `roles` — the role declaration, the `codev roles` command, and the\n  `roles:` settings of the project configuration and of a change.\n\n### Modified Capabilities\n\n- `instructions` — the `role` field of `codev instructions`.\n- `skills` — the default schema's role block is rendered from declared\n  roles; skills consult `codev roles` at each role step and skip a step\n  disabled by configuration.\n- `schemas` — a schema may declare roles and name the role of each artifact.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `codev-core`: role model, merge of role settings by origin, validation\n  of settings (pure); schema model gains `roles` and `artifact.role`.\n- `codev-engine`: built-in role catalog embedded from a new asset file,\n  reading `roles:` from the configuration, inherited sources and\n  `change.yaml`; `instructions` builds the role block.\n- `codev-cli`: new `roles` command, new `RolesV1` document and a `role`\n  field on the instructions document in `contract::v1`.\n- `codev-agents` / `assets/workflows/*.md`: role prose replaced by\n  `codev roles --at <step>` calls; regenerated skills.\n- `assets/schemas/spec-driven/schema.yaml`: role blocks moved out of the\n  instructions into declared roles.\n- Documentation in `docs/en` and `docs/fr`: `roles.md`, `skills.md`,\n  `workflow.md`, `concepts.md`, the configuration and JSON output\n  references, the custom schema guide, and a new generated role reference\n  page; CHANGELOG.\n\n### Assumptions\n\nNo user was available to answer questions; these were decided and can be\nrevised before implementation:\n\n- \"Disable a role\" means its step is skipped. Roles that own an artifact,\n  or that guard a boundary (analyst, developer, maintainer of the living\n  specs, editor, guide, project setup analyst, thinking partner), cannot be\n  disabled; the investigator, the traceability checker, the skeptic and the\n  newcomer reviewer can.\n- Teams add criteria; they cannot remove or reword built-in ones. Rewording\n  needs a project schema.\n- \"For a precise change\" means the `roles:` section of that change's\n  `change.yaml`, with the same shape as the project's.\n- An inherited source contributes criteria only; its `enabled` settings are\n  ignored, as only its context and rules are read today.\n- Declared criteria stay in English, the language of codev's instructions;\n  the generated reference page is in English in both documentation\n  editions, around localized headings.\n\n## Domains\n\n- [ ] security — no input from outside the repository, no secret\n- [ ] personal-data\n- [ ] user-interface — CLI output only, no interface surface beyond a new command\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Added: Roles are now declared once and listed by the new `codev roles` command, with their question, steps and \"Done when\" criteria.\n- Added: A `roles:` section in `_codev/config.yaml`, or in a change's `change.yaml`, disables an optional role (investigator, traceability checker, skeptic, newcomer reviewer) or adds your own \"Done when\" criteria to any role.\n- Changed: `codev instructions` returns the artifact's role, team criteria included. Run `codev update` so your installed skills read roles from codev instead of carrying their own copy.\n",
+    "_codev/changes/declarative-roles/specs/instructions/spec.md": "## ADDED Requirements\n\n### Requirement: `codev instructions` carries the artifact's effective role\n\nThe JSON document of `codev instructions` SHALL carry `role`: `null` when\nthe artifact names no role in its schema, otherwise the role's `id`,\n`name`, `question` and `doneWhen` — its declared criteria followed by the\ncriteria added by inherited sources, the project and the change, each\n`{origin, text}`, as `codev roles --change <name>` returns them. When the\nartifact names a role, `instruction` SHALL start with a block rendered from\nthat role — `Role: <name> — <question>` then `Done when:` with one bullet\nper criterion of `doneWhen`, in the same order — followed by the schema's\ninstruction text. The human output SHALL show that block at the start of\n`Instruction:`.\n\n#### Scenario: The role of the tasks artifact\n\n- **GIVEN** a `spec-driven` change `add-auth` and a configuration adding the\n  criterion \"Every migration has a rollback task\" to `tech-lead`\n- **WHEN** the user runs `codev instructions tasks --change add-auth --json`\n- **THEN** `role.id` is `tech-lead`\n- **AND** the last entry of `role.doneWhen` is that criterion with the\n  origin `project`\n- **AND** `instruction` starts with `Role: tech lead` and its `Done when:`\n  list ends with that criterion\n\n#### Scenario: An artifact without a role\n\n- **GIVEN** a change using a project schema whose artifact `brief` names no\n  role\n- **WHEN** the user runs `codev instructions brief --change quick --json`\n- **THEN** `role` is `null`\n- **AND** `instruction` is the schema's text, with no `Role:` line added\n",
+    "_codev/changes/declarative-roles/specs/roles/spec.md": "## Purpose\n\nDeclare each role of codev's workflows — the question it owns, the steps it\ncovers and its \"Done when\" criteria — once, as data that the CLI serves to\nskills and documentation, and let a team disable an optional role or add its\nown criteria for the whole project or for one change.\n\n## ADDED Requirements\n\n### Requirement: Every role is declared once, with its question, steps and criteria\n\ncodev SHALL know a set of roles, each with an `id` (kebab-case, unique), a\n`name`, the `question` it owns, the `steps` it covers, its `doneWhen`\ncriteria and whether it is `disableable`. Step roles SHALL be built into\ncodev and cover these steps:\n\n| Role id | Steps | Disableable |\n|---|---|---|\n| `analyst` | `plan.understand` | no |\n| `investigator` | `plan.investigate` | yes |\n| `tracer` | `plan.trace` | yes |\n| `skeptic` | `plan.challenge` | yes |\n| `developer` | `code.implement` | no |\n| `newcomer` | `code.review` | yes |\n| `maintainer` | `specs.maintain` | no |\n| `editor` | `update.revise` | no |\n| `guide` | `onboard` | no |\n| `setup-analyst` | `configure` | no |\n| `thinking-partner` | `explore` | no |\n\nArtifact roles SHALL be declared by the change's schema; with `spec-driven`\nthey are `product-owner` (artifact `proposal`), `qa-analyst` (`specs`),\n`architect` (`design`) and `tech-lead` (`tasks`), all covering the step\n`plan.write` and none disableable. The criteria of a built-in role carry the\norigin `built-in`; those declared by a schema carry `schema:<schema name>`.\n\n#### Scenario: The built-in skeptic\n\n- **GIVEN** a project without any `roles:` setting\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `roles` holds one entry with `id` `skeptic`, a non-empty\n  `question`, `steps` `[\"plan.challenge\"]` and `disableable: true`\n- **AND** each of its `doneWhen` entries has the origin `built-in`\n\n#### Scenario: An artifact role comes from the schema\n\n- **GIVEN** a change `add-auth` using `spec-driven`\n- **WHEN** the user runs `codev roles --at plan.write --change add-auth --json`\n- **THEN** `roles` holds `product-owner`, `qa-analyst`, `architect` and\n  `tech-lead`, each with its `artifact`\n- **AND** their criteria carry the origin `schema:spec-driven`\n\n#### Scenario: A step without a role\n\n- **WHEN** the user runs `codev roles --at plan.unknown --json`\n- **THEN** the command fails with `unknown_step`, listing the known steps\n\n### Requirement: `codev roles` lists the effective roles\n\n`codev roles` SHALL list every role of the project — built-in roles, then\nthe roles of the schema (the change's schema with `--change`, otherwise the\nconfigured schema) — each with its effective criteria and an `enabled`\nflag. `--at <step>` SHALL restrict the output to the roles covering that\nstep. `--change <name>` SHALL apply that change's settings and schema. With\n`--json`, the document SHALL carry `changeName` (or `null`), `schemaName`,\n`at` (or `null`), `roles` — the enabled roles, each with `id`, `name`,\n`question`, `steps`, `artifact` (or `null`), `disableable` and `doneWhen`,\na list of `{origin, text}` — `disabled` — the disabled roles, each with its\n`id` and the `origin` of the setting that disabled it — and `status`, the\nconfiguration warnings. The command reads files and writes none, and exits\nwith code 0 on success.\n\nWithout `--json`, it SHALL print one block per role: its name and id, its\nquestion, its steps, then its criteria one per line prefixed by their\norigin in parentheses; a disabled role SHALL be printed as one line\nsaying it is disabled and by which origin.\n\n#### Scenario: Listing every role\n\n- **GIVEN** a project using `spec-driven` without `roles:` settings\n- **WHEN** the user runs `codev roles --json`\n- **THEN** `roles` holds the eleven built-in roles followed by the four\n  `spec-driven` roles\n- **AND** `disabled` is empty\n\n#### Scenario: Human output\n\n- **GIVEN** a project whose configuration adds a criterion to `tech-lead`\n- **WHEN** the user runs `codev roles --at plan.write`\n- **THEN** the `tech-lead` block shows the schema's criteria each prefixed\n  with `(schema:spec-driven)`, then the added one prefixed with `(project)`\n\n#### Scenario: Unknown change\n\n- **WHEN** the user runs `codev roles --change missing --json`\n- **THEN** the command fails with the codes of the change choice specified\n  by the `changes` capability\n\n### Requirement: A project or a change disables optional roles\n\nThe `roles:` section of `_codev/config.yaml`, and the `roles:` section of a\nchange's `change.yaml`, SHALL accept, per role id, `enabled: false` or\n`enabled: true`. A role whose effective `enabled` is `false` SHALL be listed\nunder `disabled` and not under `roles`, and a step whose roles are all\ndisabled SHALL return an empty `roles`. The change's setting SHALL win over\nthe project's. An `enabled` setting in an inherited source's configuration\nSHALL be ignored.\n\nSetting `enabled: false` on a role that is not disableable SHALL make every\ncommand that reads that setting fail with the code `invalid`, naming the\nrole and the file.\n\n#### Scenario: The project disables the skeptic\n\n- **GIVEN** a configuration holding `roles: {skeptic: {enabled: false}}`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `roles` is empty\n- **AND** `disabled` holds `skeptic` with the origin `project`\n\n#### Scenario: A change re-enables a role the project disabled\n\n- **GIVEN** a configuration disabling `skeptic`, and a change `payments`\n  whose `change.yaml` holds `roles: {skeptic: {enabled: true}}`\n- **WHEN** the user runs `codev roles --at plan.challenge --change payments --json`\n- **THEN** `roles` holds `skeptic`\n- **AND** without `--change`, `skeptic` is listed under `disabled`\n\n#### Scenario: A change disables a role for itself only\n\n- **GIVEN** a change `typo-fix` whose `change.yaml` disables `newcomer`\n- **WHEN** the user runs `codev roles --at code.review --change typo-fix --json`\n  and then the same command for another change\n- **THEN** the first lists `newcomer` under `disabled` with the origin\n  `change`\n- **AND** the second lists `newcomer` under `roles`\n\n#### Scenario: A mandatory role cannot be disabled\n\n- **GIVEN** a configuration holding `roles: {analyst: {enabled: false}}`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with the code `invalid`, naming `analyst` and\n  `_codev/config.yaml`\n\n#### Scenario: An inherited source cannot disable a role\n\n- **GIVEN** a project inheriting from a source whose configuration disables\n  `skeptic`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `roles` holds `skeptic`\n\n### Requirement: A project or a change adds \"Done when\" criteria\n\nPer role id, `roles.<id>.done_when` SHALL accept a list of strings, in\nthe configuration of an inherited source, of the project, and of a change.\nThe effective criteria of a role SHALL be its declared criteria, then the\nnon-blank added ones, trimmed, in this order: each inherited source in the\norder sources are declared (origin `path:<declared path>` or `git:<url>`),\nthe project (origin `project`), the change (origin `change`). Added\ncriteria SHALL never replace or remove declared ones. They SHALL apply to a\nrole whether or not it is disableable, and SHALL be kept, but not served,\nwhile the role is disabled.\n\n#### Scenario: Criteria from general to specific\n\n- **GIVEN** an inherited source `~/shared` adding \"Every public API change\n  is reviewed by the platform team\" to `tech-lead`, a project adding\n  \"Every migration has a rollback task\", and a change `payments` adding\n  \"The PCI checklist is linked\"\n- **WHEN** the user runs `codev roles --at plan.write --change payments --json`\n- **THEN** the `doneWhen` of `tech-lead` ends with these three criteria in\n  this order, with the origins `path:~/shared`, `project` and `change`\n\n#### Scenario: Blank criteria are ignored\n\n- **GIVEN** a configuration adding `[\"\", \"  \"]` to `skeptic`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `doneWhen` of `skeptic` holds only its built-in criteria\n\n### Requirement: Invalid role settings are reported\n\nA `roles:` entry naming an id that is neither a built-in role nor a role of\nthe applicable schema SHALL be ignored and reported as a warning with the\ncode `unknown_role`, naming the id and the file, in the `status` array of\ncommands that report configuration warnings. A key other than `enabled`\nand `done_when` inside a role entry, a `done_when` that is not a list of\nstrings, or an `enabled` that is not a boolean SHALL make every command\nthat reads that setting fail with the code `invalid`, naming the key and\nthe file. When validating the whole project, `codev validate` SHALL report\neach `unknown_role` of `_codev/config.yaml` as a `warning` finding of the\n`config` item, at the line of the id, and each `unknown_role` of a change's\n`change.yaml` as a `warning` finding of that change.\n\n#### Scenario: A misspelled role id\n\n- **GIVEN** a configuration holding `roles: {skeptik: {enabled: false}}`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** the command succeeds with `skeptic` enabled\n- **AND** `status` holds a warning `unknown_role` naming `skeptik`\n\n#### Scenario: A misspelled key inside a role entry\n\n- **GIVEN** a configuration holding `roles: {tech-lead: {done-when: [x]}}`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with the code `invalid`, naming `done-when`\n\n#### Scenario: Validation reports an unknown role\n\n- **GIVEN** a change `payments` whose `change.yaml` names the role\n  `auditor`, unknown to its schema\n- **WHEN** the user runs `codev validate --strict`\n- **THEN** the report holds a warning `unknown_role` for `payments`\n- **AND** the command fails because of the warning\n",
+    "_codev/changes/declarative-roles/specs/schemas/spec.md": "## ADDED Requirements\n\n### Requirement: A schema declares roles and names the role of each artifact\n\nA `schema.yaml` SHALL accept a top-level `roles:` list, each entry with\n`id`, `name`, `question` and `done_when` (a list of strings), and, on each\nartifact, an optional `role:` naming one of them. A schema role SHALL cover\nthe step `plan.write` and SHALL NOT be disableable. Besides the existing\nchecks, a schema SHALL be refused with `schema_invalid`, naming the schema\nand the reason, when:\n\n- a role id is not kebab-case, is declared twice, or is the id of a\n  built-in role;\n- a role has an empty `name`, `question` or `done_when`;\n- an artifact's `role` names a role the schema does not declare;\n- two artifacts name the same role.\n\nA role entry holding a key codev does not know SHALL be refused with\n`schema_unreadable`. A schema declaring no roles SHALL stay valid: its\nartifacts have no role.\n\n#### Scenario: A project schema with its own role\n\n- **GIVEN** a project schema `lite` declaring the role `scribe` and an\n  artifact `brief` with `role: scribe`\n- **WHEN** the user runs `codev roles --at plan.write --change quick --json`\n  on a change using `lite`\n- **THEN** `roles` holds `scribe` with `artifact` `brief` and criteria of\n  origin `schema:lite`\n\n#### Scenario: An artifact names an undeclared role\n\n- **GIVEN** a project schema whose artifact names `role: reviewer` and\n  which declares no role `reviewer`\n- **WHEN** it is read\n- **THEN** it is refused with `schema_invalid` naming `reviewer`\n\n#### Scenario: A schema role shadows a built-in role\n\n- **GIVEN** a project schema declaring a role `skeptic`\n- **WHEN** it is read\n- **THEN** it is refused with `schema_invalid` naming `skeptic`\n\n#### Scenario: A schema without roles\n\n- **GIVEN** a project schema declaring no `roles:` and no artifact `role:`\n- **WHEN** it is read\n- **THEN** it is accepted, and `codev roles --at plan.write` on a change\n  using it returns an empty `roles`\n",
+    "_codev/changes/declarative-roles/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The default schema gives each artifact a role with \"Done when\" criteria\n\nEach artifact of the embedded `spec-driven` schema SHALL name a role\ndeclared by that schema, and the instruction of each artifact, as returned\nby `codev instructions <artifact> --json`, SHALL start with a role block\nrendered from that role: a `Role:` line naming the role and what it owns,\nfollowed by a `Done when:` list of checkable criteria — the schema's, then\nthose the project and the change add. The roles are:\n\n- `proposal` — product owner, owns why and what;\n- `specs` — QA analyst, owns observable behavior;\n- `design` — architect, owns how;\n- `tasks` — tech lead, owns sequencing and verification.\n\nThe tech lead's criteria MUST require that the documentation affected by\nthe change is updated in a task, or that the plan states none is affected;\nthat every spec scenario is covered by an automated test written in a task,\na manual check being acceptable only when automation is impossible and with\nthe reason stated; and that tests follow the project's existing test suite,\nthe testing conventions of its language, and its `rules`. The `proposal`\ninstruction MUST ask the Impact section to name the affected documentation,\nand MUST describe a `## Release note` section, after `## Impact`: bullets\n`- <Category>: <text>` with Category among `Added`, `Changed`,\n`Deprecated`, `Removed`, `Fixed` and `Security`, breaking items starting\nwith `**BREAKING**`, or the single line `None` for an internal change. The\nproduct owner's criteria MUST require that the release note is written for\nend users, categorized, with breaking items marked, or `None`. The\nembedded proposal template MUST carry the `## Release note` section. The\narchitect's criteria MUST require that the approach is the simplest that\nsatisfies the specs, and that a newcomer can follow the design without\nknowing its history.\n\nThe rest of each instruction MUST stay as before. The criteria MUST be\nwritten once, in the schema's role declarations: the schema's instruction\ntexts MUST NOT repeat them. A custom schema's instructions MUST be\nreturned as written, without any role block added by codev, unless its\nartifact names a role the schema declares.\n\n#### Scenario: The proposal instruction starts with the product owner role\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `instruction` starts with `Role: product owner`\n- **AND** it contains a `Done when:` list that includes marking every\n  breaking change with **BREAKING**\n- **AND** it asks the Impact section to name the affected documentation\n- **AND** its `Done when:` list requires a release note written for end\n  users, categorized, with breaking items marked, or `None`\n- **AND** `template` has a `## Release note` section after `## Impact`\n\n#### Scenario: The tasks criteria cover every spec scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `instruction` starts with `Role: tech lead`\n- **AND** its `Done when:` list requires every spec scenario to be covered\n  by at least one task's verification\n\n#### Scenario: The tasks criteria require documentation and automated tests\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires the affected documentation to be\n  updated in a task, or the plan to state that none is affected\n- **AND** it requires every spec scenario to be covered by an automated\n  test, a manual check only when automation is impossible, with the reason\n- **AND** it requires tests to follow the project's existing test suite,\n  the conventions of its language and its `rules`\n\n#### Scenario: The design criteria require the simplest approach\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions design --change <name> --json`\n- **THEN** `instruction` starts with `Role: architect`\n- **AND** its `Done when:` list requires the approach to be the simplest\n  that satisfies the specs, and the design to be followable by a newcomer\n  without knowing its history\n\n#### Scenario: A team criterion joins the role block\n\n- **GIVEN** a change `payments` using `spec-driven`, whose `change.yaml`\n  adds the criterion \"The PCI checklist is linked\" to `architect`\n- **WHEN** the user runs `codev instructions design --change payments --json`\n- **THEN** the `Done when:` list of `instruction` ends with that criterion\n- **AND** the same command for another change does not show it\n\n#### Scenario: A custom schema gets no role block\n\n- **GIVEN** a change using a project schema whose artifact names no role\n  and whose instruction has no role block\n- **WHEN** the user runs `codev instructions <artifact> --change <name>\n  --json`\n- **THEN** `instruction` is the schema's text, with no `Role:` line added\n\n## ADDED Requirements\n\n### Requirement: Skills apply the roles codev serves at each step\n\nThe installed skills SHALL NOT carry the question or the \"Done when\"\ncriteria of a role. At each step that has a role — `plan.understand`,\n`plan.investigate`, `plan.trace` and `plan.challenge` in `propose`,\n`code.implement` and `code.review` in `apply`, `specs.maintain` in `sync`\nand `archive`, `update.revise` in `update`, `onboard`, `configure` and\n`explore` — the skill SHALL run `codev roles --at <step>`, with\n`--change <name>` once the change exists, and apply every criterion of\nevery role returned, the project's and the change's included. When\nwriting an artifact, the skill SHALL apply the criteria of the `role`\nreturned by `codev instructions`.\n\n#### Scenario: A project criterion reaches the skeptic\n\n- **GIVEN** a configuration adding \"Every new dependency names its\n  licence\" to `skeptic`\n- **WHEN** `/codev-propose` reaches the challenge step\n- **THEN** the plan is checked against that criterion along with the\n  built-in ones\n\n#### Scenario: The skill text holds no role criteria\n\n- **WHEN** `codev update` regenerates the skills\n- **THEN** no installed skill contains a `Done when` list of a role\n- **AND** each step with a role holds a `codev roles --at <step>` call\n\n### Requirement: A step whose roles are all disabled is skipped\n\nWhen `codev roles --at <step>` returns an empty `roles` because the\nstep's roles are disabled by configuration, the skill SHALL skip that step\nand SHALL name it in its final summary as disabled by configuration. The\nrequirements on the investigation, the traceability check and the\ncontrarian pass of `propose`, and on the newcomer review of `apply`, SHALL\napply only while their role is enabled. In particular, a `propose` run\nwhose `skeptic` is disabled SHALL say \"The skeptic is disabled by\nconfiguration\" in place of the \"Points to challenge\" block. A role that is\nnot disableable can never be skipped this way.\n\n#### Scenario: The project disables the traceability check\n\n- **GIVEN** a configuration holding `roles: {tracer: {enabled: false}}`\n- **WHEN** the user runs `/codev-propose`\n- **THEN** no traceability check runs\n- **AND** the summary names the step `plan.trace` as disabled by\n  configuration\n\n#### Scenario: A change skips the newcomer review\n\n- **GIVEN** a change whose `change.yaml` disables `newcomer`\n- **WHEN** `/codev-apply` has checked every task of that change\n- **THEN** it runs the full test suite without a newcomer review\n- **AND** its summary says the newcomer review is disabled by\n  configuration instead of giving Readability notes\n\n#### Scenario: The skeptic is disabled\n\n- **GIVEN** a configuration disabling `skeptic`\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary says \"The skeptic is disabled by configuration\"\n- **AND** holds no \"Points to challenge\" block\n"
+  },
+  "validate": {
+    "declarative-roles": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "declarative-roles",
+          "path": "_codev/changes/declarative-roles"
+        }
+      ],
+      "status": []
+    }
+  }
+}

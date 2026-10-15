@@ -1,0 +1,645 @@
+{
+  "format": 2,
+  "case": "plan-fix-core-command-edge-cases",
+  "error": null,
+  "costUsd": 2.2385520000000003,
+  "durationMs": 215780,
+  "consumption": {
+    "durationApiMs": 391557,
+    "turns": 19,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1220,
+      "cacheCreation": 148436,
+      "cacheRead": 2804200,
+      "output": 33914
+    },
+    "toolCalls": 60,
+    "orientationCalls": 45,
+    "calls": [
+      {
+        "cacheCreation": 7843,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7843
+        }
+      },
+      {
+        "cacheCreation": 14344,
+        "cacheRead": 29982,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14344
+        }
+      },
+      {
+        "cacheCreation": 1126,
+        "cacheRead": 44326,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1126
+        }
+      },
+      {
+        "cacheCreation": 1233,
+        "cacheRead": 45452,
+        "input": 2,
+        "output": 27,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 1161,
+          "output": 72
+        }
+      },
+      {
+        "cacheCreation": 12695,
+        "cacheRead": 0,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 12478,
+          "output": 217
+        }
+      },
+      {
+        "cacheCreation": 1013,
+        "cacheRead": 46685,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1013
+        }
+      },
+      {
+        "cacheCreation": 3832,
+        "cacheRead": 12695,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3832
+        }
+      },
+      {
+        "cacheCreation": 3553,
+        "cacheRead": 47698,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3553
+        }
+      },
+      {
+        "cacheCreation": 847,
+        "cacheRead": 16527,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 822,
+          "output": 25
+        }
+      },
+      {
+        "cacheCreation": 4603,
+        "cacheRead": 17374,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "search": 4603
+        }
+      },
+      {
+        "cacheCreation": 897,
+        "cacheRead": 51251,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 897
+        }
+      },
+      {
+        "cacheCreation": 4603,
+        "cacheRead": 17374,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 4603
+        }
+      },
+      {
+        "cacheCreation": 897,
+        "cacheRead": 51251,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 897
+        }
+      },
+      {
+        "cacheCreation": 4603,
+        "cacheRead": 17374,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4603
+        }
+      },
+      {
+        "cacheCreation": 4691,
+        "cacheRead": 21977,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "search": 4691
+        }
+      },
+      {
+        "cacheCreation": 357,
+        "cacheRead": 52148,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 357
+        }
+      },
+      {
+        "cacheCreation": 4691,
+        "cacheRead": 21977,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4691
+        }
+      },
+      {
+        "cacheCreation": 1460,
+        "cacheRead": 52505,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1460
+        }
+      },
+      {
+        "cacheCreation": 1291,
+        "cacheRead": 53965,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1291
+        }
+      },
+      {
+        "cacheCreation": 3534,
+        "cacheRead": 26668,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3534
+        }
+      },
+      {
+        "cacheCreation": 1509,
+        "cacheRead": 55256,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1509
+        }
+      },
+      {
+        "cacheCreation": 2095,
+        "cacheRead": 30202,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2095
+        }
+      },
+      {
+        "cacheCreation": 1509,
+        "cacheRead": 55256,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1509
+        }
+      },
+      {
+        "cacheCreation": 2095,
+        "cacheRead": 30202,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2095
+        }
+      },
+      {
+        "cacheCreation": 8233,
+        "cacheRead": 56765,
+        "input": 2,
+        "output": 61,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8233
+        }
+      },
+      {
+        "cacheCreation": 2494,
+        "cacheRead": 32297,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2445,
+          "output": 49
+        }
+      },
+      {
+        "cacheCreation": 8233,
+        "cacheRead": 56765,
+        "input": 2,
+        "output": 61,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 8233
+        }
+      },
+      {
+        "cacheCreation": 720,
+        "cacheRead": 34791,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 720
+        }
+      },
+      {
+        "cacheCreation": 4577,
+        "cacheRead": 64998,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4577
+        }
+      },
+      {
+        "cacheCreation": 611,
+        "cacheRead": 69575,
+        "input": 2,
+        "output": 44,
+        "toolCalls": 0,
+        "sources": {
+          "search": 611
+        }
+      },
+      {
+        "cacheCreation": 806,
+        "cacheRead": 35511,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "output": 806
+        }
+      },
+      {
+        "cacheCreation": 611,
+        "cacheRead": 69575,
+        "input": 2,
+        "output": 44,
+        "toolCalls": 1,
+        "sources": {
+          "file": 611
+        }
+      },
+      {
+        "cacheCreation": 721,
+        "cacheRead": 36317,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 721
+        }
+      },
+      {
+        "cacheCreation": 291,
+        "cacheRead": 70186,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 291
+        }
+      },
+      {
+        "cacheCreation": 1308,
+        "cacheRead": 37038,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 1308
+        }
+      },
+      {
+        "cacheCreation": 2947,
+        "cacheRead": 38346,
+        "input": 2,
+        "output": 50,
+        "toolCalls": 3,
+        "sources": {
+          "search": 2947
+        }
+      },
+      {
+        "cacheCreation": 9078,
+        "cacheRead": 41293,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 9041,
+          "output": 37
+        }
+      },
+      {
+        "cacheCreation": 1186,
+        "cacheRead": 50371,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1186
+        }
+      },
+      {
+        "cacheCreation": 1813,
+        "cacheRead": 51557,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1813
+        }
+      },
+      {
+        "cacheCreation": 3814,
+        "cacheRead": 53370,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3814
+        }
+      },
+      {
+        "cacheCreation": 2270,
+        "cacheRead": 57184,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2270
+        }
+      },
+      {
+        "cacheCreation": 861,
+        "cacheRead": 59454,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "search": 861
+        }
+      },
+      {
+        "cacheCreation": 1680,
+        "cacheRead": 60315,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 625,
+          "search": 1055
+        }
+      },
+      {
+        "cacheCreation": 1117,
+        "cacheRead": 61995,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 1117
+        }
+      },
+      {
+        "cacheCreation": 4342,
+        "cacheRead": 70477,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 4342
+        }
+      },
+      {
+        "cacheCreation": 3224,
+        "cacheRead": 74819,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3224
+        }
+      },
+      {
+        "cacheCreation": 3125,
+        "cacheRead": 78043,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3125
+        }
+      },
+      {
+        "cacheCreation": 2166,
+        "cacheRead": 81168,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2166
+        }
+      },
+      {
+        "cacheCreation": 2491,
+        "cacheRead": 83334,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2491
+        }
+      },
+      {
+        "cacheCreation": 3121,
+        "cacheRead": 85825,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 2979,
+          "edit": 142
+        }
+      },
+      {
+        "cacheCreation": 3971,
+        "cacheRead": 88946,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3406,
+          "output": 566
+        }
+      },
+      {
+        "cacheCreation": 4292,
+        "cacheRead": 92917,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 4124,
+          "edit": 168
+        }
+      },
+      {
+        "cacheCreation": 2006,
+        "cacheRead": 97209,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1754,
+          "edit": 215,
+          "output": 37
+        }
+      },
+      {
+        "cacheCreation": 1374,
+        "cacheRead": 99215,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1374
+        }
+      },
+      {
+        "cacheCreation": 860,
+        "cacheRead": 100589,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "file": 860
+        }
+      },
+      {
+        "cacheCreation": 3914,
+        "cacheRead": 101449,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3652,
+          "output": 262
+        }
+      },
+      {
+        "cacheCreation": 1270,
+        "cacheRead": 105363,
+        "input": 2,
+        "output": 50,
+        "toolCalls": 2,
+        "sources": {
+          "output": 24,
+          "search": 1246
+        }
+      },
+      {
+        "cacheCreation": 830,
+        "cacheRead": 106633,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 390,
+          "edit": 328,
+          "output": 112
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/fix-core-command-edge-cases/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/fix-core-command-edge-cases/design.md": "# Design: Fix edge cases found while specifying the core commands\n\n## Context\n\nWhat the code does today, as read (nothing was run):\n\n- **Capability listing.** `codev-engine/src/specs.rs` `list` walks every\n  file under `_codev/specs/` and keeps those for which\n  `relative.strip_suffix(\"spec.md\")` succeeds. The match has no `/`\n  boundary: `old-spec.md` yields the capability `old-`, and\n  `user-auth/draft-spec.md` yields `user-auth/draft-`. `README.md` is\n  already ignored (test `ignores_what_is_not_a_spec`).\n  `validate/mod.rs` `validate_all` then calls `validate_spec` on that\n  capability; reading `_codev/specs/old-/spec.md` fails with\n  `EngineError::Unreadable`, and the `?` in the loop aborts the whole run.\n  `codev-cli/src/commands.rs` reaches the same path through\n  `validate --specs` and `validate <name>`; `list --specs` only prints the\n  bogus name.\n- **Schema resolution.** `codev-engine/src/schemas.rs` `resolve(name)`\n  finds `_codev/schemas/<name>/schema.yaml` by folder and parses it with\n  `ArtifactGraph::from_yaml`, which only checks that `name` is kebab-case\n  (`codev-core/src/schema.rs`). `ResolvedSchema::name()` returns the YAML\n  `name`, and `commands::new_change` records it in `change.yaml`\n  (`ChangeMetadata::new(resolved.name(), …)`). `change::load` later\n  resolves that recorded name as a folder and fails with\n  `schema_not_found`. `schemas::list` names project schemas after their\n  folder.\n- **Change names.** `codev-core/src/id.rs` `ChangeId::parse` only applies\n  `kebab_violation`, which `is_kebab_case` shares with schema names and\n  artifact ids. `archive` passes; `new_change` creates it when\n  `_codev/changes/archive/` does not exist yet, and `change::list` then\n  hides it (`filter(|name| name != \"archive\")`). The folder name lives in\n  the private `ARCHIVE_DIR` of `codev-core/src/layout.rs`.\n- **JSON paths.** `codev-cli/src/contract.rs` has a private\n  `to_slash(&Path) -> String` (`to_string_lossy().replace('\\\\', \"/\")`),\n  used by `validate`, `sync`, `archive`, `doctor` steps and\n  `dependencies[].path`. About thirty other fields go through\n  `display().to_string()` in `contract.rs` and `main.rs`:\n  `resolvedOutputPath`, `StatusV1`'s `planningHome`/`changeRoot` (built in\n  `main.rs` and passed as `String`), `NewChangeV1.changeRoot`, `created`\n  (`main.rs` `fn paths`), the `root` of `list`/`schemas`/`init`/…, and the\n  `path`/`newPath`/`oldPath`/`designPath` of the `decision` commands.\n  The JSON reference already promises portable paths; the code breaks it.\n\nConstraints: decision 0001 (the core decides, without I/O) and 0002 (the\ncrate graph is the dependency rule); the JSON contract lives in\n`codev-cli::contract::v1` and never derives from the domain model.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Each of the four bugs is fixed where it originates, so every command\n  sharing the faulty code benefits.\n- Each fix is covered by a test reproducing the reported case.\n\n**Non-Goals**\n\n- Making `codev validate` report an unreadable main spec as a finding\n  instead of aborting. Once only real `spec.md` files are listed, the\n  reported crash cannot happen; an unreadable `spec.md` (permissions) is a\n  different problem.\n- A markdown file lying directly in a change's `specs/` folder (parsed as a\n  delta by `validate`, refused by `sync`). Separate behavior, separate\n  change.\n- Repairing changes already created with a mismatched schema.\n- Normalizing paths in human output: they are shown to a person on their\n  own OS.\n\n## Decisions\n\n### Decision: A capability is matched on the exact file name `spec.md`\n\nIn `specs::list`, keep a walked file only when its last path segment is\nexactly `spec.md`: the relative path is `spec.md` (root, ignored as today)\nor ends with `/spec.md`, and the capability is everything before that\n`/`. `walk_files` returns `/`-separated relative paths (the memory and real\nfile systems both normalize through `ports::to_slash`), so a string test on\n`/spec.md` is exact. Every consumer — `validate_all`, `validate --specs`,\n`validate <name>`, `list --specs`, the spec count of `doctor` —\ngoes through this function, so the fix is in one place.\n\n**Alternatives considered**: catching `Unreadable` in `validate_all` and\nturning it into a finding — it hides the wrong capability instead of not\ncreating it, and `list --specs` would still print `old-`.\n\n### Decision: A project schema whose `name` differs from its folder is `schema_invalid`\n\n`schemas::resolve` compares, for a project schema only, the parsed\n`graph.schema().name` with the folder name it was asked for, and returns\n`CoreError::SchemaInvalid { schema: <folder>, reason: \"its name `<yaml>`\ndiffers from its folder `<folder>`; rename one of them\" }`, surfaced with\nthe existing code `schema_invalid`. The check lives in the engine, not in\n`ArtifactGraph::from_yaml`: the core parses text and does not know where\nit came from (decision 0001). Because `codev schemas` builds each listed\nentry's flow through `resolve`, a mismatched schema becomes a\n`schema_unusable` warning there without further code, and `new_change`\nfails before `apply::execute` writes anything.\n\nAfter the check, the folder name and `resolved.name()` are equal, so\n`change.yaml` records a name that resolves.\n\n**Alternatives considered**:\n\n- Folder wins: record the requested name and ignore `name:`. It makes the\n  schema usable, but leaves a field that means nothing and contradicts the\n  custom-schemas guide, which already requires the folder's name.\n- A new error code `schema_name_mismatch`: more precise, but adds a code to\n  the public contract for a case `schema_invalid` already describes (\"a\n  schema file that is not valid, with the reason\").\n\n### Decision: `archive` is reserved in `ChangeId::parse`\n\n`ChangeId::parse` checks, after `kebab_violation`, that the name is not a\nreserved one, with the reason \"`archive` is reserved for the archived\nchanges\". The reserved name comes from `codev-core/src/layout.rs`\n(`ARCHIVE_DIR` made `pub(crate)`, or a `pub const RESERVED_CHANGE_NAMES`\nnext to it) so the folder and the rule cannot drift apart.\n`kebab_violation` and `is_kebab_case` stay unchanged: they also validate\nschema names and artifact ids, where `archive` is legitimate.\n\nSince every command taking `--change` parses it with `ChangeId::parse`,\n`--change archive` fails with `invalid_change_id` everywhere at once, and\n`change::list` keeps excluding the folder (its explicit filter can then go:\n`archive` no longer parses).\n\n**Alternatives considered**: a check in `new_change` only — `status\n--change archive` would keep treating the archive folder as a change.\n\n### Decision: Every JSON path goes through one `to_slash`\n\n`contract::to_slash` becomes `pub(crate)` and is the only way a path\nbecomes a JSON string. Every `display().to_string()` that produces a JSON\nfield in `contract.rs` and `main.rs` is replaced by it, including\n`fn paths` in `main.rs` (used for `created`) and the `String` arguments of\n`StatusV1::new`, which take `&Path` instead so the conversion happens\ninside the contract module. `commands::portable` (config paths) already\ndoes the same replacement and is left as is: it writes a file, not JSON.\n\nField names and shapes do not change, so the contract stays version 1; on\nUnix the output is byte-identical (`to_slash` keeps a leading `/` single,\nas its existing tests check).\n\nA test in `contract.rs` builds each affected document from a Windows-style\npath (`C:\\p\\_codev\\…`) and asserts the JSON holds no `\\`: string\nreplacement does not depend on the host OS, so it runs on Linux CI.\n\n**Alternatives considered**: a serde `serialize_with` on `PathBuf` fields —\nthe contract structs hold `String`s today, and changing their types widens\nthe diff for no behavior gain.\n\n## Risks / Trade-offs\n\n- [A project relies on a schema whose `name` differs from its folder, with\n  changes created before the mismatch appeared] → those changes already\n  fail with `schema_not_found`; the new message tells which name to fix.\n  The release note marks the refusal **BREAKING**.\n- [A Windows script compares JSON paths with native `\\` paths] → the JSON\n  reference has promised `/` since version 1; the release note says so.\n- [A project already has an active change folder named `archive`] →\n  impossible: that folder is the archive itself, which `codev list` never\n  showed as a change.\n- [A JSON path field is missed] → the contract test enumerates the\n  documents of `status`, `instructions`, `new change`, `list`, `schemas`\n  and the `decision` commands; a `grep` for `display().to_string()` in\n  `contract.rs`/`main.rs` must find no JSON field left.\n\n## Migration Plan\n\nNo data migration. A schema refused after upgrading is fixed by renaming\nits folder or its `name`, then correcting `schema:` in the `change.yaml`\nof any change that recorded the wrong name. Rollback is a downgrade of\ncodev: no file format changes.\n\nDocumentation, in `docs/en` and `docs/fr`: `reference/cli.md` (the\nreserved name under `codev new change`, `schema_invalid` cause),\n`guides/custom-schemas.md` (the mismatch is now refused, with its error).\n`reference/json-output.md` already states the portable-paths guarantee.\n",
+    "_codev/changes/fix-core-command-edge-cases/proposal.md": "# Proposal: Fix edge cases found while specifying the core commands\n\n## Why\n\nThe `specify-core-commands` change left four behaviors out of the specs\nbecause they looked like bugs. Each one breaks a command on input a real\nproject produces: a stray markdown file aborts `codev validate`, a schema\nwhose `name` differs from its folder breaks every change created with it, a\nchange can be named `archive`, and JSON paths carry backslashes on Windows.\nThe skills and CI now rely on these commands, so the bugs are fixed before\nmore projects run into them.\n\n## What Changes\n\n- **Stray markdown in `_codev/specs/`.** A capability is a folder holding a\n  file named exactly `spec.md`. Today any file whose name *ends* with\n  `spec.md` counts: `_codev/specs/old-spec.md` becomes a capability `old-`,\n  whose `spec.md` does not exist, and `codev validate --all` (or `--specs`)\n  aborts on it instead of reporting. Such a file is now ignored by\n  `codev list --specs`, `codev validate` and every other command listing\n  the capabilities.\n- **Schema `name` differing from its folder.** Today\n  `_codev/schemas/foo/schema.yaml` holding `name: bar` is accepted when\n  creating a change, which then records `schema: bar` and fails with\n  `schema_not_found` on every later command. Such a schema is now refused\n  with `schema_invalid`, naming both names: `codev new change --schema foo`\n  fails before writing anything, and `codev schemas` reports `foo` as\n  `schema_unusable`.\n- **Reserved change name `archive`.** `archive` is the folder of archived\n  changes. `codev new change archive` is now refused with\n  `invalid_change_id` and a message saying the name is reserved, and\n  `--change archive` fails the same way in `status`, `instructions`, `sync`\n  and `archive`.\n- **Portable paths in JSON.** Every path in a `--json` document uses `/`\n  separators on every OS, as the JSON reference already promises. Today\n  `planningHome`, `changeRoot`, `resolvedOutputPath`, `created`, `root` and\n  the paths of the `decision` commands keep Windows backslashes.\n\nAssumptions made without asking:\n\n- The reported crash is the \"name ending with `spec.md`\" case: a file named\n  `README.md` directly in `_codev/specs/` is already ignored. A markdown file\n  lying directly in a *change's* `specs/` folder is left out: it is parsed as\n  a delta by `validate` and refused by `sync`, which is a separate behavior.\n- A schema whose name differs from its folder is refused rather than made to\n  work under its folder name: the custom-schemas guide already says `name`\n  must be the folder's name, and silently ignoring `name` would leave a\n  field with no meaning.\n- `archive` is the only reserved name: it is the only fixed folder codev\n  creates under `_codev/changes/`.\n\n## Capabilities\n\n### New Capabilities\n\n- `json-output` — the guarantees shared by every `--json` document, starting\n  with portable paths.\n\n### Modified Capabilities\n\n- `changes` — a capability is a folder holding a file named exactly\n  `spec.md`; `archive` is a reserved change name.\n- `schemas` — a project schema's `name` must equal its folder name.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `codev-core`: change name validation (`id.rs`) learns the reserved name.\n- `codev-engine`: capability listing (`specs.rs`), project schema resolution\n  (`schemas.rs`).\n- `codev-cli`: the JSON contract (`contract.rs`, `main.rs`) normalizes every\n  path field; no field is added, renamed or removed.\n- Documentation, English and French: `reference/cli.md` (reserved name),\n  `reference/json-output.md` (unchanged promise, now kept),\n  `guides/custom-schemas.md` (the mismatch is refused, with its error).\n- A change already created with a mismatched schema keeps failing with\n  `schema_not_found` until its `change.yaml` is corrected; nothing migrates\n  it.\n\n## Domains\n\n- [ ] security — no new input reaches a sensitive operation\n- [ ] personal-data\n- [ ] user-interface — CLI error messages only, no interface added\n- [ ] performance\n- [ ] operations\n- [x] migration — Windows JSON paths change, a mismatched schema is now refused, `--change archive` stops working\n\n<!-- No diff to go by yet (only planning files): domains ticked by judgement. -->\n\n\n\n## Release note\n\n- Fixed: `codev validate` no longer aborts when `_codev/specs/` holds a\n  markdown file whose name ends with `spec.md`; only files named exactly\n  `spec.md` define a capability.\n- Changed: **BREAKING** A project schema whose `name` differs from its\n  folder is now refused with `schema_invalid` instead of producing changes\n  that no command can open afterwards. Rename the folder or the `name`.\n- Fixed: `archive` can no longer be used as a change name; it is the folder\n  of archived changes.\n- Fixed: paths in `--json` output use `/` separators on Windows too, as the\n  JSON contract promises.\n",
+    "_codev/changes/fix-core-command-edge-cases/specs/changes/spec.md": "## MODIFIED Requirements\n\n### Requirement: A change name is kebab-case and unique\n\nA change name MUST consist of lowercase ASCII letters, digits and hyphens,\nMUST NOT start or end with a hyphen, and MUST NOT contain two consecutive\nhyphens; it MAY start with a digit. A change name MUST NOT be `archive`,\nthe name of the folder holding the archived changes. `codev new change`\nSHALL refuse any other name with the error code `invalid_change_id` and a\nmessage naming the first rule broken (empty, leading or trailing hyphen,\nconsecutive hyphens, space, underscore, uppercase letter, the offending\ncharacter, or a reserved name). It SHALL refuse a name whose folder already\nexists with the error code `change_exists`. A refused command writes nothing\nand exits with code 1.\n\n#### Scenario: Names accepted\n\n- **WHEN** the user creates the changes `add-auth`, `100-add-feature`,\n  `v2-migration` and `archive-old-logs`\n- **THEN** each one is created\n\n#### Scenario: An invalid name is refused with the rule it breaks\n\n- **WHEN** the user runs `codev new change \"Add Auth\"`\n- **THEN** the command fails with `invalid_change_id` and a message saying\n  the name contains a space\n- **AND** `_codev/changes/` is unchanged\n\n#### Scenario: The reserved name `archive` is refused\n\n- **GIVEN** a project with no archived change yet, so no\n  `_codev/changes/archive/` folder\n- **WHEN** the user runs `codev new change archive`\n- **THEN** the command fails with `invalid_change_id` and a message saying\n  `archive` is reserved for the archived changes\n- **AND** `_codev/changes/archive/` does not exist\n\n#### Scenario: The reserved name is refused as `--change`\n\n- **GIVEN** a project holding archived changes under\n  `_codev/changes/archive/`\n- **WHEN** the user runs `codev status --change archive`\n- **THEN** the command fails with `invalid_change_id`\n\n#### Scenario: An existing name is refused\n\n- **GIVEN** an active change `add-auth`\n- **WHEN** the user runs `codev new change add-auth`\n- **THEN** the command fails with `change_exists`\n- **AND** the existing `change.yaml` is unchanged\n\n### Requirement: `codev list` lists the active changes and, with `--specs`, the capabilities\n\n`codev list` SHALL list the active changes — the folders of\n`_codev/changes/` other than `archive` whose name is a valid change name —\nin alphabetical order. A folder whose name is not a valid change name is\nignored without error. When there is none, the human output SHALL say so\nand name `codev new change <name>`. With `--json`, the document SHALL be\n`{ \"changes\": [...], \"root\": <project root>, \"status\": [] }`.\n\n`codev list --specs` SHALL list the capabilities that have a main spec: the\npath, relative to `_codev/specs/`, of each folder holding a file named\nexactly `spec.md`, nested folders included, in alphabetical order. A\n`spec.md` placed directly in `_codev/specs/` names no capability, and a file\nwhose name only ends with `spec.md` (such as `old-spec.md`) is not a spec:\nneither defines a capability. Every command that works on the main specs —\n`codev validate` among them — SHALL see the same capabilities, so such a\nfile never makes it fail. When there is none, the human output SHALL say\nthat specs appear when a change is synced or archived. With `--json`, the\ndocument SHALL be `{ \"specs\": [...], \"root\": <project root>, \"status\": [] }`.\n\n#### Scenario: Active changes, archive excluded\n\n- **GIVEN** the changes `fix-bug` and `add-auth`, an archived change, and a\n  folder `Notes_2026` under `_codev/changes/`\n- **WHEN** the user runs `codev list --json`\n- **THEN** `changes` is `[\"add-auth\", \"fix-bug\"]`\n\n#### Scenario: No active change\n\n- **GIVEN** a project without active change\n- **WHEN** the user runs `codev list`\n- **THEN** the output names `codev new change`\n- **AND** the exit code is 0\n\n#### Scenario: Capabilities, nested ones included\n\n- **GIVEN** main specs `_codev/specs/user-auth/spec.md` and\n  `_codev/specs/identity/sso/spec.md`, and a file\n  `_codev/specs/user-auth/README.md`\n- **WHEN** the user runs `codev list --specs --json`\n- **THEN** `specs` is `[\"identity/sso\", \"user-auth\"]`\n\n#### Scenario: A file whose name ends with `spec.md` is not a spec\n\n- **GIVEN** a main spec `_codev/specs/user-auth/spec.md`, and the files\n  `_codev/specs/old-spec.md` and `_codev/specs/user-auth/draft-spec.md`\n- **WHEN** the user runs `codev list --specs --json`\n- **THEN** `specs` is `[\"user-auth\"]`\n\n#### Scenario: A stray markdown file does not break validation\n\n- **GIVEN** a well-formed main spec `_codev/specs/user-auth/spec.md` and the\n  files `_codev/specs/README.md` and `_codev/specs/old-spec.md`\n- **WHEN** the user runs `codev validate --all --json`\n- **THEN** the report holds one spec item, `user-auth`, and no execution\n  error in `status`\n- **AND** the exit code is 0\n\n#### Scenario: No capability yet\n\n- **GIVEN** a project without main spec\n- **WHEN** the user runs `codev list --specs`\n- **THEN** the output says that specs appear when a change is synced or\n  archived\n",
+    "_codev/changes/fix-core-command-edge-cases/specs/json-output/spec.md": "## Purpose\n\nState the guarantees every `--json` document shares, whatever the command,\nso that skills and scripts parse codev's output the same way on every\noperating system.\n\n## ADDED Requirements\n\n### Requirement: Paths in JSON output use forward slashes on every OS\n\nEvery path that a command writes into its `--json` document — absolute or\nrelative, a file, a folder or a glob — SHALL use `/` as its only separator,\non every operating system. On Windows, the drive prefix is kept and each\n`\\` of the native path is written `/` (`C:\\p\\_codev` becomes `C:/p/_codev`).\nThe rule SHALL hold for the fields of a failed command as well as a\nsuccessful one. On systems whose native separator is already `/`, paths are\nunchanged.\n\n#### Scenario: Status paths on Windows\n\n- **GIVEN** a project at `C:\\p` with a change `add-auth`, on Windows\n- **WHEN** the user runs `codev status --change add-auth --json`\n- **THEN** `planningHome` is `C:/p` and `changeRoot` is\n  `C:/p/_codev/changes/add-auth`\n- **AND** no path of the document holds a `\\`\n\n#### Scenario: Instructions paths on Windows, glob included\n\n- **GIVEN** a project at `C:\\p` with a `spec-driven` change `add-auth`\n  whose `proposal.md` exists, on Windows\n- **WHEN** the user runs `codev instructions --change add-auth --json`\n- **THEN** `resolvedOutputPath` is `C:/p/_codev/changes/add-auth/specs/**/*.md`\n- **AND** the `path` of the `proposal` dependency is\n  `C:/p/_codev/changes/add-auth/proposal.md`\n\n#### Scenario: Created files and project root on Windows\n\n- **GIVEN** a project at `C:\\p`, on Windows\n- **WHEN** the user runs `codev new change add-auth --json`, then\n  `codev list --json`\n- **THEN** `changeRoot` is `C:/p/_codev/changes/add-auth` and `created`\n  lists `C:/p/_codev/changes/add-auth/change.yaml`\n- **AND** the `root` of `codev list` is `C:/p`\n\n#### Scenario: Unix paths are unchanged\n\n- **GIVEN** a project at `/p` with a change `add-auth`, on Linux or macOS\n- **WHEN** the user runs `codev status --change add-auth --json`\n- **THEN** `planningHome` is `/p` and `changeRoot` is\n  `/p/_codev/changes/add-auth`, without a doubled leading `/`\n",
+    "_codev/changes/fix-core-command-edge-cases/specs/schemas/spec.md": "## MODIFIED Requirements\n\n### Requirement: A schema file is validated before use\n\nA `schema.yaml` SHALL be refused with `schema_unreadable` when it is not\nvalid YAML or holds a key codev does not know, and with `schema_invalid`,\nnaming the schema and the reason, when:\n\n- `name` is empty or not kebab-case;\n- for a project schema, `name` differs from the name of its folder\n  `_codev/schemas/<folder>/` — the message names both;\n- `artifacts` is empty;\n- an artifact id is not kebab-case or is declared twice;\n- an artifact has an empty `generates`;\n- an artifact requires an artifact that does not exist, or itself;\n- the dependencies form a cycle — the message names the artifacts\n  involved;\n- `apply.requires` is empty or names an artifact that does not exist;\n- `apply.tracks` is empty.\n\n`version` defaults to `1`. A command that needs a refused schema fails with\nits code; `codev schemas` reports it as `schema_unusable`.\n\n#### Scenario: A minimal valid schema\n\n- **GIVEN** a schema with a name, two artifacts, `apply.requires` and\n  `apply.tracks`, and no `version`\n- **WHEN** it is read\n- **THEN** it is accepted with version `1`\n\n#### Scenario: An unknown key\n\n- **GIVEN** a schema holding the key `artefacts`\n- **WHEN** it is read\n- **THEN** it is refused with `schema_unreadable`\n\n#### Scenario: Structural defects\n\n- **WHEN** a schema requires a missing artifact, declares an artifact twice,\n  declares no artifact, has an empty `apply.requires`, or has a cycle\n  between `a` and `b`\n- **THEN** each is refused with `schema_invalid`\n- **AND** the cycle message names `a` and `b`\n\n#### Scenario: A name that differs from its folder is refused before any write\n\n- **GIVEN** a project schema `_codev/schemas/lite/schema.yaml` whose `name`\n  is `quick`, otherwise valid\n- **WHEN** the user runs `codev new change add-auth --schema lite`\n- **THEN** the command fails with `schema_invalid` and a message naming\n  `lite` and `quick`\n- **AND** `_codev/changes/add-auth/` does not exist\n\n#### Scenario: A name that differs from its folder is reported as unusable\n\n- **GIVEN** the same project schema `lite` whose `name` is `quick`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** the exit code is 0\n- **AND** `schemas` does not list `lite` nor `quick`\n- **AND** `status` holds a warning `schema_unusable` naming `lite`\n\n#### Scenario: A name equal to its folder is accepted\n\n- **GIVEN** a project schema `_codev/schemas/lite/schema.yaml` whose `name`\n  is `lite`\n- **WHEN** the user runs `codev new change quick --schema lite`\n- **THEN** its `change.yaml` holds `schema: lite`\n- **AND** `codev status --change quick` lists the artifacts of `lite`\n"
+  },
+  "validate": {
+    "fix-core-command-edge-cases": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "fix-core-command-edge-cases",
+          "path": "_codev/changes/fix-core-command-edge-cases"
+        }
+      ],
+      "status": []
+    }
+  }
+}

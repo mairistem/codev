@@ -1,0 +1,14 @@
+step: plan.write
+kind: seeded
+ref: 4dbf9808d6f0f26a2fb367d13d5f68f04a56437e
+request: "Remplacer, dévier ou promouvoir une décision crée toujours un truc accepté et scellé tout de suite, donc on se retrouve encore à forcer le sceau après avoir écrit le texte. Je veux que ces trois cas créent aussi un brouillon, que l'ancienne décision reste en vigueur, et que ce soit uniquement au moment de l'acceptation que la nouvelle soit scellée et que celle qu'elle remplace passe en obsolète."
+summary: "Replays the change 2026-09-30-decision-lifecycle-via-accept (feat(decisions)!: every decision is created proposed and takes effect on accept (#11))."
+expected:
+  modified:
+    - "decisions::Supersession resolved as a chain"
+    - "decisions::Superseding a decision through the CLI"
+    - "decisions::The `codev decision deviate` command creates a deviation ADR"
+    - "decisions::The `codev decision promote` command extracts a design block into an ADR"
+    - "decisions::`decision accept` accepts and seals a proposed decision"
+  collateral: []
+  decisions: []

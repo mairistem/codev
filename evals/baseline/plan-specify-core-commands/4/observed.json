@@ -1,0 +1,1068 @@
+{
+  "format": 2,
+  "case": "plan-specify-core-commands",
+  "error": null,
+  "costUsd": 4.671573799999999,
+  "durationMs": 523616,
+  "consumption": {
+    "durationApiMs": 705264,
+    "turns": 27,
+    "permissionDenials": 5,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1301,
+      "cacheCreation": 341126,
+      "cacheRead": 6769914,
+      "output": 65206
+    },
+    "toolCalls": 115,
+    "orientationCalls": 99,
+    "calls": [
+      {
+        "cacheCreation": 7814,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7814
+        }
+      },
+      {
+        "cacheCreation": 16219,
+        "cacheRead": 29953,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 4405,
+          "skill": 11814
+        }
+      },
+      {
+        "cacheCreation": 7053,
+        "cacheRead": 46172,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 7053
+        }
+      },
+      {
+        "cacheCreation": 7869,
+        "cacheRead": 53225,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 7869
+        }
+      },
+      {
+        "cacheCreation": 8119,
+        "cacheRead": 61094,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8119
+        }
+      },
+      {
+        "cacheCreation": 4123,
+        "cacheRead": 69213,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4123
+        }
+      },
+      {
+        "cacheCreation": 14680,
+        "cacheRead": 0,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 14680
+        }
+      },
+      {
+        "cacheCreation": 1614,
+        "cacheRead": 14680,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1614
+        }
+      },
+      {
+        "cacheCreation": 994,
+        "cacheRead": 16294,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "shell": 994
+        }
+      },
+      {
+        "cacheCreation": 4123,
+        "cacheRead": 69213,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4124
+        }
+      },
+      {
+        "cacheCreation": 994,
+        "cacheRead": 16294,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 994
+        }
+      },
+      {
+        "cacheCreation": 8792,
+        "cacheRead": 6065,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8792
+        }
+      },
+      {
+        "cacheCreation": 16278,
+        "cacheRead": 17288,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 16278
+        }
+      },
+      {
+        "cacheCreation": 2940,
+        "cacheRead": 14857,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2940
+        }
+      },
+      {
+        "cacheCreation": 6739,
+        "cacheRead": 33566,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6739
+        }
+      },
+      {
+        "cacheCreation": 2805,
+        "cacheRead": 17797,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2805
+        }
+      },
+      {
+        "cacheCreation": 6739,
+        "cacheRead": 33566,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6739
+        }
+      },
+      {
+        "cacheCreation": 2805,
+        "cacheRead": 17797,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2805
+        }
+      },
+      {
+        "cacheCreation": 6739,
+        "cacheRead": 33566,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6739
+        }
+      },
+      {
+        "cacheCreation": 4770,
+        "cacheRead": 20602,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4770
+        }
+      },
+      {
+        "cacheCreation": 6739,
+        "cacheRead": 33566,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6739
+        }
+      },
+      {
+        "cacheCreation": 4277,
+        "cacheRead": 25372,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4277
+        }
+      },
+      {
+        "cacheCreation": 11065,
+        "cacheRead": 40305,
+        "input": 2,
+        "output": 49,
+        "toolCalls": 1,
+        "sources": {
+          "search": 11065
+        }
+      },
+      {
+        "cacheCreation": 2603,
+        "cacheRead": 29649,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2603
+        }
+      },
+      {
+        "cacheCreation": 3738,
+        "cacheRead": 51370,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3738
+        }
+      },
+      {
+        "cacheCreation": 5198,
+        "cacheRead": 32252,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5198
+        }
+      },
+      {
+        "cacheCreation": 713,
+        "cacheRead": 37450,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 713
+        }
+      },
+      {
+        "cacheCreation": 2658,
+        "cacheRead": 55108,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2658
+        }
+      },
+      {
+        "cacheCreation": 6728,
+        "cacheRead": 38163,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 6728
+        }
+      },
+      {
+        "cacheCreation": 2734,
+        "cacheRead": 57766,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2734
+        }
+      },
+      {
+        "cacheCreation": 2873,
+        "cacheRead": 44891,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2873
+        }
+      },
+      {
+        "cacheCreation": 1904,
+        "cacheRead": 60500,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1904
+        }
+      },
+      {
+        "cacheCreation": 4667,
+        "cacheRead": 47764,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4667
+        }
+      },
+      {
+        "cacheCreation": 1904,
+        "cacheRead": 60500,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1904
+        }
+      },
+      {
+        "cacheCreation": 2715,
+        "cacheRead": 52431,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2715
+        }
+      },
+      {
+        "cacheCreation": 8003,
+        "cacheRead": 62404,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8003
+        }
+      },
+      {
+        "cacheCreation": 3405,
+        "cacheRead": 55146,
+        "input": 2,
+        "output": 36,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3405
+        }
+      },
+      {
+        "cacheCreation": 1265,
+        "cacheRead": 70407,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1265
+        }
+      },
+      {
+        "cacheCreation": 1702,
+        "cacheRead": 58551,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1702
+        }
+      },
+      {
+        "cacheCreation": 1679,
+        "cacheRead": 71672,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1679
+        }
+      },
+      {
+        "cacheCreation": 3366,
+        "cacheRead": 60253,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3366
+        }
+      },
+      {
+        "cacheCreation": 1679,
+        "cacheRead": 71672,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1679
+        }
+      },
+      {
+        "cacheCreation": 1454,
+        "cacheRead": 63619,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1454
+        }
+      },
+      {
+        "cacheCreation": 1679,
+        "cacheRead": 71672,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1679
+        }
+      },
+      {
+        "cacheCreation": 1454,
+        "cacheRead": 63619,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1454
+        }
+      },
+      {
+        "cacheCreation": 1679,
+        "cacheRead": 71672,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1679
+        }
+      },
+      {
+        "cacheCreation": 5002,
+        "cacheRead": 65073,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5002
+        }
+      },
+      {
+        "cacheCreation": 7339,
+        "cacheRead": 73351,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7339
+        }
+      },
+      {
+        "cacheCreation": 578,
+        "cacheRead": 80690,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 578
+        }
+      },
+      {
+        "cacheCreation": 1222,
+        "cacheRead": 70075,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1222
+        }
+      },
+      {
+        "cacheCreation": 578,
+        "cacheRead": 80690,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 578
+        }
+      },
+      {
+        "cacheCreation": 2197,
+        "cacheRead": 71297,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2197
+        }
+      },
+      {
+        "cacheCreation": 8740,
+        "cacheRead": 81268,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8740
+        }
+      },
+      {
+        "cacheCreation": 502,
+        "cacheRead": 73494,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 502
+        }
+      },
+      {
+        "cacheCreation": 8740,
+        "cacheRead": 81268,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8740
+        }
+      },
+      {
+        "cacheCreation": 402,
+        "cacheRead": 73996,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 402
+        }
+      },
+      {
+        "cacheCreation": 8740,
+        "cacheRead": 81268,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8740
+        }
+      },
+      {
+        "cacheCreation": 402,
+        "cacheRead": 73996,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 402
+        }
+      },
+      {
+        "cacheCreation": 5617,
+        "cacheRead": 90008,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5617
+        }
+      },
+      {
+        "cacheCreation": 2231,
+        "cacheRead": 74398,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2231
+        }
+      },
+      {
+        "cacheCreation": 1053,
+        "cacheRead": 95625,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1053
+        }
+      },
+      {
+        "cacheCreation": 1406,
+        "cacheRead": 76629,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1406
+        }
+      },
+      {
+        "cacheCreation": 1129,
+        "cacheRead": 96678,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1129
+        }
+      },
+      {
+        "cacheCreation": 1732,
+        "cacheRead": 78035,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1732
+        }
+      },
+      {
+        "cacheCreation": 717,
+        "cacheRead": 97807,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 717
+        }
+      },
+      {
+        "cacheCreation": 4187,
+        "cacheRead": 79767,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4187
+        }
+      },
+      {
+        "cacheCreation": 1082,
+        "cacheRead": 83954,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1082
+        }
+      },
+      {
+        "cacheCreation": 1633,
+        "cacheRead": 85036,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1633
+        }
+      },
+      {
+        "cacheCreation": 1324,
+        "cacheRead": 98524,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1324
+        }
+      },
+      {
+        "cacheCreation": 1814,
+        "cacheRead": 86669,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1814
+        }
+      },
+      {
+        "cacheCreation": 1478,
+        "cacheRead": 88483,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1478
+        }
+      },
+      {
+        "cacheCreation": 2731,
+        "cacheRead": 89961,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2731
+        }
+      },
+      {
+        "cacheCreation": 2648,
+        "cacheRead": 92692,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2648
+        }
+      },
+      {
+        "cacheCreation": 3411,
+        "cacheRead": 95340,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3411
+        }
+      },
+      {
+        "cacheCreation": 3390,
+        "cacheRead": 98751,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3390
+        }
+      },
+      {
+        "cacheCreation": 2271,
+        "cacheRead": 102141,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2271
+        }
+      },
+      {
+        "cacheCreation": 3739,
+        "cacheRead": 104412,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3739
+        }
+      },
+      {
+        "cacheCreation": 1946,
+        "cacheRead": 108151,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1946
+        }
+      },
+      {
+        "cacheCreation": 2807,
+        "cacheRead": 110097,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2807
+        }
+      },
+      {
+        "cacheCreation": 3364,
+        "cacheRead": 112904,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3364
+        }
+      },
+      {
+        "cacheCreation": 3169,
+        "cacheRead": 116268,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3169
+        }
+      },
+      {
+        "cacheCreation": 561,
+        "cacheRead": 119437,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 561
+        }
+      },
+      {
+        "cacheCreation": 11174,
+        "cacheRead": 119998,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 11174
+        }
+      },
+      {
+        "cacheCreation": 1117,
+        "cacheRead": 131172,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1117
+        }
+      },
+      {
+        "cacheCreation": 2288,
+        "cacheRead": 132289,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2288
+        }
+      },
+      {
+        "cacheCreation": 2737,
+        "cacheRead": 134577,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 2130,
+          "file": 607
+        }
+      },
+      {
+        "cacheCreation": 1055,
+        "cacheRead": 137314,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1055
+        }
+      },
+      {
+        "cacheCreation": 2261,
+        "cacheRead": 138369,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2261
+        }
+      },
+      {
+        "cacheCreation": 1878,
+        "cacheRead": 140630,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1878
+        }
+      },
+      {
+        "cacheCreation": 21072,
+        "cacheRead": 73336,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 19457,
+          "file": 1615
+        }
+      },
+      {
+        "cacheCreation": 4434,
+        "cacheRead": 94408,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 4434
+        }
+      },
+      {
+        "cacheCreation": 2217,
+        "cacheRead": 98842,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2217
+        }
+      },
+      {
+        "cacheCreation": 2673,
+        "cacheRead": 101059,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2665,
+          "output": 8
+        }
+      },
+      {
+        "cacheCreation": 5711,
+        "cacheRead": 103732,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5711
+        }
+      },
+      {
+        "cacheCreation": 921,
+        "cacheRead": 109443,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "search": 921
+        }
+      },
+      {
+        "cacheCreation": 1142,
+        "cacheRead": 110364,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 4,
+        "sources": {
+          "edit": 1142
+        }
+      },
+      {
+        "cacheCreation": 6917,
+        "cacheRead": 111506,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 6554,
+          "output": 363
+        }
+      },
+      {
+        "cacheCreation": 1943,
+        "cacheRead": 118423,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1943
+        }
+      },
+      {
+        "cacheCreation": 539,
+        "cacheRead": 120366,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 539
+        }
+      },
+      {
+        "cacheCreation": 891,
+        "cacheRead": 120905,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 892
+        }
+      },
+      {
+        "cacheCreation": 2432,
+        "cacheRead": 121796,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 939,
+          "edit": 1493
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/specify-core-commands/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/specify-core-commands/design.md": "# Design: Specify the core commands as they behave today\n\n## Context\n\nThe seven commands live in `crates/codev-cli/src/main.rs` (dispatch,\n`emit`/`fail`), `commands.rs` (`new_change`, `list_changes`, `list_specs`,\n`status`, `artifact_instructions`, `list_schemas`, `decision_show`,\n`update`), `render.rs` and `contract.rs`, over `codev-engine` (`root`,\n`change`, `scaffold`, `instructions`, `schemas`, `decisions_actions`) and\n`codev-core` (`id`, `status`, `graph`). Their behavior was inventoried from\nthe code; the new specs describe that behavior and nothing else.\n\nExisting coverage is uneven: the engine and core have unit tests for name\nrules, artifact states, the next artifact, schema precedence and skill\nhand-edit detection, but almost nothing is tested at command level — no\ntest calls `commands::decision_show`, and none checks the JSON success or\nfailure documents of `new change`, `list`, `instructions`, `schemas` or\n`update`, nor the human outputs of `new change`, `schemas`, `decision show`\nand `update`.\n\n## Goals / Non-Goals\n\n**Goals**: every scenario of the five deltas is backed by an automated\ntest that passes against the current code.\n\n**Non-Goals**: changing any production code or any JSON field; fixing the\nquirks listed under Risks; specifying behaviors already specified in\n`decisions`, `skills`, `init`, `self-update`, `doctor` and `configuration`.\n\n## Decisions\n\n### Decision: Test at command level through the in-memory ports\n\nNew tests call the `commands::*` functions with the in-memory `FileSystem`\nand `FixedEnv` ports already used by `commands.rs` tests, then check the\noutcome, the contract value built by `contract.rs`, and the `render.rs`\ntext. This follows decision 0001 (the shell only executes plans; behavior\nis observable from the command's outcome) and 0002 (effects only through\nthe four ports), and the project rule against temporary directories.\nContract shapes are asserted through the `contract::v1` types serialized to\n`serde_json::Value`, since the JSON contract is the public API skills\nconsume. Failure shapes are asserted on the `*_shape()` documents `main.rs`\npasses to `fail`; where such a shape is private to `main.rs`, the test goes\nin a `#[cfg(test)] mod tests` of `main.rs`.\n\n**Alternatives considered**: a binary-level test suite under\n`crates/codev-cli/tests` running the compiled `codev` would also check exit\ncodes and stderr, but it needs a real filesystem and temporary folders,\nwhich the project's conventions exclude. Exit codes (1 on failure, 0 with\nwarnings) are covered by testing `fail` and `emit` directly.\n\n### Decision: Shared rules live in the `changes` spec\n\nRoot discovery, the failure shape and change inference are common to all\nseven commands. They are stated once in `changes`, which every other new\nspec references, rather than repeated per command — repeating them would\nlet the specs drift apart.\n\n**Alternatives considered**: a separate `cli-contract` capability; rejected\nbecause the rules are small and `changes` is the first capability a reader\nof these commands opens.\n\n### Decision: Describe today's behavior, leave accidental behavior unspecified\n\nWhere the code does something that looks unintended, the spec states the\nnominal behavior only and stays silent on the edge, so a later fix needs no\nspec change. Contradictions between existing specs and the code are\nreported here, not settled silently.\n\n**Alternatives considered**: specifying the quirks as they are would freeze\nthem; fixing them would change behavior, which the request excludes.\n\n## Risks / Trade-offs\n\n- [A scenario written from reading the code does not hold when tested] →\n  The test is written first against the current code; if it fails, the\n  scenario is corrected to the observed behavior, not the code.\n- [Accidental behaviors left unspecified, to address in later changes] →\n  Follow-ups, none specified here:\n  - a plain file with a valid name in `_codev/changes/` is listed as a\n    change;\n  - `--change archive` is accepted and treats the archive folder as a\n    change;\n  - `codev list --specs` reads `x/my-spec.md` as the capability `x/my-`;\n  - `codev new change --schema <folder> --json` echoes the folder name in\n    `schemaName` while `change.yaml` stores the schema's own `name:`;\n  - a skill edited by hand but stamped with an older version is\n    overwritten by `codev update` without `--force`;\n  - the `codev instructions` failure document has no `language` key while\n    the success document has one;\n  - a write failure in `codev new change` leaves an empty change folder.\n- [Existing specs disagree slightly with the code] → Reported, not\n  changed: `decisions` \"Showing a decision through the CLI\" says the\n  header is followed by the markdown body, whereas the whole file,\n  frontmatter included, is printed (the new requirement states it); and\n  \"Injection into the design instructions\" lists the decision fields\n  without `qualifiedId`, which the code also emits. A later change can\n  align the wording.\n",
+    "_codev/changes/specify-core-commands/proposal.md": "# Proposal: Specify the core commands as they behave today\n\n## Why\n\nThe commands written first — `codev new change`, `codev list`,\n`codev status`, `codev instructions`, `codev schemas`,\n`codev decision show` and `codev update` — have no spec of their own, and\nseveral of their behaviors have no test (no test calls `decision_show` at\nall). The skills already installed in projects depend on these commands and\non their JSON output, yet nothing states what must be preserved. They are\nspecified now, as they work today, before further changes touch them.\n\n## What Changes\n\n- New `changes` spec: how `codev new change` validates a name, refuses an\n  existing change or an unknown schema, and writes `change.yaml`; how\n  `codev list` and `codev list --specs` list active changes and specified\n  capabilities; how `codev status` infers the change and derives each\n  artifact's state (`done`, `ready`, `blocked`, `skipped`) from the files\n  on disk, with its JSON and human outputs.\n- New `instructions` spec: the default artifact (the first ready one),\n  the errors `unknown_artifact` and `no_artifact_ready`, the fields of the\n  JSON document (output path, dependencies, unlocks, ordered context and\n  rules, `skipped`), and the human layout.\n- New `schemas` spec: project schemas listed before the built-in one, a\n  project schema replacing the built-in of the same name, a broken project\n  schema reported as a warning without hiding the others.\n- New `update` spec: `codev update` restores the missing `_codev/`\n  structure, regenerates the configured skills, keeps a skill edited by\n  hand unless `--force`, removes no skill, and writes nothing on a second\n  run.\n- Modified `decisions` spec: the success outputs of `codev decision show`\n  (JSON fields, raw file content, human header) and its failure outside a\n  project, which are not yet stated.\n- Shared behavior of these commands (planning root found by walking up,\n  `no_codev_root`, change inference, failure shape and exit code 1) is\n  stated in the `changes` spec and referenced by the others.\n- Missing automated tests are added for every new scenario; no production\n  code changes.\n\n**Assumptions** (made without asking, in this evaluation run):\n\n- \"Mise à jour\" means `codev update` (regenerating the skills), not\n  `codev self-update`, which already has its spec.\n- Behaviors that look accidental are **not** specified, so as not to freeze\n  them: a plain file in `_codev/changes/` listed as a change, `--change\n  archive` accepted as a change, a file named `my-spec.md` read as the\n  capability `my-`, `schemaName` in `new change --json` echoing the\n  requested name while `change.yaml` stores the schema's own `name:`, a\n  hand-edited skill stamped with an older version overwritten without\n  `--force`, and the `instructions` failure shape lacking the `language`\n  key. They are listed in the design as follow-ups.\n- Behaviors already specified elsewhere (decisions injected into the\n  design instructions, `language` and role blocks in the instructions,\n  managed sections refreshed by `update`, the update check of `status`,\n  the doctor hint) are not restated; the new specs refer to them.\n\n## Capabilities\n\n### New Capabilities\n\n- `changes` — creating, listing and inspecting changes: `codev new\n  change`, `codev list`, `codev status`, and the rules these commands\n  share.\n- `instructions` — `codev instructions`.\n- `schemas` — `codev schemas`.\n- `update` — `codev update`.\n\n### Modified Capabilities\n\n- `decisions` — success outputs of `codev decision show`.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `_codev/specs/changes/`, `_codev/specs/instructions/`,\n  `_codev/specs/schemas/`, `_codev/specs/update/` created;\n  `_codev/specs/decisions/spec.md` extended.\n- New tests in `crates/codev-cli/src/commands.rs`, `render.rs` and\n  `contract.rs` (unit tests, in-memory `FileSystem` and `FixedEnv` ports).\n  No production code, no JSON contract change.\n- No documentation affected: the commands' behavior does not change.\n- Domains: the change's diff holds only planning files, so there is no\n  diff to go by; judged by hand, it touches none — the human outputs and\n  the JSON contract are described, not changed.\n\n## Domains\n\nNone\n\n## Release note\n\nNone\n",
+    "_codev/changes/specify-core-commands/specs/changes/spec.md": "## Purpose\n\nCreate, list and inspect the changes of a codev project from the terminal,\nwith outputs that a human reads and that installed skills parse, so that a\nchange's planning state is always derived from what is on disk.\n\n## ADDED Requirements\n\n### Requirement: Project commands find the planning root by walking up\n\n`codev new change`, `codev list`, `codev status`, `codev instructions`,\n`codev schemas`, `codev decision show` and `codev update` SHALL use as\nproject root the nearest folder, starting from the current directory and\nwalking up through its parents, that contains a `_codev/` directory. When\nno such folder exists, they MUST fail with the stable code `no_codev_root`,\na message naming the starting directory and pointing to `codev init`, and\nwrite nothing.\n\n#### Scenario: A command run from a sub-folder finds the project\n\n- **GIVEN** a project whose root contains `_codev/` and an active change\n  `add-auth`\n- **WHEN** the user runs `codev list` from `<root>/crates/foo`\n- **THEN** the output lists `add-auth`\n\n#### Scenario: The nearest root wins\n\n- **GIVEN** a folder containing `_codev/` nested inside another folder\n  containing `_codev/`\n- **WHEN** the user runs `codev status` from the nested folder\n- **THEN** the nested folder is used as project root\n\n#### Scenario: Outside any project\n\n- **GIVEN** a directory with no `_codev/` in it or in any parent\n- **WHEN** the user runs `codev status`, `codev list` or `codev new change\n  add-auth`\n- **THEN** the command fails with `no_codev_root`\n- **AND** no file is written\n\n### Requirement: Failures keep the command's JSON shape and exit with code 1\n\nEach command of this capability, and `codev instructions`, `codev schemas`,\n`codev decision show` and `codev update`, SHALL exit with code 0 on success\nand code 1 on failure. On failure with `--json`, stdout MUST carry a single\nJSON document with the same keys as the command's success document — string\nand object fields `null`, array fields empty — and a root `status` array\nholding one entry `{ level: \"error\", code, message }`. Without `--json`, the\nfailure MUST be printed on stderr as `error: <message>`, followed by\n`help: <fix>` when a fix is known. Warnings MUST NOT change the exit code;\nthey appear in `status` as `{ level: \"warning\", code, message }` with\n`--json`, and as `warning: <message>` lines on stderr otherwise.\n\n#### Scenario: JSON failure of `codev status`\n\n- **GIVEN** a project with no active change\n- **WHEN** the user runs `codev status --json`\n- **THEN** stdout carries one JSON document with `changeName: null`,\n  `schemaName: null`, `planningHome: null`, `changeRoot: null`,\n  `applyRequires: []`, `isPlanningComplete: false`, `artifacts: []` and\n  `status: [{ level: \"error\", code: \"no_active_change\", … }]`\n- **AND** the exit code is 1\n\n#### Scenario: Human failure with a fix\n\n- **GIVEN** a project with no active change\n- **WHEN** the user runs `codev status`\n- **THEN** stderr carries `error: no active change in this project`\n  followed by a `help:` line naming `codev new change <name>`\n- **AND** the exit code is 1\n\n#### Scenario: A warning does not fail the command\n\n- **GIVEN** a project whose `config.yaml` carries an unknown top-level key\n  and one active change\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 0\n- **AND** `status` holds a `warning` entry with code `unknown_config_key`\n\n### Requirement: A change name is lowercase kebab-case\n\nA change name SHALL contain only lowercase ASCII letters, digits and single\nhyphens, and MUST NOT start or end with a hyphen. A leading digit is\nallowed. Any command given another name MUST fail with the stable code\n`invalid_change_id` and a message naming the first rule broken: empty name,\nleading or trailing hyphen, two consecutive hyphens, a space, an\nunderscore, an uppercase letter, or another character, which it quotes.\n\n#### Scenario: Valid names\n\n- **WHEN** the user runs `codev new change add-user-auth`, or `codev new\n  change 100-add-x`\n- **THEN** the name is accepted\n\n#### Scenario: A name with a space is explained\n\n- **WHEN** the user runs `codev new change \"Add Auth\"`\n- **THEN** the command fails with `invalid_change_id`\n- **AND** the message names the rule broken and suggests hyphens or\n  lowercase letters\n\n#### Scenario: A name with an underscore\n\n- **WHEN** the user runs `codev status --change add_auth`\n- **THEN** the command fails with `invalid_change_id`\n- **AND** the message says to use hyphens\n\n### Requirement: `codev new change` creates the change folder and its metadata\n\n`codev new change <name>` SHALL create the folder `_codev/changes/<name>/`\nholding a single file, `change.yaml`, which records the schema of the\nchange (the `--schema` value, otherwise the configuration's `schema`,\n`spec-driven` by default), the creation date as `created: YYYY-MM-DD`, and\nthe `--goal` value when one is given and not blank. It MUST NOT create any\nplanning artifact. Before writing anything, the command MUST refuse:\n\n- an existing `_codev/changes/<name>`, with the stable code\n  `change_exists`;\n- a schema that is neither in `_codev/schemas/<schema>/schema.yaml` nor\n  built in, with the stable code `schema_not_found` and a message pointing\n  to `codev schemas`.\n\nWith `--json`, stdout MUST carry `{ changeName, schemaName, changeRoot,\ncreated, status }`, `created` listing the path of `change.yaml`. The human\noutput MUST name the change, its location and its schema, then point to\n`codev instructions --change <name>` as the next step.\n\n#### Scenario: Creation with the default schema\n\n- **GIVEN** a project whose configuration sets no `schema`\n- **WHEN** the user runs `codev new change add-auth` on 2026-09-08\n- **THEN** `_codev/changes/add-auth/change.yaml` exists with\n  `schema: spec-driven` and `created: 2026-09-08`\n- **AND** the folder contains no other file\n\n#### Scenario: A goal is recorded\n\n- **WHEN** the user runs `codev new change add-auth --goal \"Let users sign\n  in\"`\n- **THEN** `change.yaml` carries `goal: Let users sign in`\n\n#### Scenario: A blank goal is not recorded\n\n- **WHEN** the user runs `codev new change add-auth --goal \"   \"`\n- **THEN** `change.yaml` carries no `goal` key\n\n#### Scenario: A project schema is accepted\n\n- **GIVEN** a project with `_codev/schemas/lean/schema.yaml`\n- **WHEN** the user runs `codev new change add-auth --schema lean`\n- **THEN** the change is created with that schema\n\n#### Scenario: An existing change is refused\n\n- **GIVEN** an active change `add-auth`\n- **WHEN** the user runs `codev new change add-auth`\n- **THEN** the command fails with `change_exists`\n- **AND** the existing `change.yaml` is unchanged\n\n#### Scenario: An unknown schema leaves no folder\n\n- **WHEN** the user runs `codev new change add-auth --schema nope`\n- **THEN** the command fails with `schema_not_found`\n- **AND** `_codev/changes/add-auth/` does not exist\n\n#### Scenario: JSON output of a creation\n\n- **WHEN** the user runs `codev new change add-auth --json`\n- **THEN** stdout carries `changeName: \"add-auth\"`,\n  `schemaName: \"spec-driven\"`, `changeRoot` ending in\n  `_codev/changes/add-auth`, `created` holding the path of `change.yaml`,\n  and `status: []`\n\n### Requirement: `codev list` lists the active changes, `--specs` the specified capabilities\n\n`codev list` SHALL list the active changes: the folders of\n`_codev/changes/` whose name is a valid change name, except `archive`,\nsorted by name. `codev list --specs` SHALL list the capabilities of\n`_codev/specs/`, one per `<path>/spec.md`, nested paths included\n(`identity/sso`), sorted. Neither reads the configuration. With `--json`,\nstdout MUST carry `{ changes, root, status }` or `{ specs, root, status }`,\n`root` being the project root. An empty list MUST be told in words that\nsay what to do next.\n\n#### Scenario: Active changes, sorted, without the archive\n\n- **GIVEN** `_codev/changes/` holding `zeta`, `alpha`, `archive/` and a\n  `.gitkeep` file\n- **WHEN** the user runs `codev list --json`\n- **THEN** `changes` is `[\"alpha\", \"zeta\"]`\n\n#### Scenario: Nested capabilities\n\n- **GIVEN** `_codev/specs/auth/spec.md` and\n  `_codev/specs/identity/sso/spec.md`\n- **WHEN** the user runs `codev list --specs`\n- **THEN** the output lists `auth` and `identity/sso`\n\n#### Scenario: No active change\n\n- **GIVEN** a project without active change\n- **WHEN** the user runs `codev list`\n- **THEN** the output says there is no active change and names\n  `codev new change <name>`\n\n#### Scenario: No spec\n\n- **GIVEN** a project whose `_codev/specs/` holds no spec\n- **WHEN** the user runs `codev list --specs`\n- **THEN** the output says there is no spec yet and that specs appear when\n  a change is synced or archived\n\n### Requirement: Commands that act on one change infer it when there is only one\n\n`codev status`, `codev instructions`, `codev sync` and `codev archive`\nSHALL use the change named by `--change`. Without `--change`, they MUST use\nthe only active change; with no active change they MUST fail with the\nstable code `no_active_change` and a fix naming `codev new change <name>`;\nwith several they MUST fail with the stable code `ambiguous_change`, a\nmessage listing the active changes and a fix suggesting `--change` with the\nfirst of them. Archived changes are never inferred. A `--change` naming no\nfolder of `_codev/changes/` MUST fail with the stable code\n`unknown_change` and a message pointing to `codev list`.\n\n#### Scenario: The only active change is inferred despite the archive\n\n- **GIVEN** one active change `add-auth` and archived changes\n- **WHEN** the user runs `codev status`\n- **THEN** the status of `add-auth` is shown\n\n#### Scenario: Several active changes\n\n- **GIVEN** active changes `alpha` and `beta`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with `ambiguous_change`\n- **AND** the message names `alpha` and `beta`, and the fix names\n  `--change alpha`\n\n#### Scenario: An unknown change named explicitly\n\n- **GIVEN** a project without change `ghost`\n- **WHEN** the user runs `codev status --change ghost`\n- **THEN** the command fails with `unknown_change`\n- **AND** the message names `ghost` and `codev list`\n\n### Requirement: `codev status` derives each artifact's state from the files on disk\n\n`codev status` SHALL give each artifact of the change's schema exactly one\nstate, from the files present in the change folder only, in dependency\norder (ties in the schema's declaration order):\n\n- `skipped` when `change.yaml` sets `skip_specs: true` and the artifact\n  generates `specs` or a path under `specs/`;\n- otherwise `done` when its output exists — for a glob output, when at\n  least one file matches;\n- otherwise `ready` when every artifact it requires is `done` or\n  `skipped`;\n- otherwise `blocked`, listing the required artifacts that are not.\n\nPlanning MUST be complete only when every artifact that implementation\nrequires, and every artifact they transitively require, is `done` or\n`skipped`. A change without `change.yaml` MUST use the configuration's\nschema.\n\n#### Scenario: An empty change\n\n- **GIVEN** a `spec-driven` change with no file but `change.yaml`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `proposal` is `ready`, and `specs`, `design` and `tasks` are\n  `blocked`\n- **AND** `isPlanningComplete` is `false`\n\n#### Scenario: A nested spec satisfies a glob output\n\n- **GIVEN** a change holding `proposal.md` and `specs/auth/login/spec.md`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `specs` is `done`\n\n#### Scenario: Writing the last artifact first does not complete planning\n\n- **GIVEN** a change holding only `tasks.md`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `tasks` is `done` and `isPlanningComplete` is `false`\n\n#### Scenario: `skip_specs` unblocks the dependents\n\n- **GIVEN** a change whose `change.yaml` sets `skip_specs: true`, holding\n  `proposal.md` and `design.md`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `specs` is `skipped` and `tasks` is `ready`\n\n#### Scenario: An invalid `change.yaml`\n\n- **GIVEN** a change whose `change.yaml` carries an unknown key\n- **WHEN** the user runs `codev status --change <name>`\n- **THEN** the command fails with the stable code `invalid`\n\n### Requirement: `codev status` reports the state in JSON and in text\n\nWith `--json`, `codev status` SHALL write `{ changeName, schemaName,\nplanningHome, changeRoot, applyRequires, isPlanningComplete, artifacts,\nstatus }`, where `planningHome` is the project root, `changeRoot` the\nchange folder, and each entry of `artifacts` is `{ id, outputPath, status,\nrequires, missingDeps }` with `status` among `done`, `ready`, `blocked` and\n`skipped`. The fields `update` and `versionRequirement` follow the\n`self-update` capability. The human output SHALL name the change and its\nschema, list the artifacts with the markers `[x]` done, `[ ]` ready, `[-]`\nblocked with the artifacts it waits on, and `[~]` skipped, count the\nartifacts done or skipped out of the total, and end with `Next:` followed\nby the first `ready` artifact, or `Planning is complete.` when none is\nready.\n\n#### Scenario: JSON labels of every state\n\n- **GIVEN** a `skip_specs` change holding `proposal.md` only\n- **WHEN** the user runs `codev status --json`\n- **THEN** `proposal` is `done`, `specs` is `skipped`, `design` is\n  `ready`, and `tasks` is `blocked` with `missingDeps: [\"design\"]` and\n  `requires: [\"specs\", \"design\"]`\n\n#### Scenario: Human output names the next artifact\n\n- **GIVEN** a change holding `proposal.md`\n- **WHEN** the user runs `codev status`\n- **THEN** the output shows `[x] proposal`, `[ ] specs`,\n  `[-] tasks (waiting on: specs, design)`, `Planning: 1/4 artifacts` and\n  `Next:` followed by `specs`\n\n#### Scenario: Human output once planning is complete\n\n- **GIVEN** a change holding `proposal.md`, a spec, `design.md` and\n  `tasks.md`\n- **WHEN** the user runs `codev status`\n- **THEN** every artifact shows `[x]`, the count is `Planning: 4/4\n  artifacts`, and the output ends with `Planning is complete.`\n",
+    "_codev/changes/specify-core-commands/specs/decisions/spec.md": "## ADDED Requirements\n\n### Requirement: Outputs of `codev decision show`\n\nWith `--json`, a successful `codev decision show <id>` SHALL write\n`{ root, decision, content, status }`: the project root; the decision with\nthe fields `id`, `qualifiedId`, `title`, `status`, `date`, `tags`,\n`supersedes`, `deviatesFrom`, `path`, `origin`, `inEffect` and\n`supersededBy`; `content`, the decision file exactly as stored,\nfrontmatter included; and an empty `status`. The human output SHALL print\nthe identifier with its qualified identifier, the title, the status and\nthe date, then the tags, the decisions it supersedes and the decision\nsuperseding it when there are any, then the file path, a blank line and\nthe file content. A qualified identifier whose origin is neither\n`project`, `path:…` nor `git:…`, or that matches no decision, MUST fail\nwith `unknown_decision_id`.\n\n#### Scenario: JSON of a local decision\n\n- **GIVEN** a project containing a unique ADR `0001` with `status:\n  accepted`\n- **WHEN** the user runs `codev decision show 0001 --json`\n- **THEN** `decision.qualifiedId` is `project/0001`, `decision.origin` is\n  `project` and `decision.inEffect` is `true`\n- **AND** `content` equals the file byte for byte\n- **AND** `status` is `[]`\n\n#### Scenario: Human header of a superseded decision\n\n- **GIVEN** an ADR `0003` superseded by an accepted ADR `0007`\n- **WHEN** the user runs `codev decision show 0003`\n- **THEN** the output shows `0003` with `project/0003`, its title, status\n  and date, a line naming `0007` as superseding it, the file path, then\n  the file content\n\n#### Scenario: A qualified identifier with an unknown origin\n\n- **GIVEN** a project containing an ADR `0001`\n- **WHEN** the user runs `codev decision show elsewhere/0001`\n- **THEN** the command fails with `unknown_decision_id`\n\n#### Scenario: Outside a project\n\n- **GIVEN** a directory outside any codev project\n- **WHEN** the user runs `codev decision show 0001 --json`\n- **THEN** stdout carries `root: null`, `decision: null`, `content: null`\n  and an error `no_codev_root`\n",
+    "_codev/changes/specify-core-commands/specs/instructions/spec.md": "## Purpose\n\nGive whoever writes an artifact — a person or a skill — everything needed\nin one call: what to write, where, in what structure, under which project\nconstraints, after reading what, and what it unlocks.\n\n## ADDED Requirements\n\n### Requirement: `codev instructions` targets the next artifact to write by default\n\n`codev instructions [<artifact>] [--change <name>]` SHALL resolve the\nchange as the `changes` capability describes. Without `<artifact>`, it\nMUST target the first artifact in the `ready` state, in the order of\n`codev status`; when none is ready it MUST fail with the stable code\n`no_artifact_ready` and a message pointing to `codev status --change\n<name>`. An `<artifact>` absent from the change's schema MUST fail with the\nstable code `unknown_artifact`, naming the artifact and the schema. An\nartifact named explicitly MUST be served whatever its state, `done` and\n`blocked` included.\n\n#### Scenario: The next artifact by default\n\n- **GIVEN** a `spec-driven` change holding only `proposal.md`\n- **WHEN** the user runs `codev instructions --json`\n- **THEN** `artifact` is `specs`\n\n#### Scenario: Everything is written\n\n- **GIVEN** a change whose every artifact is written\n- **WHEN** the user runs `codev instructions`\n- **THEN** the command fails with `no_artifact_ready`\n- **AND** the message names `codev status --change <name>`\n\n#### Scenario: An artifact unknown to the schema\n\n- **WHEN** the user runs `codev instructions summary --change add-auth`\n- **THEN** the command fails with `unknown_artifact`\n- **AND** the message names `summary` and `spec-driven`\n\n#### Scenario: An explicit artifact already written\n\n- **GIVEN** a change holding `proposal.md`\n- **WHEN** the user runs `codev instructions proposal`\n- **THEN** the instructions of `proposal` are served, without error\n\n#### Scenario: Several active changes\n\n- **GIVEN** active changes `alpha` and `beta`\n- **WHEN** the user runs `codev instructions`\n- **THEN** the command fails with `ambiguous_change`\n\n### Requirement: The instructions document carries the artifact's full writing context\n\nWith `--json`, `codev instructions` SHALL write one document with:\n\n- `changeName`, `schemaName`, `artifact`, `description`;\n- `resolvedOutputPath`: the change folder joined with the artifact's\n  output, which may be a glob pattern;\n- `instruction` and `template`: the schema's text and the template's\n  content, or `null` when the schema declares none;\n- `language`, as the `skills` capability describes;\n- `context` and `rules`: entries `{ origin, text }`, inherited sources\n  first in their declaration order, the project last (origin `project`),\n  blank texts left out; `rules` holds only the rules of this artifact;\n- `dependencies`: one `{ id, path, done }` per artifact required, `done`\n  true when it is `done` or `skipped`;\n- `unlocks`: the artifacts that directly require this one;\n- `decisions`, as the `decisions` capability describes;\n- `skipped`: true when `skip_specs` disables the artifact, in which case\n  `status` also holds the warning `artifact_skipped`;\n- `status`: the warnings, configuration warnings included.\n\nA template declared by a project schema but missing MUST fail with the\nstable code `template_not_found`.\n\n#### Scenario: Dependencies, unlocks and output path\n\n- **GIVEN** a `spec-driven` change holding `proposal.md`\n- **WHEN** the user runs `codev instructions specs --json`\n- **THEN** `resolvedOutputPath` ends with `specs/**/*.md`\n- **AND** `dependencies` is one entry `proposal` with `done: true`\n- **AND** `unlocks` is `[\"tasks\"]`\n\n#### Scenario: Only the artifact's rules, project context last\n\n- **GIVEN** a project inheriting a source whose configuration has a\n  `context`, and whose own configuration has a `context` and rules for\n  `design` and `tasks`\n- **WHEN** the user runs `codev instructions design --json`\n- **THEN** `context` holds the source's entry, then the entry with origin\n  `project`\n- **AND** `rules` holds the `design` rules only\n\n#### Scenario: A disabled artifact\n\n- **GIVEN** a change whose `change.yaml` sets `skip_specs: true`\n- **WHEN** the user runs `codev instructions specs --json`\n- **THEN** `skipped` is `true`\n- **AND** `status` holds a warning `artifact_skipped`\n\n#### Scenario: A project schema's missing template\n\n- **GIVEN** a change of a project schema declaring a template file that\n  does not exist\n- **WHEN** the user runs `codev instructions <artifact>`\n- **THEN** the command fails with `template_not_found`\n\n### Requirement: The human instructions read in writing order\n\nWithout `--json`, `codev instructions` SHALL print the artifact, its change\nand schema, the path to write to, and the language; then, each only when\nnot empty and in this order: the artifacts to read first, each marked\n`[x]` when done or `[ ]` otherwise; the project context and the rules for\nthe artifact, each line prefixed with its origin; the decisions in effect;\nthe instruction; the template; and the artifacts it unlocks. For an\nartifact disabled by `skip_specs`, the output MUST stop after the header\nwith a line saying not to create it.\n\n#### Scenario: Ordered sections\n\n- **GIVEN** a change holding `proposal.md`\n- **WHEN** the user runs `codev instructions design`\n- **THEN** the output starts with `Artifact: design`, then `Write to:`\n  and `Language:`\n- **AND** `[x] proposal` appears before the instruction, the instruction\n  before the template, and `Unlocks: tasks` last\n\n#### Scenario: A disabled artifact stops after the header\n\n- **GIVEN** a change whose `change.yaml` sets `skip_specs: true`\n- **WHEN** the user runs `codev instructions specs`\n- **THEN** the output says the artifact is disabled by `skip_specs` and\n  must not be created\n- **AND** it shows neither instruction nor template\n",
+    "_codev/changes/specify-core-commands/specs/schemas/spec.md": "## Purpose\n\nShow which workflow schemas a project can create changes with, where each\ncomes from, and the order of its artifacts.\n\n## ADDED Requirements\n\n### Requirement: `codev schemas` lists the project schemas, then the built-in one\n\n`codev schemas` SHALL list first the project schemas — each folder of\n`_codev/schemas/` holding a `schema.yaml`, named after the folder and\nsorted by name, with origin `project` — then the built-in `spec-driven`\nschema with origin `built-in`, unless a project schema of the same name\nreplaces it. Each schema MUST come with its flow: its artifacts in\ndependency order. Schemas of inherited sources are not listed. A project\nschema that cannot be read or parsed MUST be left out with a warning\n`schema_unusable` naming it, while the others are still listed and the\ncommand succeeds.\n\n#### Scenario: Built-in schema alone\n\n- **GIVEN** a project with an empty `_codev/schemas/`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** `schemas` is a single entry `{ name: \"spec-driven\", origin:\n  \"built-in\", flow: [\"proposal\", \"specs\", \"design\", \"tasks\"] }`\n\n#### Scenario: Project schemas first, sorted\n\n- **GIVEN** project schemas `zen` and `lean`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** the names are `lean`, `zen`, `spec-driven` in that order, the\n  first two with origin `project`\n\n#### Scenario: A project schema replaces the built-in one\n\n- **GIVEN** a project schema in `_codev/schemas/spec-driven/`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** `spec-driven` appears once, with origin `project`\n\n#### Scenario: A broken project schema\n\n- **GIVEN** a project schema `broken` whose `schema.yaml` is invalid\n- **WHEN** the user runs `codev schemas`\n- **THEN** `spec-driven` is listed\n- **AND** a warning `schema_unusable` names `broken`\n- **AND** the exit code is 0\n\n### Requirement: `codev schemas` reports in JSON and in text\n\nWith `--json`, `codev schemas` SHALL write `{ schemas, root, status }`,\neach schema being `{ name, origin, flow }` and `root` the project root.\nThe human output SHALL list each schema as its name with its origin in\nparentheses, followed by its flow joined with `→`.\n\n#### Scenario: Human listing\n\n- **GIVEN** a project with no project schema\n- **WHEN** the user runs `codev schemas`\n- **THEN** the output shows `spec-driven (built-in)` and\n  `proposal → specs → design → tasks`\n\n#### Scenario: Outside a project\n\n- **GIVEN** a directory outside any codev project\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** stdout carries `schemas: []`, `root: null` and an error\n  `no_codev_root`\n",
+    "_codev/changes/specify-core-commands/specs/update/spec.md": "## Purpose\n\nBring an already initialized project in line with the running codev after\nan upgrade or a configuration change — its `_codev/` structure and its\nskills — without losing what the team edited by hand.\n\n## ADDED Requirements\n\n### Requirement: `codev update` restores the missing structure without touching what exists\n\n`codev update` SHALL recreate, without overwriting anything, every missing\nfolder among `_codev/specs`, `_codev/decisions`, `_codev/changes`,\n`_codev/changes/archive` and `_codev/schemas` with its `.gitkeep`, and a\nmissing `_codev/config.yaml`. A project is one whose root holds `_codev/`;\noutside one, the command fails with `no_codev_root` as the `changes`\ncapability describes.\n\n#### Scenario: A deleted folder comes back\n\n- **GIVEN** an initialized project whose `_codev/schemas/` was deleted\n- **WHEN** the user runs `codev update`\n- **THEN** `_codev/schemas/.gitkeep` exists again\n- **AND** `_codev/config.yaml` is unchanged\n\n#### Scenario: Outside a project\n\n- **GIVEN** a directory outside any codev project\n- **WHEN** the user runs `codev update`\n- **THEN** the command fails with `no_codev_root`\n- **AND** no file is written\n\n### Requirement: `codev update` regenerates the configured skills and keeps hand edits\n\n`codev update` SHALL write the skill of each workflow listed under\n`workflows:` — the default catalog when the key is absent — to\n`.claude/skills/codev-<workflow>/SKILL.md`, stamped with the running\nversion. An unknown workflow MUST raise the warning `unknown_workflow`\nwithout blocking the others. A skill whose content differs from what the\nrunning version generates while carrying the running version's stamp is an\nedit by hand: without `--force` it MUST be left as it is and reported as\npreserved; with `--force` it MUST be overwritten. A skill whose workflow is\nno longer configured MUST NOT be deleted. A skill already identical to what\nwould be generated MUST NOT be rewritten, so that a second run in a row\nchanges nothing.\n\n#### Scenario: A skill from an earlier version is regenerated\n\n- **GIVEN** a project whose `codev-propose` skill was generated by an\n  earlier codev version\n- **WHEN** the user runs `codev update`\n- **THEN** the skill carries the running version's stamp and content\n\n#### Scenario: A hand edit is preserved\n\n- **GIVEN** a `codev-propose` skill edited by hand after being generated by\n  the running version\n- **WHEN** the user runs `codev update --json`\n- **THEN** the file is unchanged\n- **AND** its path is in `preserved`\n\n#### Scenario: `--force` overwrites a hand edit\n\n- **GIVEN** the same edited skill\n- **WHEN** the user runs `codev update --force`\n- **THEN** the skill is regenerated\n\n#### Scenario: A workflow removed from the configuration keeps its skill\n\n- **GIVEN** an installed `codev-sync` skill and a configuration whose\n  `workflows:` no longer lists `sync`\n- **WHEN** the user runs `codev update`\n- **THEN** `.claude/skills/codev-sync/SKILL.md` still exists\n\n#### Scenario: An unknown workflow\n\n- **GIVEN** a configuration listing `workflows: [propose, nope]`\n- **WHEN** the user runs `codev update --json`\n- **THEN** the `codev-propose` skill is written\n- **AND** `status` holds a warning `unknown_workflow`\n\n#### Scenario: A second run changes nothing\n\n- **GIVEN** a project on which `codev update` just ran\n- **WHEN** the user runs `codev update --json` again\n- **THEN** `created` and `updated` are empty\n\n### Requirement: `codev update` reports what it did\n\nWith `--json`, `codev update` SHALL write `{ root, created, updated,\nuntouched, preserved, skills, integration, status }`: the project root,\nthe files created, overwritten, left identical and preserved, the\ninstalled skills as `codev-<workflow>`, the repository integration steps\nas the `init` capability describes, and the warnings. The human output\nSHALL say codev was updated in the root, name the installed skills, count\nthe files created and updated — or say there was nothing to do — and,\nwhen skills were preserved, list them with a hint to rerun with `--force`.\n\n#### Scenario: Human report with a preserved skill\n\n- **GIVEN** a `codev-propose` skill edited by hand under the running\n  version\n- **WHEN** the user runs `codev update`\n- **THEN** the output lists the skill's path as left in place because\n  edited by hand, and names `--force`\n\n#### Scenario: Human report when everything is in place\n\n- **GIVEN** a project on which `codev update` just ran\n- **WHEN** the user runs `codev update` again\n- **THEN** the output says there is nothing to do\n\n#### Scenario: JSON failure shape\n\n- **GIVEN** a directory outside any codev project\n- **WHEN** the user runs `codev update --json`\n- **THEN** stdout carries `root: null`, empty `created`, `updated`,\n  `untouched`, `preserved`, `skills` and `integration`, and an error\n  `no_codev_root`\n"
+  },
+  "validate": {
+    "specify-core-commands": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "specify-core-commands",
+          "path": "_codev/changes/specify-core-commands"
+        }
+      ],
+      "status": []
+    }
+  }
+}

@@ -2,22 +2,87 @@
   "format": 2,
   "case": "privacy-code-python-soft-delete",
   "error": null,
-  "costUsd": 0.3812646,
-  "durationMs": 47246,
+  "costUsd": 0.3452764,
+  "durationMs": 40748,
   "consumption": {
-    "durationApiMs": 46826,
-    "turns": 11,
-    "permissionDenials": 4,
+    "durationApiMs": 40771,
+    "turns": 7,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1184,
-      "cacheCreation": 27988,
-      "cacheRead": 468678,
-      "output": 3130
-    }
+      "input": 1174,
+      "cacheCreation": 29852,
+      "cacheRead": 245777,
+      "output": 2816
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7391,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7391
+        }
+      },
+      {
+        "cacheCreation": 15129,
+        "cacheRead": 29530,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4563,
+          "skill": 10566
+        }
+      },
+      {
+        "cacheCreation": 3919,
+        "cacheRead": 44659,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3919
+        }
+      },
+      {
+        "cacheCreation": 903,
+        "cacheRead": 48578,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 903
+        }
+      },
+      {
+        "cacheCreation": 1909,
+        "cacheRead": 49481,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1909
+        }
+      },
+      {
+        "cacheCreation": 601,
+        "cacheRead": 51390,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 601
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +94,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-privacy-1 (Account deletion keeps the member's personal data in the users row) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-privacy-1 (Account deletion keeps the member's e-mail, name, phone and postal address) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +105,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "_conn.execute(\n    \"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n    (user_id,),\n)\n",
+        "evidence": "\"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n",
         "history": [
           {
             "by": "privacy",
@@ -56,13 +121,13 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "The proposal promises that the button \"erases the member's personal data\" and keeps orders \"without personal data\", but delete_account only soft-deletes: it sets deleted_at and clears password_hash, leaving email, display_name, phone and postal_address (app/schema.sql:3-6) in the users row. After a member clicks \"Delete my account\", every one of those fields is still stored and still joined to their orders through orders.user_id — the right to erasure (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Overwrite or null those columns in the same UPDATE (e.g. email set to a unique opaque placeholder such as 'deleted-<id>' since the column is NOT NULL UNIQUE, which also frees the address for a new sign-up; display_name to a placeholder; phone and postal_address to NULL), so the kept orders point at a row with no personal data. Add a test asserting these columns no longer hold the member's values, and state how backups are purged or expire, since the plan says nothing about them.",
+        "recommendation": "The proposal promises that the button \"erases the member's personal data\" and that orders are kept \"without personal data\", but delete_account only soft-deletes: it sets deleted_at and clears password_hash, leaving email, display_name, phone and postal_address (app/schema.sql:3-6) in the users row. After a member presses \"Delete my account\", their row still holds e.g. 'ada@example.org' / 'Ada' / phone / address, and every kept order still points to it through orders.user_id, so the orders stay linked to identifying data — the right to erasure (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met. Overwrite or NULL every personal column in the same UPDATE (e.g. email replaced by a unique non-identifying tombstone such as 'deleted-<id>' to satisfy NOT NULL UNIQUE, display_name by a placeholder, phone and postal_address by NULL), and add a test asserting that no personal column of the deleted row still holds the original values.",
         "reported": true,
         "role": "privacy",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Account deletion keeps the member's personal data in the users row"
+        "title": "Account deletion keeps the member's e-mail, name, phone and postal address"
       },
       {
         "awaiting": "author",
@@ -78,18 +143,45 @@
           }
         ],
         "id": "R-privacy-2",
-        "line": 42,
+        "line": 35,
         "location": "app/account.py:11-13",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "analytics_id is added with no caller in the change, and is a deterministic salted hash of the user id: whoever holds ANALYTICS_SALT can re-link events to the member, so they are pseudonymous, still personal data (GDPR recital 26). delete_account does nothing about events already carrying this id. The analytics store was not visible to the reviewer; the team should state whether those events are erased, aggregated or expire on deletion, or drop the function from this change if it is unused.",
+        "recommendation": "analytics_id is a deterministic, salted hash of the user id: it is pseudonymous, not anonymous, so events carrying it remain personal data as long as the salt and the users table exist (GDPR Recital 26). delete_account neither deletes those events nor breaks the link (for example with a per-user salt destroyed on deletion), so the analytics copies survive the erasure. The analytics store and its callers are not visible in this repository; confirm where these events go (and whether that processor is outside the EEA) and make account deletion reach them.",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
         "title": "Erasure does not reach analytics events keyed by analytics_id"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def delete_account(user_id: int) -> None:\n    \"\"\"Deletes the member's account; their orders are kept for accounting.\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 57,
+        "location": "app/account.py:16-23",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change keeps a tombstone users row (deleted_at) forever and states no retention period for it nor for the copies of the deleted member's data in database backups of members.db. Define how long the tombstone and backups keep the data and how they are purged (GDPR Art. 5(1)(e)); the backup policy is not visible in the repository, so this is a question for the team.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No retention or purge for the soft-deleted row and its backups"
       }
     ],
     "format": 1,

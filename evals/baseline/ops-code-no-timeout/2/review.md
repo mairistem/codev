@@ -6,6 +6,10 @@
 
 Mode: inline.
 
+### newcomer
+
+Disabled by configuration.
+
 ### ops
 
 #### R-ops-1 Unbounded retry of a non-idempotent charge can bill an order several times
@@ -15,70 +19,71 @@ severity: high
 confidence: high
 location: "app/payments.py:12-18"
 evidence: |
-  while True:
-      try:
-          response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
-          response.raise_for_status()
-          return response.json()
-      except requests.RequestException:
-          time.sleep(1)
+    while True:
+        try:
+            response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException:
+            time.sleep(1)
 recommendation: >-
-  Bound the retries (a few attempts with exponential backoff), retry only
-  errors where the charge certainly did not happen (connection refused, 429,
-  503) and send an idempotency key derived from the order id so the provider
-  deduplicates a repeated POST; after the last attempt, raise an error naming
-  the order. Scenario: the provider accepts the charge but the response is
-  lost (read error) or a 5xx comes back after processing — the loop POSTs
-  again every second and the customer is charged twice or more; when the
-  provider is down or rejects the request permanently (400, 401, 402),
-  checkout spins forever at one request per second against the provider.
+  Bound the retries (a few attempts with exponential backoff and jitter) and
+  retry only errors that are safe to repeat: connection errors before the
+  request was sent, 429 and 5xx — never 4xx such as a declined card or a bad
+  amount, which today loop forever. Make the POST idempotent by sending an
+  idempotency key derived from the order (e.g. an `Idempotency-Key: <order_id>`
+  header, if the provider supports it) so a retry after a read timeout or a 5xx
+  that was in fact processed does not create a second charge. After the last
+  attempt, raise an error naming the order and the provider status.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Charge call has no timeout and can hang checkout forever
+Scenario: the provider processes the charge but the response is lost (connection reset, 502 from a proxy). `requests.RequestException` is caught, the loop sleeps one second and POSTs again with no idempotency key: the customer is charged twice, and keeps being charged until a call succeeds. During a provider outage or for a permanent 4xx (declined card, invalid amount), the call never returns and the checkout request hangs forever, with retries every second hammering the provider.
+
+#### R-ops-2 The payment call has no timeout and can hang the checkout path
 
 ```yaml
 severity: high
 confidence: high
 location: "app/payments.py:14"
 evidence: |
-  response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
+            response = requests.post(PAYMENT_URL, json={"order": order_id, "amount": amount_cents})
 recommendation: >-
-  Pass `timeout=(connect, read)` to `requests.post`, e.g. `timeout=(3, 10)`.
-  Scenario: the provider accepts the TCP connection but never answers —
-  `requests` waits indefinitely, the checkout worker is stuck with no error
-  and no log, and an operator sees only hung requests. Note that a read
-  timeout on a POST is ambiguous (the charge may have happened), so it must
-  only be retried with the idempotency key of R-ops-1.
+  Pass an explicit `timeout=` (connect and read, e.g. `timeout=(3, 10)`) to
+  `requests.post`, and treat a read timeout as an outcome of unknown state —
+  retried only with the idempotency key of R-ops-1.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-3 Charge failures are swallowed with no log
+Scenario: the provider accepts the TCP connection but never answers (overload, half-open connection). `requests` without `timeout=` waits indefinitely, so the worker serving the checkout blocks forever; under load all workers are exhausted and checkout goes down, with no error raised anywhere for the operator to see.
+
+#### R-ops-3 Payment failures are swallowed without any log
 
 ```yaml
-severity: medium
+severity: high
 confidence: high
 location: "app/payments.py:17-18"
 evidence: |
-  except requests.RequestException:
-      time.sleep(1)
+        except requests.RequestException:
+            time.sleep(1)
 recommendation: >-
-  Log each failed attempt with structured fields — order_id, attempt, HTTP
-  status, provider error code, exception type — never the request body or
-  credentials, and log the final failure at error level. Scenario: the
-  provider returns 402 or 500 for an order — nothing is logged, so an
-  operator at 3 a.m. cannot tell which order is failing, why, or that the
-  provider is failing at all.
+  Log each failed attempt with structured fields — `order_id`, attempt number,
+  HTTP status or exception class, provider error code — at warning level, and
+  at error level when giving up; never log the request body beyond the order
+  and amount. Consider a counter metric of charge attempts and failures by
+  outcome so a provider outage is visible on a dashboard.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-4 Provider URL is hard-coded instead of read from configuration
+Scenario: the provider starts returning 401 after a credential rotation, or 5xx during an outage. Every exception is caught and dropped; nothing is logged and nothing is raised, so the operator sees only stuck checkouts with no message, order id or status code to diagnose from.
+
+#### R-ops-4 The provider URL is hard-coded instead of read from configuration
 
 ```yaml
 severity: medium
@@ -87,17 +92,12 @@ location: "app/payments.py:7"
 evidence: |
   PAYMENT_URL = "https://payments.example.com/v2/charges"
 recommendation: >-
-  Read the provider URL (and its credentials, when added) from the
-  environment or the application's configuration, failing at start-up when it
-  is missing. Scenario: tasks.md verifies the charge against the provider's
-  sandbox, but the code always targets the production endpoint — a test or
-  staging environment either charges real orders, or needs a code edit to
-  point at the sandbox.
+  Read the provider URL from the environment or the application's
+  configuration (e.g. `PAYMENT_URL = os.environ["PAYMENT_URL"]`), so staging
+  and tests target the sandbox and production the live endpoint.
 history:
   - status: open
     by: ops
 ```
 
-### newcomer
-
-Disabled by configuration.
+Scenario: task 1.1 is verified against the provider's sandbox, yet the code only knows one URL. Either the sandbox verification used a locally edited constant, or staging and tests hit the live endpoint and create real charges; switching environments or provider endpoints requires a code change and a release.

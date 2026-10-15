@@ -2,22 +2,87 @@
   "format": 2,
   "case": "migration-code-drop-and-rename",
   "error": null,
-  "costUsd": 0.302512,
-  "durationMs": 24437,
+  "costUsd": 0.31676139999999997,
+  "durationMs": 26140,
   "consumption": {
-    "durationApiMs": 23845,
+    "durationApiMs": 26072,
     "turns": 7,
-    "permissionDenials": 1,
+    "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1176,
-      "cacheCreation": 25221,
-      "cacheRead": 275555,
-      "output": 2232
-    }
+      "input": 1174,
+      "cacheCreation": 27035,
+      "cacheRead": 238482,
+      "output": 2590
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7401,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7401
+        }
+      },
+      {
+        "cacheCreation": 15265,
+        "cacheRead": 29540,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3705,
+          "skill": 11560
+        }
+      },
+      {
+        "cacheCreation": 1616,
+        "cacheRead": 44805,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1616
+        }
+      },
+      {
+        "cacheCreation": 586,
+        "cacheRead": 46421,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 586
+        }
+      },
+      {
+        "cacheCreation": 1563,
+        "cacheRead": 47007,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1563
+        }
+      },
+      {
+        "cacheCreation": 604,
+        "cacheRead": 48570,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 604
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +94,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public JSON field renamed with no BREAKING mark nor compatibility path) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Irreversible DROP COLUMN with no down migration or backup) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Irreversible DROP COLUMN with no down migration nor backup) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (JSON field user_name renamed userName with no BREAKING mark or transition) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,33 +106,6 @@
     "changeName": "drop-legacy-email",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "#[serde(rename = \"userName\")]\npub user_name: String,\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-1",
-        "line": 11,
-        "location": "src/api.rs:8-9",
-        "raisedBy": [
-          "migration"
-        ],
-        "recommendation": "`Account` is a type of the public HTTP API (src/api.rs:1), so every existing client that reads `user_name` from the account response gets a missing field after deploy, with no warning. Mark the rename **BREAKING** in the release note (it is only listed as \"Changed: Account JSON uses camelCase.\") with what clients must do, and give consumers a transition: emit both `user_name` and `userName` for a deprecation period (e.g. a second serialized field or a versioned endpoint), then remove `user_name` in a later release.",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "code.review",
-        "title": "Public JSON field renamed with no BREAKING mark nor compatibility path"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -81,19 +119,46 @@
             "to": null
           }
         ],
-        "id": "R-migration-2",
-        "line": 33,
+        "id": "R-migration-1",
+        "line": 11,
         "location": "migrations/0005_drop_legacy_email.sql:2",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Running 0005 on production permanently deletes every `users.legacy_email` value imported in 2023 (\"not written since\" does not mean empty), and there is no `0005_drop_legacy_email.down.sql`, while 0004 ships one (`migrations/0004_accounts.down.sql`). Add a down migration that re-adds the nullable column, and a backup step before the drop (e.g. copy `id, legacy_email` into an archive table or export it), or state in the plan why the data can be lost and how to recover it.",
+        "recommendation": "Every legacy_email value still stored in production rows (the column was filled by the 2023 import, only no longer written) is destroyed when the migration runs, and nothing can bring it back: unlike migrations/0004_accounts.down.sql, there is no 0005 down migration, and neither the proposal nor tasks.md has a backup step. Add migrations/0005_drop_legacy_email.down.sql (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`), and before the drop copy the data out (e.g. `CREATE TABLE users_legacy_email_backup AS SELECT id, legacy_email FROM users WHERE legacy_email IS NOT NULL;`) or state in the plan why the data may be lost and how to recover it.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Irreversible DROP COLUMN with no down migration nor backup"
+        "title": "Irreversible DROP COLUMN with no down migration or backup"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"userName\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 35,
+        "location": "src/api.rs:8",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Every existing consumer of the public HTTP API that reads `account.user_name` gets a missing field after deployment, with no warning: the proposal's release note lists it only as \"Changed: Account JSON uses camelCase.\" with no **BREAKING** item and no instruction for consumers, and the change ships rename and removal in one step, so old clients cannot keep working side by side. Mark it **BREAKING** in the release note with what consumers must do, and either keep emitting the old field for a deprecation window (serialize both `user_name` and `userName`, e.g. a second deprecated field or a custom Serialize) or version the endpoint; `#[serde(alias)]` does not help here since it only affects deserialization.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "JSON field user_name renamed userName with no BREAKING mark or transition"
       }
     ],
     "format": 1,

@@ -16,15 +16,7 @@ confidence: high
 location: "app/signup.py:14"
 evidence: |
   log.info("new signup email=%s name=%s id=%s", email, display_name, user_id)
-raised_by: [privacy]
-recommendation: >-
-  Log only the opaque member id (`log.info("new signup id=%s", user_id)`).
-  As written, every sign-up copies the member's e-mail address and display
-  name into the INFO log and wherever logs are shipped and retained; those
-  copies escape the users table, so account erasure and the retention rule
-  never reach them (GDPR Art. 5(1)(c) data minimisation, 5(1)(e) storage
-  limitation, Art. 17 erasure). Add a test asserting the log record holds
-  neither the e-mail nor the name.
+recommendation: Log only the opaque id (`log.info("new signup id=%s", user_id)`). As written, every call to `signup("ada@example.org", "Ada")` copies the member's e-mail address and display name into the INFO log, where they escape the member's retention and erasure (GDPR Art. 5(1)(c) data minimisation, 5(1)(e) storage limitation, Art. 17 erasure) and reach whoever reads or ships the logs.
 history:
   - status: open
     by: privacy
@@ -38,59 +30,35 @@ confidence: high
 location: "app/signup.py:15"
 evidence: |
   track("signup", {"user_id": user_id, "email": email})
-raised_by: [privacy]
-recommendation: >-
-  Drop `email` from the event properties: the proposal's stated purpose is
-  that "Sign-ups are counted in product analytics", which needs no e-mail
-  address (and arguably not even the user id). As written, every sign-up
-  sends the member's e-mail address to the third party at
-  https://beacon.example.com/v1/events (app/analytics.py:5), beyond what the
-  purpose needs (GDPR Art. 5(1)(b)-(c) purpose limitation and minimisation,
-  Art. 25 by default); the copy at the processor is then out of reach of
-  access and erasure requests (Art. 15, 17). Add a test asserting the
-  tracked properties hold no e-mail.
+recommendation: Drop `email` from the event properties; counting sign-ups (the proposal's stated purpose) needs at most the opaque `user_id`. As written, each sign-up posts the member's e-mail address to `https://beacon.example.com/v1/events` (app/analytics.py:5), a third-party processor, where the member's erasure and access rights do not reach it (GDPR Art. 5(1)(b)-(c) purpose limitation and minimisation, Art. 28 processors).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-3 Beacon is a new processor not identified in the plan
+#### R-privacy-3 New analytics processor not identified in the plan
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/analytics.py:1-5"
+location: "app/analytics.py:1"
 evidence: |
   """Product analytics, sent to the Beacon SaaS (beacon.example.com)."""
-raised_by: [privacy]
-recommendation: >-
-  Question for the team: the change introduces Beacon as a new recipient of
-  member data, yet the proposal's Impact and What Changes do not name it as
-  a processor. Confirm a data processing agreement exists (GDPR Art. 28),
-  where Beacon hosts the data and whether that is a transfer outside the EEA
-  (Chapter V), and record it in the plan and the record of processing
-  (Art. 30). Confidence is low: the contract and hosting region cannot be
-  seen from the code.
+recommendation: Question for the team — the proposal's Impact and Domains do not name Beacon as a new processor. Record it with its data processing agreement (GDPR Art. 28), where it hosts the data (Chapter V if outside the EEA), and how long it keeps the `signup` events and the `user_id` it receives. Depends on contracts and hosting the reviewer could not see.
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-4 Purpose, lawful basis and retention of sign-up data not stated
+#### R-privacy-4 No stated purpose, lawful basis or retention for the collected e-mail and display name
 
 ```yaml
-severity: low
+severity: medium
 confidence: low
 location: "app/signup.py:13"
 evidence: |
   user_id = insert_user(email=email, display_name=display_name)
-raised_by: [privacy]
-recommendation: >-
-  Question for the team: the change starts collecting e-mail addresses and
-  display names from self sign-up, but the proposal states neither the
-  lawful basis (Art. 6), nor how long a member row is kept, nor how it is
-  erased (backups included). State them in the proposal; only the
-  controller can decide them, and the users table predates this change.
+recommendation: Question for the team — the proposal states that sign-up "collects e-mail addresses and display names" but not why each is needed, on which lawful basis (GDPR Art. 6), how long they are kept, nor how account deletion erases them, backups included (Art. 5(1)(e), Art. 17). Only the controller can say; state it in the proposal. `app/db.py` is outside the change, so the existing retention could not be checked.
 history:
   - status: open
     by: privacy

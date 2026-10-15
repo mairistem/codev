@@ -8,17 +8,17 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 A send that times out after the relay accepted it is retried and may be delivered twice
+#### R-ops-1 A send that times out after the relay took the message is sent again
 
 ```yaml
-severity: medium
+severity: low
 confidence: low
 location: "src/worker.rs:46-50"
 evidence: |
   Err(SendError::Unavailable) => {
       let delay = RETRY_STEP * job.attempts;
       queue.release(job.id, delay);
-recommendation: Confirm in the `Mailer` implementation that a timeout after the message data was handed to the relay is not reported as `Unavailable`, or give each message a stable Message-ID so a re-send can be recognised; otherwise a slow relay that accepts the message after `SEND_TIMEOUT` makes the worker release the job and send the same e-mail again, up to `MAX_ATTEMPTS` times. Low confidence because the `Mailer` implementation is not part of the change.
+recommendation: Check how the mailer maps a timeout reached after the message data was sent; if it returns `Unavailable`, the job is handed out again and the recipient gets the e-mail twice. Map that case to a distinct error and do not retry it, or accept the duplicate as SMTP's usual at-least-once delivery.
 history:
   - status: open
     by: ops

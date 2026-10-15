@@ -1,0 +1,382 @@
+{
+  "format": 2,
+  "case": "plan-built-in-experts",
+  "error": null,
+  "costUsd": 2.1740418000000004,
+  "durationMs": 382997,
+  "consumption": {
+    "durationApiMs": 380769,
+    "turns": 40,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1184,
+      "cacheCreation": 106153,
+      "cacheRead": 2681034,
+      "output": 39376
+    },
+    "toolCalls": 39,
+    "orientationCalls": 18,
+    "calls": [
+      {
+        "cacheCreation": 7805,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7805
+        }
+      },
+      {
+        "cacheCreation": 14338,
+        "cacheRead": 29944,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14338
+        }
+      },
+      {
+        "cacheCreation": 2384,
+        "cacheRead": 44282,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2384
+        }
+      },
+      {
+        "cacheCreation": 3850,
+        "cacheRead": 46666,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3850
+        }
+      },
+      {
+        "cacheCreation": 277,
+        "cacheRead": 50516,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev roles": 277
+        }
+      },
+      {
+        "cacheCreation": 5018,
+        "cacheRead": 50793,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 14,
+          "file": 5004
+        }
+      },
+      {
+        "cacheCreation": 752,
+        "cacheRead": 55811,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 147,
+          "shell": 605
+        }
+      },
+      {
+        "cacheCreation": 1341,
+        "cacheRead": 56563,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1341
+        }
+      },
+      {
+        "cacheCreation": 6263,
+        "cacheRead": 57904,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6263
+        }
+      },
+      {
+        "cacheCreation": 2865,
+        "cacheRead": 64167,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2865
+        }
+      },
+      {
+        "cacheCreation": 4692,
+        "cacheRead": 67032,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 4692
+        }
+      },
+      {
+        "cacheCreation": 1284,
+        "cacheRead": 71724,
+        "input": 2,
+        "output": 61,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1284
+        }
+      },
+      {
+        "cacheCreation": 4007,
+        "cacheRead": 73008,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 3946,
+          "output": 61
+        }
+      },
+      {
+        "cacheCreation": 7301,
+        "cacheRead": 77015,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7301
+        }
+      },
+      {
+        "cacheCreation": 2636,
+        "cacheRead": 84316,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2636
+        }
+      },
+      {
+        "cacheCreation": 1439,
+        "cacheRead": 86952,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1439
+        }
+      },
+      {
+        "cacheCreation": 2275,
+        "cacheRead": 88391,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2275
+        }
+      },
+      {
+        "cacheCreation": 2253,
+        "cacheRead": 90666,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1605,
+          "output": 648
+        }
+      },
+      {
+        "cacheCreation": 702,
+        "cacheRead": 92919,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 687,
+          "output": 15
+        }
+      },
+      {
+        "cacheCreation": 2072,
+        "cacheRead": 93621,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2072
+        }
+      },
+      {
+        "cacheCreation": 9496,
+        "cacheRead": 95693,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 9496
+        }
+      },
+      {
+        "cacheCreation": 5784,
+        "cacheRead": 105189,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4896,
+          "output": 888
+        }
+      },
+      {
+        "cacheCreation": 2266,
+        "cacheRead": 110973,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 2227,
+          "output": 39
+        }
+      },
+      {
+        "cacheCreation": 901,
+        "cacheRead": 113239,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 235,
+          "edit": 518,
+          "output": 148
+        }
+      },
+      {
+        "cacheCreation": 1195,
+        "cacheRead": 114140,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1196
+        }
+      },
+      {
+        "cacheCreation": 558,
+        "cacheRead": 115335,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 558
+        }
+      },
+      {
+        "cacheCreation": 2240,
+        "cacheRead": 115893,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2240
+        }
+      },
+      {
+        "cacheCreation": 432,
+        "cacheRead": 118133,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "file": 132,
+          "output": 300
+        }
+      },
+      {
+        "cacheCreation": 2273,
+        "cacheRead": 118565,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2272
+        }
+      },
+      {
+        "cacheCreation": 480,
+        "cacheRead": 120838,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 480
+        }
+      },
+      {
+        "cacheCreation": 5971,
+        "cacheRead": 121318,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 5630,
+          "output": 341
+        }
+      },
+      {
+        "cacheCreation": 1003,
+        "cacheRead": 127289,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 542,
+          "edit": 461
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/built-in-expert-roles/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/built-in-expert-roles/design.md": "# Design: Built-in expert roles activated by the proposal's domains\n\n## Context\n\nToday a role is either a built-in **step role**, loaded from\n`assets/roles.yaml` (embedded with `include_str!` in\n`codev-core::roles`), or an **artifact role** declared by the schema.\n`codev-core::roles::catalog` merges them, `resolve` applies the project's\nthen the change's `always`/`never` settings, and `active_at` filters by\nstep. A role has one step (`at`), no knowledge, and its activation never\ndepends on the change's content. `codev-engine::roles::resolve` reads the\nsettings and the schema and calls the core; `codev-cli::contract::v1`\nturns the result into `RoleV1`/`RolesV1`.\n\nWhat exists and can be reused:\n\n- the skeptic's last-but-one criterion in `assets/roles.yaml` is the only\n  place that mentions the six domains today;\n- `codev-core::detect::stack` knows the five manifests, and\n  `codev-engine::detect` already reads them for `codev init` (it stops at\n  the first match, which is not enough for a polyglot project);\n- `codev-core::changelog::release_note` already parses one section of\n  `proposal.md`, purely, with a fence mask and located findings — the\n  model for parsing `## Domains`;\n- the embedded `spec-driven` schema (`assets/schemas/spec-driven/`) owns\n  the proposal template, its instruction and the product owner's\n  criteria;\n- the skill bodies live in `assets/workflows/propose.md` and `apply.md`.\n\nConstraints: the core never touches the disk (decision 0001); the crate\ngraph core → engine → cli is the dependency rule (decision 0002); the\nJSON contract is a public API consumed by installed skills and never\nderives directly from the domain model (project context); an inherited\nsource's configuration is read-only and its role keys are ignored\n(decision 0005); YAML goes through `serde_norway` (decision 0006).\n\n## Goals / Non-Goals\n\n**Goals:**\n\n- One catalog, one resolution path: experts are roles, so settings,\n  `done_when` extensions, validation codes and the `codev roles` output\n  work for them without a parallel mechanism.\n- Knowledge authored as readable prose, reviewed like documentation, and\n  filtered by stack before it reaches the skill.\n- Additive JSON contract: a skill installed before this change still\n  reads `codev roles --json` without error.\n\n**Non-Goals:**\n\n- Project-declared experts or domains (the list is closed).\n- Suggesting domains from the change's diff; the proposal is the only\n  activation signal here.\n- A persisted review record, sub-agent isolation or severity scales for\n  findings: the skills keep their current inline pass and summary blocks.\n- Stacks beyond the five detected manifests.\n\n## Decisions\n\n### Decision: Experts are a third role kind in the same catalog\n\n`RoleKind` gains `Expert { domain }`; `Role` gains `steps: Vec<String>`\n(the step roles and artifact roles get a one-element list, so `at` stays\n`steps[0]`) and `knowledge: Option<Knowledge>`. `catalog` appends the\nexperts after the step and artifact roles and keeps the stable sort by\nfirst step, so the experts land right after the `skeptic`.\n`active_at(step)` tests `steps.contains(step)` instead of `at == step`.\nAt `code.review`, the newcomer keeps its place before the experts because\nthe catalog order is preserved by the filter.\n\n`check_settings` accepts expert ids as known roles; `is_builtin_step_role`\ngets a sibling `is_builtin_expert_role`, used by schema validation to\nreserve the ids (the schemas delta).\n\n**Alternatives considered**:\n\n- A separate `experts` list next to `roles` in the output: rejected —\n  every skill would need a second loop, and settings, `done_when` and\n  validation codes would be duplicated.\n- Making each expert two roles (one per step): rejected — the user\n  configures one specialist, not two, and `roles: { security: never }`\n  must disable both reviews.\n\n### Decision: Activation gains a `domain` value fed by the proposal\n\n`Activation` gains `Domain`, the default of every expert and accepted\nonly on an expert (`invalid_role_activation` otherwise, with a message\nlisting the activations the role accepts). `resolve` takes the change's\nticked domains as a `BTreeSet<Domain>` (empty without a change); a role\nis active when its activation is `Always`, or `Domain` and its domain is\nin the set. `ResolvedRole` gains `activated_by: Option<ActivatedBy>`\n(`Always` | `Domain(domain)`), computed once there so the contract does\nnot re-derive it.\n\nThe project-then-change override order is unchanged: an explicit\n`always`/`never` always wins over the proposal, which is how a project\nforces an expert on, or a change silences one.\n\n**Alternatives considered**:\n\n- Activating experts from the Impact section's wording (as the skeptic's\n  lenses do today): rejected — free text is not a reliable trigger, and\n  the author cannot see or correct what activated a reviewer.\n- A `domains:` list in `change.yaml`: rejected — it hides the choice in a\n  file reviewers rarely read; the proposal is what the team approves, and\n  the tick sits next to the Impact it follows from.\n\n### Decision: `## Domains` is parsed in the core, like the release note\n\nA new pure module `codev-core::proposal::domains` takes the proposal text\nand returns the ticked domains and located findings\n(`unknown_domain`, `domains_conflict`, `domains_invalid`). It reuses\n`parser::fence::build_fence_mask` and the comment handling of\n`changelog::release_note`, so both sections follow the same tolerance\n(`*` or `-`, `x` or `X`) and the same strictness (an unrecognized line is\na finding, never a guess). A missing section returns an empty set and no\nfinding, so archived and in-flight changes are untouched.\n\n`codev validate` reports the findings as errors on the change's item\n(the validation hook that already checks change files).\n`codev roles`/`status`/`instructions` take the ticked set, ignore unknown\nnames, and turn findings into warnings in `status`: a typo must not stop\na skill mid-workflow, and `codev validate` before commit catches it.\n\nThe `Domain` enum lives in the core with its six kebab-case names in\ncatalog order; the expert-to-domain link is data in `assets/roles.yaml`\n(`domain:`), checked against the enum when the catalog is loaded (the\nexisting \"catalog is valid\" test covers it).\n\n**Alternatives considered**:\n\n- Parsing in the engine: rejected by decision 0001 — the engine only\n  reads the file; the parse is pure.\n- Failing `codev roles` on an unknown domain: rejected — it would break\n  `/codev-propose` while the proposal is being written.\n\n### Decision: Knowledge lives in one Markdown file per expert\n\nEach expert's knowledge is authored in `assets/experts/<role-id>.md`,\nembedded with `include_str!`: a `## General` section, then `## By stack`\nwith one `### <Stack>` subsection per stack, in the fixed order `Rust`,\n`JavaScript/TypeScript`, `Python`, `Go`, `Java`. The criteria\n(`done_when`) stay in `assets/roles.yaml` with the other roles, so the\n\"what must hold\" and the \"how to check\" are not mixed. A unit test\nasserts that every expert file has a General section and exactly the\nfive stack subsections.\n\nFiltering is pure: `Knowledge::served(&[Stack]) -> String` returns the\nGeneral text followed by `## By stack` and only the kept subsections. The\nserved form is one Markdown string, so the skill applies it as written\n(the propose skill's \"use it as served\").\n\nContent outline per expert (the substance the tasks will write):\n\n- **security** — trust boundaries and input validation, authorization at\n  each entry point, secrets out of code and logs, dependency additions and\n  their advisories, injection (SQL, shell, path traversal). By stack, e.g.\n  Rust: `unsafe` justification, `std::process::Command` with separate\n  args, `cargo audit`/`cargo deny`, path canonicalization; JS/TS:\n  prototype pollution, `eval`/`child_process.exec`, `npm audit`, XSS\n  escaping in templates; Python: `subprocess` without `shell=True`,\n  `pickle`/`yaml.load`, parameterized queries, `pip-audit`; Go:\n  `exec.Command`, `html/template` vs `text/template`, `govulncheck`;\n  Java: deserialization, `PreparedStatement`, XXE in XML parsers, OWASP\n  dependency-check.\n- **privacy** — data inventory (what personal data, why, where stored),\n  minimization, retention and deletion, consent and lawful basis, logs\n  and telemetry that leak identifiers, export and erasure requests. By\n  stack: redaction in `tracing`/`Debug` impls (Rust), logger serializers\n  (JS/TS), `logging` filters and Django/SQLAlchemy model fields (Python),\n  `slog` attributes (Go), Lombok `@ToString` exclusions (Java).\n- **accessibility** — keyboard reachability, focus order, labels and\n  names, contrast, text alternatives, reduced motion, and for CLIs: no\n  meaning carried by color alone, `NO_COLOR`, screen-reader-friendly\n  output, stable machine-readable modes. By stack: terminal crates and\n  color detection (Rust), ARIA and testing-library/axe (JS/TS),\n  Rich/Click options (Python), etc.\n- **performance** — the hot path and its complexity, I/O in loops,\n  allocation and copying, unbounded collections, caching and its\n  invalidation, a measurement before and after. By stack: clones and\n  `collect` in loops, `criterion` benches (Rust); re-renders, bundle\n  size, event-loop blocking (JS/TS); N+1 queries, `cProfile` (Python);\n  goroutine leaks, `pprof` (Go); boxing, JMH (Java).\n- **operations** — logs with context and without secrets, metrics,\n  timeouts and retries with backoff, failure modes, feature flags,\n  rollback, configuration defaults. By stack: `tracing` spans, exit codes\n  (Rust); unhandled rejections, graceful shutdown (JS/TS); `logging`\n  config, signal handling (Python); `context` deadlines (Go); thread\n  pools and JVM flags (Java).\n- **migration** — what existing users, data, configuration and consumers\n  see after upgrade; backward compatibility of formats and public APIs;\n  migration scripts that are idempotent and reversible; deprecation path;\n  ordering of deploy and data changes. By stack: serde defaults and\n  `#[serde(deny_unknown_fields)]` traps, semver of public crates (Rust);\n  package exports and major bumps (JS/TS); Alembic/Django migrations\n  (Python); module major versions (Go); Flyway/Liquibase (Java).\n\n**Alternatives considered**:\n\n- All knowledge inline in `assets/roles.yaml`: rejected — thirty prose\n  blocks in YAML scalars are hard to read and review, and the file would\n  stop being a readable catalog of criteria.\n- Knowledge as a structured JSON object (`general`, `byStack`): rejected\n  — codev already filters; the skill only needs the text, and a\n  structured shape would freeze the authoring format in the public\n  contract.\n\n### Decision: Stacks are resolved in the engine, filtered in the core\n\nThe engine resolves the project's stacks once per command:\n`config.stacks` when non-empty (parsed into the core `Stack` enum,\ncase-insensitive, `unknown_stack` otherwise); else every manifest present\nat the project root, by a new `detect::present_stacks(fs, root)` that\nchecks all five manifests by existence (it does not parse them, and does\nnot share the first-match loop of `codev init`); else all stacks, with\nthe filter `all`. The core receives the list and filters knowledge.\n`stacks:` is read from the project configuration only and ignored in an\ninherited source's, like `roles:` (decision 0005); `ResolvedConfig`\ngains the field, and `stacks` joins the known top-level keys.\n\n**Alternatives considered**:\n\n- Reusing `codev init`'s detection result: rejected — it keeps only the\n  first manifest, and parses content that presence alone answers.\n- Serving every stack always: rejected — it multiplies the text a skill\n  must read by five for no benefit, which is the problem the request\n  names.\n\n### Decision: The contract grows additively\n\n`RoleV1` gains `steps`, `domains` (a list, one element for an expert,\nempty otherwise, so a future multi-domain role needs no shape change),\n`activatedBy` (`\"always\"`, `\"domain:<d>\"` or `null`) and `knowledge`\n(string or `null`); `kind` gains `\"expert\"` and `when` gains `\"domain\"`.\n`RolesV1` gains `stacks: { detected, filter }`. Mapping stays in\n`contract.rs` from the resolved model, never `Serialize` on the domain\ntypes. The existing contract test that lists required fields is extended\nwith the new ones.\n\n**Alternatives considered**:\n\n- A `v2` contract: rejected — no field changes meaning; a new enum value\n  in `kind`/`when` is tolerated by the installed skills, which read these\n  as text.\n\n### Decision: The skeptic hands its lenses to the experts; the skills apply every role served\n\nThe skeptic's criterion \"Apply these lenses only when the proposal's\nImpact touches them…\" is removed from `assets/roles.yaml`. The\n`propose` body's challenge step and the `apply` body's review step say:\napply every role `codev roles` returns, an expert along its criteria and\n`knowledge` as served; the propose summary tags each point with its role\nid within the existing five-point cap; the apply summary adds an \"Expert\nnotes\" block (five items max) only when an expert is active. The bodies\ndo not restate the experts' criteria (existing requirement: criteria are\nserved as data). The `spec-driven` proposal template, instruction and\nproduct owner criteria gain `## Domains`.\n\n**Alternatives considered**:\n\n- Keeping the skeptic's lenses as a fallback when no expert is active:\n  rejected — it is the duplicated, knowledge-free review the request\n  wants to replace, and an unticked domain is a decision the plan states.\n\n## Risks / Trade-offs\n\n- [An author forgets to tick a domain, so its expert never runs] →\n  The product owner's criterion requires Domains to be filled; the\n  template lists all six unticked so each is a visible choice; the\n  skeptic's \"Scope — an obvious case missing?\" criterion covers a wrong\n  `None`; a project can force critical experts with `always`.\n- [Skills installed before this change, run against the new binary, lose\n  the skeptic's lenses and do not apply experts] → The release note and\n  the skills' existing update check point to `codev update`; the JSON\n  stays readable by old skills (additive fields), so nothing fails.\n- [Stack knowledge goes stale (tool names, advisories)] → It lives in\n  reviewable Markdown files with a structure test; each item names a\n  practice first and a tool second, so a renamed tool degrades gracefully.\n- [Knowledge size bloats skill context] → Filtering by stack keeps one or\n  two stack parts; the outline caps each section at a short checklist,\n  and the structure test asserts a maximum length per expert file.\n- [A custom schema already uses an expert id for an artifact role] →\n  Marked **BREAKING** with the fix (rename the role) in the release note;\n  `schema_invalid` names the id and says it is a built-in expert.\n- [Proposal parsing warnings make `codev roles` noisy while writing] →\n  Warnings only in `status`, never a failure; `codev validate` is where\n  they become errors.\n\n## Migration Plan\n\n- No data migration. Existing changes (active or archived) without\n  `## Domains` keep working: no expert activates and no finding is\n  reported.\n- Projects get the experts on upgrade; they activate only for proposals\n  written from the new template. `codev update` regenerates the\n  `propose` and `apply` skills.\n- Rollback: reverting the binary restores the previous catalog. A\n  `stacks:` key then falls back to the existing `unknown_config_key`\n  warning, but a `roles:` entry naming an expert fails with\n  `unknown_role` and must be removed before downgrading; the\n  documentation says so next to the expert settings.\n\n## Open Questions\n\n- The exact wording of each expert's criteria and knowledge is written\n  during implementation from the outline above; it can be refined later\n  without changing the specs or the approach.\n",
+    "_codev/changes/built-in-expert-roles/proposal.md": "# Proposal: Built-in expert roles activated by the proposal's domains\n\n## Why\n\nThe review roles say *what* to check but not *how*. Security, personal\ndata, accessibility, performance, operations and migrations are reduced to\none line of the skeptic's grid (\"apply these lenses only when the Impact\ntouches them\"), with no knowledge behind it and no review of the code at\nall. Teams get a generic pass exactly where a specialist eye matters most,\nand a project has no way to switch a specialist on or off.\n\n## What Changes\n\n- codev's role catalog gains six built-in **expert** roles, one per domain:\n  `security` (domain `security`), `privacy` (`personal-data`),\n  `accessibility` (`user-interface`), `performance` (`performance`),\n  `operations` (`operations`) and `migration` (`migration`). Each serves\n  both `plan.challenge` (does the plan address the domain?) and\n  `code.review` (does the code?).\n- Each expert carries **knowledge**: general guidance on how to check its\n  domain, plus a **By stack** part with concrete checks for Rust,\n  TypeScript/JavaScript, Python, Go and Java. `codev roles` serves only the\n  stacks of the project: the ones detected from its manifests by default,\n  or the ones listed under a new `stacks:` key of `_codev/config.yaml`.\n- An expert is active by default **only when the change's proposal ticks\n  its domain**. A project or a change can still force it with `always` or\n  `never`, as for any role. Without `--change`, or for a change whose\n  proposal has no `## Domains` section, no expert is active unless forced.\n- **BREAKING** The six expert ids become reserved: a project schema whose\n  artifact role uses one of them (`security`, `privacy`,\n  `accessibility`, `performance`, `operations`, `migration`) is refused\n  with `schema_invalid`, as it already is for a step role's id.\n- The `spec-driven` proposal gains a `## Domains` section, after\n  `## Impact`: a checklist of the six domains, or the single line `None`.\n  The product owner's criteria require it to be filled.\n- `codev validate` reports a ticked domain codev does not know\n  (`unknown_domain`), `None` alongside a ticked domain\n  (`domains_conflict`) and a line that is neither an item nor `None`\n  (`domains_invalid`), so a typo cannot silently drop an expert.\n- `codev roles --json` gains, per role, `domains`, `knowledge` and\n  `activatedBy` (why the role is active), a third `kind` value `expert`,\n  and at the top level `stacks` (the stacks served and where they come\n  from). The fields are additive; existing fields keep their meaning.\n- The skeptic no longer carries the conditional lenses (security &\n  privacy, compatibility & migration, operability, performance,\n  accessibility & UX): the experts own them now.\n- `/codev-propose` applies the active experts at `plan.challenge`\n  alongside the skeptic; `/codev-apply` applies them at `code.review`\n  alongside the newcomer, and reports what it did not fix alone in an\n  \"Expert notes\" block.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- Six domains, exactly those named in the request; the list is closed in\n  this change (a project cannot declare its own expert yet).\n- Activation is driven by the proposal's ticked domains only. Suggesting\n  domains from the change's diff (paths, manifests, added lines) is left\n  to a later change.\n- The stacks covered are the five codev already detects from manifests.\n  When no stack is detected and none is configured, every stack's part is\n  served rather than none.\n- Experts can be disabled (`never`): they are advisory, like the skeptic.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `roles`\n- `schemas`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- Role catalog asset and its loading (`assets/roles.yaml`,\n  `codev-core::roles`), activation and settings validation; stack\n  resolution in the engine (reusing manifest detection); proposal parsing\n  for `## Domains` and its validation finding.\n- JSON contract `codev-cli::contract::v1`: additive fields on\n  `codev roles --json` and on the `role` of `codev instructions --json`.\n- `_codev/config.yaml`: new known top-level key `stacks`.\n- Embedded `spec-driven` schema: proposal template, instruction and\n  product owner criteria.\n- Skills: `propose` (step `plan.challenge`) and `apply` (step\n  `code.review`) bodies; installed skills must be regenerated with\n  `codev update`.\n- Documentation, in both `docs/en` and `docs/fr`: the roles chapter, the\n  configuration reference (`stacks`, expert activation), the JSON output\n  reference, the file formats reference (proposal `## Domains`), the\n  custom schemas guide (reserved role ids) and the skills chapter.\n- Schema validation: the reserved role ids now include the experts'.\n\n## Domains\n\n- [ ] security — adds guidance about security, but no input handling, authorization, secret or dependency\n- [ ] personal-data — no personal data is read, stored or sent\n- [ ] user-interface — no interface beyond additive CLI output fields\n- [ ] performance — at most five small manifests read per `codev roles` call\n- [ ] operations — a local CLI with no service to run, log or roll back\n- [x] migration\n\n## Release note\n\n- Added: Expert roles for security, personal data, accessibility,\n  performance, operations and migrations, with concrete checks for your\n  stack. They review the plan and the code only when the proposal ticks\n  their domain in its new `## Domains` section.\n- Added: The `stacks:` key of `_codev/config.yaml` chooses which stacks'\n  guidance the experts receive; by default, the stacks detected in the\n  project.\n- Changed: The skeptic no longer applies the security, migration,\n  operability, performance and accessibility lenses itself: the matching\n  expert does, when its domain is ticked. Run `codev update` to refresh\n  your installed skills.\n- Changed: **BREAKING** A custom schema can no longer give an artifact\n  role the id `security`, `privacy`, `accessibility`, `performance`,\n  `operations` or `migration`: these are now the built-in experts. Rename\n  the role in your `schema.yaml`.\n",
+    "_codev/changes/built-in-expert-roles/specs/roles/spec.md": "## ADDED Requirements\n\n### Requirement: Built-in expert roles each own one domain\n\ncodev SHALL embed six expert roles, each owning one domain and serving two\nsteps, `plan.challenge` (does the plan address the domain?) and\n`code.review` (does the code?):\n\n| Role id | Domain | Display names |\n|---|---|---|\n| `security` | `security` | Security expert / Expert sécurité |\n| `privacy` | `personal-data` | Privacy expert / Expert données personnelles |\n| `accessibility` | `user-interface` | Accessibility expert / Expert accessibilité |\n| `performance` | `performance` | Performance expert / Expert performance |\n| `operations` | `operations` | Operations expert / Expert exploitation |\n| `migration` | `migration` | Migration expert / Expert migration |\n\nThe set of domains is closed: these six, in this order. Every expert can be\ndisabled. An expert's \"done when\" criteria have the origin `built-in` and\nstate what must hold for its domain; its knowledge (see the requirement on\nknowledge) says how to check it.\n\n#### Scenario: The experts at `plan.challenge` and `code.review`\n\n- **GIVEN** a project with no `roles:` key and a change `add-auth` whose\n  proposal ticks every domain\n- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth\n  --json`\n- **THEN** `roles` holds `skeptic`, then `security`, `privacy`,\n  `accessibility`, `performance`, `operations` and `migration`, each\n  expert with `kind: \"expert\"`, `steps: [\"plan.challenge\", \"code.review\"]`\n  and `disableable: true`\n- **AND** `codev roles --at code.review --change add-auth --json` holds the\n  same six experts after `newcomer`\n\n#### Scenario: An expert's display name in French\n\n- **GIVEN** a configuration with `language: fr`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** the `privacy` entry has `name: \"Expert données personnelles\"`\n\n### Requirement: An expert is active only when the change's proposal ticks its domain\n\nAn expert's default activation SHALL be `domain`: it is active at its steps\nfor a change exactly when that change's `proposal.md` ticks the expert's\ndomain under `## Domains`. A project setting or a change setting of\n`always` or `never` SHALL override it, the change's over the project's, as\nfor any role; the value `domain` SHALL also be accepted for an expert, to\nrestore the default. Without `--change`, an expert whose activation is\n`domain` SHALL be inactive.\n\nEach role served SHALL carry `activatedBy`: `always` for a role active by\nits activation, `domain:<domain>` for an expert active because its domain\nis ticked, and `null` for an inactive role.\n\n#### Scenario: Only the ticked domain brings its expert\n\n- **GIVEN** a change `add-export` whose proposal ticks `personal-data` and\n  no other domain\n- **WHEN** the user runs `codev roles --at plan.challenge --change\n  add-export --json`\n- **THEN** `roles` holds `skeptic` and `privacy` only\n- **AND** `privacy` has `when: \"domain\"` and\n  `activatedBy: \"domain:personal-data\"`\n\n#### Scenario: `None` activates no expert\n\n- **GIVEN** a change whose proposal's `## Domains` holds the single line\n  `None`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `roles` holds `newcomer` only\n\n#### Scenario: A proposal without a `## Domains` section\n\n- **GIVEN** a change created before this behavior, whose proposal has no\n  `## Domains` section, or a change with no `proposal.md` yet\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** no expert is active and the exit code is 0\n\n#### Scenario: A project forces an expert on\n\n- **GIVEN** a configuration with `roles: { security: always }` and a change\n  whose proposal ticks no domain\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `roles` holds `security` with `whenOrigin: \"project\"` and\n  `activatedBy: \"always\"`\n\n#### Scenario: A change disables a ticked expert\n\n- **GIVEN** a change whose proposal ticks `performance` and whose\n  `change.yaml` holds `roles: { performance: never }`\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** `roles` does not hold `performance`\n- **AND** `codev roles --change <name> --json` lists it with\n  `when: \"never\"`, `whenOrigin: \"change\"` and `activatedBy: null`\n\n#### Scenario: No expert without a change\n\n- **GIVEN** a project with no `roles:` key\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `roles` holds `skeptic` only\n\n### Requirement: The proposal declares the domains it touches\n\ncodev SHALL read a change's domains from the `## Domains` section of its\n`proposal.md`: each list item `- [x] <domain>` (or `- [X]`, or with `*`\nfor `-`) ticks `<domain>`; text after the domain, separated by a space, a\ndash or an em dash, is a free note and is ignored; `- [ ] <domain>` items,\nthe single line `None`, HTML comments and fenced blocks tick nothing. A\ndomain is matched exactly, in lower case.\n\n`codev validate` SHALL report, as an error finding under the change's item:\n\n- `unknown_domain` for each ticked domain codev does not know, naming it\n  and listing the six domains;\n- `domains_conflict` when the section both ticks a domain and holds the\n  line `None`;\n- `domains_invalid` for each non-blank line, outside comments and fenced\n  blocks, that is neither a checklist item nor `None` — such as a note\n  wrapped onto a second line — naming the line.\n\nA proposal without the section produces no finding. `codev roles`,\n`codev status` and `codev instructions` SHALL NOT fail on these defects:\nthey ignore the unknown domain and report it as a warning in `status`.\n\n#### Scenario: A note after a ticked domain\n\n- **GIVEN** a proposal whose `## Domains` holds\n  `- [x] migration — the config key is renamed`\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** `migration` is active with `activatedBy: \"domain:migration\"`\n\n#### Scenario: A misspelled domain\n\n- **GIVEN** a proposal whose `## Domains` holds `- [x] securty`\n- **WHEN** the user runs `codev validate <name> --json`\n- **THEN** the change's item holds an error `unknown_domain` naming\n  `securty` and listing the six domains\n- **AND** `codev roles --at plan.challenge --change <name> --json` exits\n  with code 0, activates no expert, and `status` holds an `unknown_domain`\n  warning\n\n#### Scenario: `None` and a ticked domain together\n\n- **GIVEN** a proposal whose `## Domains` holds `None` and `- [x] security`\n- **WHEN** the user runs `codev validate <name>`\n- **THEN** it reports the error `domains_conflict`\n\n#### Scenario: A note wrapped onto a second line\n\n- **GIVEN** a proposal whose `## Domains` holds `- [ ] performance — reads`\n  followed by the line `  one more file`\n- **WHEN** the user runs `codev validate <name>`\n- **THEN** it reports the error `domains_invalid` naming the line\n  `one more file`\n\n#### Scenario: A domain ticked inside a fenced block\n\n- **GIVEN** a proposal whose `## Domains` shows `- [x] security` only\n  inside a fenced code block\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** `security` is not active\n\n### Requirement: Experts carry knowledge filtered by the project's stacks\n\nEach expert SHALL carry `knowledge`: a general part that says how to check\nits domain, whatever the language, and a `By stack` part with concrete\nchecks — the idioms, libraries, tools and pitfalls of that stack — for\neach of the stacks `Rust`, `JavaScript/TypeScript`, `Python`, `Go` and\n`Java`. A role that is not an expert SHALL have `knowledge: null`.\n\n`codev roles` SHALL serve, in each expert's `knowledge`, the general part\nfollowed by the `By stack` entries of the project's stacks only, in the\norder above. The project's stacks SHALL be, in order of precedence: the\n`stacks:` list of `_codev/config.yaml`; otherwise every stack whose\nmanifest is present at the project root (`Cargo.toml`, `package.json`,\n`pyproject.toml`, `go.mod`, `pom.xml`) — several when the project has\nseveral; otherwise, when none is detected, every stack.\n\nWith `--json`, the document SHALL carry `stacks`, with `detected` (the\nstacks found from manifests, possibly empty) and `filter`: `config` when\n`stacks:` is set, `detected` when stacks were detected, `all` when every\nstack is served.\n\n#### Scenario: A Rust project receives the Rust part only\n\n- **GIVEN** a project with a `Cargo.toml` at its root and no `stacks:` key,\n  and a change whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** the `security` entry's `knowledge` holds the general part and\n  the `Rust` entry of `By stack`, and no other stack's entry\n- **AND** `stacks` is `{ \"detected\": [\"Rust\"], \"filter\": \"detected\" }`\n\n#### Scenario: A polyglot project receives both parts\n\n- **GIVEN** a project with both `pyproject.toml` and `package.json` at its\n  root\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** each expert's `By stack` holds `JavaScript/TypeScript` then\n  `Python`\n\n#### Scenario: The configuration chooses the stacks\n\n- **GIVEN** a project with a `Cargo.toml` and a configuration with\n  `stacks: [Go]`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** each expert's `By stack` holds `Go` only\n- **AND** `stacks.filter` is `config`\n\n#### Scenario: No stack detected\n\n- **GIVEN** a project with none of the five manifests and no `stacks:` key\n- **WHEN** the user runs `codev roles --json`\n- **THEN** each expert's `By stack` holds the five stacks\n- **AND** `stacks` is `{ \"detected\": [], \"filter\": \"all\" }`\n\n#### Scenario: A step role has no knowledge\n\n- **WHEN** the user runs `codev roles --at plan.trace --change <name>\n  --json`\n- **THEN** the `tracer` entry has `knowledge: null`\n\n### Requirement: The project chooses its stacks under `stacks:`\n\n`_codev/config.yaml` SHALL accept a top-level `stacks:` key: a list of\nstack names among `Rust`, `JavaScript/TypeScript`, `Python`, `Go` and\n`Java`, matched without regard to case. `stacks` SHALL be a known key: it\nnever produces an `unknown_config_key` warning. An entry that is not one\nof these names SHALL be reported with `unknown_stack`, naming the entry\nand the valid names: as an error finding under the `config` item by\n`codev validate`, and as a failure with exit code 1 by `codev status`,\n`codev instructions` and `codev roles`. An empty list SHALL behave as if\nthe key were absent. The `stacks:` key of an inherited source's\nconfiguration MUST be ignored.\n\n#### Scenario: A known key\n\n- **GIVEN** a configuration with `stacks: [Rust]`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `status` holds no `unknown_config_key` warning\n\n#### Scenario: An unknown stack\n\n- **GIVEN** a configuration with `stacks: [Ruby]`\n- **WHEN** the user runs `codev validate --json`\n- **THEN** the `config` item holds an error `unknown_stack` naming `Ruby`\n  and listing the five valid names\n- **AND** `codev roles --json` exits with code 1 and `status[0].code` is\n  `unknown_stack`\n\n#### Scenario: Case does not matter\n\n- **GIVEN** a configuration with `stacks: [python]`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** each expert's `By stack` holds `Python`\n\n## MODIFIED Requirements\n\n### Requirement: codev knows a catalog of roles bound to workflow steps\n\ncodev SHALL know a catalog of roles. Each role has an id, a display name in\nEnglish and in French, the question it owns, its \"done when\" criteria, and\nthe workflow step it serves. The steps, in workflow order, are\n`plan.understand`, `plan.investigate`, `plan.write`, `plan.trace`,\n`plan.challenge`, `code.implement` and `code.review`.\n\nThe catalog is made of:\n\n- the built-in step roles, embedded in codev: `analyst`\n  (`plan.understand`), `investigator` (`plan.investigate`), `tracer`\n  (`plan.trace`), `skeptic` (`plan.challenge`), `developer`\n  (`code.implement`) and `newcomer` (`code.review`);\n- the artifact roles declared by the schema in use, all at `plan.write`:\n  with the default `spec-driven` schema, `product` (`proposal`), `qa`\n  (`specs`), `architect` (`design`) and `lead` (`tasks`);\n- the built-in expert roles, each serving `plan.challenge` and\n  `code.review`: `security`, `privacy`, `accessibility`, `performance`,\n  `operations` and `migration`.\n\nThe display names are: Analyst / Analyste, Investigator / Enquêteur,\nProduct owner / Product owner, QA analyst / Analyste QA, Architect /\nArchitecte, Tech lead / Tech lead, Tracer / Contrôleur de traçabilité,\nSkeptic / Contradicteur, Developer / Développeur, Newcomer / Nouvel\narrivant, and those of the experts. Every step role and artifact role is\nactive (`always`) by default; every expert's default activation is\n`domain`. Artifact roles and the `developer` cannot be disabled.\n\nThe catalog is ordered by its first step, then by catalog or schema order;\nan expert, whose first step is `plan.challenge`, comes after the\n`skeptic`. Listed at `code.review`, the experts come after the `newcomer`.\n\nThe `skeptic`'s criteria MUST NOT include the domain lenses (security &\nprivacy, compatibility & migration, operability, performance,\naccessibility & UX): the experts own them.\n\n#### Scenario: The default catalog\n\n- **GIVEN** a project using the `spec-driven` schema and no `roles:` key\n- **WHEN** the user runs `codev roles --json`\n- **THEN** `roles` lists `analyst`, `investigator`, `product`, `qa`,\n  `architect`, `lead`, `tracer`, `skeptic`, `security`, `privacy`,\n  `accessibility`, `performance`, `operations`, `migration`, `developer`\n  and `newcomer`, in that order\n- **AND** the experts have `when: \"domain\"` and every other role\n  `when: \"always\"`\n- **AND** `product`, `qa`, `architect`, `lead` and `developer` have\n  `disableable: false`\n\n#### Scenario: A custom schema without roles\n\n- **GIVEN** a project whose schema declares no artifact role\n- **WHEN** the user runs `codev roles --json`\n- **THEN** `roles` lists only the six built-in step roles and the six\n  experts\n\n#### Scenario: The skeptic no longer carries the domain lenses\n\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** no criterion of the `skeptic` names the security & privacy,\n  compatibility & migration, operability, performance or accessibility &\n  UX lenses\n\n### Requirement: The project configures roles under `roles:`\n\n`_codev/config.yaml` SHALL accept a top-level `roles:` mapping from a role\nid to either an activation (`always` or `never`, and also `domain` for an\nexpert), or a mapping with an optional `when:` (the same values, the\nrole's default when absent) and an optional `done_when:` list. The\n`done_when:` entries SHALL be added after the role's own criteria, never\nreplacing them, each with the origin `project`; blank entries are ignored.\nAny other key inside a role's mapping MUST make the configuration invalid,\nlike an unknown key of `changelog`. The `roles:` key of an inherited\nsource's configuration MUST be ignored.\n\nA change's `change.yaml` SHALL accept a `roles:` mapping from a role id to\nan activation, which overrides the project's activation of that role for\nthis change only.\n\n#### Scenario: A role disabled by the project\n\n- **GIVEN** a configuration with `roles: { newcomer: never }`\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `roles` is empty\n- **AND** `codev roles --json` lists `newcomer` with `when: \"never\"` and\n  `whenOrigin: \"project\"`\n\n#### Scenario: Extra criteria are added after the role's own\n\n- **GIVEN** a configuration where `skeptic` has `done_when:` with the entry\n  `The rollback plan is stated`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `skeptic` entry's `doneWhen` holds its built-in criteria,\n  each with the origin `built-in`, followed by `The rollback plan is\n  stated` with the origin `project`\n\n#### Scenario: Extra criteria for an expert keep its activation\n\n- **GIVEN** a configuration where `security` has `done_when:` with the\n  entry `Every endpoint is behind the gateway` and no `when:`\n- **WHEN** the user runs `codev roles --change <name> --json` for a change\n  whose proposal ticks no domain\n- **THEN** `security` has `when: \"domain\"`, `whenOrigin: \"default\"` and\n  `activatedBy: null`\n- **AND** its `doneWhen` ends with the project's entry\n\n#### Scenario: A change overrides the activation\n\n- **GIVEN** a configuration with `roles: { newcomer: never }` and a change\n  `add-auth` whose `change.yaml` holds `roles: { newcomer: always }`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `roles` holds `newcomer` with `whenOrigin: \"change\"`\n- **AND** without `--change`, `roles` is empty\n\n#### Scenario: An unknown key inside a role\n\n- **GIVEN** a configuration where `skeptic` holds the key `done-when`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with the code `invalid`, naming the key\n\n#### Scenario: Roles of an inherited source are ignored\n\n- **GIVEN** a project inheriting from a source whose configuration holds\n  `roles: { skeptic: never }`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `roles` holds `skeptic`\n\n### Requirement: Invalid role settings are reported with stable codes\n\nA role setting, in `_codev/config.yaml` or in a change's `change.yaml`,\nSHALL be reported:\n\n- with `unknown_role` when its id is neither a built-in step role, nor a\n  built-in expert role, nor an artifact role of the schema in use;\n- with `invalid_role_activation` when its activation is neither `always`\n  nor `never`, or is `domain` on a role that is not an expert;\n- with `role_not_disableable` when it sets `never` on an artifact role or\n  on the `developer`.\n\nThe message MUST name the role and the file, and list the activations the\nrole accepts. `codev validate` SHALL report each one as an error finding\nwith its code — under the `config` item for `_codev/config.yaml`, under\nthe change's item for its `change.yaml`. Project settings are checked\nagainst the configured schema; a change's settings against the change's\nschema. `codev status`, `codev instructions` and `codev roles` SHALL fail\nwith exit code 1 and the code of the first invalid setting, the project's\nbefore the change's.\n\n#### Scenario: An unknown role id\n\n- **GIVEN** a configuration with `roles: { reviewer: never }`\n- **WHEN** the user runs `codev validate --json`\n- **THEN** the `config` item holds an error `unknown_role` naming\n  `reviewer`\n- **AND** `codev status --change add-auth --json` fails with\n  `status[0].code` `unknown_role`\n\n#### Scenario: An invalid activation\n\n- **GIVEN** a configuration with `roles: { skeptic: sometimes }`\n- **WHEN** the user runs `codev validate`\n- **THEN** it reports the error `invalid_role_activation` naming `skeptic`\n  and the accepted values `always` and `never`\n\n#### Scenario: `domain` on a role that is not an expert\n\n- **GIVEN** a configuration with `roles: { skeptic: domain }`\n- **WHEN** the user runs `codev validate`\n- **THEN** it reports the error `invalid_role_activation` naming `skeptic`\n  and the accepted values `always` and `never`\n- **AND** `roles: { migration: domain }` is accepted\n\n#### Scenario: Disabling an artifact role\n\n- **GIVEN** a configuration with `roles: { qa: never }`\n- **WHEN** the user runs `codev instructions specs --change add-auth`\n- **THEN** the command fails with `role_not_disableable` naming `qa`\n- **AND** `roles: { qa: { done_when: [\"...\"] } }` is accepted\n\n#### Scenario: An invalid setting in a change\n\n- **GIVEN** a change `add-auth` whose `change.yaml` holds\n  `roles: { developer: never }`\n- **WHEN** the user runs `codev validate add-auth --json`\n- **THEN** the item of `add-auth` holds an error `role_not_disableable`\n  naming `developer` and `change.yaml`\n\n### Requirement: `codev roles` serves the roles of a step\n\n`codev roles [--at <step>] [--change <name>] [--json]` SHALL resolve the\nroles against the change's schema, its `change.yaml` and its proposal's\ndomains with `--change`, otherwise against the configured schema and the\nproject configuration alone. With `--at`, it SHALL list the roles active\nat that step; without it, every role of the catalog with its activation.\nIt reads files, writes none, and exits with code 0.\n\nWith `--json`, the document SHALL carry `changeName` (`null` without\n`--change`), `schemaName`, `at` (`null` without `--at`), `language`,\n`stacks`, `roles` and `status`. Each role SHALL carry `id`, `name` (its\ndisplay name in the configured `language`, English when the role has none\nin that language), `kind` (`step`, `artifact` or `expert`), `at` (its\nfirst step), `steps` (every step it serves), `artifact` (the artifact id\nof an artifact role, `null` otherwise), `domains` (the domain an expert\nowns, empty for other roles), `question`, `when` (`always`, `never` or\n`domain`), `whenOrigin` (`default`, `project` or `change`),\n`activatedBy`, `disableable`, `knowledge` (an expert's knowledge as\nserved, `null` for other roles), and `doneWhen`, a list of criteria each\nwith its `origin` (`built-in`, `schema:<name>` or `project`) and its\n`text`. The fields that existed before `kind: \"expert\"` keep their meaning\nfor the other roles. The `role` of `codev instructions --json` SHALL carry\nthe same fields.\n\nWithout `--json`, with `--at`, it SHALL print each active role's id and\nname, its question, why it is active when it is an expert, its criteria\neach prefixed with its origin in parentheses, and its knowledge — or a\nline saying no role is active at that step. Without `--at`, it SHALL print\none line per role: id, name, step or artifact, and activation with its\norigin when not the default, marking the roles that cannot be disabled and\nnaming each expert's domain.\n\nAn `--at` that is not one of the steps SHALL fail with `unknown_step`,\nnaming the valid steps. With `--json`, a failure keeps the document's\nshape, with `roles` empty.\n\n#### Scenario: The roles of a step, as JSON\n\n- **GIVEN** a project with no `roles:` key and a change `add-auth`\n- **WHEN** the user runs `codev roles --at plan.trace --change add-auth\n  --json`\n- **THEN** `roles` holds one entry, `tracer`, with `kind: \"step\"`,\n  `at: \"plan.trace\"`, `steps: [\"plan.trace\"]`, `artifact: null`,\n  `domains: []`, `when: \"always\"`, `whenOrigin: \"default\"`,\n  `activatedBy: \"always\"`, `knowledge: null` and its criteria with the\n  origin `built-in`\n\n#### Scenario: Artifact roles at `plan.write`\n\n- **WHEN** the user runs `codev roles --at plan.write --json`\n- **THEN** `roles` holds `product`, `qa`, `architect` and `lead`, with\n  `artifact` `proposal`, `specs`, `design` and `tasks`, and criteria with\n  the origin `schema:spec-driven`\n\n#### Scenario: An expert, as JSON\n\n- **GIVEN** a change `add-auth` whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** the `security` entry has `kind: \"expert\"`,\n  `at: \"plan.challenge\"`, `domains: [\"security\"]`, `when: \"domain\"`,\n  `activatedBy: \"domain:security\"` and a non-null `knowledge`\n\n#### Scenario: Display names follow the configured language\n\n- **GIVEN** a configuration with `language: fr`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `skeptic` entry has `name: \"Contradicteur\"`\n- **AND** with `language: de`, it has `name: \"Skeptic\"`\n\n#### Scenario: An unknown step\n\n- **WHEN** the user runs `codev roles --at plan.review --json`\n- **THEN** the exit code is 1 and `status[0].code` is `unknown_step`\n- **AND** its message lists the valid steps and `roles` is empty\n\n#### Scenario: Human output of every role\n\n- **GIVEN** a configuration with `roles: { newcomer: never }`\n- **WHEN** the user runs `codev roles`\n- **THEN** it prints one line per role, the `newcomer` line saying `never`\n  and `project`, the `product` line saying it cannot be disabled, and the\n  `privacy` line naming the domain `personal-data`\n",
+    "_codev/changes/built-in-expert-roles/specs/schemas/spec.md": "## MODIFIED Requirements\n\n### Requirement: A schema artifact may declare its role\n\nAn artifact of a `schema.yaml` MAY declare a `role:` mapping with an `id`,\na `name` mapping from language codes to display names, a `question` and a\n`done_when` list. The schema SHALL be refused with `schema_unreadable` when\nthe mapping holds an unknown key or misses `id`, `name` or `question`, and\nwith `schema_invalid`, naming the schema and the reason, when:\n\n- a role id is not kebab-case;\n- two artifacts declare the same role id;\n- a role id is the id of a built-in step role or of a built-in expert\n  role;\n- a role's `name` has no `en` entry.\n\nAn artifact without `role:` has no role, and the rest of the schema is\nunaffected.\n\n#### Scenario: A schema with an artifact role\n\n- **GIVEN** a project schema whose artifact `brief` declares\n  `role: { id: editor, name: { en: Editor }, question: \"Is the brief clear?\", done_when: [\"One page at most\"] }`\n- **WHEN** the user runs `codev roles --at plan.write --json`\n- **THEN** `roles` holds `editor` with `artifact: \"brief\"` and the criterion\n  `One page at most` with the origin `schema:<the schema's name>`\n\n#### Scenario: A role id taken by a built-in step role\n\n- **GIVEN** a project schema whose artifact declares `role: { id: skeptic, … }`\n- **WHEN** a command reads the schema\n- **THEN** the schema is refused with `schema_invalid`, naming `skeptic`\n\n#### Scenario: A role id taken by a built-in expert role\n\n- **GIVEN** a project schema whose artifact declares\n  `role: { id: security, … }`\n- **WHEN** a command reads the schema\n- **THEN** the schema is refused with `schema_invalid`, naming `security`\n  and saying it is a built-in expert role\n\n#### Scenario: A role without an English name\n\n- **GIVEN** a project schema whose artifact role has `name: { fr: Rédacteur }`\n- **WHEN** a command reads the schema\n- **THEN** the schema is refused with `schema_invalid`, naming the role\n",
+    "_codev/changes/built-in-expert-roles/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The default schema gives each artifact a role with \"Done when\" criteria\n\nEach artifact of the embedded `spec-driven` schema SHALL declare its role as\ndata — an id, a display name, the question it owns and a list of \"done\nwhen\" criteria — which `codev instructions <artifact> --json` returns in\nits `role` field, with the origin `schema:spec-driven` on each criterion.\nThe roles are:\n\n- `proposal` — `product` (product owner), owns why and what;\n- `specs` — `qa` (QA analyst), owns observable behavior;\n- `design` — `architect`, owns how;\n- `tasks` — `lead` (tech lead), owns sequencing and verification.\n\nThe tech lead's criteria MUST require that the documentation affected by\nthe change is updated in a task, or that the plan states none is affected;\nthat every spec scenario is covered by an automated test written in a task,\na manual check being acceptable only when automation is impossible and with\nthe reason stated; and that tests follow the project's existing test suite,\nthe testing conventions of its language, and its `rules`. The `proposal`\ninstruction MUST ask the Impact section to name the affected documentation,\nand MUST describe a `## Release note` section, after `## Impact`: bullets\n`- <Category>: <text>` with Category among `Added`, `Changed`,\n`Deprecated`, `Removed`, `Fixed` and `Security`, breaking items starting\nwith `**BREAKING**`, or the single line `None` for an internal change. The\nproduct owner's criteria MUST require that the release note is written for\nend users, categorized, with breaking items marked, or `None`. The\nembedded proposal template MUST carry the `## Release note` section. The\narchitect's criteria MUST require that the approach is the simplest that\nsatisfies the specs, and that a newcomer can follow the design without\nknowing its history.\n\nThe `proposal` instruction MUST also describe a `## Domains` section,\nbetween `## Impact` and `## Release note`: a checklist that ticks each\ndomain the change touches — `security`, `personal-data`,\n`user-interface`, `performance`, `operations`, `migration`, each with a\none-line hint of what it covers — or the single line `None`, and say that\neach ticked domain brings its expert to challenge the plan and review the\ncode. The embedded proposal template MUST carry that section with the six\ndomains unticked. The product owner's criteria MUST require that Domains\nticks every domain the change touches, or says `None`.\n\nThe instructions of the default schema MUST NOT restate the role: they no\nlonger start with a `Role:` line or a `Done when:` list. A custom\nschema's instructions MUST be returned as written; its artifacts carry a\nrole only when the schema declares one.\n\n#### Scenario: The proposal carries the product owner role\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `role.id` is `product` and `role.name` is `Product owner`\n- **AND** `role.doneWhen` includes marking every breaking change with\n  **BREAKING**\n- **AND** `instruction` asks the Impact section to name the affected\n  documentation, and does not start with `Role:`\n- **AND** `role.doneWhen` requires a release note written for end users,\n  categorized, with breaking items marked, or `None`\n- **AND** `template` has a `## Release note` section after `## Impact`\n\n#### Scenario: The proposal carries the Domains section\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `template` has a `## Domains` section between `## Impact` and\n  `## Release note`, listing the six domains as unticked items\n- **AND** `instruction` describes the six domains and the line `None`\n- **AND** `role.doneWhen` requires Domains to tick every domain the change\n  touches, or to say `None`\n\n#### Scenario: A custom schema's proposal is left as written\n\n- **GIVEN** a change using a project schema whose proposal template has no\n  `## Domains` section\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `template` is the schema's, with no `## Domains` section added\n\n#### Scenario: The tasks criteria cover every spec scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `role.id` is `lead`\n- **AND** `role.doneWhen` requires every spec scenario to be covered by at\n  least one task's verification\n\n#### Scenario: The tasks criteria require documentation and automated tests\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `role.doneWhen` requires the affected documentation to be\n  updated in a task, or the plan to state that none is affected\n- **AND** it requires every spec scenario to be covered by an automated\n  test, a manual check only when automation is impossible, with the reason\n- **AND** it requires tests to follow the project's existing test suite,\n  the conventions of its language and its `rules`\n\n#### Scenario: The design criteria require the simplest approach\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions design --change <name> --json`\n- **THEN** `role.id` is `architect`\n- **AND** `role.doneWhen` requires the approach to be the simplest that\n  satisfies the specs, and the design to be followable by a newcomer\n  without knowing its history\n\n#### Scenario: A custom schema gets no role added\n\n- **GIVEN** a change using a project schema whose artifact declares no role\n- **WHEN** the user runs `codev instructions <artifact> --change <name>\n  --json`\n- **THEN** `instruction` is the schema's text, with no `Role:` line added\n- **AND** `role` is `null`\n\n### Requirement: The `propose` skill challenges the plan and reports points to challenge\n\nAfter the traceability check, the `propose` skill SHALL re-read the\nartifacts as reviewers who did not write them: the skeptic, along a fixed\ngrid — the need (does the change solve the Why, is there a simpler\nsolution or one without code), the scope (anything nobody asked for, an\nobvious case missing), the specs (error and edge cases, each requirement\nverifiable), the decisions (a silent contradiction with a decision in\neffect), the assumptions (the one that would bring the plan down if\nwrong) and the tasks (each one verifiable) — and every expert active at\n`plan.challenge`, each asking whether the plan addresses its domain, along\nits criteria and with its knowledge as served, the `By stack` part\nincluded. Every role MUST also apply the project's `rules:` received\nthrough `codev instructions`. An expert that is not active MUST NOT be\napplied, and no role other than an active expert raises a point about an\nexpert's domain.\n\nThe pass MUST fix what is unambiguous directly in the artifacts and record\nwhat needs a human decision in the Open Questions of `design.md`, or in the\nproposal when there is no design. It MUST NOT add scope.\n\nThe final summary of the skill MUST end with a \"Points to challenge\" block:\nat most five items across all roles, ranked by impact, each on one line\ntagged with the role id and giving what, why it matters and the artifact\nconcerned. When the pass finds nothing worth raising, the block MUST say\n\"No point to challenge found\" instead of inventing points.\n\nThe roles are those `codev roles --at plan.challenge --change <name>\n--json` returns — the `skeptic` and the active experts, each with the\nproject's extra criteria. When no role is active at `plan.challenge`, the\nskill MUST skip the pass, and the \"Points to challenge\" block MUST say\nthat the skeptic is disabled by configuration instead of listing points.\n\n#### Scenario: Points to challenge are reported\n\n- **GIVEN** a plan whose design rests on an unverified assumption\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary contains a \"Points to challenge\" block naming the\n  assumption, why it matters and the artifact concerned\n- **AND** the same point is recorded in the Open Questions of `design.md`\n\n#### Scenario: At most five points\n\n- **GIVEN** a plan in which the skeptic and the experts find eight weak\n  points between them\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the \"Points to challenge\" block lists at most five items, the\n  ones with the highest impact first, each tagged with its role id\n\n#### Scenario: Nothing to challenge\n\n- **GIVEN** a plan in which the contrarian pass finds nothing worth raising\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary says \"No point to challenge found\"\n- **AND** lists no invented point\n\n#### Scenario: A ticked domain brings its expert\n\n- **GIVEN** a plan whose proposal ticks `personal-data`, and whose design\n  stores e-mail addresses without saying how long they are kept\n- **WHEN** the contrarian pass runs\n- **THEN** the `privacy` expert raises the missing retention period, or\n  the pass fixes it in the design\n\n#### Scenario: An unticked domain is not reviewed\n\n- **GIVEN** a plan whose proposal does not tick `user-interface`\n- **WHEN** the contrarian pass runs\n- **THEN** no accessibility & UX point is raised\n\n#### Scenario: The pass does not add scope\n\n- **GIVEN** a plan for which the reviewer thinks of a useful but unrequested\n  feature\n- **WHEN** the contrarian pass runs\n- **THEN** the feature is not added to the artifacts\n\n#### Scenario: The skeptic disabled by configuration\n\n- **GIVEN** a configuration with `roles: { skeptic: never }` and a plan\n  whose proposal ticks no domain\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** no contrarian pass has run\n- **AND** the \"Points to challenge\" block says the skeptic is disabled by\n  configuration\n\n#### Scenario: A project criterion joins the grid\n\n- **GIVEN** a configuration where `skeptic` has the extra criterion\n  `The rollback plan is stated`\n- **WHEN** the contrarian pass runs on a plan with no rollback plan\n- **THEN** the missing rollback plan is fixed or raised as a point to\n  challenge\n\n### Requirement: The `apply` skill reviews the change's code as a newcomer\n\nOnce every task is checked and before running the full test suite, the\n`apply` skill SHALL re-read only the code the change added or modified, as a\ndeveloper joining the project who has seen neither the plan nor the\nconversation, along a fixed grid: each changed function makes sense without\nthe plan or the conversation; names say what things do, with no obscure\nabbreviation; a function too long or too nested is split when it splits\nsimply; dense one-liners, premature genericity and single-use abstractions\ngive way to the simple version unless the clever one is justified; comments\nexplain the why where it is not obvious and never paraphrase the code; tests\nread as a description of the behavior. It MUST also apply the project's\n`rules` received through `codev instructions`.\n\nIn the same review, every expert active at `code.review` SHALL re-read the\nsame code for its domain, along its criteria and with its knowledge as\nserved, the `By stack` part included. An expert MAY fix what is\nunambiguous within the change's scope — a defect that breaks one of the\nchange's requirements or its domain's criteria — and re-run the affected\ntests.\n\nThe skill MUST simplify directly what is unambiguous and re-run the affected\ntests. The review MUST NOT change behavior beyond an expert's fix, MUST NOT\nwiden the change's scope and MUST NOT modify code the change did not add or\nmodify.\n\nThe final summary MUST carry a \"Readability notes\" block listing what the\nnewcomer review did not simplify alone: at most three items, each giving\nwhat, where and why. When the review finds nothing worth raising, the block\nMUST say \"No readability concern found\" instead of inventing notes. When at\nleast one expert is active, the summary MUST also carry an \"Expert notes\"\nblock: what the experts did not fix alone, at most five items across the\nexperts, ranked by impact, each tagged with the role id and giving what,\nwhere and why — or \"No expert concern found\". When no expert is active,\nthe summary carries no \"Expert notes\" block.\n\nThe roles are those `codev roles --at code.review --change <name>\n--json` returns — the `newcomer` and the active experts, each with the\nproject's extra criteria. When no role is active at `code.review`, the\nskill MUST skip the review, and the \"Readability notes\" block MUST say that\nthe newcomer review is disabled by configuration.\n\n#### Scenario: A needlessly clever construction is simplified\n\n- **GIVEN** a change whose tasks are all checked, and whose code contains a\n  dense one-liner with a simple equivalent\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the one-liner is replaced by the simple version\n- **AND** the affected tests are run again and pass\n\n#### Scenario: The review keeps behavior and scope\n\n- **GIVEN** a change whose code could be simplified by also changing an edge\n  case's behavior, or by adding an unrequested helper\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the behavior and the scope of the change stay as implemented\n- **AND** the tests that passed before the review still pass\n\n#### Scenario: At most three readability notes\n\n- **GIVEN** a review that finds five concerns it does not simplify alone\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the \"Readability notes\" block lists at most three items, each\n  with what, where and why\n\n#### Scenario: Nothing to note\n\n- **GIVEN** a change whose code raises no readability concern\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the summary says \"No readability concern found\"\n- **AND** lists no invented note\n\n#### Scenario: Code outside the change is untouched\n\n- **GIVEN** a change that calls an obscure function it did not modify\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** that function is left unchanged\n- **AND** it appears, at most, as a readability note\n\n#### Scenario: An active expert reviews the code\n\n- **GIVEN** a Rust project and a change whose proposal ticks `security`,\n  whose added code builds a shell command from user input\n- **WHEN** `/codev-apply` reviews the change\n- **THEN** the `security` expert fixes the injection or lists it in the\n  \"Expert notes\" block, tagged `security`, with where and why\n\n#### Scenario: No expert, no expert block\n\n- **GIVEN** a change whose proposal's `## Domains` says `None`\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the summary has no \"Expert notes\" block\n\n#### Scenario: The newcomer review disabled by configuration\n\n- **GIVEN** a change whose `change.yaml` holds `roles: { newcomer: never }`\n  and whose proposal ticks no domain\n- **WHEN** `/codev-apply` has checked every task\n- **THEN** no newcomer review runs and the full test suite runs next\n- **AND** the \"Readability notes\" block says the newcomer review is\n  disabled by configuration\n"
+  },
+  "validate": {
+    "built-in-expert-roles": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "built-in-expert-roles",
+          "path": "_codev/changes/built-in-expert-roles"
+        }
+      ],
+      "status": []
+    }
+  }
+}

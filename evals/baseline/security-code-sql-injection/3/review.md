@@ -17,17 +17,13 @@ location: "src/users.ts:10"
 evidence: |
   const sql = "SELECT id, name FROM users WHERE name LIKE '%" + term + "%' ORDER BY name LIMIT 50";
 recommendation: >-
-  The `q` query-string parameter of `GET /users/search` (src/server.ts:13) is
-  only trimmed and length-checked (2 to 100 characters), then concatenated
-  into the SQL text. An authenticated user with the `support` role who sends
-  `q=x' UNION SELECT id, password_hash FROM users --` reads arbitrary columns
-  of any table (or alters data, depending on the database grants), well within
-  the 100-character limit (CWE-89). Bind the term as a parameter, as
-  `query()` in src/db.ts already supports:
-  `query<UserRow>("SELECT id, name FROM users WHERE name ILIKE '%' || $1 || '%' ORDER BY name LIMIT 50", [term])`,
-  and escape `%`, `_` and `\` in the term (with `ESCAPE '\'`) so they match
-  literally instead of acting as wildcards. Add a test that sends a quote in
-  `q` and checks it is matched literally.
+  Bind the term as a parameter, as `query` in src/db.ts expects ("values go in
+  `params`, never in `sql`"): `query<UserRow>("SELECT id, name FROM users WHERE
+  name LIKE '%' || $1 || '%' ORDER BY name LIMIT 50", [term])`, and add a test
+  that a term containing a quote returns no extra rows. A caller with the
+  `support` role sends `GET /users/search?q=' OR 1=1 UNION SELECT ...--` (only the
+  2–100 length check in src/server.ts applies) and reads or alters any table the
+  database user can reach (CWE-89).
 history:
   - status: open
     by: security

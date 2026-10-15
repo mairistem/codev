@@ -2,22 +2,119 @@
   "format": 2,
   "case": "ops-code-retry-without-backoff",
   "error": null,
-  "costUsd": 0.3527431999999999,
-  "durationMs": 38152,
+  "costUsd": 0.4133342,
+  "durationMs": 49465,
   "consumption": {
-    "durationApiMs": 37754,
-    "turns": 9,
-    "permissionDenials": 0,
+    "durationApiMs": 49028,
+    "turns": 12,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1181,
-      "cacheCreation": 28023,
-      "cacheRead": 283881,
-      "output": 3540
-    }
+      "input": 1185,
+      "cacheCreation": 30151,
+      "cacheRead": 379836,
+      "output": 4758
+    },
+    "toolCalls": 11,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7411,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7411
+        }
+      },
+      {
+        "cacheCreation": 13977,
+        "cacheRead": 29550,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13977
+        }
+      },
+      {
+        "cacheCreation": 1545,
+        "cacheRead": 43527,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1545
+        }
+      },
+      {
+        "cacheCreation": 274,
+        "cacheRead": 45072,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 274
+        }
+      },
+      {
+        "cacheCreation": 601,
+        "cacheRead": 45346,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 601
+        }
+      },
+      {
+        "cacheCreation": 1699,
+        "cacheRead": 45947,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1699
+        }
+      },
+      {
+        "cacheCreation": 1946,
+        "cacheRead": 47646,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 3,
+        "sources": {
+          "edit": 1583,
+          "output": 363
+        }
+      },
+      {
+        "cacheCreation": 1425,
+        "cacheRead": 49592,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 940,
+          "edit": 486
+        }
+      },
+      {
+        "cacheCreation": 1273,
+        "cacheRead": 51017,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 996,
+          "edit": 277
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -26,10 +123,6 @@
         {
           "code": "review_step_missing",
           "message": "the review record has no `## plan.challenge` section, while roles were active at it"
-        },
-        {
-          "code": "review_unresolved",
-          "message": "R-ops-2 (A dropped webhook is only logged at debug level, in free text, without the HTTP status) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,7 +149,7 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Space the attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s), or hand failed deliveries to a delayed retry queue so the payment event listener is not held while waiting. The retries are bounded and the operation is deduplicated by `x-event-id`, so only the spacing is missing.",
+        "recommendation": "Space the attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s, capped), so a merchant endpoint that is restarting or briefly overloaded gets time to recover. The operation is safe to repeat (merchants deduplicate on `x-event-id`) and the count is bounded, but the spacing is missing. Consider also not retrying 4xx responses other than 408/429, which will not succeed on a retry.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
@@ -83,13 +176,40 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Use the project's structured `logger` (as `src/events.ts` does) instead of `console.debug`: log each failed attempt with fields (`eventId`, `attempt`, `status` of a non-ok response or the error), and log the final drop at `error` level with `eventId`, the merchant or payment id, the last status and the error, so a dropped delivery is visible and alertable. The URL may carry a merchant token: do not log it whole.",
+        "recommendation": "Use the project's structured `logger` from `src/logger.ts`: log each failed attempt with `logger.warn` and fields (`eventId`, `attempt`, `status` or `error`, the merchant id or URL host), and the final drop with `logger.error` and the same fields, so an operator can find and replay lost events. `deliver` returns `false`, but the listener at line 34 ignores it, so this log is the only trace of the loss.",
         "reported": true,
         "role": "ops",
-        "severity": "high",
+        "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "A dropped webhook is only logged at debug level, in free text, without the HTTP status"
+        "title": "A dropped webhook is logged only at debug level, in free text, and failed HTTP statuses are never logged"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "if (rows.length > 0) {\n  await deliver(rows[0].webhook_url, event);\n}\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 78,
+        "location": "src/webhooks.ts:33-35",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Hand the delivery off instead of awaiting it in the listener — a queue or outbox table read by a worker, or at least a non-awaited task with its own error handling — so a slow merchant cannot delay the other listeners or the payment service that calls `publish`.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Webhook delivery runs inline in the payment event chain, for up to about 25 s per event"
       }
     ],
     "format": 1,

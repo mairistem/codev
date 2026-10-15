@@ -1,0 +1,252 @@
+{
+  "format": 2,
+  "case": "plan-decision-llm-in-binary",
+  "error": null,
+  "costUsd": 1.1303853999999998,
+  "durationMs": 166735,
+  "consumption": {
+    "durationApiMs": 165671,
+    "turns": 21,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1103,
+      "cacheCreation": 68068,
+      "cacheRead": 1341267,
+      "output": 15831
+    },
+    "toolCalls": 20,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7748,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7748
+        }
+      },
+      {
+        "cacheCreation": 15192,
+        "cacheRead": 29887,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15192
+        }
+      },
+      {
+        "cacheCreation": 2386,
+        "cacheRead": 45079,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2386
+        }
+      },
+      {
+        "cacheCreation": 4881,
+        "cacheRead": 47465,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4881
+        }
+      },
+      {
+        "cacheCreation": 4305,
+        "cacheRead": 52346,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4305
+        }
+      },
+      {
+        "cacheCreation": 5680,
+        "cacheRead": 56651,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 5680
+        }
+      },
+      {
+        "cacheCreation": 5228,
+        "cacheRead": 62331,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5154,
+          "output": 74
+        }
+      },
+      {
+        "cacheCreation": 2005,
+        "cacheRead": 67559,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2005
+        }
+      },
+      {
+        "cacheCreation": 387,
+        "cacheRead": 69564,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 387
+        }
+      },
+      {
+        "cacheCreation": 2251,
+        "cacheRead": 69951,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2251
+        }
+      },
+      {
+        "cacheCreation": 2004,
+        "cacheRead": 72202,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2004
+        }
+      },
+      {
+        "cacheCreation": 2277,
+        "cacheRead": 74206,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2277
+        }
+      },
+      {
+        "cacheCreation": 357,
+        "cacheRead": 76483,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 252,
+          "output": 105
+        }
+      },
+      {
+        "cacheCreation": 1995,
+        "cacheRead": 76840,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 1995
+        }
+      },
+      {
+        "cacheCreation": 5463,
+        "cacheRead": 78835,
+        "input": 2,
+        "output": 51,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5463
+        }
+      },
+      {
+        "cacheCreation": 2100,
+        "cacheRead": 84298,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2059,
+          "output": 41
+        }
+      },
+      {
+        "cacheCreation": 2951,
+        "cacheRead": 86398,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2951
+        }
+      },
+      {
+        "cacheCreation": 365,
+        "cacheRead": 89349,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 365
+        }
+      },
+      {
+        "cacheCreation": 256,
+        "cacheRead": 89714,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 256
+        }
+      },
+      {
+        "cacheCreation": 237,
+        "cacheRead": 89970,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 237
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/ready-made-review-briefs/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/ready-made-review-briefs/design.md": "# Design: Ready-made review briefs, so the skills start every reviewer at once\n\n## Context\n\nIsolated review exists today (archived change `2026-10-13-isolated-review`).\nThe `_isolated-review.md` procedure, rendered into `codev-propose` and\n`codev-apply`, tells the agent to build each brief itself from four\nsources: the role from `codev roles --at <step> --change <name> --json`,\nthe `context` and `rules` from one `codev instructions <artifact>` call\nper artifact of the change, the material from `review.material`, and the\nrecorded ids from `codev review --change <name>`. It then dispatches every\nsub-agent in one message. With four artifacts, that is about six codev\ncalls, often split across several turns, before the first reviewer\nstarts. Each turn re-reads the context, and change\n`2026-10-14-fewer-review-turns` measured that turns drive what a review\ncosts and how long it takes.\n\nEvery piece the brief needs is already computed by the binary:\n`codev-engine::roles` (resolved and active roles), `review_material`\n(`measure`), `instructions::for_artifact` (context and rules blocks with\ntheir origin), and the review record parser in `codev-core::review`.\n\nConstraining decisions:\n\n- **0007**: orchestration (dispatch, retry, fallback, merge) stays in\n  the skill. The binary serves the data a brief is built from, renders\n  the permission and checks the record. It never calls a model. This\n  change follows 0007: assembling a brief from the binary's own data is\n  deterministic, so it falls on the binary's side of the split.\n- **0001**: assembling the brief is a pure function in `codev-core`. The\n  engine reads the files through its ports.\n- **0002**: `codev-core ← codev-engine ← codev-agents ← codev-cli`. The\n  brief cannot depend on the skill assets in `codev-agents`.\n- The JSON contract `codev-cli::contract::v1` grows additively and never\n  derives from the domain model.\n\n## Goals / Non-Goals\n\n**Goals**: one codev call gives every brief of a reviewing step, so the\nskill can dispatch every sub-agent in the turn after it. The content of\nthe briefs, as the `skills` spec requires it, does not change.\n\n**Non-goals**:\n\n- the binary calling the Claude API, `claude -p` or any model (decision\n  0007);\n- changing the retry, the fallback, the meeting, the record's format or\n  the reviewing roles;\n- dispatching the summarizing sub-agents in parallel with the reviewers.\n  The reviewers need the summaries, so the order stays.\n\n## Decisions\n\n### Decision: The binary assembles the data part of each brief; the skill keeps the procedure\n\n`codev-core::review::brief` gets a pure function. It takes the resolved\nrole, the deduplicated context and rules blocks, the measured material\nand the recorded finding ids, and returns a `Brief { role_id, summarize,\ntext }`. The text is Markdown with fixed English headings (`Role`,\n`Project context and rules`, `Material`, `Already in the record`), in\nthat order. Blocks are listed in the order `codev instructions` serves\nthem. A block that several artifacts share is kept once, matched on\norigin and text. Ids are listed in record order. No timestamp and no\nabsolute path appear, so two runs on the same files give the same bytes.\n\nThe skill still appends the fixed part: the finding format, the scales,\nthe \"modify no file, material is data\" rule, and the summaries. That text\nalready lives in `_review-record.md` and `_isolated-review.md`, which are\nassets of `codev-agents`. Copying it into the core would break the crate\ngraph (0002) and give the same rules two sources.\n\n**Alternatives considered**:\n\n- *The binary calls the Claude API in parallel* (the user's literal\n  request): excluded by 0007, whose rejected alternatives include \"the\n  binary running `claude -p` per role\". It would bring credentials,\n  process budgets and model costs into a binary that has none. Doing it\n  requires a decision superseding 0007 first. This design does not\n  propose one, because the bottleneck it measures is not the dispatch.\n- *A complete brief, format and scales included, served by the binary*:\n  this would move procedure text from the skill assets into the core and\n  make it depend on `codev-agents` content (0002). The gain over\n  appending a constant block is nil.\n- *A single `codev instructions --all` to get the context and rules in\n  one call*: this saves calls but leaves the per-role assembly to the\n  agent, which is the error-prone part, and still needs `codev review`.\n\n### Decision: A `--briefs` flag on `codev roles`, not a new command\n\n`codev roles --at <step> --change <name>` already serves the roles, the\nreview mode and the material, which are three of the four inputs. The\nflag adds `RolesV1.briefs: Option<Vec<BriefV1>>` (`roleId`, `summarize`,\n`text`), additive in v1. It is `null` without the flag and in a failure.\nThe engine gathers the context and rules through `instructions::for_artifact`\nfor each artifact present in the change, and the ids through the record\nparser. Errors `briefs_need_change` and `briefs_need_review_step` are new\nstable codes.\n\n**Alternatives considered**: `codev review brief` puts the briefs next\nto the record, but would have to resolve the roles and the material a\nsecond time and adds a subcommand to document. Always serving the\nbriefs, without a flag, would weigh down every `codev roles --json`\ncall that the skills make at other steps.\n\n### Decision: The skill falls back to inline when there are no briefs\n\nWhen `briefs` is missing (an older binary) or the call fails, every role\nreviews inline with a `Fallback:` line. The skill does not fall back to\nbuilding briefs by hand. Keeping both paths in the skill text would make\nit longer and bring back the drift this change removes.\n`codev update` installs the skills and the binary together, so this case\nonly arises after a partial update.\n\n**Alternatives considered**: keeping the old assembly as a fallback\nkeeps two procedures to test and to keep identical.\n\n## Risks / Trade-offs\n\n- [The gain is within the noise] → Measure with `codev-evals compare`\n  against the baseline: turns and duration on the isolated cases. The\n  quality side checks that recall and evidence validity stay within the\n  baseline's range. If the gain does not show, say so with the numbers,\n  as `fewer-review-turns` did.\n- [A brief served by the binary misses something the procedure asked\n  for] → The `skills` spec keeps listing what a brief must hold. A golden\n  test in `codev-core` asserts each part for a fixture change, and a\n  `workflows.rs` test asserts the procedure names `--briefs`, `text` and\n  `summarize`.\n- [The JSON grows large for a change with many roles and rules] → The\n  flag is opt-in. The text holds paths and ids, never file contents, so\n  its size scales with the roles, not with the material.\n- [Users expected an API-driven speed-up and read this as a refusal] →\n  The proposal states the assumption and the route (a decision\n  superseding 0007) in its *Out of scope* section.\n\n## Migration Plan\n\nAdditive: `briefs` is a new nullable field and `--briefs` a new flag. The\nprocedure in `_isolated-review.md` changes, so `codev update` regenerates\n`codev-propose` and `codev-apply`, and codev's own skills are refreshed in\nthe same change. Rollback is reverting the change. An older skill never\npasses `--briefs`, and a newer skill facing an older binary falls back to\ninline.\n\n## Open Questions\n\n- Should a later change also serve the brief of the summarizing\n  sub-agents (path plus diff command)? This can wait: it changes neither\n  these specs nor this approach.\n",
+    "_codev/changes/ready-made-review-briefs/proposal.md": "# Proposal: Ready-made review briefs, so the skills start every reviewer at once\n\n## Why\n\nThe user wants reviews to go faster than the skills run them today, and\nasked for codev to call the Claude API itself, in parallel. Accepted\ndecision 0007 rules that out: sub-agent orchestration lives in the skills,\nand the binary never calls a model, holds no credentials and runs no\nprocesses. Calling `claude -p` from the binary is listed there as a\nrejected alternative. This change goes after the same goal, speed, within\nthat decision.\n\nThe parallelism the user asks for already exists. In `isolated` mode the\nskills start every reviewing role as a sub-agent in a single message.\nThe time goes into what comes before. To build each brief, the agent\ncalls `codev roles`, then `codev instructions` once per artifact of the\nchange to collect `context` and `rules`, then `codev review` for the ids\nalready recorded. It then copies all of this into one brief per role by\nhand. Each of these calls is a turn, and each turn re-reads the whole\ncontext. Copying by hand also lets the brief drift from what the spec\nrequires.\n\n**Assumption, made without asking (evaluation run):** what the user wants\nis faster reviews, not a particular mechanism. A binary that calls the API\nwould require superseding decision 0007 first, with\n`codev decision new … --supersedes 0007`. That choice is the team's to\nmake in a decision of its own, not in a change proposal, so this change\nleaves it out (see *Out of scope*).\n\n## What Changes\n\n- `codev roles --at <step> --change <name> --briefs --json` serves, at\n  `plan.trace`, `plan.challenge` and `code.review`, one ready-to-send\n  brief per active role. Each brief holds the role (id, question,\n  criteria, knowledge filtered by stack), the project's `context` and\n  `rules` for each artifact of the change, the material with its\n  `full` or `summarize` treatment, and the finding ids already in the\n  review record. One call replaces the `codev instructions` call per\n  artifact and the `codev review` call that building a brief needs today.\n- Without `--briefs`, the output is unchanged. With `--briefs` and no\n  reviewing step, or without `--change`, the command fails with a stable\n  code.\n- The isolated review procedure of `/codev-propose` and `/codev-apply`\n  builds each sub-agent's brief from `briefs[]`. To each brief it adds\n  only the fixed part it already carries: the finding format, the scales,\n  the read-only rule and the summaries of files marked `summarize`. It\n  then starts every sub-agent in the same message.\n- Nothing changes in what a brief must hold or exclude, in the retry, the\n  fallback, the meeting or the review record.\n\n### Out of scope\n\n- codev calling the Claude API, `claude -p`, or any model, and holding\n  an API key: excluded by decision 0007 (and by decision 0001 for the\n  core). Reopening that question means writing a decision that\n  supersedes 0007, with its own cost and credentials analysis, before any\n  change.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- roles\n- skills\n\n### Removed Capabilities\n\n## Impact\n\n- `crates/codev-core/src/review/` (pure assembly of a brief from the\n  resolved role, the context and rules blocks, the measured material and\n  the record's ids), `crates/codev-engine/src/roles.rs` and\n  `review_material.rs` (gathering the inputs),\n  `crates/codev-cli/src/commands.rs` (the `--briefs` flag), `contract.rs`\n  (`RolesV1.briefs`, additive) and `render.rs`.\n- `assets/workflows/_isolated-review.md`, rendered into the\n  `codev-propose` and `codev-apply` skills; `crates/codev-agents/src/workflows.rs`\n  tests; codev's own skills refreshed with `codev update`.\n- The evaluation suite (`codev-evals compare`) measures the gain in turns\n  and duration against the baseline.\n- Documentation: `docs/{en,fr}/src/reference/cli.md`,\n  `reference/json-output.md` and `guides/review-record.md` (isolated\n  review), in both languages.\n- No new dependency, no network access, no credentials.\n\n## Domains\n\n- [ ] security — no secret, no input from outside the repository, no new dependency: the briefs are built from files codev already reads\n- [ ] personal-data — the briefs carry no personal data that the planning files and the diff do not already hold\n- [ ] user-interface — a new flag on an existing command, and its human output follows that command's conventions\n- [x] performance\n- [ ] operations — no process, timeout or log is added: the binary still makes no network call\n- [x] migration\n\n## Release note\n\n- Changed: In isolated review, `/codev-propose` and `/codev-apply` start every reviewing sub-agent sooner. `codev roles --at <step> --change <name> --briefs --json` now serves each role's brief ready to send, which replaces several codev calls per step.\n",
+    "_codev/changes/ready-made-review-briefs/specs/roles/spec.md": "## ADDED Requirements\n\n### Requirement: `codev roles --briefs` serves a ready-made brief per reviewing role\n\n`codev roles --at <step> --change <name> --briefs` SHALL accept `--at`\nwith a reviewing step only: `plan.trace`, `plan.challenge` or\n`code.review`. It reads files, writes none, makes no network call and\ncalls no model.\n\nWith `--json`, the document SHALL carry `briefs`. It is `null` without\n`--briefs`, and in a failure's document. With `--briefs`, it is a list\nholding one entry per role in `roles`, in the same order. Each entry has\n`roleId` (the role's `id`), `summarize` and `text`. `summarize` lists the\npaths of the material marked `summarize`, which the skill gets summarized\nand appends itself. `text` is the brief in Markdown, and it SHALL hold,\nunder headings that name each part:\n\n- the role: its id, its question, every `doneWhen` criterion with its\n  origin, and its `knowledge` as `roles` serves it, the `By stack` part\n  already filtered;\n- the project's `context` and `rules` blocks, as `codev instructions`\n  serves them for each artifact of the change, each block with its\n  origin, a block shared by several artifacts appearing once;\n- the material, as `review.material` lists it: each path with its\n  treatment, and at `code.review` the base `diff.base` the change's diff\n  is read against. When `review.material` is `null`, a line saying no\n  material could be measured, and why;\n- the ids of the findings already in the change's review record, each\n  with its step and its role, so that none is raised again. When the\n  record does not exist or holds none, a line saying so.\n\nThe brief SHALL be built only from the change's files, the project's\nconfiguration and codev's own rules. It MUST NOT hold another role's\ncriteria or knowledge, nor the content of any finding: only the ids. The\nsame files SHALL give byte-identical briefs.\n\n`--briefs` without `--change` SHALL fail with the stable code\n`briefs_need_change`. `--briefs` without `--at`, or with a step that is\nnot a reviewing step, SHALL fail with `briefs_need_review_step`, naming\nthe three reviewing steps. Without `--json`, `--briefs` SHALL print each\nrole's brief under a line naming the role.\n\n#### Scenario: One brief per role at the challenge\n\n- **GIVEN** a change `add-auth` with a proposal that ticks `security`, a\n  design, tasks and one spec delta, and a project configuration with a\n  `context` and `rules` for `design`\n- **WHEN** the user runs `codev roles --at plan.challenge --change\n  add-auth --briefs --json`\n- **THEN** `briefs` holds one entry for `skeptic` and one for `security`,\n  in the order of `roles`\n- **AND** the `security` brief holds its question, its criteria, its\n  knowledge, the project's `context`, the `design` rules and the four\n  planning files with treatment `full`\n- **AND** the `skeptic` brief holds neither the `security` criteria nor\n  its knowledge\n\n#### Scenario: Ids already recorded are listed, not their content\n\n- **GIVEN** a change whose `review.md` holds `R-skeptic-1` and\n  `R-security-1` under `## plan.challenge`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --briefs --json`\n- **THEN** each brief lists `R-skeptic-1` and `R-security-1` with their\n  step and role\n- **AND** no brief holds the title, evidence or recommendation of either\n  finding\n\n#### Scenario: Material over the limit\n\n- **GIVEN** a change whose diff modifies files of 100000, 60000 and 10000\n  bytes\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --briefs --json`\n- **THEN** each entry's `summarize` lists the 100000-byte file\n- **AND** each brief names that file with treatment `summarize`, and the\n  two others with `full` and the base the diff is read against\n\n#### Scenario: Two runs give the same briefs\n\n- **GIVEN** a change whose files do not change between two runs\n- **WHEN** the user runs `codev roles --at plan.challenge --change\n  <name> --briefs --json` twice\n- **THEN** both runs give byte-identical `briefs`\n\n#### Scenario: No diff at the code review\n\n- **GIVEN** a project outside a git repository\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --briefs --json`\n- **THEN** the exit code is 0 and each brief says no material could be\n  measured, and why\n\n#### Scenario: Without the flag, nothing changes\n\n- **WHEN** the user runs `codev roles --at plan.challenge --change\n  <name> --json`\n- **THEN** `briefs` is `null` and every other field is as before\n\n#### Scenario: Briefs need a change\n\n- **WHEN** the user runs `codev roles --at plan.challenge --briefs\n  --json`\n- **THEN** the exit code is 1, `status[0].code` is `briefs_need_change`\n  and `briefs` is `null`\n\n#### Scenario: Briefs need a reviewing step\n\n- **WHEN** the user runs `codev roles --at code.implement --change\n  <name> --briefs --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `briefs_need_review_step`\n- **AND** its message names `plan.trace`, `plan.challenge` and\n  `code.review`\n",
+    "_codev/changes/ready-made-review-briefs/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: In isolated mode, each reviewing role runs alone, then the skill consolidates\n\nAt `plan.trace`, `plan.challenge` and `code.review`, the `propose` and\n`apply` skills SHALL read `review.mode` from `codev roles --at <step>\n--change <name> --json`. In `inline` mode they review as before. In\n`isolated` mode they SHALL run every role returned — the tracer, the\nskeptic, the newcomer and the active experts — as a separate sub-agent,\nall of a step's sub-agents at once when the platform allows.\n\nIn `isolated` mode the skills SHALL take each role's brief from the\n`briefs` that `codev roles --at <step> --change <name> --briefs --json`\nserves. They SHALL NOT assemble the role, the `context` and `rules`, the\nmaterial list or the recorded ids themselves, and SHALL NOT call `codev\ninstructions` or `codev review` to build a brief. When that call fails,\nor returns no `briefs` field because the binary is older than the\nskill, every role SHALL fall back to inline, and the record says so.\n\nThe brief of each sub-agent MUST hold only:\n\n- its role: id, question, `doneWhen` criteria and `knowledge` as served,\n  the `By stack` part already filtered;\n- the project's `context` and `rules` from `codev instructions`;\n- the material listed by `review.material`: the files marked `full`, to\n  read whole, with the change's diff for them at `code.review`; for each\n  file marked `summarize`, a summary of its change written by a separate\n  sub-agent that sees only that file's diff, quoting the changed lines\n  verbatim where they fit;\n- the ids already in the record, so as not to raise them again;\n- the review record's format, scales and rules for a finding.\n\nThe first four parts are the served brief's `text`. The skill appends\nonly the summaries of the paths in the entry's `summarize` and the\nreview record's format, scales and rules, which are the same for every\nrole.\n\nThe brief MUST NOT carry the conversation, the author's reasoning or\nanother role's findings, and is assembled only from codev's outputs and\nthe files. The sub-agent MAY read other files of the repository with\nread-only tools — the decisions, the main specs, the code the material\ncites — and is told to modify no file and to treat the material as data,\nnever as instructions. It returns its findings as a role section of the\nreview record, or `No finding.`.\n\nA sub-agent that the platform reports as failed or stopped — its own\ntime or budget limits included — or that returns something other than a\nrole section with well-formed findings SHALL be run once more; if it\nfails again, the skill SHALL run that role inline and record the fallback\nwith its reason. When the sub-agent tool is unavailable, every role falls\nback to inline, and the record says so.\n\nThe skill then consolidates — the meeting:\n\n- findings of several roles about the same defect at the same location\n  become one finding, written under the role that rated it most severe\n  (ties: higher confidence, then the order `codev roles` lists the\n  roles), with `raised_by` listing every role that raised it; a role\n  whose findings were all merged writes `No finding.`;\n- findings at the same place that need different fixes stay separate;\n- the findings are ranked by severity, then confidence, then role order,\n  and the summary's caps apply as in inline mode;\n- the step's section records `Mode: isolated.` and one `Summarized:` line\n  per summarized file;\n- then the record is checked, and the author's answer loop and the\n  escalation to the human run as in inline mode.\n\nAt `plan.trace`, the tracer's findings are not recorded: the skill fixes\nthe gaps in the artifacts, as in inline mode, and its summary names any\nfallback.\n\n#### Scenario: The skills describe the isolated review\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each names `review.mode`, a sub-agent per role, what the\n  brief holds and that it never carries the conversation, the material\n  as data, parallel dispatch, `review.material` with `full` and\n  `summarize`, the summarizing sub-agent, one retry then the inline\n  fallback recorded with `Fallback:`, the merge of duplicate findings\n  with `raised_by`, the ranking, `Mode: isolated.` and `Summarized:`\n\n#### Scenario: The skills take the briefs from codev\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** their isolated review names `codev roles` with `--briefs`,\n  `briefs`, `text` and `summarize`\n- **AND** it no longer tells the agent to call `codev instructions` per\n  artifact to build a brief\n\n#### Scenario: Two roles report the same defect\n\n- **GIVEN** isolated mode, and the `security` and `skeptic` sub-agents\n  both report that `design.md#Decision: Tokens` stores tokens in clear,\n  `security` as `high`\n- **WHEN** the skill consolidates\n- **THEN** the record holds one finding under `### security` with\n  `raised_by: [security, skeptic]`\n- **AND** `### skeptic` holds its other findings, or `No finding.`\n\n#### Scenario: A sub-agent fails twice\n\n- **GIVEN** isolated mode, and the platform stops the `newcomer`\n  sub-agent twice, on its time limit\n- **WHEN** the skill reviews the change\n- **THEN** the newcomer reviews inline\n- **AND** its section in the record carries a `Fallback:` line with the\n  reason\n\n#### Scenario: Material over the limit\n\n- **GIVEN** isolated mode, and `review.material` marks a file `summarize`\n- **WHEN** the skill briefs the sub-agents\n- **THEN** they receive a summary of that file's change, written by a\n  sub-agent that saw only that file's diff, instead of the whole file\n- **AND** the step's section records a `Summarized:` line naming it\n\n#### Scenario: An older binary serves no briefs\n\n- **GIVEN** isolated mode, and a skill rendered by this version run\n  against a binary whose `codev roles` output has no `briefs` field\n- **WHEN** the skill reviews the change\n- **THEN** every role reviews inline\n- **AND** each role's section carries a `Fallback:` line naming the\n  missing briefs\n\n#### Scenario: A change reviewed inline in an isolated project\n\n- **GIVEN** a project in isolated mode and a change whose `change.yaml`\n  sets `review: { mode: inline }`\n- **WHEN** `/codev-apply` reviews it\n- **THEN** every role reviews inline, in the conversation\n"
+  },
+  "validate": {
+    "ready-made-review-briefs": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "ready-made-review-briefs",
+          "path": "_codev/changes/ready-made-review-briefs"
+        }
+      ],
+      "status": []
+    }
+  }
+}

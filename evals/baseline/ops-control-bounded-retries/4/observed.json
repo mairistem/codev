@@ -2,22 +2,87 @@
   "format": 2,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.25391300000000006,
-  "durationMs": 16451,
+  "costUsd": 0.2953754,
+  "durationMs": 21664,
   "consumption": {
-    "durationApiMs": 16251,
-    "turns": 5,
+    "durationApiMs": 21641,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1170,
-      "cacheCreation": 24897,
-      "cacheRead": 141240,
-      "output": 1276
-    }
+      "input": 1174,
+      "cacheCreation": 25983,
+      "cacheRead": 235207,
+      "output": 1975
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7403,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7403
+        }
+      },
+      {
+        "cacheCreation": 14113,
+        "cacheRead": 29542,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14113
+        }
+      },
+      {
+        "cacheCreation": 2419,
+        "cacheRead": 43655,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2419
+        }
+      },
+      {
+        "cacheCreation": 676,
+        "cacheRead": 46074,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 676
+        }
+      },
+      {
+        "cacheCreation": 297,
+        "cacheRead": 46750,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "search": 297
+        }
+      },
+      {
+        "cacheCreation": 1075,
+        "cacheRead": 47047,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 627,
+          "edit": 448
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

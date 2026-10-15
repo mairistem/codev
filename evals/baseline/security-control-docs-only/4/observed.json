@@ -2,10 +2,10 @@
   "format": 2,
   "case": "security-control-docs-only",
   "error": null,
-  "costUsd": 0.283819,
-  "durationMs": 29193,
+  "costUsd": 0.305147,
+  "durationMs": 22667,
   "consumption": {
-    "durationApiMs": 28473,
+    "durationApiMs": 22393,
     "turns": 7,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,86 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 26035,
-      "cacheRead": 235070,
-      "output": 1377
-    }
+      "input": 1176,
+      "cacheCreation": 26404,
+      "cacheRead": 279210,
+      "output": 1854
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7379,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7379
+        }
+      },
+      {
+        "cacheCreation": 11380,
+        "cacheRead": 29518,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11380
+        }
+      },
+      {
+        "cacheCreation": 3355,
+        "cacheRead": 40898,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3355
+        }
+      },
+      {
+        "cacheCreation": 2690,
+        "cacheRead": 44253,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2690
+        }
+      },
+      {
+        "cacheCreation": 304,
+        "cacheRead": 46943,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "file": 304
+        }
+      },
+      {
+        "cacheCreation": 965,
+        "cacheRead": 47247,
+        "input": 2,
+        "output": 33,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 965
+        }
+      },
+      {
+        "cacheCreation": 331,
+        "cacheRead": 48212,
+        "input": 2,
+        "output": 182,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 302,
+          "output": 29
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,7 +107,35 @@
     },
     "changeName": "document-token-rotation",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "API tokens do not expire. Rotate a token when a person who knew it leaves\nthe team, or when it may have been exposed:\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "README.md:13-20",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The same create → deploy → revoke order is given for a planned rotation and for a suspected exposure. For an exposure, whoever holds the leaked token keeps full API access for the whole deployment window of step 2, and indefinitely if the deployment stalls, since tokens do not expire. Add a sentence for the exposure case: revoke the old token first (accepting the integration's downtime), or deploy and revoke without delay.",
+        "reported": true,
+        "role": "security",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Exposed token stays valid until the new one is deployed"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/document-token-rotation/review.md",
@@ -60,7 +163,7 @@
             "credited": [],
             "fallback": null,
             "role": "security",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

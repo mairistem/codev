@@ -1,0 +1,244 @@
+{
+  "format": 2,
+  "case": "plan-decision-disk-cache",
+  "error": null,
+  "costUsd": 1.0450496,
+  "durationMs": 156699,
+  "consumption": {
+    "durationApiMs": 154674,
+    "turns": 22,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1100,
+      "cacheCreation": 65833,
+      "cacheRead": 1143408,
+      "output": 14435
+    },
+    "toolCalls": 21,
+    "orientationCalls": 12,
+    "calls": [
+      {
+        "cacheCreation": 7734,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7734
+        }
+      },
+      {
+        "cacheCreation": 14337,
+        "cacheRead": 29873,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14337
+        }
+      },
+      {
+        "cacheCreation": 1838,
+        "cacheRead": 44210,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1838
+        }
+      },
+      {
+        "cacheCreation": 3828,
+        "cacheRead": 46048,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3828
+        }
+      },
+      {
+        "cacheCreation": 497,
+        "cacheRead": 49876,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 497
+        }
+      },
+      {
+        "cacheCreation": 1789,
+        "cacheRead": 50373,
+        "input": 2,
+        "output": 50,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1789
+        }
+      },
+      {
+        "cacheCreation": 5181,
+        "cacheRead": 52162,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 5134,
+          "output": 47
+        }
+      },
+      {
+        "cacheCreation": 785,
+        "cacheRead": 57343,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 785
+        }
+      },
+      {
+        "cacheCreation": 2158,
+        "cacheRead": 58128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2158
+        }
+      },
+      {
+        "cacheCreation": 4118,
+        "cacheRead": 60286,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4118
+        }
+      },
+      {
+        "cacheCreation": 4357,
+        "cacheRead": 64404,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 4357
+        }
+      },
+      {
+        "cacheCreation": 1870,
+        "cacheRead": 68761,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1870
+        }
+      },
+      {
+        "cacheCreation": 462,
+        "cacheRead": 70631,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 182,
+          "shell": 280
+        }
+      },
+      {
+        "cacheCreation": 1776,
+        "cacheRead": 71093,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1776
+        }
+      },
+      {
+        "cacheCreation": 3973,
+        "cacheRead": 72869,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 3846,
+          "edit": 127
+        }
+      },
+      {
+        "cacheCreation": 4947,
+        "cacheRead": 76842,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 4770,
+          "edit": 177
+        }
+      },
+      {
+        "cacheCreation": 667,
+        "cacheRead": 81789,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 667
+        }
+      },
+      {
+        "cacheCreation": 1669,
+        "cacheRead": 82456,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1669
+        }
+      },
+      {
+        "cacheCreation": 3847,
+        "cacheRead": 84125,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 1869,
+          "edit": 1593,
+          "output": 385
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/cache-parsed-specs/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/cache-parsed-specs/design.md": "# Design: Cache parsed specs and deltas on disk for `codev validate`\n\n## Context\n\nObserved in the code:\n\n- The parser is `codev_core::parser` (`parse_spec`, `parse_delta`): pure\n  functions `&str → Parsed<T>`, where `Parsed` holds the value (`Spec` or\n  `Delta`) and the parser's `findings`. Its module comment cites decision\n  0001: \"No I/O — this is pure core\".\n- `codev-engine/src/validate/mod.rs` is the only place `validate` reads and\n  parses files, at three call sites: `validate_change` (each delta),\n  `validate_spec` (each main spec) and `read_main_spec` (the main spec a\n  delta targets — so in `validate --all` a targeted main spec is parsed\n  twice in the same process).\n- The rules (`core_validate::check_spec`, `check_delta`,\n  `check_delta_against_spec`) run on the parsed value. They are not cached:\n  they are cheap, and `check_delta_against_spec` depends on two files.\n- The AST types (`parser::ast`) derive `Debug, Clone, PartialEq, Eq` but not\n  serde. `Finding.code` is a `&'static str` taken from `parser::codes`.\n- `sources::cache::root(env)` already resolves the user's codev cache root\n  (`$XDG_CACHE_HOME/codev/`, else `~/.cache/codev/`), shared by the\n  inherited sources and `update-check.json`.\n- No measurement of `validate`'s time split (read / parse / rules / review\n  record / diff) exists in the repository.\n\nConstraints: decisions 0001 (nothing in `codev-core` touches the disk),\n0002 (effects through the `FileSystem` / `Env` ports, in `codev-engine`),\n0003 (`_codev/` is the readable source of truth — the cache does not belong\nthere).\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Skip the parse of every spec or delta whose content was already parsed by\n  the same codev build.\n- A report byte-identical to an uncached run, in every case — including a\n  broken cache.\n- Testable with the in-memory `FileSystem`, like the rest of the engine.\n\n**Non-Goals**\n\n- Caching in `sync`, `archive`, `changelog` or any writing command.\n- Caching rule results, the review record, the diff or the decisions' seals.\n- Eviction or size limits (see Open Questions).\n- Skipping the file read: the content is the key.\n\n## Decisions\n\n### Decision: The cache wraps the parser in `codev-engine`; the parser stays pure\n\nThe request said \"directly in the parser\". Decision 0001 forbids any disk\naccess in `codev-core`, where the parser lives, and decision 0002 puts\neffects behind the engine's ports. We follow both: a new\n`codev-engine/src/parse_cache.rs` exposes `ParseCache` with\n`parse_spec(&self, fs, source) -> Parsed<Spec>` and\n`parse_delta(&self, fs, source) -> Parsed<Delta>`, with the same results as\nthe core functions. The three call sites in `validate/mod.rs` call it\ninstead of `codev_core::parser` directly. The core only gains serde derives\non its result types — data, not I/O.\n\n**Alternatives considered**:\n\n- *A cache inside `parse_spec` / `parse_delta`.* Breaks decision 0001 (the\n  core would read and write files, and lose its in-memory golden tests) and\n  decision 0002 (`codev-core` would need `std::fs` or a port it does not\n  have). Superseding 0001 for a cache is not worth it.\n- *A `FileSystem` passed into the parser.* Still puts an effect in the\n  core, and makes every pure caller (merge, rules, tests) carry a port.\n\n### Decision: Content-addressed entries, keyed by build and kind\n\nKey = SHA-256 of `CACHE_FORMAT` + codev version + kind (`spec` | `delta`) +\nthe file's bytes. Entry path:\n`<codev cache root>/parsed/<codev version>/<kind>-<hex digest>.json`.\n\n- The content in the key makes staleness impossible: no invalidation logic,\n  no reliance on modification times, and a reverted edit hits its old entry.\n- The version in the key (and in the directory) makes an upgrade start\n  cold, since the parser's output can change between versions; the\n  per-version directory lets a user delete old versions by hand.\n- `CACHE_FORMAT`, a constant in `parse_cache.rs`, is bumped when the\n  serialized shape changes without a version bump.\n- `sha2` is already an engine dependency (`sources/cache.rs`).\n\n**Alternatives considered**:\n\n- *Path + mtime + size.* Avoids reading files, but git checkouts, `touch`\n  and coarse timestamps make it serve stale parses, which would change the\n  verdict — unacceptable for a validator.\n- *One index file for the whole project.* Concurrent runs (an editor hook\n  and a terminal) would race on it; per-entry files written by\n  write-then-rename are safe and need no lock.\n- *A cache under `_codev/` or `target/`.* `_codev/` is versioned and read\n  by humans and agents (decision 0003); a project-local cache would also\n  need a `.gitignore` entry in every project.\n\n### Decision: Any cache failure degrades to a fresh parse, silently\n\n`ParseCache` returns `Parsed<T>`, never a `Result`. A read error, a JSON\nerror, an unknown version, or a `Finding.code` that is not in\n`parser::codes` (the `&'static str` is restored by looking the string up in\nthe code registry; an unknown code makes the entry invalid) all lead to\nparsing the source. A write error is ignored. Writes go to a temporary\nfile in the same directory, then `FileSystem::rename`, so a concurrent\nreader sees either nothing or a complete entry.\n\nNothing is reported, so the JSON contract (`codev-cli::contract::v1`) and\nthe report stay untouched: the cache is not a property of the project.\n\n**Alternatives considered**:\n\n- *A warning finding on cache failure.* It would make the verdict depend on\n  the machine's cache state, and `--strict` would turn it into a failure.\n- *A message on stderr.* Kept out for now: `validate` runs in hooks where\n  stderr noise is read as failure; a `--verbose` can come later.\n\n### Decision: `--no-cache` and debug builds bypass the cache\n\n`ParseCache::disabled()` parses directly and touches no file. The CLI\nbuilds it when `--no-cache` is passed, and also in debug builds\n(`cfg!(debug_assertions)`): a contributor changing the parser would\notherwise get the previous parse back while the version number is\nunchanged. Release builds use `ParseCache::at(sources::cache::root(env))`.\n\n**Alternatives considered**:\n\n- *An environment variable `CODEV_NO_CACHE`.* Useful in CI, but a flag is\n  explicit in the command line and in shell completions; a variable can be\n  added without changing the spec's behavior.\n- *Embedding a hash of the parser sources in the key.* Needs a build\n  script for a problem only contributors have.\n\n### Decision: Ship only if a measurement shows the gain\n\nParsing is a linear scan; a warm hit still reads the file, hashes it and\ndeserializes JSON. The first implementation task generates a project of\n1,000 specs and 50 changes and times `validate --all` cold, warm and\n`--no-cache`, recording the numbers in the change. If the warm run is not\nclearly faster than `--no-cache`, the change stops there and is reported\nback rather than merged. As a no-risk complement, `validate_all` memoizes\nin memory the main specs it already parsed in the same run, removing the\ndouble parse of `read_main_spec`.\n\n**Alternatives considered**:\n\n- *Ship without measuring.* The cache adds disk state and a failure mode;\n  it must pay for them.\n\n## Risks / Trade-offs\n\n- [A serialized parse differs from a fresh one, changing a verdict] → a\n  round-trip test (`parse` → serialize → deserialize → `==`) over every\n  fixture of the parser's test suite, and an engine test asserting cold and\n  warm reports are equal.\n- [The warm path is not faster than parsing] → the measurement gate above.\n- [The cache grows without bound across versions and edits] → entries are\n  small and grouped per version; documented as safe to delete. Eviction is\n  an open question.\n- [A malicious or corrupted entry injects a wrong parse] → the cache sits\n  in the user's own directory, which an attacker able to write can already\n  use to replace inherited sources; an entry is only data, and an unknown\n  code or shape invalidates it.\n- [Two processes write the same entry] → same content by construction;\n  write-then-rename keeps each entry whole.\n\n## Migration Plan\n\nNone: the cache starts empty; removing the feature only leaves a\n`parsed/` directory that can be deleted. Docs: the `validate` section of\n`docs/en/src/reference/cli.md` and `docs/fr/src/reference/cli.md` gains the\nflag and the cache location.\n\n## Open Questions\n\n- Eviction: pruning the `parsed/<version>/` directories of other versions\n  at startup. Deferred — it changes no requirement and can follow once\n  sizes are observed.\n",
+    "_codev/changes/cache-parsed-specs/proposal.md": "# Proposal: Cache parsed specs and deltas on disk for `codev validate`\n\n## Why\n\n`codev validate` re-reads and re-parses every main spec and every delta of\nevery active change on each run, although between two runs almost none of\nthese files changed. On large projects — hundreds of capabilities, run from\na pre-commit hook or by an agent after each edit — that repeated work is\nthe cost users wait on; a cache of parse results keyed by file content\nremoves it for every unchanged file.\n\n## What Changes\n\n- `codev validate` reuses, for a spec or delta file whose content is\n  byte-identical to a previously parsed one, the parse result stored in a\n  per-user cache on disk, instead of parsing it again.\n- The report is identical with or without the cache: same items, same\n  findings, same lines, same exit code, same JSON. A cache entry is only\n  reused for the exact same content and the exact same codev version.\n- A missing, corrupt or unwritable cache never fails validation and never\n  produces a finding: codev parses the file as before.\n- New `--no-cache` flag on `codev validate`: parses every file without\n  reading or writing the cache.\n- The cache lives outside the repository, in the user's codev cache\n  directory, next to the inherited-sources cache; nothing is written under\n  `_codev/`.\n\nAssumptions made without asking (evaluation run, no user to ask):\n\n- **Not \"directly in the parser\".** The request asks for the cache inside\n  the parser. The parser lives in `codev-core`, which accepted decision\n  [0001](../../decisions/0001-functional-core-imperative-shell.md) forbids\n  from touching the disk, and decision\n  [0002](../../decisions/0002-crate-graph-as-dependency-rule.md) routes\n  effects through the engine's ports. The cache is therefore placed around\n  the parser, in `codev-engine`, where `validate` already reads the files.\n  The parser itself keeps the same pure signature. The observable behavior\n  the user asked for — a faster `validate` — is unchanged by this placement.\n- **`validate` only.** `sync`, `archive` and `changelog` keep parsing every\n  file: `sync` and `archive` rewrite the specs, and a stale parse there\n  would corrupt data, which no speed-up justifies.\n- **Content-keyed, not timestamp-keyed.** Each file is still read, so that\n  its content identifies the entry; only the parse is skipped. Modification\n  times are not trusted (git checkouts, clock skew, coarse filesystems).\n- **No automatic eviction** in this change. Entries are small and keyed by\n  content; clearing the cache directory is always safe and documented.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- validation\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-engine`: `validate/mod.rs` — the three places that call\n  `parse_spec` / `parse_delta` (`validate_change`, `validate_spec`,\n  `read_main_spec`) go through a new cached-parse module; `sources/cache.rs`\n  provides the shared cache root.\n- `codev-core`: the parser's result types (`parser::ast`) gain serde\n  serialization so an entry can be stored; no I/O and no behavior change in\n  the core.\n- `codev-cli`: `--no-cache` flag on `validate`; shell completions follow\n  from the clap definition.\n- Dependencies: none new (`serde_json` and `sha2` are already in the\n  workspace).\n- Documentation: `docs/en/src/reference/cli.md` and\n  `docs/fr/src/reference/cli.md` (the flag and the cache location), and the\n  architecture chapter in both editions if it lists codev's cache\n  directories.\n\n## Domains\n\n- [ ] security — only parse results of the user's own files, in their own cache directory; no secret, no new dependency\n- [ ] personal-data — no personal data is stored\n- [ ] user-interface — one new CLI flag, no change to the output\n- [x] performance\n- [x] operations\n- [ ] migration — the report and the JSON contract do not change; the cache is new, nothing to migrate\n\n## Release note\n\n- Changed: `codev validate` caches the parse of unchanged specs and deltas in the user's codev cache directory, which makes repeated runs faster on large projects; `--no-cache` turns it off for one run.\n",
+    "_codev/changes/cache-parsed-specs/specs/validation/spec.md": "## ADDED Requirements\n\n### Requirement: Unchanged files are not parsed again\n\n`codev validate` SHALL reuse, for a main spec or a delta file whose content\nis byte-identical to a file it already parsed with the same codev version,\nthe parse result it stored in the user's codev cache directory, instead of\nparsing the file again. A file whose content differs in any byte, or that\nwas parsed by another codev version, MUST be parsed again. The cache MUST\nNOT be written inside the project: nothing appears under `_codev/` or\nelsewhere in the repository.\n\n#### Scenario: Second run on an unchanged project\n\n- **GIVEN** a project whose specs and deltas were validated once\n- **WHEN** the user runs `codev validate --all` again without editing any\n  file\n- **THEN** no spec and no delta is parsed again\n- **AND** the report is identical to the first run's\n\n#### Scenario: One file edited between two runs\n\n- **GIVEN** a project validated once\n- **WHEN** the user edits one main spec, then runs `codev validate --all`\n- **THEN** only that spec is parsed again\n- **AND** its findings reflect the edited content\n\n#### Scenario: An edit reverted to an earlier content\n\n- **GIVEN** a spec validated in content A, then in content B\n- **WHEN** the user restores content A and runs `codev validate --all`\n- **THEN** the findings reported for that spec are those of content A\n\n#### Scenario: Upgrade of codev\n\n- **GIVEN** a cache filled by an earlier codev version\n- **WHEN** the user runs `codev validate --all` with a newer codev\n- **THEN** every spec and delta is parsed again, none of the earlier\n  version's results being reused\n\n#### Scenario: The project stays clean\n\n- **GIVEN** a clean git working tree\n- **WHEN** the user runs `codev validate --all`\n- **THEN** `git status` still reports a clean working tree\n\n### Requirement: The cache never changes the verdict\n\nThe report of `codev validate` — its items, findings, codes, severities,\npaths, lines, messages, exit code and JSON document — MUST be the same\nwhether parse results come from the cache or from a fresh parse. A missing,\nunreadable, corrupt or unwritable cache MUST NOT fail the command and MUST\nNOT add a finding nor a `status` entry: the affected files are parsed as if\nno cache existed.\n\n#### Scenario: Same report from a cold and a warm cache\n\n- **GIVEN** a project with a change carrying one error and one warning\n- **WHEN** the user runs `codev validate --all --json` with an empty cache,\n  then again with the cache filled by that first run\n- **THEN** both runs print the same JSON document and exit with the same\n  code\n\n#### Scenario: Corrupt cache entry\n\n- **GIVEN** a cache entry for a spec that was truncated or overwritten with\n  invalid data\n- **WHEN** the user runs `codev validate --all`\n- **THEN** that spec is parsed again and its findings are correct\n- **AND** the command adds no finding and no `status` entry about the cache\n\n#### Scenario: Cache directory not writable\n\n- **GIVEN** a codev cache directory the user cannot write to\n- **WHEN** the user runs `codev validate --all`\n- **THEN** the report and the exit code are those of a run without cache\n\n### Requirement: The cache can be bypassed for one run\n\n`codev validate` SHALL accept a `--no-cache` flag. With it, every spec and\ndelta MUST be parsed, and the cache MUST be neither read nor written during\nthat run.\n\n#### Scenario: Validation without the cache\n\n- **GIVEN** a project whose cache is filled\n- **WHEN** the user runs `codev validate --all --no-cache`\n- **THEN** every spec and delta is parsed\n- **AND** the cache is left exactly as it was\n\n#### Scenario: Flag combined with a named item\n\n- **GIVEN** a change `add-auth`\n- **WHEN** the user runs `codev validate add-auth --no-cache --json`\n- **THEN** the JSON document has the same shape and content as without\n  the flag\n"
+  },
+  "validate": {
+    "cache-parsed-specs": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "cache-parsed-specs",
+          "path": "_codev/changes/cache-parsed-specs"
+        }
+      ],
+      "status": []
+    }
+  }
+}

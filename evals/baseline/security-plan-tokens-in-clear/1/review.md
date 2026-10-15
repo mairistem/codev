@@ -6,10 +6,6 @@
 
 Mode: inline.
 
-### skeptic
-
-Disabled by configuration.
-
 ### security
 
 #### R-security-1 API tokens are stored in clear in the database
@@ -23,22 +19,22 @@ evidence: |
   middleware looks a request's token up with `WHERE token = $1`. Storing the
   token as given keeps the lookup a simple indexed equality.
 recommendation: >-
-  Store only a hash of the token (SHA-256 is enough for a random 32-byte
-  value; no bcrypt needed) in a `token_hash` column with a unique index, and
-  look it up with `WHERE token_hash = $1` on the hash of the presented token —
-  still an indexed equality, so the stated reason for storing it in clear does
-  not hold. Anyone who reads the table today (a database backup, a replica, a
-  read-only analyst account, an SQL injection elsewhere in the service) gets
-  every user's live bearer credentials and can call the API as them, the same
-  exposure the proposal's Why sets out to remove (CWE-312, CWE-256). Keep a
-  short non-secret prefix if support needs to identify a token. Update task
-  1.1 and the spec ("shown once") accordingly.
+  Store only a digest of the token (SHA-256 of the 32 random bytes is enough
+  for high-entropy tokens; no bcrypt needed) in a `token_hash` column with a
+  unique index, hash the presented bearer token in the middleware and look it
+  up with `WHERE token_hash = $1` — still a single indexed equality, so the
+  stated performance reason does not require clear storage. Anyone who reads
+  the `api_tokens` table (a database backup, a replica, a read-only SQL
+  access, an injection elsewhere) otherwise obtains every live bearer
+  credential and can call the API as each user (CWE-312, CWE-256). Show the
+  clear token once at creation, as the spec already requires, and never
+  persist it. Update the design's Alternatives and task 1.1/1.2 accordingly.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 The Authorization header, with the bearer token, is logged at info level
+#### R-security-2 The Authorization header, and so every API token, is written to the logs
 
 ```yaml
 severity: high
@@ -49,19 +45,21 @@ evidence: |
   method, path and headers at `info` level, including `Authorization`, so
   support can see which token an integration sent.
 recommendation: >-
-  Redact `Authorization` (and `Cookie`, `Set-Cookie`, `Proxy-Authorization`)
-  before logging; to let support see which token was sent, log the token's
-  non-secret prefix or its id after lookup. As designed, anyone with access to
-  the logs — support staff, the log aggregation service, a leaked log archive —
-  copies a live token from any request line and replays it in
-  `Authorization: Bearer` to act as that user (CWE-532). Task 1.3's test
-  `logs_requests` should assert the header is redacted.
+  Never log the `Authorization` header (nor `Cookie` / other credential
+  headers): redact it to its scheme (`Bearer [redacted]`) or log a
+  non-reversible identifier of the token (its row id or a short prefix of its
+  hash) so support can still tell which token was sent. As designed, anyone
+  with read access to the info-level logs — support staff, the log pipeline,
+  a log aggregation vendor — collects every user's bearer token and can
+  replay it against the API (CWE-532); with revocation deferred, a token
+  leaked this way stays valid forever. Task 1.3's test `logs_requests` should
+  assert that the token value never appears in the log output.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-3 A leaked token cannot be revoked and never expires
+#### R-security-3 A leaked token can never be invalidated: no revocation and no expiry
 
 ```yaml
 severity: medium
@@ -70,34 +68,20 @@ location: "design.md#Goals / Non-Goals"
 evidence: |
   **Non-Goals:** OAuth, scopes, revocation (a later change).
 recommendation: >-
-  Ship at least a way to delete one's own token (or an expiry) with this
-  change, or record the gap under Risks / Trade-offs with who decides it. The
-  proposal's Why is that "a leaked integration exposes the account"; with this
-  plan, once a token leaks (for instance through R-security-2's logs) the
-  holder keeps full account access indefinitely and, unlike a password, the
-  user has no way to change or cut it off. The Risks section only covers a
-  lost token, not a leaked one.
+  The proposal's own motivation is that "a leaked integration exposes the
+  account", yet with revocation deferred and no expiry in the design, a token
+  that leaks (through the logs of R-security-2, a compromised integration, or
+  the table of R-security-1) grants permanent API access as the user, and
+  changing the password does not stop it. Either ship a minimal delete of the
+  user's own tokens with this change, or give tokens an expiry
+  (`expires_at` checked by the middleware) until the revocation change lands;
+  the Risks entry "revoking the old one comes with the later revocation
+  change" should state this exposure explicitly if the deferral is kept.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-4 Authorization of token creation is not specified
+### skeptic
 
-```yaml
-severity: medium
-confidence: low
-location: "specs/api-tokens/spec.md#Requirement: A user creates an API token"
-evidence: |
-  The service SHALL let a signed-in user create an API token, shown once, and SHALL accept it in the `Authorization: Bearer` header of later requests.
-recommendation: >-
-  State whether "signed-in" includes a request authenticated by an API token.
-  If it does, a stolen token can mint further tokens that survive any later
-  revocation of the first one; require a password session (or a
-  re-authentication) for the creation endpoint and add a scenario for it.
-  Recorded with low confidence: the plan does not show the creation endpoint
-  nor how the middleware marks a session as signed in.
-history:
-  - status: open
-    by: security
-```
+Disabled by configuration.

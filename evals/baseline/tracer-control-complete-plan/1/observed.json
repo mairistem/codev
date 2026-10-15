@@ -2,28 +2,104 @@
   "format": 2,
   "case": "tracer-control-complete-plan",
   "error": null,
-  "costUsd": 0.270648,
-  "durationMs": 22505,
+  "costUsd": 0.320758,
+  "durationMs": 24981,
   "consumption": {
-    "durationApiMs": 22258,
-    "turns": 9,
-    "permissionDenials": 2,
+    "durationApiMs": 24870,
+    "turns": 11,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1088,
-      "cacheCreation": 25022,
-      "cacheRead": 166645,
-      "output": 1814
-    }
+      "input": 1092,
+      "cacheCreation": 27265,
+      "cacheRead": 274395,
+      "output": 2344
+    },
+    "toolCalls": 10,
+    "orientationCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 7291,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7291
+        }
+      },
+      {
+        "cacheCreation": 2609,
+        "cacheRead": 29430,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2609
+        }
+      },
+      {
+        "cacheCreation": 14010,
+        "cacheRead": 32039,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 4,
+        "sources": {
+          "codev roles": 1505,
+          "skill": 12505
+        }
+      },
+      {
+        "cacheCreation": 1543,
+        "cacheRead": 46049,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1544
+        }
+      },
+      {
+        "cacheCreation": 795,
+        "cacheRead": 47592,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 795
+        }
+      },
+      {
+        "cacheCreation": 372,
+        "cacheRead": 48387,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 372
+        }
+      },
+      {
+        "cacheCreation": 645,
+        "cacheRead": 48759,
+        "input": 2,
+        "output": 144,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 458,
+          "output": 187
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": null,
   "files": {
     "_codev/changes/add-session-timeout/proposal.md": "# Proposal: Idle session timeout\n\n## Why\n\nShared computers at our customers' branches stay signed in all day.\n\n## What Changes\n\n- A session expires after 30 minutes without a request.\n\n## Capabilities\n\n### New Capabilities\n\n- `session-timeout`\n\n### Modified Capabilities\n\nNone.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `src/auth/session.rs`, `docs/sign-in.md`.\n\n## Domains\n\n- [x] security — session lifetime\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [ ] migration\n\n## Release note\n\n- Changed: You are signed out after 30 minutes without activity.\n",
     "_codev/changes/add-session-timeout/specs/session-timeout/spec.md": "## Purpose\n\nSigns idle members out.\n\n## ADDED Requirements\n\n### Requirement: Idle sessions expire\n\nA session SHALL expire after 30 minutes without a request; a request with an expired session SHALL be answered 401.\n\n#### Scenario: An active session\n\n- **WHEN** a member sends a request 10 minutes after the previous one\n- **THEN** the request is served\n\n#### Scenario: An idle session\n\n- **WHEN** a member sends a request 31 minutes after the previous one\n- **THEN** the service answers 401\n",
-    "_codev/changes/add-session-timeout/tasks.md": "# Tasks\n\n## 1. Sessions\n\n- [ ] 1.1 Idle expiry in `src/auth/session.rs`, verified by tests `an_active_session_is_served` (\"An active session\") and `an_idle_session_is_refused` (\"An idle session\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe the 30-minute idle timeout in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+    "_codev/changes/add-session-timeout/tasks.md": "# Tasks\n\n## 1. Sessions\n\n- [ ] 1.1 Idle expiry in `src/auth/session.rs`, verified by tests `an_active_session_is_served` (\"An active session\") and `an_idle_session_is_refused` (\"An idle session\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe the 30-minute idle timeout in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`, extended in `tests/docs.rs` to assert that the page states the 30-minute idle timeout (the current assertion, `contains(\"session\")`, already passes before the change)\n"
   }
 }

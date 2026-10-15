@@ -2,22 +2,107 @@
   "format": 2,
   "case": "security-plan-tokens-in-clear",
   "error": null,
-  "costUsd": 0.3608778,
-  "durationMs": 44558,
+  "costUsd": 0.4015727999999999,
+  "durationMs": 40460,
   "consumption": {
-    "durationApiMs": 44239,
-    "turns": 9,
-    "permissionDenials": 1,
+    "durationApiMs": 40148,
+    "turns": 8,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 29640,
-      "cacheRead": 364724,
-      "output": 2491
-    }
+      "input": 1162,
+      "cacheCreation": 32672,
+      "cacheRead": 336459,
+      "output": 3596
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 3305,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3305
+        }
+      },
+      {
+        "cacheCreation": 14428,
+        "cacheRead": 32839,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "file": 14428
+        }
+      },
+      {
+        "cacheCreation": 1928,
+        "cacheRead": 47267,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1928
+        }
+      },
+      {
+        "cacheCreation": 359,
+        "cacheRead": 49195,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 359
+        }
+      },
+      {
+        "cacheCreation": 2200,
+        "cacheRead": 49554,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2200
+        }
+      },
+      {
+        "cacheCreation": 2423,
+        "cacheRead": 51754,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1940,
+          "output": 483
+        }
+      },
+      {
+        "cacheCreation": 634,
+        "cacheRead": 54177,
+        "input": 2,
+        "output": 298,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 634
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +114,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (The Authorization header, bearer tokens included, is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-2 (The Authorization header is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-2 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,33 +126,6 @@
     "changeName": "add-api-tokens",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "The `api_tokens` table holds `user_id`, `token` and `created_at`; the\nmiddleware looks a request's token up with `WHERE token = $1`. Storing the\ntoken as given keeps the lookup a simple indexed equality.\n",
-        "history": [
-          {
-            "by": "security",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-security-1",
-        "line": 11,
-        "location": "design.md#Decision: Tokens are stored as given",
-        "raisedBy": [
-          "security"
-        ],
-        "recommendation": "Store only a hash of the token (SHA-256 of the 32 random bytes is enough for a high-entropy secret; no bcrypt needed) in a `token_hash` column, hash the presented token in the middleware and look it up with `WHERE token_hash = $1` — still a simple indexed equality, so the stated reason for storing it as given does not hold. Anyone who reads the table (a SQL injection elsewhere, a leaked backup, a replica, a support dump) otherwise gets bearer credentials for every account, usable at once and, since revocation is deferred, impossible to cancel (CWE-312, CWE-256). Update task 1.1 and 1.2 accordingly.",
-        "reported": true,
-        "role": "security",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "API tokens are stored in clear in the database"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -81,19 +139,100 @@
             "to": null
           }
         ],
-        "id": "R-security-2",
-        "line": 36,
+        "id": "R-security-1",
+        "line": 11,
         "location": "design.md#Decision: Every request is logged with its headers",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Redact credential headers before logging: drop or mask `Authorization` and `Cookie` (the middleware already authenticates by the `session=` cookie, so every browser session would leak too). Anyone with access to the logs — support, the log pipeline, a log aggregator — can copy a token or session and call the API as that user, with no way to revoke it in this change (CWE-532). To identify which token an integration sent, log a non-secret token id or a short prefix of its hash instead. Task 1.3's test `logs_requests` should assert the header is absent from the log.",
+        "recommendation": "Never log credential-bearing headers (CWE-532). Redact `Authorization`, `Cookie` and `Set-Cookie` in the middleware's request log (e.g. log `Bearer <redacted>` or a short non-reversible fingerprint such as the first bytes of the token's SHA-256 if support needs to tell tokens apart). As designed, anyone who can read the `info` logs — support, a log aggregation service, a leaked log archive — copies a live token and calls the API as its owner; the same line also captures the passwords of integrations still using Basic auth. Update task 1.3 so `logs_requests` asserts the header value is absent from the log output.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The Authorization header is written to the logs"
+        "title": "The Authorization header, bearer tokens included, is written to the logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The `api_tokens` table holds `user_id`, `token` and `created_at`; the\nmiddleware looks a request's token up with `WHERE token = $1`. Storing the\ntoken as given keeps the lookup a simple indexed equality.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 36,
+        "location": "design.md#Decision: Tokens are stored as given",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Store only a hash of the token (CWE-312 / CWE-256): since tokens are 32 random bytes, an unsalted SHA-256 is enough, and the lookup stays a simple indexed equality (`WHERE token_hash = $1` with the hash of the presented token), so the stated reason for storing it as given does not hold. As designed, anyone who reads the `api_tokens` table — a database backup, a read replica, an SQL injection elsewhere, an operator — gets every user's working credential, while the same database already protects passwords with bcrypt. Hashing also removes the comparison of the raw secret inside the database. Update the table in task 1.1 and the spec's \"shown once\" requirement then holds by construction.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "API tokens are stored in clear in the database"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Non-Goals:** OAuth, scopes, revocation (a later change).\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 62,
+        "location": "design.md#Goals / Non-Goals",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The proposal's own motivation is that \"a leaked integration exposes the account\"; with no revocation and no expiry, a leaked token gives permanent, full-account API access and the user has no way to stop it (the Risks section only offers creating another token, which leaves the old one valid). Either bring a minimal revocation (delete a token by id, owner-checked) into this change, or give tokens an expiry and a documented operator procedure until the revocation change ships — and make the deferral an explicit risk for a human to accept.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A leaked token cannot be revoked and never expires"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The service SHALL let a signed-in user create an API token, shown once, and SHALL accept it in the `Authorization: Bearer` header of later requests.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-4",
+        "line": 84,
+        "location": "specs/api-tokens/spec.md#Requirement: A user creates an API token",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "State that token creation requires an interactive (password) session and refuse it for requests authenticated by an API token. If the middleware treats a bearer-authenticated request as \"signed in\", a stolen token can mint fresh tokens and keep access after the original is replaced — which matters all the more with no revocation (R-security-3). Add a scenario for it and a test in task 1.2.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The plan does not say whether a bearer token may create new tokens"
       }
     ],
     "format": 1,

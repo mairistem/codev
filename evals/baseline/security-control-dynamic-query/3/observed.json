@@ -2,22 +2,87 @@
   "format": 2,
   "case": "security-control-dynamic-query",
   "error": null,
-  "costUsd": 0.2417572,
-  "durationMs": 12682,
+  "costUsd": 0.29054939999999996,
+  "durationMs": 18466,
   "consumption": {
-    "durationApiMs": 12355,
-    "turns": 5,
+    "durationApiMs": 17914,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1170,
-      "cacheCreation": 24098,
-      "cacheRead": 140621,
-      "output": 994
-    }
+      "input": 1174,
+      "cacheCreation": 26264,
+      "cacheRead": 239062,
+      "output": 1582
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7387,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7387
+        }
+      },
+      {
+        "cacheCreation": 15424,
+        "cacheRead": 29526,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3850,
+          "skill": 11574
+        }
+      },
+      {
+        "cacheCreation": 1871,
+        "cacheRead": 44950,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1871
+        }
+      },
+      {
+        "cacheCreation": 767,
+        "cacheRead": 46821,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 767
+        }
+      },
+      {
+        "cacheCreation": 450,
+        "cacheRead": 47588,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 450
+        }
+      },
+      {
+        "cacheCreation": 365,
+        "cacheRead": 48038,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 365
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

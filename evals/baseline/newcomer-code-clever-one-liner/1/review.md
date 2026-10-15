@@ -8,7 +8,8 @@ Mode: inline.
 
 ### newcomer
 
-#### R-newcomer-1 `bucket` packs its premium rule into a bitwise one-liner
+#### R-newcomer-1 `bucket` packs a bit-trick threshold, an assignment and a push into one unreadable line
+
 ```yaml
 severity: medium
 confidence: high
@@ -17,22 +18,19 @@ evidence: |
   export const bucket = (ps: Price[]) =>
     ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? "hi" : "lo"] ||= []).push(p), a), {});
 recommendation: >-
-  A newcomer reading the docstring "Splits prices into the cheap and the
-  premium ones" cannot recover the premium rule from
-  `(p.cents >> 4) & 0x3e8` without the plan (which says premium means
-  10 euros and more): a shift, a hex mask and a ternary nested inside an
-  index, inside a `||=`, inside a comma expression in a `reduce` callback.
-  The shape hides what it computes — it is not a threshold at all: 200
-  cents gives `(200 >> 4) & 0x3e8 === 8`, so a 2-euro price lands in "hi",
-  while 1000 cents lands there too. Rewrite it as a plain loop or two
-  `filter`s on a named constant, e.g.
-  `const PREMIUM_MIN_CENTS = 1000;` and
-  `premium = prices.filter(p => p.cents >= PREMIUM_MIN_CENTS)`, returning a
-  typed `{ cheap: Price[]; premium: Price[] }` instead of a
-  `Record<string, Price[]>` keyed by the magic strings "hi"/"lo" (whose
-  keys are missing when a band is empty); and name it and its parameter
-  for what they are (`splitByPriceBand(prices)` rather than `bucket(ps)`,
-  `a`, `p`).
+  Replace the one-liner with a plain loop over a named threshold, e.g.
+  `const PREMIUM_THRESHOLD_CENTS = 1000;` and
+  `function splitByPriceBand(prices: Price[]): { cheap: Price[]; premium: Price[] }`
+  that pushes each price into `premium` when `price.cents >= PREMIUM_THRESHOLD_CENTS`,
+  else into `cheap`. A newcomer cannot tell from `(p.cents >> 4) & 0x3e8` where
+  "premium" starts (the doc comment does not say; the 10-euro rule lives only in
+  the proposal), and the dense shape hides that the mask is not a threshold at all:
+  a 128-cent price gives `(128 >> 4) & 0x3e8 = 8`, so it lands in "hi", while
+  1000 cents is the intended boundary. The comma operator returning `a`, the
+  `||=` inside an index, the single-letter names `ps`/`a`/`p`, the untyped
+  `"hi"`/`"lo"` keys behind `Record<string, Price[]>` (callers must guess the keys,
+  and a missing bucket is `undefined`), and a name `bucket` that does not say by
+  what all add to the cost; the simple version removes all of them at once.
 history:
   - status: open
     by: newcomer

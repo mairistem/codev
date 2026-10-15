@@ -2,11 +2,11 @@
   "format": 2,
   "case": "migration-plan-breaking-rename",
   "error": null,
-  "costUsd": 0.3536366000000001,
-  "durationMs": 29543,
+  "costUsd": 0.3091852,
+  "durationMs": 24906,
   "consumption": {
-    "durationApiMs": 29227,
-    "turns": 12,
+    "durationApiMs": 25028,
+    "turns": 8,
     "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,10 +14,76 @@
     ],
     "tokens": {
       "input": 1158,
-      "cacheCreation": 30660,
-      "cacheRead": 243913,
-      "output": 2931
-    }
+      "cacheCreation": 26812,
+      "cacheRead": 236001,
+      "output": 2329
+    },
+    "toolCalls": 7,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7383,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7383
+        }
+      },
+      {
+        "cacheCreation": 15219,
+        "cacheRead": 29522,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15219
+        }
+      },
+      {
+        "cacheCreation": 269,
+        "cacheRead": 44741,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 269
+        }
+      },
+      {
+        "cacheCreation": 1561,
+        "cacheRead": 45010,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 204,
+          "file": 1357
+        }
+      },
+      {
+        "cacheCreation": 1447,
+        "cacheRead": 46571,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1447
+        }
+      },
+      {
+        "cacheCreation": 933,
+        "cacheRead": 48018,
+        "input": 2,
+        "output": 162,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 755,
+          "edit": 178
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +95,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (The public field rename is not marked BREAKING and the release note gives users nothing to do) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Public field removed in place with no deprecation or side-by-side period) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (The rename removes `status` in one step, with no compatibility period for partner integrations) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Breaking rename not marked BREAKING and no action given to users) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -41,33 +107,6 @@
     "changeName": "rename-order-status",
     "exists": true,
     "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "- Changed: The order's `status` field is now called `state`.\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-1",
-        "line": 11,
-        "location": "proposal.md#Release note",
-        "raisedBy": [
-          "migration"
-        ],
-        "recommendation": "Mark the item **BREAKING** in the release note and say what partners must do: read `state` instead of `status` from `GET /orders/{id}`, with the date or version after which `status` is gone. Today a partner integration that reads `status` to know when to ship (design.md#Context) gets `undefined` after deploy, with no warning in the note it reads, and stops shipping orders. The API version (openapi.yaml `version: 1.4.0`) should move with the announcement so consumers can tell which contract they are on.",
-        "reported": true,
-        "role": "migration",
-        "severity": "high",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "The public field rename is not marked BREAKING and the release note gives users nothing to do"
-      },
       {
         "awaiting": "author",
         "confidence": "high",
@@ -81,19 +120,46 @@
             "to": null
           }
         ],
-        "id": "R-migration-2",
-        "line": 32,
+        "id": "R-migration-1",
+        "line": 15,
         "location": "design.md#Decision: The field is renamed in place",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Use expand then contract: in this change, return both `state` and `status` (same value), mark `status` as `deprecated: true` in openapi.yaml, and announce its removal date; remove `status` in a later change once partners have moved. The design's own context says partners' integrations read `status` to know when to ship, and `src/orders.ts:19` (`status: rows[0].state`) is what they read today: a big-bang rename breaks every one of them at deploy, with no window to migrate. Add a task and a spec scenario checking that a paid order still exposes `\"status\": \"paid\"` during the deprecation period, so the migration path is tested; tasks.md 1.1 only tests the new field.",
+        "recommendation": "Use expand and contract: return both `status` and `state` with the same value, mark `status` deprecated in `openapi.yaml` with a removal date, and remove it in a later change once partners have moved. Add a task and a scenario that check `GET /orders/{id}` still holds `\"status\": \"paid\"` alongside `\"state\": \"paid\"` during the deprecation period, so the migration path is tested.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The rename removes `status` in one step, with no compatibility period for partner integrations"
+        "title": "Public field removed in place with no deprecation or side-by-side period"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Changed: The order's `status` field is now called `state`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 44,
+        "location": "proposal.md#Release note",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Mark the item **BREAKING** in the release note and in `## What Changes`, and say what partners must do: read `state` instead of `status`, by which date or version `status` is removed, and that both are served until then (see R-migration-1). If the API is versioned, bump its major version or announce the change in the API changelog partners follow.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Breaking rename not marked BREAKING and no action given to users"
       }
     ],
     "format": 1,
@@ -111,14 +177,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "migration",
-            "state": "findings"
+            "role": "skeptic",
+            "state": "disabled"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "skeptic",
-            "state": "disabled"
+            "role": "migration",
+            "state": "findings"
           }
         ],
         "step": "plan.challenge",

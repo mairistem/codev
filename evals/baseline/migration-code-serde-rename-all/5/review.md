@@ -6,14 +6,18 @@
 
 Mode: inline.
 
+### newcomer
+
+Disabled by configuration.
+
 ### migration
 
-#### R-migration-1 rename_all = "camelCase" renames every existing field of the public order JSON
+#### R-migration-1 `rename_all = "camelCase"` renames every existing order JSON field
 
 ```yaml
 severity: high
 confidence: high
-location: "src/api.rs:6-12"
+location: "src/api.rs:6-10"
 evidence: |
   #[serde(rename_all = "camelCase")]
   pub struct OrderResponse {
@@ -21,44 +25,50 @@ evidence: |
       pub customer_id: i64,
       pub total_cents: i64,
 recommendation: >-
-  Remove `#[serde(rename_all = "camelCase")]` so `order_id`, `customer_id` and
-  `total_cents` keep their snake_case names and only `currency` is added. Today a
-  partner integration reading `order_id` from `GET /orders/{id}` gets nothing
-  after this change: the JSON now holds `orderId`, `customerId`, `totalCents`.
-  This breaks the contract in docs/api.md ("a field is never renamed or removed
-  without two releases of deprecation"), is marked nowhere as BREAKING, is absent
-  from the release note ("Added: Orders carry their `currency`."), and
-  contradicts docs/api.md itself, which still lists the snake_case names. If
-  camelCase is wanted, emit both names for two releases and announce it as
-  BREAKING; add a test pinning the serialized field names.
+  Remove `#[serde(rename_all = "camelCase")]` so `order_id`, `customer_id`
+  and `total_cents` keep their snake_case names, and add `currency` as a
+  purely additive field. If a camelCase API is wanted, it is a separate,
+  **BREAKING** change with two releases of deprecation (per docs/api.md),
+  serving both names in the meantime and announced in the release note.
+  Add a test that serializes an `OrderResponse` and asserts the existing
+  field names are unchanged.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Existing config.toml files without default_currency no longer load
+Scenario: a partner integration that today reads `order_id`,
+`customer_id` and `total_cents` from `GET /orders/{id}` receives
+`orderId`, `customerId` and `totalCents` after the deploy; its lookups
+return nothing and it breaks without warning. `docs/api.md` states "a
+field is never renamed or removed without two releases of deprecation",
+still documents the snake_case names, and the proposal's release note
+lists only "Added" — no **BREAKING** item.
+
+#### R-migration-2 Required `default_currency` makes existing `config.toml` files fail to load
 
 ```yaml
 severity: high
 confidence: high
 location: "src/config.rs:9-10"
 evidence: |
-      /// The currency of orders that do not name one (ISO 4217).
-      pub default_currency: String,
+  /// The currency of orders that do not name one (ISO 4217).
+  pub default_currency: String,
 recommendation: >-
-  Give the field a default (`#[serde(default = "default_currency")]` returning
-  "EUR", the currency sold before this change) so existing files keep loading.
-  As written, every deployed `config.toml` — which today holds only
-  `database_url` and `listen`, as config.example.toml did on main — makes
-  `toml::from_str` fail with a missing-field error at start-up after the upgrade,
-  and the service does not start; nothing in the proposal or release note tells
-  operators to add the key. Add a test loading the old two-key file. If the key
-  must stay required, mark it BREAKING with the step to take in the release note.
+  Give the field a default so existing files keep loading — e.g.
+  `#[serde(default = "default_currency")]` returning `"EUR"`, the currency
+  the shop sold in before this change — and add a test that `load` accepts
+  the previous `config.example.toml` (without `default_currency`). Otherwise
+  mark the new key **BREAKING** in the release note with the line operators
+  must add.
 history:
   - status: open
     by: migration
 ```
 
-### newcomer
-
-Disabled by configuration.
+Scenario: an existing deployment's `config.toml` holds only
+`database_url` and `listen` (as the previous `config.example.toml` did).
+After upgrading, `toml::from_str` returns a "missing field
+`default_currency`" error and the service no longer starts. Only
+`config.example.toml` was updated; the release note says nothing about the
+new key.

@@ -8,7 +8,7 @@ Mode: inline.
 
 ### privacy
 
-#### R-privacy-1 Account deletion keeps the member's e-mail, name, phone and postal address
+#### R-privacy-1 Account deletion keeps the member's personal data in the users row
 
 ```yaml
 severity: high
@@ -17,66 +17,41 @@ location: "app/account.py:18-21"
 evidence: |
   "UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?",
 recommendation: >-
-  The proposal promises that the button "erases the member's personal data"
-  and keeps orders "without personal data", but `delete_account` only
-  soft-deletes: it sets `deleted_at` and clears `password_hash`, while
-  `users.email`, `users.display_name`, `users.phone` and
-  `users.postal_address` (app/schema.sql) stay in the table, still joined to
-  the kept `orders` rows through `orders.user_id`. Scenario: a member clicks
-  "Delete my account"; their row still holds their e-mail, name, phone and
-  address, indefinitely, linked to their order history — the erasure right
-  (GDPR Art. 17) and storage limitation (Art. 5(1)(e)) are not met, and the
-  `UNIQUE` e-mail also blocks them from signing up again. Overwrite or null
-  those columns in the same UPDATE (e.g. `email` set to a non-identifying
-  placeholder such as `'deleted-' || id`, `display_name` to a fixed label,
-  `phone` and `postal_address` to NULL), so the row that `orders` references
-  carries no personal data, and add a test asserting the columns are erased.
+  The proposal promises that "Delete my account" erases the member's personal data (GDPR Art. 17),
+  but delete_account only soft-deletes: it sets deleted_at and clears password_hash, while email,
+  display_name, phone and postal_address (app/schema.sql:3-6) stay in the users table forever.
+  Scenario: Ada deletes her account; SELECT email, phone, postal_address FROM users WHERE id = 1
+  still returns her e-mail, phone and address. Because orders.user_id references that row, her
+  kept orders also stay linked to her identity, contradicting "kept for accounting, without
+  personal data". Overwrite or NULL every personal column on deletion (e.g. email to a unique
+  non-identifying placeholder such as 'deleted-<id>', display_name to a placeholder, phone and
+  postal_address to NULL) so the row only anchors the orders, and add a test asserting those
+  columns no longer hold the member's data after delete_account. Also state how backups holding
+  the old values are purged (retention of backups is not defined by the change).
 history:
   - status: open
     by: privacy
 ```
 
-#### R-privacy-2 Erasure does not reach analytics data keyed by `analytics_id`
+#### R-privacy-2 Analytics pseudonym survives erasure and is not reached by deletion
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/account.py:13"
+location: "app/account.py:11-13"
 evidence: |
-  return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()
+  def analytics_id(user_id: int) -> str:
+      """The pseudonymous id analytics events carry instead of the user id."""
+      return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()
 recommendation: >-
-  The change adds a pseudonymous `analytics_id` that analytics events carry,
-  derived deterministically from the user id and a fixed salt. Since the
-  `users` row and its `id` are kept after deletion, anyone holding the salt
-  can recompute the id and re-link the member's analytics events to them, and
-  `delete_account` does nothing about those events. Nothing in the change
-  calls `analytics_id`, and the analytics store is not visible here, so this
-  depends on how it is used: either remove the function until a use needs it,
-  or make deletion reach the analytics data (delete the member's events, or
-  break the link, e.g. a random per-user analytics id stored in `users` and
-  cleared on deletion). The analytics recipient should also be identified as
-  a processor if it is a third party.
-history:
-  - status: open
-    by: privacy
-```
-
-#### R-privacy-3 No retention or purge defined for deleted accounts, backups included
-
-```yaml
-severity: medium
-confidence: low
-location: "app/account.py:16-17"
-evidence: |
-  def delete_account(user_id: int) -> None:
-      """Deletes the member's account; their orders are kept for accounting."""
-recommendation: >-
-  Deleted accounts stay in `users` with `deleted_at` set and no rule says
-  when the row (or what is left of it) is purged, nor how deleted members'
-  data is removed from database backups of `members.db`. State the
-  retention period for kept orders (the accounting obligation) and for the
-  deleted `users` row, and how backups age out the erased data; this is a
-  question for the team, as only the controller can set the periods.
+  The change adds a deterministic pseudonymous id for analytics, derived from a global salt and
+  the user id; it is pseudonymous, not anonymous, data (still personal data under GDPR), yet
+  delete_account does nothing about analytics events carrying it, and anyone holding the salt can
+  recompute the link to a user id still present in users and orders. The analytics pipeline was
+  not visible in the change, hence low confidence. Ask the team whether analytics events keyed by
+  analytics_id must be erased or unlinked on account deletion (e.g. a per-user salt deleted with
+  the account), and identify the analytics processor receiving these ids; the function is also
+  unused within this change, so consider dropping it from this change if it has no purpose here.
 history:
   - status: open
     by: privacy

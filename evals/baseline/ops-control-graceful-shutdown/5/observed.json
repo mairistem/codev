@@ -2,10 +2,10 @@
   "format": 2,
   "case": "ops-control-graceful-shutdown",
   "error": null,
-  "costUsd": 0.3576572,
-  "durationMs": 33844,
+  "costUsd": 0.3724756,
+  "durationMs": 40134,
   "consumption": {
-    "durationApiMs": 33480,
+    "durationApiMs": 39925,
     "turns": 7,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,76 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1176,
-      "cacheCreation": 29709,
-      "cacheRead": 294761,
-      "output": 3002
-    }
+      "input": 1174,
+      "cacheCreation": 30444,
+      "cacheRead": 246393,
+      "output": 3933
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 15960,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4597,
+          "skill": 11363
+        }
+      },
+      {
+        "cacheCreation": 2356,
+        "cacheRead": 45494,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2356
+        }
+      },
+      {
+        "cacheCreation": 1368,
+        "cacheRead": 47850,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1368
+        }
+      },
+      {
+        "cacheCreation": 2940,
+        "cacheRead": 49218,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2940
+        }
+      },
+      {
+        "cacheCreation": 425,
+        "cacheRead": 52158,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 425
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,13 +117,13 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Confirm in the `Mailer` implementation that a timeout after the message data was handed to the relay is not reported as `Unavailable`, or give each message a stable Message-ID so a re-send can be recognised; otherwise a slow relay that accepts the message after `SEND_TIMEOUT` makes the worker release the job and send the same e-mail again, up to `MAX_ATTEMPTS` times. Low confidence because the `Mailer` implementation is not part of the change.",
+        "recommendation": "Check how the mailer maps a timeout reached after the message data was sent; if it returns `Unavailable`, the job is handed out again and the recipient gets the e-mail twice. Map that case to a distinct error and do not retry it, or accept the duplicate as SMTP's usual at-least-once delivery.",
         "reported": false,
         "role": "ops",
-        "severity": "medium",
+        "severity": "low",
         "status": "open",
         "step": "code.review",
-        "title": "A send that times out after the relay accepted it is retried and may be delivered twice"
+        "title": "A send that times out after the relay took the message is sent again"
       }
     ],
     "format": 1,

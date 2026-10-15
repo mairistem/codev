@@ -87,6 +87,11 @@ struct RunArgs {
     /// Run only the cases of this role (repeatable)
     #[arg(long = "role")]
     roles: Vec<String>,
+    /// Run only the cases of this step (repeatable): `review` for the three
+    /// review steps, or `plan.challenge`, `code.review`, `plan.trace`,
+    /// `plan.write`
+    #[arg(long = "step")]
+    steps: Vec<String>,
     /// Output directory (default: target/evals/run-<timestamp>); a directory
     /// that already holds observations is resumed
     #[arg(long)]
@@ -183,13 +188,13 @@ fn main() -> ExitCode {
                 Err(e) => return usage(e),
             };
             let out = args.out.unwrap_or_else(|| args.dir.clone());
-            match suite::score_dir(&cases, &args.dir, thresholds) {
+            match suite::score_dir(&repo, &cases, &args.dir, thresholds) {
                 Ok(score) => finish(&score, &out),
                 Err(e) => usage(e),
             }
         }
         Commands::Run(args) => run(&repo, &cases, args),
-        Commands::Compare(args) => compare_runs(&cases, &args),
+        Commands::Compare(args) => compare_runs(&repo, &cases, &args),
         Commands::Docs(_) => unreachable!("handled before the cases are loaded"),
     }
 }
@@ -243,7 +248,7 @@ fn now() -> (u64, String) {
 /// Scores both directories on the cases they share and prints the
 /// comparison; refuses two models, an unreadable directory or no case in
 /// common, printing no report.
-fn compare_runs(cases: &[case::Case], args: &CompareArgs) -> ExitCode {
+fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCode {
     let ids = |dir: &Path| -> Result<BTreeSet<String>, String> {
         suite::read_run(dir)?;
         Ok(suite::load_observations(dir)?
@@ -261,8 +266,15 @@ fn compare_runs(cases: &[case::Case], args: &CompareArgs) -> ExitCode {
         return usage("the baseline and the candidate have no case in common");
     }
     let not_compared: Vec<String> = base_ids.symmetric_difference(&cand_ids).cloned().collect();
-    let score =
-        |dir: &Path| suite::score_dir_only(cases, dir, score::Thresholds::default(), Some(&common));
+    let score = |dir: &Path| {
+        suite::score_dir_only(
+            repo,
+            cases,
+            dir,
+            score::Thresholds::default(),
+            Some(&common),
+        )
+    };
     let (baseline, candidate) =
         match score(&args.baseline).and_then(|b| Ok((b, score(&args.candidate)?))) {
             Ok(pair) => pair,
@@ -308,8 +320,12 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
             return usage(format!("no case `{id}`"));
         }
     }
-    let selected: Vec<case::Case> = cases
-        .iter()
+    let by_step = match runner::select_steps(cases, &args.steps) {
+        Ok(selected) => selected,
+        Err(e) => return usage(e),
+    };
+    let selected: Vec<case::Case> = by_step
+        .into_iter()
         .filter(|c| args.cases.is_empty() || args.cases.contains(&c.id))
         .filter(|c| args.roles.is_empty() || args.roles.contains(&c.role))
         .cloned()
@@ -352,7 +368,11 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
             Ok(r) => r,
             Err(e) => return usage(e),
         };
-        if let Err(e) = runner::check_resume(&resumed, info.model.as_deref()) {
+        if let Err(e) = runner::check_resume(
+            &resumed,
+            info.model.as_deref(),
+            info.claude_version.as_deref(),
+        ) {
             return usage(e);
         }
     }
@@ -378,14 +398,22 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         tools,
         settings,
     };
-    runner::run_cases(&pending, &options, &info.date);
+    let limited = runner::run_cases(&pending, &options, &info.date);
     if !options.keep {
         let _ = fs::remove_dir(&options.work);
     }
-    match suite::score_dir(cases, &out, thresholds) {
+    let code = match suite::score_dir(repo, cases, &out, thresholds) {
         Ok(score) => finish(&score, &out),
-        Err(e) => usage(e),
+        Err(e) => return usage(e),
+    };
+    if limited {
+        eprintln!(
+            "[codev-evals] stopped: the account's usage limit is reached; run the same command \
+             again once it resets, and it resumes where it stopped"
+        );
+        return ExitCode::from(1);
     }
+    code
 }
 
 fn finish(score: &SuiteScore, out: &Path) -> ExitCode {

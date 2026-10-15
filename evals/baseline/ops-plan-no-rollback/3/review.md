@@ -19,20 +19,22 @@ evidence: |
   release. There is no switch between the two: keeping both would double the
   code to maintain. The Stripe account is closed the day after the release.
 recommendation: >-
-  If Paylane fails in production after the release (authorizations
-  rejected, outage, captures not settling), redeploying the previous
-  version does not restore payments: the Stripe account is already closed
-  the next day, so checkout stays broken with no rollback. Keep the Stripe
-  client behind a configuration switch (provider selected per environment)
-  and keep the Stripe account open until Paylane has run in production for
-  an agreed period; decide the rollback path in the design and add a task
-  for it.
+  Keep a way back until Paylane has proven itself in production: keep the
+  Stripe client behind a configuration switch (or a percentage rollout) for
+  at least one weekly release cycle, and do not close the Stripe account
+  until that window has passed without incident. Failure scenario: Paylane
+  starts declining or timing out on authorizations two days after the
+  release; the previous version can be redeployed, but it calls a Stripe
+  account that was closed the day after the release, so no card payment can
+  be taken by either provider and the only remedy is a new release against
+  a provider that is failing. State the rollback path and the account
+  closure criterion in the design.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-2 Nobody would see the settlement worker fail
+#### R-ops-2 The nightly settlement worker can fail without anyone seeing it
 
 ```yaml
 severity: high
@@ -43,13 +45,16 @@ evidence: |
   payments and matches them to orders. It runs as a Kubernetes CronJob and
   writes its result to the database.
 recommendation: >-
-  If the CronJob fails, is not scheduled, or cannot reach Paylane at 02:00,
-  the only output is a database write that never happens: the spec alerts
-  finance only for an unmatched payment, so a night with no settlement at
-  all goes unnoticed until someone checks the books. Decide in the design
-  how the worker reports a run — a log at start and end with the run's
-  counts, a metric or last-success timestamp, and an alert when a night's
-  run fails or does not complete — and add it to task 1.2.
+  Decide in the design how an operator learns that a run failed or did not
+  run: a log line at start and end of each run with the counts fetched,
+  matched and unmatched, a metric or heartbeat for the last successful run,
+  and an alert when the CronJob fails or no successful run is recorded by a
+  given hour. Failure scenario: the Paylane API is unreachable at 02:00 (or
+  the CronJob is never scheduled after a manifest error); the job exits or
+  never starts, nothing is written to the database and nothing alerts, so
+  the day's payments stay unreconciled and the spec's alert to the finance
+  channel for unmatched payments never fires either. Add a task for this
+  monitoring to tasks.md.
 history:
   - status: open
     by: ops

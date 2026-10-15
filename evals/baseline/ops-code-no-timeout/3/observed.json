@@ -2,22 +2,89 @@
   "format": 2,
   "case": "ops-code-no-timeout",
   "error": null,
-  "costUsd": 0.3026662,
-  "durationMs": 26973,
+  "costUsd": 0.3330964,
+  "durationMs": 34819,
   "consumption": {
-    "durationApiMs": 27151,
-    "turns": 7,
+    "durationApiMs": 34855,
+    "turns": 9,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1162,
-      "cacheCreation": 26190,
-      "cacheRead": 188746,
-      "output": 2720
-    }
+      "input": 1164,
+      "cacheCreation": 27458,
+      "cacheRead": 238037,
+      "output": 3241
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7378,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7378
+        }
+      },
+      {
+        "cacheCreation": 14867,
+        "cacheRead": 29517,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3237,
+          "skill": 11630
+        }
+      },
+      {
+        "cacheCreation": 1134,
+        "cacheRead": 44384,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1134
+        }
+      },
+      {
+        "cacheCreation": 2514,
+        "cacheRead": 45518,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2161,
+          "edit": 353
+        }
+      },
+      {
+        "cacheCreation": 415,
+        "cacheRead": 48032,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 415
+        }
+      },
+      {
+        "cacheCreation": 1150,
+        "cacheRead": 48447,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 989,
+          "edit": 161
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +96,15 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-1 (The provider call has no timeout) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-1 (Charge call to the payment provider has no timeout) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge can duplicate charges) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-ops-2 (Unbounded retry of a non-idempotent charge, on every error) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Charge failures are swallowed without any log) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +131,13 @@
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it, when the payment provider accepts the connection but stops answering, `charge()` blocks forever on the checkout path: the request worker hangs, nothing is logged and the operator only sees checkouts piling up.",
+        "recommendation": "Pass an explicit `timeout=` (connect and read) to `requests.post`. Without it, when the provider accepts the connection but never answers, `requests` waits indefinitely: the checkout request that calls `charge()` hangs, no exception is raised, nothing is logged, and the operator sees stuck workers with no error to diagnose.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "The provider call has no timeout"
+        "title": "Charge call to the payment provider has no timeout"
       },
       {
         "awaiting": "author",
@@ -82,18 +153,18 @@
           }
         ],
         "id": "R-ops-2",
-        "line": 29,
+        "line": 30,
         "location": "app/payments.py:12-18",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Bound the retries (a few attempts, exponential backoff with jitter), then raise an error naming the order. Retry only when the charge is safe to repeat: send an idempotency key derived from `order_id` that the provider honours, and do not retry on 4xx responses. Today, when the provider charges the card but the response is lost (read error, 5xx after processing), the loop posts the charge again every second and charges the customer twice; when the provider is down or rejects the request (e.g. a 400 for an invalid amount), the loop never ends and hammers the provider at 1 request per second per pending order.",
+        "recommendation": "Bound the retries (a few attempts, with exponential backoff and jitter) and retry only transient failures (connection errors, 5xx, 429), never 4xx such as a declined card or invalid amount, which today loops forever every second. Make the POST safe to repeat by sending an idempotency key derived from `order_id` (if the provider supports one); otherwise a read timeout or 5xx returned after the provider already charged makes the retry charge the customer twice. During a provider outage, every pending checkout retries every second with no limit, a retry storm that also blocks callers forever. After the last attempt, raise an error carrying the order id and the provider's status.",
         "reported": true,
         "role": "ops",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Unbounded retry of a non-idempotent charge can duplicate charges"
+        "title": "Unbounded retry of a non-idempotent charge, on every error"
       },
       {
         "awaiting": "author",
@@ -109,18 +180,18 @@
           }
         ],
         "id": "R-ops-3",
-        "line": 58,
+        "line": 60,
         "location": "app/payments.py:17-18",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Log each failed attempt as a structured event (order id, attempt number, HTTP status, error class, no request body or credentials) and emit a metric for charge failures. Today, when the provider returns errors, the exception is dropped: an operator investigating a stuck checkout has no log, no status code and no order id to diagnose from.",
+        "recommendation": "Log each failed attempt as a structured event (order id, attempt number, HTTP status or exception type, never the request body or credentials) and expose a counter of charge failures. Today, when the provider is down or rejects a charge, the exception is dropped: the operator has no log line, no metric and no error, and cannot tell a slow checkout from a provider outage or a declined order.",
         "reported": true,
         "role": "ops",
-        "severity": "medium",
+        "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Failed charge attempts are swallowed without a log"
+        "title": "Charge failures are swallowed without any log"
       },
       {
         "awaiting": "author",
@@ -136,18 +207,18 @@
           }
         ],
         "id": "R-ops-4",
-        "line": 78,
+        "line": 81,
         "location": "app/payments.py:7",
         "raisedBy": [
           "ops"
         ],
-        "recommendation": "Read the provider URL from the environment or configuration (e.g. `PAYMENT_URL` env var), with no production default for non-production environments. The task is verified against the provider's sandbox, yet the code only knows the production endpoint: pointing a test or staging environment at the sandbox needs a code edit, and an environment run as is sends real charges to production.",
+        "recommendation": "Read the provider URL from the environment or the application configuration. The task was verified against the provider's sandbox, while production must call the live endpoint: with the URL baked in, switching between sandbox and production, or pointing a test environment away from real charges, needs a code change and a release.",
         "reported": true,
         "role": "ops",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Provider URL is hard-coded"
+        "title": "Provider URL hard-coded instead of read from configuration"
       }
     ],
     "format": 1,

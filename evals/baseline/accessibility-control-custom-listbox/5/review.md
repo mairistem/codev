@@ -8,25 +8,46 @@ Mode: inline.
 
 ### accessibility
 
-#### R-accessibility-1 Highlighted option is marked only by a class with no style in the repository
+#### R-accessibility-1 Highlighted option and combobox focus rely on styles the change does not include
+
+```yaml
+severity: medium
+confidence: low
+location: "src/components/SizePicker.tsx:92"
+evidence: |
+            className={index === active ? "option option--active" : "option"}
+recommendation: >-
+  DOM focus stays on the combobox while `aria-activedescendant` moves the
+  highlight, so a sighted keyboard user sees which size Arrow keys reached
+  only through the `option--active` class, and sees the closed control's
+  focus only through the browser default outline. No stylesheet in the
+  repository defines `option--active`, `option` or `size-picker`. Check
+  that the stylesheet that will ship with this component gives
+  `.option--active` a visible highlight and keeps a visible focus
+  indicator on `[role="combobox"]`, each with at least 3:1 contrast
+  (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast).
+history:
+  - status: open
+    by: accessibility
+```
+
+#### R-accessibility-2 Option touch target size is not set by the change
 
 ```yaml
 severity: low
 confidence: low
-location: "src/components/SizePicker.tsx:92"
+location: "src/components/SizePicker.tsx:87-95"
 evidence: |
-  className={index === active ? "option option--active" : "option"}
+          <li
+            key={size}
+            id={`${id}-option-${index}`}
+            role="option"
 recommendation: >-
-  The combobox keeps DOM focus and points to the highlighted option with
-  aria-activedescendant, so the browser draws no focus ring on the option:
-  sighted keyboard users see which size Arrow keys, Enter and Tab will choose
-  only through the `option--active` style. No stylesheet defining
-  `option--active` (or `.size-picker`) exists in the repository. Check that a
-  stylesheet gives `.option--active` a visible indicator with at least 3:1
-  contrast against adjacent colours (WCAG 2.4.7 Focus Visible, 1.4.11
-  Non-text Contrast), and that options on phones are at least 24 by 24 CSS
-  pixels (2.5.8 Target Size (Minimum)), the mis-tap problem the proposal
-  addresses.
+  The proposal's motivation is that customers on phones mis-tap tiny size
+  controls, yet nothing in the change sizes the options or the combobox.
+  Check that the stylesheet gives each `.option` and the combobox a target
+  of at least 24 by 24 CSS pixels, preferably larger for this use case
+  (WCAG 2.5.8 Target Size (Minimum)).
 history:
   - status: open
     by: accessibility

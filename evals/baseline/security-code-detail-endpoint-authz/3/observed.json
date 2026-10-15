@@ -2,10 +2,10 @@
   "format": 2,
   "case": "security-code-detail-endpoint-authz",
   "error": null,
-  "costUsd": 0.33613420000000005,
-  "durationMs": 26961,
+  "costUsd": 0.3769972,
+  "durationMs": 40203,
   "consumption": {
-    "durationApiMs": 26609,
+    "durationApiMs": 40231,
     "turns": 8,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,86 @@
     ],
     "tokens": {
       "input": 1181,
-      "cacheCreation": 28273,
-      "cacheRead": 291236,
-      "output": 2536
-    }
+      "cacheCreation": 30548,
+      "cacheRead": 292451,
+      "output": 3657
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7392,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7392
+        }
+      },
+      {
+        "cacheCreation": 14621,
+        "cacheRead": 29531,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3934,
+          "skill": 10687
+        }
+      },
+      {
+        "cacheCreation": 2894,
+        "cacheRead": 44152,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2894
+        }
+      },
+      {
+        "cacheCreation": 580,
+        "cacheRead": 47046,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 580
+        }
+      },
+      {
+        "cacheCreation": 2196,
+        "cacheRead": 47626,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2196
+        }
+      },
+      {
+        "cacheCreation": 2313,
+        "cacheRead": 49822,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2313
+        }
+      },
+      {
+        "cacheCreation": 552,
+        "cacheRead": 52135,
+        "input": 2,
+        "output": 383,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 526,
+          "output": 26
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -56,7 +132,7 @@
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization A sends `GET /invoices/42` (or iterates ids 1, 2, 3…) and gets the number, total and date of organization B's invoices: the query selects by `id` alone, with no check against the caller's organization, while `GET /invoices` scopes by `org_id`. Scope the query to the caller — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and answer 404 (not 403) when no row matches, so ids of other organizations cannot be probed. Add a test asserting the query carries the caller's `orgId`, alongside the existing list test.",
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization 7 who sends `GET /invoices/42` gets invoice 42 even when it belongs to another organization, and can enumerate every customer's invoices by walking the ids. Scope the lookup to the caller like the list does — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and keep answering 404 when no row matches, so foreign ids are indistinguishable from missing ones. Add a test asserting the query is scoped by `org_id`.",
         "reported": true,
         "role": "security",
         "severity": "high",
@@ -67,7 +143,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
+        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n",
         "history": [
           {
             "by": "security",
@@ -78,18 +154,45 @@
           }
         ],
         "id": "R-security-2",
-        "line": 37,
+        "line": 35,
         "location": "src/server.ts:15-18",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Information exposure through an error message (CWE-209). Any client, even without a session — `express.json()` runs before `requireUser` — sends a request with `Content-Type: application/json` and a malformed body; the body parser's error reaches this handler and the response carries its message and full stack trace, revealing the server's file paths, module layout and dependency versions. Database errors forwarded here would likewise expose `pg` messages (table, column, constraint names). Answer a generic body (`{ error: \"internal error\" }`, with the client-error status for parser errors such as `err.status` 400) and keep the details in the server log only.",
+        "recommendation": "Information exposure through an error message (CWE-209). `express.json()` runs before `requireUser`, so an unauthenticated client that POSTs a malformed JSON body to any path gets the body-parser error forwarded here and receives the full stack trace (server file paths, node_modules layout and versions); any other error reaching the handler (database errors included) leaks its message the same way. Keep logging the error server-side, but answer a generic body such as `{ \"error\": \"internal error\" }` (and the error's own status, e.g. 400 for `err.status`/`err.expose` errors, instead of a blanket 500).",
         "reported": true,
         "role": "security",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Error handler sends error messages and stack traces to the client"
+        "title": "Error handler returns the error message and stack trace to any client"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const id = Number(req.params.id);\nif (!Number.isInteger(id)) {\n  res.status(400).json({ error: \"id must be a number\" });\n  return;\n}\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 59,
+        "location": "src/invoices.ts:27-31",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The boundary check accepts any integer-valued number, so a signed-in user who sends `GET /invoices/100000000000000000000` (or `/invoices/1e20`) passes validation and the query fails in PostgreSQL with \"out of range for type integer\". With express 4.19.2 (package.json) a rejected promise in an async handler is not forwarded to the error handler: the request hangs and the rejection is unhandled, which terminates the process under Node's default `--unhandled-rejections=throw` — one request takes the API down for everyone. Validate with an allow-list (`/^[1-9][0-9]{0,9}$/` and an upper bound matching the column type) and wrap the async handlers so rejections reach `next(err)`.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Invoice id is not range-checked and a database error escapes the async handler"
       }
     ],
     "format": 1,

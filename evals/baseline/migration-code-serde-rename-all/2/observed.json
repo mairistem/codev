@@ -2,22 +2,119 @@
   "format": 2,
   "case": "migration-code-serde-rename-all",
   "error": null,
-  "costUsd": 0.31532220000000005,
-  "durationMs": 40380,
+  "costUsd": 0.35280620000000007,
+  "durationMs": 29292,
   "consumption": {
-    "durationApiMs": 39455,
-    "turns": 7,
+    "durationApiMs": 29157,
+    "turns": 11,
     "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 27313,
-      "cacheRead": 237066,
-      "output": 2421
-    }
+      "input": 1180,
+      "cacheCreation": 27365,
+      "cacheRead": 370786,
+      "output": 2936
+    },
+    "toolCalls": 10,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 13618,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13618
+        }
+      },
+      {
+        "cacheCreation": 690,
+        "cacheRead": 43143,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 690
+        }
+      },
+      {
+        "cacheCreation": 258,
+        "cacheRead": 43833,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 258
+        }
+      },
+      {
+        "cacheCreation": 1370,
+        "cacheRead": 44091,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1370
+        }
+      },
+      {
+        "cacheCreation": 838,
+        "cacheRead": 45461,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 838
+        }
+      },
+      {
+        "cacheCreation": 1411,
+        "cacheRead": 46299,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 942,
+          "output": 469
+        }
+      },
+      {
+        "cacheCreation": 875,
+        "cacheRead": 47710,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 691,
+          "edit": 184
+        }
+      },
+      {
+        "cacheCreation": 919,
+        "cacheRead": 48585,
+        "input": 2,
+        "output": 164,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 737,
+          "edit": 182
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +126,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (`rename_all = \"camelCase\"` silently renames every existing field of the public order JSON) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (camelCase rename silently breaks every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (New required `default_currency` key makes existing `config.toml` files fail to load) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Existing config.toml files fail to load without `default_currency`) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,22 +153,22 @@
         ],
         "id": "R-migration-1",
         "line": 11,
-        "location": "src/api.rs:6-10",
+        "location": "src/api.rs:6-9",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so that `GET /orders/{id}` keeps emitting `order_id`, `customer_id` and `total_cents`, and only adds `currency` (single-word, unaffected). Today a partner integration that reads `order[\"order_id\"]` gets nothing after the release: the response now carries `orderId`, `customerId` and `totalCents`, with no **BREAKING** item in the proposal's release note and against docs/api.md, which still lists the snake_case names and promises \"a field is never renamed or removed without two releases of deprecation\". If camelCase is wanted, it is a separate change that emits both names for two releases, is marked BREAKING and announced. Add a test that serializes an `OrderResponse` and asserts the documented field names.",
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `GET /orders/{id}` keeps emitting `order_id`, `customer_id` and `total_cents` (the new `currency` field is a single word and needs no rename). Today partners' integrations read `order_id`, `customer_id` and `total_cents`; after this change the endpoint returns `orderId`, `customerId` and `totalCents`, so every partner reading those keys gets a missing field on the first deploy, with no **BREAKING** item in the release note (which only says \"Added: Orders carry their `currency`\"), while `docs/api.md` still lists the snake_case names and promises \"a field is never renamed or removed without two releases of deprecation\". If camelCase is really wanted, it must go through that deprecation (emit both names for two releases), be marked BREAKING in the release note and the docs, and follow semantic versioning for the 4.1.0 crate.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "`rename_all = \"camelCase\"` silently renames every existing field of the public order JSON"
+        "title": "camelCase rename silently breaks every existing order JSON field"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "#[derive(Deserialize)]\npub struct Config {\n    pub database_url: String,\n    pub listen: String,\n    /// The currency of orders that do not name one (ISO 4217).\n    pub default_currency: String,\n",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
         "history": [
           {
             "by": "migration",
@@ -82,18 +179,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 40,
-        "location": "src/config.rs:5-10",
+        "line": 41,
+        "location": "src/config.rs:9-10",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "Give the field a default (`#[serde(default = \"default_currency\")]` returning `\"EUR\"`, the currency every existing order was in) so that a deployed `config.toml` holding only `database_url` and `listen` keeps loading. As it stands, `toml::from_str` fails with \"missing field `default_currency`\" and the service refuses to start after the upgrade; only config.example.toml was updated, and the release note does not tell operators to add the key. If a required key is intended, mark it **BREAKING** in the release note with the line to add. Add a test that loads the pre-change configuration.",
+        "recommendation": "Give the key a default so existing configuration keeps working, e.g. `#[serde(default = \"default_currency\")]` returning `\"EUR\"` (the currency the shop sold in before this change), and add a test that `config::load` accepts a file holding only `database_url` and `listen`. Today every deployed `config.toml` has only `database_url` and `listen` (as `config.example.toml` did on `main`); `Config` derives `Deserialize` with `default_currency` as a required `String`, so `toml::from_str` returns `missing field default_currency` and the service refuses to start on upgrade. Nothing in the release note tells operators to add the key; if it stays required, say so as a BREAKING item with the step to take.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "New required `default_currency` key makes existing `config.toml` files fail to load"
+        "title": "Existing config.toml files fail to load without `default_currency`"
       }
     ],
     "format": 1,

@@ -22,6 +22,8 @@ pub enum Step {
     PlanChallenge,
     CodeReview,
     PlanTrace,
+    /// `/codev-propose` writing a plan for a request: a planning case.
+    PlanWrite,
 }
 
 impl Step {
@@ -30,6 +32,7 @@ impl Step {
             "plan.challenge" => Some(Step::PlanChallenge),
             "code.review" => Some(Step::CodeReview),
             "plan.trace" => Some(Step::PlanTrace),
+            "plan.write" => Some(Step::PlanWrite),
             _ => None,
         }
     }
@@ -39,12 +42,18 @@ impl Step {
             Step::PlanChallenge => "plan.challenge",
             Step::CodeReview => "code.review",
             Step::PlanTrace => "plan.trace",
+            Step::PlanWrite => "plan.write",
         }
+    }
+
+    /// The review steps, those of a review case.
+    pub fn is_review(self) -> bool {
+        !matches!(self, Step::PlanWrite)
     }
 
     /// Whether the step writes a review record (the tracer fixes instead).
     pub fn records_findings(self) -> bool {
-        !matches!(self, Step::PlanTrace)
+        matches!(self, Step::PlanChallenge | Step::CodeReview)
     }
 }
 
@@ -296,6 +305,119 @@ pub struct Case {
     pub unchanged: Vec<UnchangedCheck>,
     /// Files and tests the plan introduces, absent from the fixture.
     pub planned: Vec<String>,
+    /// What a planning case replays and expects; `None` for a review case.
+    pub plan: Option<PlanCase>,
+}
+
+/// A requirement named as `<capability>::<requirement name>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RequirementId {
+    pub capability: String,
+    pub name: String,
+}
+
+impl RequirementId {
+    pub fn parse(text: &str) -> Option<RequirementId> {
+        let (capability, name) = text.split_once("::")?;
+        let (capability, name) = (capability.trim(), name.trim());
+        (!capability.is_empty() && !name.is_empty()).then(|| RequirementId {
+            capability: capability.to_string(),
+            name: name.to_string(),
+        })
+    }
+}
+
+impl fmt::Display for RequirementId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}::{}", self.capability, self.name)
+    }
+}
+
+/// What a plan must do with an accepted decision.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DecisionExpect {
+    Follow,
+    Supersede,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpectedDecision {
+    pub id: String,
+    pub expect: DecisionExpect,
+}
+
+/// A planning case: a request replayed on the repository at `git_ref`, and
+/// what the real change did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlanCase {
+    pub git_ref: String,
+    pub request: String,
+    /// The requirements the request is about.
+    pub modified: Vec<RequirementId>,
+    /// The requirements the real change also modified in passing.
+    pub collateral: Vec<RequirementId>,
+    pub decisions: Vec<ExpectedDecision>,
+}
+
+/// What the repository's history says at a commit, read by the shell.
+pub trait History {
+    fn has_commit(&self, git_ref: &str) -> bool;
+    /// The requirement names of `_codev/specs/<capability>/spec.md` at
+    /// `git_ref`; `None` when the spec is absent.
+    fn requirement_names(&self, git_ref: &str, capability: &str) -> Option<Vec<String>>;
+    /// The ids (`0007`) of `_codev/decisions/` at `git_ref`.
+    fn decision_ids(&self, git_ref: &str) -> Vec<String>;
+    fn has_path(&self, git_ref: &str, path: &str) -> bool;
+}
+
+/// Checks a planning case against the history: its commit exists, its
+/// expected requirements and decisions existed at that commit, and the
+/// state does not already hold the case — its answer.
+pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError> {
+    let Some(plan) = &case.plan else {
+        return Ok(());
+    };
+    let fail = |message: String| CaseError {
+        case: case.id.clone(),
+        message,
+    };
+    if !history.has_commit(&plan.git_ref) {
+        return Err(fail(format!(
+            "`ref` {} is not a commit of the repository's history; the planning cases need \
+             the full history (a shallow clone lacks it: fetch with --unshallow or fetch-depth 0)",
+            plan.git_ref
+        )));
+    }
+    for req in plan.modified.iter().chain(&plan.collateral) {
+        let names = history
+            .requirement_names(&plan.git_ref, &req.capability)
+            .unwrap_or_default();
+        if !names
+            .iter()
+            .any(|n| normalize_heading(n) == normalize_heading(&req.name))
+        {
+            return Err(fail(format!(
+                "requirement `{req}` is not in `_codev/specs/{}/spec.md` at {}",
+                req.capability, plan.git_ref
+            )));
+        }
+    }
+    let ids = history.decision_ids(&plan.git_ref);
+    for d in &plan.decisions {
+        if !ids.contains(&d.id) {
+            return Err(fail(format!(
+                "decision `{}` is not in `_codev/decisions/` at {}",
+                d.id, plan.git_ref
+            )));
+        }
+    }
+    if history.has_path(&plan.git_ref, &format!("evals/cases/{}/case.yaml", case.id)) {
+        return Err(fail(format!(
+            "the tree at {} already holds `evals/cases/{}/`, which would hand the agent the answer",
+            plan.git_ref, case.id
+        )));
+    }
+    Ok(())
 }
 
 impl Case {
@@ -426,6 +548,124 @@ pub struct Catalog {
     pub vocabulary: Vocabulary,
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PlanCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
+    #[allow(dead_code)]
+    step: String,
+    kind: String,
+    #[serde(rename = "ref")]
+    git_ref: String,
+    request: String,
+    summary: String,
+    expected: PlanExpectedFile,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+struct PlanExpectedFile {
+    #[serde(default)]
+    modified: Vec<String>,
+    #[serde(default)]
+    collateral: Vec<String>,
+    #[serde(default)]
+    decisions: Vec<DecisionFile>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DecisionFile {
+    id: String,
+    expect: String,
+}
+
+/// The role a planning case is filed under: it evaluates the planning
+/// step, not a reviewing role.
+pub const PLANNER: &str = "planner";
+
+/// Loads a planning case: a `case.yaml` alone, no fixture directory.
+fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: PlanCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if !fixture.base.is_empty() || !fixture.change.is_empty() {
+        return Err(fail(
+            "a planning case holds only its case.yaml: its fixture is the repository at `ref`"
+                .into(),
+        ));
+    }
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for a planning case; expected seeded",
+            file.kind
+        )));
+    }
+    if file.request.trim().is_empty() {
+        return Err(fail("the request is empty".into()));
+    }
+    if file.git_ref.trim().is_empty() {
+        return Err(fail("`ref` is empty".into()));
+    }
+    let parse = |texts: &[String]| -> Result<Vec<RequirementId>, CaseError> {
+        texts
+            .iter()
+            .map(|t| {
+                RequirementId::parse(t)
+                    .ok_or_else(|| fail(format!("`{t}` is not `<capability>::<requirement name>`")))
+            })
+            .collect()
+    };
+    let modified = parse(&file.expected.modified)?;
+    let collateral = parse(&file.expected.collateral)?;
+    let mut decisions = Vec::new();
+    for d in &file.expected.decisions {
+        let expect = match d.expect.as_str() {
+            "follow" => DecisionExpect::Follow,
+            "supersede" => DecisionExpect::Supersede,
+            other => {
+                return Err(fail(format!(
+                    "decision `{}`: unknown expect `{other}`; expected follow or supersede",
+                    d.id
+                )));
+            }
+        };
+        decisions.push(ExpectedDecision {
+            id: d.id.clone(),
+            expect,
+        });
+    }
+    if modified.is_empty() && collateral.is_empty() && decisions.is_empty() {
+        return Err(fail(
+            "a planning case must expect at least one requirement or one decision".into(),
+        ));
+    }
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step: Step::PlanWrite,
+        change: String::new(),
+        stacks: Vec::new(),
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: Some(PlanCase {
+            git_ref: file.git_ref.trim().to_string(),
+            request: file.request.trim().to_string(),
+            modified,
+            collateral,
+            decisions,
+        }),
+    })
+}
+
 /// Loads and checks a case: `id` is its directory name, `yaml` its
 /// `case.yaml`, `fixture` its files, `catalog` the roles' steps and the
 /// category vocabulary.
@@ -435,12 +675,20 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         case: id.to_string(),
         message,
     };
+    #[derive(Deserialize)]
+    struct StepOnly {
+        step: Option<String>,
+    }
+    let peek: Option<StepOnly> = serde_norway::from_str(yaml).ok();
+    if peek.and_then(|p| p.step).as_deref() == Some("plan.write") {
+        return load_plan(id, yaml, fixture);
+    }
     let file: CaseFile =
         serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
 
     let step = Step::parse(&file.step).ok_or_else(|| {
         fail(format!(
-            "unknown step `{}`; expected plan.challenge, code.review or plan.trace",
+            "unknown step `{}`; expected plan.challenge, code.review, plan.trace or plan.write",
             file.step
         ))
     })?;
@@ -593,6 +841,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         fixed,
         unchanged,
         planned,
+        plan: None,
     })
 }
 
@@ -1040,6 +1289,7 @@ pub(crate) mod tests {
             fixed: vec![],
             unchanged: vec![],
             planned: vec![],
+            plan: None,
         }
     }
 
@@ -1126,5 +1376,170 @@ pub(crate) mod tests {
             })
             .collect();
         assert_eq!(coverage_gaps(&cases), ["security: no `python` case"]);
+    }
+
+    const PLAN_YAML: &str = "step: plan.write\nkind: seeded\nref: abc1234\nrequest: \"Je voudrais qu'une décision naisse en brouillon.\"\nsummary: A draft decision.\nexpected:\n  modified: [\"decisions::Creating a decision through the CLI\"]\n  collateral: [\"decisions::Stable JSON contract for all commands\"]\n  decisions:\n    - { id: \"0007\", expect: follow }\n";
+
+    fn planning_case(yaml: &str) -> Result<Case, CaseError> {
+        load(
+            "plan-decision-accept",
+            yaml,
+            &Fixture::default(),
+            &Catalog::default(),
+        )
+    }
+
+    #[test]
+    fn a_planning_case_loads() {
+        let case = planning_case(PLAN_YAML).unwrap();
+        assert_eq!(case.step, Step::PlanWrite);
+        assert_eq!(case.role, PLANNER);
+        let plan = case.plan.unwrap();
+        assert_eq!(plan.git_ref, "abc1234");
+        assert_eq!(plan.modified[0].capability, "decisions");
+        assert_eq!(plan.modified[0].name, "Creating a decision through the CLI");
+        assert_eq!(plan.collateral.len(), 1);
+        assert_eq!(plan.decisions[0].expect, DecisionExpect::Follow);
+    }
+
+    #[test]
+    fn a_planning_case_refuses_an_unknown_key_or_an_empty_request() {
+        let unknown = PLAN_YAML.replace("summary:", "role: security\nsummary:");
+        assert!(
+            planning_case(&unknown)
+                .unwrap_err()
+                .message
+                .contains("role")
+        );
+        let empty = PLAN_YAML.replace("Je voudrais qu'une décision naisse en brouillon.", " ");
+        assert!(
+            planning_case(&empty)
+                .unwrap_err()
+                .message
+                .contains("request is empty")
+        );
+        let fixture = Fixture {
+            base: [("a.txt".to_string(), b"x".to_vec())].into(),
+            change: BTreeMap::new(),
+        };
+        let err = load("p", PLAN_YAML, &fixture, &Catalog::default()).unwrap_err();
+        assert!(err.message.contains("only its case.yaml"), "{err}");
+    }
+
+    #[test]
+    fn a_planning_case_expects_something() {
+        let nothing =
+            "step: plan.write\nkind: seeded\nref: abc\nrequest: x\nsummary: y\nexpected: {}\n";
+        assert!(
+            planning_case(nothing)
+                .unwrap_err()
+                .message
+                .contains("at least one requirement or one decision")
+        );
+        let bad_id = PLAN_YAML.replace(
+            "decisions::Creating a decision through the CLI",
+            "no separator",
+        );
+        assert!(
+            planning_case(&bad_id)
+                .unwrap_err()
+                .message
+                .contains("<capability>::")
+        );
+    }
+
+    #[derive(Default)]
+    struct FakeHistory {
+        commits: Vec<&'static str>,
+        specs: BTreeMap<&'static str, Vec<&'static str>>,
+        decisions: Vec<&'static str>,
+        paths: Vec<String>,
+    }
+
+    impl History for FakeHistory {
+        fn has_commit(&self, r: &str) -> bool {
+            self.commits.contains(&r)
+        }
+        fn requirement_names(&self, _r: &str, cap: &str) -> Option<Vec<String>> {
+            self.specs
+                .get(cap)
+                .map(|v| v.iter().map(|s| s.to_string()).collect())
+        }
+        fn decision_ids(&self, _r: &str) -> Vec<String> {
+            self.decisions.iter().map(|s| s.to_string()).collect()
+        }
+        fn has_path(&self, _r: &str, path: &str) -> bool {
+            self.paths.iter().any(|p| p == path)
+        }
+    }
+
+    fn good_history() -> FakeHistory {
+        FakeHistory {
+            commits: vec!["abc1234"],
+            specs: [(
+                "decisions",
+                vec![
+                    "Creating a decision through the CLI",
+                    "Stable JSON contract for all commands",
+                ],
+            )]
+            .into(),
+            decisions: vec!["0001", "0007"],
+            paths: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn a_requirement_absent_at_the_ref_is_named() {
+        let case = planning_case(PLAN_YAML).unwrap();
+        assert!(check_history(&case, &good_history()).is_ok());
+        let mut h = good_history();
+        h.specs
+            .insert("decisions", vec!["Stable JSON contract for all commands"]);
+        let err = check_history(&case, &h).unwrap_err();
+        assert!(
+            err.message
+                .contains("decisions::Creating a decision through the CLI"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_ref_outside_the_history_asks_for_the_full_history() {
+        let case = planning_case(PLAN_YAML).unwrap();
+        let mut h = good_history();
+        h.commits.clear();
+        let err = check_history(&case, &h).unwrap_err();
+        assert!(
+            err.message.contains("abc1234") && err.message.contains("full history"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn an_unknown_decision_is_named() {
+        let case = planning_case(PLAN_YAML).unwrap();
+        let mut h = good_history();
+        h.decisions = vec!["0001"];
+        assert!(
+            check_history(&case, &h)
+                .unwrap_err()
+                .message
+                .contains("`0007`")
+        );
+    }
+
+    #[test]
+    fn a_ref_holding_the_case_is_refused() {
+        let case = planning_case(PLAN_YAML).unwrap();
+        let mut h = good_history();
+        h.paths
+            .push("evals/cases/plan-decision-accept/case.yaml".into());
+        assert!(
+            check_history(&case, &h)
+                .unwrap_err()
+                .message
+                .contains("answer")
+        );
     }
 }

@@ -6,9 +6,13 @@
 
 Mode: inline.
 
+### skeptic
+
+Disabled by configuration.
+
 ### accessibility
 
-#### R-accessibility-1 Field errors are conveyed by a red border only
+#### R-accessibility-1 Field errors are conveyed by a red border only, with no text
 
 ```yaml
 severity: high
@@ -18,47 +22,44 @@ evidence: |
   `field--invalid`, a red border (`#e5484d`); the list of errors at the top of
   the page is removed, since the red border already shows where the problem
   is. No message text is added, to keep the form compact.
-recommendation: >-
-  Keep the red border but add, under each invalid field, a text message saying
-  what is wrong and how to fix it ("Enter a 5-digit postcode"), associated with
-  the input through `aria-describedby`, and set `aria-invalid="true"` on the
-  input while it is invalid. Today a screen reader user who tabs out of the
-  postcode field with `ABC` hears nothing, and on returning to the field hears
-  only its label: nothing tells them it is invalid nor why; a colour-blind user
-  cannot tell the red border from the grey one; and with the top error list
-  removed, there is no text left anywhere. WCAG 1.4.1 Use of Color, 3.3.1 Error
-  Identification, 3.3.3 Error Suggestion, 4.1.2 Name, Role, Value. Update the
-  spec's scenarios ("the field's border turns red", "the border returns to
-  grey") so that they require the message and `aria-invalid`, and task 1.2 to
-  test them.
+recommendation: >
+  A screen reader user who leaves the postcode field with `ABC` hears nothing:
+  the border colour is not exposed to assistive technology, and the only text
+  that named the error ("Enter a 5-digit postcode, such as 75011.", from
+  rules.ts) is the summary list the design removes. A colour-blind user cannot
+  tell the red border from the grey one. Neither can learn which field is
+  wrong or how to fix it, so the checkout cannot be completed (WCAG 1.4.1 Use
+  of Color, 3.3.1 Error Identification, 3.3.3 Error Suggestion, 4.1.2 Name,
+  Role, Value). Show the message rules.ts already returns as text under each
+  invalid field, tie it to the input with `aria-describedby`, and set
+  `aria-invalid="true"` on the input while it is invalid; keep the red border
+  as an addition. Update the spec's scenarios ("THEN the field's border turns
+  red") to require the message and its association, and task 1.2 to test them.
 history:
   - status: open
     by: accessibility
 ```
 
-#### R-accessibility-2 Nothing says where focus goes when the form is submitted with errors
+#### R-accessibility-2 A failed submit is no longer announced and focus is not moved
 
 ```yaml
 severity: medium
-confidence: low
+confidence: high
 location: "design.md#Decision: Invalid fields turn red"
 evidence: |
-  Each field validates on `blur`. An invalid field gets the class
-recommendation: >-
-  The plan removes the error list at the top of the page and only describes
-  validation on `blur`; it does not say what happens on submit when a field is
-  invalid or was never visited. If submit is simply blocked, a keyboard or
-  screen reader user presses Enter on the submit button and nothing is
-  announced. Specify that on a blocked submit every field is validated and
-  focus moves to the first invalid field (whose message is then read through
-  `aria-describedby`), and add a scenario for it. WCAG 3.3.1 Error
-  Identification, 2.4.3 Focus Order. Confidence low: the current submit
-  handling in `web/src/checkout/Form.tsx` may already do part of this.
+  the list of errors at the top of
+  the page is removed
+recommendation: >
+  Today the summary is rendered with `role="alert"` (Form.tsx:22), so pressing
+  Pay with invalid fields is announced. The design removes it and says nothing
+  of what happens on submit: a keyboard or screen reader user who never left a
+  field, or who skipped past one, presses Pay and nothing happens and nothing
+  is announced, with focus left on the button (WCAG 3.3.1 Error
+  Identification, 4.1.3 Status Messages, 2.4.3 Focus Order). State the submit
+  behaviour in the design and the spec: on a failed submit, validate every
+  field, show each inline message, and move focus to the first invalid field
+  (or keep an error summary with links to the fields), with a scenario for it.
 history:
   - status: open
     by: accessibility
 ```
-
-### skeptic
-
-Disabled by configuration.

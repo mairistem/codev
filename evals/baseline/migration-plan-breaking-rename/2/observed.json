@@ -2,22 +2,89 @@
   "format": 2,
   "case": "migration-plan-breaking-rename",
   "error": null,
-  "costUsd": 0.35734780000000005,
-  "durationMs": 29837,
+  "costUsd": 0.3042858,
+  "durationMs": 28590,
   "consumption": {
-    "durationApiMs": 29601,
-    "turns": 12,
-    "permissionDenials": 2,
+    "durationApiMs": 28561,
+    "turns": 9,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 28058,
-      "cacheRead": 372429,
-      "output": 2871
-    }
+      "input": 1158,
+      "cacheCreation": 26773,
+      "cacheRead": 235939,
+      "output": 2098
+    },
+    "toolCalls": 8,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7382,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7382
+        }
+      },
+      {
+        "cacheCreation": 15182,
+        "cacheRead": 29521,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15182
+        }
+      },
+      {
+        "cacheCreation": 239,
+        "cacheRead": 44703,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 239
+        }
+      },
+      {
+        "cacheCreation": 1508,
+        "cacheRead": 44942,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 197,
+          "file": 1311
+        }
+      },
+      {
+        "cacheCreation": 1734,
+        "cacheRead": 46450,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1397,
+          "edit": 337
+        }
+      },
+      {
+        "cacheCreation": 728,
+        "cacheRead": 48184,
+        "input": 2,
+        "output": 160,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 488,
+          "edit": 240
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +96,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-1 (Public field removed in one step, with no transition for partners) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-1 (Public field removed with no deprecation or transition period) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-migration-2 (Breaking rename not marked BREAKING, no action for consumers) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-migration-2 (Breaking rename not marked BREAKING in the release note) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -60,13 +127,13 @@
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "The design's own context says \"partners' integrations read `status` to know when to ship\"; on the day this deploys, every partner reading `GET /orders/{id}` today (`src/orders.ts:19` builds `status: rows[0].state`, `openapi.yaml:18` lists `required: [id, status]`) gets no `status` field, reads undefined and stops shipping orders, with no warning. Use expand and contract: return both `status` and `state` with the same value in this change, mark `status` `deprecated: true` in `openapi.yaml`, and remove it in a later change after a stated deprecation period. Reflect it in the spec (a requirement or scenario that `status` is still returned, equal to `state`, while deprecated) and in tasks.md (a task that keeps `status`, verified by a test that a paid order holds both `\"status\": \"paid\"` and `\"state\": \"paid\"`). The alternative rejected as \"duplication\" is the migration path, not a cost to avoid.",
+        "recommendation": "Use expand and contract: return both `status` and `state` (same value) for a stated deprecation period, mark `status` deprecated in `openapi.yaml`, and remove it only in a later change once partners have moved. Add a task and a scenario that check a response still holds `status` during the transition, so the migration path is tested. The rejected alternative \"keeping both fields (duplication)\" is the compatibility path the public contract needs.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Public field removed in one step, with no transition for partners"
+        "title": "Public field removed with no deprecation or transition period"
       },
       {
         "awaiting": "author",
@@ -82,18 +149,18 @@
           }
         ],
         "id": "R-migration-2",
-        "line": 43,
+        "line": 42,
         "location": "proposal.md#Release note",
         "raisedBy": [
           "migration"
         ],
-        "recommendation": "A partner reading the release note sees an ordinary \"Changed\" item, not a break, and is not told to act, so their integration fails in production when the field disappears. Mark the item **BREAKING** (also in `## What Changes`), and say what consumers must do and by when: read `state` instead of `status`, `status` kept until the announced removal date (see R-migration-1).",
+        "recommendation": "Mark the item **BREAKING**, state what partners must do (read `state` instead of `status`, and by when the old field disappears if a deprecation period is adopted), and name the affected endpoint `GET /orders/{id}`. Bump the API's major version if it follows semantic versioning.",
         "reported": true,
         "role": "migration",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Breaking rename not marked BREAKING, no action for consumers"
+        "title": "Breaking rename not marked BREAKING in the release note"
       }
     ],
     "format": 1,

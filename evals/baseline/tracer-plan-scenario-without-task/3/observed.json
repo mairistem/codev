@@ -2,26 +2,92 @@
   "format": 2,
   "case": "tracer-plan-scenario-without-task",
   "error": null,
-  "costUsd": 0.3179228,
-  "durationMs": 22782,
+  "costUsd": 0.2900668,
+  "durationMs": 18691,
   "consumption": {
-    "durationApiMs": 22506,
+    "durationApiMs": 19138,
     "turns": 10,
-    "permissionDenials": 3,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1094,
-      "cacheCreation": 26142,
-      "cacheRead": 318099,
-      "output": 2214
-    }
+      "input": 1090,
+      "cacheCreation": 26230,
+      "cacheRead": 219979,
+      "output": 1768
+    },
+    "toolCalls": 9,
+    "orientationCalls": 8,
+    "calls": [
+      {
+        "cacheCreation": 7297,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7297
+        }
+      },
+      {
+        "cacheCreation": 2517,
+        "cacheRead": 29436,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2517
+        }
+      },
+      {
+        "cacheCreation": 10712,
+        "cacheRead": 31953,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1113,
+          "skill": 9599
+        }
+      },
+      {
+        "cacheCreation": 3437,
+        "cacheRead": 42665,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "output": 1197,
+          "shell": 2240
+        }
+      },
+      {
+        "cacheCreation": 1582,
+        "cacheRead": 46102,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1583
+        }
+      },
+      {
+        "cacheCreation": 685,
+        "cacheRead": 47684,
+        "input": 2,
+        "output": 94,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 685
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": null,
   "files": {
-    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Refuse an expired link and ask for a new one, verified by test `an_expired_link_is_refused` (\"An expired link\")\n- [ ] 1.4 Refuse a link already used and ask for a new one, verified by test `a_used_link_is_refused` (\"A link already used\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Refuse an expired link and ask for a new one, verified by test `an_expired_link_does_not_sign_in` (\"An expired link\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
   }
 }

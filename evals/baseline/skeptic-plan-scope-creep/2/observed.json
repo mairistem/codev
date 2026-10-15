@@ -2,22 +2,139 @@
   "format": 2,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.393021,
-  "durationMs": 39002,
+  "costUsd": 0.44297900000000007,
+  "durationMs": 39885,
   "consumption": {
-    "durationApiMs": 38780,
-    "turns": 12,
-    "permissionDenials": 1,
+    "durationApiMs": 39561,
+    "turns": 13,
+    "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1160,
-      "cacheCreation": 31649,
-      "cacheRead": 298635,
-      "output": 3957
-    }
+      "input": 1168,
+      "cacheCreation": 33193,
+      "cacheRead": 495630,
+      "output": 3865
+    },
+    "toolCalls": 12,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7381,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7381
+        }
+      },
+      {
+        "cacheCreation": 12812,
+        "cacheRead": 29520,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12812
+        }
+      },
+      {
+        "cacheCreation": 2332,
+        "cacheRead": 42332,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 2332
+        }
+      },
+      {
+        "cacheCreation": 3770,
+        "cacheRead": 44664,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 359,
+          "file": 3411
+        }
+      },
+      {
+        "cacheCreation": 395,
+        "cacheRead": 48434,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 395
+        }
+      },
+      {
+        "cacheCreation": 304,
+        "cacheRead": 48829,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 304
+        }
+      },
+      {
+        "cacheCreation": 2192,
+        "cacheRead": 49133,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 1862,
+          "output": 40,
+          "shell": 290
+        }
+      },
+      {
+        "cacheCreation": 408,
+        "cacheRead": 51325,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 408
+        }
+      },
+      {
+        "cacheCreation": 900,
+        "cacheRead": 51733,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 900
+        }
+      },
+      {
+        "cacheCreation": 2255,
+        "cacheRead": 52633,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2255
+        }
+      },
+      {
+        "cacheCreation": 444,
+        "cacheRead": 54888,
+        "input": 2,
+        "output": 185,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 444
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,13 +169,13 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The Why is accountants copying invoices one by one into a spreadsheet; one CSV route answers it. Drop the plugin system from What Changes, the registry decision from design.md (\"Exports go through a plugin registry\", whose only rejected alternative — \"a single CSV function (not extensible)\" — is the one the Why calls for), task 1.2 (`npm test -- registry`, which no spec scenario backs, so its done state cannot be observed) and `src/export/plugins/` from Impact. Add other formats in their own change when someone asks for them.",
+        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a single CSV route solves it. Drop the plugin system from What Changes, replace \"Decision: Exports go through a plugin registry\" in design.md (the rejected \"single CSV function\" is the simpler solution the Why calls for) and remove task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"), which traces to no requirement of specs/invoice-export/spec.md. This also removes the unverified assumption that `registry.ts` can discover modules in `src/export/plugins/` at start-up once compiled by `tsc -p .`. A plugin system can be proposed in its own change when a second format is actually requested.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A plugin system for four future formats nobody asked for"
+        "title": "A plugin system for future formats nobody asked for"
       },
       {
         "awaiting": "author",
@@ -74,12 +191,12 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 32,
+        "line": 34,
         "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "Nothing in the Why asks for a format preference, and with CSV the only format the choice has no effect: the route is `GET /invoices.csv`, so the scenario \"WHEN a user picks CSV THEN exports use CSV\" cannot fail and checks nothing. The design's \"A settings page stores each user's preferred format\" also needs a stored per-user value the plan never places (no table or column in Impact, `migration` unticked) and touches `web/src/settings/` with `user-interface` unticked. Drop the requirement, the What Changes bullet, the design sentence, task 2.1 and `web/src/settings/` from Impact.",
+        "recommendation": "Nothing in the Why asks for a format preference, and with CSV as the only format the choice has no effect: the route is `GET /invoices.csv`, so the scenario \"A preference\" (\"**WHEN** a user picks CSV / **THEN** exports use CSV\") cannot fail and verifies nothing. Remove this requirement and its scenarios, the \"A settings page where each user picks their preferred export format.\" line of proposal.md#What Changes, `web/src/settings/` from proposal.md#Impact, the last sentence of the design decision (\"A settings page stores each user's preferred format.\") and task 2.1. Note that it would also need a storage for the preference that the plan never describes, and a user-visible change absent from the release note.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
@@ -90,7 +207,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- [ ] security\n- [ ] personal-data\n",
+        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
         "history": [
           {
             "by": "skeptic",
@@ -101,18 +218,18 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 54,
+        "line": 57,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "`GET /invoices.csv` returns every invoice of a month with its customer and total, and the spec has no scenario for who may call it (no unauthorized case: an unauthenticated request would get the whole month). Tick `security` and `personal-data` so their experts review the route, or write the reason on each line if access is already guarded elsewhere; and add the unauthorized scenario to \"Invoices are exported as CSV\".",
+        "recommendation": "The new route `GET /invoices.csv?month=YYYY-MM` exposes a whole month of invoices, with each customer's name, and neither the proposal nor the spec says who may call it (no \"unauthorized\" scenario): tick `security` and `personal-data` so that their experts review it, or give the reason on the line. While the settings page stays in scope (see R-skeptic-2), tick `user-interface` too — the plan modifies `web/src/settings/`.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The export route exposes customer data with every domain unticked"
+        "title": "Domains the plan touches are all unticked, with no reason"
       }
     ],
     "format": 1,

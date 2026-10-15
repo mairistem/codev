@@ -2,10 +2,10 @@
   "format": 2,
   "case": "security-control-docs-only",
   "error": null,
-  "costUsd": 0.28399019999999997,
-  "durationMs": 26016,
+  "costUsd": 0.30074180000000006,
+  "durationMs": 23503,
   "consumption": {
-    "durationApiMs": 25567,
+    "durationApiMs": 23490,
     "turns": 8,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,76 @@
     ],
     "tokens": {
       "input": 1174,
-      "cacheCreation": 25684,
-      "cacheRead": 235566,
-      "output": 1521
-    }
+      "cacheCreation": 26530,
+      "cacheRead": 233684,
+      "output": 2039
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7378,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7378
+        }
+      },
+      {
+        "cacheCreation": 13924,
+        "cacheRead": 29517,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3362,
+          "skill": 10562
+        }
+      },
+      {
+        "cacheCreation": 1152,
+        "cacheRead": 43441,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1152
+        }
+      },
+      {
+        "cacheCreation": 2159,
+        "cacheRead": 44593,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2159
+        }
+      },
+      {
+        "cacheCreation": 490,
+        "cacheRead": 46752,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "file": 490
+        }
+      },
+      {
+        "cacheCreation": 1427,
+        "cacheRead": 47242,
+        "input": 2,
+        "output": 197,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 976,
+          "edit": 451
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,7 +98,35 @@
     },
     "changeName": "document-token-rotation",
     "exists": true,
-    "findings": [],
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "3. Revoke the old token from the same page. Requests that still carry it\n   are refused with `401 Unauthorized`.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "README.md:19-20",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Confirm against the service that serves Settings → API tokens that a revoked token is refused immediately on every endpoint (no cache or grace period); if revocation is delayed, say so in this step, since an integrator rotating an exposed token relies on the old one being dead. Nothing in this repository (src/api.rs, src/db.rs) handles tokens, so the claim could not be checked here.",
+        "reported": false,
+        "role": "security",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Revocation guarantee documented without code to back it"
+      }
+    ],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/document-token-rotation/review.md",
@@ -60,7 +154,7 @@
             "credited": [],
             "fallback": null,
             "role": "security",
-            "state": "no-finding"
+            "state": "findings"
           },
           {
             "credited": [],

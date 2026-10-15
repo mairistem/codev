@@ -2,22 +2,76 @@
   "format": 2,
   "case": "newcomer-code-clever-one-liner",
   "error": null,
-  "costUsd": 0.2866654,
-  "durationMs": 22668,
+  "costUsd": 0.2754724,
+  "durationMs": 21164,
   "consumption": {
-    "durationApiMs": 22681,
-    "turns": 6,
+    "durationApiMs": 20900,
+    "turns": 5,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 24880,
-      "cacheRead": 231202,
-      "output": 2019
-    }
+      "input": 1162,
+      "cacheCreation": 24937,
+      "cacheRead": 186597,
+      "output": 1883
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7387,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7387
+        }
+      },
+      {
+        "cacheCreation": 13361,
+        "cacheRead": 29526,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13361
+        }
+      },
+      {
+        "cacheCreation": 2377,
+        "cacheRead": 42887,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2377
+        }
+      },
+      {
+        "cacheCreation": 1517,
+        "cacheRead": 45264,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1517
+        }
+      },
+      {
+        "cacheCreation": 295,
+        "cacheRead": 46781,
+        "input": 2,
+        "output": 158,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 295
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,13 +106,13 @@
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Rewrite `bucket` as a plain function a newcomer can read without the plan:\na named constant `PREMIUM_THRESHOLD_CENTS = 1000` (10 euros, the premium\nband), a comparison `price.cents >= PREMIUM_THRESHOLD_CENTS`, a return type\nwith named keys (`{ cheap: Price[]; premium: Price[] }`, matching the\ndocstring) instead of `Record<string, Price[]>` with \"hi\"/\"lo\", and full\nnames instead of `ps`, `a`, `p`. A reader stumbles on line 10: the\ncomma-operator arrow, the `||=` push inside an index expression and the\nbit shift masked with `0x3e8` cannot be decoded without knowing that\npremium means 10 euros and more; nothing says 0x3e8 is 1000 cents, and a\nreader who works it out would read the expression as \"cents >= 1000\"\nwhen it is a bitwise test (`(cents >> 4) & 1000`): 999 cents or 200 cents\nland in \"hi\", 100 cents in \"lo\". The dense shape is what hides that the\nrule does not match the stated premium band; the developer should confirm\nthe intended rule when simplifying, since that part changes behavior.\n",
+        "recommendation": "A developer who has not read the proposal cannot tell from this line where \"premium\" starts: the threshold is hidden behind a shift and a hex mask (`(p.cents >> 4) & 0x3e8`), with no named constant and no comment; the reduce relies on the comma operator and `||=` inside an index expression; the names `ps`, `a`, `p`, `bucket` and the untyped string keys `\"hi\"` / `\"lo\"` say nothing about cheap versus premium. A reader is likely to misread the condition as \"1000 cents or more\" (0x3e8 is 1000) — and it is not: 500 cents gives `(500 >> 4) & 0x3e8 === 8`, so a 5-euro product lands in \"hi\", which the shape of the line hides (correctness itself is the developer's to confirm). Write it plainly: a named constant `PREMIUM_THRESHOLD_CENTS = 1000` (\"10 euros\", from the proposal), a named function such as `splitByPriceBand(prices)` returning `{ cheap: Price[]; premium: Price[] }`, built with two `filter` calls or a `for … of` loop on `price.cents >= PREMIUM_THRESHOLD_CENTS`.",
         "reported": true,
         "role": "newcomer",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "`bucket` packs the premium rule into an unreadable one-liner that hides its threshold"
+        "title": "`bucket` packs the premium rule into an unreadable bit-twiddling one-liner"
       }
     ],
     "format": 1,

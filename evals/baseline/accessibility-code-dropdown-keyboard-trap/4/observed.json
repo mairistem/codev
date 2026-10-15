@@ -2,11 +2,11 @@
   "format": 2,
   "case": "accessibility-code-dropdown-keyboard-trap",
   "error": null,
-  "costUsd": 0.336294,
-  "durationMs": 29424,
+  "costUsd": 0.3221298,
+  "durationMs": 25956,
   "consumption": {
-    "durationApiMs": 29012,
-    "turns": 8,
+    "durationApiMs": 25953,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
@@ -14,10 +14,65 @@
     ],
     "tokens": {
       "input": 1172,
-      "cacheCreation": 29672,
-      "cacheRead": 196805,
-      "output": 2929
-    }
+      "cacheCreation": 29007,
+      "cacheRead": 196384,
+      "output": 2491
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7419,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7419
+        }
+      },
+      {
+        "cacheCreation": 15714,
+        "cacheRead": 29558,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4180,
+          "skill": 11534
+        }
+      },
+      {
+        "cacheCreation": 3521,
+        "cacheRead": 45272,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3521
+        }
+      },
+      {
+        "cacheCreation": 1829,
+        "cacheRead": 48793,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1829
+        }
+      },
+      {
+        "cacheCreation": 524,
+        "cacheRead": 50622,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 524
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +84,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Open sort menu traps the keyboard: Tab is captured and Escape does nothing) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Open sort menu traps Tab and cannot be dismissed with Escape) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -51,18 +106,18 @@
           }
         ],
         "id": "R-accessibility-1",
-        "line": 15,
+        "line": 11,
         "location": "src/components/SortMenu.tsx:21-30",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 2.1.2 No Keyboard Trap / 2.1.1 Keyboard, blocks keyboard and screen reader users. A keyboard user opens \"Sort\", focus moves into the menu; pressing Tab (or Shift+Tab, which also has event.key \"Tab\" and moves forward) only cycles among the four items, and Escape is not handled, so the only way out is to activate an item — the user cannot dismiss the menu and reach the product list without picking a sort order. Follow the APG menu button pattern: stop calling preventDefault on Tab and let Tab / Shift+Tab close the menu and move focus naturally; handle Escape to close the menu and return focus to the button (button.current?.focus()); also close it when focus leaves the list (onBlur with relatedTarget outside). Alternatively use a native <select> labelled \"Sort\", which provides all of this.",
+        "recommendation": "WCAG 2.1.2 No Keyboard Trap (and 2.1.1 Keyboard). A keyboard user opens the menu with Enter on \"Sort: …\", focus moves to the first item, and from then Tab and Shift+Tab (both reported as key \"Tab\") are cancelled and only cycle through the four items; Escape is not handled. The user cannot leave the menu to reach the product list or the rest of the page without picking a sort option, and nothing tells them so. Stop intercepting Tab (let it close the menu and move on, as the APG menu button pattern does), handle Escape to close the menu and return focus to the button, and close the menu when focus leaves it. A native `<select>` with a `<label>` would give all of this for free.",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "Open sort menu traps the keyboard: Tab is captured and Escape does nothing"
+        "title": "Open sort menu traps Tab and cannot be dismissed with Escape"
       },
       {
         "awaiting": "author",
@@ -78,18 +133,18 @@
           }
         ],
         "id": "R-accessibility-2",
-        "line": 43,
+        "line": 38,
         "location": "src/components/SortMenu.tsx:34",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "WCAG 4.1.2 Name, Role, Value, misleads screen reader users. aria-expanded is a hard-coded string, so after activating \"Sort\" the button is still announced as \"collapsed\" while the menu is open, and the state never matches the behaviour. Bind it to the state: aria-expanded={open}; optionally add aria-controls pointing to the menu's id.",
+        "recommendation": "WCAG 4.1.2 Name, Role, Value. `aria-expanded` is hard-coded to \"false\", so a screen reader user who activates the button hears \"Sort: Newest, menu button, collapsed\" while the menu is open, and the state never reflects the popup. Bind it to the state: `aria-expanded={open}`.",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
         "status": "open",
         "step": "code.review",
-        "title": "Menu button always announces `aria-expanded=\"false\"`"
+        "title": "Menu button always announces aria-expanded=\"false\""
       }
     ],
     "format": 1,
@@ -118,14 +173,14 @@
           {
             "credited": [],
             "fallback": null,
-            "role": "newcomer",
-            "state": "disabled"
+            "role": "accessibility",
+            "state": "findings"
           },
           {
             "credited": [],
             "fallback": null,
-            "role": "accessibility",
-            "state": "findings"
+            "role": "newcomer",
+            "state": "disabled"
           }
         ],
         "step": "code.review",

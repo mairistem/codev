@@ -13,48 +13,48 @@ Mode: inline.
 ```yaml
 severity: high
 confidence: high
-location: "app/attachments.py:30-31"
+location: "app/attachments.py:30-32"
 evidence: |
   path = os.path.join(UPLOAD_DIR, str(ticket_id), name)
   with open(path, "rb") as f:
+      return f.read()
 recommendation: >-
-  Validate `name` where it enters (CWE-22): reject it unless it equals
-  `os.path.basename(name)` and is not empty, `.` or `..`, or better, look it up
-  in the `attachments` table for this `ticket_id` and open only the stored
-  name; then resolve the path with `os.path.realpath` and check it stays under
-  the ticket's directory. Add a test that `../`, absolute and other-ticket
-  names are refused.
+  An agent allowed to read one ticket of their team passes the authorization
+  check at line 28, then sends name="../43/contract.pdf" to read another
+  team's attachment, name="../../../../etc/passwd" or an absolute path such as
+  "/etc/passwd" (which makes os.path.join discard the base) to read any file
+  the service can open (CWE-22). Do not open a path built from the request:
+  look the name up in the attachments table for that ticket_id (the row
+  save_attachment inserts) and refuse it when absent, and additionally reject
+  any name that differs from os.path.basename(name) or whose resolved real
+  path is not under os.path.join(UPLOAD_DIR, str(ticket_id)).
 history:
   - status: open
     by: security
 ```
 
-An agent allowed to read any one ticket calls `read_attachment(agent, own_ticket, "../42/invoice.pdf")`
-and gets another ticket's attachment, bypassing `may_read_ticket`; `"../../../../etc/passwd"` or an
-absolute name such as `"/etc/passwd"` (which `os.path.join` keeps, discarding the base) reads any
-file the server process can read, secrets included. Unlike `save_attachment`, the name is not passed
-through `os.path.basename`.
-
-#### R-security-2 save_attachment enforces no authorization on the ticket written to
+#### R-security-2 save_attachment stores into any ticket without an authorization check
 
 ```yaml
 severity: medium
 confidence: low
-location: "app/attachments.py:11"
+location: "app/attachments.py:11-16"
 evidence: |
   def save_attachment(ticket_id: int, filename: str, data: bytes) -> str:
+      """Stores an uploaded file under the ticket's directory; returns its name."""
+      name = os.path.basename(filename)
+      directory = os.path.join(UPLOAD_DIR, str(ticket_id))
 recommendation: >-
-  Take the caller's `agent_id` and check it may write to `ticket_id` on the
-  server, as `read_attachment` does with `may_read_ticket`, unless the caller
-  of this function is shown to enforce it.
+  The proposal says agents upload files to a ticket, yet the upload takes no
+  agent_id and never calls may_read_ticket, unlike read_attachment; if the
+  agent's ticket_id reaches it unchecked, an agent writes (and, with the same
+  filename, overwrites) attachments of another team's ticket. The caller is
+  not in the change, so this could not be confirmed. Take the agent_id and
+  enforce the same ownership check as read_attachment before writing.
 history:
   - status: open
     by: security
 ```
-
-Any caller reaching this function can add a file to any ticket, and a file with an existing name
-silently overwrites that ticket's attachment (`open(..., "wb")`). Confidence is low: the handler that
-calls it is not part of the change, so whether it checks authorization could not be verified.
 
 ### newcomer
 

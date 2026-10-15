@@ -2,10 +2,10 @@
   "format": 2,
   "case": "performance-code-n-plus-one",
   "error": null,
-  "costUsd": 0.2680504,
-  "durationMs": 14910,
+  "costUsd": 0.2700226,
+  "durationMs": 16074,
   "consumption": {
-    "durationApiMs": 14678,
+    "durationApiMs": 15957,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -14,10 +14,74 @@
     ],
     "tokens": {
       "input": 1179,
-      "cacheCreation": 24414,
-      "cacheRead": 231317,
-      "output": 1275
-    }
+      "cacheCreation": 24340,
+      "cacheRead": 231138,
+      "output": 1405
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 13875,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13875
+        }
+      },
+      {
+        "cacheCreation": 1340,
+        "cacheRead": 43400,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1340
+        }
+      },
+      {
+        "cacheCreation": 534,
+        "cacheRead": 44740,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 534
+        }
+      },
+      {
+        "cacheCreation": 786,
+        "cacheRead": 45274,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 786
+        }
+      },
+      {
+        "cacheCreation": 419,
+        "cacheRead": 46060,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 419
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +93,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-performance-1 (One order-lines query per order (N+1) on the customer page) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-performance-1 (One order-lines query per order (N+1) on every customer page view) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,13 +120,13 @@
         "raisedBy": [
           "performance"
         ],
-        "recommendation": "Fetch the lines of every order in one query with the existing batch method `Db::lines_of_orders(&ids)` (`WHERE order_id = ANY($1)`, api/src/db.rs:30-33), then group them by `order_id` (e.g. a `HashMap<i64, i64>` of totals) and build the summaries in the original order of `orders`. Cost today: 1 + N queries per customer page view, N up to 100 — 101 round-trips on a user-facing path that runs on every view (proposal `## Domains`); after the fix, 2 queries whatever N. Keep the order of the summaries and the error behavior unchanged; orders without lines must still get a total of 0.",
+        "recommendation": "Collect the order ids and fetch every line in one query with the existing `Db::lines_of_orders(&[i64])` (`WHERE order_id = ANY($1)`, api/src/db.rs:30-31), then group the lines by `order_id` (e.g. a `HashMap<i64, i64>` of totals) and build the summaries in the original order of `orders`, keeping an order with no line at a total of 0. This turns up to 101 round trips per request into 2.",
         "reported": true,
         "role": "performance",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "One order-lines query per order (N+1) on the customer page"
+        "title": "One order-lines query per order (N+1) on every customer page view"
       }
     ],
     "format": 1,

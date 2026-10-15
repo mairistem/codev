@@ -8,7 +8,7 @@ Mode: inline.
 
 ### security
 
-#### R-security-1 SQL injection through the `q` search term
+#### R-security-1 SQL injection through the search term
 
 ```yaml
 severity: high
@@ -18,24 +18,19 @@ evidence: |
   const sql = "SELECT id, name FROM users WHERE name LIKE '%" + term + "%' ORDER BY name LIMIT 50";
   return query<UserRow>(sql);
 recommendation: >-
-  Pass the term as a bound parameter instead of concatenating it (CWE-89):
-  `query<UserRow>("SELECT id, name FROM users WHERE name ILIKE $1 ORDER BY name LIMIT 50", ["%" + term + "%"])`,
-  as `src/db.ts` documents ("values go in `params`, never in `sql`"). The length
-  check in `src/server.ts:14` (2 to 100 characters) does not prevent the attack.
-  Add a test that a term containing a quote returns matching rows without error.
-  Escaping `%` and `_` in the term (with `ESCAPE`) would also keep them literal.
+  CWE-89. Any user with the `support` role sends `GET /users/search?q=` with a
+  2-100 character value such as `x' UNION SELECT id, password_hash FROM users --`;
+  the route in src/server.ts only checks its length, and searchUsers concatenates
+  it into the SQL text, so the attacker reads any table the database user can
+  reach (or alters data if stacked statements are allowed). `query` in src/db.ts
+  already takes parameters ("values go in `params`, never in `sql`"): use
+  `query<UserRow>("SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50", ["%" + term + "%"])`,
+  escaping `%`, `_` and `\` in `term` (with `ESCAPE '\'`) so the term matches
+  literally. Add a test that a quote in `q` returns no error and no extra rows.
 history:
   - status: open
     by: security
 ```
-
-Attack: any caller holding the `support` role sends
-`GET /users/search?q=' UNION SELECT id, password_hash FROM users --` (under
-100 characters); the term is spliced into the SQL string, so the query reads
-any table or column the database user can reach and returns it in the JSON
-response — data beyond the `id`/`name` the endpoint is meant to expose. A
-compromised or malicious support account is enough; no further privilege is
-needed.
 
 ### newcomer
 

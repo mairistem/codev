@@ -1,0 +1,348 @@
+{
+  "format": 2,
+  "case": "plan-isolated-review",
+  "error": null,
+  "costUsd": 1.9174710000000004,
+  "durationMs": 294281,
+  "consumption": {
+    "durationApiMs": 291742,
+    "turns": 35,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 104127,
+      "cacheRead": 2447950,
+      "output": 29688
+    },
+    "toolCalls": 34,
+    "orientationCalls": 19,
+    "calls": [
+      {
+        "cacheCreation": 7807,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7807
+        }
+      },
+      {
+        "cacheCreation": 14337,
+        "cacheRead": 29946,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14337
+        }
+      },
+      {
+        "cacheCreation": 1222,
+        "cacheRead": 44283,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1222
+        }
+      },
+      {
+        "cacheCreation": 2506,
+        "cacheRead": 45505,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2506
+        }
+      },
+      {
+        "cacheCreation": 319,
+        "cacheRead": 48011,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 319
+        }
+      },
+      {
+        "cacheCreation": 923,
+        "cacheRead": 48330,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "search": 923
+        }
+      },
+      {
+        "cacheCreation": 3793,
+        "cacheRead": 49253,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "output": 42,
+          "search": 3751
+        }
+      },
+      {
+        "cacheCreation": 19827,
+        "cacheRead": 53046,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "file": 19827
+        }
+      },
+      {
+        "cacheCreation": 6496,
+        "cacheRead": 72873,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4675,
+          "shell": 1821
+        }
+      },
+      {
+        "cacheCreation": 2412,
+        "cacheRead": 79369,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2412
+        }
+      },
+      {
+        "cacheCreation": 820,
+        "cacheRead": 81781,
+        "input": 2,
+        "output": 26,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 820
+        }
+      },
+      {
+        "cacheCreation": 1657,
+        "cacheRead": 82601,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1648,
+          "output": 9
+        }
+      },
+      {
+        "cacheCreation": 1527,
+        "cacheRead": 84258,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1527
+        }
+      },
+      {
+        "cacheCreation": 3218,
+        "cacheRead": 85785,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3218
+        }
+      },
+      {
+        "cacheCreation": 2952,
+        "cacheRead": 89003,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2952
+        }
+      },
+      {
+        "cacheCreation": 2790,
+        "cacheRead": 91955,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2790
+        }
+      },
+      {
+        "cacheCreation": 2117,
+        "cacheRead": 94745,
+        "input": 2,
+        "output": 39,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2117
+        }
+      },
+      {
+        "cacheCreation": 2706,
+        "cacheRead": 96862,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2685,
+          "output": 21
+        }
+      },
+      {
+        "cacheCreation": 4384,
+        "cacheRead": 99568,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4384
+        }
+      },
+      {
+        "cacheCreation": 2279,
+        "cacheRead": 103952,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2279
+        }
+      },
+      {
+        "cacheCreation": 3457,
+        "cacheRead": 106231,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3457
+        }
+      },
+      {
+        "cacheCreation": 3298,
+        "cacheRead": 109688,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 3298
+        }
+      },
+      {
+        "cacheCreation": 2601,
+        "cacheRead": 112986,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2601
+        }
+      },
+      {
+        "cacheCreation": 808,
+        "cacheRead": 115587,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 631,
+          "output": 177
+        }
+      },
+      {
+        "cacheCreation": 1137,
+        "cacheRead": 116395,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 879,
+          "edit": 258
+        }
+      },
+      {
+        "cacheCreation": 2088,
+        "cacheRead": 117532,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2088
+        }
+      },
+      {
+        "cacheCreation": 1273,
+        "cacheRead": 119620,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1273
+        }
+      },
+      {
+        "cacheCreation": 4860,
+        "cacheRead": 120893,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1032,
+          "shell": 3828
+        }
+      },
+      {
+        "cacheCreation": 513,
+        "cacheRead": 125753,
+        "input": 2,
+        "output": 643,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 513
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/isolated-review/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/isolated-review/design.md": "# Design: Run reviewers in isolation\n\n## Context\n\nThe reviewing roles are served as data by `codev roles --at <step>`\n(`codev-engine::roles::resolve`, `codev-cli::contract::RolesV1`); the skills\napply them in the conversation itself (`assets/workflows/propose.md` steps 6\nand 7, `apply.md` step 5, the shared `_review-record.md` substituted for\n`{{REVIEW_RECORD}}` by `codev-agents::workflows::review_record`). The change\n`2026-10-01-propose-review-roles` rejected sub-agents for the challenge\nbecause the skill had to stay a single prompt; the review record\n(`2026-10-13-review-record`) explicitly deferred \"running reviewers in\nisolation\" to this change. That earlier rejection is a design choice of an\narchived change, not a decision of `_codev/decisions/`: this change revisits\nit as an opt-in mode and keeps the single-prompt inline review as the\ndefault.\n\nThe diff the review material is built from already exists: `codev-engine::diff`\nreads `git diff --numstat` against the merge-base with the default branch,\nclassifies planning and binary files, and keeps `added_lines` per file — it\nparses the removed count but drops it today.\n\nDecisions in force that constrain the approach:\n\n- [0001](../../decisions/0001-functional-core-imperative-shell.md) — the\n  mode resolution and the material selection are pure functions of\n  `codev-core`; reading the config, the change's files and git stays in\n  `codev-engine` behind the ports.\n- [0002](../../decisions/0002-crate-graph-as-dependency-rule.md) — no new\n  crate edge: core ← engine ← cli, agents.\n- [0005](../../decisions/0005-read-only-inherited-sources.md) — an inherited\n  source's `review:` is ignored, as its `roles:` is.\n- [0006](../../decisions/0006-serde-norway-for-yaml.md) — the new keys are\n  parsed with the existing YAML library, `deny_unknown_fields` on the\n  `review:` mapping.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- The mode and the material are decided by codev and served as data; the\n  skill texts describe the procedure but never compute who reads what.\n- Inline mode stays byte-for-byte the same procedure, plus the `Mode:` line.\n- An isolated review always ends in a record that validates, even when every\n  sub-agent fails (fallback to inline).\n\n**Non-Goals**\n\n- Isolating the answer loop (the author's answer, the reviewer's single\n  re-check): it stays in the main conversation.\n- Isolating authoring steps (`plan.write`, `code.implement`) or\n  `plan.understand` / `plan.investigate`.\n- Choosing the sub-agent's model or budget: left to the platform.\n- Supporting agent platforms other than Claude Code; the `Fallback:` path\n  covers a platform without a sub-agent tool.\n\n## Decisions\n\n### Decision: A `review: { mode }` setting, project-wide with a per-change override\n\nThe mode lives in `_codev/config.yaml` and `change.yaml`, resolved like a\nrole's activation: change, then project, then `inline` (`default`). A skill\nis a prompt, so a command-line flag would not reach it; a setting is read by\nthe skill through `codev roles`, where it already looks for everything about\nthe reviewers. The per-change override lets a team keep isolation on and\nskip its cost for a typo fix, or try it on one change first.\n\nThe setting is a mapping rather than a scalar so that later options of the\nreview (a model, a cap on sub-agents) can be added without a breaking change\nto the key. `codev-core::config` gains a `ReviewSetting { mode:\nOption<ReviewMode> }` with `deny_unknown_fields`; `ReviewMode` is `Inline |\nIsolated`. A bad value maps to the new code `invalid_review_mode`, an unknown\nkey to the existing `invalid`, both reported where the role settings are\n(`project_findings`, `change_findings`).\n\n**Alternatives considered**: a `--isolated` argument of the skills (does not\nsurvive `codev update`, and nothing in codev can see it); one setting per\nstep (no need expressed, and three keys where one serves); a role-level\n`isolated: true` (the meeting needs every role of a step in the same mode).\n\n### Decision: `codev roles` serves the material; the core chooses it\n\n`RolesV1` gains `review: ReviewV1 { mode, origin, material:\nOption<MaterialV1 { files: Vec<MaterialFileV1 { path, treatment,\nchanged_lines }>, summarized }> }` — additive in v1, `null` in a failure's\ndocument. Serving it from `codev roles` rather than a new command keeps one\ncall per step for the skill, which already reads `diff` and `suggestions`\nthere.\n\nThe selection is a pure function `codev_core::review::material(step,\nartifacts, diff) -> Option<Material>`:\n\n- plan steps: the change's artifacts present on disk, in path order, all\n  `full` — the plan is small and every reviewer must read it whole;\n- `code.review`: the diff's files minus planning and binary files, `full`\n  up to 300 changed lines (`SUMMARY_THRESHOLD`), `summarize` beyond.\n\n300 lines keeps a typical file's diff readable in full while bounding what\neach of up to seven parallel sub-agents receives; the threshold is a core\nconstant, named in the spec because the skill's behavior depends on it.\n\n`diff::parse_numstat` keeps the removed count in a new\n`ChangedFile::removed_lines`; an untracked file's changed lines are its line\ncount, counted while it is read for the triggers (already bounded by\n`MAX_UNTRACKED_BYTES`; a larger one is `summarize`).\n\n**Alternatives considered**: letting the skill pick the files from the diff\n(the selection would differ from one session to the next, and could not be\ntested); summarizing in codev (codev does not call a model, and a mechanical\nexcerpt loses what changed); giving every reviewer the whole diff (a large\nchange would exhaust the sub-agents' context).\n\n### Decision: The skill builds briefs only from codev's outputs and the files\n\nThe isolation is a property of the brief: if the author's conversation leaks\ninto it, the sub-agent agrees with the author again. The skill texts\ntherefore list the brief's contents exhaustively (role, context and rules,\nmaterial, ids already in the record, finding format and scales, the\n`### <role-id>` answer shape) and forbid anything else. The summaries are\nproduced by sub-agents too — the author summarizing its own change would\nreintroduce its framing. Sub-agents get read access to the whole repository\n(they need the decisions, the main specs, the callers of the changed code)\nand the instruction to modify nothing; the skill picks a sub-agent type\nwithout editing tools when one exists, so the instruction is backed by the\nplatform where it can be.\n\nThe procedure text lives in a new shared partial\n`assets/workflows/_isolated-review.md`, substituted for\n`{{ISOLATED_REVIEW}}` in `propose.md` (referenced from steps 6 and 7) and in\n`apply.md` (step 5), like `_review-record.md`, so the two copies cannot\ndrift. The `allowed-tools` of both skills stay unchanged: the `Agent` tool is\nnot a tool the frontmatter has to pre-approve in Claude Code.\n\n**Alternatives considered**: one sub-agent for all reviewers (the roles would\ncontaminate each other, which is the defect the change fixes); a fresh\n`claude -p` process per role launched by codev (codev would depend on an\nagent CLI and its credentials, against decision 0002's dependency rule).\n\n### Decision: The meeting merges in the main conversation, and `raised_by` keeps the trace\n\nDeduplication needs every role's findings at once, so it happens after the\nsub-agents return, in the main conversation. The merge rule is mechanical —\nsame place, overlapping lines, same fix; keep the most severe, then the most\nconfident, then catalog order — to leave the author no room to soften a\nfinding while merging. `raised_by` keeps the information a merge would lose\n(two roles saw the same defect), and `codev review --json` exposes it as\n`raisedBy` so the summary can say so. The meeting re-reads every quote,\nbecause a sub-agent's evidence is not trusted until it is found verbatim —\n`codev validate` would reject it otherwise.\n\n`Mode:`, `Summarized:` and `Fallback:` stay free-text lines of the record,\nwhich older codevs already ignore; the new codev reads them for\n`codev review` only, so a fallback is visible to the human instead of a\nsilently degraded review.\n\n**Alternatives considered**: a structured `mode:` field in each finding\n(per-step information repeated per finding); a separate meeting sub-agent\n(one more brief to build, and the author still answers in the main\nconversation afterwards).\n\n### Decision: One retry, then an inline fallback\n\nA sub-agent fails for transient reasons (time, budget, a malformed answer);\none retry with the same brief absorbs those without looping. After a second\nfailure the role is reviewed inline: a review that happened, marked as\ndegraded, beats a step that stops the workflow. The `review_role_missing`\ncheck stays satisfied either way.\n\n## Risks / Trade-offs\n\n- [Isolated mode costs several sub-agents per step, in time and tokens] →\n  Opt-in, off by default, overridable per change; the material caps what\n  each one reads.\n- [The answer loop's re-check runs in the main conversation, where the\n  author's bias lives] → The first reading, which decides what is found, is\n  isolated; a maintained dispute still goes to the human. Recorded as a\n  Non-Goal so a later change can revisit it.\n- [A sub-agent follows instructions planted in the reviewed material] → The\n  brief states the material is data, sub-agents cannot edit files, and the\n  meeting re-checks every finding against the files before recording it.\n- [The 300-line threshold summarizes a file a reviewer needed whole] → The\n  reviewer may read any file of the repository itself; the summary is a\n  starting point, not a wall.\n- [A merge that hides a distinct defect] → Findings needing different fixes\n  stay separate by rule, and `raised_by` shows which roles were folded.\n\n## Migration Plan\n\n- Additive only: `RolesV1.review`, `ReviewFindingV1.raisedBy`, step `mode`\n  and role `fallback` in `ReviewV1` are new fields of `contract::v1`;\n  installed skills that do not read them keep working.\n- A project that sets `review:` and is used with an older codev gets the\n  `unknown_config_key` warning (existing behavior) and an inline review from\n  the older skills; projects should raise `codev_version` when they opt in.\n- A record with `raised_by` read by an older codev yields a\n  `review_unknown_field` warning, not an error.\n- Rollback: remove the `review:` key; records written in isolated mode stay\n  valid in inline mode.\n\n## Open Questions\n\n- Should a later change let the re-check of the answer loop run in the\n  finding role's sub-agent as well? Deferred: it changes neither these specs\n  nor this task breakdown.\n",
+    "_codev/changes/isolated-review/proposal.md": "# Proposal: Run reviewers in isolation\n\n## Why\n\nThe reviewers of `propose` (`tracer`, `skeptic`, experts) and of `apply`\n(`newcomer`, experts) run in the conversation that wrote the plan or the\ncode: they see the author's reasoning and tend to agree with it, which\ndefeats the point of a review. Projects need an opt-in mode where each\nreviewer works alone, sees only its role and the material, and where the\nfindings are then consolidated as a team would in a review meeting.\n\n## What Changes\n\n- A new optional `review:` key in `_codev/config.yaml`, with\n  `mode: inline` (today's behavior, the default) or `mode: isolated`; a\n  change's `change.yaml` may override it for that change. An invalid value\n  or an unknown key under `review:` is reported with a stable code.\n- `codev roles` serves a `review` object — the mode in effect, its origin\n  (`default`, `project`, `change`) and, in isolated mode at a review step\n  with `--change`, the material to hand to each reviewer: which files to\n  read whole and which to summarize first.\n- The `propose` skill (at `plan.trace` and `plan.challenge`) and the\n  `apply` skill (at `code.review`) gain an isolated procedure: one brief\n  per role built only from codev's outputs and the files, one sub-agent\n  per role run in parallel and forbidden to modify files, summaries of\n  large files produced by sub-agents too, one retry then an inline\n  fallback that is recorded, and a \"meeting\" in the main conversation\n  that merges duplicate findings across roles, checks every quote,\n  renumbers and ranks them before the existing answer loop.\n- The review record gains an optional `raised_by` field on a finding,\n  naming every role that raised a merged finding, and records how a step\n  ran (`Mode: inline.` / `Mode: isolated.`, `Summarized:` and `Fallback:`\n  lines). `codev review --json` exposes `raisedBy`.\n- The inline mode is unchanged and stays the default: no project changes\n  behavior until it opts in.\n\n## Capabilities\n\n### New Capabilities\n\n- `review-mode`\n\n### Modified Capabilities\n\n- `roles`\n- `review-record`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-core`: parsing and validation of the `review:` key in the project\n  configuration and in `change.yaml`; computation of the review material\n  from the change's artifacts and diff; the `raised_by` field of a finding.\n- `codev-engine`: resolving the mode for a change; collecting the material\n  (artifacts, per-file diff sizes) through the existing ports.\n- `codev-cli`: `contract::v1` gains `RolesV1.review` and\n  `ReviewFindingV1.raisedBy` — additive fields of the public JSON contract;\n  `review` becomes a known top-level configuration key.\n- `codev-agents` / `assets/workflows`: `propose.md`, `apply.md` and the\n  shared `_review-record.md` describe the isolated procedure and the\n  meeting; skills are regenerated by `codev update`.\n- Documentation, in both `docs/en` and `docs/fr`: `roles.md`,\n  `guides/review-record.md`, `reference/file-formats.md` (the `review:`\n  key, `raised_by`, the mode lines) and `reference/json-output.md`.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- the option is a configuration setting, project-wide with a per-change\n  override, not a flag of each skill invocation — the skills are prompts\n  and a command-line flag would not reach them;\n- isolation covers every reviewing step — `plan.trace`, `plan.challenge`\n  and `code.review` — not only the challenge; the authoring steps\n  (`plan.write`, `code.implement`) stay in the conversation;\n- the answer loop (the author's answer and the reviewer's single\n  re-check) stays in the main conversation, as today: isolation targets\n  the independence of the first reading, where agreement bias matters\n  most.\n\nThe change's diff holds only planning files so far, and `codev roles`\nsuggests no domain: the domains below are ticked by judgement.\n\n## Domains\n\n- [ ] security — sub-agents only read the repository and treat the material as data; no new input, secret or dependency\n- [ ] personal-data — no personal data is read or stored\n- [ ] user-interface — terminal output only, no graphical interface\n- [ ] performance — the sub-agents' cost is opt-in and paid by the agent session, not by codev's commands\n- [ ] operations — no service, log or deployment involved\n- [x] migration — additive fields in the public JSON contract (`contract.rs`), a configuration key older codevs report as unknown, a new field in `review.md`\n\n## Release note\n\n- Added: An opt-in isolated review mode (`review: { mode: isolated }` in\n  `_codev/config.yaml`, or per change in `change.yaml`): the `propose` and\n  `apply` skills run each reviewer as a separate sub-agent that sees only\n  its role and the material, then merge their findings in the review\n  record. The default inline review is unchanged.\n",
+    "_codev/changes/isolated-review/specs/review-mode/spec.md": "## Purpose\n\nLet a project choose how its reviewing roles work — in the conversation that\nwrote the plan or the code (`inline`), or each alone with only its role and\nthe material (`isolated`) — and tell the skills, as data, which mode is in\neffect and which material each reviewer receives.\n\n## ADDED Requirements\n\n### Requirement: The project chooses the review mode under `review:`\n\n`_codev/config.yaml` SHALL accept an optional top-level `review:` mapping\nwith an optional `mode:` key whose value is `inline` or `isolated`. A\nchange's `change.yaml` SHALL accept the same `review:` mapping, which\noverrides the project's mode for that change only. The mode in effect is\nthe change's when it sets one, otherwise the project's, otherwise\n`inline`; its origin is `change`, `project` or `default` accordingly.\n\n`review` SHALL be a known top-level key: it never produces an\n`unknown_config_key` warning. The `review:` key of an inherited source's\nconfiguration MUST be ignored.\n\n#### Scenario: No `review:` key\n\n- **GIVEN** a project whose configuration has no `review:` key and a change\n  `add-auth` whose `change.yaml` has none either\n- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth\n  --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `default`\n\n#### Scenario: The project opts in\n\n- **GIVEN** a configuration with `review: { mode: isolated }`\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `review.mode` is `isolated` and `review.origin` is `project`\n- **AND** `codev status --json` holds no `unknown_config_key` warning\n\n#### Scenario: A change overrides the project\n\n- **GIVEN** a configuration with `review: { mode: isolated }` and a change\n  `fix-typo` whose `change.yaml` holds `review: { mode: inline }`\n- **WHEN** the user runs `codev roles --at plan.challenge --change fix-typo\n  --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `change`\n- **AND** without `--change`, `review.mode` is `isolated`\n\n#### Scenario: The mode of an inherited source is ignored\n\n- **GIVEN** a project without a `review:` key, inheriting from a source\n  whose configuration holds `review: { mode: isolated }`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `default`\n\n### Requirement: Invalid review settings are reported with stable codes\n\nA `review:` setting, in `_codev/config.yaml` or in a change's\n`change.yaml`, SHALL be reported with the code `invalid_review_mode` when\n`mode` is neither `inline` nor `isolated`, the message naming the value,\nthe file and the accepted values; and with the code `invalid` when\n`review:` is not a mapping or holds a key other than `mode`, the message\nnaming the key and the file. `codev validate` SHALL report each one as an\nerror finding — under the `config` item for `_codev/config.yaml`, under\nthe change's item for its `change.yaml`. `codev status`,\n`codev instructions` and `codev roles` SHALL fail with exit code 1 and\nthe code of the first invalid setting, the project's before the change's.\n\n#### Scenario: An unknown mode\n\n- **GIVEN** a configuration with `review: { mode: separate }`\n- **WHEN** the user runs `codev validate --json`\n- **THEN** the `config` item holds an error `invalid_review_mode` naming\n  `separate`, `inline` and `isolated`\n- **AND** `codev roles --at plan.challenge --json` exits with code 1 and\n  `status[0].code` `invalid_review_mode`\n\n#### Scenario: An unknown key under `review:`\n\n- **GIVEN** a change `add-auth` whose `change.yaml` holds\n  `review: { mod: isolated }`\n- **WHEN** the user runs `codev validate add-auth --json`\n- **THEN** the item of `add-auth` holds an error `invalid` naming `mod`\n  and `change.yaml`\n\n#### Scenario: The project's error comes first\n\n- **GIVEN** a configuration with `review: { mode: separate }` and a change\n  `add-auth` whose `change.yaml` holds `review: { mode: parallel }`\n- **WHEN** the user runs `codev status --change add-auth --json`\n- **THEN** the exit code is 1 and `status[0]` names `separate` and\n  `_codev/config.yaml`\n\n### Requirement: `codev roles` serves the material of an isolated review\n\n`codev roles --json` SHALL carry a `review` object with `mode`, `origin`\nand `material`. `material` SHALL be `null` unless the mode in effect is\n`isolated`, `--change` is given, and `--at` is a reviewing step —\n`plan.trace`, `plan.challenge` or `code.review`. Otherwise it SHALL hold\n`files`, a list of entries each with `path` (relative to the project\nroot, with `/` as separator), `treatment` (`full` or `summarize`) and\n`changedLines` (an integer, `null` for a planning artifact), sorted by\npath; and `summarized`, `true` when at least one entry is `summarize`.\n\nAt `plan.trace` and `plan.challenge`, the files SHALL be the planning\nartifacts of the change that exist on disk — its `proposal.md`,\n`design.md`, `tasks.md` and every spec delta under `specs/` — each\n`full`; the review record `review.md` and `change.yaml` are not material.\n\nAt `code.review`, the files SHALL be those of the change's diff, as the\n`domain-suggestions` capability computes it against `diff.base`, minus\nthe planning files and the files whose content is not text. A file whose\nadded and removed lines total at most 300 SHALL be `full`; a larger one\nSHALL be `summarize`. A deleted file is listed, `full` within the same\nlimit. When the diff is not available, `files` SHALL be empty and\n`summarized` `false`.\n\n#### Scenario: The material of the plan challenge\n\n- **GIVEN** a configuration with `review: { mode: isolated }` and a change\n  `add-auth` with a proposal, a design, tasks and the delta\n  `specs/auth/spec.md`\n- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth\n  --json`\n- **THEN** `review.material.files` lists those four files, each with\n  `treatment: \"full\"` and `changedLines: null`\n- **AND** `review.material.summarized` is `false`\n\n#### Scenario: A large file is summarized at the code review\n\n- **GIVEN** an isolated project and a change `add-auth` whose diff adds 40\n  lines to `src/auth.rs` and 900 lines to `src/schema.rs`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `src/auth.rs` is `full` with `changedLines: 40`, and\n  `src/schema.rs` is `summarize` with `changedLines: 900`\n- **AND** `review.material.summarized` is `true`\n\n#### Scenario: A file at the limit is read whole\n\n- **GIVEN** an isolated project and a change whose diff adds 200 and\n  removes 100 lines of `src/db.rs`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `src/db.rs` is `full`\n\n#### Scenario: No material in inline mode or outside a reviewing step\n\n- **GIVEN** a project without a `review:` key\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `review.material` is `null`\n- **AND** with `review: { mode: isolated }`, `codev roles --at plan.write\n  --change add-auth --json` and `codev roles --at code.review --json` also\n  give `review.material: null`\n\n#### Scenario: No diff at the code review\n\n- **GIVEN** an isolated project outside git and a change `add-auth`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `diff.available` is `false`, `review.material.files` is empty\n  and `review.material.summarized` is `false`\n\n#### Scenario: Binary and planning files are not material\n\n- **GIVEN** an isolated project and a change whose diff adds\n  `assets/logo.png` and modifies `_codev/changes/add-auth/design.md` and\n  `src/auth.rs`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `review.material.files` lists `src/auth.rs` only\n\n### Requirement: The human output names the review mode\n\n`codev roles --at <step>` without `--json` SHALL print, after the roles,\none line giving the review mode and its origin when the origin is not\n`default`, and, when the material is not `null`, one line per file with\nits treatment.\n\n#### Scenario: The mode in the human output\n\n- **GIVEN** a configuration with `review: { mode: isolated }` and a change\n  `add-auth` whose diff modifies `src/auth.rs`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth`\n- **THEN** it prints that the review mode is `isolated`, set by the\n  project, and lists `src/auth.rs` as read in full\n\n#### Scenario: The default mode stays silent\n\n- **GIVEN** a project without a `review:` key\n- **WHEN** the user runs `codev roles --at plan.challenge`\n- **THEN** it prints no review mode line\n",
+    "_codev/changes/isolated-review/specs/review-record/spec.md": "## MODIFIED Requirements\n\n### Requirement: A finding states where, what and why, with a verbatim quote\n\nA finding's block SHALL hold `severity`, `confidence`, `location`,\n`evidence`, `recommendation` and `history`. Its id SHALL be\n`R-<role-id>-<n>`, where `<role-id>` is the role of its section and `<n>` a\npositive integer, unique in the record: an id, once written, is never\nreused or renumbered. The `location` is either `<path>:<line>` or\n`<path>:<start>-<end>`, a path relative to the project root, for code; or\n`<file>#<heading>`, a file relative to the change's directory and the text\nof one of its headings, for the plan. `\\` is read as `/`; the path is then\njudged as text, the same on every operating system: it MUST NOT start\nwith `/`, its first segment MUST NOT hold `:` (a drive or a scheme), and\nno segment may be empty, `.` or `..`. The `evidence` is the cited text,\ncopied verbatim — whole lines or a fragment of each — never empty.\n\nA finding's block MAY also hold `raised_by`: the list of the roles that\nraised the same defect when their findings were merged into this one. When\npresent, it SHALL be a non-empty list of role ids of the change's catalog,\nwithout duplicates, whose first entry is the finding's own role.\n\nValidation SHALL report as `review_invalid` errors a missing or empty\nfield, a malformed id or location, a duplicate id, and a `raised_by` that\nis not such a list; and as the warning `review_unknown_field` a field it\ndoes not know, which is otherwise ignored.\n\n#### Scenario: Both kinds of location\n\n- **GIVEN** a finding located at `src/db.rs:12-14` and another at\n  `specs/auth/spec.md#Requirement: Login`, each with its fields\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `review_invalid` error is reported for either\n\n#### Scenario: A missing evidence\n\n- **GIVEN** a finding without `evidence`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error names the finding and `evidence`\n\n#### Scenario: An id that does not match its role\n\n- **GIVEN** a finding `R-security-1` under `### privacy`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error says the id must start with\n  `R-privacy-`\n\n#### Scenario: Two findings with the same id\n\n- **GIVEN** two findings `R-security-1`, one under each step\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error is reported at the second one\n\n#### Scenario: A location outside the project\n\n- **GIVEN** a finding whose location is `../secrets.txt:1`, and another\n  at `C:\\secrets.txt:1`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error is reported for each\n- **AND** neither file is read\n\n#### Scenario: A field from a newer codev\n\n- **GIVEN** a finding with an extra field `category: injection`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_unknown_field` warning names `category`\n\n#### Scenario: A merged finding names every role that raised it\n\n- **GIVEN** a finding `R-security-2` under `### security` with\n  `raised_by: [security, skeptic]`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no review finding is reported\n\n#### Scenario: A `raised_by` that does not start with the finding's role\n\n- **GIVEN** a finding `R-security-2` under `### security` with\n  `raised_by: [skeptic, security]`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error says `raised_by` must start with\n  `security`\n\n#### Scenario: A `raised_by` naming an unknown role\n\n- **GIVEN** a finding under `### skeptic` with\n  `raised_by: [skeptic, reviewer]`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error names `reviewer`\n\n### Requirement: `codev review` shows the record and what is left to decide\n\n`codev review [--change <name>] [--json]` SHALL read the change's record\nand print, per step and per role, the findings with their severity,\nstatus and location, and, for each finding, who must act next: the\nauthor for an `open` finding, the reviewer for a `fixed` finding not yet\nverified or a `disputed` one the reviewer has not answered, a human for a\ndispute the reviewer maintained. It SHALL say which findings are\nreported to the human (confidence `high`), list the record's defects as\n`codev validate` does, and say whether the record lets the change be\narchived, naming each reason it does not. The change is picked as by the\nother commands taking `--change`. Without a record, the command succeeds\nand says so. The exit code is 1 when the record has an error, 0\notherwise. With `--json`, it prints a `ReviewV1` document, in which each\nfinding carries `raisedBy`, the roles of its `raised_by` field or only\nits own role when the field is absent.\n\nWhen a step's section holds the line `Mode: inline.` or\n`Mode: isolated.`, `codev review` SHALL report that step's mode (`mode`\nin the JSON, `null` without the line), and when a role's section holds a\nline starting with `Fallback:`, it SHALL report that line's text for the\nrole (`fallback` in the JSON, `null` without it). These lines are\notherwise free text and are never a defect of the record.\n\n#### Scenario: A maintained dispute is for the human\n\n- **GIVEN** a finding `disputed` by `developer`, then `disputed` by\n  `security` with a note\n- **WHEN** the user runs `codev review --json`\n- **THEN** the finding's `awaiting` is `human`\n\n#### Scenario: A low-confidence finding is not reported\n\n- **GIVEN** a finding with confidence `low`\n- **WHEN** the user runs `codev review --json`\n- **THEN** the finding's `reported` is `false`\n\n#### Scenario: No record yet\n\n- **GIVEN** an active change without `review.md`\n- **WHEN** the user runs `codev review --change <change> --json`\n- **THEN** `exists` is `false`, `findings` is empty\n- **AND** the exit code is 0\n\n#### Scenario: A record with an error\n\n- **GIVEN** a record with a `review_invalid` error\n- **WHEN** the user runs `codev review`\n- **THEN** the error is listed with its line\n- **AND** the exit code is 1\n\n#### Scenario: A merged finding shows every role\n\n- **GIVEN** a finding `R-skeptic-1` with `raised_by: [skeptic, ops]`, and a\n  finding `R-ops-1` without `raised_by`\n- **WHEN** the user runs `codev review --json`\n- **THEN** `R-skeptic-1` has `raisedBy: [\"skeptic\", \"ops\"]` and `R-ops-1`\n  has `raisedBy: [\"ops\"]`\n\n#### Scenario: An isolated step with a fallback\n\n- **GIVEN** a record whose `## code.review` starts with `Mode: isolated.`\n  and whose `### newcomer` holds `Fallback: the sub-agent timed out,\n  twice.` then `No finding.`\n- **WHEN** the user runs `codev review --json`\n- **THEN** the step `code.review` has `mode: \"isolated\"` and the role\n  `newcomer` has `fallback` holding that line's text\n- **AND** no defect of the record is reported for those lines\n\n#### Scenario: A record written before the modes\n\n- **GIVEN** a record whose steps hold no `Mode:` line\n- **WHEN** the user runs `codev review --json`\n- **THEN** each step has `mode: null` and no defect is reported\n",
+    "_codev/changes/isolated-review/specs/roles/spec.md": "## MODIFIED Requirements\n\n### Requirement: `codev roles` serves the roles of a step\n\n`codev roles [--at <step>] [--change <name>] [--knowledge] [--all-stacks]\n[--json]` SHALL resolve the roles against the change's schema, its\n`change.yaml` and the domains of its proposal with `--change`, otherwise\nagainst the configured schema and the project configuration alone. With\n`--at`, it SHALL list the roles active at that step; without it, every\nrole of the catalog with its activation. It reads files, writes none, and\nexits with code 0.\n\nWith `--json`, the document SHALL carry `changeName` (`null` without\n`--change`), `schemaName`, `at` (`null` without `--at`), `language`,\n`stacks`, `diff`, `suggestions`, `roles`, `review` and `status`. `diff`\nand `suggestions` are defined by the `domain-suggestions` capability,\n`review` by the `review-mode` capability. Each\nrole SHALL carry `id`, `name` (its display name in the configured\n`language`, English when the role has none in that language), `kind`\n(`step` or `artifact`), `at` (the step asked with `--at`, otherwise the\nrole's first step), `steps` (every step the role serves, in workflow\norder), `artifact` (the artifact id of an artifact role, `null`\notherwise), `domains` (the domains that activate it, empty for a role bound\nto none), `question`, `when` (`always`, `never` or `on_domain`),\n`whenOrigin` (`default`, `project` or `change`), `activatedBy`,\n`disableable`, `knowledge`, and `doneWhen`, a list of criteria each with\nits `origin` (`built-in`, `schema:<name>` or `project`) and its `text`.\n\n`activatedBy` SHALL say why an active role is active: `always` for the\ndefault activation, `project` or `change` when that file set `always`, and\n`domain:<name>` for an `on_domain` role, naming its first domain the\nproposal ticks. It is `null` for an inactive role. `knowledge` SHALL be the\nrole's knowledge text for an active role that has one, its `By stack`\npart filtered as `stacks.filter` says, and `null` otherwise.\n\nWithout `--json`, with `--at`, it SHALL print each active role's id and\nname, its question, and its criteria each prefixed with its origin in\nparentheses — or a line saying no role is active at that step — and, with\n`--knowledge`, the stacks the knowledge is filtered for and each role's\nknowledge after its criteria. Without `--at`, it SHALL print one line per\nrole: id, name, step or artifact, and activation with its origin when not\nthe default, marking the roles that cannot be disabled.\n\nAn `--at` that is not one of the steps SHALL fail with `unknown_step`,\nnaming the valid steps. With `--json`, a failure keeps the document's\nshape, with `roles` and `suggestions` empty and `stacks`, `diff` and\n`review` `null`.\n\n#### Scenario: The roles of a step, as JSON\n\n- **GIVEN** a project with no `roles:` key and a change `add-auth`\n- **WHEN** the user runs `codev roles --at plan.trace --change add-auth\n  --json`\n- **THEN** `roles` holds one entry, `tracer`, with `kind: \"step\"`,\n  `at: \"plan.trace\"`, `steps: [\"plan.trace\"]`, `artifact: null`,\n  `domains: []`, `when: \"always\"`, `whenOrigin: \"default\"`,\n  `activatedBy: \"always\"`, `knowledge: null` and its criteria with the\n  origin `built-in`\n- **AND** `review` is `{ \"mode\": \"inline\", \"origin\": \"default\",\n  \"material\": null }`\n\n#### Scenario: Artifact roles at `plan.write`\n\n- **WHEN** the user runs `codev roles --at plan.write --json`\n- **THEN** `roles` holds `product`, `qa`, `architect` and `lead`, with\n  `artifact` `proposal`, `specs`, `design` and `tasks`, and criteria with\n  the origin `schema:spec-driven`\n\n#### Scenario: Display names follow the configured language\n\n- **GIVEN** a configuration with `language: fr`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `skeptic` entry has `name: \"Contradicteur\"`\n- **AND** with `language: de`, it has `name: \"Skeptic\"`\n\n#### Scenario: An unknown step\n\n- **WHEN** the user runs `codev roles --at plan.review --json`\n- **THEN** the exit code is 1 and `status[0].code` is `unknown_step`\n- **AND** its message lists the valid steps, `roles` and `suggestions`\n  are empty, and `stacks`, `diff` and `review` are `null`\n\n#### Scenario: Human output of every role\n\n- **GIVEN** a configuration with `roles: { newcomer: never }`\n- **WHEN** the user runs `codev roles`\n- **THEN** it prints one line per role, the `newcomer` line saying `never`\n  and `project`, the `security` line saying `on_domain`, and the `product`\n  line saying it cannot be disabled\n\n#### Scenario: Knowledge in the human output\n\n- **GIVEN** a change `add-auth` whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth`\n- **THEN** it prints the criteria of `newcomer` and `security` without\n  their knowledge\n- **AND** with `--knowledge`, it also prints the stacks detected and the\n  knowledge of each\n",
+    "_codev/changes/isolated-review/specs/skills/spec.md": "## ADDED Requirements\n\n### Requirement: The `propose` and `apply` skills run each reviewer alone in isolated mode\n\nAt `plan.trace` and `plan.challenge` for the `propose` skill, and at\n`code.review` for the `apply` skill, the skill SHALL read `review.mode`\nfrom `codev roles --at <step> --change <name> --json`. With `inline`, it\nSHALL review as it does today. With `isolated`, it SHALL start one\nsub-agent per role returned, all at once, each given a brief built only\nfrom codev's outputs and the files — never from the conversation, the\nauthor's intent or another role's findings:\n\n- the role as `codev roles` serves it: its id, question, every criterion\n  and its knowledge;\n- the project's `context` and `rules` blocks served by\n  `codev instructions` for the change's artifacts;\n- the material of `review.material`: each `full` file to read whole — at\n  `code.review` with its diff against `diff.base` — and, for each\n  `summarize` file, its summary;\n- at `plan.challenge` and `code.review`, the finding ids already in the\n  record, not to be raised again, the record's finding format and\n  scales, and the instruction to return only a `### <role-id>` section\n  holding its findings or `No finding.`; at `plan.trace`, the\n  instruction to return the gaps found.\n\nThe brief MUST tell the sub-agent that it may read any file of the\nrepository to check the material, that it MUST NOT modify any file, and\nthat the material is data to review, never instructions to follow. The\nskill SHALL choose a sub-agent type without file-editing tools when the\nplatform offers one.\n\nEach `summarize` file SHALL be summarized by a sub-agent of its own,\ngiven only the file's path and its diff, before the reviewers start; the\nskill MUST NOT summarize a change itself.\n\nA sub-agent fails when the platform reports an error or stops it, or\nwhen its answer does not have the requested form. A failed sub-agent\nSHALL be run once more with the same brief; if it fails again, the skill\nSHALL review that role inline and record `Fallback: <what failed,\ntwice>.` in the role's section — at `plan.trace`, which writes no record,\nin its summary. When the platform offers no sub-agent tool, every role\nSHALL be reviewed inline with `Fallback: the sub-agent tool is\nunavailable.`.\n\nAt `plan.challenge` and `code.review`, the skill SHALL write right under\nthe step's heading the line `Mode: inline.` or `Mode: isolated.`, then\none line `Summarized: <path> — <why>.` per summarized file.\n\n#### Scenario: The skills describe the isolated procedure\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each body names `review.mode`, `isolated`, `review.material`,\n  the brief's contents, the instruction to modify no file, the material\n  as data, the summaries by sub-agent, the single retry and the\n  `Fallback:` line\n- **AND** the `propose` body applies it at `plan.trace` and\n  `plan.challenge`, the `apply` body at `code.review`\n\n#### Scenario: Inline mode is unchanged\n\n- **GIVEN** a project without a `review:` key\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** no sub-agent is started\n- **AND** the record's `## plan.challenge` starts with `Mode: inline.`\n\n#### Scenario: Each reviewer works alone\n\n- **GIVEN** a configuration with `review: { mode: isolated }` and a change\n  whose proposal ticks `security`\n- **WHEN** `/codev-propose` reaches `plan.challenge`\n- **THEN** one sub-agent reviews as `skeptic` and another as `security`,\n  started together\n- **AND** neither brief holds the conversation, the other role's findings\n  or the author's reasoning\n\n#### Scenario: A reviewer that fails twice falls back to inline\n\n- **GIVEN** an isolated review in which the `newcomer` sub-agent returns\n  an answer without a `### newcomer` section, twice\n- **WHEN** `/codev-apply` reviews the change\n- **THEN** the `newcomer` reviews inline and its section of the record\n  starts with a `Fallback:` line saying what failed\n- **AND** the other roles' sections hold their sub-agents' findings\n\n#### Scenario: A large file is summarized by a sub-agent\n\n- **GIVEN** an isolated review whose `review.material` marks\n  `src/schema.rs` `summarize`\n- **WHEN** `/codev-apply` reaches `code.review`\n- **THEN** a sub-agent given only that path and its diff produces its\n  summary, which every reviewer's brief holds\n- **AND** the record's `## code.review` holds a `Summarized:` line for\n  `src/schema.rs`\n\n### Requirement: The `propose` and `apply` skills consolidate isolated reviews in a meeting\n\nIn isolated mode, once every sub-agent of the step has answered, the\nskill SHALL hold the meeting in the main conversation:\n\n- **merge** the findings of several roles about the same defect — the\n  same file or plan section, overlapping lines and the same fix — into\n  one, kept under the role that rated it most severe, then with the\n  higher confidence, then first in the order `codev roles` lists the\n  roles, with that role's title, evidence and severity, the other roles'\n  points folded into its recommendation, and `raised_by` naming that role\n  then the others; findings at the same place that need different fixes\n  stay separate, and a role whose findings were all merged writes\n  `No finding.`;\n- **check** every finding by re-reading its cited lines: evidence not\n  found verbatim is corrected from the file, or the finding is dropped\n  when the defect is not there;\n- **number** each finding with the next free id of its role in the whole\n  record, whatever number the sub-agent used;\n- **rank** them by severity, then confidence, then role order, the caps\n  of the summary applying to that order.\n\nThen it SHALL write the record and run the answer loop as in inline mode.\nAt `plan.trace`, the skill SHALL fix in the artifacts each gap the tracer\nreturns. The skill MUST NOT add a finding of its own during the meeting.\n\n#### Scenario: The skills describe the meeting\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each body names the merge with `raised_by`, the check of the\n  evidence, the renumbering and the ranking\n\n#### Scenario: Two roles report the same defect\n\n- **GIVEN** an isolated plan challenge in which the `skeptic` (`medium`)\n  and `ops` (`high`) both report the missing rollback of the same design\n  decision, with the same fix\n- **WHEN** the meeting runs\n- **THEN** the record holds one finding under `### ops`, `high`, with\n  `raised_by: [ops, skeptic]`\n- **AND** `### skeptic` says `No finding.` if it had no other finding\n\n#### Scenario: Same place, different fixes\n\n- **GIVEN** an isolated code review in which `security` and `newcomer`\n  both cite `src/auth.rs:10-14`, one for an unescaped query and the other\n  for an obscure name\n- **WHEN** the meeting runs\n- **THEN** the record holds both findings, each under its role\n\n#### Scenario: Invented evidence is dropped\n\n- **GIVEN** an isolated review in which a sub-agent quotes a line that is\n  not in the cited file, and the defect it describes is not there\n- **WHEN** the meeting checks the findings\n- **THEN** that finding is not written to the record\n\n#### Scenario: Ids continue the record\n\n- **GIVEN** a record already holding `R-skeptic-1` and `R-skeptic-2`, and\n  a `skeptic` sub-agent returning a finding numbered `R-skeptic-1`\n- **WHEN** the meeting numbers the findings\n- **THEN** the new finding is written as `R-skeptic-3`\n"
+  },
+  "validate": {
+    "isolated-review": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "isolated-review",
+          "path": "_codev/changes/isolated-review"
+        }
+      ],
+      "status": []
+    }
+  }
+}

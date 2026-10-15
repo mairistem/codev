@@ -2,22 +2,100 @@
   "format": 2,
   "case": "privacy-plan-birth-date-retention",
   "error": null,
-  "costUsd": 0.4180558,
-  "durationMs": 42062,
+  "costUsd": 0.385805,
+  "durationMs": 39399,
   "consumption": {
-    "durationApiMs": 42069,
-    "turns": 10,
+    "durationApiMs": 39451,
+    "turns": 13,
     "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 31800,
-      "cacheRead": 396514,
-      "output": 4169
-    }
+      "input": 1170,
+      "cacheCreation": 30973,
+      "cacheRead": 281620,
+      "output": 4037
+    },
+    "toolCalls": 12,
+    "orientationCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 7405,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7405
+        }
+      },
+      {
+        "cacheCreation": 3733,
+        "cacheRead": 29544,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 3733
+        }
+      },
+      {
+        "cacheCreation": 14004,
+        "cacheRead": 33277,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2946,
+          "skill": 11058
+        }
+      },
+      {
+        "cacheCreation": 243,
+        "cacheRead": 47281,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "codev review": 243
+        }
+      },
+      {
+        "cacheCreation": 2209,
+        "cacheRead": 47524,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 181,
+          "file": 2028
+        }
+      },
+      {
+        "cacheCreation": 2389,
+        "cacheRead": 49733,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2389
+        }
+      },
+      {
+        "cacheCreation": 990,
+        "cacheRead": 52122,
+        "input": 2,
+        "output": 283,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 770,
+          "edit": 170,
+          "output": 49
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,7 +130,7 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "Tie retention to the purpose (GDPR Art. 5(1)(e), storage limitation; Art. 7(3), withdrawal of consent): when a member turns the option off, clear `birthday` and `phone` in the same update, and add a spec scenario \"A member opts out → both fields are erased\" with a matching task. Today a member who opts out keeps both values in `profiles` until the whole profile is deleted, although no feature uses them any more; the spec's \"No phone\" scenario even assumes the birthday stays once the phone is removed.",
+        "recommendation": "The only purpose of `birthday` and `phone` is the greeting (proposal.md#What Changes), yet retention is tied to the profile, not to the opt-in. A member who turns the option off keeps both values in `profiles` indefinitely, with no purpose left (GDPR Art. 5(1)(c) and (e), Art. 7(3) withdrawal of consent). State in the design that opting out clears both columns, add a spec scenario \"A member opts out → birthday and phone are erased\", and a task with its test.",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
@@ -79,13 +157,13 @@
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "State how long the nightly backups holding `birthday` and `phone` are kept and how an opt-out or a profile deletion reaches them (backup expiry period, or re-applying erasures on restore). As written, a birthday and phone number erased from `profiles` survive in every backup for an undefined time (GDPR Art. 5(1)(e), Art. 17).",
+        "recommendation": "The design copies birthdays and phone numbers into the nightly backups but defines neither how long those backups are kept nor how an erasure (opt-out or profile deletion) reaches them, so a deleted phone number survives in every backup for an unknown time (GDPR Art. 5(1)(e), Art. 17). State the backup retention period and that erased values are not restored from a backup (or are re-erased after a restore).",
         "reported": true,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "No retention or erasure rule for the copies in the nightly backups"
+        "title": "No retention or purge rule for the copies in the nightly backups"
       },
       {
         "awaiting": "author",
@@ -101,45 +179,18 @@
           }
         ],
         "id": "R-privacy-3",
-        "line": 53,
+        "line": 55,
         "location": "design.md#Decision: Greetings are sent by SMS through Textly",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "A question for the team: identify Textly as a processor in the plan, with its data processing agreement (GDPR Art. 28), the transfer mechanism for the United States (Chapter V — adequacy decision under the EU-US Data Privacy Framework if Textly is certified, otherwise standard contractual clauses), and how long Textly keeps the phone numbers and display names it receives. Only the controller can tell what was decided; add it to the design and to the records of processing (Art. 30).",
+        "recommendation": "Textly is a new processor receiving members' phone numbers and display names, outside the EEA. The plan names the vendor but states no data processing agreement (GDPR Art. 28), no transfer mechanism (Chapter V — adequacy decision or standard contractual clauses), and no limit on how long Textly keeps the numbers and messages. Question for the team: which safeguards apply, and is an EU-hosted provider an option? Also confirm the display name is needed in the message; if not, send only the number. Record the answer in the design and in the proposal's Impact, which only says \"Textly account\".",
         "reported": false,
         "role": "privacy",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Transfer of phone numbers to Textly in the United States has no stated safeguard or processor terms"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "A daily job selects the profiles whose birthday is today and posts each\nphone number and display name to Textly's API (hosted in the United\n",
-        "history": [
-          {
-            "by": "privacy",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-privacy-4",
-        "line": 73,
-        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
-        "raisedBy": [
-          "privacy"
-        ],
-        "recommendation": "Neither the proposal nor the spec says the message is personalised by name (\"SHALL send them a text message\"). Send only the phone number and a fixed text, or state in the spec that the greeting carries the display name, so that what goes to the processor matches the stated purpose (GDPR Art. 5(1)(c), data minimisation).",
-        "reported": false,
-        "role": "privacy",
-        "severity": "low",
-        "status": "open",
-        "step": "plan.challenge",
-        "title": "The display name is sent to Textly without the purpose requiring it"
+        "title": "Phone numbers and names sent to a US processor with no transfer safeguard or processor terms stated"
       },
       {
         "awaiting": "author",
@@ -154,19 +205,19 @@
             "to": null
           }
         ],
-        "id": "R-privacy-5",
-        "line": 91,
+        "id": "R-privacy-4",
+        "line": 77,
         "location": "proposal.md#What Changes",
         "raisedBy": [
           "privacy"
         ],
-        "recommendation": "A question for the team: the opt-in suggests consent (GDPR Art. 6(1)(a)), but the plan never names the lawful basis, while the proposal's \"Why\" cites marketing. State the basis in the proposal, and if it is consent, the wording shown on the profile form and how withdrawal works (see R-privacy-1).",
+        "recommendation": "The opt-in suggests consent (GDPR Art. 6(1)(a)), but no artifact states the lawful basis, and the Why mentions marketing's interest. Question for the controller: is the basis consent, and is the message purely a greeting (no marketing content, which would also bring ePrivacy rules for SMS)? State the basis and purpose in the proposal.",
         "reported": false,
         "role": "privacy",
         "severity": "low",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Lawful basis for the new data is not stated"
+        "title": "Lawful basis of the new processing is not stated"
       }
     ],
     "format": 1,

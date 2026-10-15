@@ -2,22 +2,129 @@
   "format": 2,
   "case": "skeptic-plan-unsupported-assumption",
   "error": null,
-  "costUsd": 0.3839818,
-  "durationMs": 35662,
+  "costUsd": 0.4250313999999999,
+  "durationMs": 40913,
   "consumption": {
-    "durationApiMs": 35051,
-    "turns": 9,
+    "durationApiMs": 40866,
+    "turns": 11,
     "permissionDenials": 3,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1164,
-      "cacheCreation": 29857,
-      "cacheRead": 380939,
-      "output": 3398
-    }
+      "input": 1166,
+      "cacheCreation": 31876,
+      "cacheRead": 436912,
+      "output": 4082
+    },
+    "toolCalls": 10,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7411,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7411
+        }
+      },
+      {
+        "cacheCreation": 12882,
+        "cacheRead": 29550,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12882
+        }
+      },
+      {
+        "cacheCreation": 287,
+        "cacheRead": 42432,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 287
+        }
+      },
+      {
+        "cacheCreation": 2133,
+        "cacheRead": 42719,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2133
+        }
+      },
+      {
+        "cacheCreation": 3468,
+        "cacheRead": 44852,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3468
+        }
+      },
+      {
+        "cacheCreation": 1144,
+        "cacheRead": 48320,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1144
+        }
+      },
+      {
+        "cacheCreation": 2207,
+        "cacheRead": 49464,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1640,
+          "output": 567
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 51671,
+        "input": 2,
+        "output": 39,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 772
+        }
+      },
+      {
+        "cacheCreation": 879,
+        "cacheRead": 52443,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 221,
+          "edit": 534,
+          "output": 124
+        }
+      },
+      {
+        "cacheCreation": 693,
+        "cacheRead": 53322,
+        "input": 2,
+        "output": 354,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 693
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,11 +136,11 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-skeptic-1 (The merge key rests on an assumption the design's own context refutes) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-skeptic-1 (The merge key rests on an assumption the design's own context contradicts) is high and still open; fix it, or a human accepts the risk or defers it"
         },
         {
           "code": "review_unresolved",
-          "message": "R-skeptic-2 (Deleting merged records is irreversible, with no way back) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-skeptic-2 (Deleting merged customers is a one-way door with no way back) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -44,7 +151,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "Since an e-mail address identifies exactly one person, the job groups\ncustomers by lower-cased e-mail, keeps the oldest record of each group,\nmoves the others' orders to it and deletes the others.\n",
+        "evidence": "Since an e-mail address identifies exactly one person, the job groups\ncustomers by lower-cased e-mail, keeps the oldest record of each group,\n",
         "history": [
           {
             "by": "skeptic",
@@ -60,13 +167,13 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The design's Context states the opposite: \"Business customers often share a purchasing mailbox (`orders@acme.example`) between several buyers, each with their own customer record and billing address.\" As written, the first nightly run fuses those distinct buyers into the oldest record, moves every buyer's orders under one name and billing address, and deletes the other buyers' records. Pick a merge key that actually identifies one person (e.g. e-mail plus name and billing address, or restrict to guest-created records), or exclude shared mailboxes, and state the evidence that the chosen key is unique per person. Then add the matching spec scenario (\"two buyers share a mailbox → both records remain\").",
+        "recommendation": "design.md#Context states: \"Business customers often share a purchasing mailbox (`orders@acme.example`) between several buyers, each with their own customer record and billing address.\" The load-bearing assumption \"an e-mail address identifies exactly one person\" is refuted by the design's own Context: several buyers sharing `orders@acme.example` each have their own record and billing address. As written, the nightly job would collapse those distinct buyers into the oldest one, reassign all their orders to it and delete their records with their billing addresses — it builds the wrong thing for business customers. Choose a key that separates them (e.g. e-mail plus name and billing address, or restrict the merge to guest-created records with matching identity fields), or exclude shared mailboxes explicitly, and state that rule in the design and the spec. Add a spec scenario \"Two buyers share a purchasing mailbox → both records remain\" and test it in task 1.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The merge key rests on an assumption the design's own context refutes"
+        "title": "The merge key rests on an assumption the design's own context contradicts"
       },
       {
         "awaiting": "author",
@@ -87,18 +194,18 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The job deletes customer rows (with their name and billing address) and rewrites `orders.customer_id`; nothing in the plan keeps the original rows or the order-to-customer mapping, so a wrong merge cannot be undone. Add a way back — record each merge (merged id → kept id, original row, moved order ids) before deleting, or soft-delete — and a staged rollout such as a dry-run report reviewed before the first destructive run. Add a task and a scenario for it.",
+        "recommendation": "The job deletes customer records (with their name and billing address) every night, and the plan gives no backup, no record of which orders moved from which customer, no dry run and no staged rollout. A wrong merge — such as the shared-mailbox case of R-skeptic-1 — cannot be undone. Plan a way back: keep a merge log (old id → kept id, original row) or soft-delete the merged records, and start with a dry-run report before enabling deletion; add a task for it.",
         "reported": true,
         "role": "skeptic",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Deleting merged records is irreversible, with no way back"
+        "title": "Deleting merged customers is a one-way door with no way back"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "- **THEN** one record remains, holding the orders of both\n",
+        "evidence": "A nightly job SHALL merge customer records that share an e-mail address into the oldest one, moving their orders to it.\n",
         "history": [
           {
             "by": "skeptic",
@@ -109,18 +216,18 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 58,
+        "line": 56,
         "location": "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The requirement does not say what happens when the merged records differ in name or billing address (whose values survive, or whether they are merged at all), nor how e-mails that differ only in case are treated — the design lower-cases them, the spec only says \"share an e-mail address\". Add scenarios for case-variant e-mails, for records with conflicting name/billing address, and for a shared business mailbox (see R-skeptic-1), and extend task 1.1 with the tests that verify them.",
+        "recommendation": "The design groups by \"lower-cased e-mail\", but the requirement says only \"share an e-mail address\", and its two scenarios (`ada@example.org` twice, all distinct) cannot tell whether `Ada@Example.org` and `ada@example.org` must merge. There is no scenario for case or surrounding whitespace differences, for three or more records (which one is kept, ties on `created_at`), nor for a record that is not a duplicate of the same person. State the normalization in the requirement and add those scenarios, then name them in task 1.1.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "The spec covers only the happy path and leaves the surviving data undefined"
+        "title": "The spec covers only the happy path and does not pin down what \"share an e-mail address\" means"
       },
       {
         "awaiting": "author",
@@ -136,18 +243,18 @@
           }
         ],
         "id": "R-skeptic-4",
-        "line": 79,
+        "line": 76,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The proposal adds \"A nightly job merges customers that share an e-mail address.\" — something to schedule, run and monitor — yet `operations` is unticked with no reason, and Impact lists only `jobs/merge_customers.py` with no scheduler entry. Tick `operations` so its expert reviews how the job is scheduled, observed and stopped, or give the reason on its line.",
+        "recommendation": "The proposal adds \"A nightly job merges customers that share an e-mail address.\" — something that must be scheduled, monitored and run against production data — yet `operations` is unticked without a reason, so no expert reviews how it is run, alerted on or stopped. Tick it, or keep it unticked with the reason on its line.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "A new scheduled job with the operations domain unticked"
+        "title": "A new scheduled job is introduced with the operations domain unticked and no reason"
       }
     ],
     "format": 1,

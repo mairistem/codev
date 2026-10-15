@@ -2,10 +2,10 @@
   "format": 2,
   "case": "skeptic-plan-scope-creep",
   "error": null,
-  "costUsd": 0.347733,
-  "durationMs": 29935,
+  "costUsd": 0.3775571999999999,
+  "durationMs": 34556,
   "consumption": {
-    "durationApiMs": 29908,
+    "durationApiMs": 35314,
     "turns": 8,
     "permissionDenials": 2,
     "models": [
@@ -14,10 +14,95 @@
     ],
     "tokens": {
       "input": 1162,
-      "cacheCreation": 28123,
-      "cacheRead": 331920,
-      "output": 2769
-    }
+      "cacheCreation": 29841,
+      "cacheRead": 336296,
+      "output": 3530
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7381,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7381
+        }
+      },
+      {
+        "cacheCreation": 15497,
+        "cacheRead": 29520,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15497
+        }
+      },
+      {
+        "cacheCreation": 344,
+        "cacheRead": 45017,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 344
+        }
+      },
+      {
+        "cacheCreation": 356,
+        "cacheRead": 45361,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 356
+        }
+      },
+      {
+        "cacheCreation": 2270,
+        "cacheRead": 45717,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2270
+        }
+      },
+      {
+        "cacheCreation": 1115,
+        "cacheRead": 47987,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1115
+        }
+      },
+      {
+        "cacheCreation": 2351,
+        "cacheRead": 49102,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1925,
+          "output": 426
+        }
+      },
+      {
+        "cacheCreation": 527,
+        "cacheRead": 51453,
+        "input": 2,
+        "output": 169,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 527
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -52,7 +137,7 @@
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a single CSV export answers it. Drop the plugin system from What Changes, drop \"Decision: Exports go through a plugin registry\" from design.md (its only alternative, \"a single CSV function\", is rejected as \"not extensible\", an extensibility no requirement asks for), and drop task 1.2 \"Plugin registry discovering `src/export/plugins/`\", which no requirement of spec.md backs. Keep `src/export/` to the CSV renderer and the route; a registry can come in its own change when a second format is actually requested.",
+        "recommendation": "The Why only asks to stop accountants copying invoices one by one into their spreadsheet; one CSV export answers it. Drop the plugin system from What Changes, replace \"Decision: Exports go through a plugin registry\" in design.md (whose only rejected alternative, \"a single CSV function (not extensible)\", is the simpler design the Why calls for), and remove task 1.2 with its `npm test -- registry` check. Start-up discovery of modules in `src/export/plugins/` also rests on an unverified assumption about how the `tsc`-built server loads files; it disappears with the registry.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
@@ -74,12 +159,12 @@
           }
         ],
         "id": "R-skeptic-2",
-        "line": 34,
+        "line": 33,
         "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "Nothing in the Why asks for a per-user format preference, and with CSV as the only format there is nothing to choose. The requirement also cannot be verified as written: its scenario \"WHEN a user picks CSV THEN exports use CSV\" holds whatever the preference is, since the only route is `GET /invoices.csv`. Remove this requirement and its scenarios, the \"A settings page where each user picks their preferred export format.\" line of proposal.md, the settings sentence of design.md, task 2.1, and `web/src/settings/` from Impact.",
+        "recommendation": "Nothing in the Why asks for a per-user format preference, and with CSV as the only format there is nothing to choose. Remove the requirement and its scenarios, the settings-page bullet of proposal.md#What Changes and `web/src/settings/` from Impact, the sentence \"A settings page stores each user's preferred format.\" in design.md, and task 2.1. As written, the scenario \"A preference\" (THEN exports use CSV) cannot be checked either: the only route is `GET /invoices.csv`, so the preference changes nothing observable.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
@@ -101,18 +186,45 @@
           }
         ],
         "id": "R-skeptic-3",
-        "line": 56,
+        "line": 55,
         "location": "proposal.md#Domains",
         "raisedBy": [
           "skeptic"
         ],
-        "recommendation": "The new `GET /invoices.csv?month=YYYY-MM` route exposes a month's invoices with customer names and totals, yet `security` and `personal-data` are unticked with no reason, so no expert reviews who may call it — and the spec has no scenario for an unauthenticated or unauthorized caller. The settings page adds UI under `web/src/settings/` with `user-interface` unticked. Tick `security` and `personal-data` (or give a reason on each line), and tick `user-interface` unless the settings page is removed per R-skeptic-2.",
+        "recommendation": "The new route `GET /invoices.csv` exposes every invoice of a month, including customer names, and the plan modifies the settings page; yet every domain is unticked with no reason. Tick security and personal-data (so their experts review who may export and what customer data leaves the system), and tick user-interface while the settings page stays in scope — or give each unticked domain its reason on its line.",
         "reported": true,
         "role": "skeptic",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Domains the plan touches are all unticked with no reason"
+        "title": "Domains all unticked while the plan exposes invoice data and changes a page"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`GET /invoices.csv?month=YYYY-MM` SHALL return the month's invoices, one per line after a header line, with number, date, customer and total; a field holding a comma, a quote or a line break SHALL be quoted as RFC 4180 says.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-4",
+        "line": 77,
+        "location": "specs/invoice-export/spec.md#Requirement: Invoices are exported as CSV",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The scenarios cover a month, an invalid month, an empty month and a comma, but none says what happens when the request comes from someone who is not signed in or not allowed to see invoices; as written, any caller gets the whole month's invoices. State who may export and add a scenario for the refused caller, with its status code, and a matching test in task 1.1.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Export requirement has no scenario for an unauthorized caller"
       }
     ],
     "format": 1,

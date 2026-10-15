@@ -2,22 +2,97 @@
   "format": 2,
   "case": "accessibility-plan-colour-only",
   "error": null,
-  "costUsd": 0.35747,
-  "durationMs": 33973,
+  "costUsd": 0.3609442,
+  "durationMs": 31577,
   "consumption": {
-    "durationApiMs": 33788,
-    "turns": 8,
-    "permissionDenials": 3,
+    "durationApiMs": 31393,
+    "turns": 7,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1162,
-      "cacheCreation": 28405,
-      "cacheRead": 333600,
-      "output": 3127
-    }
+      "input": 1160,
+      "cacheCreation": 30483,
+      "cacheRead": 284666,
+      "output": 2960
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 4797,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 4797
+        }
+      },
+      {
+        "cacheCreation": 13883,
+        "cacheRead": 34322,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 13883
+        }
+      },
+      {
+        "cacheCreation": 234,
+        "cacheRead": 48205,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 234
+        }
+      },
+      {
+        "cacheCreation": 1455,
+        "cacheRead": 48439,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1455
+        }
+      },
+      {
+        "cacheCreation": 2248,
+        "cacheRead": 49894,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2248
+        }
+      },
+      {
+        "cacheCreation": 480,
+        "cacheRead": 52142,
+        "input": 2,
+        "output": 131,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 452,
+          "output": 28
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +104,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-accessibility-1 (Field errors are conveyed by colour only, with no text message) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-accessibility-1 (Invalid fields are identified by colour only, with no text message) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -56,18 +131,18 @@
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Blocked: screen reader users and users who cannot perceive red (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification, 4.1.2 Name, Role, Value). A screen reader user who tabs out of the postcode field with `ABC` hears nothing — the border change is not announced and, with the error list removed, no text anywhere says the field is invalid or why; a colour-blind user sees a border that barely changes. Add a short text message under each invalid field (or on the same line, to keep it compact on mobile), associate it with the input through `aria-describedby`, set `aria-invalid=\"true\"` on the input while it is invalid, and keep the red border as a complement. Update the spec scenarios of \"Invalid fields are shown as the customer types\", whose THEN clauses check only the colour (\"the field's border turns red\" / \"returns to grey\"), so they also require the message and its association, and task 1.2 so its tests verify them.",
+        "recommendation": "A screen reader user who tabs out of the postcode field with `ABC` hears nothing: the only signal is a border colour change, which is not exposed to assistive technology, and colour-blind or low-vision users may not perceive red against grey either. With the top error list removed, no text anywhere says which field is wrong or why, so the checkout cannot be completed reliably (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification, 3.3.3 Error Suggestion, 4.1.2 Name, Role, Value). Add a text message under each invalid field, linked with `aria-describedby`, set `aria-invalid=\"true\"` on the input, and keep a non-colour cue (icon or text) next to the border. Update the spec scenarios in `specs/checkout-validation/spec.md` (\"the field's border turns red\" / \"returns to grey\") to require the message and `aria-invalid`, and the tests named in tasks 1.2 accordingly; the \"Alternatives considered\" entry rejected exactly this fix.\n",
         "reported": true,
         "role": "accessibility",
         "severity": "high",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Field errors are conveyed by colour only, with no text message"
+        "title": "Invalid fields are identified by colour only, with no text message"
       },
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "Each field validates on `blur`. An invalid field gets the class\n`field--invalid`, a red border (`#e5484d`); the list of errors at the top of\nthe page is removed\n",
+        "evidence": "- The error list at the top of the form is removed.\n",
         "history": [
           {
             "by": "accessibility",
@@ -79,17 +154,17 @@
         ],
         "id": "R-accessibility-2",
         "line": 40,
-        "location": "design.md#Decision: Invalid fields turn red",
+        "location": "proposal.md#What Changes",
         "raisedBy": [
           "accessibility"
         ],
-        "recommendation": "Keyboard and screen reader users (WCAG 3.3.1 Error Identification, 2.4.3 Focus Order). Validation runs only on `blur`, and the error list at the top is removed: a customer who presses Enter to submit while a required field was never focused, or while a field is invalid lower in the form, gets no announcement and no focus move — the submit appears to do nothing. Decide what submit does: validate every field, then move focus to the first invalid field (or to a short error summary linking to the fields, the RGAA/WCAG pattern), and add a scenario for it in the spec.",
+        "recommendation": "A keyboard or screen reader user who presses Enter on the submit button with an invalid or never-visited required field gets no announcement and focus stays on the button: the plan validates only on `blur` and says nothing about what happens on submit, so the user cannot find which field blocks the order (WCAG 3.3.1 Error Identification, 2.4.3 Focus Order). Specify the submit behaviour: validate every field on submit and move focus to the first invalid field (whose message is announced via `aria-describedby`), or keep an error summary that takes focus and links to each field. Add a scenario for it in `specs/checkout-validation/spec.md`.\n",
         "reported": true,
         "role": "accessibility",
         "severity": "medium",
         "status": "open",
         "step": "plan.challenge",
-        "title": "Submitting with invalid or untouched fields gives no feedback once the error list is removed"
+        "title": "Removing the error summary leaves no feedback or focus target on submit"
       }
     ],
     "format": 1,

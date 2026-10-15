@@ -2,10 +2,10 @@
   "format": 2,
   "case": "ops-control-bounded-retries",
   "error": null,
-  "costUsd": 0.277713,
-  "durationMs": 18786,
+  "costUsd": 0.27687700000000004,
+  "durationMs": 20406,
   "consumption": {
-    "durationApiMs": 18663,
+    "durationApiMs": 20186,
     "turns": 6,
     "permissionDenials": 0,
     "models": [
@@ -13,11 +13,57 @@
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1172,
-      "cacheCreation": 25768,
-      "cacheRead": 188835,
-      "output": 1642
-    }
+      "input": 1170,
+      "cacheCreation": 26619,
+      "cacheRead": 144080,
+      "output": 1707
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7405,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7405
+        }
+      },
+      {
+        "cacheCreation": 15416,
+        "cacheRead": 29544,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3904,
+          "skill": 11512
+        }
+      },
+      {
+        "cacheCreation": 2477,
+        "cacheRead": 44960,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 2477
+        }
+      },
+      {
+        "cacheCreation": 1321,
+        "cacheRead": 47437,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 812,
+          "edit": 509
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

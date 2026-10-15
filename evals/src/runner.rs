@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
@@ -78,6 +78,20 @@ pub fn prompt(case: &Case) -> String {
                 step = case.step.as_str(),
             )
         }
+        Step::PlanWrite => {
+            let request = case.plan.as_ref().map_or("", |p| p.request.as_str());
+            format!(
+                "Run the `codev-propose` skill (read .claude/skills/codev-propose/SKILL.md and follow it) for this \
+                 user request:\n\
+                 \n\
+                 « {request} »\n\
+                 \n\
+                 This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+                 make the most reasonable assumption and state it in the proposal. Write the proposal, the delta specs \
+                 and the design, then stop: skip tasks.md, the traceability check (plan.trace) and the challenge \
+                 (plan.challenge). Modify no file outside `_codev/changes/`. End with a one-line summary."
+            )
+        }
         Step::PlanTrace => format!(
             "This is a codev role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -97,12 +111,18 @@ pub fn prompt(case: &Case) -> String {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClaudeSettings {
     pub model: Option<String>,
-    pub budget_usd: f64,
-    pub timeout: Duration,
+    /// `CODEV_EVAL_BUDGET_USD`, overriding every step's default.
+    pub budget_usd: Option<f64>,
+    /// `CODEV_EVAL_TIMEOUT_SECS`, overriding every step's default.
+    pub timeout: Option<Duration>,
 }
 
 pub const DEFAULT_BUDGET_USD: f64 = 3.0;
 pub const DEFAULT_TIMEOUT_SECS: u64 = 600;
+/// A planning run writes three artifacts from scratch: about 1.65 USD and
+/// several minutes at the median, measured by the study of 44 runs.
+pub const PLAN_BUDGET_USD: f64 = 6.0;
+pub const PLAN_TIMEOUT_SECS: u64 = 1800;
 
 impl ClaudeSettings {
     /// `CODEV_EVAL_MODEL`, `CODEV_EVAL_BUDGET_USD`,
@@ -111,18 +131,17 @@ impl ClaudeSettings {
     pub fn from_env(env: &dyn Fn(&str) -> Option<String>) -> Result<ClaudeSettings, String> {
         let model = env("CODEV_EVAL_MODEL").filter(|m| !m.trim().is_empty());
         let budget_usd = match env("CODEV_EVAL_BUDGET_USD") {
-            None => DEFAULT_BUDGET_USD,
+            None => None,
             Some(text) => text
                 .trim()
                 .parse::<f64>()
                 .ok()
                 .filter(|v| *v > 0.0)
-                .ok_or_else(|| {
-                    format!("CODEV_EVAL_BUDGET_USD: `{text}` is not a positive number")
-                })?,
+                .ok_or_else(|| format!("CODEV_EVAL_BUDGET_USD: `{text}` is not a positive number"))
+                .map(Some)?,
         };
         let timeout = match env("CODEV_EVAL_TIMEOUT_SECS") {
-            None => DEFAULT_TIMEOUT_SECS,
+            None => None,
             Some(text) => text
                 .trim()
                 .parse::<u64>()
@@ -130,13 +149,30 @@ impl ClaudeSettings {
                 .filter(|v| *v > 0)
                 .ok_or_else(|| {
                     format!("CODEV_EVAL_TIMEOUT_SECS: `{text}` is not a positive whole number")
-                })?,
+                })
+                .map(|secs| Some(Duration::from_secs(secs)))?,
         };
         Ok(ClaudeSettings {
             model,
             budget_usd,
-            timeout: Duration::from_secs(timeout),
+            timeout,
         })
+    }
+
+    /// The budget of a run at `step`: the environment's, else the step's.
+    pub fn budget_for(&self, step: Step) -> f64 {
+        self.budget_usd.unwrap_or(match step {
+            Step::PlanWrite => PLAN_BUDGET_USD,
+            _ => DEFAULT_BUDGET_USD,
+        })
+    }
+
+    /// How long a run at `step` may take: the environment's, else the step's.
+    pub fn timeout_for(&self, step: Step) -> Duration {
+        self.timeout.unwrap_or(Duration::from_secs(match step {
+            Step::PlanWrite => PLAN_TIMEOUT_SECS,
+            _ => DEFAULT_TIMEOUT_SECS,
+        }))
     }
 }
 
@@ -160,12 +196,13 @@ pub const DISALLOWED_TOOLS: &str = "WebFetch WebSearch";
 pub const ALLOWED_TOOLS: &str = "Bash(codev:*)";
 
 /// The arguments of `claude` for one case.
-pub fn claude_args(prompt: &str, settings: &ClaudeSettings) -> Vec<String> {
+pub fn claude_args(prompt: &str, settings: &ClaudeSettings, step: Step) -> Vec<String> {
     let mut args: Vec<String> = [
         "-p",
         prompt,
         "--output-format",
-        "json",
+        "stream-json",
+        "--verbose",
         "--no-session-persistence",
         "--permission-mode",
         "acceptEdits",
@@ -180,12 +217,42 @@ pub fn claude_args(prompt: &str, settings: &ClaudeSettings) -> Vec<String> {
     .iter()
     .map(|s| s.to_string())
     .collect();
-    args.push(format!("{}", settings.budget_usd));
+    args.push(format!("{}", settings.budget_for(step)));
     if let Some(model) = &settings.model {
         args.push("--model".into());
         args.push(model.clone());
     }
     args
+}
+
+/// The steps `--step` accepts: `review` for the three review steps, or a
+/// step's own name.
+pub const STEP_SELECTORS: [&str; 5] = [
+    "review",
+    "plan.challenge",
+    "code.review",
+    "plan.trace",
+    "plan.write",
+];
+
+/// The cases of the steps named, all of them when none is; an unknown name
+/// is an error naming the valid ones.
+pub fn select_steps<'a>(cases: &'a [Case], steps: &[String]) -> Result<Vec<&'a Case>, String> {
+    if let Some(unknown) = steps.iter().find(|s| !STEP_SELECTORS.contains(&s.as_str())) {
+        return Err(format!(
+            "--step: unknown step `{unknown}`; expected one of {}",
+            STEP_SELECTORS.join(", ")
+        ));
+    }
+    Ok(cases
+        .iter()
+        .filter(|c| {
+            steps.is_empty()
+                || steps
+                    .iter()
+                    .any(|s| s == c.step.as_str() || (s == "review" && c.step.is_review()))
+        })
+        .collect())
 }
 
 /// One run of a case: its repetition `n`, from 1.
@@ -218,7 +285,8 @@ pub fn pending<'a>(
 
 /// The files `git status --porcelain -z --untracked-files=all` lists that
 /// the step does not allow: `review.md` at the review steps, the change's
-/// directory at `plan.trace`.
+/// directory at `plan.trace`, anything under `_codev/changes/` at
+/// `plan.write`.
 pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     let change_dir = format!("{}/", case.change_dir());
     let review = format!("{change_dir}review.md");
@@ -235,6 +303,7 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
         }
         let allowed = match case.step {
             Step::PlanTrace => path.starts_with(&change_dir),
+            Step::PlanWrite => path.starts_with(CHANGES_DIR),
             _ => path == review,
         };
         if !allowed {
@@ -243,6 +312,34 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     }
     out.sort();
     out
+}
+
+const CHANGES_DIR: &str = "_codev/changes/";
+
+/// The changes a planning run created: the directories of
+/// `_codev/changes/` (archive aside) that hold a file git does not track,
+/// with those files, from `git status --porcelain -z --untracked-files=all`.
+pub fn created_changes(porcelain: &str) -> BTreeMap<String, Vec<String>> {
+    let mut changes: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for entry in porcelain.split('\0').filter(|e| e.len() > 3) {
+        let (status, path) = entry.split_at(3);
+        if status != "?? " {
+            continue;
+        }
+        let Some((name, _)) = path
+            .strip_prefix(CHANGES_DIR)
+            .and_then(|rest| rest.split_once('/'))
+        else {
+            continue;
+        };
+        if name != "archive" {
+            changes
+                .entry(name.to_string())
+                .or_default()
+                .push(path.to_string());
+        }
+    }
+    changes
 }
 
 /// What Claude Code's `--output-format json` reports about a run.
@@ -255,8 +352,244 @@ pub struct ClaudeOutput {
     pub error: Option<String>,
 }
 
-/// What Claude Code's `--output-format json` reports: cost, duration, what
-/// the run consumed, and whether it ended in error.
+/// What Claude Code's event stream (`--output-format stream-json`) reports:
+/// its final `result` event, read as `--output-format json` prints it, plus
+/// the tool calls and every call to the model, read from the events.
+pub fn parse_claude_stream(stdout: &str) -> ClaudeOutput {
+    let events: Vec<serde_json::Value> = stdout
+        .lines()
+        .filter_map(|line| serde_json::from_str(line.trim()).ok())
+        .collect();
+    let Some(result) = events
+        .iter()
+        .rev()
+        .find(|e| e.get("type").and_then(|t| t.as_str()) == Some("result"))
+    else {
+        return ClaudeOutput {
+            error: Some(format!(
+                "Claude Code's event stream has no result: {}",
+                excerpt(stdout)
+            )),
+            ..ClaudeOutput::default()
+        };
+    };
+    let mut output = parse_claude_output(&result.to_string());
+    if let Some(consumption) = output.consumption.as_mut() {
+        let stream = read_calls(&events);
+        consumption.tool_calls = Some(stream.tool_calls);
+        consumption.orientation_calls = stream.orientation_calls;
+        consumption.calls = stream.calls;
+    }
+    output
+}
+
+/// What the events say about each call to the model.
+struct StreamCalls {
+    tool_calls: u64,
+    orientation_calls: Option<u64>,
+    calls: Vec<crate::observed::Call>,
+}
+
+/// The source a tool result is counted under, from the tool call that
+/// asked for it.
+pub fn source_of(tool: &str, input: &serde_json::Value) -> String {
+    let field = |k: &str| input.get(k).and_then(|v| v.as_str()).unwrap_or("");
+    match tool {
+        "Read" if field("file_path").contains(".claude/skills/") => "skill".into(),
+        "Read" | "NotebookRead" => "file".into(),
+        "Grep" | "Glob" => "search".into(),
+        "Write" | "Edit" | "MultiEdit" | "NotebookEdit" => "edit".into(),
+        "Bash" => {
+            let command = without_cd(field("command"));
+            if command.contains(".claude/skills/") && !command.starts_with("codev ") {
+                return "skill".into();
+            }
+            let mut words = command.split(|c: char| c.is_whitespace() || ";&|)".contains(c));
+            match words.next().unwrap_or("") {
+                "codev" => format!("codev {}", words.find(|w| !w.is_empty()).unwrap_or("")),
+                "grep" | "rg" | "find" | "fd" | "ag" => "search".into(),
+                "cat" | "sed" | "head" | "tail" | "less" | "awk" | "nl" => "file".into(),
+                _ => "shell".into(),
+            }
+        }
+        other => other.to_lowercase(),
+    }
+}
+
+/// A command without the `cd <dir> &&` (or `;`) that opens it: what runs
+/// is what follows.
+fn without_cd(command: &str) -> &str {
+    let mut rest = command.trim_start();
+    while let Some(after) = rest.strip_prefix("cd ") {
+        let Some(at) = after.find(['&', ';']) else {
+            break;
+        };
+        rest = after[at..].trim_start_matches(['&', ';']).trim_start();
+    }
+    rest
+}
+
+fn is_planning_write(tool: &str, input: &serde_json::Value) -> bool {
+    matches!(tool, "Write" | "Edit" | "MultiEdit")
+        && input
+            .get("file_path")
+            .and_then(|v| v.as_str())
+            .is_some_and(|p| p.contains("_codev/changes/"))
+}
+
+/// Groups the assistant events by message — one call to the model may
+/// span several events — and shares each call's cache writes among what
+/// entered the context since the previous call: the tool results returned
+/// in between, by the length of their text, and the previous call's own
+/// text. The first call's writes are Claude Code's prompt and the request.
+fn read_calls(events: &[serde_json::Value]) -> StreamCalls {
+    let mut reader = CallReader::default();
+    for event in events {
+        match event.get("type").and_then(|t| t.as_str()) {
+            Some("assistant") => reader.read_assistant(&event["message"]),
+            Some("user") => reader.read_tool_results(&event["message"]),
+            _ => {}
+        }
+    }
+    StreamCalls {
+        tool_calls: reader.tool_calls,
+        orientation_calls: reader.orientation_calls,
+        calls: reader.calls,
+    }
+}
+
+/// Shares a call's cache writes among what entered its context since the
+/// previous call, `(source, length)`, in proportion to the length. The
+/// first call's writes are Claude Code's own prompt and the request. A
+/// later call that received no tool result and follows no text still
+/// wrote something: what the previous call produced and Claude Code
+/// carries forward (its tool calls, its thinking), so it goes to `output`.
+fn share_writes(writes: u64, entered: &[(String, usize)], first: bool) -> BTreeMap<String, u64> {
+    let mut sources = BTreeMap::new();
+    let total: usize = entered.iter().map(|(_, len)| *len).sum();
+    if first {
+        sources.insert("prompt".to_string(), writes);
+    } else if total == 0 {
+        sources.insert("output".to_string(), writes);
+    } else {
+        for (source, len) in entered {
+            let share = (writes as f64 * *len as f64 / total as f64).round() as u64;
+            *sources.entry(source.clone()).or_insert(0) += share;
+        }
+    }
+    sources
+}
+
+/// The length of a message's text, whether a string or a list of blocks.
+fn text_len(value: &serde_json::Value) -> usize {
+    match value {
+        serde_json::Value::String(s) => s.len(),
+        serde_json::Value::Array(items) => items
+            .iter()
+            .map(|i| i.get("text").and_then(|t| t.as_str()).map_or(0, str::len))
+            .sum(),
+        _ => 0,
+    }
+}
+
+/// The state of a stream being read, one event at a time.
+#[derive(Default)]
+struct CallReader {
+    calls: Vec<crate::observed::Call>,
+    /// The message id of the call being read: one call spans several
+    /// events with the same id.
+    last_id: Option<String>,
+    /// The source of each tool call, by its id, for its result.
+    sources_of_tools: BTreeMap<String, String>,
+    /// What entered since the previous call: (source, length).
+    pending: Vec<(String, usize)>,
+    /// The length of the text the current call produced.
+    previous_text: usize,
+    tool_calls: u64,
+    orientation_calls: Option<u64>,
+}
+
+impl CallReader {
+    /// An assistant event: starts a call when its message id is new, then
+    /// records its usage and reads its blocks.
+    fn read_assistant(&mut self, message: &serde_json::Value) {
+        let id = message
+            .get("id")
+            .and_then(|i| i.as_str())
+            .map(str::to_string);
+        let usage = &message["usage"];
+        let get = |k: &str| usage.get(k).and_then(|v| v.as_u64()).unwrap_or(0);
+        if id.is_none() || id != self.last_id {
+            self.start_call(get("cache_creation_input_tokens"));
+            self.last_id = id;
+        }
+        let call = self.calls.last_mut().expect("a call was started");
+        // The last event of a message carries its final usage.
+        call.cache_read = get("cache_read_input_tokens");
+        call.input = get("input_tokens");
+        call.output = call.output.max(get("output_tokens"));
+        for block in message["content"].as_array().into_iter().flatten() {
+            self.read_block(block);
+        }
+    }
+
+    fn start_call(&mut self, writes: u64) {
+        let mut entered = std::mem::take(&mut self.pending);
+        if self.previous_text > 0 {
+            entered.push(("output".into(), self.previous_text));
+        }
+        let sources = share_writes(writes, &entered, self.calls.is_empty());
+        self.calls.push(crate::observed::Call {
+            cache_creation: writes,
+            sources,
+            ..crate::observed::Call::default()
+        });
+        self.previous_text = 0;
+    }
+
+    /// One block of the current call: a tool call, or text it produced.
+    fn read_block(&mut self, block: &serde_json::Value) {
+        match block.get("type").and_then(|t| t.as_str()) {
+            Some("tool_use") => {
+                let tool = block.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                let input = &block["input"];
+                if self.orientation_calls.is_none() && is_planning_write(tool, input) {
+                    self.orientation_calls = Some(self.tool_calls);
+                }
+                self.tool_calls += 1;
+                if let Some(call) = self.calls.last_mut() {
+                    call.tool_calls += 1;
+                }
+                if let Some(tid) = block.get("id").and_then(|i| i.as_str()) {
+                    self.sources_of_tools
+                        .insert(tid.to_string(), source_of(tool, input));
+                }
+            }
+            Some("text") => self.previous_text += text_len(&block["text"]),
+            Some("thinking") => self.previous_text += text_len(&block["thinking"]),
+            _ => {}
+        }
+    }
+
+    /// A user event: the tool results it returns enter the next call.
+    fn read_tool_results(&mut self, message: &serde_json::Value) {
+        for block in message["content"].as_array().into_iter().flatten() {
+            if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
+                continue;
+            }
+            let source = block
+                .get("tool_use_id")
+                .and_then(|i| i.as_str())
+                .and_then(|i| self.sources_of_tools.get(i))
+                .cloned()
+                .unwrap_or_else(|| "other".into());
+            self.pending.push((source, text_len(&block["content"])));
+        }
+    }
+}
+
+/// Reads one `result` document, as `--output-format json` prints it: cost,
+/// duration, what the run consumed, and whether it ended in error.
 pub fn parse_claude_output(stdout: &str) -> ClaudeOutput {
     let Ok(value) = serde_json::from_str::<serde_json::Value>(stdout.trim()) else {
         return ClaudeOutput {
@@ -326,6 +659,7 @@ fn consumption(value: &serde_json::Value) -> Consumption {
             .map(|d| d.len() as u64),
         models,
         tokens,
+        ..Consumption::default()
     }
 }
 
@@ -635,6 +969,65 @@ pub fn setup(
     Ok(())
 }
 
+/// Builds a planning case's project in `dir`: the tree of `repo` at the
+/// case's `ref`, one commit, then the skills the codev under test renders
+/// (`codev update --force`, over skills edited since), committed.
+pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
+    let io = |e: std::io::Error| format!("setting up the fixture: {e}");
+    let git_ref = case
+        .plan
+        .as_ref()
+        .map(|p| p.git_ref.as_str())
+        .ok_or_else(|| "not a planning case".to_string())?;
+    if dir.exists() {
+        fs::remove_dir_all(dir).map_err(io)?;
+    }
+    fs::create_dir_all(dir).map_err(io)?;
+    let archive = dir.with_extension("tar");
+    let archive_arg = archive.to_string_lossy().into_owned();
+    git(
+        tools,
+        repo,
+        &["archive", "--format=tar", "-o", &archive_arg, git_ref],
+    )?;
+    let untar = Command::new("tar")
+        .arg("-xf")
+        .arg(&archive)
+        .arg("-C")
+        .arg(dir)
+        .output()
+        .map_err(|e| format!("cannot run tar: {e}"));
+    let _ = fs::remove_file(&archive);
+    let untar = untar?;
+    if !untar.status.success() {
+        return Err(format!(
+            "extracting `{git_ref}`: {}",
+            String::from_utf8_lossy(&untar.stderr).trim()
+        ));
+    }
+    git(tools, dir, &["init", "-q", "-b", "main"])?;
+    git(tools, dir, &["add", "-A"])?;
+    git(
+        tools,
+        dir,
+        &["commit", "-q", "-m", &format!("state at {git_ref}")],
+    )?;
+    run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+    git(tools, dir, &["add", "-A"])?;
+    git(
+        tools,
+        dir,
+        &[
+            "commit",
+            "-q",
+            "--allow-empty",
+            "-m",
+            "skills of the codev under test",
+        ],
+    )?;
+    Ok(())
+}
+
 /// Runs Claude Code in `dir` with a timeout; returns its standard output.
 fn run_claude(
     dir: &Path,
@@ -643,7 +1036,7 @@ fn run_claude(
     timeout: Duration,
     log: &Path,
 ) -> Result<String, String> {
-    let stdout_path = log.join("claude.json");
+    let stdout_path = log.join("claude.jsonl");
     let stderr_path = log.join("claude.stderr");
     let stdout = fs::File::create(&stdout_path).map_err(|e| e.to_string())?;
     let stderr = fs::File::create(&stderr_path).map_err(|e| e.to_string())?;
@@ -709,11 +1102,51 @@ fn terminate(child: &mut std::process::Child) {
     let _ = child.wait();
 }
 
+/// A stream without its `system/init` event: the session's settings, whose
+/// paths name the operator's home directory, and nothing a run is
+/// measured on.
+pub fn without_init_event(stream: &str) -> String {
+    stream
+        .lines()
+        .filter(|line| {
+            serde_json::from_str::<serde_json::Value>(line).map_or(true, |event| {
+                !(event["type"] == "system" && event["subtype"] == "init")
+            })
+        })
+        .map(|line| format!("{line}\n"))
+        .collect()
+}
+
+/// A `codev validate --json` report without its `root`: the absolute path
+/// of the case's directory on the machine that ran it, which the scoring
+/// does not read.
+pub fn without_root(mut report: serde_json::Value) -> serde_json::Value {
+    if let Some(object) = report.as_object_mut() {
+        object.remove("root");
+    }
+    report
+}
+
+/// The JSON document a `codev … --json` command prints in `dir`. codev
+/// exits with 1 when what it reports holds an error — an invalid plan, a
+/// review record with an error — and still prints its document, which is
+/// the observation: only output that is not JSON is an error.
+fn codev_json(tools: &Tools, dir: &Path, args: &[&str]) -> Result<serde_json::Value, String> {
+    let command = format!("codev {}", args.join(" "));
+    let out = tool_command(&tools.codev, dir, codev_dir(tools))
+        .args(args)
+        .output()
+        .map_err(|e| format!("cannot run `{command}`: {e}"))?;
+    serde_json::from_slice(&out.stdout).map_err(|e| format!("`{command}` output: {e}"))
+}
+
 /// Runs one repetition of a case in `work_dir`, its working copy, set up
 /// from the fixture in `case_dir`; returns its observation and never fails:
 /// a failure is the observation's `error`.
+#[allow(clippy::too_many_arguments)]
 pub fn run_case(
     case: &Case,
+    repo: &Path,
     case_dir: &Path,
     work_dir: &Path,
     log: &Path,
@@ -731,21 +1164,30 @@ pub fn run_case(
         strayed: Vec::new(),
         review: None,
         files: BTreeMap::new(),
+        validate: BTreeMap::new(),
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    if let Err(e) = setup(case, case_dir, work_dir, tools, date) {
+    let built = if case.step == Step::PlanWrite {
+        setup_plan(case, repo, work_dir, tools)
+    } else {
+        setup(case, case_dir, work_dir, tools, date)
+    };
+    if let Err(e) = built {
         observed.error = Some(e);
         return observed;
     }
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
-    let args = claude_args(&prompt(case), settings);
-    match run_claude(work_dir, tools, &args, settings.timeout, log) {
+    let args = claude_args(&prompt(case), settings, case.step);
+    match run_claude(work_dir, tools, &args, settings.timeout_for(case.step), log) {
         Err(e) => observed.error = Some(e),
         Ok(stdout) => {
-            let output = parse_claude_output(&stdout);
+            let output = parse_claude_stream(&stdout);
+            // The stream is kept for reading a run again; its first event,
+            // which names the operator's home directory, is not needed.
+            let _ = fs::write(log.join("claude.jsonl"), without_init_event(&stdout));
             observed.cost_usd = output.cost_usd;
             observed.duration_ms = output.duration_ms;
             observed.consumption = output.consumption;
@@ -759,25 +1201,35 @@ pub fn run_case(
     if observed.error.is_some() {
         return observed;
     }
-    if let Ok(status) = git(
+    let status = git(
         tools,
         work_dir,
         &["status", "--porcelain", "-z", "--untracked-files=all"],
-    ) {
-        observed.strayed = strayed(&status, case);
+    )
+    .unwrap_or_default();
+    observed.strayed = strayed(&status, case);
+    if case.step == Step::PlanWrite {
+        for (change, files) in created_changes(&status) {
+            for path in files {
+                let content = fs::read_to_string(work_dir.join(&path)).ok();
+                observed.files.insert(path, content);
+            }
+            match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
+                Ok(value) => {
+                    observed.validate.insert(change, without_root(value));
+                }
+                Err(e) => observed.error = Some(e),
+            }
+        }
     }
     if case.step.records_findings() {
-        // codev exits with 1 when the record has an error: its JSON is
-        // still the observation, only output that is not JSON is an error.
-        let output = tool_command(&tools.codev, work_dir, codev_dir(tools))
-            .args(["review", "--change", &case.change, "--json"])
-            .output();
-        match output {
-            Ok(out) => match serde_json::from_slice::<serde_json::Value>(&out.stdout) {
-                Ok(value) => observed.review = Some(value),
-                Err(e) => observed.error = Some(format!("`codev review --json` output: {e}")),
-            },
-            Err(e) => observed.error = Some(format!("cannot run codev review: {e}")),
+        match codev_json(
+            tools,
+            work_dir,
+            &["review", "--change", &case.change, "--json"],
+        ) {
+            Ok(value) => observed.review = Some(value),
+            Err(e) => observed.error = Some(e),
         }
         if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
             let _ = fs::write(log.join("review.md"), record);
@@ -801,26 +1253,65 @@ pub struct RunOptions {
     pub settings: ClaudeSettings,
 }
 
+/// Whether a run's error says the account's usage limit is reached: every
+/// run after it would fail the same way, at once.
+pub fn is_usage_limit(error: &str) -> bool {
+    let error = error.to_lowercase();
+    error.contains("session limit") || error.contains("usage limit")
+}
+
+/// The runs left to make, shared by the jobs; once stopped, it hands out
+/// no more.
+pub struct Queue<'a> {
+    jobs: Mutex<Vec<Job<'a>>>,
+    stopped: std::sync::atomic::AtomicBool,
+}
+
+impl<'a> Queue<'a> {
+    pub fn new(pending: &[Job<'a>]) -> Self {
+        Queue {
+            jobs: Mutex::new(pending.iter().rev().copied().collect()),
+            stopped: std::sync::atomic::AtomicBool::new(false),
+        }
+    }
+
+    /// The next run, in the order given; `None` once empty or stopped.
+    pub fn pop(&self) -> Option<Job<'a>> {
+        if self.is_stopped() {
+            return None;
+        }
+        self.jobs.lock().expect("queue lock").pop()
+    }
+
+    pub fn stop(&self) {
+        self.stopped
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub fn is_stopped(&self) -> bool {
+        self.stopped.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
 /// Runs the repetitions `jobs` at a time, each case's repetition `n` set up
 /// in `<work>/<case>-<n>` and logged in `<out>/<case>/<n>/`, writing each
 /// `observed.json` as soon as it is known, so an interrupted run keeps what
-/// it measured.
-pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
-    let queue: Arc<Mutex<Vec<Job>>> = Arc::new(Mutex::new(pending.iter().rev().copied().collect()));
+/// it measured. Returns `true` when a run hit the account's usage limit,
+/// after which no other run started.
+pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
+    let queue = Queue::new(pending);
     std::thread::scope(|scope| {
         for _ in 0..options.jobs.max(1) {
-            let queue = Arc::clone(&queue);
+            let queue = &queue;
             scope.spawn(move || {
-                loop {
-                    let Some(Job { case, n }) = queue.lock().expect("queue lock").pop() else {
-                        break;
-                    };
+                while let Some(Job { case, n }) = queue.pop() {
                     eprintln!("[codev-evals] {} #{n} — running", case.id);
                     let case_dir = options.repo.join("evals").join("cases").join(&case.id);
                     let log = options.out.join(&case.id).join(n.to_string());
                     let work = options.work.join(format!("{}-{n}", case.id));
                     let observed = run_case(
                         case,
+                        &options.repo,
                         &case_dir,
                         &work,
                         &log,
@@ -840,6 +1331,9 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
                         case.id,
                         observed.error.as_deref().unwrap_or("done")
                     );
+                    if observed.error.as_deref().is_some_and(is_usage_limit) {
+                        queue.stop();
+                    }
                     if !options.keep {
                         let _ = fs::remove_dir_all(&work);
                     }
@@ -847,21 +1341,37 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
             });
         }
     });
+    queue.is_stopped()
 }
 
-/// Refuses to resume a run recorded with another model: its observations
-/// would be scored under the first model's name.
-pub fn check_resume(recorded: &RunInfo, model: Option<&str>) -> Result<(), String> {
-    if recorded.model.as_deref() == model {
-        return Ok(());
-    }
+/// Refuses to resume a run recorded with another model, whose observations
+/// would be scored under the first model's name, or with another Claude
+/// Code version, whose runs would be credited to the wrong version.
+pub fn check_resume(
+    recorded: &RunInfo,
+    model: Option<&str>,
+    claude_version: Option<&str>,
+) -> Result<(), String> {
     let name = |m: Option<&str>| m.unwrap_or("Claude Code's default").to_string();
-    Err(format!(
-        "this output directory was recorded with the model {}, and CODEV_EVAL_MODEL asks for {}; \
-         use another --out directory, or the same model",
-        name(recorded.model.as_deref()),
-        name(model)
-    ))
+    if recorded.model.as_deref() != model {
+        return Err(format!(
+            "this output directory was recorded with the model {}, and CODEV_EVAL_MODEL asks for {}; \
+             use another --out directory, or the same model",
+            name(recorded.model.as_deref()),
+            name(model)
+        ));
+    }
+    if let (Some(recorded_version), Some(installed)) =
+        (recorded.claude_version.as_deref(), claude_version)
+        && recorded_version != installed
+    {
+        return Err(format!(
+            "this output directory was recorded with {recorded_version}, and {installed} is installed; \
+             runs added to it would be credited to the wrong version: install the same Claude Code, or use \
+             another --out directory"
+        ));
+    }
+    Ok(())
 }
 
 /// Writes `run.json` unless the output directory already has one (a
@@ -945,7 +1455,7 @@ mod tests {
             _ => None,
         };
         let settings = ClaudeSettings::from_env(&env).unwrap();
-        let args = claude_args("p", &settings);
+        let args = claude_args("p", &settings, Step::CodeReview);
         let after = |flag: &str| {
             args.iter()
                 .position(|a| a == flag)
@@ -956,11 +1466,14 @@ mod tests {
         assert_eq!(after("-p").as_deref(), Some("p"));
 
         let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
-        let args = claude_args("p", &defaults);
+        let args = claude_args("p", &defaults, Step::CodeReview);
         assert!(!args.iter().any(|a| a == "--model"));
         let budget = args.iter().position(|a| a == "--max-budget-usd").unwrap();
         assert_eq!(args[budget + 1], "3");
-        assert_eq!(defaults.timeout, Duration::from_secs(600));
+        assert_eq!(
+            defaults.timeout_for(Step::CodeReview),
+            Duration::from_secs(600)
+        );
 
         let bad = |name: &str| (name == "CODEV_EVAL_TIMEOUT_SECS").then(|| "soon".to_string());
         assert!(
@@ -1024,7 +1537,11 @@ mod tests {
 
     #[test]
     fn claude_runs_in_the_sandbox() {
-        let args = claude_args("p", &ClaudeSettings::from_env(&|_| None).unwrap());
+        let args = claude_args(
+            "p",
+            &ClaudeSettings::from_env(&|_| None).unwrap(),
+            Step::CodeReview,
+        );
         let after = |flag: &str| {
             args.iter()
                 .position(|a| a == flag)
@@ -1133,8 +1650,8 @@ mod tests {
             repeat: None,
             jobs: None,
         };
-        assert!(check_resume(&recorded, None).is_ok());
-        let err = check_resume(&recorded, Some("claude-sonnet-4-5")).unwrap_err();
+        assert!(check_resume(&recorded, None, None).is_ok());
+        let err = check_resume(&recorded, Some("claude-sonnet-4-5"), None).unwrap_err();
         assert!(
             err.contains("Claude Code's default") && err.contains("claude-sonnet-4-5"),
             "{err}"
@@ -1266,5 +1783,390 @@ mod tests {
         };
         let err = preflight(&tools).unwrap_err();
         assert!(err.contains("`claude`"), "{err}");
+    }
+
+    /// An assistant event of message `id`, with its usage and content.
+    fn assistant(id: &str, writes: u64, output: u64, content: serde_json::Value) -> String {
+        json!({"type": "assistant", "message": {"id": id, "content": content,
+            "usage": {"input_tokens": 2, "cache_creation_input_tokens": writes,
+                      "cache_read_input_tokens": 1000, "output_tokens": output}}})
+        .to_string()
+    }
+
+    fn tool_use(id: &str, name: &str, input: serde_json::Value) -> serde_json::Value {
+        json!({"type": "tool_use", "id": id, "name": name, "input": input})
+    }
+
+    fn tool_result(id: &str, chars: usize) -> String {
+        json!({"type": "user", "message": {"content": [
+            {"type": "tool_result", "tool_use_id": id, "content": "x".repeat(chars)}]}})
+        .to_string()
+    }
+
+    const RESULT: &str = r#"{"type":"result","subtype":"success","is_error":false,"duration_ms":1000,"num_turns":3,"total_cost_usd":0.1,"usage":{"input_tokens":1,"cache_creation_input_tokens":1,"cache_read_input_tokens":1,"output_tokens":1}}"#;
+
+    #[test]
+    fn a_calls_writes_are_shared_by_length_among_its_sources() {
+        let stream = [
+            assistant(
+                "m1",
+                9000,
+                10,
+                json!([
+                    tool_use(
+                        "t1",
+                        "Bash",
+                        json!({"command": "codev roles --at code.review --json"})
+                    ),
+                    tool_use("t2", "Read", json!({"file_path": "/p/src/users.ts"})),
+                ]),
+            ),
+            tool_result("t1", 9000),
+            tool_result("t2", 3000),
+            assistant("m2", 6000, 5, json!([{"type": "text", "text": "Done."}])),
+            RESULT.to_string(),
+        ]
+        .join("\n");
+        let c = parse_claude_stream(&stream).consumption.unwrap();
+        assert_eq!(c.calls.len(), 2);
+        assert_eq!(c.calls[1].sources["codev roles"], 4500);
+        assert_eq!(c.calls[1].sources["file"], 1500);
+    }
+
+    #[test]
+    fn the_first_call_goes_to_the_prompt() {
+        let stream = [
+            assistant("m1", 9696, 3, json!([{"type": "text", "text": "Hi"}])),
+            RESULT.to_string(),
+        ]
+        .join("\n");
+        let c = parse_claude_stream(&stream).consumption.unwrap();
+        assert_eq!(
+            c.calls[0].sources,
+            BTreeMap::from([("prompt".to_string(), 9696)])
+        );
+    }
+
+    #[test]
+    fn each_call_is_recorded() {
+        // One call spread over two events of the same message, then another.
+        let stream = [
+            assistant(
+                "m1",
+                500,
+                4,
+                json!([{"type": "thinking", "thinking": "hm"}]),
+            ),
+            assistant(
+                "m1",
+                500,
+                9,
+                json!([tool_use("t1", "Grep", json!({"pattern": "x"}))]),
+            ),
+            tool_result("t1", 100),
+            assistant("m2", 80, 7, json!([{"type": "text", "text": "ok"}])),
+            RESULT.to_string(),
+        ]
+        .join("\n");
+        let c = parse_claude_stream(&stream).consumption.unwrap();
+        assert_eq!(c.calls.len(), 2);
+        assert_eq!(
+            (
+                c.calls[0].cache_creation,
+                c.calls[0].output,
+                c.calls[0].tool_calls
+            ),
+            (500, 9, 1)
+        );
+        assert_eq!(c.calls[0].cache_read, 1000);
+        assert!(
+            c.calls[1].sources.contains_key("search"),
+            "{:?}",
+            c.calls[1].sources
+        );
+    }
+
+    #[test]
+    fn a_codev_command_is_named_by_its_subcommand() {
+        assert_eq!(
+            source_of("Bash", &json!({"command": "codev review --change x"})),
+            "codev review"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "codev validate; git status"})),
+            "codev validate"
+        );
+        assert_eq!(
+            source_of(
+                "Bash",
+                &json!({"command": "cd \"$PWD\" && codev roles --json"})
+            ),
+            "codev roles"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "grep -rn x _codev/specs"})),
+            "search"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "cd /tmp/x; sed -n 1,80p a.md"})),
+            "file"
+        );
+        assert_eq!(source_of("Bash", &json!({"command": "ls _codev"})), "shell");
+        assert_eq!(
+            source_of("Bash", &json!({"command": "codev --version&&ls"})),
+            "codev --version"
+        );
+        assert_eq!(
+            source_of(
+                "Bash",
+                &json!({"command": "cat .claude/skills/codev-apply/SKILL.md"})
+            ),
+            "skill"
+        );
+        assert_eq!(
+            source_of(
+                "Read",
+                &json!({"file_path": "/p/.claude/skills/codev-apply/SKILL.md"})
+            ),
+            "skill"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "git diff main"})),
+            "shell"
+        );
+        assert_eq!(source_of("Edit", &json!({"file_path": "/p/a.rs"})), "edit");
+    }
+
+    #[test]
+    fn a_stream_gives_the_result_tool_calls_and_orientation() {
+        let mut lines = Vec::new();
+        for i in 0..27 {
+            let input = if i == 11 {
+                json!({"file_path": "/p/_codev/changes/add-search/proposal.md", "content": "x"})
+            } else {
+                json!({"file_path": "/p/src/a.rs"})
+            };
+            let tool = if i == 11 { "Write" } else { "Read" };
+            lines.push(assistant(
+                &format!("m{i}"),
+                10,
+                1,
+                json!([tool_use(&format!("t{i}"), tool, input)]),
+            ));
+            lines.push(tool_result(&format!("t{i}"), 10));
+        }
+        lines.push(RESULT.to_string());
+        let out = parse_claude_stream(&lines.join("\n"));
+        assert_eq!(out.cost_usd, Some(0.1));
+        let c = out.consumption.unwrap();
+        assert_eq!(c.tool_calls, Some(27));
+        assert_eq!(c.orientation_calls, Some(11));
+    }
+
+    #[test]
+    fn a_stream_without_a_write_has_no_orientation() {
+        let stream = [
+            assistant(
+                "m1",
+                10,
+                1,
+                json!([tool_use("t1", "Read", json!({"file_path": "/p/a.rs"}))]),
+            ),
+            tool_result("t1", 10),
+            RESULT.to_string(),
+        ]
+        .join("\n");
+        let c = parse_claude_stream(&stream).consumption.unwrap();
+        assert_eq!(c.tool_calls, Some(1));
+        assert_eq!(c.orientation_calls, None);
+    }
+
+    #[test]
+    fn a_stream_without_a_result_is_an_error() {
+        let stream = assistant("m1", 10, 1, json!([]));
+        let out = parse_claude_stream(&stream);
+        assert!(out.error.unwrap().contains("no result"));
+        assert_eq!(out.consumption, None);
+    }
+
+    #[test]
+    fn a_resumed_run_with_another_claude_code_is_refused() {
+        let recorded = RunInfo {
+            format: FORMAT,
+            model: None,
+            date: "2026-10-15".into(),
+            claude_version: Some("2.1.289 (Claude Code)".into()),
+            codev_version: None,
+            repeat: None,
+            jobs: None,
+        };
+        assert!(check_resume(&recorded, None, Some("2.1.289 (Claude Code)")).is_ok());
+        let err = check_resume(&recorded, None, Some("2.1.301 (Claude Code)")).unwrap_err();
+        assert!(err.contains("2.1.289") && err.contains("2.1.301"), "{err}");
+    }
+
+    #[test]
+    fn cases_are_selected_by_step() {
+        let mut review = a_case("security", Kind::Seeded, &[]);
+        review.id = "r".into();
+        let mut plan = a_case("planner", Kind::Seeded, &[]);
+        plan.id = "p".into();
+        plan.step = Step::PlanWrite;
+        let cases = vec![review, plan];
+        let ids = |steps: &[&str]| -> Vec<String> {
+            select_steps(
+                &cases,
+                &steps.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()
+            .iter()
+            .map(|c| c.id.clone())
+            .collect()
+        };
+        assert_eq!(ids(&["plan.write"]), ["p"]);
+        assert_eq!(ids(&["review"]), ["r"]);
+        assert_eq!(ids(&[]), ["r", "p"]);
+        let err = select_steps(&cases, &["plan.writ".to_string()]).unwrap_err();
+        assert!(err.contains("plan.writ") && err.contains("plan.write") && err.contains("review"));
+    }
+
+    fn planning_case(request: &str) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.step = Step::PlanWrite;
+        case.plan = Some(crate::case::PlanCase {
+            git_ref: "abc123".into(),
+            request: request.into(),
+            modified: Vec::new(),
+            collateral: Vec::new(),
+            decisions: Vec::new(),
+        });
+        case
+    }
+
+    #[test]
+    fn the_planning_prompt_names_the_skill_the_request_and_the_mode() {
+        let text = prompt(&planning_case(
+            "Je voudrais qu'une décision naisse en brouillon",
+        ));
+        assert!(text.contains("`codev-propose`"), "{text}");
+        assert!(text.contains("« Je voudrais qu'une décision naisse en brouillon »"));
+        assert!(text.contains("ask no question"));
+        assert!(
+            text.contains("skip tasks.md")
+                && text.contains("plan.trace")
+                && text.contains("plan.challenge")
+        );
+        assert!(text.contains("Modify no file outside `_codev/changes/`"));
+    }
+
+    #[test]
+    fn a_planning_case_has_its_own_budget_and_timeout() {
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        let budget = |args: Vec<String>| {
+            let i = args.iter().position(|a| a == "--max-budget-usd").unwrap();
+            args[i + 1].clone()
+        };
+        assert_eq!(budget(claude_args("p", &defaults, Step::PlanWrite)), "6");
+        assert_eq!(
+            defaults.timeout_for(Step::PlanWrite),
+            Duration::from_secs(1800)
+        );
+        assert_eq!(
+            budget(claude_args("p", &defaults, Step::PlanChallenge)),
+            "3"
+        );
+        assert_eq!(
+            defaults.timeout_for(Step::PlanChallenge),
+            Duration::from_secs(600)
+        );
+
+        let env = |name: &str| match name {
+            "CODEV_EVAL_BUDGET_USD" => Some("2".to_string()),
+            "CODEV_EVAL_TIMEOUT_SECS" => Some("900".to_string()),
+            _ => None,
+        };
+        let set = ClaudeSettings::from_env(&env).unwrap();
+        assert_eq!(budget(claude_args("p", &set, Step::PlanWrite)), "2");
+        assert_eq!(set.timeout_for(Step::PlanWrite), Duration::from_secs(900));
+    }
+
+    #[test]
+    fn a_planning_run_strays_outside_the_changes() {
+        let case = planning_case("r");
+        let status = "?? _codev/changes/draft/proposal.md\0?? _codev/changes/draft/specs/a/spec.md\0 M crates/codev-core/src/lib.rs\0";
+        assert_eq!(strayed(status, &case), ["crates/codev-core/src/lib.rs"]);
+        let created = created_changes(status);
+        assert_eq!(created.keys().collect::<Vec<_>>(), ["draft"]);
+        assert_eq!(created["draft"].len(), 2);
+        assert!(
+            created_changes(" M _codev/changes/old/tasks.md\0?? _codev/changes/archive/x/a.md\0")
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn a_usage_limit_is_recognized() {
+        assert!(is_usage_limit(
+            "Claude Code reported an error (success): You've hit your session limit · resets 5:40pm"
+        ));
+        assert!(is_usage_limit("Usage limit reached"));
+        assert!(!is_usage_limit("timeout after 600 s"));
+        assert!(!is_usage_limit("claude exited with 1: budget exceeded"));
+    }
+
+    #[test]
+    fn the_queue_stops_after_a_usage_limit() {
+        let cases: Vec<Case> = (0..40)
+            .map(|i| {
+                let mut c = a_case("security", Kind::Seeded, &[]);
+                c.id = format!("case-{i:02}");
+                c
+            })
+            .collect();
+        let pending: Vec<Job> = cases.iter().map(|case| Job { case, n: 1 }).collect();
+        let queue = Queue::new(&pending);
+        let order: Vec<String> = (0..3)
+            .map(|_| queue.pop().unwrap().case.id.clone())
+            .collect();
+        assert_eq!(order, ["case-00", "case-01", "case-02"]);
+        queue.stop();
+        assert!(queue.pop().is_none(), "no fourth run starts");
+        assert!(queue.is_stopped());
+    }
+
+    #[test]
+    fn a_call_with_nothing_new_charges_its_writes_to_output() {
+        assert_eq!(
+            share_writes(900, &[], true),
+            BTreeMap::from([("prompt".to_string(), 900)])
+        );
+        assert_eq!(
+            share_writes(900, &[], false),
+            BTreeMap::from([("output".to_string(), 900)])
+        );
+        let entered = [("file".to_string(), 300), ("skill".to_string(), 600)];
+        assert_eq!(
+            share_writes(900, &entered, false),
+            BTreeMap::from([("file".to_string(), 300), ("skill".to_string(), 600)])
+        );
+    }
+
+    #[test]
+    fn the_stream_keeps_no_init_event() {
+        let stream = "{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/Users/someone/x\"}\n\
+{\"type\":\"assistant\",\"message\":{}}\n{\"type\":\"result\"}\n";
+        let kept = without_init_event(stream);
+        assert!(!kept.contains("/Users/someone"), "{kept}");
+        assert_eq!(kept.lines().count(), 2);
+        // A stream it cannot read is kept as it is.
+        assert_eq!(without_init_event("not json\n"), "not json\n");
+    }
+
+    #[test]
+    fn a_validate_report_keeps_no_root() {
+        let report = json!({"root": "/private/var/folders/x/T/case", "items": [], "status": []});
+        let kept = without_root(report);
+        assert!(kept.get("root").is_none());
+        assert_eq!(kept["items"], json!([]));
     }
 }

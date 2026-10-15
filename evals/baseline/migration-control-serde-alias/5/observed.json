@@ -2,22 +2,77 @@
   "format": 2,
   "case": "migration-control-serde-alias",
   "error": null,
-  "costUsd": 0.35806819999999995,
-  "durationMs": 34296,
+  "costUsd": 0.27224000000000004,
+  "durationMs": 16723,
   "consumption": {
-    "durationApiMs": 33843,
-    "turns": 10,
+    "durationApiMs": 16718,
+    "turns": 6,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1178,
-      "cacheCreation": 28097,
-      "cacheRead": 329456,
-      "output": 3320
-    }
+      "input": 1172,
+      "cacheCreation": 25589,
+      "cacheRead": 186655,
+      "output": 1461
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7391,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7391
+        }
+      },
+      {
+        "cacheCreation": 13810,
+        "cacheRead": 29530,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13810
+        }
+      },
+      {
+        "cacheCreation": 1684,
+        "cacheRead": 43340,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1684
+        }
+      },
+      {
+        "cacheCreation": 1598,
+        "cacheRead": 45024,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1598
+        }
+      },
+      {
+        "cacheCreation": 1106,
+        "cacheRead": 46622,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 648,
+          "edit": 458
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -32,62 +87,7 @@
     },
     "changeName": "rename-listen-setting",
     "exists": true,
-    "findings": [
-      {
-        "awaiting": "author",
-        "confidence": "high",
-        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-1",
-        "line": 11,
-        "location": "src/config.rs:10-11",
-        "raisedBy": [
-          "migration"
-        ],
-        "recommendation": "Add unit tests that load a TOML file using `listen` and one using `bind_address` through `config::load`, and that serialize an `OrderResponse` and assert the JSON key is `customer_id` (src/api.rs:10-11). Both migration paths are today only verified by a manual staging run (tasks 1.1 and 1.2), so a later edit dropping the `alias` or the `rename` would silently break existing config files or partners' integrations with nothing failing.",
-        "reported": true,
-        "role": "migration",
-        "severity": "low",
-        "status": "open",
-        "step": "code.review",
-        "title": "No automated test pins the `listen` alias and the `customer_id` JSON name"
-      },
-      {
-        "awaiting": "author",
-        "confidence": "low",
-        "evidence": "pub bind_address: String,\n",
-        "history": [
-          {
-            "by": "migration",
-            "note": null,
-            "ref": null,
-            "status": "open",
-            "to": null
-          }
-        ],
-        "id": "R-migration-2",
-        "line": 26,
-        "location": "src/config.rs:11",
-        "raisedBy": [
-          "migration"
-        ],
-        "recommendation": "`orders` is a library crate (src/lib.rs exposes `pub mod api; pub mod config;`) and the public fields `Config::listen` and `OrderResponse::customer_id` (src/api.rs:11, now `buyer_id`) are renamed in one step, so any Rust code reading `config.listen` or building `OrderResponse { customer_id, .. }` stops compiling, with no BREAKING item in the release note. No such consumer is visible in this repository; if one exists, mark the rename BREAKING in the release note or keep a deprecated accessor for a release.",
-        "reported": false,
-        "role": "migration",
-        "severity": "medium",
-        "status": "open",
-        "step": "code.review",
-        "title": "Public Rust fields renamed without deprecation for crate consumers"
-      }
-    ],
+    "findings": [],
     "format": 1,
     "issues": [],
     "path": "_codev/changes/rename-listen-setting/review.md",
@@ -115,7 +115,7 @@
             "credited": [],
             "fallback": null,
             "role": "migration",
-            "state": "findings"
+            "state": "no-finding"
           },
           {
             "credited": [],

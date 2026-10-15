@@ -15,36 +15,37 @@ severity: high
 confidence: high
 location: "src/invoices.ts:32-35"
 evidence: |
-  const rows = await query<InvoiceRow>(
     "SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1",
     [id],
-  );
 recommendation: >-
-  Scope the lookup to the caller's organization, as the list route does:
-  call currentUser(req) and query "... WHERE id = $1 AND org_id = $2" with
-  [id, user.orgId], answering 404 when no row matches so other organizations'
-  ids are not revealed. Add a test where a user of org 7 asks for an invoice of
-  org 8 and gets 404. Attack: any authenticated user sends GET /invoices/1,
-  /invoices/2, ... and reads every organization's invoices (CWE-639 / CWE-862).
+  Scope the lookup to the caller's organization: call `currentUser(req)` and
+  query `WHERE id = $1 AND org_id = $2` with `[id, user.orgId]`, answering 404
+  when no row matches so other organizations' ids are not confirmed. Add a test
+  asserting the detail query is bound to the caller's `orgId`, as the list test
+  does (CWE-639 / CWE-862). Attack: any signed-in user of organization A sends
+  `GET /invoices/42`, `GET /invoices/43`, ... and receives the number, total and
+  date of every other organization's invoices, since ids are sequential integers.
 history:
   - status: open
     by: security
 ```
 
-#### R-security-2 Error handler sends the exception message and stack trace to the client
+#### R-security-2 Error handler sends the stack trace to the client
 
 ```yaml
 severity: medium
 confidence: high
-location: "src/server.ts:17"
+location: "src/server.ts:15-18"
 evidence: |
-  res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: err.message, stack: err.stack });
 recommendation: >-
-  Keep logging the error server-side, but answer a generic body such as
-  { error: "internal error" } without err.message or err.stack. Scenario: any
-  request whose handler throws (a database failure, a malformed query) returns
-  file paths, module layout and driver error text — possibly SQL or connection
-  details — to the caller (CWE-209).
+  Keep `console.error(err)` for the server log, but answer only a generic body
+  such as `{ error: "internal error" }` (CWE-209). The handler is registered
+  globally, so it also handles errors raised by `express.json()` before
+  `requireUser`: an unauthenticated client posting a malformed JSON body to any
+  route receives the error message and the stack with the server's file paths
+  and module layout; any error forwarded from `query` would likewise reveal
+  database messages (table, column, constraint names).
 history:
   - status: open
     by: security

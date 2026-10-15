@@ -1,0 +1,12 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Je voudrais que codev lance lui-même les relectures en appelant l'API Claude, en parallèle, pour aller plus vite qu'avec les skills."
+summary: "A request written against decision 0007."
+expected:
+  modified:
+    - "review-mode::The project and a change set the review mode"
+    - "skills::In isolated mode, each reviewing role runs alone, then the skill consolidates"
+  collateral: []
+  decisions:
+    - { id: "0007", expect: supersede }

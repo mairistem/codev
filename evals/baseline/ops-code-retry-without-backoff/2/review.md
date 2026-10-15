@@ -8,78 +8,73 @@ Mode: inline.
 
 ### ops
 
-#### R-ops-1 A dropped webhook is only logged at debug level, and a non-2xx response is not logged at all
-
-```yaml
-severity: high
-confidence: high
-location: "src/webhooks.ts:17-24"
-evidence: |2
-      if (response.ok) {
-        return true;
-      }
-    } catch (error) {
-      console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
-    }
-  }
-  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
-recommendation: >-
-  When a merchant's endpoint answers 500 five times, the loop falls through
-  without any log for those attempts (only thrown errors are logged), and the
-  final give-up is a `console.debug` line, filtered out in production: the
-  payment event is permanently lost and no operator can see it or tell the
-  merchant. Use the project's structured `logger` (as `src/events.ts` does):
-  log each failed attempt with fields (`eventId`, `attempt`, `status` or
-  `error`, merchant id or host, never the full URL if it can carry a secret),
-  and log the drop with `logger.error` so it can be alerted on; consider a
-  counter of dropped deliveries.
-history:
-  - status: open
-    by: ops
-```
-
-#### R-ops-2 Failed deliveries are retried immediately, with no backoff
+#### R-ops-1 Webhook retries fire back to back, with no backoff
 
 ```yaml
 severity: medium
 confidence: high
-location: "src/webhooks.ts:9-16"
+location: "src/webhooks.ts:9-23"
 evidence: |
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const response = await fetch(url, {
 recommendation: >-
-  The retries are bounded and idempotent (`x-event-id`), but not spaced: when
-  a merchant's server returns 503 or refuses connections during a restart, the
-  five attempts fire back to back within milliseconds, hammering an endpoint
-  that is already struggling and exhausting every attempt inside a few-second
-  outage, so the event is dropped (see R-ops-1). Wait between attempts with
-  exponential backoff and jitter (e.g. 1s, 2s, 4s, 8s), ideally from a queue
-  or scheduled job rather than an in-process sleep (see R-ops-3).
+  Wait between attempts with exponential backoff and jitter (for example 1s, 2s, 4s, 8s),
+  or hand failed deliveries to a delayed queue. When a merchant's endpoint answers 503
+  or restarts for a few seconds, the five attempts currently run one right after the
+  other, so they hit the struggling server in a burst and all fail during the same short
+  outage. The event is then dropped although waiting a few seconds would have delivered it.
+  Also stop retrying on non-retryable responses (4xx other than 408/429), which can never
+  succeed.
 history:
   - status: open
     by: ops
 ```
 
-#### R-ops-3 Webhook delivery runs inline in the payment event listener and blocks `publish`
+#### R-ops-2 Failed and dropped deliveries are logged only at debug level, as free text, without the HTTP status
 
 ```yaml
 severity: medium
 confidence: high
+location: "src/webhooks.ts:17-24"
+evidence: |
+  if (response.ok) {
+    return true;
+  }
+  } catch (error) {
+    console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);
+  }
+  }
+  console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);
+recommendation: >-
+  Use the project's structured `logger` (src/logger.ts, already used by src/events.ts)
+  and log fields: eventId, merchant or URL host, attempt, HTTP status or error. Log a
+  dropped webhook at error level, and add a counter for delivered and dropped webhooks.
+  Today, when a merchant's endpoint answers 500, nothing is logged for that attempt
+  because only thrown errors reach the catch block. The final "dropped" line is a free-text
+  `console.debug` with no status and no merchant, so an operator cannot query it, may not
+  see it at production log levels, and cannot tell a merchant why their webhooks stopped.
+history:
+  - status: open
+    by: ops
+```
+
+#### R-ops-3 Delivery is awaited inside the payment event listener, so a slow merchant can delay the publisher for up to 25 s
+
+```yaml
+severity: medium
+confidence: low
 location: "src/webhooks.ts:33-35"
 evidence: |
   if (rows.length > 0) {
     await deliver(rows[0].webhook_url, event);
   }
 recommendation: >-
-  `publish` in `src/events.ts`, called by the payment service once a payment
-  is settled, awaits each listener in turn. When a merchant's endpoint hangs,
-  `deliver` holds that `publish` call for up to five 5-second timeouts (25s,
-  more once backoff is added), delaying every listener registered after it and
-  the payment service's own flow; a slow merchant becomes an incident on the
-  payment path. Enqueue the delivery (outbox table or job queue) and return
-  from the listener immediately, or at least do not await `deliver` there,
-  catching and logging its outcome.
+  Do not await delivery inline: enqueue it, or start it without awaiting and report its
+  failure through the logger. `publish` in src/events.ts awaits each listener in turn, so a
+  merchant that times out makes the publisher wait 5 attempts × 5 s, and any backoff added
+  for R-ops-1 makes that delay longer. Whether this delays settlement depends on how the
+  payment service calls `publish`, which this review could not see.
 history:
   - status: open
     by: ops

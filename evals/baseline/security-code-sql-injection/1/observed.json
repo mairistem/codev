@@ -2,22 +2,118 @@
   "format": 2,
   "case": "security-code-sql-injection",
   "error": null,
-  "costUsd": 0.2851736,
-  "durationMs": 22052,
+  "costUsd": 0.34443120000000005,
+  "durationMs": 31456,
   "consumption": {
-    "durationApiMs": 21776,
-    "turns": 6,
-    "permissionDenials": 0,
+    "durationApiMs": 31322,
+    "turns": 10,
+    "permissionDenials": 2,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1174,
-      "cacheCreation": 25266,
-      "cacheRead": 233903,
-      "output": 1764
-    }
+      "input": 1180,
+      "cacheCreation": 27340,
+      "cacheRead": 378211,
+      "output": 2453
+    },
+    "toolCalls": 9,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7381,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7381
+        }
+      },
+      {
+        "cacheCreation": 11802,
+        "cacheRead": 29520,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11802
+        }
+      },
+      {
+        "cacheCreation": 4714,
+        "cacheRead": 41322,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 4714
+        }
+      },
+      {
+        "cacheCreation": 502,
+        "cacheRead": 46036,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 502
+        }
+      },
+      {
+        "cacheCreation": 969,
+        "cacheRead": 46538,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 969
+        }
+      },
+      {
+        "cacheCreation": 349,
+        "cacheRead": 47507,
+        "input": 2,
+        "output": 53,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 349
+        }
+      },
+      {
+        "cacheCreation": 314,
+        "cacheRead": 47856,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 110,
+          "shell": 204
+        }
+      },
+      {
+        "cacheCreation": 953,
+        "cacheRead": 48170,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 230,
+          "file": 723
+        }
+      },
+      {
+        "cacheCreation": 356,
+        "cacheRead": 49123,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 356
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {
@@ -29,7 +125,7 @@
         },
         {
           "code": "review_unresolved",
-          "message": "R-security-1 (SQL injection through the search term in searchUsers) is high and still open; fix it, or a human accepts the risk or defers it"
+          "message": "R-security-1 (SQL injection through the search term) is high and still open; fix it, or a human accepts the risk or defers it"
         }
       ],
       "ready": false
@@ -40,7 +136,7 @@
       {
         "awaiting": "author",
         "confidence": "high",
-        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\nreturn query<UserRow>(sql);\n",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\n",
         "history": [
           {
             "by": "security",
@@ -52,17 +148,17 @@
         ],
         "id": "R-security-1",
         "line": 11,
-        "location": "src/users.ts:10-11",
+        "location": "src/users.ts:10",
         "raisedBy": [
           "security"
         ],
-        "recommendation": "Bind the term as a parameter instead of concatenating it, as `query` in src/db.ts:5-6 requires (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + term + \"%\"])`. The length check in src/server.ts:14 (2 to 100 characters) does not prevent the attack. Also escape `%`, `_` and `\\` in the term (with an `ESCAPE` clause) so they match literally, and add a test sending a quote in `q` that fails without the fix. CWE-89. An authenticated user with the `support` role sends `GET /users/search?q=' UNION SELECT id, password FROM users--` (well under 100 characters) and gets back any column of any table the database user can read, or alters data through stacked statements.",
+        "recommendation": "Bind the term as a parameter through the existing parameterized helper, e.g. `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + escaped + \"%\"])`, escaping `%`, `_` and `\\` in the term (with `ESCAPE '\\'`) so they match literally. `src/db.ts` documents that values go in `params`, never in `sql`. Add a test sending a quote in `q` (CWE-89). Scenario: a user with the `support` role calls `GET /users/search?q=x' UNION SELECT id, password_hash FROM users --`; the term passes the 2-100 length check in `src/server.ts:14`, is concatenated into the SQL string, and the attacker reads any column of any table (or alters data) instead of searching names.",
         "reported": true,
         "role": "security",
         "severity": "high",
         "status": "open",
         "step": "code.review",
-        "title": "SQL injection through the search term in searchUsers"
+        "title": "SQL injection through the search term"
       }
     ],
     "format": 1,

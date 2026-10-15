@@ -1,0 +1,79 @@
+{
+  "format": 2,
+  "case": "plan-decision-yaml-lib",
+  "error": null,
+  "costUsd": 0.34686720000000004,
+  "durationMs": 28980,
+  "consumption": {
+    "durationApiMs": 28966,
+    "turns": 6,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1062,
+      "cacheCreation": 31730,
+      "cacheRead": 188051,
+      "output": 2729
+    },
+    "toolCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7728,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7728
+        }
+      },
+      {
+        "cacheCreation": 5035,
+        "cacheRead": 29867,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 5035
+        }
+      },
+      {
+        "cacheCreation": 14130,
+        "cacheRead": 34902,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4046,
+          "skill": 10084
+        }
+      },
+      {
+        "cacheCreation": 3079,
+        "cacheRead": 49032,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3079
+        }
+      },
+      {
+        "cacheCreation": 1758,
+        "cacheRead": 52111,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev roles": 1758
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {}
+}

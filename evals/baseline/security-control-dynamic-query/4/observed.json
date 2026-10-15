@@ -2,22 +2,97 @@
   "format": 2,
   "case": "security-control-dynamic-query",
   "error": null,
-  "costUsd": 0.25720800000000005,
-  "durationMs": 15850,
+  "costUsd": 0.28954579999999996,
+  "durationMs": 27399,
   "consumption": {
-    "durationApiMs": 15197,
-    "turns": 6,
+    "durationApiMs": 27050,
+    "turns": 7,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1170,
-      "cacheCreation": 25038,
-      "cacheRead": 142775,
-      "output": 1369
-    }
+      "input": 1176,
+      "cacheCreation": 25113,
+      "cacheRead": 280044,
+      "output": 1582
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 14144,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14144
+        }
+      },
+      {
+        "cacheCreation": 1814,
+        "cacheRead": 43673,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1814
+        }
+      },
+      {
+        "cacheCreation": 464,
+        "cacheRead": 45487,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 464
+        }
+      },
+      {
+        "cacheCreation": 347,
+        "cacheRead": 45951,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 347
+        }
+      },
+      {
+        "cacheCreation": 669,
+        "cacheRead": 46298,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 669
+        }
+      },
+      {
+        "cacheCreation": 285,
+        "cacheRead": 46967,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 241,
+          "output": 44
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

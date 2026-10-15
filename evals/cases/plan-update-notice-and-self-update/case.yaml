@@ -1,0 +1,13 @@
+step: plan.write
+kind: seeded
+ref: c8ab48e2635d955ef496010812c8b0aa1e9c6c74
+request: "Les gens restent sur de vieilles versions sans le savoir et mettre à jour est pénible. Je voudrais que l'outil détecte de temps en temps qu'une nouvelle version existe et le signale, sans jamais s'auto-installer, plus une commande explicite qui télécharge, vérifie le checksum et remplace le binaire proprement."
+summary: "Replays the change 2026-10-12-update-notice-and-self-update (feat(update): update notice and `codev self-update` (#19))."
+expected:
+  modified:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+  collateral:
+    - "configure::The `configure` skill enriches `_codev/config.yaml` by analyzing the project"
+    - "decisions::A git source is never read from a floating branch"
+    - "doctor::`codev status` hints at `codev doctor`"
+  decisions: []

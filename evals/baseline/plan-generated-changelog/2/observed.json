@@ -1,0 +1,379 @@
+{
+  "format": 2,
+  "case": "plan-generated-changelog",
+  "error": null,
+  "costUsd": 1.5828808,
+  "durationMs": 280580,
+  "consumption": {
+    "durationApiMs": 278230,
+    "turns": 35,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1173,
+      "cacheCreation": 82659,
+      "cacheRead": 2237969,
+      "output": 23646
+    },
+    "toolCalls": 34,
+    "orientationCalls": 22,
+    "calls": [
+      {
+        "cacheCreation": 7664,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7664
+        }
+      },
+      {
+        "cacheCreation": 14338,
+        "cacheRead": 29803,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14338
+        }
+      },
+      {
+        "cacheCreation": 1099,
+        "cacheRead": 44141,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1099
+        }
+      },
+      {
+        "cacheCreation": 3663,
+        "cacheRead": 45240,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3663
+        }
+      },
+      {
+        "cacheCreation": 1696,
+        "cacheRead": 48903,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1696
+        }
+      },
+      {
+        "cacheCreation": 2878,
+        "cacheRead": 50599,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2878
+        }
+      },
+      {
+        "cacheCreation": 531,
+        "cacheRead": 53477,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 318,
+          "shell": 213
+        }
+      },
+      {
+        "cacheCreation": 456,
+        "cacheRead": 54008,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 456
+        }
+      },
+      {
+        "cacheCreation": 1323,
+        "cacheRead": 54464,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1323
+        }
+      },
+      {
+        "cacheCreation": 5939,
+        "cacheRead": 55787,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5939
+        }
+      },
+      {
+        "cacheCreation": 1803,
+        "cacheRead": 61726,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1803
+        }
+      },
+      {
+        "cacheCreation": 1168,
+        "cacheRead": 63529,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1168
+        }
+      },
+      {
+        "cacheCreation": 1768,
+        "cacheRead": 64697,
+        "input": 2,
+        "output": 45,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1768
+        }
+      },
+      {
+        "cacheCreation": 2355,
+        "cacheRead": 66465,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2322,
+          "output": 33
+        }
+      },
+      {
+        "cacheCreation": 3507,
+        "cacheRead": 68820,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3507
+        }
+      },
+      {
+        "cacheCreation": 614,
+        "cacheRead": 72327,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 614
+        }
+      },
+      {
+        "cacheCreation": 1522,
+        "cacheRead": 72941,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1522
+        }
+      },
+      {
+        "cacheCreation": 2620,
+        "cacheRead": 74463,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2620
+        }
+      },
+      {
+        "cacheCreation": 1386,
+        "cacheRead": 77083,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1386
+        }
+      },
+      {
+        "cacheCreation": 456,
+        "cacheRead": 78469,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 397,
+          "search": 59
+        }
+      },
+      {
+        "cacheCreation": 1162,
+        "cacheRead": 78925,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1162
+        }
+      },
+      {
+        "cacheCreation": 511,
+        "cacheRead": 80087,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 511
+        }
+      },
+      {
+        "cacheCreation": 2308,
+        "cacheRead": 80598,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2308
+        }
+      },
+      {
+        "cacheCreation": 2538,
+        "cacheRead": 82906,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2522,
+          "output": 16
+        }
+      },
+      {
+        "cacheCreation": 1911,
+        "cacheRead": 85444,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1911
+        }
+      },
+      {
+        "cacheCreation": 3781,
+        "cacheRead": 87355,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3394,
+          "output": 387
+        }
+      },
+      {
+        "cacheCreation": 2510,
+        "cacheRead": 91136,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2510
+        }
+      },
+      {
+        "cacheCreation": 2798,
+        "cacheRead": 93646,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 2769,
+          "output": 29
+        }
+      },
+      {
+        "cacheCreation": 1594,
+        "cacheRead": 96444,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1392,
+          "edit": 167,
+          "output": 35
+        }
+      },
+      {
+        "cacheCreation": 2032,
+        "cacheRead": 98038,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2032
+        }
+      },
+      {
+        "cacheCreation": 4169,
+        "cacheRead": 100070,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4169
+        }
+      },
+      {
+        "cacheCreation": 559,
+        "cacheRead": 104239,
+        "input": 2,
+        "output": 711,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 482,
+          "output": 77
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/generated-changelog/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/generated-changelog/design.md": "# Design: Release notes in proposals and a generated changelog\n\n## Context\n\nObserved in the repository (workspace version `0.4.0`):\n\n- The embedded `spec-driven` schema lives in\n  `assets/schemas/spec-driven/schema.yaml` and its templates in\n  `assets/schemas/spec-driven/templates/`, included by\n  `crates/codev-engine/src/schemas.rs`. The repository's proposal template\n  ends at `## Impact`: it has neither `## Domains` nor `## Release note`.\n- `codev validate` on a change (`crates/codev-engine/src/validate/mod.rs`,\n  `validate_change`) checks the change metadata and the deltas only; it never\n  reads `proposal.md`. Pure rules implement the `Rule` trait in\n  `crates/codev-core/src/validate/rules.rs`; their codes live in\n  `crates/codev-core/src/validate/codes.rs`.\n- Active changes exclude `archive/` (`crates/codev-engine/src/change.rs`);\n  archived folders are named `<YYYY-MM-DD>-<name>` and keep their\n  `proposal.md`. None of the 34 archived changes has a release note.\n- `git` is already run through the `ProcessRunner` port, with a fake runner\n  for tests (`crates/codev-engine/src/ports.rs`,\n  `crates/codev-engine/src/sources/update.rs`).\n- `CHANGELOG.md` follows Keep a Changelog with the categories the release\n  note reuses.\n\nContradiction to report: the codev binary that planned this change\n(`codev 0.6.1`) already serves a proposal template with `## Domains` and\n`## Release note`, and its instruction already mentions `codev changelog`,\nwhile this repository's schema has neither and no command exists. This\ndesign targets the repository's code; the wording of the template and\ninstruction can be aligned with what 0.6.1 serves, which this plan takes as\nthe reference text. A human should confirm which source is authoritative.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One parser of the release note section, shared by `validate` and\n  `changelog`, so that what validation accepts is exactly what the changelog\n  renders.\n- A deterministic `codev changelog` that reads committed history only.\n\n**Non-Goals**\n\n- Writing into `CHANGELOG.md`, or calling the command from\n  `.github/workflows/release.yml`; both can follow once the output has been\n  used for a release or two.\n- Backfilling release notes into archived changes.\n- Checking that the release note agrees with What Changes, or that a\n  **BREAKING** in What Changes appears in the note: that is a review\n  concern, not a parseable rule.\n\n## Decisions\n\n### Decision: Parsing and rendering are pure, in `codev-core`\n\nA new `codev_core::release_note` module parses the text of a `proposal.md`\ninto `ReleaseNote::{Absent, None, Entries(Vec<NoteEntry>)}` plus located\nfindings; `NoteEntry` carries a `Category` enum (closed set, hence an\n`enum`, per decision 0002), the text, a `breaking` flag (text starts with\n`**BREAKING**`) and its line. It reuses the existing fence handling of the\nparser so that a `## Release note` inside a code block is ignored. A\n`codev_core::changelog` module takes the ordered list of\n`(change name, ReleaseNote)` and returns the grouped, ordered section and\nthe `withoutNote` list; a `render_markdown` function produces the text.\nNothing here touches the disk or `git` (decision 0001).\n\n**Alternatives considered**: parsing in the engine next to the validator —\nrejected, the changelog would need a second parser or a dependency on\nvalidation; a regex per line in the CLI — rejected for the same reason, and\nit would ignore code fences.\n\n### Decision: The validation rule runs only when the schema's template declares the section\n\n`validate_change` resolves the change's schema (already done to load the\nchange) and reads its proposal template through\n`ResolvedSchema::template`. If the template contains a `## Release note`\nheading and the change has a `proposal.md`, the core parser runs and its\nfindings are added under `proposal.md`: `release_note_missing` (warning),\n`release_note_invalid` (error). The codes are added to\n`codev_core::validate::codes`. Because `sync` and `archive` already refuse\non validation errors, an invalid note blocks them with no extra code.\n\n**Alternatives considered**: always checking `proposal.md` — rejected, it\nwould flag every project on a custom schema; a flag in `change.yaml`\n(`skip_release_note`) — rejected, `None` already expresses \"nothing for\nusers\" in the artifact itself.\n\n### Decision: A change belongs to a range by archive-folder presence, read through `git`\n\nA new `codev_engine::changelog` use case receives the `ProcessRunner`, the\nlayout and the two optional refs. It:\n\n1. refuses an empty value or one starting with `-` before running anything\n   (`changelog_invalid_ref`);\n2. checks `git` and the repository with `git -C <root> rev-parse\n   --show-prefix` (`changelog_git_unavailable` on failure) — the prefix\n   locates `_codev/` when the project is a subfolder of the repository;\n3. resolves each ref with `git rev-parse --verify --quiet\n   --end-of-options <ref>^{commit}` (`changelog_ref_not_found`), then uses\n   only the resolved hashes for every later call;\n4. lists `git ls-tree --name-only <hash>:<prefix>_codev/changes/archive`\n   at both commits (an absent tree at `--from` means an empty set) and takes\n   the difference, sorted by folder name — the date prefix gives archive\n   order;\n5. reads each `proposal.md` with `git show <hash>:<prefix>…/proposal.md`,\n   and the date of `--to` with `git log -1 --format=%cs <hash>`.\n\nReading from commits rather than the working tree is what makes the output\nreproducible for a tag, and the reason an uncommitted archive is excluded.\nRefusing a leading `-` and passing only hashes after resolution keep user\ninput from ever being read as a `git` option.\n\n**Alternatives considered**: `git log --name-status from..to` on the archive\ndirectory — rejected, it follows commits, not states, and miscounts a change\narchived then reverted, or moved by a rename; dates in folder names compared\nwith tag dates — rejected, a change can be archived on a branch merged after\nthe tag; `git2`/`gix` as a library — rejected, a new heavy dependency when\nthe `ProcessRunner` port already exists.\n\n### Decision: Shell output and contract in `codev-cli`\n\n`codev changelog` is a new clap subcommand in `crates/codev-cli/src/main.rs`\ndispatched from `commands.rs`. Text mode prints the Markdown section on\nstdout and one line per change without a usable note on stderr\n(`warning: <change>: no release note (missing|invalid)`). `--json` prints a\n`ChangelogReportV1` defined in `contract::v1`, mapped from the core result\nand never serialized from it directly, with the failure shape described in\nthe spec. Completions pick the subcommand up from clap.\n\n**Alternatives considered**: a `codev release` command that also writes the\nfile — rejected for now (Non-Goals); printing the missing list as a Markdown\ncomment in stdout — rejected, it would end up pasted in the changelog.\n\n### Decision: The schema text is the 0.6.1 wording\n\nThe proposal template gains, after `## Domains` if present and otherwise\nafter `## Impact`, the `## Release note` section with its comment; the\n`proposal` instruction gains the **Release note** bullet and the product\nowner's \"Done when\" gains the release note criterion, worded as served by\ncodev 0.6.1. The rest of the instruction stays as it is (requirement \"The\ndefault schema gives each artifact a role…\").\n\n## Risks / Trade-offs\n\n- [Projects running `codev validate --strict` in CI fail after upgrading\n  until each active change gains a note] → the finding is a warning with a\n  message that shows the expected section and the `None` line; the release\n  note in the CHANGELOG says it; fixing an active change is one section.\n- [The changelog of the first releases after this change is mostly\n  \"without note\"] → the command lists those changes by name on stderr so the\n  release manager writes them by hand once; no backfill of history.\n- [A user-supplied ref injected as a `git` option] → leading `-` refused\n  before any call, `--end-of-options` on the one call that takes the raw\n  value, hashes only afterwards.\n- [A monorepo where `_codev/` is not at the repository root] →\n  `--show-prefix` makes every tree path relative to the project, covered by\n  a test with a non-empty prefix.\n- [Large archives: one `git show` per change] → bounded by the number of\n  changes in the range, typically tens; acceptable for a release-time\n  command.\n\n## Migration Plan\n\n- No data migration: archived changes are left as they are.\n- Active changes in this repository get a `## Release note` section as part\n  of the implementation, so that `codev validate --strict` stays green.\n- Rollback: removing the command and the rule leaves proposals with an extra\n  section that nothing reads, which is harmless.\n\n## Open Questions\n\n- Should `codev changelog` later prepend its section into `CHANGELOG.md`\n  under `## [Unreleased]`? Deferred: it changes neither these specs nor this\n  approach.\n",
+    "_codev/changes/generated-changelog/proposal.md": "# Proposal: Release notes in proposals and a generated changelog\n\n## Why\n\n`CHANGELOG.md` and the GitHub Release notes are written by hand, even though\nevery archived change already states what it brings in its proposal: the same\ninformation is written twice and drifts. With 34 archived changes and the\n`[Unreleased]` section growing, a release now costs a manual rewrite that a\ncommand could produce from the archive.\n\n## What Changes\n\n- The `spec-driven` proposal gains a `## Release note` section: one bullet per\n  item, `- <Category>: <text>`, Category among `Added`, `Changed`,\n  `Deprecated`, `Removed`, `Fixed`, `Security` (the Keep a Changelog\n  categories this repository already uses), a breaking item starting its text\n  with `**BREAKING**`; a change users will not notice writes the single line\n  `None`.\n- The `proposal` instruction and its product owner \"Done when\" criteria ask\n  for that section.\n- `codev validate` checks the section of every active change whose proposal\n  template declares it:\n  - a missing or empty section is a warning, `release_note_missing`;\n  - a bullet with an unknown category, or with no text, is an error,\n    `release_note_invalid`;\n  - `None` mixed with bullets is an error, `release_note_invalid`.\n- New command `codev changelog [--from <ref>] [--to <ref>] [--json]`: it\n  lists the changes archived between two git revisions (typically two tags)\n  and prints a Markdown changelog section, entries grouped by category in a\n  fixed order, breaking items first. It modifies no file.\n- Archived changes without a `## Release note` section, or with an invalid\n  one, are not dropped silently: the command lists them so the release\n  manager can write their notes by hand.\n\nAssumptions, made without a user to ask (to confirm in review):\n\n- A missing section is a **warning**, not an error, so that active changes\n  created before this version still archive; projects running\n  `codev validate --strict` in CI (what `codev init` sets up) will see it fail\n  until the section is added. An invalid section is an error, hence blocks\n  `sync` and `archive`.\n- A change belongs to a range when its archive folder exists at `--to` and\n  not at `--from`. `--to` defaults to `HEAD`; without `--from`, the range\n  starts at the beginning of history. The note is read as it is at `--to`.\n- The output is a section to paste or pipe (`## [<to>] - <date>` then\n  `### <Category>`), not a rewrite of `CHANGELOG.md`; writing into the file\n  and wiring the command into `.github/workflows/release.yml` are left out.\n- Archived changes are history: none is rewritten to add a note.\n- The rule only applies to proposals whose template declares\n  `## Release note`; a custom schema without it is not checked.\n\n## Capabilities\n\n### New Capabilities\n\n- `changelog`\n\n### Modified Capabilities\n\n- `validation`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/schemas/spec-driven/templates/proposal.md` and the `proposal`\n  instruction of `assets/schemas/spec-driven/schema.yaml`.\n- `codev-core`: parsing of the release note section and its validation\n  rules (pure); grouping and rendering of a changelog from parsed notes.\n- `codev-engine`: the release note rule wired into `validate_change`; a\n  changelog use case that reads archive folders at two git revisions through\n  the existing `ProcessRunner` port.\n- `codev-cli`: the `changelog` subcommand, its text rendering and a new\n  `ChangelogReportV1` in `contract::v1`; shell completions follow from clap.\n- Documentation, in `docs/en` and `docs/fr`: `reference/cli.md`\n  (`codev changelog`), `reference/file-formats.md` (the `## Release note`\n  section), `reference/json-output.md` (`ChangelogReportV1`, new validation\n  codes), `workflow.md` (writing the note, generating the changelog at\n  release time).\n- `CHANGELOG.md` entry for this change. Dependency: the `git` executable,\n  only for `codev changelog`.\n\n## Domains\n\n- [x] security — `--from` and `--to` are user input passed to `git`\n- [ ] personal-data — no personal data is read or produced\n- [ ] user-interface — a CLI output only, no graphical interface\n- [ ] performance — a few `git` calls per run, bounded by the archive size\n- [ ] operations — no service, log or timeout involved; the command is read-only\n- [x] migration — older active changes get a new warning that fails `--strict` CI\n\n## Release note\n\n- Added: Each proposal now has a `## Release note` section listing what users\n  will notice, by category (`Added`, `Changed`, `Deprecated`, `Removed`,\n  `Fixed`, `Security`), or `None`; `codev validate` checks it.\n- Added: `codev changelog --from <tag> --to <tag>` prints the changelog\n  section of a release from the release notes of the changes archived in\n  between, and lists the archived changes that have none.\n- Changed: `codev validate` warns (`release_note_missing`) about an active\n  change whose proposal has no release note; with `--strict`, as in the CI\n  workflow `codev init` sets up, that warning fails the run until the\n  section is added.\n",
+    "_codev/changes/generated-changelog/specs/changelog/spec.md": "## Purpose\n\nProduce the changelog section of a release from the release notes of the\nchanges archived between two git revisions, so that release notes are\nwritten once, in each proposal, and never rewritten by hand.\n\n## ADDED Requirements\n\n### Requirement: `codev changelog` selects the changes archived between two revisions\n\n`codev changelog [--from <ref>] [--to <ref>]` SHALL take into account\nexactly the changes whose folder exists under `_codev/changes/archive/` at\nrevision `--to` and does not exist there at revision `--from`. `--to`\ndefaults to `HEAD`. Without `--from`, every change archived at `--to` is\ntaken into account. The release note of each change MUST be read from its\n`proposal.md` as it is at revision `--to`, whatever the working tree holds.\nActive changes, under `_codev/changes/` outside `archive/`, MUST never be\ntaken into account.\n\n#### Scenario: Changes archived between two tags\n\n- **GIVEN** a repository where `v0.4.0` has the archived change\n  `2026-09-09-update-skill`\n- **AND** `v0.5.0` has `2026-09-09-update-skill` and\n  `2026-10-12-init-complete-project` archived\n- **WHEN** the user runs `codev changelog --from v0.4.0 --to v0.5.0`\n- **THEN** the output contains the release note of\n  `2026-10-12-init-complete-project`\n- **AND** it contains nothing from `2026-09-09-update-skill`\n\n#### Scenario: `--to` defaults to HEAD\n\n- **GIVEN** a change archived and committed after the tag `v0.5.0`\n- **WHEN** the user runs `codev changelog --from v0.5.0`\n- **THEN** the output contains that change's release note\n\n#### Scenario: Without `--from`, the range starts at the beginning of history\n\n- **GIVEN** a repository whose `HEAD` has three archived changes\n- **WHEN** the user runs `codev changelog`\n- **THEN** the output takes the three changes into account\n\n#### Scenario: An uncommitted archive is not taken into account\n\n- **GIVEN** a change archived in the working tree but not committed\n- **WHEN** the user runs `codev changelog --from v0.5.0`\n- **THEN** the output contains nothing from that change\n\n#### Scenario: An active change is not taken into account\n\n- **GIVEN** an active change `add-auth` whose proposal has a release note,\n  committed after `v0.5.0`\n- **WHEN** the user runs `codev changelog --from v0.5.0`\n- **THEN** the output contains nothing from `add-auth`\n\n#### Scenario: A range with no archived change\n\n- **GIVEN** two tags `v0.5.0` and `v0.5.1` with the same archived changes\n- **WHEN** the user runs `codev changelog --from v0.5.0 --to v0.5.1`\n- **THEN** the output is the section heading followed by the line\n  `No user-facing change.`\n- **AND** the exit code is `0`\n\n### Requirement: `codev changelog` refuses revisions it cannot resolve\n\nThe command SHALL resolve `--from` and `--to` as git revisions of the\nrepository holding `_codev/` before reading anything. It MUST refuse, with\nexit code `1`, no output on stdout other than the JSON document when\n`--json` is set, and a stable code:\n\n- `changelog_invalid_ref` — a value that is empty or starts with `-`,\n  refused without running `git`, so that a value is never read as a `git`\n  option;\n- `changelog_ref_not_found` — a revision that does not resolve to a commit,\n  naming the value;\n- `changelog_git_unavailable` — `git` cannot be run, or the project is not\n  inside a git repository.\n\n#### Scenario: Unknown tag\n\n- **GIVEN** a repository without a tag `v9.9.9`\n- **WHEN** the user runs `codev changelog --from v9.9.9`\n- **THEN** the command fails with `changelog_ref_not_found` naming `v9.9.9`\n- **AND** the exit code is `1`\n\n#### Scenario: A revision that looks like an option\n\n- **WHEN** the user runs `codev changelog --from=--output=/tmp/x`\n- **THEN** the command fails with `changelog_invalid_ref`\n- **AND** `git` is not run with that value\n\n#### Scenario: Outside a git repository\n\n- **GIVEN** a codev project that is not inside a git repository\n- **WHEN** the user runs `codev changelog`\n- **THEN** the command fails with `changelog_git_unavailable`\n\n### Requirement: The changelog groups release notes by category\n\nThe text output SHALL be a Markdown section in the Keep a Changelog format:\na heading `## [<to>] - <date>`, `<date>` being the commit date of `--to` as\n`YYYY-MM-DD`, or `## [Unreleased]` when `--to` is omitted; then one\n`### <Category>` heading per category that has at least one entry, in the\norder `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`;\nunder each, one `- <text>` bullet per release note entry. Within a\ncategory, entries whose text starts with `**BREAKING**` MUST come first;\notherwise entries keep the order of the archive folders, then the order of\nthe bullets in the proposal. A change whose release note is `None`\ncontributes no entry and is not reported.\n\n#### Scenario: Entries grouped and ordered\n\n- **GIVEN** a range with a change whose note is\n  `- Fixed: A crash on empty specs.` and `- Added: A new command.`\n- **AND** a later change whose note is\n  `- Added: **BREAKING** A required flag.`\n- **WHEN** the user runs `codev changelog --from v0.5.0 --to v0.6.0`\n- **THEN** the output starts with `## [v0.6.0] - <commit date of v0.6.0>`\n- **AND** `### Added` comes before `### Fixed`\n- **AND** under `### Added`, `- **BREAKING** A required flag.` comes before\n  `- A new command.`\n- **AND** no `### Changed`, `### Deprecated`, `### Removed` or\n  `### Security` heading appears\n\n#### Scenario: An omitted `--to` is rendered as Unreleased\n\n- **WHEN** the user runs `codev changelog --from v0.6.0`\n- **THEN** the output starts with `## [Unreleased]`\n\n#### Scenario: A change with `None` is silent\n\n- **GIVEN** a range whose only archived change has the release note `None`\n- **WHEN** the user runs `codev changelog --from v0.5.0 --to v0.5.1`\n- **THEN** the output is the section heading followed by\n  `No user-facing change.`\n- **AND** no change is reported as lacking a release note\n\n### Requirement: Archived changes without a usable release note are reported\n\nA change of the range whose proposal has no `## Release note` section, or\nwhose section breaks the rules that `codev validate` checks, SHALL contribute\nno entry and MUST be reported by name with its reason, `missing` or\n`invalid`, on stderr in text mode, so that stdout stays a section ready to\npaste. Such a change MUST NOT make the command fail: the exit code stays\n`0`.\n\n#### Scenario: A change archived before release notes existed\n\n- **GIVEN** a range holding `2026-09-30-decision-accept-command`, whose\n  proposal has no `## Release note` section\n- **WHEN** the user runs `codev changelog --from v0.4.0`\n- **THEN** stderr names `2026-09-30-decision-accept-command` with the reason\n  `missing`\n- **AND** stdout contains no entry for it\n- **AND** the exit code is `0`\n\n#### Scenario: A change with an invalid release note\n\n- **GIVEN** a range holding a change whose note is `- Improved: Faster.`\n- **WHEN** the user runs `codev changelog --from v0.5.0`\n- **THEN** stderr names that change with the reason `invalid`\n- **AND** stdout contains no `Faster.` entry\n\n### Requirement: `codev changelog` is read-only\n\nThe command SHALL NOT create, modify or delete any file, nor change the git\nrepository's state (index, refs, working tree).\n\n#### Scenario: The working tree is untouched\n\n- **GIVEN** a clean working tree\n- **WHEN** the user runs `codev changelog --from v0.4.0`\n- **THEN** `git status --porcelain` prints nothing afterwards\n\n#### Scenario: A failing run writes nothing either\n\n- **GIVEN** a clean working tree\n- **WHEN** the user runs `codev changelog --from v9.9.9` and it fails\n- **THEN** `git status --porcelain` prints nothing afterwards\n\n### Requirement: `codev changelog --json` follows the version 1 contract\n\nWith `--json`, the command SHALL write exactly one JSON document to stdout,\nwith the fields `from` (the value given, or `null`), `to` (the value given,\nor `null` for `HEAD`), `date` (`YYYY-MM-DD`, or `null` when `to` is\n`null`), `entries` — each with `category`, `text`, `breaking` and `change`,\nthe archive folder name — in the order of the text output, `withoutNote` —\neach with `change` and `reason` (`missing` or `invalid`) — and the `status`\narray. On failure, the document MUST keep that shape, with empty arrays and\n`null` values, and carry the error in `status`.\n\n#### Scenario: JSON output of a range\n\n- **GIVEN** the range of the scenario \"Entries grouped and ordered\"\n- **WHEN** the user runs `codev changelog --from v0.5.0 --to v0.6.0 --json`\n- **THEN** stdout is a single JSON document whose `entries` hold three\n  items, the first with `\"category\": \"Added\"` and `\"breaking\": true`\n- **AND** `withoutNote` and `status` are empty arrays\n\n#### Scenario: JSON output of a failure\n\n- **WHEN** the user runs `codev changelog --from v9.9.9 --json`\n- **THEN** stdout is a single JSON document with empty `entries` and\n  `withoutNote`\n- **AND** its `status` holds an error with code `changelog_ref_not_found`\n- **AND** the exit code is `1`\n",
+    "_codev/changes/generated-changelog/specs/skills/spec.md": "## ADDED Requirements\n\n### Requirement: The default proposal asks for a categorized release note\n\nThe `proposal` artifact of the embedded `spec-driven` schema, as returned by\n`codev instructions proposal --json`, SHALL carry a `## Release note`\nsection in its `template`, after `## Impact`, and its `instruction` MUST\ndescribe it: what end users read in the changelog, as bullets\n`- <Category>: <one or two sentences>` with Category among `Added`,\n`Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`, a breaking item\nstarting its text with `**BREAKING**`, or the single line `None` for a\nchange users will not notice. Its `Done when:` list MUST include that the\nrelease note is written for end users, categorized, with breaking items\nmarked, or `None`. A custom schema's template and instruction MUST be\nreturned as written, without that section added by codev.\n\n#### Scenario: The proposal template has a release note section\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `template` contains `## Release note` after `## Impact`\n- **AND** `instruction` names the six categories and the line `None`\n- **AND** its `Done when:` list includes the release note criterion\n\n#### Scenario: A custom schema gets no release note section\n\n- **GIVEN** a change using a project schema whose proposal template has no\n  `## Release note` section\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `template` is the schema's template, with no `## Release note`\n  added\n",
+    "_codev/changes/generated-changelog/specs/validation/spec.md": "## ADDED Requirements\n\n### Requirement: The release note of a proposal is checked\n\nFor each active change whose schema's proposal template declares a\n`## Release note` section, validation SHALL inspect that section of the\nchange's `proposal.md`. The section is well-formed when it holds either the\nsingle line `None`, or one or more bullets `- <Category>: <text>`, where\n`<Category>` is exactly one of `Added`, `Changed`, `Deprecated`, `Removed`,\n`Fixed`, `Security` and `<text>` is not empty; a bullet may continue on\nindented lines, and HTML comments are ignored. Validation MUST report:\n\n- as a warning `release_note_missing`, a change whose `proposal.md` exists\n  and has no `## Release note` section, or an empty one;\n- as an error `release_note_invalid`, on the line concerned, a bullet whose\n  category is not in the list, a bullet with no text, a line that is neither\n  a bullet nor its continuation, or `None` together with bullets.\n\nA change whose schema's proposal template has no `## Release note` section,\nand a change that has no `proposal.md` yet, MUST receive neither finding.\n\n#### Scenario: A well-formed release note\n\n- **GIVEN** an active change whose proposal has a `## Release note` section\n  with `- Added: A new command.` and `- Fixed: A crash on empty specs.`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `release_note_missing` or `release_note_invalid` is reported\n\n#### Scenario: `None` for an internal change\n\n- **GIVEN** an active change whose `## Release note` section is the single\n  line `None`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no release note finding is reported\n\n#### Scenario: A proposal without a release note\n\n- **GIVEN** an active change created before this version, whose proposal has\n  no `## Release note` section\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a warning `release_note_missing` is reported on `proposal.md`\n- **AND** the exit code is `0`\n- **AND** with `--strict` the exit code is `1`\n\n#### Scenario: An unknown category\n\n- **GIVEN** an active change whose release note holds `- Improved: Faster.`\n  on line 42 of `proposal.md`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** an error `release_note_invalid` is reported on line 42, naming\n  `Improved` and the accepted categories\n- **AND** the exit code is `1`\n\n#### Scenario: A bullet with no text\n\n- **GIVEN** an active change whose release note holds `- Fixed:`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** an error `release_note_invalid` is reported on that line\n\n#### Scenario: `None` mixed with bullets\n\n- **GIVEN** an active change whose release note holds `None` and\n  `- Added: A new command.`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** an error `release_note_invalid` is reported\n\n#### Scenario: A custom schema without a release note\n\n- **GIVEN** an active change using a project schema whose proposal template\n  has no `## Release note` section\n- **AND** a proposal without that section\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no release note finding is reported\n\n#### Scenario: An invalid release note blocks the archive\n\n- **GIVEN** an active change whose release note holds `- Improved: Faster.`\n- **WHEN** the user runs `codev archive <change>`\n- **THEN** the archive is refused by the validation pre-flight, as for any\n  validation error\n- **AND** the change stays active\n"
+  },
+  "validate": {
+    "generated-changelog": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "generated-changelog",
+          "path": "_codev/changes/generated-changelog"
+        }
+      ],
+      "status": []
+    }
+  }
+}

@@ -2,22 +2,97 @@
   "format": 2,
   "case": "performance-control-batched-query",
   "error": null,
-  "costUsd": 0.25353060000000005,
-  "durationMs": 16336,
+  "costUsd": 0.2861238,
+  "durationMs": 17825,
   "consumption": {
-    "durationApiMs": 15959,
-    "turns": 6,
-    "permissionDenials": 0,
+    "durationApiMs": 17815,
+    "turns": 7,
+    "permissionDenials": 1,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1172,
-      "cacheCreation": 23737,
-      "cacheRead": 184363,
-      "output": 1290
-    }
+      "input": 1176,
+      "cacheCreation": 25003,
+      "cacheRead": 276409,
+      "output": 1492
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7389,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7389
+        }
+      },
+      {
+        "cacheCreation": 13725,
+        "cacheRead": 29528,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13725
+        }
+      },
+      {
+        "cacheCreation": 236,
+        "cacheRead": 43253,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 236
+        }
+      },
+      {
+        "cacheCreation": 1498,
+        "cacheRead": 43489,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1498
+        }
+      },
+      {
+        "cacheCreation": 1163,
+        "cacheRead": 44987,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1163
+        }
+      },
+      {
+        "cacheCreation": 713,
+        "cacheRead": 46150,
+        "input": 2,
+        "output": 27,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 713
+        }
+      },
+      {
+        "cacheCreation": 279,
+        "cacheRead": 46863,
+        "input": 2,
+        "output": 164,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 251,
+          "output": 28
+        }
+      }
+    ]
   },
   "strayed": [],
   "review": {

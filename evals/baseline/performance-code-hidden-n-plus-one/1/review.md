@@ -8,47 +8,44 @@ Mode: inline.
 
 ### performance
 
-#### R-performance-1 One customer query per invoice in the monthly report
+#### R-performance-1 One customer query per invoice (N+1)
 
 ```yaml
-severity: high
+severity: medium
 confidence: high
-location: "src/report.rs:23-26"
+location: "src/report.rs:39"
 evidence: |
-  for invoice in &invoices {
-      lines.push(ReportLine {
-          number: invoice.number.clone(),
-          customer: customer_label(db, invoice)?,
+  let customer = db.customer(invoice.customer_id)?;
 recommendation: >-
-  N+1 queries: `customer_label` calls `db.customer(invoice.customer_id)` (src/report.rs:39,
-  `SELECT ... FROM customers WHERE id = $1`) once per invoice, so a month of about 3 000
-  invoices from 800 customers runs about 3 000 customer queries plus the list query, and the
-  count grows linearly with the month's invoices. Collect the distinct `customer_id`s, load
-  them with the existing batch method `db.customers(&ids)` (`WHERE id = ANY($1)`), index them
-  in a `HashMap<i64, Customer>` and build each label from the map — two queries per report
-  whatever the volume. Keep the invoice-number order and return the same error when a
-  customer is missing.
+  The loop of `monthly_report` (`src/report.rs:23-30`) calls, through
+  `customer_label` (`src/report.rs:26`), `db.customer` (`SELECT ... FROM customers WHERE id = $1`) once
+  per invoice, so a report runs 1 + N + 1 queries: about 3 000 round trips for
+  a month of 3 000 invoices from only 800 customers, and the count grows with
+  the month's invoices. `Db::customers(&[i64])` (`WHERE id = ANY($1)`) already
+  serves the whole set in one query: collect the distinct `customer_id`s,
+  fetch them once, index them in a `HashMap<i64, Customer>` and build each
+  label from it. Keep the current behavior when a customer is missing (an
+  error), and keep the invoice-number order.
 history:
   - status: open
     by: performance
 ```
 
-#### R-performance-2 The purchase-order regex is compiled once per invoice
+#### R-performance-2 The purchase-order regex is compiled for every invoice
 
 ```yaml
-severity: medium
+severity: low
 confidence: high
 location: "src/report.rs:44-46"
 evidence: |
   fn purchase_order(notes: &str) -> Option<String> {
       let pattern = Regex::new(r"PO-\d{4}-\d{4}").expect("a valid pattern");
 recommendation: >-
-  `purchase_order` is called for every invoice of the loop (src/report.rs:28) and calls
-  `Regex::new` each time, so a report of about 3 000 invoices compiles the same pattern
-  about 3 000 times — compile cost that grows with the month's invoices and dwarfs the
-  per-note match. Compile it once: a `static PO_PATTERN: std::sync::LazyLock<Regex>` (or
-  `once_cell::sync::Lazy`), or build it in `monthly_report` before the loop and pass it in.
-  The matching behavior stays the same.
+  `purchase_order` is called once per invoice (`src/report.rs:28`) and compiles
+  the same pattern each time — about 3 000 compilations per report, a cost far
+  larger than the match itself. Compile it once: a `static` with
+  `std::sync::OnceLock<Regex>` (or `LazyLock`), or build it in
+  `monthly_report` and pass it in.
 history:
   - status: open
     by: performance

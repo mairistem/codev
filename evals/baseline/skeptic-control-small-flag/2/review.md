@@ -8,40 +8,78 @@ Mode: inline.
 
 ### skeptic
 
-#### R-skeptic-1 The spec leaves `--quiet` after the file undefined, and the planned parser rejects it
+#### R-skeptic-1 The spec does not say where `--quiet` goes, and the parser accepts it only before the file
 
 ```yaml
-severity: medium
+severity: low
 confidence: high
-location: "design.md#Decision: The progress reporter takes a `quiet` switch"
+location: "specs/cli-import/spec.md#Requirement: `--quiet` silences progress"
 evidence: |
-  `src/main.rs` accepts `--quiet` before the file and passes it to
+  `ledger import --quiet` SHALL print no progress line on standard error; errors SHALL still be printed, and the exit code SHALL be unchanged.
 recommendation: >-
-  Add a scenario to `specs/cli-import/spec.md` for `ledger import data.csv --quiet`
-  (accepted, or rejected with a stated error and exit code), and make the design's
-  parsing in `src/main.rs` match it. Today `src/main.rs:6` only matches
-  `[command, path]`, so with the design as written `ledger import data.csv --quiet`
-  falls to the `_` arm, prints the usage line and exits 2 without importing: a
-  nightly script that puts the flag last skips its import that night. Cover the
-  chosen behaviour with a test in task 1.1.
+  State in the requirement where the flag is accepted, and add a scenario for
+  the other position. The design has `src/main.rs` accept "`--quiet` before the
+  file", and `src/main.rs:6` matches an exact slice
+  (`[command, path] if command == "import"`), so `ledger import data.csv --quiet`
+  would fall to the usage branch and exit 2 — a changed exit code, which the
+  requirement forbids, for a script that puts the flag last. Either accept the
+  flag in both positions or specify the usage error as the expected outcome.
 history:
   - status: open
     by: skeptic
 ```
 
-#### R-skeptic-2 The usage line keeps omitting `--quiet`
+#### R-skeptic-2 `Progress::new(quiet)` "does nothing", but the lines are printed by `row()`
 
 ```yaml
 severity: low
 confidence: high
-location: "src/main.rs:8"
+location: "design.md#Decision: The progress reporter takes a `quiet` switch"
 evidence: |
-  eprintln!("usage: ledger import <file>");
+  `Progress::new(quiet)` does nothing when `quiet` is set;
 recommendation: >-
-  Add to task 1.1 (or 1.2) updating the usage line, and the `docs/cli.md`
-  heading `ledger import <file>`, to show `[--quiet]`; the design only adds the
-  flag to `FLAGS`, which `docs_mention_every_flag` checks against `docs/cli.md`
-  alone, so nothing catches a stale usage message.
+  Say that `Progress::row` prints nothing when the reporter was built quiet.
+  `Progress::new` prints nothing today (`src/cli/progress.rs:12-14`); the line
+  is written in `row()` (`src/cli/progress.rs:20`), so the decision as worded
+  describes no change to the code that prints.
+history:
+  - status: open
+    by: skeptic
+```
+
+#### R-skeptic-3 The usage message is not part of the plan
+
+```yaml
+severity: low
+confidence: high
+location: "tasks.md#1. Flag"
+evidence: |
+  - [ ] 1.1 `--quiet` read by `src/main.rs`, added to `FLAGS` in `src/cli/import.rs` and passed to `Progress::new(quiet)`, verified by tests `a_quiet_import_prints_nothing` ("A quiet import") and `a_quiet_import_still_prints_errors` ("A quiet import that fails")
+recommendation: >-
+  Include updating the usage line printed by `src/main.rs:8`
+  (`eprintln!("usage: ledger import <file>");`) to show `[--quiet]`, so a
+  wrong invocation points at the new flag.
+history:
+  - status: open
+    by: skeptic
+```
+
+#### R-skeptic-4 Every domain is unticked with no reason
+
+```yaml
+severity: low
+confidence: low
+location: "proposal.md#Domains"
+evidence: |
+  - [ ] user-interface
+  - [ ] performance
+  - [ ] operations
+recommendation: >-
+  The change adds a flag to a command scripts call and changes what nightly
+  jobs log; whether `user-interface` (the CLI surface) or `operations` (the
+  nightly scripts' reports) applies depends on how the project scopes those
+  domains. Tick them, or give the reason on their line, so no expert's review
+  is skipped silently.
 history:
   - status: open
     by: skeptic

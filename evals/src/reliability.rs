@@ -16,7 +16,9 @@ use std::fmt::Write as _;
 use serde::Deserialize;
 
 use crate::observed::{RunInfo, check_format, parse_run_info};
-use crate::score::{EvidenceCounts, Spread, SuiteFigures, Thresholds, number};
+use crate::score::{
+    EvidenceCounts, Measures, SourceShare, Spread, SuiteFigures, Thresholds, number,
+};
 
 /// The repository's baseline, on GitHub: the page links to it.
 const BASELINE_URL: &str = "https://github.com/mairistem/codev/tree/main/evals/baseline";
@@ -151,6 +153,19 @@ impl Measure {
     }
 }
 
+/// The planning figures of `report.json`: medians and ranges over the
+/// repetitions.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanningFigures {
+    pub cases: u32,
+    pub primary_recall: Option<Spread>,
+    pub collateral_recall: Option<Spread>,
+    pub duplicates: Option<Spread>,
+    pub decisions_ignored: Option<Spread>,
+    pub invalid: Option<Spread>,
+}
+
 /// What the page is built from: the run, the thresholds and the roles.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Baseline {
@@ -167,6 +182,13 @@ pub struct Baseline {
     /// headline figures are then summed over the roles.
     pub figures: Option<SuiteFigures>,
     pub roles: Vec<RoleRow>,
+    /// The planning step, when the baseline holds planning cases.
+    pub planning: Option<PlanningFigures>,
+    /// The sums of the cases' median consumption.
+    pub consumption: Option<Measures>,
+    /// Where the tokens go, ranked by cost; empty when no run recorded its
+    /// calls.
+    pub sources: Vec<SourceShare>,
 }
 
 #[derive(Deserialize)]
@@ -183,6 +205,12 @@ struct ReportFile {
     figures: Option<SuiteFigures>,
     roles: Vec<RoleRow>,
     cases: Vec<CaseId>,
+    #[serde(default)]
+    planning: Option<PlanningFigures>,
+    #[serde(default)]
+    consumption: Option<Measures>,
+    #[serde(default)]
+    sources: Vec<SourceShare>,
 }
 
 #[derive(Deserialize)]
@@ -235,6 +263,9 @@ impl Baseline {
             repetitions: report.repetitions.unwrap_or(1),
             figures: report.figures,
             roles: report.roles,
+            planning: report.planning,
+            consumption: report.consumption,
+            sources: report.sources,
         })
     }
 
@@ -419,25 +450,53 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         "## {}\n",
         lang.pick("What it does not measure", "Ce qu'elle ne mesure pas")
     );
-    let _ = writeln!(
-        out,
-        "{}\n",
-        lang.pick(
-            "It is not a benchmark of models, and not a promise that a role finds every defect \
-             of your project. It does not measure how useful a correct finding is to you, nor \
-             the roles that write the plan (the analyst, the architect, the tech lead…): only \
-             the roles that review. A score describes these cases, on this model, on the day \
-             of the run.",
-            "Ce n'est ni un banc d'essai de modèles, ni la promesse qu'un rôle trouve chaque \
-             défaut de votre projet. Elle ne mesure pas l'utilité pour vous d'un constat juste, \
-             ni les rôles qui écrivent le plan (l'analyste, l'architecte, le tech lead…)\u{a0}: \
-             seulement les rôles qui relisent. Un score décrit ces cas, avec ce modèle, le jour \
-             de l'exécution."
-        )
-    );
+    if b.planning.is_some() {
+        let _ = writeln!(
+            out,
+            "{}\n",
+            lang.pick(
+                "It is not a benchmark of models, and not a promise that a role finds every \
+                 defect of your project. It does not measure how useful a correct finding is to \
+                 you. The plan is measured only as a whole, on the planning cases below, by what \
+                 it modifies, not role by role. A score describes these cases, on this model, on \
+                 the day of the run.",
+                "Ce n'est ni un banc d'essai de modèles, ni la promesse qu'un rôle trouve chaque \
+                 défaut de votre projet. Elle ne mesure pas l'utilité pour vous d'un constat \
+                 juste. Le plan n'est mesuré que dans son ensemble, sur les cas de planification \
+                 ci-dessous, par ce qu'il modifie, pas rôle par rôle. Un score décrit ces cas, \
+                 avec ce modèle, le jour de l'exécution."
+            )
+        );
+    } else {
+        let _ = writeln!(
+            out,
+            "{}\n",
+            lang.pick(
+                "It is not a benchmark of models, and not a promise that a role finds every defect \
+                 of your project. It does not measure how useful a correct finding is to you, nor \
+                 the roles that write the plan (the analyst, the architect, the tech lead…): only \
+                 the roles that review. A score describes these cases, on this model, on the day \
+                 of the run.",
+                "Ce n'est ni un banc d'essai de modèles, ni la promesse qu'un rôle trouve chaque \
+                 défaut de votre projet. Elle ne mesure pas l'utilité pour vous d'un constat juste, \
+                 ni les rôles qui écrivent le plan (l'analyste, l'architecte, le tech lead…)\u{a0}: \
+                 seulement les rôles qui relisent. Un score décrit ces cas, avec ce modèle, le jour \
+                 de l'exécution."
+            )
+        );
+    }
 
     // The run.
     let _ = writeln!(out, "## {}\n", lang.pick("The run", "L'exécution"));
+    // The planning cases are counted with the others: name them, so that
+    // seeded and controls add up to the total.
+    let planning = b.planning.as_ref().map_or_else(String::new, |p| {
+        format!(
+            ", {} {}",
+            p.cases,
+            lang.pick("planning", "de planification")
+        )
+    });
     let model = b.run.model.as_deref().map_or_else(
         || {
             lang.pick("Claude Code's default", "celui de Claude Code par défaut")
@@ -447,7 +506,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     );
     let _ = writeln!(
         out,
-        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {})\n- {}{c}{}\n- {}{c}{}\n",
+        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {}{planning})\n- {}{c}{}\n- {}{c}{}\n",
         lang.pick("Date", "Date"),
         b.run.date,
         lang.pick("Model", "Modèle"),
@@ -640,6 +699,13 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     }
     out.push('\n');
 
+    if let Some(p) = &b.planning {
+        planning_section(&mut out, p, lang);
+    }
+    if let Some(m) = &b.consumption {
+        consumption_section(&mut out, b, m, lang);
+    }
+
     // Thresholds.
     let _ = writeln!(out, "## {}\n", lang.pick("The thresholds", "Les seuils"));
     let _ = writeln!(
@@ -795,6 +861,22 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
                 .to_string(),
         ],
     };
+    let mut limits = limits;
+    if b.planning.is_some() {
+        limits.push(
+            lang.pick(
+                "**Planning replays a public history.** The planning cases replay requests \
+                 against codev's own past states, which the model may have read: their figures \
+                 compare two versions of the skills on the same cases, they do not tell how well \
+                 codev plans a project it has never seen.",
+                "**La planification rejoue un historique public.** Les cas de planification \
+                 rejouent des demandes sur des états passés de codev, que le modèle a pu lire\u{a0}: \
+                 leurs chiffres comparent deux versions des skills sur les mêmes cas, ils ne disent \
+                 pas comment codev planifie un projet qu'il n'a jamais vu.",
+            )
+            .to_string(),
+        );
+    }
     for l in limits {
         let _ = writeln!(out, "- {l}");
     }
@@ -843,6 +925,267 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
         }
     );
     out
+}
+
+/// A median with its range: `0.67 (0.60–0.75)`, the range only when the
+/// repetitions disagreed.
+fn spread_text(lang: Lang, s: Option<Spread>, ratio: bool) -> String {
+    let show = |v: f64| {
+        if ratio {
+            lang.ratio(v)
+        } else {
+            lang.decimal(number(v))
+        }
+    };
+    match s {
+        None => "—".into(),
+        Some(s) if s.min != s.max => {
+            format!("{} ({}–{})", show(s.median), show(s.min), show(s.max))
+        }
+        Some(s) => show(s.median),
+    }
+}
+
+/// The planning step: its five measures, median and range.
+fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
+    let _ = writeln!(out, "## {}\n", lang.pick("Planning", "La planification"));
+    let _ = writeln!(
+        out,
+        "{}\n",
+        match lang {
+            Lang::En => format!(
+                "{} planning cases replay a request against the repository as it was before an \
+                 archived change, and score the plan `/codev-propose` writes against what that \
+                 change really did: the **primary recall** is the share of the requirements the \
+                 request is about that the plan modifies, the **collateral recall** the share of \
+                 those the real change modified in passing; a **probable duplicate** is a \
+                 requirement added where one should have been modified. Each figure is the median \
+                 over the repetitions, with its range.",
+                p.cases
+            ),
+            Lang::Fr => format!(
+                "{} cas de planification rejouent une demande sur le dépôt tel qu'il était avant un \
+                 change archivé, et notent le plan qu'écrit `/codev-propose` face à ce que ce change \
+                 a vraiment fait{c}le **rappel principal** est la part des exigences visées par la \
+                 demande que le plan modifie, le **rappel collatéral** la part de celles que le vrai \
+                 change a modifiées au passage{NBSP}; un **doublon probable** est une exigence ajoutée \
+                 là où il fallait en modifier une. Chaque chiffre est la médiane sur les \
+                 répétitions, avec son écart.",
+                p.cases,
+                c = lang.colon()
+            ),
+        }
+    );
+    let _ = writeln!(
+        out,
+        "| {} |\n|---|---:|",
+        lang.pick("Measure | Median (range)", "Mesure | Médiane (écart)")
+    );
+    for (label, s, ratio) in [
+        (
+            lang.pick("Primary recall", "Rappel principal"),
+            p.primary_recall,
+            true,
+        ),
+        (
+            lang.pick("Collateral recall", "Rappel collatéral"),
+            p.collateral_recall,
+            true,
+        ),
+        (
+            lang.pick("Probable duplicates", "Doublons probables"),
+            p.duplicates,
+            false,
+        ),
+        (
+            lang.pick("Decisions ignored", "Décisions ignorées"),
+            p.decisions_ignored,
+            false,
+        ),
+        (
+            lang.pick(
+                "Plans that do not validate",
+                "Plans qui ne passent pas la validation",
+            ),
+            p.invalid,
+            false,
+        ),
+    ] {
+        let _ = writeln!(out, "| {label} | {} |", spread_text(lang, s, ratio));
+    }
+    out.push('\n');
+}
+
+/// What a run of the suite consumes, and where its tokens go.
+fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang) {
+    let c = lang.colon();
+    let _ = writeln!(
+        out,
+        "## {}\n",
+        lang.pick("What a run consumes", "Ce que consomme une exécution")
+    );
+    let tokens = |v: Option<f64>| v.map_or_else(|| "—".to_string(), |v| number(v.round()));
+    let _ = writeln!(
+        out,
+        "- {}{c}{}\n- {}{c}{}\n- {}{c}{}\n",
+        lang.pick("One run of the suite", "Une exécution de la suite"),
+        lang.usd(b.cost_usd),
+        lang.pick("Input per call, in tokens", "Entrée par appel, en tokens"),
+        tokens(m.input_per_call),
+        lang.pick("Output per call, in tokens", "Sortie par appel, en tokens"),
+        tokens(m.output_per_call),
+    );
+    if b.sources.is_empty() {
+        return;
+    }
+    let _ = writeln!(
+        out,
+        "{}\n",
+        lang.pick(
+            "Every call to the model is recorded. The tokens a call writes to the cache — what \
+             entered its context since the previous call, the bulk of a run's cost — are shared \
+             among what brought them in: the skill read, each `codev` subcommand, the files, the \
+             searches, the model's own output; `prompt` is Claude Code's own prompt and the \
+             request. Per case the median over its runs, summed over the cases.",
+            "Chaque appel au modèle est enregistré. Les tokens qu'un appel écrit dans le cache — ce \
+             qui est entré dans son contexte depuis l'appel précédent, l'essentiel du coût d'une \
+             exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la skill, \
+             chaque sous-commande `codev`, les fichiers, les recherches, la sortie du modèle \
+             lui-même\u{a0}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
+             médiane sur ses exécutions, sommée sur les cas."
+        )
+    );
+    let _ = writeln!(out, "{}\n", sources_chart(&b.sources, lang));
+    let _ = writeln!(
+        out,
+        "| {} |\n|---|---:|---:|",
+        lang.pick(
+            "Source | Tokens | Share of the cost",
+            "Source | Tokens | Part du coût"
+        )
+    );
+    for s in &b.sources {
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} |",
+            s.source,
+            number(s.tokens),
+            percent(lang, s.share)
+        );
+    }
+    out.push('\n');
+}
+
+/// `60 %`, with a no-break space in French.
+fn percent(lang: Lang, share: f64) -> String {
+    match lang {
+        Lang::En => format!("{:.0} %", share * 100.0),
+        Lang::Fr => format!("{:.0}{NBSP}%", share * 100.0),
+    }
+}
+
+/// Where the tokens go: one horizontal bar per source, its share of the
+/// cost, ranked from the most costly.
+fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
+    // A wider label column than the role charts': source names such as
+    // `codev instructions` are longer than a role's name.
+    let (label_end, x0, plot) = (142.0, 150.0, 200.0);
+    let (row_h, bar_h, first) = (26.0, 14.0, 12.0);
+    let bottom = first + row_h * sources.len() as f64;
+    let height = bottom + 22.0;
+    let c = lang.colon();
+    let title = lang.pick("Where the tokens go", "Où vont les tokens");
+    let mut desc = lang
+        .pick(
+            "Horizontal bars, one per source, ranked by their share of the cost. ",
+            "Barres horizontales, une par source, classées par part du coût. ",
+        )
+        .to_string();
+    let mut marks = String::new();
+    for (i, s) in sources.iter().enumerate() {
+        let y = first + row_h * i as f64;
+        let cy = y + row_h / 2.0;
+        let share = percent(lang, s.share);
+        let tip = match lang {
+            Lang::En => format!(
+                "{}: {} tokens, {share} of the cost",
+                s.source,
+                number(s.tokens)
+            ),
+            Lang::Fr => format!(
+                "{}{c}{} tokens, {share} du coût",
+                s.source,
+                number(s.tokens)
+            ),
+        };
+        let _ = write!(desc, "{tip}. ");
+        let _ = write!(
+            marks,
+            "<g class=\"rel-row\"><title>{}</title><rect class=\"rel-hit\" x=\"0\" y=\"{y:.1}\" width=\"{VIEW_WIDTH:.1}\" height=\"{row_h:.1}\" fill=\"transparent\"/>",
+            esc(&tip)
+        );
+        marks.push_str(&text(
+            "rel-label",
+            INK,
+            label_end,
+            cy + 4.0,
+            "end",
+            &s.source,
+        ));
+        let end = x0 + plot * s.share;
+        if s.share > 0.0 {
+            let _ = write!(
+                marks,
+                "<path class=\"rel-bar\" fill=\"{SERIES}\" d=\"{}\"/>",
+                bar_path(x0, cy - bar_h / 2.0, end - x0, bar_h)
+            );
+        }
+        marks.push_str(&text(
+            "rel-value",
+            INK,
+            end + 6.0,
+            cy + 4.0,
+            "start",
+            &share,
+        ));
+        marks.push_str("</g>");
+    }
+    let mut svg = format!(
+        "<svg class=\"rel-chart\" viewBox=\"0 0 {VIEW_WIDTH:.0} {height:.0}\" role=\"img\" aria-labelledby=\"rel-src-title-{tag}\" aria-describedby=\"rel-src-desc-{tag}\" font-family=\"sans-serif\" font-size=\"12\"><title id=\"rel-src-title-{tag}\">{}</title><desc id=\"rel-src-desc-{tag}\">{}</desc>",
+        esc(title),
+        esc(desc.trim_end()),
+        tag = lang.tag()
+    );
+    for v in [0.0, 0.25, 0.5, 0.75, 1.0] {
+        let gx = x0 + plot * v;
+        let _ = write!(
+            svg,
+            "<line class=\"rel-grid\" stroke=\"{GRID}\" x1=\"{gx:.1}\" y1=\"{first:.1}\" x2=\"{gx:.1}\" y2=\"{bottom:.1}\"/>"
+        );
+        svg.push_str(&text(
+            "rel-tick",
+            MUTED,
+            gx,
+            bottom + 16.0,
+            "middle",
+            &percent(lang, v),
+        ));
+    }
+    let _ = write!(
+        svg,
+        "<line class=\"rel-axis\" stroke=\"{MUTED}\" x1=\"{x0:.1}\" y1=\"{first:.1}\" x2=\"{x0:.1}\" y2=\"{bottom:.1}\"/>"
+    );
+    svg.push_str(&marks);
+    svg.push_str("</svg>");
+    figure(
+        &svg,
+        lang.pick(
+            "The share of the cost of the tokens written to the cache, per source, over every case \
+             of the suite.",
+            "La part du coût des tokens écrits dans le cache, par source, sur tous les cas de la \
+             suite.",
+        ),
+    )
 }
 
 /// A headline figure: its label, its value, a line of context, and
@@ -1415,6 +1758,9 @@ mod tests {
             repetitions: 1,
             figures: None,
             roles,
+            planning: None,
+            consumption: None,
+            sources: vec![],
         }
     }
 
@@ -1618,5 +1964,89 @@ mod tests {
         assert_eq!(tick_step(11), 2);
         assert_eq!(tick_step(29), 5);
         assert_eq!(tick_step(130), 50);
+    }
+
+    #[test]
+    fn the_page_gives_the_planning_figures() {
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        let s = |median, min, max| Some(Spread { median, min, max });
+        b.planning = Some(PlanningFigures {
+            cases: 25,
+            primary_recall: s(0.67, 0.6, 0.75),
+            collateral_recall: s(0.4, 0.4, 0.4),
+            duplicates: s(2.0, 1.0, 3.0),
+            decisions_ignored: s(1.0, 0.0, 1.0),
+            invalid: s(0.0, 0.0, 0.0),
+        });
+        let en = page(&b, Lang::En);
+        assert!(en.contains("## Planning"), "{en}");
+        assert!(en.contains("| Primary recall | 0.67 (0.60–0.75) |"), "{en}");
+        assert!(en.contains("| Collateral recall | 0.40 |"), "{en}");
+        assert!(
+            en.contains("**Planning replays a public history.**"),
+            "{en}"
+        );
+        let fr = page(&b, Lang::Fr);
+        assert!(fr.contains("## La planification"), "{fr}");
+        assert!(
+            fr.contains("| Rappel principal | 0,67 (0,60–0,75) |"),
+            "{fr}"
+        );
+        // The run line counts the planning cases with the others.
+        assert!(en.contains("controls, 25 planning)"), "{en}");
+        assert!(fr.contains("témoins propres, 25 de planification)"), "{fr}");
+        assert!(
+            !page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En).contains("## Planning")
+        );
+    }
+
+    #[test]
+    fn the_page_ranks_the_sources_by_cost() {
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        b.consumption = Some(Measures {
+            input_per_call: Some(38_000.0),
+            output_per_call: Some(900.0),
+            ..Measures::default()
+        });
+        let share = |source: &str, tokens: f64, share: f64| SourceShare {
+            source: source.into(),
+            tokens,
+            share,
+        };
+        b.sources = vec![
+            share("skill", 60_000.0, 0.6),
+            share("codev roles", 25_000.0, 0.25),
+            share("file", 15_000.0, 0.15),
+        ];
+        for (lang, heading, row) in [
+            (
+                Lang::En,
+                "## What a run consumes",
+                "| skill | 60000 | 60 % |",
+            ),
+            (
+                Lang::Fr,
+                "## Ce que consomme une exécution",
+                "| skill | 60000 | 60\u{a0}% |",
+            ),
+        ] {
+            let text = page(&b, lang);
+            let at = |needle: &str| {
+                text.find(needle)
+                    .unwrap_or_else(|| panic!("{needle}: {text}"))
+            };
+            assert!(at(heading) < at(row));
+            assert!(
+                at("| skill |") < at("| codev roles |") && at("| codev roles |") < at("| file |")
+            );
+            assert!(text.contains(&format!("rel-src-title-{}", lang.tag())));
+            // The chart draws the sources in the same order, each named on hover.
+            let chart = &text[at("rel-src-title")..];
+            assert!(chart.find(">skill<").unwrap() < chart.find(">file<").unwrap());
+            assert!(text.contains("38000"));
+            assert!(!text.contains("{NBSP}"), "a placeholder left in the page");
+            // Long source names fit left of the plot.
+            assert!(chart.contains("x=\"142.0\""), "{chart}");
+        }
     }
 }

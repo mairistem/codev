@@ -8,38 +8,31 @@ Mode: inline.
 
 ### newcomer
 
-#### R-newcomer-1 `import` hides its rules in five levels of nesting and a duplicated seat loop
-
+#### R-newcomer-1 `import` nests six levels deep and hides its filters
 ```yaml
 severity: medium
 confidence: high
 location: "src/import.rs:14-40"
 evidence: |
-  if !row.email.is_empty() {
-      match db.find_account(&row.email)? {
-          Some(account) => {
-              if account.plan != row.plan {
-                  for seat in &row.seats {
-                      if !account.seats.contains(seat) {
-                          if seat.contains('@') {
+          if !row.email.is_empty() {
+              match db.find_account(&row.email)? {
+                  Some(account) => {
+                      if account.plan != row.plan {
+                          for seat in &row.seats {
+                              if !account.seats.contains(seat) {
+                                  if seat.contains('@') {
 recommendation: >-
-  Flatten and name the rules so the function reads without the plan. A
-  reader of the existing-account branch stumbles at
-  `if account.plan != row.plan`, five levels deep: it reads as "update the
-  plan", yet the plan is never written — it only gates whether new seats
-  are added, so an existing account whose plan is unchanged silently gets
-  none of the CSV's new seats; nothing says whether that is intended.
-  The other filters are unexplained too: rows with an empty email are
-  skipped without a word (`if !row.email.is_empty()`), and
-  `seat.contains('@')` is an undocumented "a seat is an email address"
-  check, duplicated in both branches together with the
-  `db.add_seat` / `created += 1` loop. Simpler version: `continue` early on
-  an empty email; resolve the account into `(id, existing_seats)` (creating
-  it when absent); extract one helper such as
-  `add_missing_seats(db, account_id, existing, &row.seats) -> Result<usize, DbError>`
-  that filters with a named predicate (`is_seat_email`) and returns the
-  count; and give the plan-difference condition a name or a comment that
-  states why seats are only added when the plan differs.
+  Flatten the loop body: skip empty emails with an early `continue`, and
+  extract the duplicated seat loop (lines 19-26 and 31-36) into one helper
+  such as `add_missing_seats(db, account_id, existing_seats, &row.seats)`
+  that both branches call. Give the two unexplained filters a name or a
+  comment that says why: `seat.contains('@')` (a seat is identified by an
+  email address, so an entry without `@` is skipped as invalid?) and
+  `account.plan != row.plan` (why an existing account on the same plan gets
+  none of its new seats — a reader at line 18 will take it for a bug or
+  will not notice it at all, and cannot tell which without the plan). The
+  doc comment "returns how many seats were created" should also say that
+  rows with an empty email and seats without `@` are silently skipped.
 history:
   - status: open
     by: newcomer

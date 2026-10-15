@@ -1,0 +1,296 @@
+{
+  "format": 2,
+  "case": "plan-decision-hidden-folder",
+  "error": null,
+  "costUsd": 1.367165,
+  "durationMs": 212205,
+  "consumption": {
+    "durationApiMs": 210100,
+    "turns": 30,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1096,
+      "cacheCreation": 77395,
+      "cacheRead": 1741275,
+      "output": 19939
+    },
+    "toolCalls": 29,
+    "orientationCalls": 11,
+    "calls": [
+      {
+        "cacheCreation": 7718,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7718
+        }
+      },
+      {
+        "cacheCreation": 19378,
+        "cacheRead": 29857,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 5675,
+          "skill": 13703
+        }
+      },
+      {
+        "cacheCreation": 1932,
+        "cacheRead": 49235,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1932
+        }
+      },
+      {
+        "cacheCreation": 4862,
+        "cacheRead": 51167,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4862
+        }
+      },
+      {
+        "cacheCreation": 2787,
+        "cacheRead": 56029,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2787
+        }
+      },
+      {
+        "cacheCreation": 2945,
+        "cacheRead": 58816,
+        "input": 2,
+        "output": 54,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2945
+        }
+      },
+      {
+        "cacheCreation": 5613,
+        "cacheRead": 61761,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 48,
+          "search": 5565
+        }
+      },
+      {
+        "cacheCreation": 1081,
+        "cacheRead": 67374,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1081
+        }
+      },
+      {
+        "cacheCreation": 2264,
+        "cacheRead": 68455,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2264
+        }
+      },
+      {
+        "cacheCreation": 3690,
+        "cacheRead": 70719,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3690
+        }
+      },
+      {
+        "cacheCreation": 2257,
+        "cacheRead": 74409,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2257
+        }
+      },
+      {
+        "cacheCreation": 1847,
+        "cacheRead": 76666,
+        "input": 2,
+        "output": 36,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1847
+        }
+      },
+      {
+        "cacheCreation": 401,
+        "cacheRead": 78513,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 320,
+          "output": 81
+        }
+      },
+      {
+        "cacheCreation": 4714,
+        "cacheRead": 78914,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2159,
+          "file": 2555
+        }
+      },
+      {
+        "cacheCreation": 524,
+        "cacheRead": 83628,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 524
+        }
+      },
+      {
+        "cacheCreation": 464,
+        "cacheRead": 84152,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 464
+        }
+      },
+      {
+        "cacheCreation": 635,
+        "cacheRead": 84616,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "file": 601,
+          "output": 34
+        }
+      },
+      {
+        "cacheCreation": 2014,
+        "cacheRead": 85251,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2016
+        }
+      },
+      {
+        "cacheCreation": 3027,
+        "cacheRead": 87265,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3027
+        }
+      },
+      {
+        "cacheCreation": 2913,
+        "cacheRead": 90292,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2760,
+          "edit": 153
+        }
+      },
+      {
+        "cacheCreation": 1221,
+        "cacheRead": 93205,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1221
+        }
+      },
+      {
+        "cacheCreation": 825,
+        "cacheRead": 94426,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 825
+        }
+      },
+      {
+        "cacheCreation": 3884,
+        "cacheRead": 95251,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2824,
+          "output": 1060
+        }
+      },
+      {
+        "cacheCreation": 399,
+        "cacheRead": 99135,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 399
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/hidden-planning-root/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/hidden-planning-root/design.md": "# Design: Hidden planning root `.codev/`\n\n## Context\n\nObserved state:\n\n- The planning directory name is a single constant, `PLANNING_DIR = \"_codev\"`,\n  in `crates/codev-core/src/layout.rs`; `Layout::planning_dir()` joins it to\n  the project root, and every planning path derives from it.\n- Root discovery (`crates/codev-engine/src/root.rs`, `discover`) walks up\n  from the current directory and returns the first ancestor whose\n  `_codev/` exists; otherwise `EngineError::NoRoot` (`no_codev_root`).\n- Domain suggestions classify a path as a planning file when its first\n  segment equals `PLANNING_DIR` (`crates/codev-core/src/triggers.rs`,\n  `classify`).\n- `roles.rs` holds a second hard-coded `\"_codev/config.yaml\"`\n  (`PROJECT_FILE`); `scaffold.rs` and the agent texts (`claude.rs`\n  managed section, `workflows.rs` skill bodies) write `_codev/` literally.\n- Inherited path and git sources are read under `<source>/_codev/`.\n- Outside the code: this repository's own `_codev/`, `.github/` (CI, PR and\n  issue templates), `evals/` (cases, fixtures, baseline), README,\n  CONTRIBUTING and about thirty chapters of `docs/en` and `docs/fr`.\n\nConstraints: decision **0003** (\"The planning root is `_codev/`, visible\")\nis accepted and sealed; it is exactly what this change reverses.\n**0001** keeps the choice of the root in the pure core and the\nfilesystem probe in the engine. **0005** makes inherited sources read-only:\ncodev cannot rename a source's directory, so it must read either name.\nThe JSON contract v1 is consumed by installed skills (`context`).\n\n## Goals / Non-Goals\n\nGoals:\n\n- `.codev/` for every new project and for this repository.\n- Zero breakage for existing projects, their installed skills and the\n  sources they inherit from.\n\nNon-Goals:\n\n- An automatic migration command (`codev migrate`, `codev doctor --fix`):\n  the rename is one `git mv`, and doctor stays read-only.\n- Removing `_codev/` support; that is a later, breaking change, once the\n  deprecation has been announced for at least one minor release.\n- A configurable directory name (`--store`, environment variable): 0003's\n  \"single rule, like git\" is kept.\n\n## Decisions\n\n### Decision: Supersede decision 0003 with a new decision, accepted by a human\n\n0003 is not ignored nor edited (it is sealed). The implementation starts\nwith `codev decision supersede 0003 \"The planning root is .codev/, hidden\"`,\nwhich creates a `proposed` decision with `supersedes: [\"0003\"]`. Its body,\nto paste as is:\n\n- **Context**: 0003 chose `_codev/` so that search tools would see the\n  planning files. In practice the agent reaches them through codev itself:\n  every skill gets absolute paths from codev (`planningHome`, `changeRoot`,\n  `resolvedOutputPath`, `decisions[].path`) and reads those files directly;\n  and the `CLAUDE.md` managed section names the directory explicitly.\n  Meanwhile, users perceive a visible `_codev/` as noise next to the code,\n  unlike `.git/`, `.github/` or `.claude/`.\n- **Decision**: the planning root is `.codev/`. `_codev/` stays readable\n  as a deprecated legacy name.\n- **Consequences**: an agent's free-text search (ripgrep, Claude Code's\n  Grep/Glob without a path) no longer finds planning files on its own;\n  codev mitigates it by always handing explicit paths. Static site\n  generators also skip dot-directories, as they did `_`-prefixed ones.\n- **Alternatives**: keep `_codev/` (0003); `codev/` (blends with code).\n\nThe decision is accepted with `codev decision accept <id>` by a human,\nbefore the implementation is merged; `0003` then becomes `superseded`.\nUntil then, `0003` stays in effect, and this change must not be archived.\n\n**Alternatives considered**:\n\n- Implementing the rename while leaving 0003 in effect — rejected: the\n  project's rule is that an accepted decision is followed or explicitly\n  superseded, and `codev validate` would keep injecting a contradicted\n  decision into every design.\n- Refusing the request on the strength of 0003 — rejected: the user may\n  reverse a decision; the process requires it to be done explicitly, not\n  that it never happens.\n\n### Decision: Two names in the core, one probe in the engine\n\n`codev-core` replaces `PLANNING_DIR` with `PLANNING_DIR = \".codev\"` and\n`LEGACY_PLANNING_DIR = \"_codev\"`, and `Layout` carries the name actually\nin use (`Layout::new(root, name)`), so every derived path follows the\nproject's real directory. `discover` checks both names in each ancestor:\none present → that layout; both → a new `EngineError::AmbiguousRoot`\n(`ambiguous_planning_root`); none → keep walking. `codev init` builds a\n`Layout` with `.codev` when no root exists. `PROJECT_FILE` in `roles.rs`\nis derived from the layout instead of hard-coded. The `NoRoot` message\nnames `.codev/`.\n\n**Alternatives considered**:\n\n- Only switching the constant to `.codev` — rejected: every existing\n  project, and every inherited source, would fail with `no_codev_root`\n  (a breaking change for no benefit).\n- Preferring `.codev/` silently when both exist — rejected: the user would\n  edit files codev ignores; failing loudly costs one `rm` or `git mv`.\n\n### Decision: Inherited sources probe the same two names\n\nThe source loader (path and git cache) resolves `<source>/.codev/`, then\n`<source>/_codev/`, with the same ambiguity rule reported as a validation\nfinding rather than a hard error, so one bad source does not block the\nproject. This follows 0005: sources are read, never rewritten.\n\n**Alternatives considered**: requiring sources to migrate first —\nrejected, a project does not control the repositories it inherits from.\n\n### Decision: Generated texts are rendered with the project's root name\n\n`codev-agents` receives the root name as a render parameter (as it already\nreceives the review mode) and substitutes it in the `CLAUDE.md` section,\nthe PR template section, the skill bodies and the `config.yaml` comments.\nThe skill frontmatter checksum therefore depends on the root name, so\n`codev update` regenerates skills after a rename and `doctor`'s `skills`\ncheck flags them as outdated until then.\n\n**Alternatives considered**: writing `.codev/` everywhere — rejected,\nskills of a legacy project would point the agent to a directory that does\nnot exist.\n\n### Decision: Doctor warns, and gives the command\n\nA new first check, `planning_root`, is a `warning` (`legacy_planning_root`)\non `_codev/`, with the fix `git mv _codev .codev` (or `mv` outside git),\nthen `codev update` to refresh the generated texts. It never fails\n`--strict`, matching the other deprecation-style warnings (`changelog`,\n`config.keys`). The check id and code are additive to the JSON contract v1.\n\n**Alternatives considered**: a `codev migrate` command — rejected as\nscope: a rename plus `codev update` is already two commands the user\nknows, and doctor must stay read-only.\n\n### Decision: Paths in the other main specs are rewritten as wording\n\nThe new `planning-root` spec states that `_codev/<path>` in any spec\ndesignates `<path>` under the planning root. After this change is\narchived, a separate wording-only commit replaces `_codev/` with `.codev/`\nin the main specs (about 200 mentions, no requirement changes), which\nCLAUDE.md exempts from a codev change.\n\n**Alternatives considered**: a `MODIFIED` block for each of the ~60\nrequirements that mention `_codev/` — rejected: hundreds of copied lines\nfor no behavioral change, and a high risk of losing detail at merge time.\n\n## Risks / Trade-offs\n\n- [The agent's free search no longer sees the planning files] →\n  Skills always pass absolute paths from codev; the `CLAUDE.md` section\n  names `.codev/specs/` and `.codev/decisions/` explicitly; the new\n  decision records the trade-off so it is not rediscovered.\n- [Installed skills of a renamed project still say `_codev/`] →\n  doctor's fix chains `codev update`, and the `skills` check reports them\n  outdated because their checksum depends on the root name.\n- [`.gitignore` patterns such as `.*` would hide `.codev/` from commits] →\n  the FAQ \"Should I commit `.codev/`?\" says so; `codev init` does not edit\n  `.gitignore`.\n- [Main specs keep saying `_codev/` until the wording pass] → the\n  `planning-root` Purpose gives the reading rule; the wording commit is\n  the first follow-up after archive.\n- [Tests and fixtures assume `_codev/`] → engine and CLI tests use the\n  in-memory filesystem; add a legacy-root variant for discovery, init,\n  status, inherited sources and doctor rather than duplicating suites.\n\n## Migration Plan\n\n1. Create and fill the superseding decision (`proposed`); a human accepts\n   it before merge.\n2. Ship the code with both names supported; this repository runs\n   `git mv _codev .codev` and `codev update` in the same change, then\n   updates CI, templates, `evals/` paths and the docs (en and fr).\n3. Users migrate when `codev doctor` tells them to; nothing breaks\n   meanwhile.\n4. Rollback: reverting the release leaves `.codev/` projects unreadable by\n   the older codev; the `codev_version` requirement of a renamed project\n   should be raised to the release that supports `.codev/`, so older\n   binaries say so instead of failing with `no_codev_root`. A project can\n   also simply `git mv .codev _codev` back.\n\n## Open Questions\n\n- In which release `_codev/` support is removed — it changes nothing here.\n",
+    "_codev/changes/hidden-planning-root/proposal.md": "# Proposal: Hidden planning root `.codev/`\n\n## Why\n\nThe request is to rename the planning directory from `_codev/` to `.codev/`,\nso that it stays out of the way in listings and file explorers like other\ntool directories (`.git/`, `.github/`, `.claude/`). This reverses the\naccepted decision `0003` (\"The planning root is `_codev/`, visible\"), whose\ndeciding argument was that search tools skip hidden directories. That\ndecision is not set aside silently: the design proposes a decision that\nsupersedes `0003` and states how the agent still reaches the planning files.\nThe new decision only takes effect once a human accepts it.\n\n## What Changes\n\n- New projects get their planning root in `.codev/`: `codev init` creates\n  `.codev/`, never `_codev/`.\n- Project root discovery recognizes `.codev/` and, for compatibility, the\n  legacy `_codev/`: an existing project keeps working without being\n  migrated. A directory that holds both fails with a dedicated error code\n  instead of picking one.\n- Inherited sources (path and git) are read from `.codev/decisions/`, or\n  from `_codev/decisions/` when the source still uses the legacy name.\n- `codev doctor` gains a `planning_root` check that warns when the project\n  still uses `_codev/` and names the command that renames it. codev never\n  renames the directory by itself.\n- Every text codev generates for a project — the `CLAUDE.md` managed\n  section, the pull request template section, the skills — names the\n  planning root the project actually uses.\n- Planning files are excluded from domain suggestions under either name.\n- This repository's own planning root is renamed to `.codev/`, and the\n  documentation (`docs/en`, `docs/fr`, README, CONTRIBUTING) names\n  `.codev/`.\n- `_codev/` is **deprecated**, not removed: no breaking change in this\n  change.\n\nAssumptions made without asking (evaluation run, no user to ask):\n\n- **Superseding decision 0003.** The request is read as a deliberate\n  reversal of `0003`, which the user is entitled to make. The change\n  proposes a new decision with `supersedes: [0003]`, created with status\n  `proposed`; it must be accepted by a human (`codev decision accept`)\n  before the implementation is merged.\n- **Compatibility over a hard rename.** Existing projects (and the skills\n  already installed in them) keep working with `_codev/`; the migration is\n  a one-line `git mv` the user runs when they choose, prompted by\n  `codev doctor`.\n- **Paths in the other specs.** About 200 mentions of `_codev/<path>` in\n  the main specs are not rewritten requirement by requirement in this\n  change; the new `planning-root` capability states that they designate\n  `<planning root>/<path>`, and the design schedules the mechanical wording\n  pass.\n\n## Capabilities\n\n### New Capabilities\n\n- `planning-root`\n\n### Modified Capabilities\n\n- `doctor`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-core`: the planning directory constant becomes a hidden name plus\n  a legacy name; the planning-file classification of domain suggestions.\n- `codev-engine`: root discovery, inherited source loading, scaffolding of\n  `codev init`, the doctor checks.\n- `codev-agents`: the `CLAUDE.md` section and the skill texts, rendered with\n  the project's planning root.\n- `codev-cli`: a new error code `ambiguous_planning_root` and a new doctor\n  check id in the JSON contract v1 (additive).\n- Repository: `_codev/` moved to `.codev/`, CI workflow, PR and issue\n  templates, `evals/` fixtures and cases that name `_codev/`.\n- Documentation: every chapter of `docs/en` and `docs/fr` naming `_codev/`\n  (installation, quickstart, concepts, workflow, FAQ, file formats,\n  architecture…), README and CONTRIBUTING in both languages.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Changed: `codev init` now creates the planning root in a hidden `.codev/`\n  directory instead of `_codev/`.\n- Deprecated: the `_codev/` planning root is still read, but `codev doctor`\n  warns about it and gives the command that renames it to `.codev/`.\n",
+    "_codev/changes/hidden-planning-root/specs/doctor/spec.md": "## MODIFIED Requirements\n\n### Requirement: `codev doctor` runs a fixed list of read-only checks\n\n`codev doctor` SHALL evaluate the following checks, reported in this order, each\nwith a stable `id`, and report each one as `ok`, `missing` or `warning`,\nwith a stable `code` (`ok` when the check passes), a one-line message and,\nwhen not `ok`, a one-line fix naming the exact command or skill:\n\n| id | passes when | otherwise | code | fix |\n|---|---|---|---|---|\n| `planning_root` | the project's planning root is `.codev/` | warning | `legacy_planning_root` | `git mv _codev .codev` in a git repository, otherwise `mv _codev .codev`, run from the project root |\n| `config.rules` | `rules:` has at least one entry, inherited ones included | missing | `rules_missing` | `/codev-configure` |\n| `config.language` | `language:` is set in `_codev/config.yaml` | missing | `language_missing` | add `language: <code>` to `_codev/config.yaml` |\n| `config.keys` | `_codev/config.yaml` holds no key the running codev ignores (top level, `mcp` or `review`) | warning | `unknown_config_key` | `codev self-update` when the running codev does not satisfy `codev_version`, otherwise correct or remove the key, naming the keys |\n| `config.roles` | every role setting is valid; informational, its message lists the active roles and the disabled ones | warning | `roles_invalid` | `codev validate` |\n| `skills` | every configured workflow has its skill, generated by the running codev version, and the `propose` and `apply` skills are rendered for the project's review mode | missing | `skills_missing`, `skills_outdated` or `skills_review_mode` | `codev update` (`codev update --force` for a skill it preserves as edited by hand) |\n| `sources` | every inherited git source is pinned in `_codev/codev.lock` and present in the cache, and the lock pins no undeclared source | missing (unpinned or not cached) or warning (undeclared pin) | `source_unpinned` or `lock_stale` | `codev sources update` |\n| `codev_version` | the running codev satisfies the project's `codev_version`, when set, and the cached update check knows no newer release | missing (requirement not satisfied) or warning (newer release known) | `codev_version_unsatisfied` or `update_available` | `codev self-update`, or `codev self-update --version <X.Y.Z>` when the running codev is above the requirement |\n| `specs` | at least one main spec exists | missing | `no_main_spec` | `/codev-propose`, noting that documenting existing behavior is planned work |\n| `decisions` | at least one decision is `accepted`, local or inherited | warning | `no_accepted_decision` | `codev decision new \"<title>\"` |\n| `validate` | `codev validate` reports no error and no warning | missing (errors) or warning (warnings only) | `validate_errors` or `validate_warnings` | `codev validate` |\n| `claude_md` | `CLAUDE.md` holds the codev managed section | missing | `claude_md_section_missing` | `codev init` |\n| `ci` | a file of `.github/workflows/` or `.gitlab-ci.yml` runs `codev validate` | missing | `ci_validate_missing` | `codev init` on GitHub, otherwise add `codev validate --strict` to the pipeline |\n| `pr_template` | the pull request template holds the codev managed section — GitHub repositories only | missing | `pr_template_section_missing` | `codev init` |\n| `changelog` | `CHANGELOG.md` exists and its managed `[Unreleased]` section matches what `codev changelog` would generate now | warning | `changelog_missing` (no file) or `changelog_outdated` | `codev changelog --write` |\n\nThe `pr_template` check MUST be absent from the report when the repository\nis not a GitHub repository. A project without any inherited source passes\n`sources`. A CI line is recognized when it names `codev` and then\n`validate`, so `cargo run --bin codev -- validate` counts.\n\nWhen the running codev does not satisfy `codev_version` because it is\nabove the requirement's upper bound, the fix MUST be\n`codev self-update --version <X.Y.Z>`, a plain `codev self-update` refusing\nto downgrade. `X.Y.Z` is, in this order of preference: the latest release\nknown to the update cache, when it satisfies the requirement; the highest\nversion the requirement admits, when an upper bound names it exactly (`<=`\nor `=` with a full version); the lowest version the requirement admits,\nwhen it has a lower bound. When none applies, the fix names the\nrequirement and asks for a release that satisfies it. When the running\ncodev is below the requirement, the fix stays `codev self-update`.\n\nThe `codev_version` check reads the per-user update cache that\n`codev status` maintains and never refreshes it: with no cache, or with\n`CI` set or `CODEV_NO_UPDATE_CHECK=1`, it only evaluates the requirement.\n\n`codev doctor` MUST NOT write any file or access the network. The only\nprocess it MAY spawn is `git`, for the local, read-only queries the\n`changelog` check needs; outside a git repository, that check compares\nwith every archived change. Outside a codev project, it fails with the code\n`no_codev_root`.\n\n#### Scenario: A freshly initialized project\n\n- **GIVEN** a project just initialized with `codev init --yes` outside\n  GitHub, without rules, specs or decisions, and no newer codev release\n  known\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.rules` and `specs` are `missing`, `decisions` is a\n  `warning`, `ci` is `missing`\n- **AND** `planning_root`, `config.keys`, `config.roles`, `config.language`,\n  `skills`, `sources`, `codev_version`, `claude_md` and `validate` are `ok`\n- **AND** `changelog` is a `warning` with the code `changelog_missing`\n- **AND** no `pr_template` check is reported\n\n#### Scenario: Outdated skills\n\n- **GIVEN** a project whose skills were generated by an earlier codev\n  version\n- **WHEN** the user runs `codev doctor`\n- **THEN** `skills` is `missing` with the code `skills_outdated` and the fix\n  `codev update`\n\n#### Scenario: An unpinned git source\n\n- **GIVEN** a project declaring a git source absent from\n  `_codev/codev.lock`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `sources` is `missing` with the code `source_unpinned` and the\n  fix `codev sources update`\n\n#### Scenario: CI recognized through `cargo run`\n\n- **GIVEN** a GitHub project whose `.github/workflows/ci.yml` runs\n  `cargo run --bin codev -- validate --strict`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `ci` is `ok`\n\n#### Scenario: Doctor writes nothing\n\n- **GIVEN** any codev project\n- **WHEN** the user runs `codev doctor`\n- **THEN** no file of the project is created or modified\n\n#### Scenario: Outside a codev project\n\n- **GIVEN** a folder with neither `.codev/` nor `_codev/` above it\n- **WHEN** the user runs `codev doctor`\n- **THEN** the command fails with the code `no_codev_root`\n\n#### Scenario: A project still on the legacy planning root\n\n- **GIVEN** a git repository whose planning root is `_codev/`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `planning_root` is a `warning` with the code\n  `legacy_planning_root` and the fix `git mv _codev .codev`\n- **AND** `_codev/` is neither renamed nor modified\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: A legacy planning root outside git\n\n- **GIVEN** a folder that is not a git repository, whose planning root is\n  `_codev/`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `planning_root` is a `warning` with the fix `mv _codev .codev`\n\n#### Scenario: CHANGELOG.md up to date\n\n- **GIVEN** a project where `codev changelog --write` was just run\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is `ok`\n\n#### Scenario: CHANGELOG.md behind the archive\n\n- **GIVEN** a project whose `CHANGELOG.md` managed section predates the\n  latest archived change\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is a `warning` with the code `changelog_outdated`\n  and the fix `codev changelog --write`\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: Running codev below the project's requirement\n\n- **GIVEN** a project with `codev_version: \">=0.7\"` and codev 0.6.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_unsatisfied` and the fix `codev self-update`\n\n#### Scenario: A newer release is known\n\n- **GIVEN** a project without `codev_version`, and an update cache knowing\n  a release newer than the running codev\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is a `warning` with the code `update_available`\n  and the fix `codev self-update`\n- **AND** no network request is made\n\n#### Scenario: Running codev above the project's requirement\n\n- **GIVEN** a project with `codev_version: \">=0.5, <0.7\"`, codev 0.7.1\n  running, and an update cache whose latest known release is 0.6.4\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_unsatisfied` and the fix\n  `codev self-update --version 0.6.4`\n\n#### Scenario: Running codev above an exact upper bound, no usable cache\n\n- **GIVEN** a project with `codev_version: \"<=0.6.2\"`, codev 0.7.0 running,\n  and no update cache\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the fix\n  `codev self-update --version 0.6.2`\n\n#### Scenario: Running codev above a requirement with no exact bound\n\n- **GIVEN** a project with `codev_version: \"^0.5\"`, codev 0.6.0 running, and\n  an update cache whose latest known release, 0.6.0, does not satisfy it\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the fix\n  `codev self-update --version 0.5.0`\n\n#### Scenario: An unknown configuration key\n\n- **GIVEN** a project whose `_codev/config.yaml` holds the top-level key\n  `review_policy`, unknown to the running codev, which satisfies\n  `codev_version`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.keys` is a `warning` with the code `unknown_config_key`\n  whose message names `review_policy`\n- **AND** its fix tells to correct or remove the key\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: An unknown key with an unsatisfied requirement\n\n- **GIVEN** a project whose `_codev/config.yaml` holds an unknown key and\n  `codev_version: \">=9\"`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.keys` is a `warning` with the fix `codev self-update`\n\n#### Scenario: The roles in effect\n\n- **GIVEN** a project whose configuration holds `roles: { newcomer: never }`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.roles` is `ok` and its message lists the active roles\n  and names `newcomer` as disabled\n\n#### Scenario: An invalid role setting\n\n- **GIVEN** a project whose configuration holds `roles: { reviewer: never }`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.roles` is a `warning` with the code `roles_invalid`\n  and the fix `codev validate`\n- **AND** `validate` is `missing`\n",
+    "_codev/changes/hidden-planning-root/specs/planning-root/spec.md": "## Purpose\n\nDefine where a project's planning files — configuration, specs, decisions,\nchanges, schemas — live: the planning root, a hidden `.codev/` directory at\nthe project root, with the legacy `_codev/` name still recognized. A path\nanother spec writes as `_codev/<path>` designates `<path>` under the\nproject's planning root, whichever of the two names it has.\n\n## ADDED Requirements\n\n### Requirement: A new project's planning root is `.codev/`\n\n`codev init` SHALL create the planning root as `.codev/` at the project\nroot and MUST NOT create a `_codev/` directory. In a folder that already\nhas a planning root, under either name, `codev init` MUST keep using it\nand MUST NOT create the other one.\n\n#### Scenario: Initializing a new project\n\n- **GIVEN** a folder with neither `.codev/` nor `_codev/`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `.codev/config.yaml`, `.codev/specs/`, `.codev/decisions/` and\n  `.codev/changes/` exist\n- **AND** no `_codev/` directory exists\n\n#### Scenario: Re-running init on a legacy project\n\n- **GIVEN** a project whose planning root is `_codev/`\n- **WHEN** the user runs `codev init --yes`\n- **THEN** `_codev/config.yaml` is identical byte for byte\n- **AND** no `.codev/` directory is created\n\n### Requirement: The project root is found under either name\n\nEvery command that works inside a project SHALL find its root by walking\nup from the current directory: the first directory holding `.codev/` or\n`_codev/` is the project root, and that directory is its planning root. A\nproject whose planning root is `_codev/` MUST behave exactly as it would\nwith `.codev/`, apart from the paths it reports. When that first directory\nholds both `.codev/` and `_codev/`, the command MUST fail with the stable\ncode `ambiguous_planning_root`, naming both directories and telling the\nuser to keep only one, and MUST write nothing.\n\n#### Scenario: Found from a subdirectory\n\n- **GIVEN** a project `/p` whose planning root is `/p/.codev/`\n- **WHEN** the user runs `codev status --json` from `/p/crates/thing/src`\n- **THEN** `planningHome` is `/p`\n\n#### Scenario: A legacy project keeps working\n\n- **GIVEN** a project `/p` whose planning root is `/p/_codev/`, holding an\n  active change `add-auth`\n- **WHEN** the user runs `codev status --change add-auth --json`\n- **THEN** the command succeeds\n- **AND** `changeRoot` is `/p/_codev/changes/add-auth`\n\n#### Scenario: New paths land in the existing planning root\n\n- **GIVEN** a project whose planning root is `_codev/`\n- **WHEN** the user runs `codev new change add-auth`\n- **THEN** `_codev/changes/add-auth/` is created\n- **AND** no `.codev/` directory is created\n\n#### Scenario: Both names in the same directory\n\n- **GIVEN** a folder holding both `.codev/` and `_codev/`\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `ambiguous_planning_root`\n- **AND** its message names `.codev/` and `_codev/`\n- **AND** no file is created or modified\n\n#### Scenario: No planning root at all\n\n- **GIVEN** a folder with neither `.codev/` nor `_codev/` above it\n- **WHEN** the user runs `codev status --json`\n- **THEN** `status[0].code` is `no_codev_root`, and its message names\n  `.codev/` and `codev init`\n\n### Requirement: Inherited sources are read under either name\n\nWhen a project inherits from a source, path or git, codev SHALL read that\nsource's decisions from its `.codev/decisions/` directory, or from\n`_codev/decisions/` when the source has no `.codev/`. A source holding both\nMUST be reported with the code `ambiguous_planning_root`, naming the\nsource, and contributes no decision.\n\n#### Scenario: A source already moved to `.codev/`\n\n- **GIVEN** a project inheriting from `path: ~/shared`, whose decisions are\n  in `~/shared/.codev/decisions/` and include an accepted `0100`\n- **WHEN** the user runs `codev decision list --json`\n- **THEN** an entry `path:~/shared/0100` is listed\n\n#### Scenario: A source still on `_codev/`\n\n- **GIVEN** a project whose own planning root is `.codev/`, inheriting from\n  `path: ~/legacy`, whose decisions are in `~/legacy/_codev/decisions/` and\n  include an accepted `0200`\n- **WHEN** the user runs `codev decision list --json`\n- **THEN** an entry `path:~/legacy/0200` is listed\n\n#### Scenario: A source holding both names\n\n- **GIVEN** a project inheriting from `path: ~/both`, which holds both\n  `.codev/decisions/` and `_codev/decisions/`\n- **WHEN** the user runs `codev validate`\n- **THEN** a finding with the code `ambiguous_planning_root` names\n  `path:~/both`\n- **AND** no decision of `~/both` appears in `codev decision list`\n\n### Requirement: Generated text names the project's planning root\n\nThe text codev writes into a project — the `CLAUDE.md` managed section,\nthe pull request template section, the generated skills and the comments\nof the generated `config.yaml` — SHALL name the planning root the project\nuses: `.codev/` for a project on `.codev/`, `_codev/` for a project still on\n`_codev/`. It MUST NOT name the other one.\n\n#### Scenario: A new project's `CLAUDE.md`\n\n- **GIVEN** a folder with no planning root\n- **WHEN** the user runs `codev init --yes`\n- **THEN** the codev managed section of `CLAUDE.md` names `.codev/specs/`\n  and `.codev/decisions/`\n- **AND** it does not contain `_codev/`\n\n#### Scenario: Updating a legacy project's skills\n\n- **GIVEN** a project whose planning root is `_codev/`\n- **WHEN** the user runs `codev update`\n- **THEN** the regenerated skills name `_codev/`, not `.codev/`\n\n#### Scenario: After the rename, `codev update` follows\n\n- **GIVEN** a project whose skills and `CLAUDE.md` name `_codev/`, and whose\n  planning root was then renamed to `.codev/`\n- **WHEN** the user runs `codev update`\n- **THEN** the regenerated skills and the managed section of `CLAUDE.md`\n  name `.codev/` and no longer `_codev/`\n\n### Requirement: Planning files never suggest a domain\n\nDomain suggestions SHALL treat every file under the project's planning\nroot as a planning file, whichever of `.codev/` or `_codev/` it is: such a\nfile never matches a trigger. A file under the name the project does not\nuse is an ordinary file.\n\n#### Scenario: A change touching only `.codev/`\n\n- **GIVEN** a project on `.codev/` whose diff only adds\n  `.codev/changes/add-auth/design.md`, holding the word `password`\n- **WHEN** the user runs `codev roles --change add-auth --json`\n- **THEN** `suggestions` is empty\n- **AND** `diff.skipped.planning` is 1\n\n#### Scenario: A stray `_codev/` file in a `.codev/` project\n\n- **GIVEN** a project on `.codev/` whose diff adds only `_codev/notes.md`\n- **WHEN** the user runs `codev roles --change add-auth --json`\n- **THEN** `diff.skipped` has no `planning` entry for it, and the file is\n  classified as it would be anywhere else in the repository\n"
+  },
+  "validate": {
+    "hidden-planning-root": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "hidden-planning-root",
+          "path": "_codev/changes/hidden-planning-root"
+        }
+      ],
+      "status": []
+    }
+  }
+}

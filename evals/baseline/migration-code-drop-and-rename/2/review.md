@@ -8,29 +8,7 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 Public JSON field renamed with no BREAKING mark nor compatibility path
-
-```yaml
-severity: high
-confidence: high
-location: "src/api.rs:8-9"
-evidence: |
-    #[serde(rename = "userName")]
-    pub user_name: String,
-recommendation: >-
-  `Account` is a type of the public HTTP API (src/api.rs:1), so every existing
-  client that reads `user_name` from the account response gets a missing field
-  after deploy, with no warning. Mark the rename **BREAKING** in the release
-  note (it is only listed as "Changed: Account JSON uses camelCase.") with what
-  clients must do, and give consumers a transition: emit both `user_name` and
-  `userName` for a deprecation period (e.g. a second serialized field or a
-  versioned endpoint), then remove `user_name` in a later release.
-history:
-  - status: open
-    by: migration
-```
-
-#### R-migration-2 Irreversible DROP COLUMN with no down migration nor backup
+#### R-migration-1 Irreversible DROP COLUMN with no down migration or backup
 
 ```yaml
 severity: high
@@ -39,13 +17,41 @@ location: "migrations/0005_drop_legacy_email.sql:2"
 evidence: |
   ALTER TABLE users DROP COLUMN legacy_email;
 recommendation: >-
-  Running 0005 on production permanently deletes every `users.legacy_email`
-  value imported in 2023 ("not written since" does not mean empty), and there
-  is no `0005_drop_legacy_email.down.sql`, while 0004 ships one
-  (`migrations/0004_accounts.down.sql`). Add a down migration that re-adds the
-  nullable column, and a backup step before the drop (e.g. copy
-  `id, legacy_email` into an archive table or export it), or state in the plan
-  why the data can be lost and how to recover it.
+  Every legacy_email value still stored in production rows (the column was
+  filled by the 2023 import, only no longer written) is destroyed when the
+  migration runs, and nothing can bring it back: unlike
+  migrations/0004_accounts.down.sql, there is no 0005 down migration, and
+  neither the proposal nor tasks.md has a backup step. Add
+  migrations/0005_drop_legacy_email.down.sql
+  (`ALTER TABLE users ADD COLUMN legacy_email TEXT;`), and before the drop
+  copy the data out (e.g. `CREATE TABLE users_legacy_email_backup AS SELECT
+  id, legacy_email FROM users WHERE legacy_email IS NOT NULL;`) or state in
+  the plan why the data may be lost and how to recover it.
+history:
+  - status: open
+    by: migration
+```
+
+#### R-migration-2 JSON field user_name renamed userName with no BREAKING mark or transition
+
+```yaml
+severity: high
+confidence: high
+location: "src/api.rs:8"
+evidence: |
+  #[serde(rename = "userName")]
+recommendation: >-
+  Every existing consumer of the public HTTP API that reads
+  `account.user_name` gets a missing field after deployment, with no
+  warning: the proposal's release note lists it only as "Changed: Account
+  JSON uses camelCase." with no **BREAKING** item and no instruction for
+  consumers, and the change ships rename and removal in one step, so old
+  clients cannot keep working side by side. Mark it **BREAKING** in the
+  release note with what consumers must do, and either keep emitting the
+  old field for a deprecation window (serialize both `user_name` and
+  `userName`, e.g. a second deprecated field or a custom Serialize) or
+  version the endpoint; `#[serde(alias)]` does not help here since it only
+  affects deserialization.
 history:
   - status: open
     by: migration

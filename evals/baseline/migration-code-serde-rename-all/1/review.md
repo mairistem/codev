@@ -8,7 +8,7 @@ Mode: inline.
 
 ### migration
 
-#### R-migration-1 camelCase rename silently renames every existing field of the public order JSON
+#### R-migration-1 `rename_all = "camelCase"` renames every existing field of the public order JSON
 
 ```yaml
 severity: high
@@ -22,21 +22,20 @@ evidence: |
       pub total_cents: i64,
 recommendation: >-
   Remove `#[serde(rename_all = "camelCase")]` so `GET /orders/{id}` keeps
-  emitting `order_id`, `customer_id` and `total_cents` and only adds
-  `currency`. Today a partner integration reading `order_id` from the
-  response gets a missing field (`orderId` is sent instead) on the first
-  deploy, with no BREAKING item in the release note and in breach of the
-  rule in docs/api.md ("a field is never renamed or removed without two
-  releases of deprecation"); docs/api.md also still documents the
-  snake_case names. If camelCase is wanted, ship it as a separate change
-  that emits both names during two releases of deprecation and marks it
-  **BREAKING** in the release note.
+  emitting `order_id`, `customer_id` and `total_cents`, and only gains
+  `currency`. Today every partner integration that reads `order_id`,
+  `customer_id` or `total_cents` (as `docs/api.md` still documents them)
+  finds them missing after the deploy, with no BREAKING item in the release
+  note and against the documented rule of two releases of deprecation
+  before a field is renamed. If camelCase is really wanted, it needs its
+  own change: emit both names during the deprecation window, mark it
+  BREAKING, and announce it.
 history:
   - status: open
     by: migration
 ```
 
-#### R-migration-2 Existing config files without `default_currency` no longer load
+#### R-migration-2 New required `default_currency` key makes existing `config.toml` files fail to load
 
 ```yaml
 severity: high
@@ -47,13 +46,13 @@ evidence: |
   pub default_currency: String,
 recommendation: >-
   Give the field a default (`#[serde(default = "default_currency")]`
-  returning `"EUR"`, the currency of every existing order) so a deployed
-  `config.toml` holding only `database_url` and `listen` keeps loading.
-  As written, `config::load` returns a `missing field default_currency`
-  error and the service fails to start on upgrade, with no release-note
-  item telling operators to add the key. Add a test that loads the old
-  two-key config, or, if the key must stay required, mark it **BREAKING**
-  in the release note with the line to add.
+  returning `"EUR"`, the currency every existing order was in), and test
+  that a config without the key still loads. Today `config::load` returns
+  `missing field `default_currency`` for every deployed `config.toml`
+  written before this change, so the service refuses to start on upgrade;
+  the release note says nothing about a manual step. If the key must stay
+  required, mark it BREAKING in the release note with the line operators
+  must add.
 history:
   - status: open
     by: migration
