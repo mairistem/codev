@@ -129,20 +129,7 @@ which refuse it.
 
 ### Decision: Every change to the workflow is evaluated, per call, for quality and tokens
 
-A change to what codev's agents read or do — a skill, a workflow, an
-output a skill reads — is evaluated with `codev-evals` on the steps it
-touches before it is merged: its quality stays within the baseline's
-range or improves, and, when it aims at consumption, its cost falls
-under the baseline's floor, each call's tokens traced to their source.
-A step the suite does not cover is covered first. This block is promoted
-to an accepted decision (`codev decision promote`, then `accept`), so
-that every later plan meets it among the decisions in force that
-`codev instructions` serves and the architect's criteria cite.
-
-**Alternatives considered**: keeping the rule only in the contributing
-guides — it would not reach the agents that plan the changes; a CI gate
-that runs the suite on every pull request — it calls a model and costs
-money on each push, which the suite's workflow deliberately avoids.
+> Promoted to ADR **0008** — see `_codev/decisions/0008-every-change-to-the-workflow-is-evaluated-per-call-for-quality-and-tokens.md`.
 
 ### Decision: Planning measures sit next to the roles, by step
 

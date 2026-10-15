@@ -30,7 +30,7 @@
 - [x] 5.2 Check out the full history (`fetch-depth: 0`) in `.github/workflows/evals.yml` and in the jobs of `.github/workflows/ci.yml` that run `cargo test`; add a `step` input to the evaluation workflow (`review` by default, passed to `--step` through the environment), bound `repeat` to 1 when it is `plan.write`, and update its sizing comment; verified by the new suite tests `the_workflows_check_out_the_full_history`, `the_workflow_passes_step_through_the_environment` and `the_workflow_bounds_a_planning_run`
 
 - [x] 5.2.b In `reliability.rs`, add to both pages the planning figures and what a run consumes — cost, input and output per call, the sources table and chart ranked by cost; verified by unit tests `the_page_gives_the_planning_figures` and `the_page_ranks_the_sources_by_cost` in both languages (scenario "The planning figures and the sources on the page"), and by `the_reliability_pages_follow_the_baseline` after task 6.2
-- [ ] 5.3 Promote the design's "Every change to the workflow is evaluated, per call, for quality and tokens" to a decision (`codev decision promote`) and accept it (`codev decision accept`); verified by `codev decision list` showing it `accepted` and `codev validate --strict` passing on its seal, and by `codev instructions design --change <a change> --json` listing it among the decisions in force
+- [x] 5.3 Promote the design's "Every change to the workflow is evaluated, per call, for quality and tokens" to a decision (`codev decision promote`) and accept it (`codev decision accept`); verified by `codev decision list` showing it `accepted` and `codev validate --strict` passing on its seal, and by `codev instructions design --change <a change> --json` listing it among the decisions in force
 
 ## 6. Baseline
 

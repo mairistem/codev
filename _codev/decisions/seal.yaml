@@ -24,3 +24,6 @@ seals:
 - id: '0007'
   bodySha256: sha256:c4a8a2846b86581b144cb3ba131ec09430c36d9c1d60ebbcd02455129cbf0d1b
   sealedAt: 2026-10-13
+- id: '0008'
+  bodySha256: sha256:757ce23e33bbb3cfbb5435a0b9ed6e38a28c4d5e38b0ee73a11dbbd0470b5207
+  sealedAt: 2026-10-15
