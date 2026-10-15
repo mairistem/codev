@@ -263,6 +263,55 @@ mod tests {
         }
     }
 
+    /// The text of `propose`'s `plan.investigate` step, up to step d.
+    fn investigate_step() -> &'static str {
+        let body = find("propose").unwrap().body;
+        let start = body.find("plan.investigate`.**").expect("the step exists");
+        let end = start + body[start..].find("**d. ").expect("step d follows");
+        &body[start..end]
+    }
+
+    #[test]
+    fn propose_searches_then_reads_the_named_requirements() {
+        let step = investigate_step()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        let search = step.find("codev search").expect("the step searches");
+        let show = step.find("codev show").expect("then reads with show");
+        assert!(search < show, "{step}");
+        assert!(step.contains("it never replaces reading"), "{step}");
+        assert!(
+            step.contains("read a requirement before you modify it"),
+            "{step}"
+        );
+    }
+
+    #[test]
+    fn the_query_is_written_in_the_language_of_the_specs() {
+        let step = investigate_step()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        assert!(
+            step.contains("in the language of the specs whatever the request's language"),
+            "{step}"
+        );
+    }
+
+    #[test]
+    fn no_search_is_required_without_specs() {
+        let step = investigate_step()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        assert!(
+            step.contains("With no specs yet, skip the search"),
+            "{step}"
+        );
+        assert!(step.contains("`codev list --specs`"), "{step}");
+    }
+
     #[test]
     fn explore_cannot_write() {
         // Its "writes no files" promise must be structural.

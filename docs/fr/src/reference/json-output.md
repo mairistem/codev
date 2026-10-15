@@ -258,6 +258,67 @@ Avertissements dans `status` : `release_note_missing`,
 Avec `--specs`, le tableau s'appelle `specs` et liste des chemins de
 capacités.
 
+### search
+
+`codev search --json` :
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "query": "decision seal",
+  "language": "en",
+  "results": [
+    {
+      "kind": "requirement",
+      "id": "decisions::Body seal recorded by the CLI",
+      "capability": "decisions",
+      "requirement": "Body seal recorded by the CLI",
+      "excerpt": "The CLI SHALL maintain a `_codev/decisions/seal.yaml` file…"
+    },
+    {
+      "kind": "decision",
+      "id": "project/0003",
+      "decision": "0003",
+      "title": "The planning folder is hidden",
+      "origin": "project",
+      "status": "superseded",
+      "inEffect": false,
+      "supersededBy": "project/0009",
+      "excerpt": "…"
+    }
+  ],
+  "archived": [
+    { "change": "2026-09-09-enforce-decision-immutability", "excerpt": "…" }
+  ],
+  "status": []
+}
+```
+
+`language` est la langue dans laquelle les mots ont été réduits à leur
+racine. Un résultat ne porte que les champs de son type ; `archived` n'est
+présent qu'avec `--archive`. Dans un résultat, `status` est le statut de la
+décision, pas le tableau des erreurs de la racine.
+
+### show
+
+`codev show --json` :
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "capability": "decisions",
+  "requirement": {
+    "name": "Creating a decision through the CLI",
+    "text": "### Requirement: Creating a decision through the CLI\n\n…"
+  },
+  "status": []
+}
+```
+
+`codev show <capacité>` porte `requirements`, les noms des exigences, et
+`purpose` au lieu de `requirement`. Un échec porte `capability: null` et
+son code dans `status`.
+
 ### status
 
 ```json

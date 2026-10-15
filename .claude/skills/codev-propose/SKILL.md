@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "3fab3ebe691ed14f658419fc4c707aaea07dcebfefd8664805bafc82c7e2fef5"
+  checksum: "a650dce59e6b16a5f4fc4bd947361c4b7d9e0515fe6158dff94f210a4a7beb11"
 ---
 
 Create a change and write its planning artifacts, in one pass.
@@ -171,6 +171,15 @@ conversation — the user may have edited the files in the meantime.
 **c. Study the project before writing — `plan.investigate`.** Ask for the
 roles of this step once, before the first artifact, and apply the
 investigator's criteria before writing each one.
+
+Find the existing behavior the request touches with `codev search
+<words>`, the words in the language of the specs whatever the request's
+language; search again with other words when the results miss its
+subject. Read each requirement it names with `codev show
+<capability>::<requirement>`, and a whole `spec.md` only when the change
+rewrites much of it. The search points to where to read; it never
+replaces reading: read a requirement before you modify it. With no specs
+yet, skip the search; `codev list --specs` names every capability.
 
 **d. Write the file**, using `template` as its structure. Then check that it
 exists at the expected location.

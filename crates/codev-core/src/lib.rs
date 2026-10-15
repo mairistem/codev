@@ -32,6 +32,7 @@ pub mod plan;
 pub mod review;
 pub mod roles;
 pub mod schema;
+pub mod search;
 pub mod status;
 pub mod triggers;
 pub mod update;

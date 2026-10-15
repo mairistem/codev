@@ -79,6 +79,12 @@ it finds, and reports contradictions with existing specs instead of settling
 them alone. It writes the prose in the project's
 [artifact language](guides/artifact-language.md).
 
+To find the existing behavior a request touches, it runs `codev search`
+with words in the language of your specs, then reads only the requirements
+the results name with `codev show <capability>::<requirement>` — the whole
+spec only when the change rewrites much of it. The search points to where
+to read; the skill still reads a requirement before modifying it.
+
 The request authorizes planning only, even if it says "build" or "fix": the
 skill stops once the artifacts are written and waits for you.
 

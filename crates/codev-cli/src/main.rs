@@ -224,6 +224,29 @@ enum Command {
         json: bool,
     },
 
+    /// Search the requirements and decisions that match a query
+    Search {
+        /// Words naming the behavior, in the language the specs are written in
+        #[arg(required = true, num_args = 1..)]
+        query: Vec<String>,
+        /// Results to print, from 1 to 50
+        #[arg(long, default_value_t = codev_engine::search::DEFAULT_LIMIT)]
+        limit: usize,
+        /// Also list the matching archived changes, in a section of their own
+        #[arg(long)]
+        archive: bool,
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Print one requirement, or the requirement names of a capability
+    Show {
+        /// `<capability>::<requirement name>`, or `<capability>` for its index
+        target: String,
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Show the state of a change's artifacts
     Status {
         /// Change name (inferred when there is only one)
@@ -733,6 +756,38 @@ fn run(cli: Cli) -> i32 {
                 }),
                 &err,
             ),
+        },
+
+        Command::Search {
+            query,
+            limit,
+            archive,
+            json,
+        } => {
+            let query = query.join(" ");
+            match commands::search(&ctx, &query, limit, archive) {
+                Ok(outcome) => {
+                    emit(
+                        json,
+                        contract::search_report(&outcome.root, &outcome.result),
+                        || render::search(&outcome),
+                    );
+                    0
+                }
+                Err(err) => fail(json, contract::search_shape(&query), &err),
+            }
+        }
+
+        Command::Show { target, json } => match commands::show(&ctx, &target) {
+            Ok(outcome) => {
+                emit(
+                    json,
+                    contract::show_report(&outcome.root, &outcome.result),
+                    || render::show(&outcome),
+                );
+                0
+            }
+            Err(err) => fail(json, contract::show_shape(), &err),
         },
 
         Command::List { specs, json } => {

@@ -22,6 +22,8 @@ Commands:
   doctor        Check what the project's codev setup still lacks, and how to fix it
   new           Create a new item
   list          List active changes, or specified capabilities with --specs
+  search        Search the requirements and decisions that match a query
+  show          Print one requirement, or the requirement names of a capability
   status        Show the state of a change's artifacts
   instructions  Print everything needed to write an artifact
   roles         List the roles active at a workflow step, with their criteria
@@ -443,6 +445,71 @@ spec: each folder under `_codev/specs/` holding a file named exactly
 `spec.md`, nested folders included. Other files, such as a `README.md` or
 `notes/myspec.md`, are not specs and are ignored, by `codev validate` as
 well.
+
+### codev search
+
+```text
+Search the requirements and decisions that match a query
+
+Usage: codev search [OPTIONS] <QUERY>...
+
+Arguments:
+  <QUERY>...  Words naming the behavior, in the language the specs are written in
+
+Options:
+      --limit <LIMIT>  Results to print, from 1 to 50 [default: 10]
+      --archive        Also list the matching archived changes, in a section of their own
+      --json
+  -h, --help           Print help
+```
+
+Ranks the requirements of the main specs — each with its description and
+scenarios — and the decisions, inherited ones included, by how well they
+match the query, and prints the best ones: kind, identifier
+(`<capability>::<requirement>`, or the decision's id and title with its
+status and whether it is in effect) and an excerpt. Case, accents and
+common words are ignored, and words match through their stem in the
+language the specs are written in: write the query in that language, so
+`decisions` finds `decision`. The output holds 10 results unless `--limit`
+asks for 1 to 50, whatever the project's size. `--archive` adds the
+matching archived changes in a section of their own, never ranked with the
+requirements. A query that matches nothing says so and exits with 0; a
+query of common words only fails with `search_query_empty`, and a
+`--limit` out of range with `search_limit_invalid`. The command only reads.
+
+```bash
+codev search create a decision from the command line
+codev search "decision seal" --archive
+```
+
+### codev show
+
+```text
+Print one requirement, or the requirement names of a capability
+
+Usage: codev show [OPTIONS] <TARGET>
+
+Arguments:
+  <TARGET>  `<capability>::<requirement name>`, or `<capability>` for its index
+
+Options:
+      --json
+  -h, --help  Print help
+```
+
+`codev show <capability>::<requirement name>` prints that requirement as its
+main spec holds it — heading, description and scenarios, verbatim — and
+nothing else of the spec; the name is compared ignoring case and spacing.
+`codev show <capability>` prints the capability's purpose and its
+requirement names, in the `<capability>::<name>` form the command accepts.
+The capability must be one of those `codev list --specs` names: anything
+else fails with `unknown_capability`, and a requirement the capability
+does not hold with `unknown_requirement`, which lists the ones it does.
+
+```bash
+codev show decisions
+codev show "decisions::Creating a decision through the CLI"
+```
 
 ### codev status
 

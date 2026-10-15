@@ -922,6 +922,183 @@ pub struct ChangesV1 {
     pub status: Vec<StatusEntry>,
 }
 
+/// One result of `codev search --json`: the fields of its kind only.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchHitV1 {
+    /// `requirement` or `decision`.
+    pub kind: &'static str,
+    /// `<capability>::<requirement>`, or the decision's qualified identifier.
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capability: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirement: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decision: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    /// The decision's status — not the root `status` array of errors.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub in_effect: Option<bool>,
+    /// `null` for a decision nobody supersedes; absent for a requirement.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub superseded_by: Option<Option<String>>,
+    pub excerpt: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchivedHitV1 {
+    pub change: String,
+    pub excerpt: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchReportV1 {
+    pub root: Option<String>,
+    pub query: String,
+    /// The language the words were stemmed in.
+    pub language: Option<String>,
+    pub results: Vec<SearchHitV1>,
+    /// Present only with `--archive`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archived: Option<Vec<ArchivedHitV1>>,
+    pub status: Vec<StatusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequirementTextV1 {
+    pub name: String,
+    /// The requirement as its main spec holds it, verbatim.
+    pub text: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShowReportV1 {
+    pub root: Option<String>,
+    pub capability: Option<String>,
+    /// Set by `codev show <capability>::<requirement>`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirement: Option<RequirementTextV1>,
+    /// Set by `codev show <capability>`, with `purpose`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirements: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<String>,
+    pub status: Vec<StatusEntry>,
+}
+
+/// `codev search --json` from the engine's result.
+pub fn search_report(
+    root: &std::path::Path,
+    r: &codev_engine::search::SearchResult,
+) -> SearchReportV1 {
+    use codev_engine::search::Hit;
+    let results = r
+        .results
+        .iter()
+        .map(|hit| match hit {
+            Hit::Requirement {
+                capability,
+                requirement,
+                excerpt,
+            } => SearchHitV1 {
+                kind: "requirement",
+                id: format!("{capability}::{requirement}"),
+                capability: Some(capability.clone()),
+                requirement: Some(requirement.clone()),
+                decision: None,
+                title: None,
+                origin: None,
+                status: None,
+                in_effect: None,
+                superseded_by: None,
+                excerpt: excerpt.clone(),
+            },
+            Hit::Decision { decision, excerpt } => SearchHitV1 {
+                kind: "decision",
+                id: decision.qualified_id.clone(),
+                capability: None,
+                requirement: None,
+                decision: Some(decision.id.clone()),
+                title: Some(decision.title.clone()),
+                origin: Some(decision.origin.clone()),
+                status: Some(decision.status.clone()),
+                in_effect: Some(decision.in_effect),
+                superseded_by: Some(decision.superseded_by.clone()),
+                excerpt: excerpt.clone(),
+            },
+        })
+        .collect();
+    SearchReportV1 {
+        root: Some(json_path(root)),
+        query: r.query.clone(),
+        language: Some(r.language.clone()),
+        results,
+        archived: r.archived.as_ref().map(|a| {
+            a.iter()
+                .map(|h| ArchivedHitV1 {
+                    change: h.change.clone(),
+                    excerpt: h.excerpt.clone(),
+                })
+                .collect()
+        }),
+        status: Vec::new(),
+    }
+}
+
+/// `codev show --json` from the engine's result.
+pub fn show_report(root: &std::path::Path, r: &codev_engine::search::ShowResult) -> ShowReportV1 {
+    use codev_engine::search::ShowResult;
+    match r {
+        ShowResult::Requirement {
+            capability,
+            name,
+            text,
+        } => ShowReportV1 {
+            root: Some(json_path(root)),
+            capability: Some(capability.clone()),
+            requirement: Some(RequirementTextV1 {
+                name: name.clone(),
+                text: text.clone(),
+            }),
+            requirements: None,
+            purpose: None,
+            status: Vec::new(),
+        },
+        ShowResult::Capability {
+            capability,
+            purpose,
+            requirements,
+        } => ShowReportV1 {
+            root: Some(json_path(root)),
+            capability: Some(capability.clone()),
+            requirement: None,
+            requirements: Some(requirements.clone()),
+            purpose: purpose.clone(),
+            status: Vec::new(),
+        },
+    }
+}
+
+/// The shape of a failed `codev search --json`.
+pub fn search_shape(query: &str) -> serde_json::Value {
+    serde_json::json!({ "root": null, "query": query, "language": null, "results": [] })
+}
+
+/// The shape of a failed `codev show --json`.
+pub fn show_shape() -> serde_json::Value {
+    serde_json::json!({ "root": null, "capability": null })
+}
+
 #[derive(Debug, Serialize)]
 pub struct SpecsV1 {
     pub specs: Vec<String>,
@@ -2328,6 +2505,65 @@ apply:
             json["movedTo"],
             "_codev/changes/archive/2026-09-08-add-auth"
         );
+    }
+
+    #[test]
+    fn search_and_show_reports_keep_their_shape() {
+        use codev_engine::search::{ArchivedHit, DecisionHit, Hit, SearchResult, ShowResult};
+        let result = SearchResult {
+            query: "seal".into(),
+            language: "en".into(),
+            results: vec![
+                Hit::Requirement {
+                    capability: "decisions".into(),
+                    requirement: "Body seal".into(),
+                    excerpt: "The CLI SHALL seal.".into(),
+                },
+                Hit::Decision {
+                    decision: DecisionHit {
+                        id: "0003".into(),
+                        qualified_id: "project/0003".into(),
+                        title: "Old".into(),
+                        origin: "project".into(),
+                        status: "superseded".into(),
+                        in_effect: false,
+                        superseded_by: Some("project/0009".into()),
+                    },
+                    excerpt: "Context.".into(),
+                },
+            ],
+            archived: Some(vec![ArchivedHit {
+                change: "2026-09-01-add-seals".into(),
+                excerpt: "Why.".into(),
+            }]),
+        };
+        let json =
+            serde_json::to_value(search_report(std::path::Path::new("C:\\p"), &result)).unwrap();
+        assert_eq!(json["root"], "C:/p");
+        assert_eq!(json["results"][0]["id"], "decisions::Body seal");
+        assert_eq!(json["results"][0]["capability"], "decisions");
+        assert!(json["results"][0].get("inEffect").is_none());
+        let decision = &json["results"][1];
+        assert_eq!(decision["kind"], "decision");
+        assert_eq!(decision["id"], "project/0003");
+        assert_eq!(decision["decision"], "0003");
+        assert_eq!(decision["status"], "superseded");
+        assert_eq!(decision["inEffect"], false);
+        assert_eq!(decision["supersededBy"], "project/0009");
+        assert_eq!(json["archived"][0]["change"], "2026-09-01-add-seals");
+
+        let show = ShowResult::Capability {
+            capability: "decisions".into(),
+            purpose: Some("Record decisions.".into()),
+            requirements: vec!["Body seal".into()],
+        };
+        let json = serde_json::to_value(show_report(std::path::Path::new("/p"), &show)).unwrap();
+        assert_eq!(json["capability"], "decisions");
+        assert_eq!(json["requirements"], serde_json::json!(["Body seal"]));
+        assert!(json.get("requirement").is_none());
+        let failure = failure(search_shape("seal"), "search_query_empty", "empty");
+        assert_eq!(failure["results"], serde_json::json!([]));
+        assert_eq!(failure["status"][0]["code"], "search_query_empty");
     }
 
     #[test]

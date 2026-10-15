@@ -33,6 +33,7 @@ use codev_engine::metadata::ChangeMetadata;
 use codev_engine::review as engine_review;
 use codev_engine::review_material as engine_material;
 use codev_engine::roles as engine_roles;
+use codev_engine::search as engine_search;
 use codev_engine::sources as engine_sources;
 use codev_engine::suggest as engine_suggest;
 use codev_engine::sync as engine_sync;
@@ -849,6 +850,38 @@ pub fn list_specs(ctx: &Ctx) -> Result<SpecsOutcome> {
     Ok(SpecsOutcome {
         specs: specs::list(ctx.fs, &layout),
         root: layout.project_root().to_path_buf(),
+    })
+}
+
+pub struct SearchOutcome {
+    pub root: PathBuf,
+    pub result: engine_search::SearchResult,
+}
+
+/// `codev search`: the requirements and decisions that match `query`, and
+/// with `archive` the archived changes apart.
+pub fn search(ctx: &Ctx, query: &str, limit: usize, archive: bool) -> Result<SearchOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
+    let result = engine_search::search(ctx.fs, ctx.env, &layout, &cfg, query, limit, archive)?;
+    Ok(SearchOutcome {
+        root: layout.project_root().to_path_buf(),
+        result,
+    })
+}
+
+pub struct ShowOutcome {
+    pub root: PathBuf,
+    pub result: engine_search::ShowResult,
+}
+
+/// `codev show`: one requirement, or a capability's requirement names.
+pub fn show(ctx: &Ctx, target: &str) -> Result<ShowOutcome> {
+    let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
+    let result = engine_search::show(ctx.fs, &layout, target)?;
+    Ok(ShowOutcome {
+        root: layout.project_root().to_path_buf(),
+        result,
     })
 }
 
@@ -5915,6 +5948,130 @@ The rationale for the choice.
             .map(|a| a.id.as_str())
             .collect();
         assert_eq!(ids, ["proposal", "specs", "design", "tasks"]);
+    }
+
+    // ─────────────── search and show ───────────────
+    //
+    // `main` turns every `Ok` into exit code 0 and every `Err` into 1
+    // (`fail`): these tests check which of the two each case is, and what
+    // it prints.
+
+    const DECISIONS_SPEC: &str = "# Decisions\n\n## Purpose\n\nRecord decisions.\n\n## Requirements\n\n\
+### Requirement: Creating a decision through the CLI\n\n`codev decision new` SHALL create a decision file.\n\n\
+#### Scenario: Create\n\n- **WHEN** asked\n- **THEN** it creates\n\n\
+### Requirement: Listing decisions\n\n`codev decision list` SHALL list them.\n\n\
+#### Scenario: List\n\n- **WHEN** asked\n- **THEN** it lists\n";
+
+    fn searchable() -> Harness {
+        let h = Harness::new().with("/p/_codev/specs/decisions/spec.md", DECISIONS_SPEC);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        h
+    }
+
+    #[test]
+    fn search_prints_kind_identifier_and_excerpt() {
+        let h = searchable();
+        let outcome = search(&h.ctx(), "create a decision file", 10, false).unwrap();
+        let rendered = crate::render::search(&outcome);
+        assert!(
+            rendered
+                .starts_with(" 1. requirement  decisions::Creating a decision through the CLI\n"),
+            "{rendered}"
+        );
+        assert!(
+            rendered.contains("SHALL create a decision file"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn search_without_a_match_names_list_specs_and_exits_zero() {
+        let h = searchable();
+        let outcome = search(&h.ctx(), "xylophone quantum", 10, false).unwrap();
+        assert!(outcome.result.results.is_empty());
+        let rendered = crate::render::search(&outcome);
+        assert!(rendered.contains("Nothing matched"), "{rendered}");
+        assert!(rendered.contains("codev list --specs"), "{rendered}");
+    }
+
+    #[test]
+    fn search_refuses_a_limit_out_of_range() {
+        let h = searchable();
+        for limit in [0, 51] {
+            let err = search(&h.ctx(), "decision", limit, false).err().unwrap();
+            assert_eq!(err.code, "search_limit_invalid");
+        }
+    }
+
+    #[test]
+    fn search_refuses_an_empty_query() {
+        let h = searchable();
+        let err = search(&h.ctx(), "the of", 10, false).err().unwrap();
+        assert_eq!(err.code, "search_query_empty");
+    }
+
+    #[test]
+    fn search_json_has_query_language_results_and_status() {
+        let h = searchable();
+        let outcome = search(&h.ctx(), "decision", 10, true).unwrap();
+        let json = serde_json::to_value(crate::contract::search_report(
+            &outcome.root,
+            &outcome.result,
+        ))
+        .unwrap();
+        assert_eq!(json["query"], "decision");
+        assert_eq!(json["language"], "en");
+        assert_eq!(json["status"], serde_json::json!([]));
+        assert!(json["archived"].is_array());
+        let first = &json["results"][0];
+        assert_eq!(first["kind"], "requirement");
+        assert!(first["id"].as_str().unwrap().starts_with("decisions::"));
+        assert!(first["excerpt"].is_string());
+    }
+
+    #[test]
+    fn show_json_failure_has_a_null_capability_and_its_code() {
+        let h = searchable();
+        let err = show(&h.ctx(), "billing").err().unwrap();
+        let json = crate::contract::failure(crate::contract::show_shape(), &err.code, &err.message);
+        assert_eq!(json["capability"], serde_json::Value::Null);
+        assert_eq!(json["status"][0]["code"], "unknown_capability");
+    }
+
+    #[test]
+    fn show_an_unknown_requirement_lists_the_names_and_exits_one() {
+        let h = searchable();
+        let err = show(&h.ctx(), "decisions::Deleting a decision")
+            .err()
+            .unwrap();
+        assert_eq!(err.code, "unknown_requirement");
+        assert!(err.message.contains("Creating a decision through the CLI"));
+        assert!(err.message.contains("Listing decisions"));
+    }
+
+    #[test]
+    fn show_an_unknown_capability_names_list_specs_and_exits_one() {
+        let h = searchable();
+        let err = show(&h.ctx(), "billing").err().unwrap();
+        assert_eq!(err.code, "unknown_capability");
+        assert!(err.message.contains("codev list --specs"));
+    }
+
+    #[test]
+    fn show_prints_a_requirement_verbatim_and_a_capability_index() {
+        let h = searchable();
+        let one = show(&h.ctx(), "decisions::Listing decisions").unwrap();
+        assert_eq!(
+            crate::render::show(&one),
+            "### Requirement: Listing decisions\n\n`codev decision list` SHALL list them.\n\n\
+#### Scenario: List\n\n- **WHEN** asked\n- **THEN** it lists\n"
+        );
+        let index = crate::render::show(&show(&h.ctx(), "decisions").unwrap());
+        assert!(index.contains("Record decisions."), "{index}");
+        assert!(
+            index.contains("  decisions::Creating a decision through the CLI\n"),
+            "{index}"
+        );
     }
 
     // ─────────────── decision show ───────────────

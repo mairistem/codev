@@ -251,6 +251,66 @@ Warnings in `status`: `release_note_missing`, `release_note_invalid`,
 
 With `--specs`, the array is named `specs` and lists capability paths.
 
+### search
+
+`codev search --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "query": "decision seal",
+  "language": "en",
+  "results": [
+    {
+      "kind": "requirement",
+      "id": "decisions::Body seal recorded by the CLI",
+      "capability": "decisions",
+      "requirement": "Body seal recorded by the CLI",
+      "excerpt": "The CLI SHALL maintain a `_codev/decisions/seal.yaml` file…"
+    },
+    {
+      "kind": "decision",
+      "id": "project/0003",
+      "decision": "0003",
+      "title": "The planning folder is hidden",
+      "origin": "project",
+      "status": "superseded",
+      "inEffect": false,
+      "supersededBy": "project/0009",
+      "excerpt": "…"
+    }
+  ],
+  "archived": [
+    { "change": "2026-09-09-enforce-decision-immutability", "excerpt": "…" }
+  ],
+  "status": []
+}
+```
+
+`language` is the language the words were stemmed in. A result carries the
+fields of its kind only; `archived` is present only with `--archive`. Inside
+a result, `status` is the decision's status, not the root array of errors.
+
+### show
+
+`codev show --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "capability": "decisions",
+  "requirement": {
+    "name": "Creating a decision through the CLI",
+    "text": "### Requirement: Creating a decision through the CLI\n\n…"
+  },
+  "status": []
+}
+```
+
+`codev show <capability>` carries `requirements`, the requirement names, and
+`purpose` instead of `requirement`. A failure carries `capability: null`
+and its code in `status`.
+
 ### status
 
 ```json
