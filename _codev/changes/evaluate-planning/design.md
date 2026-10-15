@@ -185,7 +185,7 @@ be evaluated.
 - [The model knows codev's public history and plans from memory] → The
   same contamination holds for baseline and candidate; the suite compares,
   it never claims an absolute planning score, and the reliability chapter
-  keeps showing role figures only.
+  shows the planning figures with that limit stated next to them.
 - [A history rewrite removes a pinned commit] → Loading fails on the case,
   naming the commit; the cases are rebased together with the history.
 - [An old state's configuration does not load with today's codev] → The

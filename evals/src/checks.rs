@@ -71,6 +71,24 @@ mod tests {
     }
 
     #[test]
+    fn a_guide_without_the_skills_is_named() {
+        let files = [
+            (
+                "CONTRIBUTING.md",
+                "A change to assets/roles/ pastes `codev-evals -- compare`.",
+            ),
+            (
+                "CONTRIBUTING.fr.md",
+                "Un changement de assets/workflows/ colle la comparaison.",
+            ),
+        ];
+        assert_eq!(
+            missing_mention(&files, "assets/workflows/"),
+            ["`CONTRIBUTING.md` does not mention `assets/workflows/`"]
+        );
+    }
+
+    #[test]
     fn missing_from_baseline_names_the_case() {
         let cases = vec!["a".to_string(), "new-case".to_string()];
         let observed: BTreeSet<String> = ["a".to_string()].into();

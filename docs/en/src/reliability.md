@@ -58,6 +58,12 @@ The table holds every value the charts draw. **Cases**: seeded and clean control
 | skeptic | 3 (2/1) | 3/3 | 0 | 5 | 1.00 | 2/3 | <span class="rel-icon-over" aria-hidden="true">▲</span> Failed: false positives |
 | tracer | 2 (1/1) | 1/1 | 0 | 0 | — | 1/1 | <span class="rel-icon-ok" aria-hidden="true">✓</span> Met |
 
+## What a run consumes
+
+- One run of the suite: 12.80 USD
+- Input per call, in tokens: —
+- Output per call, in tokens: —
+
 ## The thresholds
 
 A role fails when its recall is under 0.50, when it reports more than 2 false positives, or when less than 0.80 of its checked evidence is valid — the suite's defaults, `--min-recall`, `--max-false-positives` and `--min-evidence`. A role with no seeded case has no recall, and one with no checked finding no evidence validity: neither fails on it.

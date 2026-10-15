@@ -80,18 +80,29 @@ false positives and evidence validity must stay within the range the
 baseline's repetitions spanned. A pull request meant to make the skills
 consume less pastes the output of `cargo run -p codev-evals -- compare`,
 without `--quality-only`: the quality must hold and the cost must fall
-under the baseline's floor, each case at its cheapest run. Record the
-candidate with `--repeat 3` at least, and with the baseline's `--jobs`
+under the baseline's floor, each case at its cheapest run. Any other
+pull request that changes what a skill does — a file of
+`assets/workflows/`, or the JSON a skill reads,
+`crates/codev-cli/src/contract.rs` — pastes the output of
+`cargo run -p codev-evals -- compare --quality-only`, which still reports
+what its runs consume. Run both on the cases of the steps the pull
+request touches, with `--step` (repeatable): `review` for the review
+steps, `plan.write` for the planning of `/codev-propose`. Accepted
+decision 0008 makes this the rule for every change to the workflow.
+Record the candidate with `--repeat 3` at least, and with the baseline's `--jobs`
 (4), so that both runs share the prompt cache alike.
 
 The suite needs [Claude Code](https://claude.com/claude-code) installed and
-signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a full run of the
-40 cases costs about fifteen US dollars, each case capped at 3 by default.
+signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a run of the
+40 review cases costs about fifteen US dollars, each case capped at 3 by
+default; a planning case costs about 1.65 dollars and takes several
+minutes, capped at 6 dollars and 1,800 seconds by default.
 
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # the cases
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
+cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- score target/evals/mine    # score again, no model
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -116,10 +127,14 @@ exits with 1 when a role is under a threshold (`--min-recall`,
 `--max-false-positives`, `--min-evidence`) or a run stopped. `--repeat N`
 runs each case N times; the report gives each measure's median over the
 runs, with its range, and what the runs consumed (cost, durations, turns,
-tokens, permission denials). A directory that already holds observations
+tokens, permission denials, calls to the model with their input and
+output per call), and where the tokens go: each source — the skill read,
+each `codev` subcommand, the files, the searches, the model's own output
+— with its share of the cost. The output never decides a comparison: it
+carries the model's reasoning, which the quality measures guard. A directory that already holds observations
 is resumed: only the missing runs, and those in error, are made. `CODEV_EVAL_MODEL` picks the
 model (default: Claude Code's), `CODEV_EVAL_BUDGET_USD` and
-`CODEV_EVAL_TIMEOUT_SECS` bound each case. Compare on the same model as the
+`CODEV_EVAL_TIMEOUT_SECS` bound each case, whatever its step. Compare on the same model as the
 baseline. Maintainers can also start the **Role evaluations** workflow by
 hand; it needs the `ANTHROPIC_API_KEY` repository secret and skips
 otherwise.
@@ -149,6 +164,24 @@ may name what it will create under `planned`; a `code.review` case, whose
 tasks are done, plans nothing. `cargo run -p codev-evals -- list` loads
 every case and names what is wrong.
 
+### Writing a planning case
+
+A planning case replays a request against this repository as it was
+before an archived change: its directory holds only `case.yaml`, with
+`step: plan.write`, `kind: seeded`, `ref` (the commit the request is
+planned against — the parent of the change's merge commit), `request`
+(the user's words, in any language, never copied from the archived
+proposal: a test refuses more than twelve words in a row of it),
+`summary`, and `expected` — `modified`, the requirements the request is
+about, `collateral`, those the real change modified in passing, each as
+`<capability>::<requirement name>`, and `decisions`, each with its `id`
+and `expect` (`follow` or `supersede`). The runner rebuilds the fixture
+from `git archive <ref>` and installs the skills of the codev under
+test, so the suite needs the full history: a shallow clone fails to load
+the cases and names the commit (`git fetch --unshallow`). Loading also
+refuses a requirement or a decision that did not exist at `ref`, and a
+`ref` whose tree already holds the case.
+
 Changing a term of the vocabulary changes the scores: score the baseline
 again (`cargo run -p codev-evals -- score evals/baseline`) and say which
 findings it re-classifies.
@@ -160,9 +193,10 @@ with the Claude Code version `.github/workflows/evals.yml` pins
 (`npm install -g @anthropic-ai/claude-code@<that version>`; a test checks
 `evals/baseline/run.json` against the pin) — remove `evals/baseline/`, then
 `cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
-(about 75 dollars) — which the tests check: five runs of every case, none
-in error. Claude Code's raw output of each run (`claude.json`,
-`claude.stderr`) stays out of version control.
+(about 270 dollars and several hours, planning cases included) — which
+the tests check: five runs of every case, none in error. Claude Code's
+raw output of each run (`claude.jsonl`, `claude.stderr`) stays out of
+version control.
 
 ## Commits
 

@@ -93,19 +93,30 @@ par les répétitions de la ligne de base. Une pull request destinée à
 réduire la consommation des skills colle la sortie de
 `cargo run -p codev-evals -- compare`, sans `--quality-only` : la qualité
 doit tenir et le coût passer sous le plancher de la ligne de base, chaque
-cas à son exécution la moins chère. Enregistrez le candidat avec
+cas à son exécution la moins chère. Toute autre pull request qui change
+ce que fait une skill — un fichier de `assets/workflows/`, ou le JSON
+qu'une skill lit, `crates/codev-cli/src/contract.rs` — colle la sortie de
+`cargo run -p codev-evals -- compare --quality-only`, qui rapporte
+toujours ce que ses exécutions consomment. Lancez l'une et l'autre sur
+les cas des étapes que la pull request touche, avec `--step`
+(répétable) : `review` pour les étapes de revue, `plan.write` pour la
+planification de `/codev-propose`. La décision acceptée 0008 en fait la
+règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
 
 La suite demande [Claude Code](https://claude.com/claude-code) installé et
 connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
-exécution complète des 40 cas coûte une quinzaine de dollars américains, chaque
-cas étant plafonné à 3 par défaut.
+exécution des 40 cas de revue coûte une quinzaine de dollars américains,
+chaque cas étant plafonné à 3 par défaut ; un cas de planification coûte
+environ 1,65 dollar et prend plusieurs minutes, plafonné par défaut à
+6 dollars et 1 800 secondes.
 
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # les cas
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
+cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -133,10 +144,15 @@ se termine avec le code 1 quand un rôle passe sous un seuil
 exécution s'est arrêtée. `--repeat N` exécute chaque cas N fois ; le
 rapport donne la médiane de chaque mesure sur les exécutions, avec son
 écart, et ce qu'elles ont consommé (coût, durées, tours, tokens, refus de
-permission). Un répertoire qui contient déjà des observations est repris :
+permission, appels au modèle avec leur entrée et leur sortie par appel),
+et où vont les tokens : chaque source — la lecture de la skill, chaque
+sous-commande `codev`, les fichiers, les recherches, la sortie du modèle
+lui-même — avec sa part du coût. La sortie ne décide jamais d'une
+comparaison : elle porte le raisonnement du modèle, que gardent les
+mesures de qualité. Un répertoire qui contient déjà des observations est repris :
 seules les exécutions manquantes, et celles en erreur, sont refaites. `CODEV_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
 Code), `CODEV_EVAL_BUDGET_USD` et `CODEV_EVAL_TIMEOUT_SECS` bornent chaque
-cas. Comparez avec le même modèle que la ligne de base. Les mainteneurs
+cas, quelle que soit son étape. Comparez avec le même modèle que la ligne de base. Les mainteneurs
 peuvent aussi lancer à la main le workflow **Role evaluations** ; il
 demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
 sinon.
@@ -169,6 +185,25 @@ de plan peut nommer ce qu'elle va créer sous `planned` ; un cas
 `cargo run -p codev-evals -- list` charge tous les cas et nomme ce qui ne
 va pas.
 
+### Écrire un cas de planification
+
+Un cas de planification rejoue une demande sur ce dépôt tel qu'il était
+avant un change archivé : son répertoire ne contient que `case.yaml`,
+avec `step: plan.write`, `kind: seeded`, `ref` (le commit sur lequel la
+demande est planifiée — le parent du commit de fusion du change),
+`request` (les mots de l'utilisateur, dans n'importe quelle langue,
+jamais copiés de la proposition archivée : un test refuse plus de douze
+mots d'affilée de celle-ci), `summary`, et `expected` — `modified`, les
+exigences sur lesquelles porte la demande, `collateral`, celles que le
+vrai change a modifiées au passage, chacune sous la forme
+`<capacité>::<nom de l'exigence>`, et `decisions`, chacune avec son `id`
+et `expect` (`follow` ou `supersede`). Le lanceur reconstruit le projet à
+partir de `git archive <ref>` et y installe les skills du codev testé :
+la suite demande donc l'historique complet. Un clone superficiel ne
+charge pas les cas et nomme le commit (`git fetch --unshallow`). Le
+chargement refuse aussi une exigence ou une décision qui n'existait pas
+à `ref`, et un `ref` dont l'arbre contient déjà le cas.
+
 Changer un terme du vocabulaire change les scores : renotez la ligne de
 base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
 constats il reclasse.
@@ -182,10 +217,10 @@ qu'épingle `.github/workflows/evals.yml`
 vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
 `evals/baseline/`, puis
 `cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
-(environ 75 dollars) —, ce que les tests vérifient : cinq exécutions de
-chaque cas, aucune en erreur. La sortie brute de Claude Code de chaque
-exécution (`claude.json`, `claude.stderr`) reste hors du contrôle de
-version.
+(environ 270 dollars et plusieurs heures, cas de planification compris) —,
+ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
+erreur. La sortie brute de Claude Code de chaque exécution
+(`claude.jsonl`, `claude.stderr`) reste hors du contrôle de version.
 
 ## Commits
 

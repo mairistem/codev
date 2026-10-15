@@ -58,6 +58,12 @@ Le tableau donne toutes les valeurs que les graphiques dessinent. **Cas** : ens
 | skeptic | 3 (2/1) | 3/3 | 0 | 5 | 1,00 | 2/3 | <span class="rel-icon-over" aria-hidden="true">▲</span> Dépassés : faux positifs |
 | tracer | 2 (1/1) | 1/1 | 0 | 0 | — | 1/1 | <span class="rel-icon-ok" aria-hidden="true">✓</span> Respectés |
 
+## Ce que consomme une exécution
+
+- Une exécution de la suite : 12,80 USD
+- Entrée par appel, en tokens : —
+- Sortie par appel, en tokens : —
+
 ## Les seuils
 
 Un rôle échoue quand son rappel est inférieur à 0,50, quand il signale plus de 2 faux positifs, ou quand moins de 0,80 de ses preuves vérifiées sont valides — les valeurs par défaut de la suite, `--min-recall`, `--max-false-positives` et `--min-evidence`. Un rôle sans cas ensemencé n'a pas de rappel, et un rôle sans constat vérifié pas de validité des preuves : aucun des deux n'échoue sur cette mesure.

@@ -168,6 +168,7 @@ fn contributing_and_roles_chapters_name_the_baseline() {
         .collect();
     let mut gaps = missing_mention(&files, "evals/baseline");
     gaps.extend(missing_mention(&files[..2], "assets/roles/"));
+    gaps.extend(missing_mention(&files[..2], "assets/workflows/"));
     gaps.extend(missing_mention(&files[..2], "codev-evals -- docs"));
     gaps.extend(missing_mention(&files, "codev-evals"));
     gaps.extend(missing_mention(&files[..2], "codev-evals -- compare"));
@@ -221,6 +222,64 @@ fn the_workflow_passes_repeat_through_the_environment() {
         .expect("the run step bounds repeat");
     let run = workflow.find("codev-evals -- run").unwrap();
     assert!(bound < run, "repeat is checked before the suite runs");
+}
+
+/// The jobs of a workflow, each from its `  <id>:` line to the next.
+fn jobs(workflow: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let body = workflow.split_once("\njobs:\n").map_or("", |(_, b)| b);
+    for line in body.lines() {
+        let is_job = line.starts_with("  ") && !line.starts_with("   ") && line.ends_with(':');
+        if is_job || out.is_empty() {
+            out.push(String::new());
+        }
+        let job = out.last_mut().expect("a job");
+        job.push_str(line);
+        job.push('\n');
+    }
+    out
+}
+
+#[test]
+fn the_workflows_check_out_the_full_history() {
+    for path in [".github/workflows/evals.yml", ".github/workflows/ci.yml"] {
+        let workflow = read(path);
+        // Every job that runs `cargo test` or the suite checks out with
+        // `fetch-depth: 0` before it.
+        let running: Vec<String> = jobs(&workflow)
+            .into_iter()
+            .filter(|j| j.contains("cargo test") || j.contains("codev-evals -- run"))
+            .collect();
+        assert!(!running.is_empty(), "{path}: no job runs the suite");
+        for job in &running {
+            let checkout = job.find("actions/checkout").expect("a checkout");
+            let depth = job.find("fetch-depth: 0").unwrap_or_else(|| {
+                panic!("{path}: a job checks out without the full history: {job}")
+            });
+            assert!(
+                checkout < depth,
+                "{path}: fetch-depth belongs to the checkout"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_workflow_passes_step_through_the_environment() {
+    let workflow = read(".github/workflows/evals.yml");
+    assert!(workflow.contains("EVAL_STEP: ${{ inputs.step }}"));
+    assert!(workflow.contains("--step \"$EVAL_STEP\""));
+    assert!(workflow.contains("default: \"review\""));
+}
+
+#[test]
+fn the_workflow_bounds_a_planning_run() {
+    let workflow = read(".github/workflows/evals.yml");
+    let bound = workflow
+        .find("[ \"$EVAL_STEP\" = \"plan.write\" ] && [ \"$EVAL_REPEAT\" != \"1\" ]")
+        .expect("the run step bounds a planning run to one repetition");
+    let run = workflow.find("codev-evals -- run").unwrap();
+    assert!(bound < run, "the bound is checked before the suite runs");
 }
 
 #[test]
