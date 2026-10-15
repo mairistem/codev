@@ -14,10 +14,12 @@ the decision index, the inherited ones included, by how well they match the
 words of the query, and print the best matches, the most relevant first.
 Matching SHALL ignore case, accents and common words without meaning, and
 SHALL count a rare word of the query for more than a frequent one. Words
-SHALL match through their stem in the language the specs are written in —
-the language their structural keywords are written in, English when they
-mix several —, so that `decisions` finds `decision` and, in a French
-project, `décisions acceptées` finds `décision acceptée`.
+SHALL match through their stem in the language the specs' prose is written
+in: the project's `language:` when stems are known for it, else the
+language of the specs' structural keywords, English when they mix several
+or when no stem is known for either — so that `decisions` finds `decision`
+and, in a project whose `language:` is `fr`, `décisions acceptées` finds
+`décision acceptée`, whatever language its keywords are written in.
 
 Each result SHALL give its kind (`requirement` or `decision`), its
 identifier — `<capability>::<requirement name>` for a requirement, the
@@ -57,8 +59,9 @@ SHALL write no file and reach no network.
 
 #### Scenario: A French project
 
-- **GIVEN** a project whose specs are written with French keywords and hold a
-  requirement about `une décision acceptée`
+- **GIVEN** a project whose `language:` is `fr`, whose specs are written
+  with English keywords and French prose, and hold a requirement about
+  `une décision acceptée`
 - **WHEN** the user runs `codev search "decisions acceptees"`
 - **THEN** that requirement is among the results
 

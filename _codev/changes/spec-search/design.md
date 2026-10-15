@@ -64,9 +64,10 @@ size; revisit only if a project's search grows past a second.
 ### Decision: Snowball stemming with `rust-stemmers`, in the language of the specs
 
 Words are stemmed with the Snowball algorithms of the `rust-stemmers`
-crate, in the language the specs' keywords are written in (`Spec.lang`):
-English, or French; a project whose specs mix languages is stemmed in
-English. Decisions carry no structural keywords: they are stemmed in the
+crate, in the language the specs' prose is written in: the project's
+`language:` when Snowball knows it, else the language of the specs'
+keywords (`Spec.lang`), English when they mix several. The keywords are
+not enough: the skills write them in English whatever the prose. Decisions carry no structural keywords: they are stemmed in the
 same language as the specs, so that one query matches both, an inherited
 decision written in another language matching less well — a loss accepted
 here, since the study measured a mismatch losing 60 to 75 % of the recall,
@@ -116,15 +117,28 @@ the main specs against the proposal's `Why` and `What Changes` — the same
 ranking as `codev search`, in the specs' language — and gives the best 10
 in a `related` field and a section of its human output, with the line that
 a requirement the change alters is modified, not added again. The
-proposal is written in the artifact language, the specs' language in
-practice, so the query is in the right language without asking the agent
-to translate anything; it is several sentences long, which ranks better
+proposal is written in the artifact language, the language its words are
+stemmed in — the project's `language:`, the specs' prose language, not
+their structural keywords, which the skills keep in English —, so the query
+is in the right language without asking the agent to translate anything;
+it is several sentences long, which ranks better
 than a few keywords. The decisions in effect are already in `decisions`
 and are not repeated.
 
+The list is served for the artifacts that require the proposal directly
+— the delta specs and the design —, empty for the others: `/codev-apply`
+and the reviews call `codev instructions` for the context and the rules
+only, and must pay neither the ranking nor the tokens. Its human section
+says how to read one requirement, `codev show <capability>::<requirement>`
+— the tool comes with the data rather than being imposed by the skill — so
+that the agent reads one requirement rather than a whole spec, the cost
+the Why targets. An empty proposal ranks nothing and an unreadable spec is
+left out with a warning: the instructions never fail for the list.
+
 The `propose` skill's paragraph shrinks to: read the requirements the
-instructions list, modify those the change alters, and treat the list as a
-starting point. It names no search command. This follows what ICM
+instructions list, modify those the change alters, treat the list as a
+starting point, and with no listed requirement work from the request and
+the code. It names no search command. This follows what ICM
 (rtk-ai/icm) does for an agent's memory — give the relevant context where
 the agent already looks rather than ask it to search — and what the first
 measure of this change showed: told to run `codev search`, the agent ran
@@ -185,6 +199,9 @@ read the same skill and could pay for its longer text unseen.
 
 ## Migration Plan
 
-Nothing to migrate: two commands and two JSON documents are added. Users
-get the new skills with `codev update`; a skill rendered by this version
-calls commands this version provides (`metadata.version`).
+Two commands and their JSON documents are added, and the instructions
+document of `contract::v1` gains a field, `related`: an addition, which an
+installed skill of an earlier version ignores. A skill rendered by this
+version reads `related` only to list requirements, and an empty or absent
+list leaves it working from the request and the code, so it also runs
+against an earlier binary. Users get the new skills with `codev update`.

@@ -82,7 +82,7 @@ proof it cuts tokens without planning worse.
 - [ ] user-interface — suggested by the reliability page of `evaluate-planning`, which this branch builds on; this change only prints terminal text in the CLI's existing style
 - [x] performance
 - [ ] operations — suggested by the workflows of `evaluate-planning`, which this branch builds on; this change adds no workflow, log or timeout
-- [ ] migration — suggested by the case format of `evaluate-planning`, which this branch builds on; this change only adds commands and JSON documents, and the skills reach users through the usual `codev update`
+- [ ] migration — the instructions document of the JSON contract gains a field, `related`, an addition that installed skills ignore; the new skill treats an absent list as empty, so a new skill with an older binary still works; no data or configuration changes
 
 ## Release note
 

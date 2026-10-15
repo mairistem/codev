@@ -8,8 +8,9 @@ the existing requirements the change likely touches, and to modify, in a
 `MODIFIED` block copied whole from its spec, every one the change alters,
 rather than add a requirement beside it. It SHALL say that the list is a
 starting point ranked by relevance, not a complete one: a requirement it
-does not name may still be concerned. The skill SHALL name no search
-command the agent must run: it may look further as it sees fit.
+does not name may still be concerned, and that with no listed
+requirement it works from the request and the code. The skill SHALL name
+no search command the agent must run: it may look further as it sees fit.
 
 #### Scenario: The propose skill reads what its instructions name
 
@@ -28,7 +29,7 @@ command the agent must run: it may look further as it sees fit.
 
 #### Scenario: Instructions without related requirements
 
-- **GIVEN** a project whose `_codev/specs/` is empty
-- **WHEN** the `codev-propose` skill writes the delta specs
-- **THEN** it goes on with the request and the code, the list of existing
-  requirements being empty
+- **GIVEN** the `codev-propose` skill as `codev update` renders it
+- **WHEN** its step that writes each artifact is read
+- **THEN** it says that with no listed requirement the agent works from the
+  request and the code
