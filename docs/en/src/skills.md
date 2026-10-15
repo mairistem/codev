@@ -253,9 +253,10 @@ remove their folders from `.claude/skills/` yourself.
 
 ## Editing a generated skill
 
-Each generated `SKILL.md` records the codev version that produced it. If you
-edit a skill by hand, `codev update` detects the edit and leaves the file in
-place:
+Each generated `SKILL.md` records the codev version that produced it and a
+checksum of its own content. If you edit a skill by hand, its content no
+longer matches its checksum: `codev update` detects the edit and leaves the
+file in place:
 
 ```text
   Left in place because edited by hand — rerun with --force to overwrite:
@@ -263,4 +264,9 @@ place:
 ```
 
 `codev update --force` overwrites it with the generated version. Skills from
-an older codev version are always regenerated.
+another codev version are always regenerated, and so are skills of this
+version that codev rendered itself — an earlier build, or the other review
+mode — since they still match their checksum. A skill generated before
+checksums existed, of this version, is preserved like an edit: run `codev
+update --force` once to give it its checksum — check `git diff` first, since
+it also overwrites your real edits, and apply them again after.

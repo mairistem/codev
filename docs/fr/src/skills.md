@@ -275,9 +275,10 @@ sont plus listées : supprimez vous-même leurs dossiers dans `.claude/skills/`
 
 ## Modifier une skill générée
 
-Chaque `SKILL.md` généré enregistre la version de codev qui l'a produit. Si
-vous modifiez une skill à la main, `codev update` détecte la modification et
-laisse le fichier en place :
+Chaque `SKILL.md` généré enregistre la version de codev qui l'a produit et
+une empreinte (`checksum`) de son propre contenu. Si vous modifiez une skill
+à la main, son contenu ne correspond plus à son empreinte : `codev update`
+détecte la modification et laisse le fichier en place :
 
 ```text
   Left in place because edited by hand — rerun with --force to overwrite:
@@ -285,4 +286,10 @@ laisse le fichier en place :
 ```
 
 `codev update --force` l'écrase avec la version générée. Les skills issues
-d'une version antérieure de codev sont toujours régénérées.
+d'une autre version de codev sont toujours régénérées, tout comme les skills
+de cette version que codev a rendues lui-même — une compilation antérieure, ou
+l'autre mode de revue —, puisqu'elles correspondent encore à leur empreinte.
+Une skill de cette version générée avant les empreintes est préservée comme
+une modification : lancez une fois `codev update --force` pour lui donner son
+empreinte — vérifiez d'abord `git diff`, car il écrase aussi vos vraies
+modifications, puis réappliquez-les.

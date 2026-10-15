@@ -97,9 +97,11 @@ Claude Code discovers skills when a session starts. After `codev init` or
   Left in place because edited by hand — rerun with --force to overwrite:
 ```
 
-That skill was edited by hand, and codev does not discard your work. Keep the
-edit and ignore the message, or run `codev update --force` to regenerate it
-(check `git diff` first).
+That skill was edited by hand — its content no longer matches its checksum —
+and codev does not discard your work. Keep the edit and ignore the message,
+or run `codev update --force` to regenerate it (check `git diff` first). A
+skill generated before checksums existed is preserved the same way until
+one `codev update --force` gives it its checksum.
 
 ### A reviewer's sub-agent fails
 
@@ -155,6 +157,18 @@ same code.
 
 Every `.md` file in `_codev/decisions/` is parsed as a decision. Move other
 Markdown files, such as a README, out of that folder.
+
+### A spec archived with an earlier codev holds a cut requirement
+
+In codev 0.6.1 and earlier — builds made before this fix — archiving a change
+that both modified the last requirement of a spec and added requirements could
+write the added ones in the middle of a line of the modified one: the spec
+then holds the start of that requirement, the added ones, and its end glued
+after them. `codev validate` does not detect it, and syncing or archiving the
+change again does not repair it. To check, look at the diff of each archive of
+a change whose delta modified a spec's last requirement and added
+requirements; to repair, put the requirement back whole by hand, or with a new
+change whose `MODIFIED` delta gives its full text.
 
 ### Sync or archive refuses a change
 

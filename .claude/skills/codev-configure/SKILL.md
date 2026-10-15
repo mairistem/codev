@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "a6f7ed7b633e3c9546c4374f9997e461a35c30872006ceeb108df060d267acad"
 ---
 
 Enrich `_codev/config.yaml` by analyzing the project — propose a detailed

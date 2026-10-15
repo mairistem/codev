@@ -24,19 +24,24 @@ impl Edit {
 
 /// Applies a series of edits to a source, preserving the remaining offsets.
 ///
-/// Edits are sorted by **descending** `byte_range.end` before being applied.
-/// Sorting by end, not by start: two edits ending at the same point but
-/// starting differently (impossible in our cases) would then stay in
-/// insertion order, which is predictable.
+/// Edits are sorted by **descending** `byte_range.end`, then by descending
+/// `byte_range.start`, before being applied. Two edits do end at the same
+/// point: a `MODIFIED` of a section's last requirement, whose span runs to
+/// the section's end, and an `ADDED` inserted at that end. The zero-width
+/// insertion then goes first and sits after the end; the replacement that
+/// follows rewrites only what lies before it. Applied the other way round,
+/// the replacement would lengthen the text and the insertion would land at
+/// its old offset, inside the new text.
 ///
 /// An edit whose `byte_range.end > source.len()` is rejected — this is the
 /// only safety invariant; the rest is already validated by the calling layer.
 pub fn apply_edits(source: &str, edits: &[Edit]) -> String {
     let mut ordered = edits.to_vec();
-    // Stable sort by descending end: the last modified segments go first,
-    // leaving earlier offsets intact. `sort_by_key` + `Reverse` avoids the
+    // Stable sort by descending end then start: the last modified segments
+    // go first, leaving earlier offsets intact, and an insertion at the end
+    // of a replacement goes before it. `sort_by_key` + `Reverse` avoids the
     // double comparison flagged by clippy.
-    ordered.sort_by_key(|e| std::cmp::Reverse(e.byte_range.end));
+    ordered.sort_by_key(|e| std::cmp::Reverse((e.byte_range.end, e.byte_range.start)));
 
     let mut out = source.to_string();
     for edit in ordered {
@@ -68,6 +73,19 @@ mod tests {
         let source = "before [HERE] after";
         let edits = vec![Edit::new(7..13, "[THERE]")];
         assert_eq!(apply_edits(source, &edits), "before [THERE] after");
+    }
+
+    #[test]
+    fn an_insertion_at_the_end_of_a_replacement_goes_after_it() {
+        // A MODIFIED of the last requirement ends where an ADDED inserts:
+        // whatever their order, the insertion lands after the new text.
+        let source = "head OLD";
+        for edits in [
+            vec![Edit::new(5..8, "NEW-AND-LONGER"), Edit::new(8..8, "+ADDED")],
+            vec![Edit::new(8..8, "+ADDED"), Edit::new(5..8, "NEW-AND-LONGER")],
+        ] {
+            assert_eq!(apply_edits(source, &edits), "head NEW-AND-LONGER+ADDED");
+        }
     }
 
     #[test]

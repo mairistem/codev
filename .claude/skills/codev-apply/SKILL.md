@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "8d676b09a240fd99a6c905377d1e462491be85671a42a1434eb12292ac4b3c58"
 ---
 
 Implement the tasks of a codev change — work through each `- [ ]` box in

@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "2aa1bd51237d4eace7ccbe42fb362d7ba42a75d88e708c5c4f586984a79accfd"
 ---
 
 Revise an already written planning artifact of an active codev change —

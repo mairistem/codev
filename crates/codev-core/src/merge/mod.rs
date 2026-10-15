@@ -527,6 +527,31 @@ mod tests {
     }
 
     #[test]
+    fn modifying_the_last_requirement_and_adding_one_keeps_both_whole() {
+        let spec_source = "# Auth\n\n## Purpose\n\nAuth.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+        let delta_source = "## MODIFIED Requirements\n\n### Requirement: Login\nThe system SHALL x, then y, then z.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b, longer than before\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n\n## ADDED Requirements\n\n### Requirement: Export\nThe system SHALL e.\n\n#### Scenario: U\n- **WHEN** f\n- **THEN** g\n";
+        let out = merged(spec_source, delta_source);
+        let login = out.find("### Requirement: Login").unwrap();
+        let export = out.find("### Requirement: Export").unwrap();
+        assert!(login < export, "{out}");
+        let login_block = &out[login..export];
+        assert!(
+            login_block.contains("- **THEN** b, longer than before")
+                && login_block.contains("#### Scenario: T\n\n- **WHEN** c\n- **THEN** d\n"),
+            "Login is whole before Export: {out}"
+        );
+        assert!(
+            out.ends_with("#### Scenario: U\n\n- **WHEN** f\n- **THEN** g\n"),
+            "Export closes the spec: {out}"
+        );
+        assert_eq!(
+            merged(&out, delta_source),
+            out,
+            "a second merge changes nothing"
+        );
+    }
+
+    #[test]
     fn added_precedes_a_following_free_section() {
         // ## Notes after ## Requirements: the ADDED must be inserted BEFORE it.
         let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n## Notes\n\nBonus.\n";

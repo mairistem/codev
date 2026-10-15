@@ -15,7 +15,10 @@ A sync SHALL apply each operation of a delta according to its own
 semantics: `ADDED` inserts at the end of the `## Requirements` section,
 `MODIFIED` replaces the block of the requirement with the same name down to
 the character, `REMOVED` deletes the entire block, `RENAMED` retitles only
-the `### Requirement:` header without touching the body.
+the `### Requirement:` header without touching the body. The operations
+SHALL compose: a requirement `ADDED` after a requirement that the same
+delta modifies or renames lands after that requirement's whole new text,
+never inside it, even when that requirement ends the section.
 
 #### Scenario: ADDED appears at the end of Requirements
 
@@ -58,6 +61,15 @@ the `### Requirement:` header without touching the body.
 - **THEN** the requirement header has become `### Requirement: Session Timeout`
 - **AND** the description and scenarios of that requirement are identical
   down to the character
+
+#### Scenario: The last requirement modified and another added
+
+- **GIVEN** a main spec whose `## Requirements` ends with `Login`
+- **AND** a delta that modifies `Login`, making it longer, and adds
+  `Export`
+- **WHEN** the user runs `codev sync <change>`
+- **THEN** the main spec holds the delta's `Login` whole, then `Export`
+- **AND** no line of `Login` is cut, and a second sync changes nothing
 
 ### Requirement: Preservation of unmentioned content
 

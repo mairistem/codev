@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use codev_core::doctor::SkillState;
 use codev_core::managed::SpliceMode;
 use codev_core::review::ReviewMode;
+use codev_core::update::sha256_hex;
 use codev_core::{Plan, WriteMode};
 use codev_engine::FileSystem;
 use codev_engine::integration::{self, IntegrationPlan, Step};
@@ -174,7 +175,7 @@ impl ClaudeCode {
                 crate::workflows::REVIEW_RECORD_PLACEHOLDER,
                 &crate::workflows::review_record(),
             );
-        format!(
+        let unsealed = format!(
             "---\n\
              name: {name}\n\
              description: {description}\n\
@@ -190,7 +191,40 @@ impl ClaudeCode {
             description = yaml_scalar(workflow.description),
             tools = yaml_scalar(&tools),
             body = body.trim_end(),
-        )
+        );
+        seal(&unsealed, version)
+    }
+
+    /// Whether `current`, the skill on disk, was edited by hand rather than
+    /// rendered by codev — the one case `codev update` leaves in place
+    /// without `--force`.
+    fn is_hand_edited(
+        &self,
+        workflow: &Workflow,
+        version: &str,
+        current: &str,
+        desired: &str,
+    ) -> bool {
+        // Identical, or stamped with another version: codev's to rewrite.
+        if current == desired || stamped_version(current).as_deref() != Some(version) {
+            return false;
+        }
+        match matches_its_checksum(current) {
+            // Still hashing to its checksum, it is codev's rendering — an
+            // earlier build of this version, or the other review mode; no
+            // longer hashing to it, someone edited it.
+            Some(matches) => !matches,
+            // Rendered before checksums: only a difference of review mode
+            // is codev's own, compared without the checksum line.
+            None => {
+                current
+                    != without_checksum(&Self::render(
+                        workflow,
+                        version,
+                        &self.ctx.other_review_mode(),
+                    ))
+            }
+        }
     }
 }
 
@@ -222,17 +256,11 @@ impl AgentTarget for ClaudeCode {
             let path = Self::skill_file(project_root, workflow.id);
             let desired = Self::render(workflow, version, &self.ctx);
 
-            // Same stamped version, different content: someone edited the
-            // file by hand. Overwriting it would lose their work without
-            // warning; report it and move on. A skill rendered by this
-            // version for the other review mode is codev's own: the mode
-            // changed, regenerate it.
+            // A skill edited by hand is left in place and reported:
+            // overwriting it would lose someone's work without warning.
             let edited_by_hand = !force
-                && fs.exists(&path)
                 && fs.read_to_string(&path).is_ok_and(|current| {
-                    current != desired
-                        && stamped_version(&current).as_deref() == Some(version)
-                        && current != Self::render(workflow, version, &self.ctx.other_review_mode())
+                    self.is_hand_edited(workflow, version, &current, &desired)
                 });
             if edited_by_hand {
                 preserved.push(path);
@@ -350,6 +378,63 @@ fn yaml_scalar(raw: &str) -> String {
     format!("\"{escaped}\"")
 }
 
+/// The frontmatter key of a skill's checksum, under `metadata`.
+const CHECKSUM_KEY: &str = "checksum:";
+
+/// The frontmatter lines of a `SKILL.md`, between its two `---`.
+fn frontmatter_lines(contents: &str) -> impl Iterator<Item = &str> {
+    contents
+        .strip_prefix("---")
+        .map(|rest| rest.lines().skip(1).take_while(|line| *line != "---"))
+        .into_iter()
+        .flatten()
+}
+
+/// The checksum stamped in a `SKILL.md`, if it carries one.
+fn stamped_checksum(contents: &str) -> Option<String> {
+    frontmatter_lines(contents)
+        .find_map(|line| line.trim().strip_prefix(CHECKSUM_KEY))
+        .map(|value| value.trim().trim_matches('"').to_string())
+}
+
+/// `unsealed` with its checksum inserted under `metadata`, right after the
+/// version line: the SHA-256 of the whole skill but that line, so that a
+/// skill whose content still hashes to it is codev's rendering.
+fn seal(unsealed: &str, version: &str) -> String {
+    let checksum = sha256_hex(unsealed.as_bytes());
+    let version_line = format!("  version: \"{version}\"\n");
+    unsealed.replacen(
+        &version_line,
+        &format!("{version_line}  {CHECKSUM_KEY} \"{checksum}\"\n"),
+        1,
+    )
+}
+
+/// The skill without its checksum line: what the checksum covers.
+fn without_checksum(contents: &str) -> String {
+    let mut out = String::with_capacity(contents.len());
+    let mut in_frontmatter = false;
+    for (i, line) in contents.split_inclusive('\n').enumerate() {
+        // Only the `---` of the first line opens the frontmatter; the next
+        // one closes it, and a `---` in the body never reopens it.
+        if line.trim_end() == "---" {
+            in_frontmatter = i == 0;
+        }
+        if in_frontmatter && line.trim().starts_with(CHECKSUM_KEY) {
+            continue;
+        }
+        out.push_str(line);
+    }
+    out
+}
+
+/// Whether a skill's content still hashes to its own checksum; `None` for
+/// a skill rendered before checksums.
+fn matches_its_checksum(contents: &str) -> Option<bool> {
+    stamped_checksum(contents)
+        .map(|checksum| sha256_hex(without_checksum(contents).as_bytes()) == checksum)
+}
+
 /// Extracts the version stamped in a `SKILL.md` frontmatter.
 ///
 /// This stamp is what distinguishes "file from an earlier version, to
@@ -429,6 +514,11 @@ mod tests {
                 "the skill name must match its folder"
             );
             assert_eq!(parsed["metadata"]["version"].as_str(), Some(VERSION));
+            assert_eq!(
+                parsed["metadata"]["checksum"].as_str().map(str::len),
+                Some(64),
+                "a hexadecimal SHA-256"
+            );
             assert!(parsed["description"].as_str().is_some_and(|d| d.len() > 60));
         }
     }
@@ -471,6 +561,92 @@ mod tests {
             ClaudeCode::new().plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false);
 
         assert_eq!(planned.plan.writes.len(), 1, "the update must write");
+        assert!(planned.preserved.is_empty());
+    }
+
+    /// A skill as codev would have rendered it with `body_edit` applied:
+    /// its checksum recomputed, as an earlier build's rendering would carry.
+    fn rendered_by_another_build(rendered: &str, body_edit: &str) -> String {
+        seal(
+            &format!("{}{body_edit}", without_checksum(rendered)),
+            VERSION,
+        )
+    }
+
+    fn plan_for(existing: String, ctx: RenderCtx) -> SkillsPlan {
+        let fs =
+            MemoryFileSystem::new().with_file("/p/.claude/skills/codev-propose/SKILL.md", existing);
+        ClaudeCode::with_ctx(ctx).plan_skills(&fs, Path::new("/p"), &[propose()], VERSION, false)
+    }
+
+    #[test]
+    fn a_rendered_skill_matches_its_checksum() {
+        for workflow in workflows::CATALOG {
+            let rendered = ClaudeCode::render(workflow, VERSION, &RenderCtx::default());
+            assert_eq!(
+                matches_its_checksum(&rendered),
+                Some(true),
+                "{}",
+                workflow.id
+            );
+            assert_eq!(
+                stamped_checksum(&rendered).unwrap(),
+                sha256_hex(without_checksum(&rendered).as_bytes())
+            );
+        }
+    }
+
+    #[test]
+    fn a_skill_from_an_earlier_build_of_the_version_is_rewritten() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        let earlier = rendered_by_another_build(&rendered, "\nA sentence an earlier build had.\n");
+        assert_ne!(earlier, rendered);
+        let planned = plan_for(earlier, RenderCtx::default());
+        assert_eq!(
+            planned.plan.writes.len(),
+            1,
+            "codev's own rendering: rewrite"
+        );
+        assert!(planned.preserved.is_empty());
+    }
+
+    #[test]
+    fn a_hand_edit_of_a_checksummed_skill_is_preserved() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        let planned = plan_for(format!("{rendered}\nMy own line.\n"), RenderCtx::default());
+        assert!(planned.plan.writes.is_empty());
+        assert_eq!(planned.preserved.len(), 1);
+    }
+
+    #[test]
+    fn a_same_version_skill_without_checksum_that_differs_is_preserved() {
+        let rendered = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+        let legacy = format!("{}\nAn older text.\n", without_checksum(&rendered));
+        let planned = plan_for(legacy, RenderCtx::default());
+        assert!(
+            planned.plan.writes.is_empty(),
+            "same version, no checksum: preserved"
+        );
+        assert_eq!(planned.preserved.len(), 1);
+    }
+
+    #[test]
+    fn a_legacy_skill_of_the_other_review_mode_is_rewritten() {
+        let legacy_inline = without_checksum(&ClaudeCode::render(
+            propose(),
+            VERSION,
+            &RenderCtx::default(),
+        ));
+        let planned = plan_for(legacy_inline, isolated());
+        assert_eq!(planned.plan.writes.len(), 1, "only the review mode differs");
+        assert!(planned.preserved.is_empty());
+    }
+
+    #[test]
+    fn a_hand_edit_of_a_skill_from_another_version_is_rewritten() {
+        let rendered = ClaudeCode::render(propose(), "0.5.0", &RenderCtx::default());
+        let planned = plan_for(format!("{rendered}\nMy own line.\n"), RenderCtx::default());
+        assert_eq!(planned.plan.writes.len(), 1, "another version: rewritten");
         assert!(planned.preserved.is_empty());
     }
 

@@ -6,6 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
+  checksum: "297fce85e08c78d3421131b9b7e3ca00e2354925fa6e455bb800ed89d081d305"
 ---
 
 Introduce codev to a user discovering it: what the tool does, the current
