@@ -645,8 +645,8 @@ mod tests {
             let html = render_html(&markdown(lang), lang, "0.0.0");
             assert_eq!(
                 html.matches("<svg class=\"rel-chart\"").count(),
-                2,
-                "both charts pass through as HTML ({lang:?})"
+                3,
+                "the three charts — false positives, recall, where the tokens go — pass through as HTML ({lang:?})"
             );
             assert_eq!(html.matches("</svg>").count(), html.matches("<svg").count());
             assert!(!html.contains("&lt;svg"), "a chart was escaped ({lang:?})");
