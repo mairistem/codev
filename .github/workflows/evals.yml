@@ -128,3 +128,6 @@ jobs:
           name: role-evaluations
           path: evals-output
           if-no-files-found: ignore
+          # The raw streams hold the run's transcripts: kept long enough to
+          # read a run again, not for the default 90 days.
+          retention-days: 14

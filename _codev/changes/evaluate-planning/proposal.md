@@ -94,7 +94,7 @@ now asks for — fewer tokens, the same quality of answer.
 ## Domains
 
 - [ ] security — the runner already confines the agent in Claude Code's sandbox; the fixture is this repository's own history, with no secret
-- [ ] personal-data
+- [x] personal-data — the raw event streams (`claude.jsonl`) hold transcripts and the operator's paths: stripped of their `system/init` event, kept local and git-ignored, 14 days as a CI artifact; the committed observations hold no path of the machine
 - [x] user-interface
 - [ ] performance — the change measures what the skills consume; it does not change it
 - [x] operations

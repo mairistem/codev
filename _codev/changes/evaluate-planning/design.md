@@ -89,7 +89,14 @@ before, counts the tool calls, and finds the orientation — the calls
 before the first `Write`, `Edit` or `MultiEdit` of a file under
 `_codev/changes/`. Both are optional fields of the observation's
 `consumption`, so earlier observations stay readable and the format stays
-2. A write through a shell redirection is not seen as a write; the
+2. The stream holds the whole transcript, and its first event
+(`system/init`) the session's settings, whose paths name the operator's
+home directory: the runner strips that event once read. The transcript
+itself may still name that directory — Claude Code saves a large tool
+output there and the agent reads it back —, so the stream as a whole
+stays local and git-ignored, and the evaluation workflow keeps its
+artifact 14 days. The observations record no path of the machine — the `root` of
+each `codev validate` report is dropped. A write through a shell redirection is not seen as a write; the
 skills write their artifacts with the file tools, which the study's 44
 runs confirm.
 

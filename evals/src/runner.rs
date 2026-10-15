@@ -1102,6 +1102,31 @@ fn terminate(child: &mut std::process::Child) {
     let _ = child.wait();
 }
 
+/// A stream without its `system/init` event: the session's settings, whose
+/// paths name the operator's home directory, and nothing a run is
+/// measured on.
+pub fn without_init_event(stream: &str) -> String {
+    stream
+        .lines()
+        .filter(|line| {
+            serde_json::from_str::<serde_json::Value>(line).map_or(true, |event| {
+                !(event["type"] == "system" && event["subtype"] == "init")
+            })
+        })
+        .map(|line| format!("{line}\n"))
+        .collect()
+}
+
+/// A `codev validate --json` report without its `root`: the absolute path
+/// of the case's directory on the machine that ran it, which the scoring
+/// does not read.
+pub fn without_root(mut report: serde_json::Value) -> serde_json::Value {
+    if let Some(object) = report.as_object_mut() {
+        object.remove("root");
+    }
+    report
+}
+
 /// The JSON document a `codev … --json` command prints in `dir`. codev
 /// exits with 1 when what it reports holds an error — an invalid plan, a
 /// review record with an error — and still prints its document, which is
@@ -1160,6 +1185,9 @@ pub fn run_case(
         Err(e) => observed.error = Some(e),
         Ok(stdout) => {
             let output = parse_claude_stream(&stdout);
+            // The stream is kept for reading a run again; its first event,
+            // which names the operator's home directory, is not needed.
+            let _ = fs::write(log.join("claude.jsonl"), without_init_event(&stdout));
             observed.cost_usd = output.cost_usd;
             observed.duration_ms = output.duration_ms;
             observed.consumption = output.consumption;
@@ -1188,7 +1216,7 @@ pub fn run_case(
             }
             match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
                 Ok(value) => {
-                    observed.validate.insert(change, value);
+                    observed.validate.insert(change, without_root(value));
                 }
                 Err(e) => observed.error = Some(e),
             }
@@ -2121,5 +2149,24 @@ mod tests {
             share_writes(900, &entered, false),
             BTreeMap::from([("file".to_string(), 300), ("skill".to_string(), 600)])
         );
+    }
+
+    #[test]
+    fn the_stream_keeps_no_init_event() {
+        let stream = "{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/Users/someone/x\"}\n\
+{\"type\":\"assistant\",\"message\":{}}\n{\"type\":\"result\"}\n";
+        let kept = without_init_event(stream);
+        assert!(!kept.contains("/Users/someone"), "{kept}");
+        assert_eq!(kept.lines().count(), 2);
+        // A stream it cannot read is kept as it is.
+        assert_eq!(without_init_event("not json\n"), "not json\n");
+    }
+
+    #[test]
+    fn a_validate_report_keeps_no_root() {
+        let report = json!({"root": "/private/var/folders/x/T/case", "items": [], "status": []});
+        let kept = without_root(report);
+        assert!(kept.get("root").is_none());
+        assert_eq!(kept["items"], json!([]));
     }
 }

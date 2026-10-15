@@ -186,12 +186,58 @@ history:
 
 No finding.
 
+### privacy
+
+#### R-privacy-1 The raw event stream keeps the operator's identifying paths with no retention or purge rule
+
+```yaml
+severity: low
+confidence: high
+location: "design.md#Decision: The runner reads Claude Code's event stream for every case"
+evidence: |
+  event as `json` does, plus every message: the runner keeps the raw stream
+  (`claude.jsonl`, ignored by git like `claude.json`), reads the result as
+  before, counts the tool calls, and finds the orientation — the calls
+recommendation: "The stream keeps every message; its `system/init` event holds the operator's home directory with the username (plugin paths, `memory_paths`), a session id and the full transcript — more than counting calls and attributing cache writes needs (GDPR Art. 5(1)(c), (e)). It is git-ignored, but no retention rule exists: under `evals/baseline/` it stays on whoever records, and the CI artifact uploads it under the default retention. State in the design what the stream holds and how long it is kept; drop the `system/init` event, or the stream once `observed.json` is written; set an explicit `retention-days` on the evaluation workflow's artifact; write one sentence under the ticked personal-data domain naming this data and its handling."
+history:
+  - status: open
+    by: privacy
+  - status: fixed
+    by: architect
+    ref: "evals/src/runner.rs without_init_event, test the_stream_keeps_no_init_event; .github/workflows/evals.yml retention-days: 14; design.md and the personal-data line say what the stream holds and how long it is kept; task 3.4"
+  - status: fixed
+    by: privacy
+```
+
 ## code.review
 
 Mode: isolated.
 Summarized: .github/workflows/evals.yml, CONTRIBUTING.md, CONTRIBUTING.fr.md, crates/codev-cli/src/docs.rs, docs/en/src/reliability.md, docs/fr/src/reliability.md — over the material limit, one summarizing sub-agent per file.
 Summarized: evals/src/case.rs, checks.rs, compare.rs, main.rs, observed.rs, plan.rs, reliability.rs, report.rs, runner.rs, score.rs, suite.rs, evals/tests/cli.rs, fixture.rs, suite.rs — over the material limit, one summarizing sub-agent per file.
 Summarized: evals/baseline/** — 479 files of generated observations, summarized as one set by one sub-agent rather than one per file; their checks are the suite tests (five runs per case, none in error, the report agreeing with the scoring).
+
+### privacy
+
+#### R-privacy-2 The baseline commits the recorder's per-user macOS temp path in every planning observation
+
+```yaml
+severity: low
+confidence: low
+location: "evals/src/runner.rs:1189-1191"
+evidence: |
+              match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
+                  Ok(value) => {
+                      observed.validate.insert(change, value);
+recommendation: "Remove the `root` field of the `codev validate --json` report before recording it — the scoring never reads it — and remove it from the 124 committed `evals/baseline/plan-*/*/observed.json`. A path like `/private/var/folders/_q/…/T/…` belongs to one account on one machine; recording it in a public repository is more than the measurement needs (GDPR Art. 5(1)(c), Art. 25). Confidence low: the path names nobody unless linked to a contributor."
+history:
+  - status: open
+    by: privacy
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs without_root, test a_validate_report_keeps_no_root; root removed from the 124 recorded evals/baseline/plan-*/*/observed.json, git grep /var/folders finds nothing"
+  - status: fixed
+    by: privacy
+```
 
 ### accessibility
 

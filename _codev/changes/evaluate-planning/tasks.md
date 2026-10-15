@@ -18,6 +18,8 @@
 
 - [x] 3.3 Stop a run at the first run whose error says the account's usage limit is reached (Claude Code's "session limit" or "usage limit"): record it as an error, start no further run, let the started ones end, and exit with 1 saying so; verified by unit tests `a_usage_limit_is_recognized` and `the_queue_stops_after_a_usage_limit` (scenario "The account's usage limit is reached"), and by resuming the baseline afterwards
 
+- [x] 3.4 Keep no data about the machine or the operator beyond what is measured: strip the `system/init` event from each `claude.jsonl`, drop the `root` of each `codev validate` report recorded in an observation (and from the 124 recorded in `evals/baseline/`), and keep the evaluation workflow's artifact 14 days; verified by unit tests `the_stream_keeps_no_init_event` and `a_validate_report_keeps_no_root`, by `git grep /var/folders -- evals/baseline` finding nothing, and by `the_baseline_agrees_with_the_scoring`
+
 ## 4. Scoring and reports
 
 - [x] 4.1 New pure module `evals/src/plan.rs`: from the plan's files, the case and the names of the requirements and decisions at `ref`, compute the primary and collateral recall (`MODIFIED`, `REMOVED`, `RENAMED` `FROM`, names compared ignoring case and spacing), the probable duplicates, the decisions ignored (`follow`: id or title cited in proposal or design; `supersede`: a citing paragraph that says it supersedes or deviates), the validity from `codev validate`'s errors, and `no-plan`; verified by unit tests `a_modified_requirement_and_a_new_one_beside_it`, `an_addition_where_a_modification_was_due`, `french_keywords_count`, `a_decision_to_supersede_only_cited_is_ignored`, `a_followed_decision_cited_by_title`, `a_plan_that_does_not_validate` and `a_run_that_plans_nothing` (the five scenarios of the scoring requirement)
@@ -47,4 +49,4 @@
 
 ## 8. Checks
 
-- [ ] 8.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict`; verified by all four passing
+- [x] 8.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict`; verified by all four passing
