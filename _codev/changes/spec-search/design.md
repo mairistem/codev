@@ -15,8 +15,9 @@ measured the ranking choices below; the evaluation suite of
 ## Goals / Non-Goals
 
 **Goals**: a ranked search over requirements and decisions whose output
-stays bounded; reading one requirement at a time; the planning skill using
-both; the gain proven by `codev-evals compare` (decision 0008).
+stays bounded; reading one requirement at a time; the requirements a
+change likely touches given to the planning agent in the instructions it
+already reads; the gain proven by `codev-evals compare` (decision 0008).
 
 **Non-goals**: a session map or any hook (`SessionStart`,
 `UserPromptSubmit`) — the study found the map costs tokens in every session
@@ -108,24 +109,36 @@ requirements whole — the output would grow with the results and lose the
 bound that makes the search cheap; extending `codev list --specs` — a list
 command that prints content would blur both.
 
-### Decision: The skills search first, then read what the search names
+### Decision: The instructions bring the related requirements; the skill names no search
 
-`assets/workflows/propose.md` (step 4c, `plan.investigate`) gains a
-short paragraph: run
-`codev search` with words in the language of the specs, search again with
-other words when the results miss the request's subject, read the named
-requirements with `codev show`, read a whole spec only when the change
-rewrites much of it, and never treat a result list as having read the
-requirement. The paragraph stays short: the skill is read in every planning
-run (12 % of its tokens today), and every added line is paid each time.
-Decision 0004 holds: the skill keeps its single identity; its
-`allowed-tools`, `Bash(codev:*)`, already covers both commands.
-`/codev-explore` would gain the same paragraph, but only once the suite
-measures it (decision 0008).
+Once `proposal.md` exists, `codev instructions` ranks the requirements of
+the main specs against the proposal's `Why` and `What Changes` — the same
+ranking as `codev search`, in the specs' language — and gives the best 10
+in a `related` field and a section of its human output, with the line that
+a requirement the change alters is modified, not added again. The
+proposal is written in the artifact language, the specs' language in
+practice, so the query is in the right language without asking the agent
+to translate anything; it is several sentences long, which ranks better
+than a few keywords. The decisions in effect are already in `decisions`
+and are not repeated.
 
-**Alternatives considered**: the investigator role's criteria — they apply
-at review steps too, where no search is due; a `CLAUDE.md` line — read in
-every session, including those that never plan.
+The `propose` skill's paragraph shrinks to: read the requirements the
+instructions list, modify those the change alters, and treat the list as a
+starting point. It names no search command. This follows what ICM
+(rtk-ai/icm) does for an agent's memory — give the relevant context where
+the agent already looks rather than ask it to search — and what the first
+measure of this change showed: told to run `codev search`, the agent ran
+it and kept `grep`-ing as before. `codev search` and `codev show` stay, for
+a person or an agent that wants them. Decision 0001 holds: the ranking is
+the core's pure function; decision 0004 holds: no new skill, no hook.
+
+**Alternatives considered**: telling the agent to run `codev search` first
+— measured first, it adds calls without replacing the agent's own
+searches; a `SessionStart` or `UserPromptSubmit` hook, as ICM does —
+the study measured a session map costing tokens in every session and a
+raw French prompt finding 13 to 23 % of the requirements; injecting at
+`proposal` time from the request — the request is not on disk and is often
+in another language than the specs.
 
 ### Decision: The change is judged on planning and on review
 
@@ -134,25 +147,27 @@ the baseline that `evaluate-planning` records: `run --step plan.write
 --repeat 3`, compared with `compare` — the primary recall and the other
 planning measures within the baseline's range or better, the cost under its
 floor; and `run --step review --repeat 3` compared with `--quality-only`,
-since the `propose` skill the review cases read grows by a paragraph. The
-pull request pastes both comparisons and the sources table, where `search`
-and `file` on the specs should fall and `codev search`, `codev show` appear.
+since the `propose` skill the review cases read changes. Two arms are
+measured against the baseline: the first, where the skill told the agent
+to run `codev search`, recorded before the revision; the second, the
+related requirements in the instructions. The pull request pastes the
+comparisons of both arms and their sources tables, and ships the arm
+that passes — or neither, with the numbers.
 
 **Alternatives considered**: measuring planning alone — the review steps
 read the same skill and could pay for its longer text unseen.
 
 ## Risks / Trade-offs
 
-- [The agent stops at the result list and misses a requirement — recall@5
-  is 0.54] → The skills say the search points to where to read and require
-  reading the requirement to modify; `compare` refuses a primary recall
-  under the baseline's minimum.
-- [The agent keeps `grep`-ing as before and the search only adds calls, as
-  in the study] → The measure shows it: `codev search` in the sources table
-  without `search`/`file` falling, and a cost above the floor, fail the
-  verdict; the skill paragraph is then revised or the change dropped.
-- [A French query on English specs finds little] → The skills require the
-  query in the language of the specs; `language` in the JSON tells which.
+- [The agent stops at the list and misses a requirement — recall@5 is
+  0.54 for short queries] → The skill says the list is a starting point;
+  `compare` refuses a primary recall under the baseline's minimum.
+- [The agent keeps exploring as before and the list only adds tokens] →
+  The list is bounded (10 entries, about 400 tokens per artifact) and the
+  measure shows it: a cost above the floor fails the verdict.
+- [A proposal written in another language than the specs ranks poorly] →
+  The artifact language is the specs' language in practice; the list being
+  a starting point, the agent still reads further.
 - [`rust-stemmers` is no longer actively developed] → It implements fixed
   reference algorithms, has no I/O and no unsafe network surface; `cargo
   audit` watches it, and the module isolates it behind one function should

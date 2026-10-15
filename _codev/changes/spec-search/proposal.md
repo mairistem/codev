@@ -30,15 +30,19 @@ proof it cuts tokens without planning worse.
   them — and `codev show <capability>` lists the names of the capability's
   requirements, so that an agent reads what it needs instead of a whole
   `spec.md`; both take `--json`.
-- The `/codev-propose` skill, at `plan.investigate`, locates the existing
-  behavior with `codev search`, querying in the
-  language of the specs, then read the requirements it names with
-  `codev show` — and the whole spec only when the change rewrites much of
-  it. The search points to where to read; it never replaces reading.
-  `/codev-explore` is left as it is: the evaluation suite does not cover it
+- Once the proposal is written, `codev instructions` gives, for the other
+  artifacts, the existing requirements the change likely touches — ranked
+  against the proposal's text, at most 10, each with an excerpt — and says
+  that a requirement the change alters is modified rather than added
+  again. The agent gets the information in the instructions it already
+  reads, without being told to run any search; as the study and the first
+  measure showed, an agent told to search keeps searching its own way.
+- The `/codev-propose` skill reads the requirements its instructions name
+  and modifies those the change alters, the list being a starting point,
+  not a complete one. `/codev-explore` is left as it is: the evaluation suite does not cover it
   yet, and decision 0008 asks for a step to be covered before it changes.
-- The CLI reference and the skills chapter, in English and French,
-  document both commands.
+- The CLI reference, the JSON reference and the skills chapter, in English
+  and French, document both commands and the instructions' new list.
 
 ## Capabilities
 
@@ -48,6 +52,7 @@ proof it cuts tokens without planning worse.
 
 ### Modified Capabilities
 
+- instructions
 - skills
 
 ### Removed Capabilities
@@ -58,7 +63,8 @@ proof it cuts tokens without planning worse.
   documents already read, and the extraction of one requirement from a
   parsed spec; `codev-engine`: loading the specs, the decision index and
   the archive through the existing ports; `codev-cli`: the two commands
-  and their JSON documents in `contract::v1`.
+  and their JSON documents in `contract::v1`, and the `related` field of
+  `codev instructions` (an addition to its JSON document).
 - A new dependency for stemming, chosen in the design.
 - `assets/workflows/propose.md`: the skill users install with
   `codev update`.
@@ -81,4 +87,4 @@ proof it cuts tokens without planning worse.
 ## Release note
 
 - Added: `codev search <query>` finds the requirements and decisions that match a query, ranked by relevance, and `codev show <capability>::<requirement>` prints a single requirement.
-- Changed: `/codev-propose` locates the existing specs with `codev search` and read only the requirements they need, which plans with fewer tokens.
+- Changed: once the proposal is written, `codev instructions` names the existing requirements the change likely touches, and `/codev-propose` reads and modifies them rather than adding new ones beside them.
