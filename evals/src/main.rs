@@ -391,14 +391,22 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         tools,
         settings,
     };
-    runner::run_cases(&pending, &options, &info.date);
+    let limited = runner::run_cases(&pending, &options, &info.date);
     if !options.keep {
         let _ = fs::remove_dir(&options.work);
     }
-    match suite::score_dir(cases, &out, thresholds) {
+    let code = match suite::score_dir(cases, &out, thresholds) {
         Ok(score) => finish(&score, &out),
-        Err(e) => usage(e),
+        Err(e) => return usage(e),
+    };
+    if limited {
+        eprintln!(
+            "[codev-evals] stopped: the account's usage limit is reached; run the same command \
+             again once it resets, and it resumes where it stopped"
+        );
+        return ExitCode::from(1);
     }
+    code
 }
 
 fn finish(score: &SuiteScore, out: &Path) -> ExitCode {

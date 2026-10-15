@@ -397,7 +397,12 @@ planning case's defaults are given by the `planning-evaluation`
 capability. Before any case runs, the
 runner SHALL check that `claude`, `git` and the `codev` binary can be
 executed, and exit with code 2 naming the missing one otherwise. A case
-that fails or times out is recorded as an error; the others still run.
+that fails or times out is recorded as an error; the others still run —
+except when Claude Code reports that the account's usage limit is reached:
+the runner then records that run as an error, starts no other run, lets
+the runs already started end, and exits with 1 saying the limit was
+reached, so that running it again on the same directory resumes where it
+stopped.
 
 #### Scenario: Only the evaluated role reviews
 
@@ -479,6 +484,15 @@ that fails or times out is recorded as an error; the others still run.
 - **WHEN** its observation is recorded
 - **THEN** its tokens and turns are absent, not zero, and the case is in
   error
+
+#### Scenario: The account's usage limit is reached
+
+- **GIVEN** a run of 40 cases, one job at a time, whose third run ends
+  with Claude Code reporting "You've hit your session limit"
+- **WHEN** the runner records it
+- **THEN** that run is recorded as an error, no fourth run starts, and the
+  runner exits with 1 saying the usage limit was reached
+- **AND** running the same command again runs that case and the 37 others
 
 #### Scenario: Each case repeated
 

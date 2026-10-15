@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
@@ -1189,20 +1189,58 @@ pub struct RunOptions {
     pub settings: ClaudeSettings,
 }
 
+/// Whether a run's error says the account's usage limit is reached: every
+/// run after it would fail the same way, at once.
+pub fn is_usage_limit(error: &str) -> bool {
+    let error = error.to_lowercase();
+    error.contains("session limit") || error.contains("usage limit")
+}
+
+/// The runs left to make, shared by the jobs; once stopped, it hands out
+/// no more.
+pub struct Queue<'a> {
+    jobs: Mutex<Vec<Job<'a>>>,
+    stopped: std::sync::atomic::AtomicBool,
+}
+
+impl<'a> Queue<'a> {
+    pub fn new(pending: &[Job<'a>]) -> Self {
+        Queue {
+            jobs: Mutex::new(pending.iter().rev().copied().collect()),
+            stopped: std::sync::atomic::AtomicBool::new(false),
+        }
+    }
+
+    /// The next run, in the order given; `None` once empty or stopped.
+    pub fn pop(&self) -> Option<Job<'a>> {
+        if self.is_stopped() {
+            return None;
+        }
+        self.jobs.lock().expect("queue lock").pop()
+    }
+
+    pub fn stop(&self) {
+        self.stopped
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub fn is_stopped(&self) -> bool {
+        self.stopped.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
 /// Runs the repetitions `jobs` at a time, each case's repetition `n` set up
 /// in `<work>/<case>-<n>` and logged in `<out>/<case>/<n>/`, writing each
 /// `observed.json` as soon as it is known, so an interrupted run keeps what
-/// it measured.
-pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
-    let queue: Arc<Mutex<Vec<Job>>> = Arc::new(Mutex::new(pending.iter().rev().copied().collect()));
+/// it measured. Returns `true` when a run hit the account's usage limit,
+/// after which no other run started.
+pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
+    let queue = Queue::new(pending);
     std::thread::scope(|scope| {
         for _ in 0..options.jobs.max(1) {
-            let queue = Arc::clone(&queue);
+            let queue = &queue;
             scope.spawn(move || {
-                loop {
-                    let Some(Job { case, n }) = queue.lock().expect("queue lock").pop() else {
-                        break;
-                    };
+                while let Some(Job { case, n }) = queue.pop() {
                     eprintln!("[codev-evals] {} #{n} — running", case.id);
                     let case_dir = options.repo.join("evals").join("cases").join(&case.id);
                     let log = options.out.join(&case.id).join(n.to_string());
@@ -1229,6 +1267,9 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
                         case.id,
                         observed.error.as_deref().unwrap_or("done")
                     );
+                    if observed.error.as_deref().is_some_and(is_usage_limit) {
+                        queue.stop();
+                    }
                     if !options.keep {
                         let _ = fs::remove_dir_all(&work);
                     }
@@ -1236,6 +1277,7 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) {
             });
         }
     });
+    queue.is_stopped()
 }
 
 /// Refuses to resume a run recorded with another model: its observations
@@ -1995,5 +2037,35 @@ mod tests {
             created_changes(" M _codev/changes/old/tasks.md\0?? _codev/changes/archive/x/a.md\0")
                 .is_empty()
         );
+    }
+
+    #[test]
+    fn a_usage_limit_is_recognized() {
+        assert!(is_usage_limit(
+            "Claude Code reported an error (success): You've hit your session limit · resets 5:40pm"
+        ));
+        assert!(is_usage_limit("Usage limit reached"));
+        assert!(!is_usage_limit("timeout after 600 s"));
+        assert!(!is_usage_limit("claude exited with 1: budget exceeded"));
+    }
+
+    #[test]
+    fn the_queue_stops_after_a_usage_limit() {
+        let cases: Vec<Case> = (0..40)
+            .map(|i| {
+                let mut c = a_case("security", Kind::Seeded, &[]);
+                c.id = format!("case-{i:02}");
+                c
+            })
+            .collect();
+        let pending: Vec<Job> = cases.iter().map(|case| Job { case, n: 1 }).collect();
+        let queue = Queue::new(&pending);
+        let order: Vec<String> = (0..3)
+            .map(|_| queue.pop().unwrap().case.id.clone())
+            .collect();
+        assert_eq!(order, ["case-00", "case-01", "case-02"]);
+        queue.stop();
+        assert!(queue.pop().is_none(), "no fourth run starts");
+        assert!(queue.is_stopped());
     }
 }
