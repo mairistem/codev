@@ -185,3 +185,207 @@ history:
 ### accessibility
 
 No finding.
+
+## code.review
+
+Mode: isolated.
+Summarized: .github/workflows/evals.yml, CONTRIBUTING.md, CONTRIBUTING.fr.md, crates/codev-cli/src/docs.rs, docs/en/src/reliability.md, docs/fr/src/reliability.md — over the material limit, one summarizing sub-agent per file.
+Summarized: evals/src/case.rs, checks.rs, compare.rs, main.rs, observed.rs, plan.rs, reliability.rs, report.rs, runner.rs, score.rs, suite.rs, evals/tests/cli.rs, fixture.rs, suite.rs — over the material limit, one summarizing sub-agent per file.
+Summarized: evals/baseline/** — 479 files of generated observations, summarized as one set by one sub-agent rather than one per file; their checks are the suite tests (five runs per case, none in error, the report agreeing with the scoring).
+
+### accessibility
+
+#### R-accessibility-1 Long source names are clipped at the left edge of the "Where the tokens go" chart
+
+```yaml
+severity: low
+confidence: low
+location: "evals/src/reliability.rs:1116-1123"
+evidence: |
+          marks.push_str(&text(
+              "rel-label",
+              INK,
+              LABEL_END,
+              cy + 4.0,
+              "end",
+              &s.source,
+          ));
+recommendation: "The sources chart right-aligns each label at LABEL_END (92 units, 12-unit font), sized for role names; \"codev instructions\" needs about 96 to 105 units and starts left of x=0, where an inline SVG clips it. Give this chart a wider label column (for example x0 = 140 and the labels ending at 132, with a narrower plot so that 100 % still fits), then check the page in both languages."
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "evals/src/reliability.rs: sources_chart's label column ends at 142 and the plot starts at 150; the_page_ranks_the_sources_by_cost checks it"
+  - status: fixed
+    by: accessibility
+```
+
+### ops
+
+#### R-ops-4 Scoring planning runs looks up history in a repository guessed from the output directory, and silently scores against empty history when the guess is wrong
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/suite.rs:293-331"
+evidence: |
+      let history = GitHistory {
+          repo: &repo_of(dir),
+      };
+recommendation: "Pass the repository the cases were loaded and checked against (`--repo`, known in main.rs) into `score_dir_only` instead of guessing it from `dir`; if a lookup at a case's `ref` fails while scoring (no spec text, no decision files), fail with an error naming the case, the ref and the repository rather than handing an empty `AtRef` to `plan::score_plan`. Otherwise a `score` or `compare` of a moved directory skews the planning measures silently."
+history:
+  - status: open
+    by: ops
+  - status: fixed
+    by: developer
+    ref: "evals/src/suite.rs: score_dir and score_dir_only take the repository the cases come from; at_ref fails naming the case, the ref and the repository; test scoring_a_planning_case_without_its_history_fails"
+  - status: fixed
+    by: ops
+```
+
+### newcomer
+
+#### R-newcomer-1 `read_calls` hides its cost-sharing rule in a 107-line, five-level loop
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/runner.rs:445-551"
+evidence: |
+                      let total: usize = entered.iter().map(|(_, l)| *l).sum();
+                      if calls.is_empty() || total == 0 {
+                          sources.insert(
+                              if calls.is_empty() { "prompt" } else { "output" }.to_string(),
+                              writes,
+                          );
+recommendation: "Extract `fn share_writes(writes, entered, first) -> BTreeMap<String, u64>` with explicit branches (first → prompt, nothing entered → output, else proportional) and one comment on why an empty interval goes to output; extract the handling of an assistant event's content blocks and of a user event's tool results, so that the loop reads as: start a call if new, record usage, read blocks."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs: share_writes with explicit branches and its reason, a CallReader with read_assistant, start_call, read_block, read_tool_results; test a_call_with_nothing_new_charges_its_writes_to_output"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The planning branch of `run_case` nests five levels and repeats the review block
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:1132-1156"
+evidence: |
+                  Err(e) => observed.error = Some(format!("cannot run codev validate: {e}")),
+recommendation: "Extract `fn codev_json(tools, dir, args) -> Result<serde_json::Value, String>`, holding once the comment on why exit code 1 is tolerated, and use it for `codev validate --json` and `codev review --json`."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs: codev_json, used for codev validate and codev review"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 `plan_case` copies the whole `CaseScore` literal and builds its empty maps two ways
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/score.rs:174-209"
+evidence: |
+      let empty = BTreeMap::new();
+      let (files, validate) = match &observed.error {
+          Some(_) => (&empty, &BTreeMap::new()),
+recommendation: "Extract a shared `fn unscored(case, observed) -> CaseScore` used by `case()` and `plan_case()`, and name both empty inputs the same way."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/score.rs: unscored shared by case and plan_case; no_files and no_validate"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 `sum_of` selects its accumulator with a boolean-to-index trick
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/score.rs:850-866"
+evidence: |
+                              let w = &mut weighted[usize::from(m == Measure::OutputPerCall)];
+recommendation: "Replace the anonymous `[(f64, f64); 2]` indexed by a bool with two named accumulators, chosen with a plain `match`."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/score.rs: sum_of keeps two named accumulators, input and output, chosen by a match"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 The doc comment of `check_resume` still describes only the model check
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:1283-1310"
+evidence: |
+  /// Refuses to resume a run recorded with another model: its observations
+  /// would be scored under the first model's name.
+recommendation: "Extend the comment: or with another Claude Code version, whose runs would be credited to the wrong version."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs: check_resume's comment names the Claude Code version"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-6 `word_runs` documents a fixed length that is really a parameter, and callers pass a bare 13
+
+```yaml
+severity: low
+confidence: high
+location: "evals/tests/suite.rs:390-414"
+evidence: |
+  /// The runs of more than twelve words of `text`, lowercased.
+  fn word_runs(text: &str, n: usize) -> BTreeSet<String> {
+recommendation: "Document it as every run of `n` consecutive words, lowercased, and name the threshold with its reason (`const COPIED_RUN: usize = 13`), used by `no_request_copies_its_proposal`."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/tests/suite.rs: word_runs documented as runs of n words; COPIED_RUN = 13 with its reason"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-7 An unexplained `#[allow(dead_code)]` on `PlanCaseFile::step`
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/case.rs:552-555"
+evidence: |
+      #[allow(dead_code)]
+      step: String,
+recommendation: "Add a one-line comment: read by `load` to dispatch here, declared so that `deny_unknown_fields` accepts it."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/case.rs: a comment on PlanCaseFile::step"
+  - status: fixed
+    by: newcomer
+```
+

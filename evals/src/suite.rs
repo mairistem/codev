@@ -143,24 +143,41 @@ pub fn decision_title(text: &str) -> String {
 }
 
 /// The repository at a planning case's `ref`: the requirement names of the
-/// capabilities it expects, and every decision's title.
-pub fn at_ref(case: &Case, history: &GitHistory) -> AtRef {
+/// capabilities it expects, and every decision's title. A spec or the
+/// decisions that cannot be read at `ref` are an error naming the case,
+/// the commit and the repository: scoring against an empty history would
+/// skew the measures without a word.
+pub fn at_ref(case: &Case, history: &GitHistory) -> Result<AtRef, String> {
     use case::History;
     let Some(plan) = &case.plan else {
-        return AtRef::default();
+        return Ok(AtRef::default());
+    };
+    let unreadable = |what: &str| {
+        format!(
+            "case `{}`: cannot read {what} at `{}` in {}; score with the repository the cases \
+             come from (`--repo`), with its full history",
+            case.id,
+            plan.git_ref,
+            history.repo.display()
+        )
     };
     let mut requirements = BTreeMap::new();
     for id in plan.modified.iter().chain(&plan.collateral) {
-        if !requirements.contains_key(&id.capability)
-            && let Some(names) = history.requirement_names(&plan.git_ref, &id.capability)
-        {
+        if !requirements.contains_key(&id.capability) {
+            let names = history
+                .requirement_names(&plan.git_ref, &id.capability)
+                .ok_or_else(|| unreadable(&format!("`_codev/specs/{}/spec.md`", id.capability)))?;
             requirements.insert(id.capability.clone(), names);
         }
     }
-    AtRef {
-        requirements,
-        decision_titles: history.decision_titles(&plan.git_ref),
+    let decision_titles = history.decision_titles(&plan.git_ref);
+    if !plan.decisions.is_empty() && decision_titles.is_empty() {
+        return Err(unreadable("`_codev/decisions/`"));
     }
+    Ok(AtRef {
+        requirements,
+        decision_titles,
+    })
 }
 
 /// `0007` from `0007-the-skills-dispatch.md`.
@@ -276,12 +293,20 @@ pub fn recorded(dir: &Path) -> Recorded {
 
 /// Scores every observation of `dir` against its case; with `only`, the
 /// observations of those cases alone.
-pub fn score_dir(cases: &[Case], dir: &Path, thresholds: Thresholds) -> Result<SuiteScore, String> {
-    score_dir_only(cases, dir, thresholds, None)
+pub fn score_dir(
+    repo: &Path,
+    cases: &[Case],
+    dir: &Path,
+    thresholds: Thresholds,
+) -> Result<SuiteScore, String> {
+    score_dir_only(repo, cases, dir, thresholds, None)
 }
 
-/// [`score_dir`], restricted to the case ids of `only` when given.
+/// [`score_dir`], restricted to the case ids of `only` when given. `repo` is
+/// the repository the cases were loaded from: the planning cases read its
+/// history at their `ref`.
 pub fn score_dir_only(
+    repo: &Path,
     cases: &[Case],
     dir: &Path,
     thresholds: Thresholds,
@@ -290,9 +315,7 @@ pub fn score_dir_only(
     let run = read_run(dir)?;
     let observations = load_observations(dir)?;
     let by_id: BTreeMap<&str, &Case> = cases.iter().map(|c| (c.id.as_str(), c)).collect();
-    let history = GitHistory {
-        repo: &repo_of(dir),
-    };
+    let history = GitHistory { repo };
     let mut refs: BTreeMap<&str, AtRef> = BTreeMap::new();
     let mut scores = Vec::new();
     for ((id, n), observed) in &observations {
@@ -303,9 +326,10 @@ pub fn score_dir_only(
             .get(id.as_str())
             .ok_or_else(|| format!("`{id}` in {} is not a case of the suite", dir.display()))?;
         let score = if case.step == case::Step::PlanWrite {
-            let at = refs
-                .entry(case.id.as_str())
-                .or_insert_with(|| at_ref(case, &history));
+            let at = match refs.entry(case.id.as_str()) {
+                std::collections::btree_map::Entry::Occupied(e) => e.into_mut(),
+                std::collections::btree_map::Entry::Vacant(e) => e.insert(at_ref(case, &history)?),
+            };
             score::plan_case(case, observed, at)
         } else {
             score::case(case, observed)
@@ -313,23 +337,6 @@ pub fn score_dir_only(
         scores.push(score.at(*n));
     }
     Ok(score::suite(run, scores, thresholds))
-}
-
-/// The repository whose history the planning cases pin: the one holding
-/// `dir`, else the current directory's.
-fn repo_of(dir: &Path) -> PathBuf {
-    let out = std::process::Command::new("git")
-        .arg("-C")
-        .arg(dir)
-        .args(["rev-parse", "--show-toplevel"])
-        .stderr(std::process::Stdio::null())
-        .output();
-    match out {
-        Ok(out) if out.status.success() => {
-            PathBuf::from(String::from_utf8_lossy(&out.stdout).trim())
-        }
-        _ => PathBuf::from("."),
-    }
 }
 
 /// `run.json` of an output directory.
@@ -353,6 +360,30 @@ mod tests {
             "The skills dispatch"
         );
         assert_eq!(decision_title("# 0001 Old style\n"), "0001 Old style");
+    }
+
+    #[test]
+    fn scoring_a_planning_case_without_its_history_fails() {
+        let yaml = "step: plan.write\nkind: seeded\nref: 0123456789abcdef\nrequest: r\nsummary: s\n\
+expected:\n  modified: [\"decisions::Creating a decision through the CLI\"]\n";
+        let catalog = case::Catalog {
+            roles: RoleSteps::new(),
+            vocabulary: Vocabulary::new(),
+        };
+        let plan = case::load("plan-x", yaml, &Fixture::default(), &catalog).unwrap();
+        let nowhere =
+            std::env::temp_dir().join(format!("codev-evals-no-repo-{}", std::process::id()));
+        fs::create_dir_all(&nowhere).unwrap();
+        let err = at_ref(&plan, &GitHistory { repo: &nowhere }).unwrap_err();
+        assert!(
+            err.contains("plan-x") && err.contains("0123456789abcdef"),
+            "{err}"
+        );
+        assert!(
+            err.contains("_codev/specs/decisions/spec.md") && err.contains("--repo"),
+            "{err}"
+        );
+        let _ = fs::remove_dir_all(&nowhere);
     }
 
     #[test]

@@ -188,13 +188,13 @@ fn main() -> ExitCode {
                 Err(e) => return usage(e),
             };
             let out = args.out.unwrap_or_else(|| args.dir.clone());
-            match suite::score_dir(&cases, &args.dir, thresholds) {
+            match suite::score_dir(&repo, &cases, &args.dir, thresholds) {
                 Ok(score) => finish(&score, &out),
                 Err(e) => usage(e),
             }
         }
         Commands::Run(args) => run(&repo, &cases, args),
-        Commands::Compare(args) => compare_runs(&cases, &args),
+        Commands::Compare(args) => compare_runs(&repo, &cases, &args),
         Commands::Docs(_) => unreachable!("handled before the cases are loaded"),
     }
 }
@@ -248,7 +248,7 @@ fn now() -> (u64, String) {
 /// Scores both directories on the cases they share and prints the
 /// comparison; refuses two models, an unreadable directory or no case in
 /// common, printing no report.
-fn compare_runs(cases: &[case::Case], args: &CompareArgs) -> ExitCode {
+fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCode {
     let ids = |dir: &Path| -> Result<BTreeSet<String>, String> {
         suite::read_run(dir)?;
         Ok(suite::load_observations(dir)?
@@ -266,8 +266,15 @@ fn compare_runs(cases: &[case::Case], args: &CompareArgs) -> ExitCode {
         return usage("the baseline and the candidate have no case in common");
     }
     let not_compared: Vec<String> = base_ids.symmetric_difference(&cand_ids).cloned().collect();
-    let score =
-        |dir: &Path| suite::score_dir_only(cases, dir, score::Thresholds::default(), Some(&common));
+    let score = |dir: &Path| {
+        suite::score_dir_only(
+            repo,
+            cases,
+            dir,
+            score::Thresholds::default(),
+            Some(&common),
+        )
+    };
     let (baseline, candidate) =
         match score(&args.baseline).and_then(|b| Ok((b, score(&args.candidate)?))) {
             Ok(pair) => pair,
@@ -395,7 +402,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     if !options.keep {
         let _ = fs::remove_dir(&options.work);
     }
-    let code = match suite::score_dir(cases, &out, thresholds) {
+    let code = match suite::score_dir(repo, cases, &out, thresholds) {
         Ok(score) => finish(&score, &out),
         Err(e) => return usage(e),
     };

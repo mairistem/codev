@@ -82,6 +82,7 @@ fn every_case_has_a_baseline_observation() {
 fn the_baseline_agrees_with_the_scoring() {
     let cases = suite::load_cases(&repo()).unwrap();
     let score = suite::score_dir(
+        &repo(),
         &cases,
         &repo().join("evals").join("baseline"),
         Thresholds::default(),
@@ -387,7 +388,11 @@ fn the_planning_suite_covers_past_changes_and_decisions() {
     );
 }
 
-/// The runs of more than twelve words of `text`, lowercased.
+/// A run of this many words shared with an archived proposal is a copy,
+/// not a coincidence: "more than twelve words", as the spec says.
+const COPIED_RUN: usize = 13;
+
+/// Every run of `n` consecutive words of `text`, lowercased.
 fn word_runs(text: &str, n: usize) -> BTreeSet<String> {
     let words: Vec<String> = text
         .split(|c: char| !c.is_alphanumeric() && c != '\'')
@@ -404,14 +409,14 @@ fn no_request_copies_its_proposal() {
     let mut proposals = BTreeSet::new();
     for entry in fs::read_dir(&archive).unwrap().filter_map(|e| e.ok()) {
         if let Ok(text) = fs::read_to_string(entry.path().join("proposal.md")) {
-            proposals.extend(word_runs(&text, 13));
+            proposals.extend(word_runs(&text, COPIED_RUN));
         }
     }
     let copied: Vec<String> = cases
         .iter()
         .filter_map(|c| c.plan.as_ref().map(|p| (c, p)))
         .filter(|(_, p)| {
-            word_runs(&p.request, 13)
+            word_runs(&p.request, COPIED_RUN)
                 .iter()
                 .any(|r| proposals.contains(r))
         })

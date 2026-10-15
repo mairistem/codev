@@ -443,110 +443,148 @@ fn is_planning_write(tool: &str, input: &serde_json::Value) -> bool {
 /// in between, by the length of their text, and the previous call's own
 /// text. The first call's writes are Claude Code's prompt and the request.
 fn read_calls(events: &[serde_json::Value]) -> StreamCalls {
-    use crate::observed::Call;
-    let mut calls: Vec<Call> = Vec::new();
-    let mut last_id: Option<String> = None;
-    let mut sources_of_tools: BTreeMap<String, String> = BTreeMap::new();
-    // What entered since the previous call: (source, length).
-    let mut pending: Vec<(String, usize)> = Vec::new();
-    let mut previous_text = 0usize;
-    let mut tool_calls = 0u64;
-    let mut orientation_calls = None;
-    let text_len = |v: &serde_json::Value| -> usize {
-        match v {
-            serde_json::Value::String(s) => s.len(),
-            serde_json::Value::Array(items) => items
-                .iter()
-                .map(|i| i.get("text").and_then(|t| t.as_str()).map_or(0, str::len))
-                .sum(),
-            _ => 0,
-        }
-    };
+    let mut reader = CallReader::default();
     for event in events {
         match event.get("type").and_then(|t| t.as_str()) {
-            Some("assistant") => {
-                let message = &event["message"];
-                let id = message
-                    .get("id")
-                    .and_then(|i| i.as_str())
-                    .map(str::to_string);
-                let usage = &message["usage"];
-                let get = |k: &str| usage.get(k).and_then(|v| v.as_u64()).unwrap_or(0);
-                let new_call = id.is_none() || id != last_id;
-                if new_call {
-                    // Share the writes of the call that starts now.
-                    let writes = get("cache_creation_input_tokens");
-                    let mut sources = BTreeMap::new();
-                    let mut entered = std::mem::take(&mut pending);
-                    if previous_text > 0 {
-                        entered.push(("output".into(), previous_text));
-                    }
-                    let total: usize = entered.iter().map(|(_, l)| *l).sum();
-                    if calls.is_empty() || total == 0 {
-                        sources.insert(
-                            if calls.is_empty() { "prompt" } else { "output" }.to_string(),
-                            writes,
-                        );
-                    } else {
-                        for (source, len) in entered {
-                            let share = (writes as f64 * len as f64 / total as f64).round() as u64;
-                            *sources.entry(source).or_insert(0) += share;
-                        }
-                    }
-                    calls.push(Call {
-                        cache_creation: writes,
-                        sources,
-                        ..Call::default()
-                    });
-                    previous_text = 0;
-                    last_id = id;
-                }
-                let call = calls.last_mut().expect("a call was just pushed");
-                // The last event of a message carries its final usage.
-                call.cache_read = get("cache_read_input_tokens");
-                call.input = get("input_tokens");
-                call.output = call.output.max(get("output_tokens"));
-                for block in message["content"].as_array().into_iter().flatten() {
-                    match block.get("type").and_then(|t| t.as_str()) {
-                        Some("tool_use") => {
-                            let tool = block.get("name").and_then(|n| n.as_str()).unwrap_or("");
-                            let input = &block["input"];
-                            if orientation_calls.is_none() && is_planning_write(tool, input) {
-                                orientation_calls = Some(tool_calls);
-                            }
-                            tool_calls += 1;
-                            call.tool_calls += 1;
-                            if let Some(tid) = block.get("id").and_then(|i| i.as_str()) {
-                                sources_of_tools.insert(tid.to_string(), source_of(tool, input));
-                            }
-                        }
-                        Some("text") => previous_text += text_len(&block["text"]),
-                        Some("thinking") => previous_text += text_len(&block["thinking"]),
-                        _ => {}
-                    }
-                }
-            }
-            Some("user") => {
-                for block in event["message"]["content"].as_array().into_iter().flatten() {
-                    if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
-                        continue;
-                    }
-                    let source = block
-                        .get("tool_use_id")
-                        .and_then(|i| i.as_str())
-                        .and_then(|i| sources_of_tools.get(i))
-                        .cloned()
-                        .unwrap_or_else(|| "other".into());
-                    pending.push((source, text_len(&block["content"])));
-                }
-            }
+            Some("assistant") => reader.read_assistant(&event["message"]),
+            Some("user") => reader.read_tool_results(&event["message"]),
             _ => {}
         }
     }
     StreamCalls {
-        tool_calls,
-        orientation_calls,
-        calls,
+        tool_calls: reader.tool_calls,
+        orientation_calls: reader.orientation_calls,
+        calls: reader.calls,
+    }
+}
+
+/// Shares a call's cache writes among what entered its context since the
+/// previous call, `(source, length)`, in proportion to the length. The
+/// first call's writes are Claude Code's own prompt and the request. A
+/// later call that received no tool result and follows no text still
+/// wrote something: what the previous call produced and Claude Code
+/// carries forward (its tool calls, its thinking), so it goes to `output`.
+fn share_writes(writes: u64, entered: &[(String, usize)], first: bool) -> BTreeMap<String, u64> {
+    let mut sources = BTreeMap::new();
+    let total: usize = entered.iter().map(|(_, len)| *len).sum();
+    if first {
+        sources.insert("prompt".to_string(), writes);
+    } else if total == 0 {
+        sources.insert("output".to_string(), writes);
+    } else {
+        for (source, len) in entered {
+            let share = (writes as f64 * *len as f64 / total as f64).round() as u64;
+            *sources.entry(source.clone()).or_insert(0) += share;
+        }
+    }
+    sources
+}
+
+/// The length of a message's text, whether a string or a list of blocks.
+fn text_len(value: &serde_json::Value) -> usize {
+    match value {
+        serde_json::Value::String(s) => s.len(),
+        serde_json::Value::Array(items) => items
+            .iter()
+            .map(|i| i.get("text").and_then(|t| t.as_str()).map_or(0, str::len))
+            .sum(),
+        _ => 0,
+    }
+}
+
+/// The state of a stream being read, one event at a time.
+#[derive(Default)]
+struct CallReader {
+    calls: Vec<crate::observed::Call>,
+    /// The message id of the call being read: one call spans several
+    /// events with the same id.
+    last_id: Option<String>,
+    /// The source of each tool call, by its id, for its result.
+    sources_of_tools: BTreeMap<String, String>,
+    /// What entered since the previous call: (source, length).
+    pending: Vec<(String, usize)>,
+    /// The length of the text the current call produced.
+    previous_text: usize,
+    tool_calls: u64,
+    orientation_calls: Option<u64>,
+}
+
+impl CallReader {
+    /// An assistant event: starts a call when its message id is new, then
+    /// records its usage and reads its blocks.
+    fn read_assistant(&mut self, message: &serde_json::Value) {
+        let id = message
+            .get("id")
+            .and_then(|i| i.as_str())
+            .map(str::to_string);
+        let usage = &message["usage"];
+        let get = |k: &str| usage.get(k).and_then(|v| v.as_u64()).unwrap_or(0);
+        if id.is_none() || id != self.last_id {
+            self.start_call(get("cache_creation_input_tokens"));
+            self.last_id = id;
+        }
+        let call = self.calls.last_mut().expect("a call was started");
+        // The last event of a message carries its final usage.
+        call.cache_read = get("cache_read_input_tokens");
+        call.input = get("input_tokens");
+        call.output = call.output.max(get("output_tokens"));
+        for block in message["content"].as_array().into_iter().flatten() {
+            self.read_block(block);
+        }
+    }
+
+    fn start_call(&mut self, writes: u64) {
+        let mut entered = std::mem::take(&mut self.pending);
+        if self.previous_text > 0 {
+            entered.push(("output".into(), self.previous_text));
+        }
+        let sources = share_writes(writes, &entered, self.calls.is_empty());
+        self.calls.push(crate::observed::Call {
+            cache_creation: writes,
+            sources,
+            ..crate::observed::Call::default()
+        });
+        self.previous_text = 0;
+    }
+
+    /// One block of the current call: a tool call, or text it produced.
+    fn read_block(&mut self, block: &serde_json::Value) {
+        match block.get("type").and_then(|t| t.as_str()) {
+            Some("tool_use") => {
+                let tool = block.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                let input = &block["input"];
+                if self.orientation_calls.is_none() && is_planning_write(tool, input) {
+                    self.orientation_calls = Some(self.tool_calls);
+                }
+                self.tool_calls += 1;
+                if let Some(call) = self.calls.last_mut() {
+                    call.tool_calls += 1;
+                }
+                if let Some(tid) = block.get("id").and_then(|i| i.as_str()) {
+                    self.sources_of_tools
+                        .insert(tid.to_string(), source_of(tool, input));
+                }
+            }
+            Some("text") => self.previous_text += text_len(&block["text"]),
+            Some("thinking") => self.previous_text += text_len(&block["thinking"]),
+            _ => {}
+        }
+    }
+
+    /// A user event: the tool results it returns enter the next call.
+    fn read_tool_results(&mut self, message: &serde_json::Value) {
+        for block in message["content"].as_array().into_iter().flatten() {
+            if block.get("type").and_then(|t| t.as_str()) != Some("tool_result") {
+                continue;
+            }
+            let source = block
+                .get("tool_use_id")
+                .and_then(|i| i.as_str())
+                .and_then(|i| self.sources_of_tools.get(i))
+                .cloned()
+                .unwrap_or_else(|| "other".into());
+            self.pending.push((source, text_len(&block["content"])));
+        }
     }
 }
 
@@ -1064,6 +1102,19 @@ fn terminate(child: &mut std::process::Child) {
     let _ = child.wait();
 }
 
+/// The JSON document a `codev … --json` command prints in `dir`. codev
+/// exits with 1 when what it reports holds an error — an invalid plan, a
+/// review record with an error — and still prints its document, which is
+/// the observation: only output that is not JSON is an error.
+fn codev_json(tools: &Tools, dir: &Path, args: &[&str]) -> Result<serde_json::Value, String> {
+    let command = format!("codev {}", args.join(" "));
+    let out = tool_command(&tools.codev, dir, codev_dir(tools))
+        .args(args)
+        .output()
+        .map_err(|e| format!("cannot run `{command}`: {e}"))?;
+    serde_json::from_slice(&out.stdout).map_err(|e| format!("`{command}` output: {e}"))
+}
+
 /// Runs one repetition of a case in `work_dir`, its working copy, set up
 /// from the fixture in `case_dir`; returns its observation and never fails:
 /// a failure is the observation's `error`.
@@ -1135,37 +1186,22 @@ pub fn run_case(
                 let content = fs::read_to_string(work_dir.join(&path)).ok();
                 observed.files.insert(path, content);
             }
-            // codev exits with 1 on an invalid plan and still prints its
-            // JSON: only output that is not JSON is an error.
-            let output = tool_command(&tools.codev, work_dir, codev_dir(tools))
-                .args(["validate", &change, "--json"])
-                .output();
-            match output {
-                Ok(out) => match serde_json::from_slice::<serde_json::Value>(&out.stdout) {
-                    Ok(value) => {
-                        observed.validate.insert(change, value);
-                    }
-                    Err(e) => {
-                        observed.error =
-                            Some(format!("`codev validate {change} --json` output: {e}"))
-                    }
-                },
-                Err(e) => observed.error = Some(format!("cannot run codev validate: {e}")),
+            match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
+                Ok(value) => {
+                    observed.validate.insert(change, value);
+                }
+                Err(e) => observed.error = Some(e),
             }
         }
     }
     if case.step.records_findings() {
-        // codev exits with 1 when the record has an error: its JSON is
-        // still the observation, only output that is not JSON is an error.
-        let output = tool_command(&tools.codev, work_dir, codev_dir(tools))
-            .args(["review", "--change", &case.change, "--json"])
-            .output();
-        match output {
-            Ok(out) => match serde_json::from_slice::<serde_json::Value>(&out.stdout) {
-                Ok(value) => observed.review = Some(value),
-                Err(e) => observed.error = Some(format!("`codev review --json` output: {e}")),
-            },
-            Err(e) => observed.error = Some(format!("cannot run codev review: {e}")),
+        match codev_json(
+            tools,
+            work_dir,
+            &["review", "--change", &case.change, "--json"],
+        ) {
+            Ok(value) => observed.review = Some(value),
+            Err(e) => observed.error = Some(e),
         }
         if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
             let _ = fs::write(log.join("review.md"), record);
@@ -1280,8 +1316,9 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
     queue.is_stopped()
 }
 
-/// Refuses to resume a run recorded with another model: its observations
-/// would be scored under the first model's name.
+/// Refuses to resume a run recorded with another model, whose observations
+/// would be scored under the first model's name, or with another Claude
+/// Code version, whose runs would be credited to the wrong version.
 pub fn check_resume(
     recorded: &RunInfo,
     model: Option<&str>,
@@ -2067,5 +2104,22 @@ mod tests {
         queue.stop();
         assert!(queue.pop().is_none(), "no fourth run starts");
         assert!(queue.is_stopped());
+    }
+
+    #[test]
+    fn a_call_with_nothing_new_charges_its_writes_to_output() {
+        assert_eq!(
+            share_writes(900, &[], true),
+            BTreeMap::from([("prompt".to_string(), 900)])
+        );
+        assert_eq!(
+            share_writes(900, &[], false),
+            BTreeMap::from([("output".to_string(), 900)])
+        );
+        let entered = [("file".to_string(), 300), ("skill".to_string(), 600)];
+        assert_eq!(
+            share_writes(900, &entered, false),
+            BTreeMap::from([("file".to_string(), 300), ("skill".to_string(), 600)])
+        );
     }
 }

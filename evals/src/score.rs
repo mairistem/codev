@@ -142,24 +142,7 @@ impl CaseScore {
 
 /// Scores one run of a case from its observation, as repetition 1.
 pub fn case(case: &Case, observed: &Observed) -> CaseScore {
-    let mut score = CaseScore {
-        id: case.id.clone(),
-        role: case.role.clone(),
-        step: case.step.as_str().into(),
-        kind: case.kind.as_str().into(),
-        outcome: Outcome::Scored,
-        expected: Vec::new(),
-        findings: Vec::new(),
-        changed: Vec::new(),
-        strayed: observed.strayed.clone(),
-        answered: Vec::new(),
-        record_errors: Vec::new(),
-        cost_usd: observed.cost_usd,
-        duration_ms: observed.duration_ms,
-        repetition: 1,
-        consumption: observed.consumption.clone(),
-        plan: None,
-    };
+    let mut score = unscored(case, observed);
     if case.step == Step::PlanTrace {
         trace(case, observed, &mut score);
     } else {
@@ -168,11 +151,10 @@ pub fn case(case: &Case, observed: &Observed) -> CaseScore {
     score
 }
 
-/// Scores one run of a planning case, against the repository at its
-/// `ref`, as repetition 1. A run that stopped is scored as a plan that
-/// modifies nothing, as a review that stopped misses what it expected.
-pub fn plan_case(case: &Case, observed: &Observed, at_ref: &AtRef) -> CaseScore {
-    let mut score = CaseScore {
+/// A run's score before its step's rules apply: what every run records,
+/// as repetition 1.
+fn unscored(case: &Case, observed: &Observed) -> CaseScore {
+    CaseScore {
         id: case.id.clone(),
         role: case.role.clone(),
         step: case.step.as_str().into(),
@@ -189,13 +171,20 @@ pub fn plan_case(case: &Case, observed: &Observed, at_ref: &AtRef) -> CaseScore 
         repetition: 1,
         consumption: observed.consumption.clone(),
         plan: None,
-    };
+    }
+}
+
+/// Scores one run of a planning case, against the repository at its
+/// `ref`, as repetition 1. A run that stopped is scored as a plan that
+/// modifies nothing, as a review that stopped misses what it expected.
+pub fn plan_case(case: &Case, observed: &Observed, at_ref: &AtRef) -> CaseScore {
+    let mut score = unscored(case, observed);
     let Some(expect) = &case.plan else {
         return score;
     };
-    let empty = BTreeMap::new();
+    let (no_files, no_validate) = (BTreeMap::new(), BTreeMap::new());
     let (files, validate) = match &observed.error {
-        Some(_) => (&empty, &BTreeMap::new()),
+        Some(_) => (&no_files, &no_validate),
         None => (&observed.files, &observed.validate),
     };
     let plan = score_plan(expect, files, validate, at_ref);
@@ -847,15 +836,19 @@ impl Measures {
     /// their calls: their tokens divided by their calls.
     pub fn sum_of<'a>(items: impl IntoIterator<Item = &'a Measures>) -> Measures {
         let mut out = Measures::default();
-        let mut weighted = [(0.0, 0.0); 2];
+        // Per-call measures: their tokens and their calls, summed apart.
+        let (mut input, mut output) = ((0.0, 0.0), (0.0, 0.0));
         for item in items {
             for m in Measure::ALL {
                 if let Some(v) = item.get(m) {
                     match (m, item.calls) {
                         (Measure::InputPerCall | Measure::OutputPerCall, Some(calls)) => {
-                            let w = &mut weighted[usize::from(m == Measure::OutputPerCall)];
-                            w.0 += v * calls;
-                            w.1 += calls;
+                            let (tokens, all_calls) = match m {
+                                Measure::InputPerCall => &mut input,
+                                _ => &mut output,
+                            };
+                            *tokens += v * calls;
+                            *all_calls += calls;
                         }
                         (Measure::InputPerCall | Measure::OutputPerCall, None) => {}
                         _ => {
@@ -867,8 +860,8 @@ impl Measures {
             }
         }
         let mean = |(tokens, calls): (f64, f64)| (calls > 0.0).then(|| (tokens / calls).round());
-        out.input_per_call = mean(weighted[0]);
-        out.output_per_call = mean(weighted[1]);
+        out.input_per_call = mean(input);
+        out.output_per_call = mean(output);
         out
     }
 }

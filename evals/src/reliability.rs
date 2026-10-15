@@ -488,6 +488,15 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
 
     // The run.
     let _ = writeln!(out, "## {}\n", lang.pick("The run", "L'exécution"));
+    // The planning cases are counted with the others: name them, so that
+    // seeded and controls add up to the total.
+    let planning = b.planning.as_ref().map_or_else(String::new, |p| {
+        format!(
+            ", {} {}",
+            p.cases,
+            lang.pick("planning", "de planification")
+        )
+    });
     let model = b.run.model.as_deref().map_or_else(
         || {
             lang.pick("Claude Code's default", "celui de Claude Code par défaut")
@@ -497,7 +506,7 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     );
     let _ = writeln!(
         out,
-        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {})\n- {}{c}{}\n- {}{c}{}\n",
+        "- {}{c}{}\n- {}{c}{model}\n- Claude Code{c}{}\n- codev{c}{}\n- {}{c}{} ({} {}, {} {}{planning})\n- {}{c}{}\n- {}{c}{}\n",
         lang.pick("Date", "Date"),
         b.run.date,
         lang.pick("Model", "Modèle"),
@@ -1042,7 +1051,7 @@ fn consumption_section(out: &mut String, b: &Baseline, m: &Measures, lang: Lang)
              qui est entré dans son contexte depuis l'appel précédent, l'essentiel du coût d'une \
              exécution — sont répartis entre ce qui les a apportés\u{a0}: la lecture de la skill, \
              chaque sous-commande `codev`, les fichiers, les recherches, la sortie du modèle \
-             lui-même{NBSP}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
+             lui-même\u{a0}; `prompt` est le prompt propre de Claude Code et la demande. Par cas la \
              médiane sur ses exécutions, sommée sur les cas."
         )
     );
@@ -1078,7 +1087,9 @@ fn percent(lang: Lang, share: f64) -> String {
 /// Where the tokens go: one horizontal bar per source, its share of the
 /// cost, ranked from the most costly.
 fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
-    let (x0, plot) = (100.0, 240.0);
+    // A wider label column than the role charts': source names such as
+    // `codev instructions` are longer than a role's name.
+    let (label_end, x0, plot) = (142.0, 150.0, 200.0);
     let (row_h, bar_h, first) = (26.0, 14.0, 12.0);
     let bottom = first + row_h * sources.len() as f64;
     let height = bottom + 22.0;
@@ -1116,7 +1127,7 @@ fn sources_chart(sources: &[SourceShare], lang: Lang) -> String {
         marks.push_str(&text(
             "rel-label",
             INK,
-            LABEL_END,
+            label_end,
             cy + 4.0,
             "end",
             &s.source,
@@ -1981,6 +1992,9 @@ mod tests {
             fr.contains("| Rappel principal | 0,67 (0,60–0,75) |"),
             "{fr}"
         );
+        // The run line counts the planning cases with the others.
+        assert!(en.contains("controls, 25 planning)"), "{en}");
+        assert!(fr.contains("témoins propres, 25 de planification)"), "{fr}");
         assert!(
             !page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En).contains("## Planning")
         );
@@ -2030,6 +2044,9 @@ mod tests {
             let chart = &text[at("rel-src-title")..];
             assert!(chart.find(">skill<").unwrap() < chart.find(">file<").unwrap());
             assert!(text.contains("38000"));
+            assert!(!text.contains("{NBSP}"), "a placeholder left in the page");
+            // Long source names fit left of the plot.
+            assert!(chart.contains("x=\"142.0\""), "{chart}");
         }
     }
 }

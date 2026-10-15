@@ -551,6 +551,8 @@ pub struct Catalog {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct PlanCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
     #[allow(dead_code)]
     step: String,
     kind: String,
