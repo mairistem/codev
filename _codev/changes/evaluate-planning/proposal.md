@@ -95,7 +95,7 @@ now asks for — fewer tokens, the same quality of answer.
 
 - [ ] security — the runner already confines the agent in Claude Code's sandbox; the fixture is this repository's own history, with no secret
 - [ ] personal-data
-- [ ] user-interface
+- [x] user-interface
 - [ ] performance — the change measures what the skills consume; it does not change it
 - [x] operations
 - [ ] migration — the observation keeps its format, gaining optional fields; earlier output directories stay readable
