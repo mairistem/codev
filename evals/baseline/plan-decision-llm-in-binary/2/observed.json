@@ -1,0 +1,258 @@
+{
+  "format": 2,
+  "case": "plan-decision-llm-in-binary",
+  "error": null,
+  "costUsd": 1.1838236,
+  "durationMs": 179797,
+  "consumption": {
+    "durationApiMs": 177625,
+    "turns": 26,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1103,
+      "cacheCreation": 71265,
+      "cacheRead": 1388653,
+      "output": 16751
+    },
+    "toolCalls": 25,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7747,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7747
+        }
+      },
+      {
+        "cacheCreation": 16652,
+        "cacheRead": 29886,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2994,
+          "skill": 13658
+        }
+      },
+      {
+        "cacheCreation": 4876,
+        "cacheRead": 46538,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4876
+        }
+      },
+      {
+        "cacheCreation": 3817,
+        "cacheRead": 51414,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3817
+        }
+      },
+      {
+        "cacheCreation": 6224,
+        "cacheRead": 55231,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6224
+        }
+      },
+      {
+        "cacheCreation": 6075,
+        "cacheRead": 61455,
+        "input": 2,
+        "output": 85,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 6075
+        }
+      },
+      {
+        "cacheCreation": 552,
+        "cacheRead": 67530,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 166,
+          "search": 386
+        }
+      },
+      {
+        "cacheCreation": 1487,
+        "cacheRead": 68082,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1487
+        }
+      },
+      {
+        "cacheCreation": 2023,
+        "cacheRead": 69569,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2023
+        }
+      },
+      {
+        "cacheCreation": 2069,
+        "cacheRead": 71592,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev roles": 2069
+        }
+      },
+      {
+        "cacheCreation": 6364,
+        "cacheRead": 73661,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 6230,
+          "edit": 134
+        }
+      },
+      {
+        "cacheCreation": 499,
+        "cacheRead": 80025,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 135,
+          "shell": 364
+        }
+      },
+      {
+        "cacheCreation": 373,
+        "cacheRead": 80524,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 373
+        }
+      },
+      {
+        "cacheCreation": 3507,
+        "cacheRead": 80897,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2760,
+          "shell": 747
+        }
+      },
+      {
+        "cacheCreation": 635,
+        "cacheRead": 84404,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 635
+        }
+      },
+      {
+        "cacheCreation": 1750,
+        "cacheRead": 85039,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1750
+        }
+      },
+      {
+        "cacheCreation": 1871,
+        "cacheRead": 86789,
+        "input": 2,
+        "output": 55,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 1718,
+          "edit": 153
+        }
+      },
+      {
+        "cacheCreation": 3754,
+        "cacheRead": 88660,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2366,
+          "edit": 1026,
+          "output": 362
+        }
+      },
+      {
+        "cacheCreation": 390,
+        "cacheRead": 92414,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 390
+        }
+      },
+      {
+        "cacheCreation": 600,
+        "cacheRead": 92804,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 64,
+          "edit": 536
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/faster-isolated-review/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/faster-isolated-review/design.md": "# Design: Faster isolated review\n\n## Context\n\nIn isolated mode, the `propose` and `apply` skills render one shared\nprocedure, `assets/workflows/_isolated-review.md`. It is put into the\nskills through the `{{ISOLATED_REVIEW}}` placeholder\n(`crates/codev-agents/src/workflows.rs`, `ISOLATED_REVIEW`). The test\n`propose_and_apply_describe_the_isolated_review` asserts the procedure's\nkeywords. The procedure currently says:\n\n- step ii: one summarizing sub-agent per file marked `summarize`. It\n  does not say when they start relative to each other or to the\n  reviewers;\n- step iii: \"Start every sub-agent of the step at once, with the `Agent`\n  tool\". It does not say how the summaries and the reviewers are\n  ordered, or which model each uses;\n- step iv: \"Run a failed sub-agent once more\". It does not say when the\n  retries start, so an agent often retries them one at a time. It also\n  does not say what reviewers receive when a summary fails twice.\n\nAll of these gaps leave room for turns that run one after another, and\nevery sub-agent runs on the session's model. Decision\n[0007](../../decisions/0007-the-skills-dispatch-sub-agents-codev-only-renders-the-permission.md)\nputs all orchestration in the skill text. The binary renders the\npermission, serves the data and checks the record.\n[0001](../../decisions/0001-functional-core-imperative-shell.md) keeps\n`codev-core` free of the network, and the shell never calls a model.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Shorten the wall time of an isolated review step by removing\n  sequential turns and by giving the mechanical summary work a faster\n  model.\n- Leave review quality where it is: same briefs, same reviewer model,\n  same meeting.\n\n**Non-Goals**\n\n- The binary calling the Claude API, or running `claude -p`. Decision\n  0007 rules this out and this design follows it (see the first\n  decision below).\n- Running `plan.trace` and `plan.challenge` at the same time. The\n  challenge reads the artifacts after the tracer's gaps have been fixed.\n- A configurable model per role, a token budget, or a timeout that\n  codev sets. A failure is still whatever the platform reports.\n- Any change to `codev roles`, the JSON contract, `review.md` or the\n  inline mode.\n\n## Decisions\n\n### Decision: Speed comes from the skill text, not from the binary\n\nThe request asked for codev itself to call the Claude API in parallel.\nDecision 0007 is accepted. It names \"the binary running `claude -p` per\nrole\" as a rejected alternative, and its consequences keep the binary\n\"free of credentials, processes and model costs\". This design follows\nit. Every change here is in the rendered procedure, and the binary's\nonly part is unchanged: rendering, serving `review.material`, and\nvalidating the record. The procedure gains one sentence saying that\ncodev starts no sub-agent and calls no model, so that a later reader\ndoes not move dispatch into the binary.\n\n**Alternatives considered**:\n\n- **An HTTP client in `codev-engine` behind a new port, driven by a new\n  `codev review run` command.** It would give real parallelism without\n  the agent's turns. But it reverses 0007, adds an API key to manage, a\n  network dependency, model costs billed outside the session, and a\n  second orchestrator to maintain next to the skills. It also does not\n  remove the skill's meeting. If the team wants this, the route is a\n  proposed decision that supersedes 0007, accepted by a person, and then\n  its own change. This design does not take that step.\n- **A sub-agent definition installed under `.claude/agents/`** that pins\n  a model. 0007 left this open for \"once isolated review is measured\".\n  It adds a generated file kind to install and diagnose. The `Agent`\n  tool's own `model` parameter gives the same lever with no new file.\n\n### Decision: Two waves, each started in a single turn, retries batched\n\nThe procedure is restructured into explicit waves:\n\n1. **Summaries**: when `review.material.summarized` is `true`, every\n   summarizing sub-agent is started in the same turn, one `Agent` call\n   per file in a single message.\n2. **Reviewers**: once every summary has returned, every role's\n   sub-agent is started in the same turn.\n3. **Retries**: once a wave's sub-agents have all returned, every\n   sub-agent of that wave that failed is started again in the same turn,\n   with the same brief and the same model.\n\nThe procedure gives these as instructions, and the test\n`propose_and_apply_describe_the_isolated_review` gains their keywords.\nThe sub-agents run in the foreground: the skill waits for the wave,\nbecause the next step needs every result. Polling would only add turns.\n\n**Alternatives considered**:\n\n- **Pipelining: start each reviewer as soon as its own inputs are\n  ready.** Every reviewer reads the same material, so all of them depend\n  on all of the summaries. There is nothing to pipeline.\n- **Starting the reviewers with the raw diff while the summaries run.**\n  This would break the material budget that `summarize` exists to\n  enforce.\n\n### Decision: The lightest model for summaries, the session's model for reviewers\n\nA summarizing sub-agent quotes the changed lines verbatim when they fit,\nand otherwise lists what changed and where. That is extraction, not\njudgement. The procedure tells the skill to pass the lightest model the\nsub-agent tool offers. In Claude Code, that is the `Agent` tool's\n`model` parameter, today `haiku`. The rendered text names the parameter\nand gives that value as an example, so a future model lineup only means\nediting the example. A reviewing role passes no model, so it inherits\nthe session's model and its quality is unchanged. If a platform's tool\nhas no model choice, the skill passes nothing.\n\n**Alternatives considered**:\n\n- **A lighter model for reviewers too.** Faster, but the skeptic's and\n  the experts' findings are the reason the review exists. Changing their\n  model belongs to a measured change, through the role-evaluation suite,\n  and not to this one.\n- **A `review.summary_model` configuration key.** This would add\n  configuration surface, `unknown_config_key` handling and docs for a\n  value the skill can pick on its own. It can be added later if a team\n  needs it.\n\n### Decision: A summary that fails twice falls back to the file's diff\n\nThe inline fallback is defined for roles, not for summaries, and a\nlighter model makes a summary failure more likely. A summary that fails\ntwice is replaced by that file's diff in the reviewers' brief. The\n`Summarized:` line records this as\n`Summarized: <path> — summary failed twice, diff given instead.`. The\ndiff of a single file is still smaller than the whole file the budget\nexcluded. The record stays truthful, and `codev validate` already\naccepts free text after the `—`.\n\n**Alternatives considered**:\n\n- **The main agent summarizes the file itself.** The procedure forbids\n  this (\"never summarize a change yourself: you wrote it\").\n- **Dropping the file from the material.** The reviewers would miss a\n  changed file without knowing it.\n\n## Risks / Trade-offs\n\n- [Concurrency is the platform's to decide. Several `Agent` calls in one\n  message may still run one after another on some platforms.] → The spec\n  keeps \"when the platform allows\". The text asks for one turn per wave,\n  which is the most the skill can do. The measure-consumption suite\n  (`duration_api_ms`) reports the wall time before and after, as the\n  evidence.\n- [A light model might paraphrase where the procedure asks for verbatim\n  lines.] → The brief already demands verbatim quotes. The meeting's\n  **Check** step re-reads the cited lines in the real files, and a\n  summary that comes back in the wrong format counts as a failure and is\n  retried, then falls back to the diff.\n- [Batching retries makes a wave wait for its slowest sub-agent before\n  any retry starts.] → Retrying right away would save time only for a\n  sub-agent that fails early. Waiting avoids interleaving retries with\n  results still arriving, which keeps the procedure simple to follow.\n  The wave's slowest member sets the step's wall time either way.\n- [Installed skills keep the old text until the next update.] →\n  `codev update` already rewrites a skill that only differs from\n  codev's rendering, so the usual refresh is enough. No migration is\n  needed.\n\n## Migration Plan\n\nNothing to migrate. The new procedure reaches projects through\n`codev update`. Projects in inline mode see a different body but behave\nthe same. The docs' isolated review section (`roles.md`) and the\nfailed-sub-agent FAQ entry are updated in `docs/en` and `docs/fr`.\n",
+    "_codev/changes/faster-isolated-review/proposal.md": "# Proposal: Faster isolated review\n\n## Why\n\nIsolated review is slow: the sub-agents of a review step can be started\nand retried in several turns, one after another, and every one of them,\nthe file summaries included, runs on the session's model. The request is\nfor reviews that run in parallel and finish sooner than they do today.\n\nThe request as written asked for codev itself to call the Claude API to\nrun the reviews. Accepted decision\n[0007](../../decisions/0007-the-skills-dispatch-sub-agents-codev-only-renders-the-permission.md)\nrules this out: the skills orchestrate sub-agents and the binary never\ncalls a model. Decision\n[0001](../../decisions/0001-functional-core-imperative-shell.md) keeps\nthe binary a functional core with no network. The decision also rejects\n\"the binary running `claude -p` per role\" by name. **Assumption, stated\nbecause this is an unattended run:** the goal is speed, and the decision\nstands. This change makes reviews faster within the skills. Having the\nbinary call the API would first need someone to supersede 0007\n(`codev decision supersede 0007 …`, then `codev decision accept`), and\nonly a person can decide that. This change does not open that debate.\n\n## What Changes\n\n- In isolated mode, each wave of a review step starts all of its\n  sub-agents in one turn: first the file summaries, then the reviewing\n  roles. A step starts no sub-agent while the wave before it is still\n  running, and none in a later turn when it could have started with its\n  wave.\n- Retries are batched too. Every sub-agent of a wave that failed is run\n  once more, all of them in the same turn, instead of one at a time.\n- Summary sub-agents ask for the platform's lightest model, because they\n  extract and quote changed lines and do not judge them. Reviewing roles\n  keep the session's model, so review quality does not change. When the\n  platform offers no choice of model, every sub-agent uses the default.\n- A summary that fails twice now has a defined fallback. The reviewers\n  get that file's diff instead, and the step's `Summarized:` line\n  records this. Until now the procedure did not say what happens in\n  that case.\n- The review procedure says plainly that codev never calls a model and\n  that all dispatch stays in the skill, as decision 0007 requires.\n- Unchanged: the content of the briefs, the single retry, the fallback\n  to inline review, the meeting, the review record and its format, every\n  `codev` command and the JSON contract. Inline mode is untouched.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- Code: the shared isolated-review procedure the `propose` and `apply`\n  skills render (`assets/workflows/_isolated-review.md`) and its\n  rendering tests in `crates/codev-agents/src/workflows.rs`. No binary\n  logic, no new dependency, no credential, no network access.\n- Installed skills: projects in isolated mode get the new text through\n  `codev update`, like any change to the skill bodies.\n- Documentation: the isolated review section of `roles.md` and the\n  failed-sub-agent entry of `faq.md`, in `docs/en` and `docs/fr`.\n\n## Domains\n\n<!-- No diff to go by yet (only planning files): ticked by judgement. -->\n\n- [ ] security — no new input, secret or dependency; the brief's content and the read-only rule are unchanged\n- [ ] personal-data\n- [ ] user-interface\n- [x] performance\n- [ ] operations — no log, metric or timeout added; a failure is still what the platform reports\n- [ ] migration — no change to the JSON contract or the configuration; skills refresh through `codev update` as usual\n\n## Release note\n\n- Changed: In isolated review mode, the skills start all the sub-agents of a review step in one turn and retry failed ones together. File summaries run on a lighter model, so reviews finish sooner.\n",
+    "_codev/changes/faster-isolated-review/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: In isolated mode, each reviewing role runs alone, then the skill consolidates\n\nAt `plan.trace`, `plan.challenge` and `code.review`, the `propose` and\n`apply` skills SHALL read `review.mode` from `codev roles --at <step>\n--change <name> --json`. In `inline` mode they review as before. In\n`isolated` mode they SHALL run every role returned — the tracer, the\nskeptic, the newcomer and the active experts — as a separate sub-agent,\nall of a step's sub-agents at once when the platform allows.\n\nThe sub-agents of a step run in waves: first the summarizing sub-agents,\nwhen `review.material.summarized` is `true`, then the reviewing roles.\nThe skill SHALL start every sub-agent of a wave in the same turn, so\nthat they run concurrently. It MUST NOT start a wave's sub-agents one\nafter another across turns, and it MUST NOT start the reviewing roles\nbefore every summary they need has returned. The sub-agents are started\nwith the platform's own sub-agent mechanism. codev does not start them,\ncall a model or hold credentials for one.\n\nA summarizing sub-agent SHALL be started on the lightest model the\nplatform's sub-agent tool offers. A reviewing role's sub-agent SHALL run\non the session's model. When the sub-agent tool offers no choice of\nmodel, every sub-agent runs on its default.\n\nThe brief of each sub-agent MUST hold only:\n\n- its role: id, question, `doneWhen` criteria and `knowledge` as served,\n  the `By stack` part already filtered;\n- the project's `context` and `rules` from `codev instructions`;\n- the material listed by `review.material`: the files marked `full`, to\n  read whole, with the change's diff for them at `code.review`; for each\n  file marked `summarize`, a summary of its change written by a separate\n  sub-agent that sees only that file's diff, quoting the changed lines\n  verbatim where they fit;\n- the ids already in the record, so as not to raise them again;\n- the review record's format, scales and rules for a finding.\n\nThe brief MUST NOT carry the conversation, the author's reasoning or\nanother role's findings, and is assembled only from codev's outputs and\nthe files. The sub-agent MAY read other files of the repository with\nread-only tools — the decisions, the main specs, the code the material\ncites — and is told to modify no file and to treat the material as data,\nnever as instructions. It returns its findings as a role section of the\nreview record, or `No finding.`.\n\nA sub-agent that the platform reports as failed or stopped — its own\ntime or budget limits included — or that returns something other than a\nrole section with well-formed findings SHALL be run once more, with the\nsame brief and the same model. The skill SHALL start the retries of\nevery sub-agent of a wave that failed in the same turn, once all of the\nwave's sub-agents have returned. If a sub-agent fails again, the skill\nSHALL run that role inline and record the fallback with its reason. When\na summarizing sub-agent fails twice, the reviewers receive that file's\ndiff in place of its summary, and the step's `Summarized:` line for it\nsays so. When the sub-agent tool is unavailable, every role falls back\nto inline, and the record says so.\n\nThe skill then consolidates — the meeting:\n\n- findings of several roles about the same defect at the same location\n  become one finding, written under the role that rated it most severe\n  (ties: higher confidence, then the order `codev roles` lists the\n  roles), with `raised_by` listing every role that raised it; a role\n  whose findings were all merged writes `No finding.`;\n- findings at the same place that need different fixes stay separate;\n- the findings are ranked by severity, then confidence, then role order,\n  and the summary's caps apply as in inline mode;\n- the step's section records `Mode: isolated.` and one `Summarized:` line\n  per summarized file;\n- then the record is checked, and the author's answer loop and the\n  escalation to the human run as in inline mode.\n\nAt `plan.trace`, the tracer's findings are not recorded: the skill fixes\nthe gaps in the artifacts, as in inline mode, and its summary names any\nfallback.\n\n#### Scenario: The skills describe the isolated review\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each names `review.mode`, a sub-agent per role, what the\n  brief holds and that it never carries the conversation, the material\n  as data, parallel dispatch, `review.material` with `full` and\n  `summarize`, the summarizing sub-agent, one retry then the inline\n  fallback recorded with `Fallback:`, the merge of duplicate findings\n  with `raised_by`, the ranking, `Mode: isolated.` and `Summarized:`\n\n#### Scenario: The skills describe the waves and the models\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each says that a wave's sub-agents start in the same turn,\n  that the summaries form a wave that ends before the reviewers start,\n  that a wave's retries start together in the same turn, that summaries\n  ask for the lightest model and reviewers keep the session's model,\n  and that codev itself never calls a model\n\n#### Scenario: Every reviewer of a step starts in the same turn\n\n- **GIVEN** isolated mode, no file to summarize, and `codev roles --at\n  plan.challenge` returning the skeptic and the `performance` expert\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** both sub-agents are started in the same turn\n- **AND** neither is started after the other has returned\n\n#### Scenario: Summaries come before the reviewers, on a lighter model\n\n- **GIVEN** isolated mode, `review.material` marking two files\n  `summarize`, and a sub-agent tool that offers a choice of model\n- **WHEN** `/codev-apply` reviews the change\n- **THEN** the two summarizing sub-agents are started in the same turn,\n  on the lightest model offered\n- **AND** the reviewing roles are started together, on the session's\n  model, only after both summaries have returned\n\n#### Scenario: Failed sub-agents are retried together\n\n- **GIVEN** isolated mode, and the platform stops both the `newcomer` and\n  the `security` sub-agents of the same wave on their time limit\n- **WHEN** the wave's sub-agents have all returned\n- **THEN** the newcomer and security sub-agents are started again in the\n  same turn, with their briefs unchanged\n\n#### Scenario: A summary that fails twice\n\n- **GIVEN** isolated mode, and the summarizing sub-agent of `src/big.rs`\n  fails twice\n- **WHEN** the skill briefs the reviewers\n- **THEN** they receive the diff of `src/big.rs` in place of its summary\n- **AND** the `Summarized:` line for `src/big.rs` says that the summary\n  failed and the diff was given instead\n\n#### Scenario: Two roles report the same defect\n\n- **GIVEN** isolated mode, and the `security` and `skeptic` sub-agents\n  both report that `design.md#Decision: Tokens` stores tokens in clear,\n  `security` as `high`\n- **WHEN** the skill consolidates\n- **THEN** the record holds one finding under `### security` with\n  `raised_by: [security, skeptic]`\n- **AND** `### skeptic` holds its other findings, or `No finding.`\n\n#### Scenario: A sub-agent fails twice\n\n- **GIVEN** isolated mode, and the platform stops the `newcomer`\n  sub-agent twice, on its time limit\n- **WHEN** the skill reviews the change\n- **THEN** the newcomer reviews inline\n- **AND** its section in the record carries a `Fallback:` line with the\n  reason\n\n#### Scenario: Material over the limit\n\n- **GIVEN** isolated mode, and `review.material` marks a file `summarize`\n- **WHEN** the skill briefs the sub-agents\n- **THEN** they receive a summary of that file's change, written by a\n  sub-agent that saw only that file's diff, instead of the whole file\n- **AND** the step's section records a `Summarized:` line naming it\n\n#### Scenario: A change reviewed inline in an isolated project\n\n- **GIVEN** a project in isolated mode and a change whose `change.yaml`\n  sets `review: { mode: inline }`\n- **WHEN** `/codev-apply` reviews it\n- **THEN** every role reviews inline, in the conversation\n"
+  },
+  "validate": {
+    "faster-isolated-review": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "faster-isolated-review",
+          "path": "_codev/changes/faster-isolated-review"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-decision-llm-in-binary-2",
+      "status": []
+    }
+  }
+}

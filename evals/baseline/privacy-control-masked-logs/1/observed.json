@@ -1,0 +1,259 @@
+{
+  "format": 2,
+  "case": "privacy-control-masked-logs",
+  "error": null,
+  "costUsd": 0.401371,
+  "durationMs": 47526,
+  "consumption": {
+    "durationApiMs": 47296,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1190,
+      "cacheCreation": 29264,
+      "cacheRead": 380625,
+      "output": 4508
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7406,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7406
+        }
+      },
+      {
+        "cacheCreation": 13156,
+        "cacheRead": 29545,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13156
+        }
+      },
+      {
+        "cacheCreation": 1974,
+        "cacheRead": 42701,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1974
+        }
+      },
+      {
+        "cacheCreation": 1428,
+        "cacheRead": 44675,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1428
+        }
+      },
+      {
+        "cacheCreation": 583,
+        "cacheRead": 46103,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 583
+        }
+      },
+      {
+        "cacheCreation": 2058,
+        "cacheRead": 46686,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2058
+        }
+      },
+      {
+        "cacheCreation": 403,
+        "cacheRead": 48744,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 367,
+          "output": 36
+        }
+      },
+      {
+        "cacheCreation": 1738,
+        "cacheRead": 49147,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1738
+        }
+      },
+      {
+        "cacheCreation": 518,
+        "cacheRead": 50885,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 518
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Addresses with non-ASCII characters are logged in full) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "mask-emails-in-logs",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/logger.ts:3",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The local-part and domain classes are ASCII-only, so any address with an accented or other non-ASCII character fails to match and is written to the logs unmasked: `logInfo(\"signup\", { email: \"josé@example.fr\" })` prints `\"email\":\"josé@example.fr\"`, and `ada@exämple.org` likewise passes through. Local parts with other legal characters leak a prefix (`o'brien@example.com` becomes `o'b***@example.com`). These customers' addresses then reach the hosting provider's logs, kept 90 days (GDPR Art. 5(1)(c) and (f), Art. 32), contrary to the release note. Match on `\\S+@\\S+`-style boundaries (or Unicode classes with the `u` flag, e.g. `[^\\s@]+@[^\\s@]+\\.[^\\s@]+`) and add tests for a non-ASCII local part, a non-ASCII domain and an apostrophe.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Addresses with non-ASCII characters are logged in full"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** `ada.lovelace@example.org` becomes `a***@example.org`. */\nexport function maskEmails(text: string): string {\n  return text.replace(EMAIL, \"$1***@$2\");\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 35,
+        "location": "src/logger.ts:5-7",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The logs keep the first letter of the local part and the whole domain. For a personal or small-company domain (`a***@lovelace-family.org`), that is enough to single out the customer, so the log line stays personal data (GDPR Art. 4(1), Art. 5(1)(c)). Depends on the customers' domains, which the reviewer could not see. Ask the team whether the domain is needed for diagnosis; if not, replace the whole address with a fixed token or a keyed hash.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Masked form keeps the first letter and the full domain"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "const EMAIL = /([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})/g;\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 58,
+        "location": "src/logger.ts:3",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The pattern requires a literal `@`. A logged URL or query string such as `/reset?email=ada%40example.org` keeps the address in full in the logs (GDPR Art. 5(1)(f)). Depends on callers logging URLs, none of which the change shows yet. Also match `%40` (case-insensitive) as the separator, and test it.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "URL-encoded addresses are not masked"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/mask-emails-in-logs/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,259 @@
+{
+  "format": 2,
+  "case": "privacy-code-email-in-logs",
+  "error": null,
+  "costUsd": 0.3065014,
+  "durationMs": 25466,
+  "consumption": {
+    "durationApiMs": 25301,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 26585,
+      "cacheRead": 233782,
+      "output": 2303
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7378,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7378
+        }
+      },
+      {
+        "cacheCreation": 11899,
+        "cacheRead": 29517,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11899
+        }
+      },
+      {
+        "cacheCreation": 4476,
+        "cacheRead": 41416,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 4476
+        }
+      },
+      {
+        "cacheCreation": 841,
+        "cacheRead": 45892,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 841
+        }
+      },
+      {
+        "cacheCreation": 1352,
+        "cacheRead": 46733,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1352
+        }
+      },
+      {
+        "cacheCreation": 639,
+        "cacheRead": 48085,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 639
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Sign-up logs the member's e-mail address and display name) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (The analytics event sends the e-mail address to the Beacon SaaS) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-signup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "log.info(\"new signup email=%s name=%s id=%s\", email, display_name, user_id)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/signup.py:14",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Log only the opaque id (`log.info(\"new signup id=%s\", user_id)`). As written, every sign-up writes the e-mail address and display name in clear to the application logs, which are kept, shipped and read outside any erasure path, against data minimisation and storage limitation (GDPR Art. 5(1)(c), 5(1)(e)).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Sign-up logs the member's e-mail address and display name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "track(\"signup\", {\"user_id\": user_id, \"email\": email})\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 29,
+        "location": "app/signup.py:15",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Drop `email` from the event properties: the stated purpose, counting sign-ups in product analytics, needs no e-mail address, and `user_id` already identifies the event. As written, every sign-up sends the member's e-mail address to a third party (`https://beacon.example.com/v1/events`), where account erasure will never reach it (GDPR Art. 5(1)(c), Art. 17).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "The analytics event sends the e-mail address to the Beacon SaaS"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"\"\"Product analytics, sent to the Beacon SaaS (beacon.example.com).\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 48,
+        "location": "app/analytics.py:1",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: name Beacon as a processor of member data (even the `user_id` alone is a pseudonymous identifier), confirm the processing agreement (GDPR Art. 28), where it hosts the data (Chapter V if outside the EEA) and its retention, and record them in the proposal. The proposal only says \"Sign-ups are counted in product analytics\".",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Beacon is a new processor that the plan does not identify"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- `signup(email, display_name)` creates a member.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 67,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "State in the plan how long a member's e-mail address and display name are kept and how an account is erased (users table, backups, and any copy in logs or Beacon). The change starts collecting this data from members themselves, but nothing in it defines retention or deletion (GDPR Art. 5(1)(e), Art. 17); whether an existing purge covers the `users` table could not be verified.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No retention or erasure defined for the collected e-mail and display name"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-signup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

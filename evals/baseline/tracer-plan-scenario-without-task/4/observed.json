@@ -1,0 +1,82 @@
+{
+  "format": 2,
+  "case": "tracer-plan-scenario-without-task",
+  "error": null,
+  "costUsd": 0.2953926,
+  "durationMs": 20984,
+  "consumption": {
+    "durationApiMs": 21207,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1088,
+      "cacheCreation": 26781,
+      "cacheRead": 178308,
+      "output": 2231
+    },
+    "toolCalls": 9,
+    "orientationCalls": 7,
+    "calls": [
+      {
+        "cacheCreation": 7300,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7300
+        }
+      },
+      {
+        "cacheCreation": 3841,
+        "cacheRead": 29439,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 3841
+        }
+      },
+      {
+        "cacheCreation": 12654,
+        "cacheRead": 33280,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "codev roles": 1341,
+          "skill": 11313
+        }
+      },
+      {
+        "cacheCreation": 1582,
+        "cacheRead": 45934,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1583
+        }
+      },
+      {
+        "cacheCreation": 1404,
+        "cacheRead": 47516,
+        "input": 2,
+        "output": 163,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 1404
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed` (\"A valid link\": the link is e-mailed with a 15-minute expiry)\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject an expired link and prompt for a new one, verified by test `an_expired_link_does_not_sign_in` (\"An expired link\")\n- [ ] 1.4 Reject a link already used and prompt for a new one, verified by test `a_used_link_does_not_sign_in` (\"A link already used\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+  }
+}

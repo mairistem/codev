@@ -1,0 +1,284 @@
+{
+  "format": 2,
+  "case": "plan-decision-accept-command",
+  "error": null,
+  "costUsd": 1.5713458,
+  "durationMs": 213840,
+  "consumption": {
+    "durationApiMs": 211789,
+    "turns": 26,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1189,
+      "cacheCreation": 96806,
+      "cacheRead": 1855054,
+      "output": 21243
+    },
+    "toolCalls": 25,
+    "orientationCalls": 14,
+    "calls": [
+      {
+        "cacheCreation": 7292,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7292
+        }
+      },
+      {
+        "cacheCreation": 14342,
+        "cacheRead": 29431,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14342
+        }
+      },
+      {
+        "cacheCreation": 1077,
+        "cacheRead": 43773,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1077
+        }
+      },
+      {
+        "cacheCreation": 1207,
+        "cacheRead": 44850,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1207
+        }
+      },
+      {
+        "cacheCreation": 15570,
+        "cacheRead": 46057,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 15570
+        }
+      },
+      {
+        "cacheCreation": 647,
+        "cacheRead": 61627,
+        "input": 2,
+        "output": 45,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 647
+        }
+      },
+      {
+        "cacheCreation": 3217,
+        "cacheRead": 62274,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 2,
+        "sources": {
+          "output": 36,
+          "shell": 3181
+        }
+      },
+      {
+        "cacheCreation": 14059,
+        "cacheRead": 65491,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 14059
+        }
+      },
+      {
+        "cacheCreation": 1866,
+        "cacheRead": 79550,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1866
+        }
+      },
+      {
+        "cacheCreation": 2502,
+        "cacheRead": 81416,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2502
+        }
+      },
+      {
+        "cacheCreation": 3636,
+        "cacheRead": 83918,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3636
+        }
+      },
+      {
+        "cacheCreation": 2258,
+        "cacheRead": 87554,
+        "input": 2,
+        "output": 55,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2258
+        }
+      },
+      {
+        "cacheCreation": 4012,
+        "cacheRead": 89812,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3969,
+          "output": 43
+        }
+      },
+      {
+        "cacheCreation": 1659,
+        "cacheRead": 93824,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1659
+        }
+      },
+      {
+        "cacheCreation": 2367,
+        "cacheRead": 95483,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2367
+        }
+      },
+      {
+        "cacheCreation": 3107,
+        "cacheRead": 97850,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2968,
+          "edit": 139
+        }
+      },
+      {
+        "cacheCreation": 5661,
+        "cacheRead": 100957,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5661
+        }
+      },
+      {
+        "cacheCreation": 841,
+        "cacheRead": 106618,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 1,
+        "sources": {
+          "search": 841
+        }
+      },
+      {
+        "cacheCreation": 3029,
+        "cacheRead": 107459,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 3000,
+          "output": 29
+        }
+      },
+      {
+        "cacheCreation": 2315,
+        "cacheRead": 110488,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 2136,
+          "edit": 179
+        }
+      },
+      {
+        "cacheCreation": 704,
+        "cacheRead": 112803,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 704
+        }
+      },
+      {
+        "cacheCreation": 4666,
+        "cacheRead": 113507,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4666
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 118173,
+        "input": 2,
+        "output": 665,
+        "toolCalls": 0,
+        "sources": {
+          "file": 772
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/decision-draft-and-accept/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/decision-draft-and-accept/design.md": "# Design: Decisions are born as drafts and accepted by a dedicated command\n\n## Context\n\nObserved in the code today:\n\n- `codev decision new` gets its status from a clap option declared with\n  `default_value = \"accepted\"` (`crates/codev-cli/src/main.rs`, `DecisionCommand::New`).\n- `plan_new` (`crates/codev-engine/src/decisions_actions.rs`) already writes\n  no seal entry for a `proposed` decision (`status_needs_seal`), and a test\n  covers it (`plan_new_with_proposed_status_does_not_seal`). The CLI already\n  omits `bodySha256` from the `decision new` output in that case.\n- `codev validate` only checks seals of local `accepted` / `superseded`\n  decisions (`crates/codev-engine/src/validate/mod.rs`, around line 176): a\n  `proposed` decision is never reported, sealed or not. The index already\n  keeps `proposed` decisions out of effect.\n- The seal covers the body only — everything after the frontmatter. The\n  concepts documentation states it explicitly: a status can change without\n  invalidating a seal.\n- Building blocks already exist for the new command: `resolve_old_entry`\n  (short or qualified id, ambiguity), `rewrite_frontmatter_status` (re-renders\n  the frontmatter, keeps the body byte for byte — used by `supersede`),\n  `seal::plan_seal_new` / `seal::body_hash`, and `plan_seal`'s pattern where\n  the shell passes a reader closure so the planner stays pure.\n- `apply::execute` runs a plan's writes sequentially; it is not a\n  transaction. Multi-write plans rely on write order to keep partial\n  failures harmless.\n\nSo the \"draft\" half of the request is a one-line default change; the work is\nthe `accept` command.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- `decision new` defaults to `proposed`; `--status accepted` keeps the old\n  path.\n- `decision accept <id>`: `proposed → accepted`, date refreshed, body sealed,\n  one plan, safe to re-run after a partial failure.\n\n**Non-Goals**\n\n- No new `draft` status: `proposed` is reused (see proposal, Assumptions).\n- No placeholder detection in the body before accepting.\n- No change to `supersede`, `deviate`, `promote`, `seal` or to `validate`.\n- No `--force` on `accept`: a stale, different seal is resolved with the\n  existing `decision seal --force`.\n\n## Decisions\n\n### Decision: `plan_accept` is a pure planner in `decisions_actions.rs`\n\nAdd `plan_accept(index, existing_seal, id, today, layout, adr_source) ->\nResult<AcceptPlan, ActionError>` next to `plan_seal`, with the same shape:\nthe shell supplies the ADR's current content through `adr_source`, the\nfunction returns a `Plan` and touches nothing. This follows ADR 0001\n(functional core, imperative shell) and ADR 0002 (the engine reads through\nports; the CLI executes).\n\nSteps, in order, each refusal returning before any plan is built:\n\n1. `resolve_old_entry(index, id)` → `unknown_decision_id` /\n   `ambiguous_decision_id`.\n2. Origin not `Project` → new `ActionError::CannotAcceptInherited`\n   (`cannot_accept_inherited`) — ADR 0005: inherited sources are read-only.\n3. Status not `Proposed` → new `ActionError::DecisionNotProposed { id,\n   status }` (`decision_not_proposed`), message naming the current status.\n4. Read the source, render the new content (status `accepted`, `date =\n   today`, every other known field unchanged, body slice unchanged), and hash\n   the **new** content with `seal::body_hash`. Hashing the rendered output\n   rather than the old source guarantees the recorded hash is the one\n   `validate` will recompute.\n5. Seal entry: none → `seal::plan_seal_new`; present with the same hash →\n   keep it, no write to `seal.yaml`; present with a different hash →\n   `ActionError::SealConflict` (existing `seal_conflict`, whose message\n   already points to `decision seal <id> --force`).\n\n`AcceptPlan { plan, id, path, body_sha256, sealed_at }`.\n\n**Alternatives considered**: implementing `accept` in the CLI as \"edit\nstatus, then call `decision_seal`\" — two plans, so no single-plan guarantee\nand two read-index passes; rejected. Extending `decision seal` with an\n`--accept` flag — mixes two intents in a command whose meaning is\n\"immutability\", and is less discoverable than a verb; rejected.\n\n### Decision: generalize the frontmatter rewrite to take a date\n\n`rewrite_frontmatter_status(source, decision, status)` keeps the original\n`date`. Introduce `rewrite_frontmatter(source, decision, status, date)` and\nmake `rewrite_frontmatter_status` delegate to it with `&decision.date`, so\n`supersede` is untouched while `accept` passes `today`.\n\n**Alternatives considered**: keeping the draft's creation date — rejected in\nthe proposal's assumptions (an ADR's date is the decision date).\n\n### Decision: write `seal.yaml` before the ADR\n\nThe plan lists `seal.yaml` (Overwrite) first, then the ADR (Overwrite).\nSince `apply::execute` is sequential:\n\n- the seal write fails → nothing changed (spec scenario \"A failed seal write\n  leaves the draft untouched\");\n- the seal write succeeds and the ADR write fails → a `proposed` ADR with a\n  seal entry matching its body. `validate` ignores seals of `proposed`\n  decisions, and re-running `accept` hits step 5's \"same hash → keep\" branch\n  and completes. No user-visible inconsistency.\n\nThe reverse order would leave an `accepted` ADR without a seal on failure —\na `decision_unsealed` warning and an unsealed body that could drift.\n\n**Alternatives considered**: a real two-phase write in `apply` — out of\nproportion for this change, and the existing multi-write plans already\nrely on ordering.\n\n### Decision: flip the clap default, keep `plan_new` as is\n\n`DecisionCommand::New { status }` gets `default_value = \"proposed\"`. `plan_new`\nand `decision_new` need no change: they already branch on the status. The\nhuman rendering of `decision new` adds, for a `proposed` result, a next-step\nline: ``Draft — edit it, then run `codev decision accept <id>`.``\n\n### Decision: CLI surface and JSON contract\n\n- `DecisionCommand::Accept { id: String, json: bool }`, doc comment\n  \"Accept a draft decision and seal its body\".\n- `commands::decision_accept(ctx, id) -> Result<DecisionAcceptedOutcome>`,\n  built like `decision_seal` (discover root, resolve config, index, read seal,\n  plan, `apply::execute`), then re-indexes to return a fresh `DecisionSummary`\n  as `decision_new` does.\n- `contract::v1::DecisionAcceptedV1 { root, decision: Option<DecisionV1>,\n  path: Option<String>, body_sha256: Option<String>, sealed_at:\n  Option<String>, status: Vec<StatusEntry> }` — same conventions as\n  `DecisionDeviatedV1` / `DecisionSealedV1`: on failure, `decision: null` and\n  the code in `status[]`. Defined in the contract module, not derived from\n  the engine type.\n- `render.rs`: one human line, e.g. `Accepted 0007 — sealed sha256:… on\n  2026-10-15`.\n- Shell completions come from clap and need no hand edit.\n\n### Decision: documentation in both editions\n\n`docs/en` and `docs/fr`, same chapters: `reference/cli.md` (command list,\n`decision new` default and help block, new `decision accept` section),\n`reference/json-output.md` (new document), `concepts.md` (replace the \"Seal\"\ncallout describing the four-step workaround with draft → accept; statuses\nparagraph), `workflow.md` and `faq.md` where they show `decision new`.\n`CHANGELOG.md` gets the release note.\n\n## Risks / Trade-offs\n\n- [Scripts or agents expect `decision new` to yield an accepted, sealed\n  decision] → **BREAKING** flagged in the release note with the\n  `--status accepted` escape hatch; no installed codev skill calls\n  `decision new` (checked: only docs and tests mention it).\n- [The frontmatter re-render drops fields codev does not know (custom keys\n  added by hand)] → same behavior as `supersede` today; documented in the\n  code comment of `rewrite_frontmatter`, and a test asserts known fields\n  (`tags`, `supersedes`, `deviates_from`) survive.\n- [A draft accepted with placeholder text still in it] → accepted by design\n  (proposal assumption); the author decides when the text is ready.\n- [Partial failure between the two writes] → write order above makes it\n  harmless and re-runnable.\n\n## Migration Plan\n\n- Existing `proposed` decisions can be accepted with the new command; existing\n  `accepted` ones are untouched and `accept` refuses them.\n- No data migration: `seal.yaml` format is unchanged.\n- Rollback: reverting restores the `accepted` default; drafts created in the\n  meantime stay valid `proposed` ADRs.\n\n## Open Questions\n\n- The main spec's JSON scenario for `decision new --json` mentions\n  `changeName: null`, while `contract::v1::DecisionCreatedV1` exposes `root`\n  and no `changeName`. This change copies the existing scenario unchanged\n  apart from the status and does not assert `changeName` for `accept`; the\n  contradiction predates it and is left to a separate fix, to be settled by\n  the maintainers (spec or code).\n",
+    "_codev/changes/decision-draft-and-accept/proposal.md": "# Proposal: Decisions are born as drafts and accepted by a dedicated command\n\n## Why\n\n`codev decision new` creates an `accepted` decision and seals it at once, so\nthe seal records the template's placeholder comments: the first real edit of\nthe body makes `codev validate` fail with `decision_seal_mismatch`, and the\nauthor has to run `codev decision seal <id> --force` — the very override the\nseal exists to make exceptional. The only workaround today is a four-step\nmanual dance (`--status proposed`, write, edit the status by hand, seal), which\nthe documentation has to explain in a callout.\n\n## What Changes\n\n- **BREAKING** `codev decision new <title>` creates the decision with\n  `status: proposed` by default and writes no seal entry. The decision is a\n  draft: its body can be edited freely, `codev validate` reports nothing about\n  it, and it is not in effect (so it is not injected into the `design`\n  instructions) until accepted. `--status <status>` stays available, so\n  `--status accepted` keeps the former behavior (accepted and sealed at once).\n- New command `codev decision accept <id>` that, in a single plan, rewrites the\n  frontmatter of a local `proposed` decision to `status: accepted` and records\n  the seal of its current body in `_codev/decisions/seal.yaml`. The body is\n  left identical down to the character.\n- `codev decision accept` refuses, with stable codes and without writing\n  anything: an unknown id (`unknown_decision_id`), an ambiguous short id\n  (`ambiguous_decision_id`), an inherited decision (`cannot_accept_inherited`),\n  and a decision whose status is not `proposed` (`decision_not_proposed`).\n- `codev decision accept --json` emits one JSON document with a frozen shape,\n  like every other `decision` command.\n- Out of scope: `supersede`, `deviate` and `promote` keep creating accepted,\n  sealed decisions — they are not touched by this change (see Assumptions).\n\n### Assumptions\n\nThis plan was written without being able to ask the requester; these choices\nare recorded here so they can be challenged:\n\n- **Default becomes `proposed`, not a new `draft` status.** The status\n  `proposed` already exists, already means \"not yet committed\", already\n  carries no seal and is already excluded from the decisions in effect. A new\n  status would ripple through the parser, the index and the validator for no\n  gain.\n- **The breaking default is accepted.** Scripts relying on `decision new`\n  producing an accepted decision must add `--status accepted`; the release\n  note says so.\n- **`accept` only transitions `proposed → accepted`.** Accepting an already\n  `accepted`, `superseded`, `deprecated` or `rejected` decision is refused\n  rather than silently ignored, so a typo on the id is never hidden.\n- **The `date` field becomes the acceptance date.** An ADR's date records when\n  the decision was taken; the day the draft was opened carries no meaning once\n  it is accepted.\n- **No check that the template was filled in.** `accept` does not inspect the\n  body for leftover placeholders: the author decides when the text is ready.\n- **`supersede`, `deviate` and `promote` stay as they are.** The request is\n  about creating a new decision; aligning the other creation commands on the\n  draft workflow is a separate change if wanted.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- decisions\n\n### Removed Capabilities\n\n## Impact\n\n- Code: `codev-engine` decision actions (new accept plan, default status of\n  creation), `codev-cli` (new `decision accept` subcommand, default of\n  `decision new --status`, human rendering, `contract::v1` JSON shape).\n- Public JSON contract: a new document for `decision accept --json`; the\n  `decision new --json` shape is unchanged but its default `status` value\n  becomes `\"proposed\"` and `bodySha256` is then absent.\n- Shell completions: the new subcommand appears through the generated scripts.\n- Documentation, in both `docs/en` and `docs/fr`: `reference/cli.md`\n  (`decision new` default, new `decision accept` section, `decision` command\n  list), `reference/json-output.md` (new document), `concepts.md` (the\n  \"Seal\" callout describing the manual workaround is replaced by the\n  draft → accept workflow), `workflow.md` / `faq.md` where they show\n  `decision new`.\n- `CHANGELOG.md` through the release note below.\n\n## Domains\n\n- [ ] security — no new input surface; inherited decisions stay read-only\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration — breaking default of `decision new` for scripts and agents\n\n## Release note\n\n- Added: `codev decision accept <id>` moves a draft decision to `accepted` and\n  seals its body in one step, once its text is ready.\n- Changed: **BREAKING** `codev decision new` now creates a draft\n  (`status: proposed`, not sealed) that you can edit freely; pass\n  `--status accepted` to keep the former behavior of accepting and sealing at\n  creation.\n",
+    "_codev/changes/decision-draft-and-accept/specs/decisions/spec.md": "## MODIFIED Requirements\n\n### Requirement: Creating a decision through the CLI\n\n`codev decision new <title>` SHALL create a new ADR in the project, with\nan automatically generated numeric `id` (the largest numeric `id` found\nin the project + 1, on four digits), a file named `NNNN-<slug>.md` where\n`<slug>` is derived from the title in kebab-case, and a valid frontmatter\nincluding the current date and, by default, `status: proposed` — a new\ndecision is a draft until it is accepted with `codev decision accept`.\nThe `--status <status>` option overrides the initial status;\n`--status accepted` creates the decision accepted and sealed at once.\n\n#### Scenario: Creation in a project without ADRs\n\n- **GIVEN** a project whose `_codev/decisions/` directory is empty\n- **WHEN** the user runs `codev decision new \"A first choice\"`\n- **THEN** the file `_codev/decisions/0001-a-first-choice.md` is created\n- **AND** its frontmatter carries `id: \"0001\"`, `title: \"A first choice\"`,\n  `status: proposed`, and a date in `YYYY-MM-DD` format\n\n#### Scenario: Sequential numbering\n\n- **GIVEN** a project whose `_codev/decisions/` directory already contains\n  six ADRs numbered `0001` to `0006`\n- **WHEN** the user runs `codev decision new \"A seventh choice\"`\n- **THEN** the file `_codev/decisions/0007-a-seventh-choice.md` is created\n- **AND** its `id` is `\"0007\"`\n\n#### Scenario: Sequential numbering counts drafts\n\n- **GIVEN** a project containing ADRs `0001` to `0006`, where `0006` is\n  `proposed`\n- **WHEN** the user runs `codev decision new \"Another choice\"`\n- **THEN** the file `_codev/decisions/0007-another-choice.md` is created\n\n#### Scenario: Customizable status\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"Settled choice\"\n  --status accepted`\n- **THEN** the created ADR carries `status: accepted`\n- **AND** `_codev/decisions/seal.yaml` carries an entry for it\n\n#### Scenario: Empty title rejected\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"\"`\n- **THEN** no file is written\n- **AND** an error message names the stable code `empty_title` and\n  asks for a non-empty title\n\n### Requirement: Body seal recorded by the CLI\n\nThe CLI SHALL maintain a `_codev/decisions/seal.yaml` file — versioned\nwith the project — that records the sealed local decisions, with, for\neach entry, the `id` of the decision, the SHA-256 hash of the ADR's\n**body** (everything that follows the `---` separator closing the\nfrontmatter), and the date on which the seal was applied. Only local\ndecisions are sealed — inherited decisions belong to the source project,\nnot to the consumer. A decision is sealed when it becomes `accepted`:\nat creation with `--status accepted`, through `codev decision accept`,\n`supersede`, `deviate` or `promote`, or explicitly with\n`codev decision seal`.\n\nThe file contains only the schema version and the list of seals —\na seal is an `id`, a `bodySha256` prefixed with `sha256:`, and a\n`sealedAt` in `YYYY-MM-DD` format.\n\n#### Scenario: Seal written when an accepted decision is created\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` does not exist\n- **WHEN** the user runs `codev decision new \"A first choice\"\n  --status accepted`\n- **THEN** the file `_codev/decisions/seal.yaml` is created\n- **AND** it contains an entry whose `id` is `\"0001\"` and whose\n  `bodySha256` matches the hexadecimal SHA-256 of the body of the file\n  `0001-a-first-choice.md` (prefixed with `sha256:`)\n\n#### Scenario: No seal written for a draft\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` does not exist\n- **WHEN** the user runs `codev decision new \"A first choice\"`\n- **THEN** the file `_codev/decisions/0001-a-first-choice.md` is created\n- **AND** `_codev/decisions/seal.yaml` still does not exist\n\n#### Scenario: Seal file format\n\n- **GIVEN** the `_codev/decisions/seal.yaml` file created by the CLI\n- **WHEN** a human opens it\n- **THEN** it contains a `version: 1` key at the top\n- **AND** a `seals` key carrying a list in which each entry has\n  exactly the fields `id`, `bodySha256`, `sealedAt`\n- **AND** no other unknown field\n\n### Requirement: `decision new` writes the ADR and the seal in the same plan\n\nWhen `codev decision new <title>` creates a decision whose status is\n`accepted` or `superseded`, the operation MUST produce an effect plan\nthat writes both the ADR **and** the corresponding entry in\n`_codev/decisions/seal.yaml`. If either one fails, neither is written\n— the command never leaves an ADR without a seal nor a seal without an\nADR. For any other status — `proposed`, the default, included — the\noperation writes the ADR only and leaves `seal.yaml` untouched.\n\n#### Scenario: A failed seal write cancels the creation\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` is\n  write-locked by the system\n- **WHEN** the user runs `codev decision new \"Title\" --status accepted`\n- **THEN** no ADR file is written to `_codev/decisions/`\n- **AND** the `seal.yaml` file remains unchanged\n\n#### Scenario: A draft is created even when the seal file is locked\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` is\n  write-locked by the system\n- **WHEN** the user runs `codev decision new \"Title\"`\n- **THEN** the ADR is created with `status: proposed`\n- **AND** the `seal.yaml` file remains unchanged\n\n### Requirement: Stable JSON contract for all commands\n\nWhen `--json` is requested, each command MUST write exactly one JSON\ndocument to stdout whose shape is frozen per version, with a root\n`status` array for execution errors — the same rules as the rest of the\ncodev contract.\n\n#### Scenario: Shape of a `decision new --json`\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"X\" --json`\n- **THEN** stdout carries a JSON document containing `changeName: null`\n  (this command does not act on a change), `decision: { id: \"0001\",\n  qualifiedId: \"project/0001\", path: \"…\", title: \"X\", status: \"proposed\"\n  }`, and a `status: []`\n- **AND** the document carries no `bodySha256`, since a draft is not\n  sealed\n\n#### Scenario: Shape of a `decision accept --json`\n\n- **GIVEN** a project containing a local ADR `0001 proposed`\n- **WHEN** the user runs `codev decision accept 0001 --json`\n- **THEN** stdout carries a single JSON document containing\n  `decision: { id: \"0001\", qualifiedId:\n  \"project/0001\", path: \"…\", title: \"…\", status: \"accepted\" }`, a\n  `bodySha256` prefixed with `sha256:`, a `sealedAt` in `YYYY-MM-DD`\n  format, and a `status: []`\n\n#### Scenario: Shape of a `decision accept` failure\n\n- **GIVEN** a project containing a local ADR `0001 accepted`\n- **WHEN** the user runs `codev decision accept 0001 --json`\n- **THEN** stdout carries a single JSON document containing\n  `decision: null` and `status: [{ code: \"decision_not_proposed\", … }]`\n\n#### Scenario: Shape of a `decision show` failure on an unknown id\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision show 9999 --json`\n- **THEN** stdout carries a single JSON document containing\n  `decision: null` and `status: [{ code: \"unknown_decision_id\", … }]`\n\n## ADDED Requirements\n\n### Requirement: A draft decision is freely editable and not in effect\n\nA local decision with status `proposed` SHALL carry no seal obligation:\n`codev validate` MUST emit no `decision_unsealed` and no\n`decision_seal_mismatch` finding for it, whatever edits its body\nreceives. It is not in effect, so it appears in `codev decision list`\nbut not in the `decisions[]` of the `design` instructions.\n\n#### Scenario: Editing a draft keeps validation clean\n\n- **GIVEN** a project in which the user ran `codev decision new \"A\n  choice\"`, creating `0001` as `proposed`\n- **AND** the user then replaced the placeholder comments of its body\n  with real text\n- **WHEN** the user runs `codev validate`\n- **THEN** the output contains no finding naming `0001`\n- **AND** the exit code of the command is zero\n\n#### Scenario: A draft is listed but not injected\n\n- **GIVEN** a project containing a local ADR `0001 proposed`\n- **WHEN** the user runs `codev decision list --json` and\n  `codev instructions design --change <name> --json`\n- **THEN** the list carries `0001` with `status: \"proposed\"` and\n  `inEffect: false`\n- **AND** the `decisions` array of the instructions does not contain it\n\n### Requirement: Accepting a draft decision through the CLI\n\n`codev decision accept <id>` MUST turn a local `proposed` decision into\nan `accepted` one and seal it, in a single effect plan: the frontmatter\n`status` becomes `accepted`, the frontmatter `date` becomes the current\ndate, every other frontmatter field keeps its value, the body stays\nidentical down to the character, and `_codev/decisions/seal.yaml`\ncarries an entry whose `bodySha256` matches that body. Identifier\nresolution follows `codev decision show`: a short `id` when unambiguous,\nor a qualified `<origin>/<id>`.\n\nThe command MUST refuse, writing nothing:\n\n- an identifier matching no decision: stable code `unknown_decision_id`;\n- a short identifier matching several decisions: stable code\n  `ambiguous_decision_id`;\n- an inherited decision: stable code `cannot_accept_inherited` — an\n  inherited decision belongs to its source project;\n- a decision whose status is not `proposed`: stable code\n  `decision_not_proposed`, naming the current status;\n- a decision already holding a seal entry whose `bodySha256` differs\n  from its current body: stable code `seal_conflict`.\n\n#### Scenario: Accepting a written draft\n\n- **GIVEN** a project containing a local ADR `0007 proposed`, dated\n  `2026-10-01`, whose body the user has written\n- **WHEN** the user runs `codev decision accept 0007` on `2026-10-15`\n- **THEN** the frontmatter of `0007` carries `status: accepted` and\n  `date: 2026-10-15`\n- **AND** its title, tags and other frontmatter fields are unchanged\n- **AND** its body is identical down to the character to the body before\n  the command\n- **AND** `_codev/decisions/seal.yaml` carries an entry for `\"0007\"`\n  whose `bodySha256` matches that body and whose `sealedAt` is\n  `2026-10-15`\n\n#### Scenario: An accepted draft takes effect and validates\n\n- **GIVEN** the same project, after `codev decision accept 0007`\n- **WHEN** the user runs `codev validate` and\n  `codev instructions design --change <name> --json`\n- **THEN** validation reports no finding naming `0007`\n- **AND** the `decisions` array of the instructions contains\n  `project/0007`\n\n#### Scenario: Accepting an already accepted decision\n\n- **GIVEN** a project containing a local ADR `0003 accepted`\n- **WHEN** the user runs `codev decision accept 0003`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `decision_not_proposed` and the current status `accepted`\n\n#### Scenario: Accepting an unknown decision\n\n- **GIVEN** a project in which `9999` does not exist\n- **WHEN** the user runs `codev decision accept 9999`\n- **THEN** no file is written\n- **AND** the error message names the stable code `unknown_decision_id`\n\n#### Scenario: Accepting an inherited decision\n\n- **GIVEN** a project inheriting from a source containing\n  `path:~/shared/0100 proposed`\n- **WHEN** the user runs `codev decision accept path:~/shared/0100`\n- **THEN** no file is written\n- **AND** the error message names the stable code\n  `cannot_accept_inherited`\n\n#### Scenario: Accepting a draft with a stale seal entry\n\n- **GIVEN** a project containing a local ADR `0007 proposed` for which\n  `seal.yaml` already holds an entry, and whose body was edited since\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** no file is written\n- **AND** the error message names the stable code `seal_conflict` and\n  recalls that `codev decision seal 0007 --force` deliberately rewrites\n  the seal\n\n#### Scenario: A failed seal write leaves the draft untouched\n\n- **GIVEN** a project containing a local ADR `0007 proposed`, and a\n  `_codev/decisions/seal.yaml` write-locked by the system\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** the command fails\n- **AND** the `0007` file still carries `status: proposed`\n- **AND** the `seal.yaml` file remains unchanged\n"
+  },
+  "validate": {
+    "decision-draft-and-accept": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "decision-draft-and-accept",
+          "path": "_codev/changes/decision-draft-and-accept"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-decision-accept-command-4",
+      "status": []
+    }
+  }
+}

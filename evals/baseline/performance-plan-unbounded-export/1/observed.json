@@ -1,0 +1,276 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.34766220000000003,
+  "durationMs": 31961,
+  "consumption": {
+    "durationApiMs": 31912,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1160,
+      "cacheCreation": 28355,
+      "cacheRead": 286426,
+      "output": 3128
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7380,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7380
+        }
+      },
+      {
+        "cacheCreation": 15427,
+        "cacheRead": 29519,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15427
+        }
+      },
+      {
+        "cacheCreation": 348,
+        "cacheRead": 44946,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 348
+        }
+      },
+      {
+        "cacheCreation": 1780,
+        "cacheRead": 45294,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1780
+        }
+      },
+      {
+        "cacheCreation": 645,
+        "cacheRead": 47074,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 645
+        }
+      },
+      {
+        "cacheCreation": 2016,
+        "cacheRead": 47719,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2016
+        }
+      },
+      {
+        "cacheCreation": 759,
+        "cacheRead": 49735,
+        "input": 2,
+        "output": 209,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 732,
+          "output": 27
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export loads the whole audit log of an organization into memory) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-2 (Building the whole CSV with map/join blocks the event loop) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The query has no bound and `src/db.ts` `query()` returns `result.rows`, so the whole result is buffered. With the design's own figures (about 40 000 events per organization per month, kept seven years) one request materializes up to ~3.4 million row objects plus a CSV string of the same size in one Node.js process: memory grows linearly with the organization's history, and a few concurrent exports can exhaust the heap and crash the instance for every user. The spec requires every event, so do not add a LIMIT: read the rows in bounded batches (a server-side cursor such as `pg-cursor`/`pg-query-stream`, or keyset pagination on `(created_at, id)`) and stream each batch to the response, respecting backpressure. Select only the exported columns instead of `*`. Record the decision with its alternatives, since \"none\" were considered.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export loads the whole audit log of an organization into memory"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 37,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The design states the API runs \"one event loop per instance\". Formatting and joining millions of rows is synchronous CPU work proportional to the size of the log: while one administrator exports, every other request on that instance (including `/health`) waits, and the time grows with each month of retained events. Write the CSV incrementally — format each batch from the cursor and `res.write` it, awaiting `drain` — so the loop yields between batches; set `Content-Type: text/csv` with chunked transfer.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Building the whole CSV with map/join blocks the event loop"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-3",
+        "line": 58,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so the index could not be checked. Verify with `EXPLAIN` that an index on `(org_id, created_at)` exists; otherwise the query scans and sorts a table that holds every organization's seven years of events. Keyset pagination (R-performance-1) also depends on that index.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is stated for the org_id filter sorted by created_at"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "**Alternatives considered**: none; the code is the simplest.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-4",
+        "line": 78,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Measure the export on an organization with the full retention (memory peak, duration, event-loop delay) before choosing, and add a task that verifies the export of a large log stays within a stated memory and latency budget.",
+        "reported": false,
+        "role": "performance",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The choice of the simplest approach is not backed by a measurement"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

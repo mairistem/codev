@@ -1,0 +1,238 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.35270920000000006,
+  "durationMs": 30072,
+  "consumption": {
+    "durationApiMs": 30075,
+    "turns": 9,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 27652,
+      "cacheRead": 380601,
+      "output": 2719
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7380,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7380
+        }
+      },
+      {
+        "cacheCreation": 15359,
+        "cacheRead": 29519,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15359
+        }
+      },
+      {
+        "cacheCreation": 232,
+        "cacheRead": 44878,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 232
+        }
+      },
+      {
+        "cacheCreation": 1514,
+        "cacheRead": 45110,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1514
+        }
+      },
+      {
+        "cacheCreation": 594,
+        "cacheRead": 46624,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 594
+        }
+      },
+      {
+        "cacheCreation": 526,
+        "cacheRead": 47218,
+        "input": 2,
+        "output": 50,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 526
+        }
+      },
+      {
+        "cacheCreation": 325,
+        "cacheRead": 47744,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 118,
+          "search": 207
+        }
+      },
+      {
+        "cacheCreation": 1231,
+        "cacheRead": 48069,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1231
+        }
+      },
+      {
+        "cacheCreation": 491,
+        "cacheRead": 49300,
+        "input": 2,
+        "output": 199,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 491
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export buffers every event of the organization in memory and builds the CSV in one synchronous pass) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Cost grows with the organization's history: at \"about 40 000 per organization and per month, kept seven years\" (design.md#Context), one export reads up to ~3.4 million rows with no LIMIT, holds them all as objects, then as one string of the same size again. Scenario: an administrator of a seven-year-old organization requests the export; the instance allocates hundreds of MB to GB (risking an out-of-memory crash), and `rows.map(...).join(...)` runs synchronously over millions of rows on the instance's single event loop (\"one event loop per instance\"), stalling every other request it serves. Stream instead: read with a server-side cursor (or keyset pages on `(created_at, id)`), convert each batch to CSV lines and write them to the response through a stream that respects backpressure, so memory stays bounded per batch and the event loop yields between batches. Keep the ordering \"oldest first\" required by the spec. Also record why no alternative was considered: \"none; the code is the simplest\" does not weigh the data volume stated in the design's own context.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export buffers every event of the organization in memory and builds the CSV in one synchronous pass"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "`SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 42,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "The schema of `audit_events` is not in the repository, so the index could not be checked. Verify with `EXPLAIN` that an index on `(org_id, created_at)` exists; without it, each export scans and sorts the whole table, whose cost grows with every organization's seven years of events. Say in the design which index serves the query, or add it.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is stated for the export's filter and sort"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

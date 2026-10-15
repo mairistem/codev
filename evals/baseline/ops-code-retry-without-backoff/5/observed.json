@@ -1,0 +1,230 @@
+{
+  "format": 2,
+  "case": "ops-code-retry-without-backoff",
+  "error": null,
+  "costUsd": 0.38824,
+  "durationMs": 46013,
+  "consumption": {
+    "durationApiMs": 45970,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 30862,
+      "cacheRead": 240445,
+      "output": 4614
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7410,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7410
+        }
+      },
+      {
+        "cacheCreation": 15274,
+        "cacheRead": 29549,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3696,
+          "skill": 11578
+        }
+      },
+      {
+        "cacheCreation": 1404,
+        "cacheRead": 44823,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1404
+        }
+      },
+      {
+        "cacheCreation": 1796,
+        "cacheRead": 46227,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1796
+        }
+      },
+      {
+        "cacheCreation": 1661,
+        "cacheRead": 48023,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1661
+        }
+      },
+      {
+        "cacheCreation": 3317,
+        "cacheRead": 49684,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2932,
+          "output": 385
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (Dropped webhooks are logged only at debug level, in free text) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-merchant-webhooks",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/webhooks.ts:9-23",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "When a merchant's endpoint returns a 5xx or refuses connections, the loop fires the next attempt immediately: the five POSTs land back-to-back, so a merchant that is briefly down or overloaded is hammered, a few seconds of outage exhausts every attempt and the event is dropped, and a burst of payments turns into a retry storm against the merchant's server. Wait between attempts with exponential backoff and jitter (for example 1s, 2s, 4s, 8s), or hand failed deliveries to a delayed retry queue so the wait does not hold the payment listener. Being bounded and idempotent (x-event-id) is not enough: the attempts must also be spaced.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Failed deliveries are retried back-to-back, with no backoff"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n  }\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\nreturn false;\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 34,
+        "location": "src/webhooks.ts:20-25",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "When a merchant's endpoint stays down, the event is given up after five attempts and the only trace is a `console.debug` line that bypasses the project's structured logger (src/logger.ts, shipped to the log platform) and is usually filtered out in production; the listener also ignores `deliver` returning false. Lost payment notifications go unnoticed and a merchant's report of a missing webhook cannot be diagnosed. Use `logger.warn` per failed attempt and `logger.error` when the event is dropped, with fields such as `eventId`, `paymentId`, `attempt`, `status` and `error` (not the full webhook URL if it may carry a merchant secret), and act on the false return in the listener.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Dropped webhooks are logged only at debug level, in free text"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if (response.ok) {\n  return true;\n}\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 62,
+        "location": "src/webhooks.ts:17-19",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "When a merchant's endpoint answers 404, 401 or 500, nothing is logged for that attempt (the catch only runs on network errors and timeouts) and the final \"dropped\" line carries no status: an operator cannot tell a misconfigured URL from a merchant outage, and permanent client errors burn all five attempts. On a non-ok response, log the attempt with `response.status`, and retry only statuses worth retrying (408, 429, 5xx), giving up at once on other 4xx.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Non-2xx responses are retried without recording their status"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

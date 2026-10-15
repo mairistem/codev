@@ -1,0 +1,212 @@
+{
+  "format": 2,
+  "case": "accessibility-plan-colour-only",
+  "error": null,
+  "costUsd": 0.3609442,
+  "durationMs": 31577,
+  "consumption": {
+    "durationApiMs": 31393,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1160,
+      "cacheCreation": 30483,
+      "cacheRead": 284666,
+      "output": 2960
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 4797,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 4797
+        }
+      },
+      {
+        "cacheCreation": 13883,
+        "cacheRead": 34322,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 13883
+        }
+      },
+      {
+        "cacheCreation": 234,
+        "cacheRead": 48205,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 234
+        }
+      },
+      {
+        "cacheCreation": 1455,
+        "cacheRead": 48439,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1455
+        }
+      },
+      {
+        "cacheCreation": 2248,
+        "cacheRead": 49894,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2248
+        }
+      },
+      {
+        "cacheCreation": 480,
+        "cacheRead": 52142,
+        "input": 2,
+        "output": 131,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 452,
+          "output": 28
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Invalid fields are identified by colour only, with no text message) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "inline-form-validation",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`field--invalid`, a red border (`#e5484d`); the list of errors at the top of\nthe page is removed, since the red border already shows where the problem\nis. No message text is added, to keep the form compact.\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "design.md#Decision: Invalid fields turn red",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "A screen reader user who tabs out of the postcode field with `ABC` hears nothing: the only signal is a border colour change, which is not exposed to assistive technology, and colour-blind or low-vision users may not perceive red against grey either. With the top error list removed, no text anywhere says which field is wrong or why, so the checkout cannot be completed reliably (WCAG 1.4.1 Use of Color, 3.3.1 Error Identification, 3.3.3 Error Suggestion, 4.1.2 Name, Role, Value). Add a text message under each invalid field, linked with `aria-describedby`, set `aria-invalid=\"true\"` on the input, and keep a non-colour cue (icon or text) next to the border. Update the spec scenarios in `specs/checkout-validation/spec.md` (\"the field's border turns red\" / \"returns to grey\") to require the message and `aria-invalid`, and the tests named in tasks 1.2 accordingly; the \"Alternatives considered\" entry rejected exactly this fix.\n",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Invalid fields are identified by colour only, with no text message"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- The error list at the top of the form is removed.\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 40,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "A keyboard or screen reader user who presses Enter on the submit button with an invalid or never-visited required field gets no announcement and focus stays on the button: the plan validates only on `blur` and says nothing about what happens on submit, so the user cannot find which field blocks the order (WCAG 3.3.1 Error Identification, 2.4.3 Focus Order). Specify the submit behaviour: validate every field on submit and move focus to the first invalid field (whose message is announced via `aria-describedby`), or keep an error summary that takes focus and links to each field. Add a scenario for it in `specs/checkout-validation/spec.md`.\n",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Removing the error summary leaves no feedback or focus target on submit"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/inline-form-validation/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

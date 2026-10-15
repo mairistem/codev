@@ -1,0 +1,201 @@
+{
+  "format": 2,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.32537980000000005,
+  "durationMs": 25083,
+  "consumption": {
+    "durationApiMs": 25073,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 28600,
+      "cacheRead": 238124,
+      "output": 2399
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 11786,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11786
+        }
+      },
+      {
+        "cacheCreation": 4835,
+        "cacheRead": 41323,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 4835
+        }
+      },
+      {
+        "cacheCreation": 2536,
+        "cacheRead": 46158,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2536
+        }
+      },
+      {
+        "cacheCreation": 1579,
+        "cacheRead": 48694,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1579
+        }
+      },
+      {
+        "cacheCreation": 466,
+        "cacheRead": 50273,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 466
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const rows = await query<InvoiceRow>(\n  \"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n  [id],\n);\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/invoices.ts:32-35",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization 7 who sends `GET /invoices/42` gets invoice 42 even when it belongs to another organization: the handler never calls `currentUser(req)` and filters on `id` alone, while the list endpoint scopes by `org_id`. Scope the query to the caller — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — so another organization's invoice answers 404, and add a test asserting the `org_id` filter as the list test does.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "GET /invoices/:id returns any organization's invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n});\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 35,
+        "location": "src/server.ts:15-18",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Information exposure through an error message (CWE-209). An unauthenticated client that POSTs a malformed JSON body to any route makes `express.json()` (mounted before `requireUser`) fail, and this handler answers with the parser's message and full stack trace — server file paths and module layout; any other error reaching it (a database error, for instance) would likewise disclose its message. Log the error server-side only and answer a generic body such as `{ error: \"internal error\" }`, keeping the error's own status when it carries one (e.g. 400 for a body-parser error).",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The error handler sends the error message and stack trace to the client"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

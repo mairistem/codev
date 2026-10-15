@@ -1,0 +1,260 @@
+{
+  "format": 2,
+  "case": "accessibility-code-icon-button",
+  "error": null,
+  "costUsd": 0.31846019999999997,
+  "durationMs": 34734,
+  "consumption": {
+    "durationApiMs": 34624,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 26631,
+      "cacheRead": 236836,
+      "output": 2852
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7382,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7382
+        }
+      },
+      {
+        "cacheCreation": 15445,
+        "cacheRead": 29521,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3836,
+          "skill": 11609
+        }
+      },
+      {
+        "cacheCreation": 801,
+        "cacheRead": 44966,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 801
+        }
+      },
+      {
+        "cacheCreation": 662,
+        "cacheRead": 45767,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 662
+        }
+      },
+      {
+        "cacheCreation": 1585,
+        "cacheRead": 46429,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1585
+        }
+      },
+      {
+        "cacheCreation": 756,
+        "cacheRead": 48014,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 756
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable by keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-2 (Icon-only delete control has no accessible name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-toolbar",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/Toolbar.tsx:13-15",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Render the delete action as a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`. The `div` has no role, no `tabindex` and no key handler: a keyboard user pressing Tab never lands on it, and Enter or Space cannot trigger it, so the only way to delete a document from its page — the purpose of the change — is a mouse click. A button is focusable, operable with Enter and Space, and exposes the role \"button\". WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete action is a clickable div, unreachable by keyboard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 32,
+        "location": "src/components/Toolbar.tsx:13-14",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Give the control a text name, for example `aria-label=\"Delete document\"` on the button (or visually hidden text inside it). Its only content is `TrashIcon`, whose `<svg>` is `aria-hidden=\"true\"` (src/components/icons.tsx:3), so the control has no text at all: a screen reader user reaching it hears nothing, or just \"button\" once it becomes a button, and cannot tell it deletes the document. WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Icon-only delete control has no accessible name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<img className=\"avatar\" src={avatarUrl} />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-3",
+        "line": 52,
+        "location": "src/components/Toolbar.tsx:12",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Add an `alt` naming the owner (e.g. `alt={`${ownerName}'s avatar`}` — which needs the owner's name as a prop), or `alt=\"\"` if the owner is named in visible text elsewhere. Without `alt`, a screen reader announces the image file name or URL from `avatarUrl` instead of who owns the document. WCAG 1.1.1 Non-text Content.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Owner avatar image has no alt attribute"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-4",
+        "line": 70,
+        "location": "src/components/Toolbar.tsx:13-14",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The icon inside is 16 by 16 (src/components/icons.tsx:3) and no stylesheet for `.icon-button` is in the change or the repository: check that the clickable area is at least 24 by 24 CSS pixels (padding on the button) and that the button gets a visible focus style. WCAG 2.5.8 Target Size (Minimum), 2.4.7 Focus Visible.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete target may be smaller than 24 by 24 CSS pixels"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-toolbar/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,154 @@
+{
+  "format": 2,
+  "case": "migration-control-additive-field",
+  "error": null,
+  "costUsd": 0.3145634,
+  "durationMs": 19408,
+  "consumption": {
+    "durationApiMs": 19517,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1160,
+      "cacheCreation": 27823,
+      "cacheRead": 282887,
+      "output": 1722
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7367,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7367
+        }
+      },
+      {
+        "cacheCreation": 15207,
+        "cacheRead": 29506,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15207
+        }
+      },
+      {
+        "cacheCreation": 266,
+        "cacheRead": 44713,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 266
+        }
+      },
+      {
+        "cacheCreation": 285,
+        "cacheRead": 44979,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 285
+        }
+      },
+      {
+        "cacheCreation": 2041,
+        "cacheRead": 45264,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2041
+        }
+      },
+      {
+        "cacheCreation": 1676,
+        "cacheRead": 47305,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1676
+        }
+      },
+      {
+        "cacheCreation": 981,
+        "cacheRead": 48981,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 420,
+          "edit": 306,
+          "output": 255
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-note",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-note/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

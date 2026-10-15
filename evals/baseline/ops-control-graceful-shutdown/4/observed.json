@@ -1,0 +1,170 @@
+{
+  "format": 2,
+  "case": "ops-control-graceful-shutdown",
+  "error": null,
+  "costUsd": 0.3465044,
+  "durationMs": 33410,
+  "consumption": {
+    "durationApiMs": 33198,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 29497,
+      "cacheRead": 244317,
+      "output": 3034
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 14662,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14662
+        }
+      },
+      {
+        "cacheCreation": 3592,
+        "cacheRead": 44194,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3592
+        }
+      },
+      {
+        "cacheCreation": 1608,
+        "cacheRead": 47786,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1608
+        }
+      },
+      {
+        "cacheCreation": 1878,
+        "cacheRead": 49394,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1878
+        }
+      },
+      {
+        "cacheCreation": 364,
+        "cacheRead": 51272,
+        "input": 2,
+        "output": 403,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 364
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-mail-worker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/worker.rs:46-48",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Check how the mailer maps a timeout that happens after the relay received the message (after DATA): if it returns `SendError::Unavailable`, the job is handed out again and the recipient gets the e-mail twice, with nothing in the logs or `notifier_jobs_total` to tell the operator. Send a stable Message-ID derived from `job.id` so the relay or the recipient can deduplicate, or map a post-DATA timeout to its own outcome. Confidence is low: the mailer implementation is not part of this change and could not be checked.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay accepted it is retried and may be delivered twice"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-mail-worker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

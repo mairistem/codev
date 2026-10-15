@@ -1,0 +1,318 @@
+{
+  "format": 2,
+  "case": "plan-decision-llm-in-binary",
+  "error": null,
+  "costUsd": 1.5655142000000006,
+  "durationMs": 270446,
+  "consumption": {
+    "durationApiMs": 268119,
+    "turns": 30,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1115,
+      "cacheCreation": 80019,
+      "cacheRead": 1913406,
+      "output": 27084
+    },
+    "toolCalls": 29,
+    "orientationCalls": 11,
+    "calls": [
+      {
+        "cacheCreation": 7746,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7746
+        }
+      },
+      {
+        "cacheCreation": 15221,
+        "cacheRead": 29885,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15221
+        }
+      },
+      {
+        "cacheCreation": 2443,
+        "cacheRead": 45106,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2443
+        }
+      },
+      {
+        "cacheCreation": 1708,
+        "cacheRead": 47549,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1708
+        }
+      },
+      {
+        "cacheCreation": 408,
+        "cacheRead": 49257,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 408
+        }
+      },
+      {
+        "cacheCreation": 3231,
+        "cacheRead": 49665,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3231
+        }
+      },
+      {
+        "cacheCreation": 6863,
+        "cacheRead": 52896,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 6779,
+          "output": 84
+        }
+      },
+      {
+        "cacheCreation": 6866,
+        "cacheRead": 59759,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6866
+        }
+      },
+      {
+        "cacheCreation": 2757,
+        "cacheRead": 66625,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2757
+        }
+      },
+      {
+        "cacheCreation": 1869,
+        "cacheRead": 69382,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1869
+        }
+      },
+      {
+        "cacheCreation": 4406,
+        "cacheRead": 71251,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4406
+        }
+      },
+      {
+        "cacheCreation": 577,
+        "cacheRead": 75657,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "file": 577
+        }
+      },
+      {
+        "cacheCreation": 2177,
+        "cacheRead": 76234,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1864,
+          "output": 313
+        }
+      },
+      {
+        "cacheCreation": 583,
+        "cacheRead": 78411,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 583
+        }
+      },
+      {
+        "cacheCreation": 4120,
+        "cacheRead": 78994,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 4,
+        "sources": {
+          "edit": 3840,
+          "output": 280
+        }
+      },
+      {
+        "cacheCreation": 6299,
+        "cacheRead": 83114,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 6299
+        }
+      },
+      {
+        "cacheCreation": 2975,
+        "cacheRead": 89413,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2952,
+          "output": 23
+        }
+      },
+      {
+        "cacheCreation": 358,
+        "cacheRead": 92388,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 358
+        }
+      },
+      {
+        "cacheCreation": 604,
+        "cacheRead": 92746,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 604
+        }
+      },
+      {
+        "cacheCreation": 169,
+        "cacheRead": 93350,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 169
+        }
+      },
+      {
+        "cacheCreation": 432,
+        "cacheRead": 93519,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 432
+        }
+      },
+      {
+        "cacheCreation": 5441,
+        "cacheRead": 93951,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4201,
+          "output": 1240
+        }
+      },
+      {
+        "cacheCreation": 776,
+        "cacheRead": 99392,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 776
+        }
+      },
+      {
+        "cacheCreation": 514,
+        "cacheRead": 100168,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 514
+        }
+      },
+      {
+        "cacheCreation": 1191,
+        "cacheRead": 100682,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1192
+        }
+      },
+      {
+        "cacheCreation": 285,
+        "cacheRead": 101873,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 285
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/review-via-claude-api/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/review-via-claude-api/design.md": "# Design: codev dispatches the reviewers through the Claude API\n\n## Context\n\nToday a reviewing step in isolated mode is orchestrated entirely by the\nskill: it reads `codev roles --at <step> --change <name> --json` (roles,\n`review.mode`, `review.material` with `full` / `summarize`), builds one\nbrief per role, starts one `Agent` sub-agent per role, retries once, falls\nback inline, then holds the meeting and writes `review.md`\n(`skills` spec, \"In isolated mode, each reviewing role runs alone, then the\nskill consolidates\").\n\nThree accepted decisions frame this change:\n\n- **0007** — \"Orchestration of sub-agents lives in the skill text, never in\n  the binary\", and lists \"the binary running `claude -p` per role\" as a\n  rejected alternative because \"the binary would call a model, need\n  credentials and a process budget\". **This change contradicts it.** It\n  is written as an explicit proposal to supersede 0007 (draft below); it\n  must not be applied before a person has accepted that supersession.\n- **0001** — the core is pure; effects live in the shell. Nothing here\n  needs the core to touch the network: the core builds the requests and\n  parses the answers, the engine sends them.\n- **0002** — effects go through ports. The engine already has an `Http`\n  port (`crates/codev-engine/src/ports.rs:216`) whose real implementation,\n  `CurlHttp`, drives `curl` through `ProcessRunner` — \"no TLS stack in the\n  binary\" — and a `MemoryHttp` for tests. It only knows `GET`, and\n  `ProcessRunner::run` has no standard input.\n\nObserved elsewhere: the only network access today is the update check and\n`codev self-update` (`self-update` spec), both anonymous GETs to GitHub.\nThis change adds the first authenticated request and the first request\nthat carries project content.\n\n### Assumptions made without the user (evaluation run, no question asked)\n\n1. The user, knowing 0007, wants it superseded rather than worked around.\n   The alternative reading — \"make the skill-side dispatch faster\" — is\n   listed as an alternative below; if that was the intent, this change\n   should be dropped in favour of it.\n2. \"In parallel, faster than the skills\" is about wall-clock time of a\n   reviewing step, not about cost; the cost is reported, not optimized.\n3. The new behaviour is an opt-in third mode, `api`; `inline` and\n   `isolated` stay as they are and `inline` stays the default.\n4. Only the dispatch moves into the binary. The meeting (merge by place and\n   fix, `raised_by`, numbering, evidence check, answer loop, escalation to\n   the human) stays in the skill: it needs judgement, and 0007's split\n   \"data and checks in codev, orchestration in the skill\" is kept for it.\n5. The key is the standard `ANTHROPIC_API_KEY`; no other credential source\n   (keychain, config, `claude` login) in this change.\n6. Default model `claude-sonnet-5-5`: the user asks for speed, and a review\n   role is a bounded reading task; a project can set `review.model`.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One command that runs all the roles of a step concurrently and returns\n  their sections in the same shape a sub-agent returns.\n- The same brief content as isolated mode, built deterministically from\n  codev's own outputs — testable byte for byte.\n- No secret ever reaches argv, output, logs or files.\n- A failed role degrades exactly as in isolated mode: retry once, then the\n  skill reviews it inline with `Fallback:`.\n\n**Non-Goals**\n\n- Writing the review record from the binary, or merging findings there.\n- Tool use for the reviewers (reading the repository on demand). The brief\n  carries what they need instead; see the trade-off below.\n- Streaming, the Batches API, prompt caching tuning, cost budgets, a\n  keychain. They can come later without changing the specs.\n- Using `api` mode for anything other than the three reviewing steps.\n- Changing `codev doctor` (it could later warn about a missing key in\n  `api` mode).\n\n## Decisions\n\n### Decision: Supersede 0007 with a decision that moves only the dispatch\n\nThe change ships with a superseding ADR, created by a person with\n`codev decision supersede 0007 --title \"…\"` and accepted with\n`codev decision accept`. Draft body:\n\n> **Title**: In `api` mode codev dispatches the reviewers; the skills\n> still hold the meeting.\n>\n> **Context**: 0007 kept every model call out of the binary. Isolated\n> review is slow: briefs are written token by token by the calling agent,\n> and sub-agents are started and awaited through the conversation.\n>\n> **Decision**: In `inline` and `isolated` modes, 0007's rules are\n> unchanged. In the opt-in `api` mode, `codev review dispatch` builds the\n> briefs from codev's own outputs, sends them in parallel to the Claude\n> Messages API through the `Http` port, retries a failed request once and\n> returns each role's section, its failure and its token usage. It writes\n> nothing. The key comes only from `ANTHROPIC_API_KEY`. The skill merges,\n> records, runs the answer loop and falls back — inline per failed role,\n> isolated for the whole step when the command cannot run.\n>\n> **Consequences**: the binary now handles a secret and sends project\n> content to a third party, only on opt-in; the brief becomes enforceable\n> code instead of skill text; API cost is billed to the key's owner and\n> reported per step; tests need a recorded-answer HTTP port.\n>\n> **Alternatives considered**: see this design.\n\nWhy supersede rather than deviate: `deviates_from` is for inherited\ndecisions; 0007 is local. Why not leave 0007 untouched: a change that\ncontradicts an accepted decision without superseding it would leave the\ndecisions and the code disagreeing, which `codev` cannot detect later.\n\n**Alternatives considered**:\n\n- **Stay within 0007 and speed up the skill side** — e.g. ship a\n  pre-rendered brief from `codev roles --brief` so the agent no longer\n  writes it, and dispatch every `Agent` call in one message. Keeps\n  credentials out of the binary; gains less (the sub-agent round-trips\n  remain). It is the fallback if the supersession is refused.\n- **The binary running `claude -p` per role** (0007's rejected option):\n  reuses the user's Claude Code login, but depends on a second binary,\n  its flags and its output format; still a model call from the binary.\n- **Moving the meeting into the binary too**: merging \"same defect, same\n  fix\" needs judgement; doing it with another model call would make the\n  record's content non-deterministic in the binary. Rejected.\n\n### Decision: The core builds requests and parses answers; the engine sends them\n\n- `codev-core::review` gains `ReviewMode::Api`, a pure\n  `build_dispatch_plan(roles, instructions, material, decisions, specs,\n  record_ids, settings) -> DispatchPlan` producing the summarizing requests\n  and the role requests (system prompt, user content with data delimiters,\n  model, `max_tokens`), and a pure `parse_role_answer(role_id, text) ->\n  Result<Section, MalformedAnswer>` reusing the review-record parser to\n  check the `### <role-id>` section and each finding's yaml fields (0001).\n- `codev-engine` gains `review_dispatch.rs`: reads the files the plan\n  names through `FileSystem`, runs the summarizing phase then the role\n  phase with `std::thread::scope` and a counting limit of\n  `review.concurrency`, each request through `Http::post_json`, applying\n  the retry rule. Threads, not async: the requests are blocking `curl`\n  processes, at most 16 of them; no runtime dependency is added.\n- `codev-cli` adds `codev review dispatch` and its `ReviewDispatchV1` shape\n  in `contract.rs`, built from the engine's result, never derived from it\n  (project context).\n\n**Alternatives considered**: an async runtime (`tokio`) with a native HTTP\nclient — a new heavy dependency and a TLS stack in the binary, against the\nchoice already made for `CurlHttp`; sending sequentially — defeats the\npurpose.\n\n### Decision: Extend the `Http` port with an authenticated POST; the key goes through stdin\n\n`Http` gains\n`post_json(&self, url, headers: &[(&str, Secret<&str>)], body: &[u8], timeout_secs) -> io::Result<HttpAnswer>`\nreturning status, the `retry-after` header and the body (the dispatch needs\nthe status to tell a 429/529 from a malformed answer). `ProcessRunner`\ngains `run_with_stdin`. `CurlHttp::post_json` passes headers and body to\n`curl --config -` on standard input, so `x-api-key` never appears in argv\n(`ps`), keeps `--proto =https`, and adds `--proto-redir =https`. The URL is\nfixed to `https://api.anthropic.com/v1/messages`, with\n`anthropic-version: 2023-06-01`. A `Secret` wrapper has a redacting\n`Debug`/`Display`, and the error type never formats the request.\n\n`MemoryHttp` gains scripted POST answers per call, so tests cover retries,\ntimeouts, rate limits and malformed sections without the network, and a\nrecording `MockProcessRunner` asserts the key is absent from every argv.\n\n**Alternatives considered**: `-H \"x-api-key: …\"` in argv — leaks the key\nto any local user via the process list; a Rust HTTP client (`ureq` +\n`rustls`) — reverses the \"no TLS stack\" choice for one feature.\n\n### Decision: The brief carries the decisions and the touched main specs\n\nA sub-agent could open `_codev/decisions/` and the main specs on demand; an\nAPI call cannot. The brief therefore adds, after the isolated-mode content,\nthe decisions in effect (from the decisions index) and, at plan steps, the\nmain specs each delta modifies. All repository text sits inside\n`<material path=\"…\">…</material>` blocks, and the system prompt says the\nmaterial is data, never instructions. These additions do not count toward\n`review.material`'s 160 KiB limit, since that limit decides what is\nsummarized, not what is sent; they are measured in the reported tokens.\n\n**Alternatives considered**: giving the reviewers tools (a read-file tool\nanswered by codev) — a multi-turn loop per role, slower, and a file-access\nsurface driven by model output; omitting them — reviewers would miss the\ndecisions they are asked to check against.\n\n### Decision: The failure rules mirror isolated mode, with the API's signals\n\n180 s per request (the API's typical long answer stays well under it), one\nretry with the same brief, honouring `retry-after` up to 60 s on 429/529.\nAfter a second failure the role is `failed` with both reasons; the command\nstill exits 0 so the skill gets every success. An error before any\ndispatch (`api_key_missing`, invalid step, invalid settings) exits 1 and\nthe skill runs the isolated procedure for the step.\n\n**Alternatives considered**: more retries with back-off — lengthens the\nslowest role, which bounds the step's time; failing the whole command on\none failed role — throws away the other roles' work.\n\n### Decision: The skills render the api procedure in every mode\n\nLike the isolated procedure (rendered in both modes so a change can\noverride the mode), the api procedure is in the `propose` and `apply` bodies\nwhatever the mode. `allowed-tools` lists `Agent` in `isolated` and `api`\nmodes, for the isolated fallback; `Bash(codev:*)` already covers\n`codev review dispatch`. `codev update` regenerates the skills when the mode\nswitches to or from `api`, as it already does for `isolated`.\n\n**Alternatives considered**: a separate `codev-review` skill — contradicts\n0004 (one identity per workflow) and splits the meeting from the step that\nowns it.\n\n## Risks / Trade-offs\n\n- [The reviewed code and plan leave the machine for a third party, possibly\n  with personal data or secrets in the diff] → opt-in mode only, never the\n  default; the configuration reference and the FAQ say what is sent; the\n  `code.review` material already excludes lock, binary and generated\n  files.\n- [The API key leaks through argv, an error message or a log] → key via\n  stdin to `curl`, `Secret` wrapper with redacting formatting, a test that\n  scans every recorded argv and every output for a sentinel key.\n- [Prompt injection: repository text instructs the reviewer] → material\n  delimited as data, the system prompt says so, and the answer is only\n  accepted as a well-formed role section that the skill then checks\n  against the files (evidence verified verbatim at the meeting).\n- [A reviewer that cannot read the repository misses context a sub-agent\n  would have opened] → decisions and touched specs are included; the\n  skill's evidence check still drops a finding whose quote is not in the\n  file; the mode is opt-in, so a project compares it with `isolated` before\n  adopting it.\n- [Cost: every step sends the material once per role] → tokens reported\n  per role and per step, summed in the skill's summary; `review.model` and\n  `review.concurrency` let a project trade speed for cost.\n- [Rate limits with many roles at once] → `review.concurrency` (default 8),\n  `retry-after` honoured once, then the inline fallback.\n- [Older installed skills do not know `api` and would treat it as an\n  unknown mode] → `codev update` regenerates them; the skills already\n  check `versionRequirement`; `api` is opt-in, so a project switches only\n  after updating.\n- [Supersession refused] → the change is dropped; the \"faster skill-side\n  dispatch\" alternative above becomes its own change.\n\n## Migration Plan\n\n1. A person supersedes 0007 with the draft above and accepts it\n   (`codev decision supersede 0007`, `codev decision accept <id>`). This\n   change writes no decision file itself.\n2. Release the binary; nothing changes for projects in `inline` or\n   `isolated` mode.\n3. A project opts in with `review: { mode: api }`, sets\n   `ANTHROPIC_API_KEY`, and runs `codev update` to regenerate the skills.\n4. Rollback: set the mode back to `isolated` or `inline` and run\n   `codev update`; records with `Mode: api.` stay valid.\n\n## Open Questions\n\n- Whether `codev doctor` should warn when the mode is `api` and\n  `ANTHROPIC_API_KEY` is unset — deferrable, it adds a diagnostic without\n  changing these specs.\n- Whether codev's own repository switches to `api` after measuring it\n  against `isolated` — a configuration choice, after the release.\n",
+    "_codev/changes/review-via-claude-api/proposal.md": "# Proposal: codev dispatches the reviewers through the Claude API\n\n> **Blocked on a human decision.** This change contradicts the accepted\n> decision [0007](../../decisions/0007-the-skills-dispatch-sub-agents-codev-only-renders-the-permission.md)\n> (\"orchestration of sub-agents lives in the skill text, never in the\n> binary\"), which lists \"the binary calling a model\" among its rejected\n> alternatives. It can only be applied once a person has superseded 0007\n> (`codev decision supersede 0007`, then `codev decision accept`) with the\n> decision drafted in `design.md`. Until then, this proposal is the case\n> for that supersession, not an authorization to implement.\n\n## Why\n\nIsolated review starts one Claude Code sub-agent per role from the skill.\nThat is slow: the agent writes each brief out token by token, the platform\ncaps how many sub-agents run at once, and every turn of the skill passes\nthrough the conversation. The user wants codev to start the reviewers\nitself, calling the Claude API in parallel, so a reviewing step finishes\nsooner.\n\n## What Changes\n\n- A third review mode, `api`, accepted by `review.mode` in\n  `_codev/config.yaml` and `change.yaml`, next to `inline` and `isolated`.\n  It is never the default: a project or a change opts in.\n- A new command, `codev review dispatch --change <name> --at <step>`, which\n  at `plan.trace`, `plan.challenge` and `code.review` builds one brief per\n  active role from the same sources as the isolated brief, sends them all\n  to the Claude Messages API at once, retries a failed request once, and\n  returns each role's section (or its failure) as JSON. Material marked\n  `summarize` is first summarized by its own parallel API call.\n- The command writes nothing to the change: the skill still holds the\n  meeting (merge, numbering, ranking), writes the review record and runs\n  the answer loop, as in isolated mode. A role whose request failed twice\n  is reviewed inline by the skill, with its `Fallback:` line.\n- The API key is read only from the `ANTHROPIC_API_KEY` environment\n  variable; it is never stored, printed or written to a file. Without it,\n  the command fails with a stable code and the skill falls back to the\n  isolated procedure.\n- Two new keys under `review:`: `model` (the Claude model used in `api`\n  mode) and `concurrency` (the maximum number of requests in flight).\n- The `propose` and `apply` skills, in `api` mode, call\n  `codev review dispatch` instead of starting sub-agents, and record\n  `Mode: api.` under the step. The review record accepts `api` as a mode.\n- The command reports the tokens each request consumed, so the speed gain\n  can be weighed against its cost.\n\n## Capabilities\n\n### New Capabilities\n\n- `review-dispatch`\n\n### Modified Capabilities\n\n- `review-mode`\n- `review-record`\n- `configuration`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- **Decision**: supersedes 0007 (to be accepted by a person before\n  `/codev-apply`); 0001 (pure core, effects in the shell) and 0002 (crate\n  graph) are kept — the core builds the requests, the engine sends them\n  through a port.\n- **Code**: `codev-core` (review mode enum, brief assembly, response\n  parsing), `codev-engine` (an HTTP POST on the existing `Http` port,\n  parallel dispatch), `codev-cli` (the `review dispatch` subcommand and its\n  JSON shape in `contract.rs`), `codev-agents` (the `propose` and `apply`\n  skill text for `api` mode).\n- **Systems**: the project's code and plan leave the machine for\n  Anthropic's API, only in `api` mode; runs cost API tokens billed to the\n  key's owner; `curl` becomes required for reviews in `api` mode.\n- **JSON contract**: `review.mode` may now be `api` — older installed skills\n  that do not know it must be regenerated (`codev update`).\n- **Domains**: there is no diff to go by yet (only planning files), so\n  the domains below are ticked by judgement.\n- **Documentation**: `docs/en` and `docs/fr` — the review mode in the\n  configuration reference, the review-record guide, the skills chapter, the\n  JSON output reference and the FAQ (cost, privacy, key).\n\n## Domains\n\n- [x] security — the binary handles an API key, sends material to a third party, and briefs carry untrusted text\n- [x] personal-data — any personal data in the reviewed code or plan is sent to the Claude API\n- [ ] user-interface — a CLI subcommand with JSON output, no interactive surface\n- [x] performance — the whole point is the wall-clock time of a reviewing step\n- [x] operations — timeouts, retries, concurrency, token consumption\n- [x] migration — a new `review.mode` value in the public JSON contract, read by installed skills\n\n## Release note\n\n- Added: a third review mode, `api`, in which `codev review dispatch` runs every reviewing role in parallel through the Claude API (key from `ANTHROPIC_API_KEY`), so a review step finishes faster than with sub-agents. Opt-in; the reviewed material is sent to Anthropic's API.\n- Added: `review.model` and `review.concurrency` configuration keys for the `api` mode.\n",
+    "_codev/changes/review-via-claude-api/specs/configuration/spec.md": "## MODIFIED Requirements\n\n### Requirement: `review` is a known configuration key\n\n`review` SHALL be a known top-level key of `_codev/config.yaml`: it never\nproduces an `unknown_config_key` warning. A key under `review:` other\nthan `mode`, `model` and `concurrency` SHALL be ignored with an\n`unknown_config_key` warning naming it `review.<key>`, as a key of `mcp`\nis, and `codev validate` and `codev doctor` report it the same way.\n\n#### Scenario: No warning for `review`\n\n- **GIVEN** a configuration with `review: { mode: isolated }`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `status` holds no `unknown_config_key` warning\n\n#### Scenario: No warning for the `api` mode settings\n\n- **GIVEN** a configuration with `review: { mode: api, model:\n  claude-sonnet-5-5, concurrency: 4 }`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `status` holds no `unknown_config_key` warning\n\n#### Scenario: An unknown key under `review`\n\n- **GIVEN** a configuration with `review: { mode: inline, budget: 3 }`\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 0 and `status` holds an `unknown_config_key`\n  warning naming `review.budget`\n",
+    "_codev/changes/review-via-claude-api/specs/review-dispatch/spec.md": "## Purpose\n\nLets codev run the reviewing roles of a step itself, all at once, through\nthe Claude API, and hand their sections back to the skill that holds the\nmeeting — so a review in `api` mode takes the time of its slowest role\nrather than the sum of the platform's sub-agent turns.\n\n## ADDED Requirements\n\n### Requirement: `codev review dispatch` runs every role of a reviewing step through the Claude API\n\n`codev review dispatch --change <name> --at <step>` SHALL accept the steps\n`plan.trace`, `plan.challenge` and `code.review`, and any other step SHALL\nfail with the stable code `invalid_review_step`, naming the allowed steps.\nIt SHALL run every role that `codev roles --at <step> --change <name>`\nreturns as active — the same roles, in the same order — and no role listed\nunder `disabled`.\n\nFor each role it SHALL send one request to the Claude Messages API, with\nthe model `review.model`, and SHALL have every request of the step in\nflight at once, up to `review.concurrency`. It SHALL wait for every\nrequest to end before answering. The command runs whatever the effective\nreview mode is: the mode tells the skills which procedure to follow, not\nwhat the command is allowed to do.\n\n#### Scenario: Three roles reviewed in parallel\n\n- **GIVEN** a change `add-auth` whose `plan.challenge` has three active\n  roles, `skeptic`, `security` and `migration`, and `ANTHROPIC_API_KEY`\n  set\n- **WHEN** the user runs `codev review dispatch --change add-auth --at\n  plan.challenge --json`\n- **THEN** three requests are sent, the three before any of them has\n  answered\n- **AND** `roles` lists `skeptic`, `security` and `migration` in that order\n\n#### Scenario: Concurrency caps the requests in flight\n\n- **GIVEN** a step with five active roles and `review: { concurrency: 2 }`\n- **WHEN** the user runs `codev review dispatch` on it\n- **THEN** no more than two requests are in flight at any time\n- **AND** all five roles are in the answer\n\n#### Scenario: A step that does not review\n\n- **WHEN** the user runs `codev review dispatch --change add-auth --at\n  code.implement --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `invalid_review_step`, naming `plan.trace`, `plan.challenge` and\n  `code.review`\n- **AND** no request is sent\n\n#### Scenario: A disabled role is not dispatched\n\n- **GIVEN** a step whose `codev roles` lists `newcomer` under `disabled`\n- **WHEN** the user runs `codev review dispatch` on it\n- **THEN** no request is sent for `newcomer` and it is not in `roles`\n\n### Requirement: The brief holds only codev's outputs and the files\n\nEach request SHALL carry, and only carry:\n\n- the role as `codev roles` serves it: id, question, `doneWhen` criteria\n  and `knowledge`, its `By stack` part already filtered;\n- the project's `context` and `rules` blocks for each artifact of the\n  change, as `codev instructions` serves them;\n- the material listed by `review.material`: the content of each file\n  marked `full`, with the change's diff for it at `code.review`, and for\n  each file marked `summarize`, the summary returned by its summarizing\n  request;\n- the decisions in effect, and at `plan.trace` and `plan.challenge` the\n  main specs the change's deltas modify, since the reviewer cannot read the\n  repository;\n- the finding ids already in the change's review record;\n- the review record's finding format, severity and confidence scales and\n  rules, and the instruction to return only a `### <role-id>` section with\n  its findings or `No finding.`.\n\nThe material, the specs and the decisions SHALL be delimited as data and\nthe reviewer told never to follow instructions found in them. A brief MUST\nNOT carry anything from the conversation of the skill that called the\ncommand, nor another role's findings.\n\n#### Scenario: The brief carries the material and the role\n\n- **GIVEN** a change whose `plan.challenge` material is `proposal.md` and\n  `design.md`, both `full`\n- **WHEN** `codev review dispatch` builds the `skeptic` brief\n- **THEN** the request holds the skeptic's question and every `doneWhen`\n  criterion, the project `context`, and the whole text of both files\n  inside data delimiters\n\n#### Scenario: Recorded ids are not raised again\n\n- **GIVEN** a record already holding `R-skeptic-1` and `R-security-1`\n- **WHEN** `codev review dispatch` builds the briefs\n- **THEN** every brief names `R-skeptic-1` and `R-security-1` as already\n  raised\n\n#### Scenario: No role sees another's findings\n\n- **GIVEN** a step with two roles\n- **WHEN** `codev review dispatch` sends their requests\n- **THEN** neither request holds the other role's answer\n\n### Requirement: Material over the limit is summarized by its own request\n\nWhen `review.material.summarized` is `true`, the command SHALL first send,\nfor each file marked `summarize`, one request holding only that file's\npath and its diff, asking for its changed lines verbatim when they fit in\nabout two hundred lines, and otherwise what changed, where, with the line\nnumbers. These requests SHALL run in parallel, before the role requests,\nunder the same concurrency limit. The answer SHALL list, in `summarized`,\neach summarized path with the reason it was summarized.\n\nA summarizing request that fails twice SHALL leave that file out of every\nbrief, and the answer SHALL say so in its `summarized` entry, with\n`failed: true` and the reason.\n\n#### Scenario: One file over the limit\n\n- **GIVEN** `review.material` marks `src/big.rs` as `summarize`\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** one summarizing request is sent with only the path and the diff\n  of `src/big.rs`, before the role requests\n- **AND** every role brief holds its summary instead of the file\n- **AND** `summarized` holds one entry for `src/big.rs`\n\n### Requirement: A failed request is retried once, then reported, never invented\n\nA request fails when the API answers an error status, when it does not\nanswer within 180 seconds, when the connection fails, or when its answer is\nnot a `### <role-id>` section, for the role asked, whose findings each have\na `#### R-<role-id>-<n> <title>` heading and a `yaml` block with every\nfield of a finding. A failed request SHALL be sent once more, with the same\nbrief. If it fails again, the role SHALL be reported with `state: failed`\nand a `reason` naming both failures; the command MUST NOT produce a section\nfor it. A rate-limit answer from the API counts as a failure like any other,\nafter waiting the delay the API states, at most 60 seconds.\n\nThe command SHALL exit with 0 when every role was attempted, failed roles\nincluded: a failed role is the skill's to fall back on.\n\n#### Scenario: A malformed answer is retried\n\n- **GIVEN** the API answers the `newcomer` request first with prose\n  without a `### newcomer` heading, then with a well-formed section\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** two requests were sent for `newcomer`\n- **AND** `newcomer` has `state: ok` and the second answer as its\n  `section`\n\n#### Scenario: A role fails twice\n\n- **GIVEN** the API answers every `security` request with status 529\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** the exit code is 0\n- **AND** `security` has `state: failed`, `section: null` and a `reason`\n  naming status 529 twice\n- **AND** the other roles have their sections\n\n#### Scenario: A section for the wrong role\n\n- **GIVEN** the API answers the `skeptic` request twice with a\n  `### security` section\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** `skeptic` has `state: failed`\n\n### Requirement: The API key comes only from the environment and never leaves the request\n\nThe command SHALL read the API key from the environment variable\n`ANTHROPIC_API_KEY` and from nowhere else — never from `_codev/config.yaml`,\n`change.yaml` or an inherited source. When it is unset or empty, the\ncommand SHALL fail with the stable code `api_key_missing`, naming the\nvariable, before sending anything. The key MUST NOT appear in the command's\noutput, in its error messages, in any file it writes, nor in the arguments\nof any process it starts. Requests SHALL go only to\n`https://api.anthropic.com`, over HTTPS, and redirects to another scheme\nMUST be refused.\n\n#### Scenario: No key\n\n- **GIVEN** `ANTHROPIC_API_KEY` is not set\n- **WHEN** the user runs `codev review dispatch --change add-auth --at\n  code.review --json`\n- **THEN** the exit code is 1 and `status[0].code` is `api_key_missing`,\n  naming `ANTHROPIC_API_KEY`\n- **AND** no request is sent\n\n#### Scenario: The key never shows\n\n- **GIVEN** `ANTHROPIC_API_KEY` set to `sk-test-123`, and the API refusing\n  it with status 401\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** neither the output nor the error messages contain `sk-test-123`\n- **AND** no process started by the command has `sk-test-123` among its\n  arguments\n\n#### Scenario: A key in the configuration is not read\n\n- **GIVEN** `ANTHROPIC_API_KEY` unset and a configuration holding\n  `review: { api_key: sk-test-123 }`\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** `status` holds `api_key_missing` and an `unknown_config_key`\n  warning naming `review.api_key`\n\n### Requirement: `codev review dispatch` writes nothing and answers in JSON contract v1\n\nThe command SHALL write no file: neither the review record nor any file of\nthe change. With `--json`, it SHALL answer a JSON contract v1 document\nholding `step`, `model`, `roles` — one entry per role in `codev roles`\norder, each with `id`, `state` (`ok` or `failed`), `section` (the returned\nrole section verbatim, `null` when failed), `reason` (`null` when ok),\n`attempts`, and `usage` with `inputTokens` and `outputTokens` summed over\nits attempts — `summarized`, and `usage` totalled over every request of\nthe step. A failure's document has `roles: null`. Without `--json`, it\nSHALL print one line per role with its state and tokens, then the totals.\n\n#### Scenario: The answer of a successful step\n\n- **GIVEN** a step with roles `skeptic` and `security`, both answered on\n  the first attempt\n- **WHEN** the user runs `codev review dispatch --json`\n- **THEN** each role has `state: \"ok\"`, `attempts: 1`, a `section`\n  starting with `### <its id>` and its `usage`\n- **AND** the top-level `usage` is the sum of both\n- **AND** the change's `review.md` is unchanged\n",
+    "_codev/changes/review-via-claude-api/specs/review-mode/spec.md": "## MODIFIED Requirements\n\n### Requirement: The project and a change set the review mode\n\n`_codev/config.yaml` SHALL accept a `review:` mapping whose `mode` is\n`inline`, `isolated` or `api`. A change's `change.yaml` SHALL accept the\nsame `review:` mapping. The effective mode of a change SHALL be the\nchange's `review.mode` when set, otherwise the project's, otherwise\n`inline`; its origin is `change`, `project` or `default` accordingly.\nWithout a change, the effective mode is the project's, or `inline`. An\ninherited source's `review:` MUST NOT be read: the mode belongs to the\nteam writing in the repository. `api` is never the default: since it sends\nthe material to the Claude API, a project or a change opts in to it\nexplicitly.\n\nA `mode` other than `inline`, `isolated` or `api`, in either file, SHALL\nmake every command that reads that file fail with the stable code\n`invalid_review_mode`, naming the file, the value and the allowed values.\nA `review:` that is not a mapping, or a `mode` that is not text, fails\nthe same way. An unknown key under `review:` in `change.yaml` fails as\nany unknown key of that file does.\n\n#### Scenario: The default mode is inline\n\n- **GIVEN** a project whose configuration has no `review:` key and a\n  change `add-auth` whose `change.yaml` has none either\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `default`\n\n#### Scenario: The project sets isolated\n\n- **GIVEN** a configuration with `review: { mode: isolated }`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `review.mode` is `isolated` and `review.origin` is `project`\n\n#### Scenario: The project sets api\n\n- **GIVEN** a configuration with `review: { mode: api }`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** `review.mode` is `api` and `review.origin` is `project`\n\n#### Scenario: A change overrides the project\n\n- **GIVEN** a configuration with `review: { mode: isolated }` and a change\n  `fix-typo` whose `change.yaml` sets `review: { mode: inline }`\n- **WHEN** the user runs `codev roles --at code.review --change fix-typo\n  --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `change`\n\n#### Scenario: An unknown mode in the configuration\n\n- **GIVEN** a configuration with `review: { mode: parallel }`\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `invalid_review_mode`\n- **AND** the message names `parallel`, `inline`, `isolated` and `api`\n\n#### Scenario: An unknown mode in a change\n\n- **GIVEN** a change whose `change.yaml` sets `review: { mode: alone }`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `invalid_review_mode`, naming `change.yaml`\n\n#### Scenario: An inherited source's mode is not read\n\n- **GIVEN** a project inheriting a source whose configuration sets\n  `review: { mode: api }`, and no `review:` key of its own\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `review.mode` is `inline` and `review.origin` is `default`\n\n## ADDED Requirements\n\n### Requirement: The project sets the model and the concurrency of the `api` mode\n\n`_codev/config.yaml` SHALL accept, under `review:`, a `model` — the\nidentifier of the Claude model `codev review dispatch` uses, sent to the\nAPI as is — and a `concurrency` — a whole number from 1 to 16, the maximum\nnumber of requests in flight. Without them, the model is\n`claude-sonnet-5-5` and the concurrency is 8. Both are read whatever the\nmode. A `concurrency` that is not a whole number from 1 to 16, or a `model`\nthat is not non-empty text, SHALL make every command that reads the file\nfail with the stable code `invalid_review_setting`, naming the key, the\nvalue and what is allowed. An inherited source's `model` and `concurrency`\nMUST NOT be read. A change's `change.yaml` SHALL NOT accept them: the model\nand the cost are the project's choice.\n\n`codev roles --json` SHALL give them in its `review` object as `model` and\n`concurrency`, next to `mode`.\n\n#### Scenario: The defaults\n\n- **GIVEN** a configuration with `review: { mode: api }`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `review.model` is `claude-sonnet-5-5` and `review.concurrency`\n  is 8\n\n#### Scenario: The project chooses its model\n\n- **GIVEN** a configuration with `review: { mode: api, model:\n  claude-opus-5-5, concurrency: 3 }`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `review.model` is `claude-opus-5-5` and `review.concurrency`\n  is 3\n\n#### Scenario: A concurrency out of range\n\n- **GIVEN** a configuration with `review: { concurrency: 0 }`\n- **WHEN** the user runs `codev status --json`\n- **THEN** the exit code is 1 and `status[0].code` is\n  `invalid_review_setting`, naming `review.concurrency`, `0` and the range\n  1 to 16\n\n#### Scenario: A change cannot change the model\n\n- **GIVEN** a change whose `change.yaml` sets `review: { model:\n  claude-opus-5-5 }`\n- **WHEN** the user runs `codev status --change <name> --json`\n- **THEN** the command fails as for any unknown key of `change.yaml`\n",
+    "_codev/changes/review-via-claude-api/specs/review-record/spec.md": "## MODIFIED Requirements\n\n### Requirement: The record says how each step was reviewed\n\nUnder a step heading, before its first role, the record MAY hold the\nline `Mode: inline.`, `Mode: isolated.` or `Mode: api.`, and any number of\nlines `Summarized: <what was summarized>`. Under a role heading, it MAY\nhold one line `Fallback: <why the role ran inline>`. A final period is\noptional. Validation SHALL report as `review_invalid` a `Mode:` line\nwhose value is neither `inline`, `isolated` nor `api`, naming all three,\nand a step or role holding two `Mode:` or two `Fallback:` lines. These\nlines do not change the role's state: a role still holds findings,\n`No finding.` or `Disabled by configuration.`.\n\n`codev review --json` SHALL give each step `mode` (`null` when not\nwritten) and `summarized` (the texts, in file order), and each role\n`fallback` (`null` when not written). The human output SHALL print them.\n\n#### Scenario: An isolated step with a summary and a fallback\n\n- **GIVEN** a record whose `## code.review` starts with `Mode:\n  isolated.` and `Summarized: src/big.rs, diff over the limit.`, and\n  whose `### newcomer` says `Fallback: the sub-agent timed out twice.`\n  then `No finding.`\n- **WHEN** the user runs `codev review --json`\n- **THEN** the step has `mode: \"isolated\"` and `summarized: [\"src/big.rs,\n  diff over the limit\"]`\n- **AND** the `newcomer` role has `fallback: \"the sub-agent timed out\n  twice\"` and `state: \"no-finding\"`\n\n#### Scenario: A step reviewed through the API\n\n- **GIVEN** a record whose `## plan.challenge` starts with `Mode: api.`,\n  and whose `### security` says `Fallback: the API answered 529 twice.`\n  then one finding\n- **WHEN** the user runs `codev review --json`\n- **THEN** the step has `mode: \"api\"`\n- **AND** the `security` role has `fallback: \"the API answered 529\n  twice\"` and its finding\n\n#### Scenario: A record written before isolated review\n\n- **GIVEN** a record without `Mode:`, `Summarized:` or `Fallback:` lines\n- **WHEN** the user runs `codev review --json`\n- **THEN** each step has `mode: null` and `summarized: []`, and each role\n  `fallback: null`\n\n#### Scenario: An unknown mode in the record\n\n- **GIVEN** a record whose `## plan.challenge` holds `Mode: parallel.`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error at that line names `inline`,\n  `isolated` and `api`\n",
+    "_codev/changes/review-via-claude-api/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The review skills request the sub-agent tool only in isolated mode\n\nWhen the project's review mode is `isolated` or `api`, the `propose` and\n`apply` skills SHALL list Claude Code's sub-agent tool, `Agent`, in their\n`allowed-tools` — in `api` mode, for the fallback to the isolated\nprocedure; when it is `inline`, no skill SHALL list it. No other skill\never lists it. The body of both skills SHALL carry the isolated review\nprocedure and the `api` review procedure in every mode, so that a change\nthat overrides the mode is reviewed as it asks.\n\n#### Scenario: Isolated mode adds the sub-agent tool\n\n- **GIVEN** a configuration with `review: { mode: isolated }`\n- **WHEN** the user runs `codev update`\n- **THEN** the `allowed-tools` of `codev-propose` and `codev-apply` end\n  with `Agent`\n- **AND** no other skill lists `Agent`\n\n#### Scenario: Api mode adds the sub-agent tool for the fallback\n\n- **GIVEN** a configuration with `review: { mode: api }`\n- **WHEN** the user runs `codev update`\n- **THEN** the `allowed-tools` of `codev-propose` and `codev-apply` end\n  with `Agent`\n- **AND** no other skill lists `Agent`\n\n#### Scenario: Inline mode leaves the tools as they were\n\n- **GIVEN** a configuration without `review:`\n- **WHEN** the user runs `codev update`\n- **THEN** no skill lists `Agent` in its `allowed-tools`\n- **AND** the `propose` and `apply` bodies still describe the isolated\n  review and the `api` review\n\n## ADDED Requirements\n\n### Requirement: In api mode, codev dispatches the roles and the skill consolidates\n\nAt `plan.trace`, `plan.challenge` and `code.review`, when `review.mode`\nfrom `codev roles --at <step> --change <name> --json` is `api`, the\n`propose` and `apply` skills SHALL run `codev review dispatch --change\n<name> --at <step> --json` instead of starting sub-agents, and SHALL NOT\nbuild briefs themselves.\n\n- Each role with `state: ok` brings its `section` to the meeting, exactly\n  as a sub-agent's section does in isolated mode.\n- Each role with `state: failed` SHALL be reviewed inline by the skill,\n  and its section SHALL carry `Fallback: <reason>.` with the `reason`\n  codev returned.\n- When the command fails with `api_key_missing`, or with any other error\n  before dispatching, the skill SHALL run the isolated procedure for the\n  whole step instead, and say so in its summary in one line.\n- The skill then holds the meeting — merge with `raised_by`, numbering,\n  ranking, evidence check — writes the step's section with `Mode: api.`\n  and one `Summarized:` line per entry of `summarized`, and runs the\n  author's answer loop and the escalation to the human as in isolated\n  mode.\n- The skill's summary SHALL give the step's total tokens from `usage`.\n\nAt `plan.trace`, the tracer's section is not recorded: the skill fixes the\ngaps in the artifacts, as in the other modes.\n\n#### Scenario: The skills describe the api review\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are rendered\n- **THEN** each names `review.mode` `api`, `codev review dispatch`, the\n  inline fallback of a failed role with `Fallback:`, the isolated\n  procedure when the command fails, the meeting, `Mode: api.`,\n  `Summarized:` and the tokens in the summary\n\n#### Scenario: A role failed through the API\n\n- **GIVEN** api mode, and `codev review dispatch` returning `security`\n  with `state: failed` and `reason: \"status 529, twice\"`\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the skill reviews `security` inline\n- **AND** the record's `### security` holds `Fallback: status 529,\n  twice.`\n\n#### Scenario: No API key\n\n- **GIVEN** api mode, and `codev review dispatch` failing with\n  `api_key_missing`\n- **WHEN** `/codev-apply` reviews the code\n- **THEN** the skill reviews the step with sub-agents, as in isolated\n  mode, and the step records `Mode: isolated.`\n"
+  },
+  "validate": {
+    "review-via-claude-api": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "review-via-claude-api",
+          "path": "_codev/changes/review-via-claude-api"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-decision-llm-in-binary-3",
+      "status": []
+    }
+  }
+}

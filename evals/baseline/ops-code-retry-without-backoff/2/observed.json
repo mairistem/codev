@@ -1,0 +1,224 @@
+{
+  "format": 2,
+  "case": "ops-code-retry-without-backoff",
+  "error": null,
+  "costUsd": 0.3262362,
+  "durationMs": 32883,
+  "consumption": {
+    "durationApiMs": 32888,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 26878,
+      "cacheRead": 235586,
+      "output": 3156
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7418,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7418
+        }
+      },
+      {
+        "cacheCreation": 13977,
+        "cacheRead": 29557,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13977
+        }
+      },
+      {
+        "cacheCreation": 1887,
+        "cacheRead": 43534,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1887
+        }
+      },
+      {
+        "cacheCreation": 1158,
+        "cacheRead": 45421,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1158
+        }
+      },
+      {
+        "cacheCreation": 1777,
+        "cacheRead": 46579,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1777
+        }
+      },
+      {
+        "cacheCreation": 661,
+        "cacheRead": 48356,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 661
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-merchant-webhooks",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n  try {\n    const response = await fetch(url, {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/webhooks.ts:9-23",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Wait between attempts with exponential backoff and jitter (for example 1s, 2s, 4s, 8s), or hand failed deliveries to a delayed queue. When a merchant's endpoint answers 503 or restarts for a few seconds, the five attempts currently run one right after the other, so they hit the struggling server in a burst and all fail during the same short outage. The event is then dropped although waiting a few seconds would have delivered it. Also stop retrying on non-retryable responses (4xx other than 408/429), which can never succeed.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Webhook retries fire back to back, with no backoff"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if (response.ok) {\n  return true;\n}\n} catch (error) {\n  console.debug(`webhook ${event.id} attempt ${attempt} failed`, error);\n}\n}\nconsole.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 34,
+        "location": "src/webhooks.ts:17-24",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Use the project's structured `logger` (src/logger.ts, already used by src/events.ts) and log fields: eventId, merchant or URL host, attempt, HTTP status or error. Log a dropped webhook at error level, and add a counter for delivered and dropped webhooks. Today, when a merchant's endpoint answers 500, nothing is logged for that attempt because only thrown errors reach the catch block. The final \"dropped\" line is a free-text `console.debug` with no status and no merchant, so an operator cannot query it, may not see it at production log levels, and cannot tell a merchant why their webhooks stopped.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Failed and dropped deliveries are logged only at debug level, as free text, without the HTTP status"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "if (rows.length > 0) {\n  await deliver(rows[0].webhook_url, event);\n}\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 62,
+        "location": "src/webhooks.ts:33-35",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Do not await delivery inline: enqueue it, or start it without awaiting and report its failure through the logger. `publish` in src/events.ts awaits each listener in turn, so a merchant that times out makes the publisher wait 5 attempts × 5 s, and any backoff added for R-ops-1 makes that delay longer. Whether this delays settlement depends on how the payment service calls `publish`, which this review could not see.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delivery is awaited inside the payment event listener, so a slow merchant can delay the publisher for up to 25 s"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

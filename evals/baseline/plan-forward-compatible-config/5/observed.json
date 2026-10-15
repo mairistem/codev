@@ -1,0 +1,307 @@
+{
+  "format": 2,
+  "case": "plan-forward-compatible-config",
+  "error": null,
+  "costUsd": 1.4453257999999995,
+  "durationMs": 269087,
+  "consumption": {
+    "durationApiMs": 267186,
+    "turns": 28,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1168,
+      "cacheCreation": 79687,
+      "cacheRead": 1847784,
+      "output": 21862
+    },
+    "toolCalls": 27,
+    "orientationCalls": 13,
+    "calls": [
+      {
+        "cacheCreation": 7592,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7592
+        }
+      },
+      {
+        "cacheCreation": 14306,
+        "cacheRead": 29731,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14306
+        }
+      },
+      {
+        "cacheCreation": 2313,
+        "cacheRead": 44037,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2313
+        }
+      },
+      {
+        "cacheCreation": 10762,
+        "cacheRead": 46350,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 10731,
+          "output": 31
+        }
+      },
+      {
+        "cacheCreation": 4462,
+        "cacheRead": 57112,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4462
+        }
+      },
+      {
+        "cacheCreation": 4282,
+        "cacheRead": 61574,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4282
+        }
+      },
+      {
+        "cacheCreation": 368,
+        "cacheRead": 65856,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 368
+        }
+      },
+      {
+        "cacheCreation": 2608,
+        "cacheRead": 66224,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2608
+        }
+      },
+      {
+        "cacheCreation": 3701,
+        "cacheRead": 68832,
+        "input": 2,
+        "output": 46,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 3701
+        }
+      },
+      {
+        "cacheCreation": 3370,
+        "cacheRead": 72533,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3332,
+          "output": 38
+        }
+      },
+      {
+        "cacheCreation": 767,
+        "cacheRead": 75903,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 767
+        }
+      },
+      {
+        "cacheCreation": 603,
+        "cacheRead": 76670,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 603
+        }
+      },
+      {
+        "cacheCreation": 1465,
+        "cacheRead": 77273,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1465
+        }
+      },
+      {
+        "cacheCreation": 800,
+        "cacheRead": 78738,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 800
+        }
+      },
+      {
+        "cacheCreation": 2119,
+        "cacheRead": 79538,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2119
+        }
+      },
+      {
+        "cacheCreation": 3000,
+        "cacheRead": 81657,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2972,
+          "output": 28
+        }
+      },
+      {
+        "cacheCreation": 1335,
+        "cacheRead": 84657,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1335
+        }
+      },
+      {
+        "cacheCreation": 5038,
+        "cacheRead": 85992,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 5038
+        }
+      },
+      {
+        "cacheCreation": 3049,
+        "cacheRead": 91030,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3035,
+          "output": 14
+        }
+      },
+      {
+        "cacheCreation": 577,
+        "cacheRead": 94079,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 577
+        }
+      },
+      {
+        "cacheCreation": 1008,
+        "cacheRead": 94656,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1008
+        }
+      },
+      {
+        "cacheCreation": 909,
+        "cacheRead": 95664,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 909
+        }
+      },
+      {
+        "cacheCreation": 3264,
+        "cacheRead": 96573,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3264
+        }
+      },
+      {
+        "cacheCreation": 1292,
+        "cacheRead": 99837,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 888,
+          "edit": 404
+        }
+      },
+      {
+        "cacheCreation": 697,
+        "cacheRead": 101129,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 190,
+          "edit": 411,
+          "output": 96
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/forward-compatible-config/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/forward-compatible-config/design.md": "# Design: Forward-compatible configuration and a precise version fix\n\n## Context\n\nObserved in the code:\n\n- `codev-engine::config::ProjectConfig` and its nested blocks\n  (`ChangelogConfig`, `McpConfig`, `InheritSource`) carry\n  `#[serde(deny_unknown_fields)]`. `config::load` maps any serde error to\n  `EngineError::Invalid`, so an unknown key aborts `config::resolve` and,\n  with it, every command: about thirty call sites go through `resolve`, and\n  three in `codev-cli::commands` call `config::load` directly (lines 1321,\n  1528, 1596).\n- `config::resolve` already collects `Warning`s (`inherit_not_transitive`…)\n  in `ResolvedConfig::warnings`. Some commands forward them (`install_skills`,\n  `status`, `instructions`); `validate` does not: `ValidateReport` holds\n  only items.\n- `codev-core::doctor::evaluate` decides the `codev_version` check from\n  `VersionFacts { running, requirement: Option<(String, bool)>,\n  newer_release }`, and always proposes `codev self-update` when the\n  requirement is not satisfied. The same facts already hold the version\n  stamped on each installed skill: `SkillState::Outdated(Some(version))`,\n  or `Current` (stamped with the running version).\n- `codev-core::update` parses requirements with `semver::VersionReq`\n  (`parse_requirement`, `satisfies`).\n\nConstraints: decision 0001 (functional core, imperative shell) — the\nversion reasoning is pure and lives in `codev-core`; decision 0002 (crate\ngraph) — `codev-core` keeps no I/O; decision 0006 (serde_norway for YAML)\n— YAML stays read through `serde_norway`, with good error messages for\nhand-written files. The JSON contract v1 lives in `codev-cli::contract::v1`.\n\n## Goals / Non-Goals\n\nGoals: an older codev keeps working on a configuration written for a newer\none, and says so; `codev doctor` gives a command that actually fixes a\ntoo-recent codev.\n\nNon-goals: tolerating unknown fields in `change.yaml`, schema files,\n`seal.yaml` or decision front matter; changing the skills' update check or\n`codev status`'s `versionRequirement` object; listing releases from\n`codev doctor` (it stays offline).\n\n## Decisions\n\n### Decision: Detect ignored keys with `serde_ignored`, drop `deny_unknown_fields` on the config structs\n\n`config::load` wraps the `serde_norway` deserializer in\n`serde_ignored::deserialize`, whose callback receives the path of every key\nthe target structs do not declare. The callback turns the path into the\ndotted form of the spec (`mcp.confluence_tool`, `inherits[1].sha`).\n`deny_unknown_fields` is removed from the four config structs only.\n`load` then returns the parsed config together with its unknown keys, and\n`resolve` turns them into `config_unknown_key` warnings for the project\nfile and for each inherited source's file, with the file path in the\nmessage. The three direct callers of `load` in `codev-cli` forward the\nwarnings the same way.\n\n`serde_ignored` is a small crate by serde's author, with no transitive\ndependency beyond `serde`; it is a new dependency of `codev-engine` only.\nIt does not contradict decision 0006: `serde_norway` still parses, and\ntype errors keep its messages and locations.\n\n**Alternatives considered**:\n\n- `#[serde(flatten)] unknown: BTreeMap<String, Value>` on each struct: no\n  new dependency, but flatten buffers the input, which degrades\n  `serde_norway`'s error locations on type errors — the messages decision\n  0006 values — and needs one field per nested struct.\n- Parse into `serde_norway::Value` first and diff its keys against a\n  hand-kept list of known keys: a second source of truth that drifts every\n  time a key is added.\n\n### Decision: Validation reports configuration warnings through `status`\n\n`ValidateReport` gains the configuration warnings, emitted in the v1\n`status` array as warnings, for every validate scope. `hasWarnings` and the\n`--strict` exit code take them into account, as they do for items'\nwarnings, so a CI running the project's pinned codev still rejects a\nmisspelled key. `codev doctor`'s `validate` check counts them among the\nwarnings it already reports.\n\n**Alternatives considered**: a synthetic `config` item in `items`. It\nintroduces a new item kind that installed skills do not expect, for one\nwarning code.\n\n### Decision: The too-recent verdict and the exact version are computed in `codev-core`\n\nA pure `update::lowest_accepted(&VersionReq) -> Option<Version>` returns\nthe lowest version a requirement accepts when one of its comparators sets\na lower bound (`>=`, `>`, `=`, `^`, `~`, wildcard), taking the highest\nlower bound and checking the result against the whole requirement; `None`\notherwise. `doctor::evaluate` then:\n\n1. classifies an unsatisfied requirement as too recent when\n   `lowest_accepted` is `Some(v)` with `v < running`, or is `None` (an\n   upper bound only, so the running version is above it);\n2. chooses the version to propose: the first version stamped on an\n   installed skill (`SkillState::Outdated(Some(_))`) that the requirement\n   accepts, otherwise `lowest_accepted`, otherwise no version;\n3. emits `codev_version_too_recent` with the fix\n   `codev self-update --version X.Y.Z`, or the placeholder fix and a\n   message naming the requirement when no version is known.\n\n`VersionFacts.requirement` keeps its shape; the skills' versions come from\n`DoctorFacts.skills`, already gathered by the shell. The new code is added\nto the v1 contract's list of doctor codes; no field changes.\n\n**Alternatives considered**:\n\n- Ask the release API for the highest accepted release: precise, but\n  `codev doctor` must not touch the network (doctor spec).\n- Read the version pinned in `.github/workflows/codev.yml`: only GitHub\n  projects have it, and `codev update` rewrites it with the running\n  version, like the skills; the skills' stamp covers the same need.\n- Keep `codev_version_unsatisfied` with a different fix: consumers of\n  `--json` could not tell the two directions apart without parsing the fix.\n\n## Risks / Trade-offs\n\n- [A misspelled key is silently ignored locally] → it is reported on every\n  command's stderr and in `status`, and `codev validate --strict` fails on\n  it, so CI still blocks it.\n- [An ignored key may carry meaning, e.g. a future field of an `inherits`\n  entry that pins integrity] → the warning explicitly says to update codev;\n  the project can raise `codev_version` so that `codev doctor` and the\n  skills flag the old binary too.\n- [The lowest accepted version may not exist as a published release (e.g.\n  `>=0.5.3` when 0.5.3 was never tagged)] → `codev self-update --version`\n  then fails with `update_download_failed`, without touching the binary;\n  the skills' stamp is preferred precisely because it names a version the\n  team actually ran.\n- [Warning noise when several unknown keys exist] → one line per key,\n  which is the information the user needs; no deduplication beyond that.\n\n## Migration Plan\n\nNo data migration. Configurations valid today stay valid and produce no\nnew warning. Older codev binaries are not changed by this release: the\ntolerance benefits configurations read by this version and the ones after\nit. Rollback is reverting the change; no file format changes.\n",
+    "_codev/changes/forward-compatible-config/proposal.md": "# Proposal: Forward-compatible configuration and a precise version fix\n\n## Why\n\nToday any key that `_codev/config.yaml` holds and the running codev does not\nknow makes every command fail: a teammate whose codev is older than the one\nthe project was configured with is locked out of `status`, `validate`,\n`doctor` and the skills until they guess that they must upgrade. And when\nthe running codev is *newer* than the project's `codev_version` allows,\n`codev doctor` still says `codev self-update`, which cannot help — it\ninstalls the latest release, or refuses a downgrade.\n\n## What Changes\n\n- An unknown key in `_codev/config.yaml` — at the top level or inside a\n  known block (`mcp`, `changelog`, an `inherits` entry) — no longer fails\n  the command: it is ignored, and the command reports a warning\n  `config_unknown_key` that names the key and the file, says the key\n  probably comes from a newer codev, and gives `codev self-update` as the\n  fix. The same applies to the `config.yaml` of an inherited source.\n- `codev validate` reports `config_unknown_key` among its warnings, so that\n  `codev validate --strict` — the CI gate — still catches a misspelled key,\n  and `codev doctor`'s `validate` check shows it.\n- A known key with a value of the wrong type, an invalid `language` and an\n  invalid `codev_version` still fail as today: only *unknown keys* become\n  tolerated.\n- When the running codev does not satisfy `codev_version` because it is\n  above every version the requirement accepts, `codev doctor` reports the\n  new code `codev_version_too_recent` with a fix naming an exact version:\n  `codev self-update --version X.Y.Z`. A codev below the requirement keeps\n  `codev_version_unsatisfied` and the fix `codev self-update`.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- \"Config\" means `_codev/config.yaml`, the project's and the inherited\n  sources'. `change.yaml`, schema files, `seal.yaml` and decision front\n  matter keep rejecting unknown fields: they are not shared between codev\n  versions the same way, and nothing in the request points at them.\n- The exact version proposed for a too-recent codev is, in this order: the\n  codev version that generated the project's installed skills, when it\n  satisfies the requirement (it is the version the team actually runs);\n  otherwise the lowest version the requirement accepts. `codev doctor`\n  stays offline and does not list releases.\n- \"Too recent\" gets its own code rather than reusing\n  `codev_version_unsatisfied`, so that `--json` consumers can tell the two\n  directions apart; the check stays `missing` in both cases.\n- The update check of the skills (driven by `codev status`'s\n  `versionRequirement`) is not changed by this proposal.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `self-update`\n- `doctor`\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-engine::config`: `ProjectConfig` and its nested blocks stop\n  rejecting unknown fields; loading returns the unknown keys found, turned\n  into warnings by `config::resolve` and every direct caller of\n  `config::load` in `codev-cli`.\n- `codev-engine::validate` (or the CLI's validate command): adds the\n  configuration warnings to the report.\n- `codev-core::doctor`: `VersionFacts` learns whether the running version\n  is above the requirement and which exact version to propose; the shell\n  supplies the version of the installed skills.\n- `codev-core::update`: a pure helper computing the lowest version a\n  requirement accepts.\n- Dependencies: `serde_ignored`, new, in `codev-engine` (see design.md).\n- Reach: the tolerance only exists from the release carrying this change\n  on; codev binaries already installed keep failing on unknown keys.\n- JSON contract v1: one new warning code (`config_unknown_key`) and one new\n  doctor check code (`codev_version_too_recent`); no field added or removed.\n- Documentation, in `docs/en` and `docs/fr`: `reference/configuration.md`\n  (unknown keys), `reference/cli.md` (`codev doctor`'s codes), and\n  `reference/json-output.md` (the new codes).\n\n## Domains\n\n- [ ] security — no new input surface: ignored keys come from the same trusted files, now dropped with a warning instead of rejected\n- [ ] personal-data\n- [x] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Changed: An unknown key in `_codev/config.yaml` no longer makes every command fail. It is ignored with a `config_unknown_key` warning suggesting `codev self-update`, and `codev validate --strict` still rejects it.\n- Fixed: When the running codev is newer than the project's `codev_version` allows, `codev doctor` now reports `codev_version_too_recent` and proposes `codev self-update --version X.Y.Z` with an exact version, instead of an upgrade that could not help.\n",
+    "_codev/changes/forward-compatible-config/specs/doctor/spec.md": "## MODIFIED Requirements\n\n### Requirement: `codev doctor` runs a fixed list of read-only checks\n\n`codev doctor` SHALL evaluate the following checks, reported in this order, each\nwith a stable `id`, and report each one as `ok`, `missing` or `warning`,\nwith a stable `code` (`ok` when the check passes), a one-line message and,\nwhen not `ok`, a one-line fix naming the exact command or skill:\n\n| id | passes when | otherwise | code | fix |\n|---|---|---|---|---|\n| `config.rules` | `rules:` has at least one entry, inherited ones included | missing | `rules_missing` | `/codev-configure` |\n| `config.language` | `language:` is set in `_codev/config.yaml` | missing | `language_missing` | add `language: <code>` to `_codev/config.yaml` |\n| `skills` | every configured workflow has its skill, generated by the running codev version | missing | `skills_missing` or `skills_outdated` | `codev update` |\n| `sources` | every inherited git source is pinned in `_codev/codev.lock` and present in the cache, and the lock pins no undeclared source | missing (unpinned or not cached) or warning (undeclared pin) | `source_unpinned` or `lock_stale` | `codev sources update` |\n| `codev_version` | the running codev satisfies the project's `codev_version`, when set, and the cached update check knows no newer release | missing (running codev below or above the requirement) or warning (newer release known) | `codev_version_unsatisfied` (below), `codev_version_too_recent` (above) or `update_available` | `codev self-update`; for `codev_version_too_recent`, `codev self-update --version X.Y.Z` with an exact version |\n| `specs` | at least one main spec exists | missing | `no_main_spec` | `/codev-propose`, noting that documenting existing behavior is planned work |\n| `decisions` | at least one decision is `accepted`, local or inherited | warning | `no_accepted_decision` | `codev decision new \"<title>\"` |\n| `validate` | `codev validate` reports no error and no warning | missing (errors) or warning (warnings only) | `validate_errors` or `validate_warnings` | `codev validate` |\n| `claude_md` | `CLAUDE.md` holds the codev managed section | missing | `claude_md_section_missing` | `codev init` |\n| `ci` | a file of `.github/workflows/` or `.gitlab-ci.yml` runs `codev validate` | missing | `ci_validate_missing` | `codev init` on GitHub, otherwise add `codev validate --strict` to the pipeline |\n| `pr_template` | the pull request template holds the codev managed section — GitHub repositories only | missing | `pr_template_section_missing` | `codev init` |\n| `changelog` | `CHANGELOG.md` exists and its managed `[Unreleased]` section matches what `codev changelog` would generate now | warning | `changelog_missing` (no file) or `changelog_outdated` | `codev changelog --write` |\n\nThe `pr_template` check MUST be absent from the report when the repository\nis not a GitHub repository. A project without any inherited source passes\n`sources`. A CI line is recognized when it names `codev` and then\n`validate`, so `cargo run --bin codev -- validate` counts.\n\nThe `codev_version` check reads the per-user update cache that\n`codev status` maintains and never refreshes it: with no cache, or with\n`CI` set or `CODEV_NO_UPDATE_CHECK=1`, it only evaluates the requirement.\n\nWhen the running codev does not satisfy `codev_version`, the check MUST\nreport `codev_version_too_recent` when the running version is greater than\nthe lowest version the requirement accepts, and `codev_version_unsatisfied`\notherwise. The message of `codev_version_too_recent` names the running\nversion and the requirement. Its fix names the exact version to install,\nchosen in this order:\n\n1. the codev version that generated the project's installed skills, when\n   the requirement accepts it;\n2. otherwise, when the requirement states a lower bound, the lowest\n   version it accepts (`\">=0.5, <0.8\"` gives `0.5.0`, `\"^0.6\"` gives\n   `0.6.0`, `\">0.6.1\"` gives `0.6.2`);\n3. otherwise, no exact version can be determined offline: the fix reads\n   `codev self-update --version <X.Y.Z>` and the message asks for a release\n   matching the requirement.\n\n`codev doctor` MUST NOT write any file or access the network. The only\nprocess it MAY spawn is `git`, for the local, read-only queries the\n`changelog` check needs; outside a git repository, that check compares\nwith every archived change. Outside a codev project, it fails with the code\n`no_codev_root`.\n\n#### Scenario: A freshly initialized project\n\n- **GIVEN** a project just initialized with `codev init --yes` outside\n  GitHub, without rules, specs or decisions, and no newer codev release\n  known\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.rules` and `specs` are `missing`, `decisions` is a\n  `warning`, `ci` is `missing`\n- **AND** `config.language`, `skills`, `sources`, `codev_version`,\n  `claude_md` and `validate` are `ok`\n- **AND** `changelog` is a `warning` with the code `changelog_missing`\n- **AND** no `pr_template` check is reported\n\n#### Scenario: Outdated skills\n\n- **GIVEN** a project whose skills were generated by an earlier codev\n  version\n- **WHEN** the user runs `codev doctor`\n- **THEN** `skills` is `missing` with the code `skills_outdated` and the fix\n  `codev update`\n\n#### Scenario: An unpinned git source\n\n- **GIVEN** a project declaring a git source absent from\n  `_codev/codev.lock`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `sources` is `missing` with the code `source_unpinned` and the\n  fix `codev sources update`\n\n#### Scenario: CI recognized through `cargo run`\n\n- **GIVEN** a GitHub project whose `.github/workflows/ci.yml` runs\n  `cargo run --bin codev -- validate --strict`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `ci` is `ok`\n\n#### Scenario: Doctor writes nothing\n\n- **GIVEN** any codev project\n- **WHEN** the user runs `codev doctor`\n- **THEN** no file of the project is created or modified\n\n#### Scenario: Outside a codev project\n\n- **GIVEN** a folder with no `_codev/` above it\n- **WHEN** the user runs `codev doctor`\n- **THEN** the command fails with the code `no_codev_root`\n\n#### Scenario: CHANGELOG.md up to date\n\n- **GIVEN** a project where `codev changelog --write` was just run\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is `ok`\n\n#### Scenario: CHANGELOG.md behind the archive\n\n- **GIVEN** a project whose `CHANGELOG.md` managed section predates the\n  latest archived change\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is a `warning` with the code `changelog_outdated`\n  and the fix `codev changelog --write`\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: Running codev below the project's requirement\n\n- **GIVEN** a project with `codev_version: \">=0.7\"` and codev 0.6.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_unsatisfied` and the fix `codev self-update`\n\n#### Scenario: Running codev above the requirement, skills from an accepted version\n\n- **GIVEN** a project with `codev_version: \">=0.5, <0.7\"`, skills generated\n  by codev 0.6.2, and codev 0.8.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_too_recent`\n- **AND** its fix is `codev self-update --version 0.6.2`\n- **AND** its message names `0.8.0` and `>=0.5, <0.7`\n\n#### Scenario: Running codev above the requirement, skills not accepted\n\n- **GIVEN** a project with `codev_version: \"^0.6\"`, skills generated by\n  codev 0.7.0, and codev 0.7.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_too_recent` and the fix `codev self-update --version 0.6.0`\n\n#### Scenario: Running codev above a requirement without lower bound\n\n- **GIVEN** a project with `codev_version: \"<0.7\"`, skills generated by\n  codev 0.8.0, and codev 0.8.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_too_recent` and the fix\n  `codev self-update --version <X.Y.Z>`\n- **AND** its message asks for a release matching `<0.7`\n- **AND** no network request is made\n\n#### Scenario: A newer release is known\n\n- **GIVEN** a project without `codev_version`, and an update cache knowing\n  a release newer than the running codev\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is a `warning` with the code `update_available`\n  and the fix `codev self-update`\n- **AND** no network request is made\n",
+    "_codev/changes/forward-compatible-config/specs/self-update/spec.md": "## ADDED Requirements\n\n### Requirement: An unknown configuration key is ignored with a warning\n\nWhen `_codev/config.yaml` — the project's, or that of an inherited source —\nholds a key the running codev does not know, at the top level or inside one\nof its known blocks (`mcp`, `changelog`, an entry of `inherits`), every\ncommand that reads the configuration SHALL ignore that key and go on as if\nit were absent. It MUST report, once per unknown key, a warning with the\ncode `config_unknown_key` whose message names the key's path (`mcp.foo`,\n`inherits[1].sha`), the file, says that the key may come from a newer codev\nand gives the fix `codev self-update`. The human output prints it on\nstderr; the JSON output carries it in the `status` array, and every other\nfield of the document is unchanged.\n\n`codev validate` MUST include these warnings in its report, so that\n`codev validate --strict` exits with a non-zero code on an unknown key.\n\nOnly unknown keys are tolerated: a known key with a value of the wrong\ntype, an invalid `language` and an invalid `codev_version` MUST still make\nthe command fail as before.\n\n#### Scenario: A key from a newer codev\n\n- **GIVEN** a project whose `_codev/config.yaml` holds a top-level key\n  `review_mode: isolated` that the running codev does not know\n- **WHEN** the user runs `codev status --change <name>`\n- **THEN** the command succeeds with the same result as without the key\n- **AND** stderr holds a warning naming `review_mode`,\n  `_codev/config.yaml` and `codev self-update`\n\n#### Scenario: An unknown key inside a known block\n\n- **GIVEN** a project whose `mcp:` block holds `confluence_tool: x`\n  besides `jira_tool`\n- **WHEN** the user runs `codev status --change <name> --json`\n- **THEN** stdout is one JSON document with a `status` entry whose code is\n  `config_unknown_key` and whose message names `mcp.confluence_tool`\n- **AND** the configured `jira_tool` is still used\n\n#### Scenario: An unknown key in an inherited source\n\n- **GIVEN** a project inheriting from a path source whose `config.yaml`\n  holds an unknown key `review_mode`\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** the command succeeds and the inherited context and rules are\n  served\n- **AND** a `config_unknown_key` warning names `review_mode` and the\n  inherited source's `config.yaml`\n\n#### Scenario: Strict validation still rejects a misspelled key\n\n- **GIVEN** a project whose `_codev/config.yaml` holds `langage: fr`\n- **WHEN** the user runs `codev validate --strict`\n- **THEN** the report carries a `config_unknown_key` warning naming\n  `langage`\n- **AND** the exit code is non-zero\n\n#### Scenario: A known key with a wrong value still fails\n\n- **GIVEN** a project whose `_codev/config.yaml` holds `workflows: propose`\n  (a string where a list is expected)\n- **WHEN** the user runs `codev status --change <name>`\n- **THEN** the command fails as it did before this change\n"
+  },
+  "validate": {
+    "forward-compatible-config": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "forward-compatible-config",
+          "path": "_codev/changes/forward-compatible-config"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-forward-compatible-config-5",
+      "status": []
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "format": 2,
+  "case": "performance-code-n-plus-one",
+  "error": null,
+  "costUsd": 0.273938,
+  "durationMs": 20969,
+  "consumption": {
+    "durationApiMs": 21029,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 24472,
+      "cacheRead": 230910,
+      "output": 1551
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7392,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7392
+        }
+      },
+      {
+        "cacheCreation": 13713,
+        "cacheRead": 29531,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13713
+        }
+      },
+      {
+        "cacheCreation": 1311,
+        "cacheRead": 43244,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1311
+        }
+      },
+      {
+        "cacheCreation": 694,
+        "cacheRead": 44555,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 694
+        }
+      },
+      {
+        "cacheCreation": 943,
+        "cacheRead": 45249,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 943
+        }
+      },
+      {
+        "cacheCreation": 419,
+        "cacheRead": 46192,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 419
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (One order_lines query per order (N+1) in order_summaries) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-summaries",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for order in orders {\n    let lines = db.lines_of_order(order.id)?;\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "api/src/orders.rs:14-15",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Load every line in one query with the existing batch method `db.lines_of_orders(&ids)` (`api/src/db.rs:31`, `WHERE order_id = ANY($1)`), then group the lines by `order_id` (a `HashMap<i64, i64>` of totals) and build the summaries in the order `orders_of_customer` returned them, so ordering and results stay unchanged. This turns 1 + N queries (up to 101) into 2 per call.",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "One order_lines query per order (N+1) in order_summaries"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-summaries/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

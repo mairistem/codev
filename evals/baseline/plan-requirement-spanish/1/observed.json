@@ -1,0 +1,278 @@
+{
+  "format": 2,
+  "case": "plan-requirement-spanish",
+  "error": null,
+  "costUsd": 1.2845394,
+  "durationMs": 200523,
+  "consumption": {
+    "durationApiMs": 198131,
+    "turns": 28,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1097,
+      "cacheCreation": 74475,
+      "cacheRead": 1450952,
+      "output": 19881
+    },
+    "toolCalls": 27,
+    "orientationCalls": 12,
+    "calls": [
+      {
+        "cacheCreation": 7718,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7718
+        }
+      },
+      {
+        "cacheCreation": 15221,
+        "cacheRead": 29857,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15221
+        }
+      },
+      {
+        "cacheCreation": 3337,
+        "cacheRead": 45078,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3337
+        }
+      },
+      {
+        "cacheCreation": 459,
+        "cacheRead": 48415,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 459
+        }
+      },
+      {
+        "cacheCreation": 773,
+        "cacheRead": 48874,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 773
+        }
+      },
+      {
+        "cacheCreation": 327,
+        "cacheRead": 49647,
+        "input": 2,
+        "output": 44,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 327
+        }
+      },
+      {
+        "cacheCreation": 7455,
+        "cacheRead": 49974,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 30,
+          "search": 2389,
+          "shell": 5037
+        }
+      },
+      {
+        "cacheCreation": 2678,
+        "cacheRead": 57429,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2678
+        }
+      },
+      {
+        "cacheCreation": 4547,
+        "cacheRead": 60107,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 4547
+        }
+      },
+      {
+        "cacheCreation": 3641,
+        "cacheRead": 64654,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3641
+        }
+      },
+      {
+        "cacheCreation": 1726,
+        "cacheRead": 68295,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1714,
+          "output": 12
+        }
+      },
+      {
+        "cacheCreation": 3585,
+        "cacheRead": 70021,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3585
+        }
+      },
+      {
+        "cacheCreation": 1830,
+        "cacheRead": 73606,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1830
+        }
+      },
+      {
+        "cacheCreation": 2822,
+        "cacheRead": 75436,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2799,
+          "output": 23
+        }
+      },
+      {
+        "cacheCreation": 405,
+        "cacheRead": 78258,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 405
+        }
+      },
+      {
+        "cacheCreation": 1889,
+        "cacheRead": 78663,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 3,
+        "sources": {
+          "file": 1889
+        }
+      },
+      {
+        "cacheCreation": 7252,
+        "cacheRead": 80552,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 7251
+        }
+      },
+      {
+        "cacheCreation": 714,
+        "cacheRead": 87804,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 714
+        }
+      },
+      {
+        "cacheCreation": 684,
+        "cacheRead": 88518,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 684
+        }
+      },
+      {
+        "cacheCreation": 2128,
+        "cacheRead": 89202,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 1927,
+          "edit": 153,
+          "output": 48
+        }
+      },
+      {
+        "cacheCreation": 1763,
+        "cacheRead": 91330,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1763
+        }
+      },
+      {
+        "cacheCreation": 3521,
+        "cacheRead": 93093,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 1926,
+          "edit": 1595
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/read-spanish-keywords/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/read-spanish-keywords/design.md": "# Design: Read structural keywords in Spanish\n\n## Context\n\nThe archived change `2026-10-14-read-french-keywords` moved every\nstructural keyword into a catalog: `crates/codev-core/src/keywords.rs`\nembeds one YAML file per language (`assets/keywords/en.yaml`,\n`assets/keywords/fr.yaml`) through the `LANGUAGE_FILES` list, and every\nreader — the spec and delta parsers, the validation rules, the merge and\nits renderer, `domains.rs`, the release note reader and the engine's\n`design.rs` — goes through `section_title`, `delta_title`, `section_line`,\n`named_heading`, `label`, `word` and `is_normative`. Languages are tried\nin the order of `LANGUAGE_FILES`, English first, and the first language\nthat matches wins.\n\nNon-English texts are compared after `fold`: lower case, a hand-written\ntable of French accented letters (`àâäçéèêëîïôöùûüÿœæ`), whitespace\ncollapsed and no space before a colon. Four unit tests guard the catalog:\nevery file defines every key and no unknown key; no two keys share a\nfolded text at the same heading level; no prefix-matched key's text\nprefixes another key's text at its level; every text folds to ASCII.\n\n`codev-core` is pure (decision 0001) and parses YAML with `serde_norway`\n(decision 0006); neither changes here.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Spanish keywords read everywhere the French ones are, by adding data\n  rather than reader code.\n- English and French documents read and written byte for byte as today.\n\n**Non-Goals**\n\n- What codev and its skills write in a new artifact (templates, schema\n  instructions, skill text): still the deferred follow-up of the French\n  change, and the skills spec keeps requiring English keywords there.\n- Region variants as separate languages (`es-MX`, `es-AR`): alternative\n  spellings live in the same `es` file as extra texts of a key.\n- A project-defined language file under `_codev/`.\n\n## Decisions\n\n### Decision: Spanish is one more embedded catalog file, `es.yaml`, tried after French\n\n`assets/keywords/es.yaml` holds the texts of the spec's table, with the\nCastilian form first (`## Requisitos AÑADIDOS`) and the Latin American\n`## Requisitos AGREGADOS` as a second text of `delta.added`.\n`LANGUAGE_FILES` gains `(\"es\", include_str!(...))` after `fr`. No reader\nchanges: they already iterate `Lang::all()`, and `requirement_headings()`\n— used by the `delta_unexpected_heading` message — names the Spanish\nheading automatically. The catalog tests, run over every file, check the\nnew one without being edited.\n\nSpanish texts follow Spanish typography: no space before the colon\n(`### Requisito:`, `DE:`). Tolerance reads them with or without a space,\nas for French.\n\n**Alternatives considered**:\n\n- A separate `es-419` file for Latin American spellings: a second language\n  code for one differing word, and a merge would have to choose which of\n  the two \"Spanish\" languages a spec is in.\n- `## Requisitos NUEVOS` instead of `AÑADIDOS`: shorter and accent-free,\n  but less exact than `AÑADIDOS`/`AGREGADOS` and unparalleled in the other\n  delta words, which are all past participles.\n\n### Decision: `fold` learns the Spanish letters, `ñ` folding to `n`\n\nThe folding table gains `á → a`, `í → i`, `ó → o`, `ú → u` and `ñ → n`\n(`é` and `ü` are already there). Folding `ñ` is required by the existing\ntest that every catalog text folds to ASCII, and it lets\n`## Requisitos ANADIDOS`, typed on a keyboard without `ñ`, still be read\nas the added section. It also widens tolerance for French texts — a French\nkeyword written with `á` is now forgiven — which only makes more lines\nmatch keywords they already resembled, never a different key: the\ncollision test guarantees that two keys never fold to the same text.\n\n**Alternatives considered**:\n\n- Keeping `ñ` distinct (folding it to itself): would fail the ASCII test,\n  and `AÑADIDOS` would stop matching when typed without the tilde, the\n  silent-failure mode the French design rejected.\n- The `unicode-normalization` crate: already rejected by the French design\n  for a dozen letters; still a new dependency for five more.\n\n### Decision: Texts shared by two languages are allowed when they are the same key\n\n`DE:` (Spanish) and `DE :` (French) fold to the same text, as do\n`### Decisión:` and `### Décision :` with each other and with the English\n`### Decision:`. The collision test already allows equal folded texts for\nthe same key, so these need no special case. The language a reader\nreports for such a line is the first match (French before Spanish), which\nmatters only where codev writes back keywords: a merge takes the target\nspec's language from its requirements heading (`## Requisitos` is\nunambiguous) and a new spec from its delta section heading\n(`## Requisitos AÑADIDOS` is unambiguous), never from a label or a\ndecision heading.\n\n**Alternatives considered**:\n\n- Distinct Spanish texts (`DESDE:` / `HACIA:`): avoids sharing `DE:`, but\n  `DE:` / `A:` is the natural pair in Spanish, and sharing has no\n  observable effect.\n\n## Risks / Trade-offs\n\n- [A Spanish text collides with another key or prefixes a named heading]\n  → The existing catalog tests run over `es.yaml` and fail the build; the\n  table was checked by hand against them (`requisito` prefixes no level-3\n  text, `## Requisitos` matches only as a whole line, like `## Exigences`).\n- [`DEBE` is a substring of upper-case English words, so an English\n  requirement without `SHALL` could pass as normative] → Same exposure as\n  `DOIT` today, limited to upper-case occurrences in a requirement's\n  description; accepted, and the substring rule is what lets `DEBERÁ`\n  count as normative.\n- [`A:` is a one-letter label] → It is matched only inside a\n  `RENAMED` section, at the start of a line, before a colon, as `TO:` is;\n  a scenario in the keyword-languages delta covers the pair.\n- [An English or French document read differently] → No reader code\n  changes and the English rules are untouched; the existing English edge\n  case tests, the French tests and `crates/codev-engine/tests/sync_golden.rs`\n  must pass unchanged, and `codev validate --all` on this repository gives\n  the same findings before and after.\n- [A team writes Spanish keywords and a teammate's older codev rejects\n  them] → The documentation tells such a project to raise\n  `codev_version` in `_codev/config.yaml` to the release that ships this\n  change, which `codev doctor` and the skills already enforce.\n- [A keyword text is unidiomatic for Spanish-speaking teams] → The texts\n  are data: correcting one is a one-line change to `es.yaml`, and adding a\n  regional spelling is one more text for the key, never a removal.\n\n## Migration Plan\n\nNothing to migrate: existing documents are unaffected. A project that\nstarts writing Spanish keywords raises `codev_version` to the first\nrelease with this change. Rollback is reverting the change; Spanish\ndocuments written meanwhile would then fail validation and need their\nkeywords rewritten in English or French.\n\n## Open Questions\n\n- Should other regional spellings be accepted (for example\n  `## Requisitos SUPRIMIDOS` next to `ELIMINADOS`)? Deferred: each is one\n  extra text in `es.yaml` and changes neither the readers nor the specs'\n  shape.\n",
+    "_codev/changes/read-spanish-keywords/proposal.md": "# Proposal: Read structural keywords in Spanish\n\n## Why\n\nA team can already write its specs, deltas, proposals and designs with\nFrench structural keywords (`### Exigence :`, `DOIT`…), but a team that\nwrites in Spanish still has to mix English headings and `SHALL` into\nSpanish prose: `El portal DEBE …` is rejected by `codev validate`. The\nkeyword catalog was built so that a new language is one data file; Spanish\nis the first language asked for after French.\n\n## What Changes\n\n- The keyword catalog ships a third language, Spanish (`es`), giving a text\n  for every key: `# Especificación {title}`, `## Propósito`,\n  `## Requisitos`, `### Requisito:`, `#### Escenario:`,\n  `## Requisitos AÑADIDOS` (also `AGREGADOS`), `## Requisitos MODIFICADOS`,\n  `## Requisitos ELIMINADOS`, `## Requisitos RENOMBRADOS`, `**Motivo**`,\n  `**Migración**`, `DE:` / `A:`, `DEBE` / `DEBEN`, `## Cambios`,\n  `## Dominios`, `## Nota de versión`, `Ninguno` / `Ninguna`, the release\n  note categories `Añadido`, `Modificado`, `Obsoleto`, `Eliminado`,\n  `Corregido`, `Seguridad`, and `## Decisiones` / `### Decisión:`.\n- Every reader that recognizes French keywords recognizes the Spanish ones\n  the same way, whatever the project's `language:`: the spec and delta\n  parser, validation (`DEBE` and `DEBEN` become normative), the proposal's\n  domains and release note, the design's decisions and\n  `codev decision promote`.\n- The tolerant matching of non-English keywords extends to Spanish: case,\n  the accented vowels `á é í ó ú ü` and `ñ` (read as `n`), and the space\n  before a colon are forgiven.\n- Sync and archive keep a Spanish spec in Spanish, and a new main spec\n  created from a Spanish delta is written with Spanish keywords.\n- English and French documents are read and written exactly as today.\n- Out of scope, as for French: what codev and its skills *write* in a new\n  artifact (templates, instructions, skill text), which keep English\n  structural keywords whatever `language:` says.\n\nAssumptions made without asking (evaluation run, no user to ask):\n\n- \"Titres structurels\" is read as the whole keyword catalog, as the French\n  change did — headings, delta sections, labels, normative words, proposal\n  and design keywords — not only the `#`-headings.\n- The keyword texts follow neutral Spanish with the conventional\n  RFC 2119 translation (`DEBE`); `AGREGADOS` is accepted as a Latin\n  American alternative to `AÑADIDOS`, and the first form is the one codev\n  writes. The texts are open to correction by a Spanish-speaking reviewer\n  before implementation.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `keyword-languages`\n- `validation`\n- `spec-merge`\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/keywords/`: a new `es.yaml` language file.\n- `codev-core`: `keywords.rs` embeds the new file and its folding table\n  learns the Spanish letters; no reader changes, since they all go through\n  the catalog.\n- The JSON contract does not change: finding codes stay the same, and a\n  release note category is reported by its English name whatever language\n  wrote it.\n- Documentation, in `docs/en` and `docs/fr`: the artifact-language guide,\n  the file-formats reference and the FAQ list the Spanish keywords next to\n  the English and French ones.\n\n## Domains\n\n- [ ] security — the parser reads the same untrusted markdown as before; no new input\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance — one more language to try per heading is negligible\n- [ ] operations\n- [x] migration — a spec written with Spanish keywords is rejected by an older codev; existing English and French specs are unaffected\n\n## Release note\n\n- Added: Specs and deltas can be written with Spanish structural keywords — `### Requisito:`, `#### Escenario:`, `## Requisitos AÑADIDOS`, `DEBE` and the others — next to the English and French ones, which keep working.\n",
+    "_codev/changes/read-spanish-keywords/specs/keyword-languages/spec.md": "## MODIFIED Requirements\n\n### Requirement: Every structural keyword has a key and a text per language\n\ncodev SHALL know a catalog of structural keywords, each identified by a\nstable key, and SHALL ship the languages English (`en`), French (`fr`) and\nSpanish (`es`), each giving a text for every key. A key MAY have several\ntexts in a language — alternative spellings or grammatical forms — and the\nfirst one is the form codev writes. The shipped keywords are:\n\n| Key | `en` | `fr` | `es` |\n|---|---|---|---|\n| `spec.title` | `# {title} Specification` | `# Spécification {title}` | `# Especificación {title}` |\n| `spec.purpose` | `## Purpose` | `## Objet` | `## Propósito` |\n| `spec.requirements` | `## Requirements` | `## Exigences` | `## Requisitos` |\n| `requirement` | `### Requirement:` | `### Exigence :` | `### Requisito:` |\n| `scenario` | `#### Scenario:` | `#### Scénario :` | `#### Escenario:` |\n| `delta.added` | `## ADDED Requirements` | `## Exigences AJOUTÉES` | `## Requisitos AÑADIDOS`, `## Requisitos AGREGADOS` |\n| `delta.modified` | `## MODIFIED Requirements` | `## Exigences MODIFIÉES` | `## Requisitos MODIFICADOS` |\n| `delta.removed` | `## REMOVED Requirements` | `## Exigences SUPPRIMÉES` | `## Requisitos ELIMINADOS` |\n| `delta.renamed` | `## RENAMED Requirements` | `## Exigences RENOMMÉES` | `## Requisitos RENOMBRADOS` |\n| `removed.reason` | `**Reason**` | `**Raison**` | `**Motivo**` |\n| `removed.migration` | `**Migration**` | `**Migration**` | `**Migración**` |\n| `renamed.from` | `FROM:` | `DE :` | `DE:` |\n| `renamed.to` | `TO:` | `VERS :` | `A:` |\n| `normative` | `SHALL`, `MUST` | `DOIT`, `DOIVENT` | `DEBE`, `DEBEN` |\n| `proposal.what_changes` | `## What Changes` | `## Changements` | `## Cambios` |\n| `proposal.domains` | `## Domains` | `## Domaines` | `## Dominios` |\n| `proposal.release_note` | `## Release note` | `## Note de version` | `## Nota de versión` |\n| `none` | `None` | `Aucun`, `Aucune` | `Ninguno`, `Ninguna` |\n| `category.added` | `Added` | `Ajouté` | `Añadido` |\n| `category.changed` | `Changed` | `Modifié` | `Modificado` |\n| `category.deprecated` | `Deprecated` | `Obsolète` | `Obsoleto` |\n| `category.removed` | `Removed` | `Supprimé` | `Eliminado` |\n| `category.fixed` | `Fixed` | `Corrigé` | `Corregido` |\n| `category.security` | `Security` | `Sécurité` | `Seguridad` |\n| `design.decisions` | `## Decisions` | `## Décisions` | `## Decisiones` |\n| `design.decision` | `### Decision:` | `### Décision :` | `### Decisión:` |\n\nDomain names (`security`, `personal-data`…), finding codes and the\n`**WHEN**` / `**THEN**` scenario lines are not keywords of the catalog:\ncodev does not read the scenario lines, and the other two are\nidentifiers.\n\n#### Scenario: Every shipped language is complete\n\n- **GIVEN** the languages shipped with codev\n- **WHEN** the catalog is loaded\n- **THEN** each of `en`, `fr` and `es` gives at least one text for every\n  key of the table\n\n#### Scenario: A key with several texts accepts each of them\n\n- **GIVEN** the key `normative`, whose `fr` texts are `DOIT` and `DOIVENT`\n- **WHEN** codev reads a French requirement\n- **THEN** either word makes it normative\n\n#### Scenario: Both Spanish spellings of an added section are accepted\n\n- **GIVEN** one delta whose section heading is `## Requisitos AÑADIDOS`\n  and another whose section heading is `## Requisitos AGREGADOS`\n- **WHEN** codev reads each delta\n- **THEN** both are read as an `ADDED` section\n\n#### Scenario: Two languages sharing a text keep one meaning\n\n- **GIVEN** a delta holding `## Requisitos RENOMBRADOS` then the lines\n  ``- DE: `### Requisito: Nombre antiguo` `` and\n  ``- A: `### Requisito: Nombre nuevo` ``\n- **WHEN** codev reads the delta\n- **THEN** the `RENAMED` operation associates `Nombre antiguo` with\n  `Nombre nuevo`, although `DE:` is also the French `DE :` written\n  without its space\n\n### Requirement: A keyword is recognized in every catalog language\n\nWherever codev reads a structural keyword — in a main spec, a delta, a\nproposal or a design — it SHALL recognize the text of that keyword's key in\nevery language of the catalog, whatever the project's `language:`\nsetting, and give it the same meaning. A document MAY mix languages: each\nkeyword is recognized on its own. Recognition is unchanged for English and\nFrench.\n\n#### Scenario: A French main spec is read\n\n- **GIVEN** a main spec holding `## Objet`, a sentence, `## Exigences`,\n  then `### Exigence : Expiration de session` with a\n  `#### Scénario : Inactivité`\n- **WHEN** codev reads the spec\n- **THEN** it exposes the Purpose text and a requirement named\n  `Expiration de session` carrying its scenario named `Inactivité`\n\n#### Scenario: A Spanish main spec is read\n\n- **GIVEN** a main spec holding `## Propósito`, a sentence,\n  `## Requisitos`, then `### Requisito: Caducidad de sesión` with a\n  `#### Escenario: Inactividad`\n- **WHEN** codev reads the spec\n- **THEN** it exposes the Purpose text and a requirement named\n  `Caducidad de sesión` carrying its scenario named `Inactividad`\n\n#### Scenario: A project configured in English reads a French spec\n\n- **GIVEN** a project whose config has `language: en`\n- **AND** a delta written with `## Exigences AJOUTÉES`\n- **WHEN** the user runs `codev validate`\n- **THEN** the delta is read as an `ADDED` section, with no finding about\n  its headings\n\n#### Scenario: A project configured in French reads a Spanish delta\n\n- **GIVEN** a project whose config has `language: fr`\n- **AND** a delta written with `## Requisitos ELIMINADOS` then\n  `### Requisito: Recordarme` followed by `**Motivo**: <text>` and\n  `**Migración**: <text>`\n- **WHEN** the user runs `codev validate`\n- **THEN** the delta is read as a `REMOVED` operation on `Recordarme`\n  carrying its reason and its migration, with no finding about its\n  headings\n\n#### Scenario: A mixed document\n\n- **GIVEN** a delta holding `## ADDED Requirements` then\n  `### Exigence : Annulation` and `### Requisito: Exportación`\n- **WHEN** codev reads the delta\n- **THEN** the `ADDED` operation carries the requirements `Annulation`\n  and `Exportación`\n\n#### Scenario: A word that is no keyword stays text\n\n- **GIVEN** a delta whose level-2 heading is `## Exigences AJOUTEES PLUS TARD`\n  and another whose level-2 heading is `## Requisitos AÑADIDOS DESPUÉS`\n- **WHEN** codev reads each delta\n- **THEN** neither heading is taken for an `ADDED` section\n\n#### Scenario: A Spanish proposal and design are read\n\n- **GIVEN** an active change whose proposal holds `## Nota de versión`\n  with `- Añadido: una exportación.` and `## Dominios` with `Ninguno`\n- **AND** whose design holds `## Decisiones` with a\n  `### Decisión: Usar JWT` block\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** no `release_note_*` and no domain finding is reported\n- **AND** `codev decision promote <change> \"Usar JWT\"` finds the block\n\n### Requirement: Keywords of new languages are matched with tolerance; English keeps its exact rules\n\nWhen codev compares a heading or a labelled line with a keyword text of a\nlanguage other than English, it SHALL ignore letter case, SHALL treat an\naccented letter as its unaccented form — the Spanish `ñ` included, read as\n`n` — and SHALL accept the text with or without a space before its colon —\nan ordinary space, a no-break space (U+00A0) or a narrow no-break space\n(U+202F). The English texts keep the rules codev applies today, so that no\nexisting English document is read differently. A section heading matches\nonly as a whole line; a heading that carries a name (requirement,\nscenario, decision) matches as the start of its line. The normative\nkeywords are case-sensitive in every language, because the same words in\nlower case are ordinary prose. A line that only this tolerance makes a\nkeyword of another language is read as that keyword: `#### Scenario : y`,\nwith a space before the colon, is the French scenario heading written\nwithout its accent.\n\n#### Scenario: Accents and colon spacing\n\n- **GIVEN** a delta holding `## exigences ajoutees` then\n  `### Exigence: Annulation` with a `#### Scenario : Dans les temps`\n- **WHEN** codev reads the delta\n- **THEN** the `ADDED` operation carries `Annulation` and its scenario\n  `Dans les temps`\n\n#### Scenario: Spanish keywords without accents, tilde or exact case\n\n- **GIVEN** a delta holding `## requisitos anadidos` then\n  `### REQUISITO : Exportación` with a `#### escenario: A tiempo`\n- **WHEN** codev reads the delta\n- **THEN** the `ADDED` operation carries `Exportación` and its scenario\n  `A tiempo`\n\n#### Scenario: No-break space before the colon\n\n- **GIVEN** a delta holding `## Exigences AJOUTÉES` then\n  `### Exigence` followed by a no-break space (U+00A0) and `: Annulation`\n- **WHEN** codev reads the delta\n- **THEN** the `ADDED` operation carries the requirement `Annulation`\n\n#### Scenario: English edge cases are read as today\n\n- **GIVEN** a delta whose section heading is `## ADDED   Requirements`,\n  holding a requirement whose body has the line `### requirement: x`\n- **WHEN** codev reads the delta\n- **THEN** the findings and the requirements are those an earlier codev\n  reports for the same file\n\n#### Scenario: Lower-case \"doit\" is not normative\n\n- **GIVEN** an added requirement whose only sentence is\n  `Le portail doit afficher la date.`\n- **WHEN** the user runs `codev validate`\n- **THEN** a `requirement_no_shall` finding names the requirement\n",
+    "_codev/changes/read-spanish-keywords/specs/spec-merge/spec.md": "## MODIFIED Requirements\n\n### Requirement: A merge writes keywords in the language of the spec it edits\n\nWhen a sync or an archive writes into a main spec, it SHALL write every\nstructural keyword — requirement and scenario headings, section headings —\nin the language of that spec, so that a French spec stays French and a\nSpanish spec stays Spanish. The language of an existing main spec is the\nlanguage of its requirements section heading (`## Requirements`,\n`## Exigences` or `## Requisitos`); a spec whose heading matches no\ncatalog language is written in English, as today. A new main spec takes\nthe language of the delta section heading that creates it. The\nrequirement names, descriptions and scenario bodies are copied verbatim,\nwhatever their language.\n\n#### Scenario: French requirement merged into a French spec\n\n- **GIVEN** a main spec whose sections are `## Objet` and `## Exigences`\n- **AND** a delta holding `## Exigences MODIFIÉES` with\n  `### Exigence : Annulation`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the spec's requirement is written `### Exigence : Annulation`\n  with its scenarios as `#### Scénario : <name>`\n\n#### Scenario: English delta merged into a French spec\n\n- **GIVEN** a main spec whose requirements heading is `## Exigences`\n- **AND** a delta holding `## ADDED Requirements` with\n  `### Requirement: Export`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the new requirement is written `### Exigence : Export` in the\n  spec\n\n#### Scenario: French delta merged into a Spanish spec\n\n- **GIVEN** a main spec whose requirements heading is `## Requisitos`\n- **AND** a delta holding `## Exigences AJOUTÉES` with\n  `### Exigence : Export` and a `#### Scénario : Nominal`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the new requirement is written `### Requisito: Export` in the\n  spec, with its scenario as `#### Escenario: Nominal`\n\n#### Scenario: New capability created from a French delta\n\n- **GIVEN** no main spec under `_codev/specs/conges/`\n- **AND** a delta holding `## Objet` and `## Exigences AJOUTÉES` with\n  `### Exigence : Annulation`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the new spec holds `## Objet`, the Purpose text, then\n  `## Exigences` and `### Exigence : Annulation`\n\n#### Scenario: New capability created from a Spanish delta\n\n- **GIVEN** no main spec under `_codev/specs/vacaciones/`\n- **AND** a delta holding `## Propósito` and `## Requisitos AGREGADOS`\n  with `### Requisito: Cancelación`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the new spec opens with a `# Especificación <title>` line, then\n  holds `## Propósito`, the Purpose text, `## Requisitos` and\n  `### Requisito: Cancelación`\n\n#### Scenario: English specs are written as before\n\n- **GIVEN** a main spec whose requirements heading is `## Requirements`\n- **AND** an English delta\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the spec's bytes are those an earlier codev would have written\n",
+    "_codev/changes/read-spanish-keywords/specs/validation/spec.md": "## MODIFIED Requirements\n\n### Requirement: Structural rules beyond the parser\n\nThe validator MUST reject as errors the defects that the parser lets\nthrough because they require inspecting the content of a requirement or a\nspec: a requirement without a normative keyword of the catalog in its\ndescription — `SHALL`, `MUST`, `DOIT`, `DOIVENT`, `DEBE` or `DEBEN`, in\nupper case — a requirement with no scenario, a main spec with no\nextractable requirement.\n\n#### Scenario: Requirement without SHALL or MUST\n\n- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: X`\n  whose descriptive text is \"The system does something\"\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_shall` reports the line of\n  the header and names the requirement `X`\n\n#### Scenario: French requirement with DOIT\n\n- **GIVEN** an `## Exigences AJOUTÉES` delta with a\n  `### Exigence : Annulation` whose descriptive text is\n  \"Le portail DOIT permettre d'annuler une demande en attente.\" and a\n  `#### Scénario : Dans les temps`\n- **WHEN** the validator inspects the file\n- **THEN** no `requirement_no_shall` finding is reported\n\n#### Scenario: Spanish requirement with DEBE\n\n- **GIVEN** a `## Requisitos AÑADIDOS` delta with a\n  `### Requisito: Cancelación` whose descriptive text is\n  \"El portal DEBE permitir cancelar una solicitud pendiente.\" and a\n  `#### Escenario: A tiempo`\n- **WHEN** the validator inspects the file\n- **THEN** no `requirement_no_shall` finding is reported\n\n#### Scenario: Lower-case \"debe\" is not normative\n\n- **GIVEN** a `## Requisitos AÑADIDOS` delta with a\n  `### Requisito: Fecha` whose only sentence is\n  \"El portal debe mostrar la fecha.\"\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_shall` names the\n  requirement `Fecha`\n\n#### Scenario: Requirement with no scenario at all\n\n- **GIVEN** an `## ADDED Requirements` delta with a `### Requirement: Y`\n  followed by its descriptive text but no `#### Scenario:`\n- **WHEN** the validator inspects the file\n- **THEN** a finding with code `requirement_no_scenario` reports the line\n  of the requirement\n\n#### Scenario: Main spec with no requirement\n\n- **GIVEN** a main spec `_codev/specs/x/spec.md` with `## Purpose`\n  but whose `## Requirements` is empty\n- **WHEN** the validator inspects the spec\n- **THEN** a finding with code `spec_no_requirement` reports that the spec\n  has no extractable requirement\n"
+  },
+  "validate": {
+    "read-spanish-keywords": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "read-spanish-keywords",
+          "path": "_codev/changes/read-spanish-keywords"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792067476/plan-requirement-spanish-1",
+      "status": []
+    }
+  }
+}

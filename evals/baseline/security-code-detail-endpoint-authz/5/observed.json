@@ -1,0 +1,240 @@
+{
+  "format": 2,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.3663686,
+  "durationMs": 37895,
+  "consumption": {
+    "durationApiMs": 37978,
+    "turns": 8,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1181,
+      "cacheCreation": 29342,
+      "cacheRead": 289448,
+      "output": 3638
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7397,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7397
+        }
+      },
+      {
+        "cacheCreation": 14419,
+        "cacheRead": 29536,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3880,
+          "skill": 10539
+        }
+      },
+      {
+        "cacheCreation": 2890,
+        "cacheRead": 43955,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2890
+        }
+      },
+      {
+        "cacheCreation": 807,
+        "cacheRead": 46845,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 807
+        }
+      },
+      {
+        "cacheCreation": 1241,
+        "cacheRead": 47652,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1241
+        }
+      },
+      {
+        "cacheCreation": 1535,
+        "cacheRead": 48893,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1535
+        }
+      },
+      {
+        "cacheCreation": 1053,
+        "cacheRead": 50428,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 990,
+          "output": 63
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const rows = await query<InvoiceRow>(\n  \"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n  [id],\n);\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/invoices.ts:32-35",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Insecure direct object reference (CWE-639 / CWE-862). Any signed-in user of organization 7 who sends `GET /invoices/42` receives invoice 42 even when it belongs to another organization: the query filters on `id` only, and ids are sequential numbers easy to enumerate. Scope the query to the caller's organization, as the list endpoint does — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and keep answering 404 when no row matches, so the existence of other organizations' invoices is not revealed. Add a test where the invoice belongs to another organization and the answer is 404.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "GET /invoices/:id returns any organization's invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {\n  console.error(err);\n  res.status(500).json({ error: err.message, stack: err.stack });\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 37,
+        "location": "src/server.ts:15-18",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Information exposure through an error message (CWE-209). An unauthenticated client that sends a malformed JSON body (`Content-Type: application/json`, body `{`) to any route makes `express.json()` raise a parse error, which reaches this handler and is answered with its full stack trace — server file paths, dependency versions — and, for errors raised further in, database or driver messages. Log the error server-side only and answer a generic body such as `{ \"error\": \"internal error\" }`; respect `err.status` for client errors such as the 400 of a bad JSON body instead of turning them into 500.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Error handler returns the error message and stack trace to any client"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "const id = Number(req.params.id);\nif (!Number.isInteger(id)) {\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 61,
+        "location": "src/invoices.ts:27-31",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The id is checked to be an integer but not bounded: `GET /invoices/1e19` passes `Number.isInteger` and is sent to PostgreSQL, which rejects it as out of range for an integer or bigint column. The handler is `async` and Express 4.19.2 does not forward a rejected promise to the error handler, so the rejection is unhandled — with Node's default `--unhandled-rejections=throw` any signed-in user can crash the process with one request. Validate the id against an allow-list at the boundary (`/^\\d{1,9}$/` or a positive safe integer within the column's range), and wrap the async handlers so a rejection reaches `next(err)`. Confidence is low: the column type and the Node runtime and its process supervision were not visible.",
+        "reported": false,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded numeric id reaches the database and its rejection escapes Express"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

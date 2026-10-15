@@ -1,0 +1,2126 @@
+{
+  "format": 2,
+  "case": "plan-specify-core-commands",
+  "error": null,
+  "costUsd": 5.4664516,
+  "durationMs": 127348,
+  "consumption": {
+    "durationApiMs": 826878,
+    "turns": 11,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1325,
+      "cacheCreation": 436695,
+      "cacheRead": 6956383,
+      "output": 78120
+    },
+    "toolCalls": 173,
+    "orientationCalls": 164,
+    "calls": [
+      {
+        "cacheCreation": 7820,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7820
+        }
+      },
+      {
+        "cacheCreation": 11723,
+        "cacheRead": 29959,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 11723
+        }
+      },
+      {
+        "cacheCreation": 4321,
+        "cacheRead": 41682,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4321
+        }
+      },
+      {
+        "cacheCreation": 348,
+        "cacheRead": 46003,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 348
+        }
+      },
+      {
+        "cacheCreation": 3035,
+        "cacheRead": 46351,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3035
+        }
+      },
+      {
+        "cacheCreation": 3897,
+        "cacheRead": 49386,
+        "input": 2,
+        "output": 50,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3897
+        }
+      },
+      {
+        "cacheCreation": 381,
+        "cacheRead": 53283,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 135,
+          "search": 246
+        }
+      },
+      {
+        "cacheCreation": 10415,
+        "cacheRead": 53664,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 10415
+        }
+      },
+      {
+        "cacheCreation": 9306,
+        "cacheRead": 64079,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 9306
+        }
+      },
+      {
+        "cacheCreation": 1953,
+        "cacheRead": 73385,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1953
+        }
+      },
+      {
+        "cacheCreation": 12947,
+        "cacheRead": 0,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 12947
+        }
+      },
+      {
+        "cacheCreation": 2795,
+        "cacheRead": 12947,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "shell": 2795
+        }
+      },
+      {
+        "cacheCreation": 1953,
+        "cacheRead": 73385,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1549,
+          "search": 404
+        }
+      },
+      {
+        "cacheCreation": 9088,
+        "cacheRead": 15742,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "agent": 9088
+        }
+      },
+      {
+        "cacheCreation": 8517,
+        "cacheRead": 4369,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8517
+        }
+      },
+      {
+        "cacheCreation": 7886,
+        "cacheRead": 24830,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 7886
+        }
+      },
+      {
+        "cacheCreation": 3718,
+        "cacheRead": 12886,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "file": 3718
+        }
+      },
+      {
+        "cacheCreation": 3536,
+        "cacheRead": 32716,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3242,
+          "search": 294
+        }
+      },
+      {
+        "cacheCreation": 1191,
+        "cacheRead": 36252,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 0,
+        "sources": {
+          "search": 1191
+        }
+      },
+      {
+        "cacheCreation": 15443,
+        "cacheRead": 16604,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 15443
+        }
+      },
+      {
+        "cacheCreation": 1191,
+        "cacheRead": 36252,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1191
+        }
+      },
+      {
+        "cacheCreation": 1953,
+        "cacheRead": 73385,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1953
+        }
+      },
+      {
+        "cacheCreation": 15443,
+        "cacheRead": 16604,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 15443
+        }
+      },
+      {
+        "cacheCreation": 8602,
+        "cacheRead": 4369,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 8602
+        }
+      },
+      {
+        "cacheCreation": 1953,
+        "cacheRead": 73385,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1953
+        }
+      },
+      {
+        "cacheCreation": 10312,
+        "cacheRead": 32047,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev instructions": 10312
+        }
+      },
+      {
+        "cacheCreation": 8602,
+        "cacheRead": 4369,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 8602
+        }
+      },
+      {
+        "cacheCreation": 2584,
+        "cacheRead": 37443,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2584
+        }
+      },
+      {
+        "cacheCreation": 8602,
+        "cacheRead": 4369,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8602
+        }
+      },
+      {
+        "cacheCreation": 7177,
+        "cacheRead": 75338,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 7177
+        }
+      },
+      {
+        "cacheCreation": 2584,
+        "cacheRead": 37443,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2584
+        }
+      },
+      {
+        "cacheCreation": 10312,
+        "cacheRead": 32047,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 10312
+        }
+      },
+      {
+        "cacheCreation": 2584,
+        "cacheRead": 37443,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2584
+        }
+      },
+      {
+        "cacheCreation": 5425,
+        "cacheRead": 12971,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5425
+        }
+      },
+      {
+        "cacheCreation": 7177,
+        "cacheRead": 75338,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 7177
+        }
+      },
+      {
+        "cacheCreation": 5425,
+        "cacheRead": 12971,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5227,
+          "shell": 198
+        }
+      },
+      {
+        "cacheCreation": 470,
+        "cacheRead": 82515,
+        "input": 2,
+        "output": 51,
+        "toolCalls": 0,
+        "sources": {
+          "search": 470
+        }
+      },
+      {
+        "cacheCreation": 1057,
+        "cacheRead": 42359,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1057
+        }
+      },
+      {
+        "cacheCreation": 6379,
+        "cacheRead": 40027,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6379
+        }
+      },
+      {
+        "cacheCreation": 470,
+        "cacheRead": 82515,
+        "input": 2,
+        "output": 51,
+        "toolCalls": 1,
+        "sources": {
+          "output": 470
+        }
+      },
+      {
+        "cacheCreation": 1057,
+        "cacheRead": 42359,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1013,
+          "shell": 44
+        }
+      },
+      {
+        "cacheCreation": 1720,
+        "cacheRead": 18396,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1720
+        }
+      },
+      {
+        "cacheCreation": 6379,
+        "cacheRead": 40027,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6379
+        }
+      },
+      {
+        "cacheCreation": 1057,
+        "cacheRead": 42359,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1057
+        }
+      },
+      {
+        "cacheCreation": 362,
+        "cacheRead": 82985,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 362
+        }
+      },
+      {
+        "cacheCreation": 6952,
+        "cacheRead": 20116,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 6952
+        }
+      },
+      {
+        "cacheCreation": 6379,
+        "cacheRead": 40027,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 6379
+        }
+      },
+      {
+        "cacheCreation": 6952,
+        "cacheRead": 20116,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6952
+        }
+      },
+      {
+        "cacheCreation": 6379,
+        "cacheRead": 40027,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 6379
+        }
+      },
+      {
+        "cacheCreation": 568,
+        "cacheRead": 83347,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 568
+        }
+      },
+      {
+        "cacheCreation": 6660,
+        "cacheRead": 43416,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6660
+        }
+      },
+      {
+        "cacheCreation": 2634,
+        "cacheRead": 27068,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2634
+        }
+      },
+      {
+        "cacheCreation": 9739,
+        "cacheRead": 46406,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "file": 9739
+        }
+      },
+      {
+        "cacheCreation": 568,
+        "cacheRead": 83347,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 568
+        }
+      },
+      {
+        "cacheCreation": 6660,
+        "cacheRead": 43416,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6660
+        }
+      },
+      {
+        "cacheCreation": 2634,
+        "cacheRead": 27068,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2634
+        }
+      },
+      {
+        "cacheCreation": 9739,
+        "cacheRead": 46406,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 9739
+        }
+      },
+      {
+        "cacheCreation": 568,
+        "cacheRead": 83347,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 568
+        }
+      },
+      {
+        "cacheCreation": 6792,
+        "cacheRead": 29702,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 6792
+        }
+      },
+      {
+        "cacheCreation": 6660,
+        "cacheRead": 43416,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "output": 6660
+        }
+      },
+      {
+        "cacheCreation": 9739,
+        "cacheRead": 46406,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 9739
+        }
+      },
+      {
+        "cacheCreation": 5470,
+        "cacheRead": 83915,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "file": 5470
+        }
+      },
+      {
+        "cacheCreation": 6792,
+        "cacheRead": 29702,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 6792
+        }
+      },
+      {
+        "cacheCreation": 5470,
+        "cacheRead": 83915,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 5470
+        }
+      },
+      {
+        "cacheCreation": 6660,
+        "cacheRead": 43416,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6386,
+          "schedulewakeup": 274
+        }
+      },
+      {
+        "cacheCreation": 352,
+        "cacheRead": 89385,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 0,
+        "sources": {
+          "file": 352
+        }
+      },
+      {
+        "cacheCreation": 9739,
+        "cacheRead": 46406,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 9739
+        }
+      },
+      {
+        "cacheCreation": 6792,
+        "cacheRead": 29702,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6792
+        }
+      },
+      {
+        "cacheCreation": 6152,
+        "cacheRead": 50076,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "file": 6152
+        }
+      },
+      {
+        "cacheCreation": 8104,
+        "cacheRead": 56145,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "output": 8104
+        }
+      },
+      {
+        "cacheCreation": 5895,
+        "cacheRead": 36494,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "output": 5895
+        }
+      },
+      {
+        "cacheCreation": 6152,
+        "cacheRead": 50076,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 6152
+        }
+      },
+      {
+        "cacheCreation": 5895,
+        "cacheRead": 36494,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5895
+        }
+      },
+      {
+        "cacheCreation": 6152,
+        "cacheRead": 50076,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6152
+        }
+      },
+      {
+        "cacheCreation": 8104,
+        "cacheRead": 56145,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8104
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 56228,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "search": 772
+        }
+      },
+      {
+        "cacheCreation": 720,
+        "cacheRead": 64249,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 0,
+        "sources": {
+          "output": 720
+        }
+      },
+      {
+        "cacheCreation": 5895,
+        "cacheRead": 36494,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 5895
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 56228,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 772
+        }
+      },
+      {
+        "cacheCreation": 720,
+        "cacheRead": 64249,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 1,
+        "sources": {
+          "file": 720
+        }
+      },
+      {
+        "cacheCreation": 5689,
+        "cacheRead": 42389,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "search": 5689
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 56228,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 772
+        }
+      },
+      {
+        "cacheCreation": 720,
+        "cacheRead": 64249,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 1,
+        "sources": {
+          "file": 720
+        }
+      },
+      {
+        "cacheCreation": 5689,
+        "cacheRead": 42389,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5689
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 56228,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 772
+        }
+      },
+      {
+        "cacheCreation": 720,
+        "cacheRead": 64249,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 1,
+        "sources": {
+          "file": 566,
+          "search": 154
+        }
+      },
+      {
+        "cacheCreation": 5689,
+        "cacheRead": 42389,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5689
+        }
+      },
+      {
+        "cacheCreation": 8830,
+        "cacheRead": 57000,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8830
+        }
+      },
+      {
+        "cacheCreation": 1463,
+        "cacheRead": 64969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1463
+        }
+      },
+      {
+        "cacheCreation": 4405,
+        "cacheRead": 48078,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4405
+        }
+      },
+      {
+        "cacheCreation": 8830,
+        "cacheRead": 57000,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8830
+        }
+      },
+      {
+        "cacheCreation": 2357,
+        "cacheRead": 52483,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2357
+        }
+      },
+      {
+        "cacheCreation": 1463,
+        "cacheRead": 64969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1463
+        }
+      },
+      {
+        "cacheCreation": 8830,
+        "cacheRead": 57000,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8830
+        }
+      },
+      {
+        "cacheCreation": 2357,
+        "cacheRead": 52483,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2357
+        }
+      },
+      {
+        "cacheCreation": 1463,
+        "cacheRead": 64969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1463
+        }
+      },
+      {
+        "cacheCreation": 8830,
+        "cacheRead": 57000,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8830
+        }
+      },
+      {
+        "cacheCreation": 476,
+        "cacheRead": 54840,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 476
+        }
+      },
+      {
+        "cacheCreation": 1463,
+        "cacheRead": 64969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1463
+        }
+      },
+      {
+        "cacheCreation": 11555,
+        "cacheRead": 65830,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 11555
+        }
+      },
+      {
+        "cacheCreation": 476,
+        "cacheRead": 54840,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 476
+        }
+      },
+      {
+        "cacheCreation": 11555,
+        "cacheRead": 65830,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 11555
+        }
+      },
+      {
+        "cacheCreation": 1463,
+        "cacheRead": 64969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1463
+        }
+      },
+      {
+        "cacheCreation": 433,
+        "cacheRead": 55316,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 433
+        }
+      },
+      {
+        "cacheCreation": 11555,
+        "cacheRead": 65830,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 11555
+        }
+      },
+      {
+        "cacheCreation": 12943,
+        "cacheRead": 66432,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12943
+        }
+      },
+      {
+        "cacheCreation": 11555,
+        "cacheRead": 65830,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 11555
+        }
+      },
+      {
+        "cacheCreation": 2804,
+        "cacheRead": 55749,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2804
+        }
+      },
+      {
+        "cacheCreation": 11555,
+        "cacheRead": 65830,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 11555
+        }
+      },
+      {
+        "cacheCreation": 2804,
+        "cacheRead": 55749,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2804
+        }
+      },
+      {
+        "cacheCreation": 12943,
+        "cacheRead": 66432,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12943
+        }
+      },
+      {
+        "cacheCreation": 7981,
+        "cacheRead": 77385,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "search": 7981
+        }
+      },
+      {
+        "cacheCreation": 2804,
+        "cacheRead": 55749,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 2804
+        }
+      },
+      {
+        "cacheCreation": 984,
+        "cacheRead": 79375,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 984
+        }
+      },
+      {
+        "cacheCreation": 7981,
+        "cacheRead": 77385,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7981
+        }
+      },
+      {
+        "cacheCreation": 2804,
+        "cacheRead": 55749,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2804
+        }
+      },
+      {
+        "cacheCreation": 984,
+        "cacheRead": 79375,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 984
+        }
+      },
+      {
+        "cacheCreation": 5322,
+        "cacheRead": 58553,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 5322
+        }
+      },
+      {
+        "cacheCreation": 1866,
+        "cacheRead": 85366,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1866
+        }
+      },
+      {
+        "cacheCreation": 984,
+        "cacheRead": 79375,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 984
+        }
+      },
+      {
+        "cacheCreation": 5322,
+        "cacheRead": 58553,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5322
+        }
+      },
+      {
+        "cacheCreation": 5281,
+        "cacheRead": 87232,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "search": 5281
+        }
+      },
+      {
+        "cacheCreation": 5322,
+        "cacheRead": 58553,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 5322
+        }
+      },
+      {
+        "cacheCreation": 13011,
+        "cacheRead": 80359,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "file": 13011
+        }
+      },
+      {
+        "cacheCreation": 5322,
+        "cacheRead": 58553,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 5322
+        }
+      },
+      {
+        "cacheCreation": 13011,
+        "cacheRead": 80359,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 13011
+        }
+      },
+      {
+        "cacheCreation": 5281,
+        "cacheRead": 87232,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5281
+        }
+      },
+      {
+        "cacheCreation": 3860,
+        "cacheRead": 63875,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 3860
+        }
+      },
+      {
+        "cacheCreation": 13011,
+        "cacheRead": 80359,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 13011
+        }
+      },
+      {
+        "cacheCreation": 1466,
+        "cacheRead": 92513,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1466
+        }
+      },
+      {
+        "cacheCreation": 13011,
+        "cacheRead": 80359,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 13011
+        }
+      },
+      {
+        "cacheCreation": 1466,
+        "cacheRead": 92513,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1466
+        }
+      },
+      {
+        "cacheCreation": 3860,
+        "cacheRead": 63875,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 3860
+        }
+      },
+      {
+        "cacheCreation": 13011,
+        "cacheRead": 80359,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8373,
+          "shell": 4638
+        }
+      },
+      {
+        "cacheCreation": 419,
+        "cacheRead": 93979,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 419
+        }
+      },
+      {
+        "cacheCreation": 5020,
+        "cacheRead": 67735,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "search": 5020
+        }
+      },
+      {
+        "cacheCreation": 3212,
+        "cacheRead": 93370,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 3212
+        }
+      },
+      {
+        "cacheCreation": 5020,
+        "cacheRead": 67735,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5020
+        }
+      },
+      {
+        "cacheCreation": 1403,
+        "cacheRead": 94398,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1403
+        }
+      },
+      {
+        "cacheCreation": 3212,
+        "cacheRead": 93370,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3212
+        }
+      },
+      {
+        "cacheCreation": 5020,
+        "cacheRead": 67735,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5020
+        }
+      },
+      {
+        "cacheCreation": 1403,
+        "cacheRead": 94398,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1403
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 72755,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 1333
+        }
+      },
+      {
+        "cacheCreation": 2250,
+        "cacheRead": 96582,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2250
+        }
+      },
+      {
+        "cacheCreation": 8571,
+        "cacheRead": 95801,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 8571
+        }
+      },
+      {
+        "cacheCreation": 1333,
+        "cacheRead": 72755,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1333
+        }
+      },
+      {
+        "cacheCreation": 2250,
+        "cacheRead": 96582,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2250
+        }
+      },
+      {
+        "cacheCreation": 8571,
+        "cacheRead": 95801,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 8571
+        }
+      },
+      {
+        "cacheCreation": 310,
+        "cacheRead": 74088,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 310
+        }
+      },
+      {
+        "cacheCreation": 700,
+        "cacheRead": 98832,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 700
+        }
+      },
+      {
+        "cacheCreation": 1985,
+        "cacheRead": 104372,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 1985
+        }
+      },
+      {
+        "cacheCreation": 1683,
+        "cacheRead": 74398,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "output": 1683
+        }
+      },
+      {
+        "cacheCreation": 1985,
+        "cacheRead": 104372,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1985
+        }
+      },
+      {
+        "cacheCreation": 1683,
+        "cacheRead": 74398,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1683
+        }
+      },
+      {
+        "cacheCreation": 4243,
+        "cacheRead": 99532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4243
+        }
+      },
+      {
+        "cacheCreation": 1683,
+        "cacheRead": 74398,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1135,
+          "search": 548
+        }
+      },
+      {
+        "cacheCreation": 4243,
+        "cacheRead": 99532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4243
+        }
+      },
+      {
+        "cacheCreation": 2184,
+        "cacheRead": 106357,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2184
+        }
+      },
+      {
+        "cacheCreation": 4243,
+        "cacheRead": 99532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4243
+        }
+      },
+      {
+        "cacheCreation": 2184,
+        "cacheRead": 106357,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2184
+        }
+      },
+      {
+        "cacheCreation": 4101,
+        "cacheRead": 76081,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 4101
+        }
+      },
+      {
+        "cacheCreation": 2925,
+        "cacheRead": 108541,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2925
+        }
+      },
+      {
+        "cacheCreation": 8351,
+        "cacheRead": 103775,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "output": 8351
+        }
+      },
+      {
+        "cacheCreation": 2925,
+        "cacheRead": 108541,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2925
+        }
+      },
+      {
+        "cacheCreation": 8351,
+        "cacheRead": 103775,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8351
+        }
+      },
+      {
+        "cacheCreation": 4101,
+        "cacheRead": 76081,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4101
+        }
+      },
+      {
+        "cacheCreation": 2925,
+        "cacheRead": 108541,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2925
+        }
+      },
+      {
+        "cacheCreation": 690,
+        "cacheRead": 112126,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 690
+        }
+      },
+      {
+        "cacheCreation": 2354,
+        "cacheRead": 80182,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2354
+        }
+      },
+      {
+        "cacheCreation": 2750,
+        "cacheRead": 111466,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2750
+        }
+      },
+      {
+        "cacheCreation": 516,
+        "cacheRead": 112816,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "output": 516
+        }
+      },
+      {
+        "cacheCreation": 2750,
+        "cacheRead": 111466,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2750
+        }
+      },
+      {
+        "cacheCreation": 2354,
+        "cacheRead": 80182,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2354
+        }
+      },
+      {
+        "cacheCreation": 516,
+        "cacheRead": 112816,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 516
+        }
+      },
+      {
+        "cacheCreation": 3777,
+        "cacheRead": 82536,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "search": 3777
+        }
+      },
+      {
+        "cacheCreation": 1927,
+        "cacheRead": 114216,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1927
+        }
+      },
+      {
+        "cacheCreation": 889,
+        "cacheRead": 113332,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 889
+        }
+      },
+      {
+        "cacheCreation": 1927,
+        "cacheRead": 114216,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1927
+        }
+      },
+      {
+        "cacheCreation": 3777,
+        "cacheRead": 82536,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3777
+        }
+      },
+      {
+        "cacheCreation": 889,
+        "cacheRead": 113332,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 889
+        }
+      },
+      {
+        "cacheCreation": 1927,
+        "cacheRead": 114216,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1927
+        }
+      },
+      {
+        "cacheCreation": 3777,
+        "cacheRead": 82536,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3777
+        }
+      },
+      {
+        "cacheCreation": 3922,
+        "cacheRead": 116143,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 3922
+        }
+      },
+      {
+        "cacheCreation": 2815,
+        "cacheRead": 86313,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2815
+        }
+      },
+      {
+        "cacheCreation": 3922,
+        "cacheRead": 116143,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 3922
+        }
+      },
+      {
+        "cacheCreation": 2815,
+        "cacheRead": 86313,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "search": 2815
+        }
+      },
+      {
+        "cacheCreation": 1666,
+        "cacheRead": 120065,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "file": 881,
+          "search": 785
+        }
+      },
+      {
+        "cacheCreation": 3286,
+        "cacheRead": 89128,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 3286
+        }
+      },
+      {
+        "cacheCreation": 1666,
+        "cacheRead": 120065,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1666
+        }
+      },
+      {
+        "cacheCreation": 3286,
+        "cacheRead": 89128,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 3,
+        "sources": {
+          "search": 3286
+        }
+      },
+      {
+        "cacheCreation": 472,
+        "cacheRead": 121731,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "file": 472
+        }
+      },
+      {
+        "cacheCreation": 2102,
+        "cacheRead": 114221,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2102
+        }
+      },
+      {
+        "cacheCreation": 2157,
+        "cacheRead": 92414,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2157
+        }
+      },
+      {
+        "cacheCreation": 3131,
+        "cacheRead": 94571,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 3131
+        }
+      },
+      {
+        "cacheCreation": 472,
+        "cacheRead": 121731,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "output": 472
+        }
+      },
+      {
+        "cacheCreation": 7884,
+        "cacheRead": 89737,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 7884
+        }
+      },
+      {
+        "cacheCreation": 573,
+        "cacheRead": 97621,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 0,
+        "sources": {
+          "schedulewakeup": 573
+        }
+      },
+      {
+        "cacheCreation": 2102,
+        "cacheRead": 114221,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2102
+        }
+      },
+      {
+        "cacheCreation": 7783,
+        "cacheRead": 98194,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 7783
+        }
+      },
+      {
+        "cacheCreation": 3183,
+        "cacheRead": 105977,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3183
+        }
+      },
+      {
+        "cacheCreation": 3131,
+        "cacheRead": 94571,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 3131
+        }
+      },
+      {
+        "cacheCreation": 2067,
+        "cacheRead": 109160,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2067
+        }
+      },
+      {
+        "cacheCreation": 12752,
+        "cacheRead": 111227,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 4,
+        "sources": {
+          "edit": 11116,
+          "output": 1636
+        }
+      },
+      {
+        "cacheCreation": 4720,
+        "cacheRead": 123979,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 4720
+        }
+      },
+      {
+        "cacheCreation": 2216,
+        "cacheRead": 128699,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1052,
+          "edit": 1016,
+          "output": 149
+        }
+      },
+      {
+        "cacheCreation": 429,
+        "cacheRead": 130915,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 429
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/specify-core-commands/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/specify-core-commands/design.md": "# Design: Specify the core commands as they work today\n\n## Context\n\nThe specs describe behavior that already exists; the work is tests only.\nCoverage today is uneven. The core and engine have unit tests (states in\n`codev-core/src/status.rs`, change loading in `codev-engine/src/change.rs`,\nschema resolution in `schemas.rs`, the default artifact in\n`instructions.rs`, skill preservation in `codev-agents/src/claude.rs`). The\ncommand layer has almost none: `commands::decision_show` and\n`render::decision_show` are never called by a test, no test covers the\n`NewChangeV1`, `ChangesV1`, `SpecsV1`, `InstructionsV1` or `SchemasV1`\ndocuments, and nothing covers `ambiguous_change`/`no_active_change`\nthrough `instructions`. `crates/codev-cli/tests/` does not exist.\n\n## Goals / Non-Goals\n\nGoals: one automated test per scenario of the deltas, as close as possible\nto the behavior described (the command function plus its contract\ndocument).\n\nNon-goals: changing any behavior, message or JSON field; specifying the\nhuman output line by line; restating what other specs already state\n(update check, doctor hint, configuration warnings, managed sections,\ndecisions injected into `design`, `language`, role block).\n\n## Decisions\n\n### Decision: Test at the command layer with the in-memory ports\n\nTests call `commands::<command>(&ctx, …)` with the in-memory `FileSystem`\nand `FixedEnv`, as the existing `commands.rs` tests do, then build the\n`contract` document from the outcome and assert its serialized fields.\nExit codes and the `error:`/`help:` lines are checked through the\n`fail`/`emit` helpers of `main.rs` in its test module. This follows\n0001-functional-core-imperative-shell (the effects stay behind ports) and\nthe project rule against temporary directories.\n\n**Alternatives considered**: spawning the real binary in\n`crates/codev-cli/tests/` would test exit codes end to end, but needs a\nreal disk, which the testing rules forbid, and would be the only test of\nits kind.\n\n### Decision: Leave accidental behavior unspecified, not frozen\n\nWhere the code behaves in a way nobody seems to have chosen, the spec says\nnothing, so a later change can fix it without a **BREAKING** marker. The\nspecs never name the JSON contract's internals beyond the fields skills\nread, since the JSON contract is a public API consumed by installed\nskills.\n\n**Alternatives considered**: specifying the quirks as they are would make\nthem contractual; fixing them here would break \"no code change\".\n\n## Known quirks left unspecified\n\nObserved in the code, deliberately not covered by a requirement, to be\nhandled by separate changes:\n\n- The JSON failure document of `codev instructions` has no `language`\n  key, unlike its success document.\n- `resolvedOutputPath`, `changeRoot` and `created` use native path\n  separators, while decision paths are forced to `/`.\n- `codev new change --schema x` stores the schema file's `name:` in\n  `change.yaml` but reports the requested name as `schemaName`; they\n  differ when a project schema's folder and `name:` differ.\n- `--change archive` loads the archive folder as if it were a change; a\n  plain file with a kebab-case name under `_codev/changes/` is listed.\n- `codev decision show` prints the frontmatter twice (header lines, then\n  the raw file), although the `decisions` spec says \"header followed by\n  the body\".\n- `codev update` recreates a missing `config.yaml` and deleted `.gitkeep`\n  files, and writes them before failing on an invalid configuration.\n\n## Contradiction with an existing spec\n\n`skills/spec.md` (Jira MCP substitution) expects `codev update` to put a\nnewly configured `mcp.jira_tool` into the skills. When the skills already\ncarry the running version, the hand-edit rule specified here preserves\nthem instead, until `--force`. Which one is right is left to the user: the\ntest for that scenario is to be written against the current behavior and\nthe conflict is reported, not settled, in this change.\n\n## Risks / Trade-offs\n\n- [The new tests pin output fields some contributors thought were free to\n  change] → Only the fields the specs name are asserted; human output is\n  checked by its markers, not verbatim.\n- [A scenario turns out not to hold when its test is written] → The\n  behavior is recorded as a quirk above and the scenario is corrected with\n  `/codev-update`, never the code.\n",
+    "_codev/changes/specify-core-commands/proposal.md": "# Proposal: Specify the core commands as they work today\n\n## Why\n\nThe first commands of codev — `new change`, `list`, `status`,\n`instructions`, `schemas`, `decision show` and `update` — shipped before\ncodev was developed with codev, so no main spec states their core\nbehavior: nothing says what a refactoring must preserve, and the installed\nskills depend on their JSON output. Specifying them now, and covering\nevery scenario with a test, turns that implicit contract into an explicit\none.\n\n## What Changes\n\n- New `changes` spec: `codev new change` (name rules, default schema,\n  `change.yaml`, refusals), `codev list` and `codev list --specs`, and\n  `codev status` (change selection, artifact states, planning\n  completeness, JSON fields), as they behave today.\n- New `instructions` spec: the default artifact, the refusals, the paths,\n  dependencies, `unlocks`, per-artifact `rules` and the skipped artifact,\n  as they behave today. What the `decisions`, `skills` and `init` specs\n  already state about this command (decisions in effect, `language`, role\n  block, inherited context) is not repeated.\n- New `schemas` spec: where schemas come from, the project's precedence\n  over the built-in `spec-driven`, the listing, and an unusable schema\n  reported without hiding the others.\n- `decisions` spec: the error paths of `codev decision show` that are not\n  yet specified are added; the existing requirement is left unchanged.\n- `init` spec: what `codev update` regenerates, preserves and never\n  touches is added next to the managed-section requirements it already\n  has.\n- Missing automated tests are added for every new scenario. **No code\n  change**: where today's behavior looks accidental (see design.md,\n  \"Known quirks left unspecified\"), the spec stays silent rather than\n  freezing it, and nothing is fixed in this change.\n\nAssumptions made without asking (evaluation run, no user available):\n\n- \"Update\" in the request means `codev update` (regenerating the skills),\n  not `codev sources update` (already specified) nor `codev self-update`\n  (already specified).\n- The aspects of these commands already specified elsewhere (update check\n  and version requirement of `status`, doctor hint, configuration\n  warnings, managed sections, skill frontmatter, decisions injected into\n  `design`) stay where they are and are not restated.\n- Human output is specified only by its stable markers (status marks,\n  empty-list message, `error:`/`help:` lines), not line by line, so the\n  wording can still be polished without a change.\n\n## Capabilities\n\n### New Capabilities\n\n- `changes`\n- `instructions`\n- `schemas`\n\n### Modified Capabilities\n\n- `decisions`\n- `init`\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `_codev/specs/` gains `changes/`, `instructions/` and `schemas/`;\n  `decisions/spec.md` and `init/spec.md` gain requirements at archive\n  time.\n- Tests only: unit tests in `crates/codev-cli/src/commands.rs`,\n  `render.rs`, `contract.rs` and `main.rs`, and in the engine modules\n  they rely on (`change.rs`, `instructions.rs`, `schemas.rs`,\n  `specs.rs`, `decisions.rs`). No production code, no JSON contract and\n  no CLI flag changes.\n- Documentation: none affected — `docs/en/src/reference/cli.md` and\n  `docs/fr` already describe these commands, and the specs add no\n  behavior.\n\n## Domains\n\n- [ ] security — no input handling, authorization or secret changes\n- [ ] personal-data\n- [ ] user-interface — output is specified as it is, not changed\n- [ ] performance\n- [ ] operations\n- [ ] migration — no behavior, configuration or contract changes\n\n## Release note\n\nNone\n",
+    "_codev/changes/specify-core-commands/specs/changes/spec.md": "## Purpose\n\nCreate a change, list the active changes and the specified capabilities,\nand report where a change's planning stands — the commands every codev\nworkflow starts from.\n\n## ADDED Requirements\n\n### Requirement: `codev new change` creates a change folder with its metadata\n\n`codev new change <name>` SHALL create `_codev/changes/<name>/` holding a\nsingle file, `change.yaml`, with `schema: <schema>`, `created: <today,\nYYYY-MM-DD>` and, when `--goal` is given and not blank, `goal: <goal>`. No\nartifact is created. The schema MUST be `--schema` when given, else the\nproject's `schema:` key, else `spec-driven`. The change name MUST be\nkebab-case: lowercase ASCII letters, digits and single hyphens, neither\nleading nor trailing; a leading digit is allowed.\n\n#### Scenario: A change is created with the configured schema\n\n- **GIVEN** a project whose configuration has no `schema:` key\n- **WHEN** the user runs `codev new change add-dark-mode --goal \"Dark theme\"`\n- **THEN** `_codev/changes/add-dark-mode/change.yaml` records\n  `schema: spec-driven`, today's date as `created` and the goal\n- **AND** no other file is created in the change folder\n- **AND** the command exits with code 0\n\n#### Scenario: A blank goal is not recorded\n\n- **WHEN** the user runs `codev new change add-x --goal \"  \"`\n- **THEN** `change.yaml` has no `goal` key\n\n#### Scenario: A project schema can be chosen\n\n- **GIVEN** a project schema `_codev/schemas/lean/schema.yaml`\n- **WHEN** the user runs `codev new change add-x --schema lean`\n- **THEN** the change is created and its `change.yaml` names that schema\n\n#### Scenario: The JSON report names the change and what was created\n\n- **WHEN** the user runs `codev new change add-x --json`\n- **THEN** stdout is one JSON document with `changeName` `add-x`,\n  `schemaName`, the absolute `changeRoot`, `created` listing the path of\n  `change.yaml`, and an empty `status` array\n\n### Requirement: `codev new change` refuses before writing anything\n\n`codev new change` MUST fail with exit code 1, and write nothing, when\nthe name is not kebab-case (`invalid_change_id`, with a message naming the\nbroken rule), when `_codev/changes/<name>/` already exists\n(`change_exists`), or when the schema cannot be found (`schema_not_found`,\npointing to `codev schemas`). In JSON mode, the failure document MUST keep\nthe success shape with `changeName`, `schemaName` and `changeRoot` set to\n`null`, `created` empty, and the error in `status`.\n\n#### Scenario: An invalid name is explained\n\n- **WHEN** the user runs `codev new change Add_User`\n- **THEN** the command fails with `invalid_change_id`\n- **AND** the message says which rule the name breaks\n- **AND** no folder is created\n\n#### Scenario: An existing change is not overwritten\n\n- **GIVEN** an active change `add-x`\n- **WHEN** the user runs `codev new change add-x`\n- **THEN** the command fails with `change_exists`\n- **AND** the existing `change.yaml` is unchanged\n\n#### Scenario: An unknown schema is refused before the folder exists\n\n- **WHEN** the user runs `codev new change add-x --schema nope --json`\n- **THEN** the command exits with code 1\n- **AND** stdout carries `changeName: null`, `created: []` and a\n  `schema_not_found` error in `status`\n- **AND** `_codev/changes/add-x/` does not exist\n\n### Requirement: `codev list` lists the active changes and the specified capabilities\n\n`codev list` SHALL list the active changes: the entries of\n`_codev/changes/` whose name is a valid change name, except `archive`,\nsorted by name. `codev list --specs` SHALL list the capabilities: every\nfolder under `_codev/specs/` holding a `spec.md`, at any depth, as its\npath relative to `_codev/specs/` with `/` separators, sorted. Both only\nread the folders: an invalid configuration MUST NOT make them fail. The\nJSON output MUST be `{changes, root, status}` or `{specs, root, status}`,\n`root` being the absolute project root.\n\n#### Scenario: Archived changes and stray entries are not listed\n\n- **GIVEN** active changes `b-change` and `a-change`, an archived change,\n  and a `.gitkeep` file in `_codev/changes/`\n- **WHEN** the user runs `codev list --json`\n- **THEN** `changes` is `[\"a-change\", \"b-change\"]`\n\n#### Scenario: An empty project says what to do next\n\n- **GIVEN** a project without active changes\n- **WHEN** the user runs `codev list`\n- **THEN** the output suggests `codev new change <name>`\n- **AND** the command exits with code 0\n\n#### Scenario: Nested capabilities are listed by path\n\n- **GIVEN** `_codev/specs/billing/spec.md` and\n  `_codev/specs/identity/sso/spec.md`\n- **WHEN** the user runs `codev list --specs --json`\n- **THEN** `specs` is `[\"billing\", \"identity/sso\"]`\n\n#### Scenario: Listing does not depend on the configuration\n\n- **GIVEN** a `_codev/config.yaml` that is not valid YAML\n- **WHEN** the user runs `codev list`\n- **THEN** the active changes are listed and the command exits with code 0\n\n### Requirement: Commands that take `--change` infer it only when unambiguous\n\n`codev status` and `codev instructions` SHALL use the change named by\n`--change` when given. Without it, they SHALL use the only active change;\nwith no active change they MUST fail with `no_active_change`, suggesting\n`codev new change <name>`; with several they MUST fail with\n`ambiguous_change`, naming every active change and suggesting\n`--change <first one>`. A `--change` value that is not a valid name MUST\nfail with `invalid_change_id`, and one that names no folder of\n`_codev/changes/` with `unknown_change`, pointing to `codev list`.\n\n#### Scenario: The single active change is inferred\n\n- **GIVEN** exactly one active change `add-x`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `changeName` is `add-x`\n\n#### Scenario: Several active changes are not guessed\n\n- **GIVEN** active changes `a-change` and `b-change`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with `ambiguous_change`\n- **AND** stderr names both changes and suggests `--change a-change`\n\n#### Scenario: No active change points to creation\n\n- **GIVEN** a project without active changes\n- **WHEN** the user runs `codev instructions`\n- **THEN** the command fails with `no_active_change`\n- **AND** stderr suggests `codev new change <name>`\n\n#### Scenario: An unknown or archived change is refused\n\n- **GIVEN** a change `add-x` that was archived\n- **WHEN** the user runs `codev status --change add-x`\n- **THEN** the command fails with `unknown_change`\n- **AND** the message points to `codev list`\n\n#### Scenario: An invalid change name is refused\n\n- **WHEN** the user runs `codev status --change Bad_Name`\n- **THEN** the command fails with `invalid_change_id`\n\n### Requirement: `codev status` derives each artifact's state from the files\n\n`codev status` SHALL report every artifact of the change's schema, in\ndependency order (ties in declaration order), with one state, decided in\nthis order: `skipped` when `change.yaml` sets `skip_specs: true` and the\nartifact generates specs; `done` when a file of the change folder matches\nits output path or pattern, whatever its dependencies; `ready` when all\nits `requires` are done or skipped; `blocked` otherwise, listing the\nunsatisfied `requires` as `missingDeps`. A change without `change.yaml`\nSHALL use the project's schema.\n\n#### Scenario: A new change has only its first artifact ready\n\n- **GIVEN** a freshly created `spec-driven` change\n- **WHEN** the user runs `codev status --json`\n- **THEN** `proposal` is `ready`\n- **AND** `specs`, `design` and `tasks` are `blocked`, each with its\n  missing dependencies in `missingDeps`\n\n#### Scenario: A nested spec satisfies the specs pattern\n\n- **GIVEN** a change holding `proposal.md` and\n  `specs/identity/sso/spec.md`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `specs` is `done` and its `outputPath` is `specs/**/*.md`\n\n#### Scenario: `skip_specs` skips the specs and unblocks their dependents\n\n- **GIVEN** a change with `skip_specs: true`, `proposal.md` and\n  `design.md`\n- **WHEN** the user runs `codev status`\n- **THEN** `specs` is shown `[~]` and `tasks` is `ready`\n\n### Requirement: `codev status` tells whether planning is complete\n\n`codev status` SHALL report `applyRequires`, the schema's artifacts\nrequired before implementation, and `isPlanningComplete`, true only when\nevery artifact of `applyRequires` and of their transitive `requires` is\ndone or skipped. Its JSON output MUST carry `changeName`, `schemaName`,\n`planningHome` (the absolute project root), `changeRoot` (the absolute\nchange folder), `applyRequires`, `isPlanningComplete`, `artifacts` (each\nwith `id`, `outputPath`, `status`, `requires`, `missingDeps`) and\n`status`. The human output MUST mark each artifact `[x]` done, `[ ]`\nready, `[-]` blocked or `[~]` skipped, and name the next artifact to\nwrite. On failure, the JSON document MUST keep this shape with null or\nempty fields and the error in `status`.\n\n#### Scenario: Writing the last artifact first does not complete planning\n\n- **GIVEN** a `spec-driven` change holding only `tasks.md`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `tasks` is `done`\n- **AND** `isPlanningComplete` is `false`\n\n#### Scenario: Planning is complete once the closure is written\n\n- **GIVEN** a change holding the proposal, a spec, the design and the tasks\n- **WHEN** the user runs `codev status`\n- **THEN** every artifact is marked `[x]`\n- **AND** the output says planning is complete\n\n#### Scenario: A failure keeps the JSON shape\n\n- **GIVEN** a project without active changes\n- **WHEN** the user runs `codev status --json`\n- **THEN** the command exits with code 1\n- **AND** stdout carries `changeName: null`, `artifacts: []`,\n  `isPlanningComplete: false` and a `no_active_change` error in `status`\n",
+    "_codev/changes/specify-core-commands/specs/decisions/spec.md": "## ADDED Requirements\n\n### Requirement: `decision show` reports the decision and its raw file\n\n`codev decision show <id> --json` SHALL return `{root, decision, content,\nstatus}`: `decision` carries the same fields as an entry of\n`codev decision list --json`, and `content` the file's full text,\nfrontmatter included. A qualified identifier is `project/<id>`,\n`path:<source>/<id>` or `git:<url>/<id>`; one that matches no decision,\nlike an unknown short identifier, MUST fail with `unknown_decision_id`,\nexit code 1, in human and JSON mode.\n\n#### Scenario: The JSON report carries the decision and its file\n\n- **GIVEN** a local accepted decision `0001`\n- **WHEN** the user runs `codev decision show 0001 --json`\n- **THEN** `decision.qualifiedId` is `project/0001` and `decision.inEffect`\n  is `true`\n- **AND** `content` is the file's text, frontmatter included\n\n#### Scenario: The `project/` qualified form\n\n- **WHEN** the user runs `codev decision show project/0001`\n- **THEN** decision `0001` is displayed\n\n#### Scenario: An unknown identifier in human mode\n\n- **WHEN** the user runs `codev decision show 9999`\n- **THEN** stderr carries `error:` with a message pointing to\n  `codev decision list`\n- **AND** the command exits with code 1\n",
+    "_codev/changes/specify-core-commands/specs/init/spec.md": "## ADDED Requirements\n\n### Requirement: `codev update` regenerates the configured skills\n\n`codev update` SHALL require a `_codev/` folder in the current folder or\na parent, else fail with `no_codev_root`. It SHALL write the skill of every\nworkflow listed in `workflows:` (all eight when the key is absent),\ndropping unknown ids with an `unknown_workflow` warning. A skill whose\ncontent differs from what the running version generates but whose\n`version` stamp is the running version MUST be left in place and listed\nin `preserved`, unless `--force` is given. Skills of workflows no longer\nconfigured MUST NOT be deleted, and `_codev/config.yaml`, the specs and\nthe changes MUST NOT be modified. The JSON report MUST carry `root`,\n`created`, `updated`, `untouched`, `preserved`, `skills`, `integration`\nand `status`.\n\n#### Scenario: A hand-edited skill is preserved, then forced\n\n- **GIVEN** an installed skill edited by hand, stamped with the running\n  version\n- **WHEN** the user runs `codev update --json`\n- **THEN** the skill is unchanged and its path is in `preserved`\n- **AND** running `codev update --force` regenerates it\n\n#### Scenario: A skill from an earlier version is regenerated\n\n- **GIVEN** an installed skill stamped with an earlier codev version\n- **WHEN** the user runs `codev update`\n- **THEN** the skill is rewritten with the running version's content\n\n#### Scenario: A workflow removed from the configuration keeps its skill\n\n- **GIVEN** an installed `codev-explore` skill and `workflows:` without\n  `explore`\n- **WHEN** the user runs `codev update`\n- **THEN** `.claude/skills/codev-explore/SKILL.md` still exists\n- **AND** `skills` in the JSON report does not name `codev-explore`\n\n#### Scenario: Outside a project\n\n- **GIVEN** a folder with no `_codev/` in it or above it\n- **WHEN** the user runs `codev update`\n- **THEN** the command fails with `no_codev_root` and writes nothing\n",
+    "_codev/changes/specify-core-commands/specs/instructions/spec.md": "## Purpose\n\nGive an agent everything it needs to write one artifact of a change: where\nto write it, what to read first, and what writing it unlocks.\n\n## ADDED Requirements\n\n### Requirement: `codev instructions` picks the next artifact to write\n\nWithout an artifact argument, `codev instructions` SHALL return the first\nartifact in state `ready`, in dependency order; when none is ready it MUST\nfail with `no_artifact_ready`, pointing to `codev status`. A named artifact\nSHALL be returned whatever its state; a name the schema does not declare\nMUST fail with `unknown_artifact`, naming the schema. The change is chosen\nas the `changes` spec states for commands taking `--change`.\n\n#### Scenario: A new change starts with its proposal\n\n- **GIVEN** a single, freshly created `spec-driven` change\n- **WHEN** the user runs `codev instructions --json`\n- **THEN** `artifact` is `proposal`\n\n#### Scenario: Nothing ready is an error that guides\n\n- **GIVEN** a change whose every artifact is written\n- **WHEN** the user runs `codev instructions --change <name>`\n- **THEN** the command fails with `no_artifact_ready`\n- **AND** the message points to `codev status`\n\n#### Scenario: An unknown artifact is refused\n\n- **WHEN** the user runs `codev instructions nope --change <name>`\n- **THEN** the command fails with `unknown_artifact`\n\n### Requirement: `codev instructions` tells where to write, what to read and what it unlocks\n\nThe JSON output SHALL carry `changeName`, `schemaName`, `artifact`,\n`description`, `resolvedOutputPath` (the absolute change folder joined\nwith the artifact's output path or pattern, a glob kept as is),\n`instruction`, `template`, `context`, `rules` (only the blocks configured\nfor this artifact), `dependencies` (one `{id, path, done}` per required\nartifact, in declaration order, `done` true when it is done or skipped),\n`unlocks` (the artifacts that directly require this one), `skipped` and\n`status`. An artifact disabled by `skip_specs` SHALL be returned with\n`skipped: true` and an `artifact_skipped` warning, and the human output\nMUST then say not to create it.\n\n#### Scenario: The specs artifact exposes its pattern and dependencies\n\n- **GIVEN** a change holding only `proposal.md`\n- **WHEN** the user runs `codev instructions specs --change <name> --json`\n- **THEN** `resolvedOutputPath` ends with `specs/**/*.md`\n- **AND** `dependencies` is one entry `proposal` with `done: true`\n- **AND** `unlocks` is `[\"tasks\"]`\n\n#### Scenario: A dependency not yet written is listed as not done\n\n- **GIVEN** a change holding only `proposal.md`\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `dependencies` lists `specs` and `design` with `done: false`\n\n#### Scenario: Rules are filtered per artifact\n\n- **GIVEN** a configuration with `rules.design` and `rules.tasks`\n- **WHEN** the user runs `codev instructions design --change <name> --json`\n- **THEN** `rules` holds only the `design` blocks\n\n#### Scenario: A skipped artifact is not to be created\n\n- **GIVEN** a change with `skip_specs: true`\n- **WHEN** the user runs `codev instructions specs --change <name>`\n- **THEN** the output says the artifact is disabled by `skip_specs`\n- **AND** a `--json` run carries `skipped: true` and an\n  `artifact_skipped` warning\n\n#### Scenario: A failure is one JSON document with exit code 1\n\n- **WHEN** the user runs `codev instructions nope --change <name> --json`\n- **THEN** the command exits with code 1\n- **AND** stdout is one JSON document with `artifact: null`, empty\n  `dependencies` and an `unknown_artifact` error in `status`\n",
+    "_codev/changes/specify-core-commands/specs/schemas/spec.md": "## Purpose\n\nTell which workflow schemas a project can use, where each comes from, and\nthe order of its artifacts.\n\n## ADDED Requirements\n\n### Requirement: Project schemas come first and can replace the built-in one\n\nA schema SHALL be any folder of `_codev/schemas/` holding a `schema.yaml`,\nnamed after its folder, plus the built-in `spec-driven`. When a project\nfolder is named `spec-driven`, it MUST replace the built-in one, for\n`codev schemas` and for every command that resolves a schema. Schemas are\nnever inherited from a source.\n\n#### Scenario: The built-in schema alone\n\n- **GIVEN** a project with an empty `_codev/schemas/`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** `schemas` is one entry `spec-driven`, origin `built-in`, flow\n  `proposal`, `specs`, `design`, `tasks`\n\n#### Scenario: A project schema overrides the built-in one\n\n- **GIVEN** `_codev/schemas/spec-driven/schema.yaml`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** `spec-driven` is listed once, with origin `project`\n\n### Requirement: `codev schemas` lists every usable schema with its flow\n\n`codev schemas` SHALL list the project schemas sorted by name, then the\nbuilt-in one, each with `name`, `origin` (`project` or `built-in`) and\n`flow`, its artifact ids in dependency order. Its JSON output MUST be\n`{schemas, root, status}`. A schema that cannot be loaded MUST be left out\nwith a `schema_unusable` warning naming it, without hiding the others nor\nfailing the command. Outside a project it MUST fail with `no_codev_root`.\n\n#### Scenario: Project schemas are listed before the built-in one\n\n- **GIVEN** project schemas `zeta` and `alpha`\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** the names are `alpha`, `zeta`, `spec-driven` in that order\n\n#### Scenario: A broken schema does not hide the others\n\n- **GIVEN** a project schema `broken` whose artifacts form a cycle\n- **WHEN** the user runs `codev schemas`\n- **THEN** `spec-driven` is listed and `broken` is not\n- **AND** a `schema_unusable` warning names `broken`\n- **AND** the command exits with code 0\n\n#### Scenario: Outside a project\n\n- **GIVEN** a folder with no `_codev/` in it or above it\n- **WHEN** the user runs `codev schemas --json`\n- **THEN** the command exits with code 1 with `no_codev_root` in `status`\n"
+  },
+  "validate": {
+    "specify-core-commands": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "specify-core-commands",
+          "path": "_codev/changes/specify-core-commands"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792067476/plan-specify-core-commands-1",
+      "status": []
+    }
+  }
+}

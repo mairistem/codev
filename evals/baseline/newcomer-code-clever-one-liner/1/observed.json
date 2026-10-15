@@ -1,0 +1,153 @@
+{
+  "format": 2,
+  "case": "newcomer-code-clever-one-liner",
+  "error": null,
+  "costUsd": 0.2756494,
+  "durationMs": 19793,
+  "consumption": {
+    "durationApiMs": 19644,
+    "turns": 5,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1162,
+      "cacheCreation": 25098,
+      "cacheRead": 187042,
+      "output": 1823
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7389,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7389
+        }
+      },
+      {
+        "cacheCreation": 13399,
+        "cacheRead": 29528,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13399
+        }
+      },
+      {
+        "cacheCreation": 2604,
+        "cacheRead": 42927,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2604
+        }
+      },
+      {
+        "cacheCreation": 1386,
+        "cacheRead": 45531,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1386
+        }
+      },
+      {
+        "cacheCreation": 320,
+        "cacheRead": 46917,
+        "input": 2,
+        "output": 189,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 320
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "group-prices",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "export const bucket = (ps: Price[]) =>\n  ps.reduce<Record<string, Price[]>>((a, p) => ((a[(p.cents >> 4) & 0x3e8 ? \"hi\" : \"lo\"] ||= []).push(p), a), {});\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/pricing.ts:9-10",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Replace the one-liner with a plain loop over a named threshold, e.g. `const PREMIUM_THRESHOLD_CENTS = 1000;` and `function splitByPriceBand(prices: Price[]): { cheap: Price[]; premium: Price[] }` that pushes each price into `premium` when `price.cents >= PREMIUM_THRESHOLD_CENTS`, else into `cheap`. A newcomer cannot tell from `(p.cents >> 4) & 0x3e8` where \"premium\" starts (the doc comment does not say; the 10-euro rule lives only in the proposal), and the dense shape hides that the mask is not a threshold at all: a 128-cent price gives `(128 >> 4) & 0x3e8 = 8`, so it lands in \"hi\", while 1000 cents is the intended boundary. The comma operator returning `a`, the `||=` inside an index, the single-letter names `ps`/`a`/`p`, the untyped `\"hi\"`/`\"lo\"` keys behind `Record<string, Price[]>` (callers must guess the keys, and a missing bucket is `undefined`), and a name `bucket` that does not say by what all add to the cost; the simple version removes all of them at once.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`bucket` packs a bit-trick threshold, an assignment and a push into one unreadable line"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/group-prices/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

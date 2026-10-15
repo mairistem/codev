@@ -1,0 +1,230 @@
+{
+  "format": 2,
+  "case": "ops-code-retry-without-backoff",
+  "error": null,
+  "costUsd": 0.33291060000000006,
+  "durationMs": 40577,
+  "consumption": {
+    "durationApiMs": 40448,
+    "turns": 9,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 27117,
+      "cacheRead": 234698,
+      "output": 3403
+    },
+    "toolCalls": 8,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7409,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7409
+        }
+      },
+      {
+        "cacheCreation": 14145,
+        "cacheRead": 29548,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14145
+        }
+      },
+      {
+        "cacheCreation": 1225,
+        "cacheRead": 43693,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1225
+        }
+      },
+      {
+        "cacheCreation": 1835,
+        "cacheRead": 44918,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1835
+        }
+      },
+      {
+        "cacheCreation": 894,
+        "cacheRead": 46753,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 3,
+        "sources": {
+          "codev review": 688,
+          "edit": 206
+        }
+      },
+      {
+        "cacheCreation": 1609,
+        "cacheRead": 47647,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 1052,
+          "edit": 558
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (A dropped webhook is invisible to operators) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-merchant-webhooks",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n  try {\n    const response = await fetch(url, {\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/webhooks.ts:9-23",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Wait between attempts with an exponential backoff and jitter (for example 1 s, 2 s, 4 s, 8 s), ideally from a durable queue rather than an in-process loop, so a merchant endpoint that is briefly down or rate-limiting gets time to recover. Today, when the merchant returns a 503 or resets connections for a few seconds, the five attempts run immediately one after another, all fail inside that window, and the event is dropped; meanwhile every payment event hits the struggling server five times in a burst. Also stop retrying on non-retryable answers (4xx other than 408/429), which the loop currently retries just the same.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Webhook retries fire back to back, with no backoff"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "console.debug(`webhook ${event.id} dropped after ${MAX_ATTEMPTS} attempts`);\nreturn false;\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 27,
+        "location": "src/webhooks.ts:24-25",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "When a merchant endpoint fails five times, the payment notification is permanently lost and the only trace is a `console.debug` free-text line, which production log levels usually suppress; a non-2xx response is not logged at all (only thrown errors reach the catch), and the caller at line 34 ignores the `false` return. Log the final drop at error level through a structured logger with fields (event id, merchant id, URL host, attempt, HTTP status or error), emit a metric for delivered/failed/dropped deliveries so an alert can fire, log the status of non-ok responses, and persist dropped events so they can be replayed.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "A dropped webhook is invisible to operators"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "onPaymentEvent(async (event) => {\n  const rows = await query<{ webhook_url: string }>(\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 42,
+        "location": "src/webhooks.ts:28-36",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "If `query` rejects (database unavailable), the async handler's promise rejects; depending on how `onPaymentEvent` (not in this diff) treats a returned promise, this becomes an unhandled rejection that can crash the process or be silently lost with no event id in the log. Wrap the handler body in a try/catch that logs the event id and error through the structured logger.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Errors in the payment listener are not handled"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-merchant-webhooks/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

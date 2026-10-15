@@ -1,0 +1,205 @@
+{
+  "format": 2,
+  "case": "migration-code-drop-and-rename",
+  "error": null,
+  "costUsd": 0.29860580000000003,
+  "durationMs": 25040,
+  "consumption": {
+    "durationApiMs": 25250,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 25429,
+      "cacheRead": 232044,
+      "output": 2389
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 13999,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13999
+        }
+      },
+      {
+        "cacheCreation": 820,
+        "cacheRead": 43536,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 820
+        }
+      },
+      {
+        "cacheCreation": 1123,
+        "cacheRead": 44356,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1123
+        }
+      },
+      {
+        "cacheCreation": 1518,
+        "cacheRead": 45479,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1518
+        }
+      },
+      {
+        "cacheCreation": 571,
+        "cacheRead": 46997,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 571
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Irreversible DROP COLUMN with no down migration or backup) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Public JSON field renamed user_name to userName with no BREAKING mark or compatibility) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "drop-legacy-email",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "ALTER TABLE users DROP COLUMN legacy_email;\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "migrations/0005_drop_legacy_email.sql:2",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Every existing `users` row loses its `legacy_email` value when 0005 runs, and nothing can bring it back: unlike `0004_accounts.sql`, which ships `0004_accounts.down.sql`, there is no `0005_drop_legacy_email.down.sql`, and the plan has no backup step. \"Not written since 2023\" does not mean the values are no longer needed. Copy the column out first (for example `CREATE TABLE users_legacy_email AS SELECT id, legacy_email FROM users WHERE legacy_email IS NOT NULL;`), add a down migration that re-adds the column and restores it from that copy, or say in the plan why the data can be lost and how to recover it.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Irreversible DROP COLUMN with no down migration or backup"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename = \"userName\")]\npub user_name: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 34,
+        "location": "src/api.rs:8-9",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "`Account` is a type of the public HTTP API (\"The JSON types of the public HTTP API\"). Before this change, the account endpoint returned `user_name`. After it, the endpoint returns only `userName`, so every existing client that reads `user_name` gets a missing field or a deserialization error without warning. The proposal's release note lists it only as \"Changed: Account JSON uses camelCase.\": it has no **BREAKING** item and does not say what consumers must do. Also, no deprecation period is planned. Mark it **BREAKING** in the release note and give the migration step. Better, keep old consumers working during a deprecation window: serialize both names (for example a second `#[serde(rename = \"user_name\")]` field, or a versioned endpoint), then remove `user_name` in a later release.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Public JSON field renamed user_name to userName with no BREAKING mark or compatibility"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/drop-legacy-email/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

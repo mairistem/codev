@@ -1,0 +1,259 @@
+{
+  "format": 2,
+  "case": "privacy-code-error-message-pii",
+  "error": null,
+  "costUsd": 0.334121,
+  "durationMs": 29585,
+  "consumption": {
+    "durationApiMs": 30012,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 29027,
+      "cacheRead": 241900,
+      "output": 2627
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 13813,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13813
+        }
+      },
+      {
+        "cacheCreation": 4553,
+        "cacheRead": 43342,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 4553
+        }
+      },
+      {
+        "cacheCreation": 590,
+        "cacheRead": 47895,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 590
+        }
+      },
+      {
+        "cacheCreation": 2025,
+        "cacheRead": 48485,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2025
+        }
+      },
+      {
+        "cacheCreation": 656,
+        "cacheRead": 50510,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 656
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Looked-up e-mail address written to the error log) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (Chat vendor receives phone, birth date and address it does not need) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-support-lookup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "throw new NotFoundError(`no customer with e-mail ${email}`);\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/support.ts:20",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Keep the e-mail address out of the error message, e.g. `throw new NotFoundError(\"no customer with this e-mail\")`. As written, every lookup that matches no customer (a typo, or an address that is not a customer's) reaches `errorHandler` in src/server.ts, which runs `logger.error(\"request failed\", { path: req.path, error: err.message })`, so the typed address lands in the application logs and wherever they are shipped (GDPR Art. 5(1)(c) and 5(1)(f), Art. 32). The 404 body itself stays generic; only the log leaks.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Looked-up e-mail address written to the error log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "user: {\n  id: String(customer.id),\n  name: customer.name,\n  email: customer.email,\n  phone: customer.phone,\n  birthDate: customer.birth_date,\n  address: customer.address,\n},\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 33,
+        "location": "src/support.ts:41-48",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal's stated purpose is that the Helply widget \"greets the signed-in customer by name, so that the agent knows who they talk to\"; the opaque id and the name serve it. Drop `phone`, `birthDate` and `address` (and `email` unless the team states why Helply needs it) from the settings, and select only the columns needed in `customerById`. Today every signed-in customer who opens the chat sends their full record through GET /chat/settings to the browser and on to Helply, a third-party processor (GDPR Art. 5(1)(c) data minimisation, Art. 25, Art. 28).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Chat vendor receives phone, birth date and address it does not need"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "- [x] personal-data — customers' records are read and the chat vendor receives who is chatting\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 63,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: name Helply as a processor in the plan, confirm a data processing agreement (GDPR Art. 28), where it stores the data (Chapter V if outside the EEA), the lawful basis for sharing (Art. 6), and how Helply's copy is retained and erased when a customer is deleted or exercises their rights (Art. 15–17). The code cannot show any of this; only the controller can.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Helply as processor: contract, location and lawful basis not identified"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"SELECT id, email, name, phone, birth_date, address FROM customers WHERE lower(email) = lower($1)\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 83,
+        "location": "src/support.ts:16",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The lookup exists so that agents stop asking customers who they are; the route returns the whole record, birth date and address included, to every `support` user. Unless the team states that agents need those fields, return only id, name and e-mail (GDPR Art. 5(1)(c), Art. 25). Recorded with low confidence: what agents actually need is not stated in the plan.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Support lookup returns birth date and address to agents by default"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-support-lookup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

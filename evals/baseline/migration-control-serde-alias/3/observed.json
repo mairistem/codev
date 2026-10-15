@@ -1,0 +1,191 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.3374458,
+  "durationMs": 28735,
+  "consumption": {
+    "durationApiMs": 28689,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1178,
+      "cacheCreation": 27635,
+      "cacheRead": 328799,
+      "output": 2481
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 13779,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13779
+        }
+      },
+      {
+        "cacheCreation": 1115,
+        "cacheRead": 43313,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1115
+        }
+      },
+      {
+        "cacheCreation": 209,
+        "cacheRead": 44428,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 209
+        }
+      },
+      {
+        "cacheCreation": 2051,
+        "cacheRead": 44637,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2051
+        }
+      },
+      {
+        "cacheCreation": 1911,
+        "cacheRead": 46688,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1911
+        }
+      },
+      {
+        "cacheCreation": 862,
+        "cacheRead": 48599,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 603,
+          "output": 259
+        }
+      },
+      {
+        "cacheCreation": 313,
+        "cacheRead": 49461,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 313
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Add a unit test that loads a configuration file holding only `listen = \"...\"` through `config::load` and checks `bind_address`, and one that serializes an `OrderResponse` with `serde_json` and checks the key is `customer_id` (src/api.rs:10-11, `#[serde(rename = \"customer_id\")]`). Tasks 1.1 and 1.2 were verified only by a one-off manual check on staging, and the repository has no test, so removing the alias or the rename later would break existing `config.toml` files (start-up error on the missing `bind_address`) and partners' integrations (`customer_id` gone from the JSON) with nothing to catch it, against the criterion that the migration path is tested.",
+        "reported": false,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The compatibility paths for `listen` and `customer_id` have no automated test"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

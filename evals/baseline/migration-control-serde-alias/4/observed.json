@@ -1,0 +1,170 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.31019699999999994,
+  "durationMs": 23174,
+  "consumption": {
+    "durationApiMs": 22920,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 27406,
+      "cacheRead": 237820,
+      "output": 2120
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 13771,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13771
+        }
+      },
+      {
+        "cacheCreation": 2706,
+        "cacheRead": 43300,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2706
+        }
+      },
+      {
+        "cacheCreation": 1661,
+        "cacheRead": 46006,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1661
+        }
+      },
+      {
+        "cacheCreation": 1512,
+        "cacheRead": 47667,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1512
+        }
+      },
+      {
+        "cacheCreation": 366,
+        "cacheRead": 49179,
+        "input": 2,
+        "output": 158,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 366
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Both compatibility paths are correct today: `#[serde(alias = \"listen\")]` keeps existing `config.toml` files readable, and `#[serde(rename = \"customer_id\")]` (src/api.rs:10) keeps the partners' JSON unchanged. But the migration path was verified only by hand on staging (tasks 1.1 and 1.2), and the repository has no test. Add a unit test that `config::load` accepts both a file with `listen` and one with `bind_address`, and one that serializes `OrderResponse` and asserts the `customer_id` key, so that removing either attribute in a later cleanup fails the build instead of breaking old configuration files or partners' integrations (docs/api.md promises two releases of deprecation).",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "No automated test pins the `listen` alias and the `customer_id` JSON name"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

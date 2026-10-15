@@ -1,0 +1,256 @@
+{
+  "format": 2,
+  "case": "privacy-plan-birth-date-retention",
+  "error": null,
+  "costUsd": 0.42786,
+  "durationMs": 44332,
+  "consumption": {
+    "durationApiMs": 44163,
+    "turns": 13,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 33063,
+      "cacheRead": 377590,
+      "output": 4344
+    },
+    "toolCalls": 12,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7405,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7405
+        }
+      },
+      {
+        "cacheCreation": 5923,
+        "cacheRead": 29544,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 5923
+        }
+      },
+      {
+        "cacheCreation": 374,
+        "cacheRead": 35467,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 374
+        }
+      },
+      {
+        "cacheCreation": 12252,
+        "cacheRead": 35841,
+        "input": 2,
+        "output": 52,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12252
+        }
+      },
+      {
+        "cacheCreation": 369,
+        "cacheRead": 48093,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "codev review": 151,
+          "output": 218
+        }
+      },
+      {
+        "cacheCreation": 2703,
+        "cacheRead": 48462,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 693,
+          "file": 2010
+        }
+      },
+      {
+        "cacheCreation": 1061,
+        "cacheRead": 51165,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1061
+        }
+      },
+      {
+        "cacheCreation": 2427,
+        "cacheRead": 52226,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2427
+        }
+      },
+      {
+        "cacheCreation": 549,
+        "cacheRead": 54653,
+        "input": 2,
+        "output": 160,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 549
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-birthday-greetings",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "kept as long as the profile exists, and copied with the rest of the\ndatabase into the nightly backups.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "design.md#Decision: Birth dates live on the profile",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Tie retention to the purpose (GDPR Art. 5(1)(e), Art. 25): when a member opts out, clear `birthday` and `phone` on their profile, and add a spec requirement and scenario for opting out (the spec only covers opting in and \"the phone number was removed\", which leaves the birthday stored). State how long the nightly backups are kept and that a cleared value disappears from them once they rotate, so erasure reaches every copy. Failing scenario: a member opts in, then turns greetings off; nothing sends them anything any more, yet their birthday and mobile number stay in `profiles` for the life of the account and in every nightly backup with no stated expiry.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Birthday and phone outlive the opt-in, in the table and in backups"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "phone number and display name to Textly's API (hosted in the United\nStates), which sends the message.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 36,
+        "location": "design.md#Decision: Greetings are sent by SMS through Textly",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The transfer is identified; record, as a question for the team, the processor agreement with Textly (GDPR Art. 28), the transfer mechanism for the United States (Chapter V: adequacy decision or standard contractual clauses), and how long Textly keeps the numbers and message logs. If the greeting does not need the display name, send only the phone number and a generic text. Confidence is low: the contract and Textly's terms are not in the material.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Phone numbers and names go to a US processor with no stated safeguard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Members enjoy being remembered; marketing wants birthday messages.\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 58,
+        "location": "proposal.md#Why",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Ask the team to state the purpose and lawful basis in the proposal (GDPR Art. 5(1)(b), Art. 6): presumably consent through the opt-in, limited to the birthday greeting. \"Marketing wants\" suggests other uses of the birthday and phone; say whether any other use is excluded, or that it needs its own basis. Only the controller can decide this.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "low",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Purpose and lawful basis are not stated"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-birthday-greetings/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

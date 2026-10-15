@@ -1,0 +1,153 @@
+{
+  "format": 2,
+  "case": "newcomer-code-deep-nesting",
+  "error": null,
+  "costUsd": 0.2683158,
+  "durationMs": 16531,
+  "consumption": {
+    "durationApiMs": 16406,
+    "turns": 5,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1162,
+      "cacheCreation": 25057,
+      "cacheRead": 187714,
+      "output": 1466
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 13746,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13746
+        }
+      },
+      {
+        "cacheCreation": 2623,
+        "cacheRead": 43271,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2623
+        }
+      },
+      {
+        "cacheCreation": 991,
+        "cacheRead": 45894,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 991
+        }
+      },
+      {
+        "cacheCreation": 311,
+        "cacheRead": 46885,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 311
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "import-accounts",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "if !row.email.is_empty() {\n    match db.find_account(&row.email)? {\n        Some(account) => {\n            if account.plan != row.plan {\n                for seat in &row.seats {\n                    if !account.seats.contains(seat) {\n                        if seat.contains('@') {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "src/import.rs:14-40",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Flatten the function: skip rows with an empty email by an early `continue`; extract a helper (e.g. `add_new_seats(db, account_id, existing, seats) -> Result<usize, DbError>`) that holds the single seat loop now duplicated in the `Some` and `None` arms (lines 19-26 and 31-36); name the `seat.contains('@')` test (e.g. `is_email_seat`) and say in a comment why non-email seats are dropped. Most of all, explain the `account.plan != row.plan` guard on line 18: a reader cannot tell without the plan that seats of an existing account are only added when its plan differs from the row's — it reads like a bug, and the doc comment (\"returns how many seats were created\") says nothing of it. Rows skipped for an empty email are likewise silent; document the skip in the doc comment.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "`import` nests six levels deep and hides its filtering rules"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/import-accounts/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

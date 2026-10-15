@@ -1,0 +1,201 @@
+{
+  "format": 2,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.31718939999999995,
+  "durationMs": 23709,
+  "consumption": {
+    "durationApiMs": 23664,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 27870,
+      "cacheRead": 239672,
+      "output": 2266
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 14645,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14645
+        }
+      },
+      {
+        "cacheCreation": 2836,
+        "cacheRead": 44182,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2836
+        }
+      },
+      {
+        "cacheCreation": 644,
+        "cacheRead": 47018,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 644
+        }
+      },
+      {
+        "cacheCreation": 1472,
+        "cacheRead": 47662,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1472
+        }
+      },
+      {
+        "cacheCreation": 875,
+        "cacheRead": 49134,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 875
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (GET /invoices/:id returns any organization's invoice) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "\"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n[id],\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/invoices.ts:32-35",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Scope the lookup to the caller's organization — `WHERE id = $1 AND org_id = $2` with `[id, currentUser(req).orgId]` — and answer 404 when no row matches, so the endpoint does not reveal which ids exist in other organizations. Add a test that asserts the detail query is bound to the caller's `orgId`, like the list test does. Insecure direct object reference / missing authorization (CWE-639, CWE-862): any signed-in user of organization A sends `GET /invoices/42` (or iterates ids) and receives organization B's invoice number, total and date; the handler never calls `currentUser`, while the proposal states the API serves \"the caller's organization's invoices\".",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "GET /invoices/:id returns any organization's invoice"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 35,
+        "location": "src/server.ts:15-18",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Log the error server-side and answer a generic body such as `{ error: \"internal error\" }`; keep `err.message` only for errors explicitly marked as safe to expose (and honour `err.status`/`err.expose` for body-parser errors). Information exposure through an error message (CWE-209): anyone, even unauthenticated since `express.json()` runs before `requireUser`, sends a malformed JSON body with `Content-Type: application/json`; the parser's SyntaxError reaches this handler and the response carries the stack trace with server file paths and dependency versions — and a database failure would leak the `pg` error text (table, column, constraint names).",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The JSON error handler sends the exception message and stack trace to the client"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

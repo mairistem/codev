@@ -1,0 +1,245 @@
+{
+  "format": 2,
+  "case": "security-plan-tokens-in-clear",
+  "error": null,
+  "costUsd": 0.3706984,
+  "durationMs": 36205,
+  "consumption": {
+    "durationApiMs": 36212,
+    "turns": 12,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1160,
+      "cacheCreation": 30983,
+      "cacheRead": 277387,
+      "output": 3319
+    },
+    "toolCalls": 11,
+    "orientationCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 2440,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2440
+        }
+      },
+      {
+        "cacheCreation": 12255,
+        "cacheRead": 31969,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2604,
+          "skill": 9651
+        }
+      },
+      {
+        "cacheCreation": 2314,
+        "cacheRead": 44224,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "codev review": 2314
+        }
+      },
+      {
+        "cacheCreation": 3905,
+        "cacheRead": 46538,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 292,
+          "file": 3613
+        }
+      },
+      {
+        "cacheCreation": 2102,
+        "cacheRead": 50443,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2102
+        }
+      },
+      {
+        "cacheCreation": 577,
+        "cacheRead": 52545,
+        "input": 2,
+        "output": 142,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 554,
+          "output": 23
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (API tokens are stored in clear in the database) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-2 (The Authorization header, and so every API token, is written to the logs) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-api-tokens",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The `api_tokens` table holds `user_id`, `token` and `created_at`; the\nmiddleware looks a request's token up with `WHERE token = $1`. Storing the\ntoken as given keeps the lookup a simple indexed equality.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "design.md#Decision: Tokens are stored as given",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Store only a digest of the token (SHA-256 of the 32 random bytes is enough for high-entropy tokens; no bcrypt needed) in a `token_hash` column with a unique index, hash the presented bearer token in the middleware and look it up with `WHERE token_hash = $1` — still a single indexed equality, so the stated performance reason does not require clear storage. Anyone who reads the `api_tokens` table (a database backup, a replica, a read-only SQL access, an injection elsewhere) otherwise obtains every live bearer credential and can call the API as each user (CWE-312, CWE-256). Show the clear token once at creation, as the spec already requires, and never persist it. Update the design's Alternatives and task 1.1/1.2 accordingly.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "API tokens are stored in clear in the database"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "To diagnose integration problems, the middleware logs each request's\nmethod, path and headers at `info` level, including `Authorization`, so\nsupport can see which token an integration sent.\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 37,
+        "location": "design.md#Decision: Every request is logged with its headers",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Never log the `Authorization` header (nor `Cookie` / other credential headers): redact it to its scheme (`Bearer [redacted]`) or log a non-reversible identifier of the token (its row id or a short prefix of its hash) so support can still tell which token was sent. As designed, anyone with read access to the info-level logs — support staff, the log pipeline, a log aggregation vendor — collects every user's bearer token and can replay it against the API (CWE-532); with revocation deferred, a token leaked this way stays valid forever. Task 1.3's test `logs_requests` should assert that the token value never appears in the log output.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The Authorization header, and so every API token, is written to the logs"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "**Non-Goals:** OAuth, scopes, revocation (a later change).\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-3",
+        "line": 62,
+        "location": "design.md#Goals / Non-Goals",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "The proposal's own motivation is that \"a leaked integration exposes the account\", yet with revocation deferred and no expiry in the design, a token that leaks (through the logs of R-security-2, a compromised integration, or the table of R-security-1) grants permanent API access as the user, and changing the password does not stop it. Either ship a minimal delete of the user's own tokens with this change, or give tokens an expiry (`expires_at` checked by the middleware) until the revocation change lands; the Risks entry \"revoking the old one comes with the later revocation change\" should state this exposure explicitly if the deferral is kept.",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A leaked token can never be invalidated: no revocation and no expiry"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-api-tokens/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

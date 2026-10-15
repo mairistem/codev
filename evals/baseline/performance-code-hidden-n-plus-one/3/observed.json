@@ -1,0 +1,198 @@
+{
+  "format": 2,
+  "case": "performance-code-hidden-n-plus-one",
+  "error": null,
+  "costUsd": 0.3101296,
+  "durationMs": 26284,
+  "consumption": {
+    "durationApiMs": 26193,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 26694,
+      "cacheRead": 235663,
+      "output": 2423
+    },
+    "toolCalls": 6,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7404,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7404
+        }
+      },
+      {
+        "cacheCreation": 13969,
+        "cacheRead": 29543,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13969
+        }
+      },
+      {
+        "cacheCreation": 2375,
+        "cacheRead": 43512,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2375
+        }
+      },
+      {
+        "cacheCreation": 667,
+        "cacheRead": 45887,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 667
+        }
+      },
+      {
+        "cacheCreation": 1474,
+        "cacheRead": 46554,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1474
+        }
+      },
+      {
+        "cacheCreation": 805,
+        "cacheRead": 48028,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 573,
+          "edit": 232
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-monthly-report",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "for invoice in &invoices {\n    lines.push(ReportLine {\n        number: invoice.number.clone(),\n        customer: customer_label(db, invoice)?,\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 15,
+        "location": "src/report.rs:23-26",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "customer_label calls db.customer(invoice.customer_id) (src/report.rs:39), one `SELECT ... FROM customers WHERE id = $1` per invoice: with the proposal's ~3 000 invoices a month, one report runs ~3 000 customer queries for ~800 distinct customers, and the count grows linearly with invoices. Collect the distinct customer_ids, fetch them once with the existing db.customers(&ids) (`WHERE id = ANY($1)`), index them in a HashMap<i64, Customer>, and build each label from the map. Keep the current error behavior for a missing customer (return a DbError) rather than silently skipping the line.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "One customer query per invoice (N+1)"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "fn purchase_order(notes: &str) -> Option<String> {\n    let pattern = Regex::new(r\"PO-\\d{4}-\\d{4}\").expect(\"a valid pattern\");\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 40,
+        "location": "src/report.rs:44-46",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "purchase_order is called for every invoice (src/report.rs:28) and compiles the same pattern each time: ~3 000 regex compilations per monthly report, growing linearly with invoices, where the per-item work is a short search. Compile it once, e.g. a `static PO_PATTERN: std::sync::LazyLock<Regex>` (or OnceLock), and use it in purchase_order. Results are unchanged.",
+        "reported": true,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Regex compiled once per invoice"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-monthly-report/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

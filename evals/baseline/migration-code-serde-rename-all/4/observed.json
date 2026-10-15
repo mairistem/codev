@@ -1,0 +1,216 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.3117962,
+  "durationMs": 23907,
+  "consumption": {
+    "durationApiMs": 23642,
+    "turns": 7,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1176,
+      "cacheCreation": 26360,
+      "cacheRead": 277216,
+      "output": 2224
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 13618,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13618
+        }
+      },
+      {
+        "cacheCreation": 690,
+        "cacheRead": 43143,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 690
+        }
+      },
+      {
+        "cacheCreation": 259,
+        "cacheRead": 43833,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 259
+        }
+      },
+      {
+        "cacheCreation": 2395,
+        "cacheRead": 44092,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2395
+        }
+      },
+      {
+        "cacheCreation": 1510,
+        "cacheRead": 46487,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1510
+        }
+      },
+      {
+        "cacheCreation": 502,
+        "cacheRead": 47997,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 478,
+          "output": 24
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (camelCase renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Existing config.toml without default_currency no longer loads) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `order_id`, `customer_id`, `total_cents` and `status` keep their snake_case names and only `currency` is added. Today `GET /orders/{id}` returns `order_id`, `customer_id` and `total_cents`; after this change it returns `orderId`, `customerId` and `totalCents`, so every partner integration reading those fields gets a missing field on the first response after deploy. `docs/api.md` promises that \"a field is never renamed or removed without two releases of deprecation\", the proposal only announces an added field, and the release note has no **BREAKING** item. If camelCase is wanted, it needs its own change: emit both names for two releases, then mark the removal BREAKING.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "camelCase renames every existing order JSON field"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "pub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 35,
+        "location": "src/config.rs:10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the field a default — `#[serde(default = \"...\")]` returning `\"EUR\"`, the currency every existing order is in — so a deployed `config.toml` holding only `database_url` and `listen` keeps loading. As written, `toml::from_str` fails with a missing-field error on such a file and the service refuses to start after the upgrade; neither the release note nor the docs tell operators to add the key. If the key must stay required, announce it as a **BREAKING** item in the release note with the line to add, and add a test that loads the pre-change `config.example.toml`.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Existing config.toml without default_currency no longer loads"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

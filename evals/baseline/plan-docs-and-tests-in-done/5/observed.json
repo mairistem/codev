@@ -1,0 +1,308 @@
+{
+  "format": 2,
+  "case": "plan-docs-and-tests-in-done",
+  "error": null,
+  "costUsd": 1.2769586,
+  "durationMs": 189553,
+  "consumption": {
+    "durationApiMs": 187835,
+    "turns": 30,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 74831,
+      "cacheRead": 1595008,
+      "output": 17908
+    },
+    "toolCalls": 29,
+    "orientationCalls": 22,
+    "calls": [
+      {
+        "cacheCreation": 7693,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7693
+        }
+      },
+      {
+        "cacheCreation": 16223,
+        "cacheRead": 29832,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1889,
+          "skill": 14334
+        }
+      },
+      {
+        "cacheCreation": 1872,
+        "cacheRead": 46055,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1872
+        }
+      },
+      {
+        "cacheCreation": 1130,
+        "cacheRead": 47927,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1130
+        }
+      },
+      {
+        "cacheCreation": 1146,
+        "cacheRead": 49057,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1146
+        }
+      },
+      {
+        "cacheCreation": 6826,
+        "cacheRead": 50203,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 6826
+        }
+      },
+      {
+        "cacheCreation": 466,
+        "cacheRead": 57029,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 119,
+          "search": 347
+        }
+      },
+      {
+        "cacheCreation": 362,
+        "cacheRead": 57495,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 362
+        }
+      },
+      {
+        "cacheCreation": 1409,
+        "cacheRead": 57857,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1409
+        }
+      },
+      {
+        "cacheCreation": 324,
+        "cacheRead": 59266,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 324
+        }
+      },
+      {
+        "cacheCreation": 271,
+        "cacheRead": 59590,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 271
+        }
+      },
+      {
+        "cacheCreation": 3839,
+        "cacheRead": 59861,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3839
+        }
+      },
+      {
+        "cacheCreation": 3086,
+        "cacheRead": 63700,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 22,
+          "shell": 3064
+        }
+      },
+      {
+        "cacheCreation": 988,
+        "cacheRead": 66786,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 988
+        }
+      },
+      {
+        "cacheCreation": 2095,
+        "cacheRead": 67774,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2095
+        }
+      },
+      {
+        "cacheCreation": 1261,
+        "cacheRead": 69869,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1261
+        }
+      },
+      {
+        "cacheCreation": 3593,
+        "cacheRead": 71130,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3593
+        }
+      },
+      {
+        "cacheCreation": 1544,
+        "cacheRead": 74723,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1544
+        }
+      },
+      {
+        "cacheCreation": 1228,
+        "cacheRead": 76267,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1228
+        }
+      },
+      {
+        "cacheCreation": 1921,
+        "cacheRead": 77495,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1921
+        }
+      },
+      {
+        "cacheCreation": 2175,
+        "cacheRead": 79416,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 2175
+        }
+      },
+      {
+        "cacheCreation": 4358,
+        "cacheRead": 81591,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev instructions": 4135,
+          "edit": 179,
+          "output": 44
+        }
+      },
+      {
+        "cacheCreation": 5353,
+        "cacheRead": 85949,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 4986,
+          "edit": 311,
+          "output": 56
+        }
+      },
+      {
+        "cacheCreation": 1393,
+        "cacheRead": 91302,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1358,
+          "output": 35
+        }
+      },
+      {
+        "cacheCreation": 4275,
+        "cacheRead": 92695,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 3042,
+          "edit": 1233
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/plan-requires-docs-and-tests/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/plan-requires-docs-and-tests/design.md": "# Design: Plans require a documentation task and automated tests, and apply runs the full suite\n\n## Context\n\nObserved today:\n\n- The tech lead's criteria live in the role block at the top of the `tasks`\n  instruction of `assets/schemas/spec-driven/schema.yaml`, embedded in the\n  binary by `crates/codev-engine/src/schemas.rs` (`include_str!`). They ask\n  for each task to name a verification and for every scenario to be covered\n  by \"at least one task's verification\" — a manual check qualifies, and\n  nothing mentions documentation or a full-suite run.\n- The `tasks.md` template (`assets/schemas/spec-driven/templates/tasks.md`)\n  has generic groups only.\n- `/codev-propose`'s traceability step (`assets/workflows/propose.md`,\n  \"### 6. Check traceability\") checks that each scenario has a task whose\n  verification refers to it.\n- `/codev-apply` (`assets/workflows/apply.md`) runs each task's own\n  verification, then, in \"### 5. Finish\", reports the change ready to be\n  archived. It never runs the project's whole suite.\n- Tests that lock this text: `spec_driven_instructions_start_with_a_role_block`\n  and `a_project_schema_instruction_is_returned_as_written` in\n  `crates/codev-engine/src/instructions.rs`; `every_embedded_artifact_has_its_template`\n  in `crates/codev-engine/src/schemas.rs`; the body-keyword tests of\n  `crates/codev-agents/src/workflows.rs` (`propose_body_carries_the_review_steps`,\n  `onboard_body_relays_codev_doctor` as the pattern to follow).\n- The user docs describe the roles in `docs/{en,fr}/src/concepts.md`\n  (\"each instruction opens with the role…\") and the traceability check and\n  `/codev-apply` in `docs/{en,fr}/src/skills.md`.\n\nNote: the installed `codev` binary used to plan this change is newer than\nthis repository's source — it serves roles separately (`codev roles`,\n`doneWhen` with `origin: schema:spec-driven`). This design targets the\nrepository's code and its main specs, which are authoritative.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- The embedded schema's tech lead criteria demand a documentation task (or\n  an explicit \"no documentation affected\"), an automated test for every\n  scenario, tests that follow the project's and its language's conventions,\n  and a final full-suite task.\n- `/codev-propose`'s traceability check enforces the same coverage.\n- `/codev-apply` runs the full test suite before saying a change is done,\n  even for a `tasks.md` written before this change.\n\n**Non-Goals**\n\n- No new CLI command, no new `config.yaml` key, no change to the JSON\n  contract (`codev-cli::contract::v1`).\n- No per-language catalog of test conventions inside codev.\n- No change to custom schemas, nor to the other roles (product owner, QA\n  analyst, architect).\n- No automatic rewriting of existing changes' `tasks.md`.\n\n## Decisions\n\n### Decision: The criteria live in the embedded schema text\n\nThe four new criteria are added to the `Done when:` list of the `tasks`\ninstruction in `schema.yaml`, and the guidance below it explains them\n(documentation per the project's editions, test per scenario, conventions,\nfinal suite task). The existing phrase \"every spec scenario is covered\" is\nkept, strengthened to \"by an automated test added or updated in a task\", so\nexisting assertions stay meaningful.\n\nRejected: injecting the criteria from Rust code for every schema. The main\nspec states that roles belong to the schema and that a custom schema's\ninstruction is returned as written; code-injected criteria would break that\nrequirement and impose them on projects that chose their own workflow.\n\n### Decision: Conventions are pointed to, not encoded\n\nThe criterion tells the tech lead to follow the project's `context`, its\n`rules` and its existing tests, and the idioms of its language (where unit\ntests live, how tests are named, which test doubles the project uses).\n\nRejected: a built-in table of conventions per language. It would duplicate\nwhat projects already write in `rules:` (this repository does exactly\nthat), go stale, and add a data model for a text instruction.\n\n### Decision: A documentation task, or an explicit \"no documentation affected\"\n\nRejected: a mandatory documentation task in every plan. An internal\nrefactor or a test-only change would get an empty task, which teaches\npeople to ignore the criterion. An explicit statement keeps the decision\nvisible and reviewable.\n\n### Decision: `/codev-apply` runs the full suite itself, in a new step\n\nA new step between \"Work through each unchecked task\" and \"Finish\" runs the\nproject's full test suite once every box is checked. Command resolution:\nthe command the final task names; otherwise the one in the project's\n`rules`/`context` (obtained with `codev instructions tasks --change <name>\n--json`); otherwise the conventional command of the detected toolchain. The\nskill reports the command and the outcome. A failing or unrunnable suite\nstops the skill before \"Finish\": no \"ready to be archived\", no archive\nsuggestion, the failing tests listed. A guardrail repeats the rule.\n\n`apply` already holds general `Bash` (the only workflow that does), so no\n`allowed-tools` change; `propose` keeps no general Bash since its\ntraceability check only reads.\n\nRejected: relying only on the plan's final full-suite task. A `tasks.md`\nwritten before this change, or by a custom schema, has no such task;\nrunning the suite in the skill guarantees the behavior regardless of the\nplan. Rejected: a `test_command:` config key or a `codev test` command —\na new public surface for a command the tasks and rules already name.\n\n### Decision: The traceability check mirrors the tasks criteria\n\nThe list in \"### 6. Check traceability\" of `propose.md` gains the automated\ntest coverage, the documentation task and the final suite task, so the\ncheck fixes the same gaps the criteria define.\n\nConstraints followed: decision 0004 (one skill per workflow — the bodies of\nthe existing `apply` and `propose` skills are edited, nothing new is\ngenerated); decisions 0001 and 0002 (no code moves between crates: the\nschema stays embedded by `codev-engine`, workflow bodies by `codev-agents`).\n\n## Risks / Trade-offs\n\n- [The full suite is slow on large projects] → It runs once, at the end,\n  not per task; the skill reports what it ran so the user can see the cost.\n- [A pre-existing failure unrelated to the change blocks the \"done\"\n  report] → The skill lists the failing tests and stops; deciding whether\n  they are unrelated is the user's call, never the skill's.\n- [Wrong suite command guessed when neither the tasks nor the rules name\n  one] → The criteria make the final task name it, and the skill reports\n  the command it ran, so a wrong guess is visible.\n- [Installed skills keep the old text until `codev update`] → Stated in the\n  release note; hand-edited skills are preserved as today.\n- [The skill behaviors are prose run by an agent; a unit test cannot run\n  `/codev-apply`] → Tests lock the body text, as the project already does\n  for `onboard` and `propose`; the behavioral scenarios are covered through\n  the text that drives them.\n\n## Migration Plan\n\nNone for data. Existing changes keep their `tasks.md`; the new criteria\napply to plans written after `codev update`. `/codev-apply` runs the full\nsuite for every change, old plans included.\n\n## Open Questions\n\nNone. The assumptions made without a user to confirm them are listed in\nthe proposal: \"one test per scenario\" means at least one automated test\ncovers each scenario; \"no documentation affected\" is an acceptable\nexplicit statement; the suite command is resolved from the tasks, then the\nrules/context, then the toolchain.\n",
+    "_codev/changes/plan-requires-docs-and-tests/proposal.md": "# Proposal: Plans require a documentation task and automated tests, and apply runs the full suite\n\n## Why\n\nWith the default `spec-driven` schema, a plan passes the tech lead's \"Done\nwhen\" criteria even when no task updates the documentation and when\nscenarios are only covered by manual checks; `/codev-apply` then declares a\nchange finished once each task's own verification passes, without running\nthe project's whole test suite. Teams end up with behavior changes that are\nundocumented, untested, or that break something elsewhere.\n\n## What Changes\n\n- The tech lead's \"Done when\" criteria of the embedded `spec-driven` schema\n  (the `tasks` instruction) require:\n  - a task that updates the documentation affected by a change of\n    observable behavior, or an explicit statement in `tasks.md` that no\n    documentation is affected;\n  - every spec scenario covered by an automated test that a task adds or\n    updates — a manual check only when automation is impossible, with the\n    reason stated in the task;\n  - tests written following the project's conventions (its `context`,\n    `rules` and existing tests) and the idioms of its language;\n  - a final task that runs the project's full test suite, naming the\n    command.\n- The `propose` skill's traceability check verifies the same coverage: a\n  scenario covered only by a manual verification without a stated reason,\n  or a behavior change with neither a documentation task nor a \"no\n  documentation affected\" statement, is a gap it fixes.\n- The `apply` skill runs the project's full test suite after the last task\n  and before saying the change is done. If the suite fails or cannot be\n  run, it does not report the change as ready to be archived; it reports\n  the failure instead.\n- Custom schemas are unaffected: their instructions are still returned as\n  written.\n\nAssumptions (no user available to confirm, see design.md):\n\n- \"One automated test per scenario\" means at least one automated test\n  covers each scenario; one test may cover several scenarios, and a\n  scenario may need several tests.\n- A change with no documentation impact (internal refactor, test-only\n  change) satisfies the criterion by stating it explicitly, rather than by\n  an empty documentation task.\n- The full suite command is the one the tasks name; otherwise the one the\n  project's `rules`/`context` give; otherwise the conventional command of\n  the detected toolchain (for example `cargo test --workspace`).\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/schemas/spec-driven/schema.yaml` — the `tasks` instruction's\n  role block, and the guidance under it.\n- `assets/schemas/spec-driven/templates/tasks.md` — a documentation group\n  and a final full-suite task in the skeleton.\n- `assets/workflows/apply.md` — a full-suite step before the final summary,\n  and a guardrail.\n- `assets/workflows/propose.md` — the traceability check's list.\n- Tests: `crates/codev-engine/src/instructions.rs`,\n  `crates/codev-engine/src/schemas.rs`,\n  `crates/codev-agents/src/workflows.rs`.\n- Documentation, in both editions: `docs/en/src/concepts.md` and\n  `docs/fr/src/concepts.md` (the tech lead's criteria),\n  `docs/en/src/skills.md` and `docs/fr/src/skills.md` (traceability and\n  `/codev-apply`).\n- Installed skills only pick up the new `apply` and `propose` bodies after\n  `codev update`; existing changes keep their `tasks.md` as written.\n\n## Domains\n\nNone\n\n## Release note\n\n- Changed: Plans made with the default `spec-driven` schema now require a\n  documentation task (or an explicit \"no documentation affected\"), an\n  automated test for every spec scenario written to the project's\n  conventions, and a final task that runs the full test suite.\n- Changed: `/codev-apply` runs the project's full test suite before\n  declaring a change done, and does not suggest archiving while it fails.\n",
+    "_codev/changes/plan-requires-docs-and-tests/specs/skills/spec.md": "## ADDED Requirements\n\n### Requirement: The tech lead's criteria require documentation and automated tests\n\nThe `Done when:` list of the `tasks` instruction of the embedded\n`spec-driven` schema, as returned by `codev instructions tasks --json`,\nSHALL require, in addition to its existing criteria:\n\n- a task that updates the documentation affected by any change of\n  observable behavior, or an explicit statement in `tasks.md` that no\n  documentation is affected;\n- every spec scenario covered by at least one automated test that a task\n  adds or updates; a manual check is acceptable only when automation is\n  impossible, and the task MUST say why;\n- tests written following the project's conventions — its `context`, its\n  `rules` and its existing tests — and the idioms of its language;\n- a final task that runs the project's full test suite, naming the\n  command.\n\nThe guidance of the `tasks` instruction and the `tasks.md` template SHALL\nreflect these criteria. A custom schema's instructions MUST still be\nreturned as written, without these criteria added by codev.\n\n#### Scenario: The tasks criteria require a documentation task\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires a task that updates the affected\n  documentation, or an explicit statement that no documentation is\n  affected\n\n#### Scenario: The tasks criteria require an automated test per scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires every spec scenario to be covered\n  by an automated test added or updated in a task\n- **AND** it accepts a manual check only when the task says why automation\n  is impossible\n- **AND** it requires tests to follow the project's conventions and the\n  idioms of its language\n\n#### Scenario: The tasks criteria require a final full-suite task\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires a final task that runs the\n  project's full test suite and names its command\n\n#### Scenario: The tasks template shows the documentation and full-suite tasks\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `template` contains a documentation task and a final task that\n  runs the full test suite\n\n#### Scenario: A custom schema's tasks instruction gets none of these criteria\n\n- **GIVEN** a change using a project schema whose `tasks` instruction says\n  nothing about documentation or tests\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `instruction` is the schema's text, with no documentation or\n  test criterion added\n\n### Requirement: The `apply` skill runs the full test suite before declaring a change done\n\nOnce every task of `tasks.md` is checked, and before reporting the change\nas ready to be archived, the `apply` workflow SHALL run the project's full\ntest suite: the command named by the tasks, otherwise the one the project's\n`rules` or `context` give, otherwise the conventional command of the\nproject's toolchain. It MUST report the command it ran and its outcome.\n\nIf the suite fails, the skill MUST NOT report the change as done nor\nsuggest archiving: it reports the failing tests and stops. If no suite\ncommand can be determined or the suite cannot run, the skill MUST say so\nand MUST NOT report the change as done.\n\n#### Scenario: A passing suite lets the change be reported as done\n\n- **GIVEN** a change whose tasks are all checked\n- **AND** a project whose full test suite passes\n- **WHEN** the user runs `/codev-apply`\n- **THEN** the skill runs the full test suite and reports its command and\n  outcome\n- **AND** then reports the change as ready to be archived\n\n#### Scenario: A failing suite blocks the \"done\" report\n\n- **GIVEN** a change whose tasks are all checked, each task's own\n  verification having passed\n- **AND** a test elsewhere in the project's suite fails\n- **WHEN** the user runs `/codev-apply`\n- **THEN** the skill reports the failing tests\n- **AND** does not report the change as ready to be archived\n- **AND** does not suggest `/codev-archive`\n\n#### Scenario: No runnable suite blocks the \"done\" report\n\n- **GIVEN** a change whose tasks are all checked\n- **AND** a project where no test suite command can be determined, or the\n  command cannot run\n- **WHEN** the user runs `/codev-apply`\n- **THEN** the skill says the full suite could not be run, and why\n- **AND** does not report the change as ready to be archived\n\n#### Scenario: The skill text carries the full-suite step\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `apply` workflow is resolved\n- **THEN** its body requires running the full test suite before the final\n  summary\n- **AND** forbids reporting the change as done while the suite fails or\n  cannot run\n\n## MODIFIED Requirements\n\n### Requirement: The `apply` skill respects the boundaries of the change\n\nThe `apply` workflow MUST confine itself to what is necessary to check off\nthe tasks of the named change: it MUST NOT modify other changes, MUST NOT\narchive or sync on its own, and MUST stop as soon as a task is ambiguous\nor blocked rather than guess.\n\n#### Scenario: Refusal to archive from apply\n\n- **GIVEN** a change whose tasks are all checked\n- **AND** a project whose full test suite passes\n- **WHEN** the user types `/codev-apply`\n- **THEN** the skill reports that the change is ready to be archived\n- **AND** explicitly invites the user to run `/codev-archive` or\n  `codev archive` as a separate next step\n\n#### Scenario: An ambiguous task interrupts the flow\n\n- **GIVEN** a `tasks.md` containing a task whose wording admits several\n  interpretations that would materially change the outcome\n- **WHEN** the skill reaches that task\n- **THEN** the skill asks the user for clarification before\n  implementing\n- **AND** does not check the task until the clarification is obtained\n\n### Requirement: The `propose` skill checks traceability before presenting the plan\n\nOnce every required artifact is written and before showing the final\nstatus, the `propose` skill SHALL re-read the artifacts from disk and check\nthat:\n\n- every capability listed in the proposal has its spec file, and every spec\n  file is listed in the proposal;\n- every requirement has a nominal scenario and an error or edge-case\n  scenario, or states why none applies;\n- every scenario is covered by an automated test that a task adds or\n  updates, or by a manual check whose task says why automation is\n  impossible;\n- every change of observable behavior has a task that updates the\n  documentation, or `tasks.md` states that no documentation is affected;\n- the last task runs the project's full test suite;\n- every task names a concrete verification.\n\nThe skill MUST fix the gaps it finds directly in the artifacts. The check\nMUST NOT modify any code file.\n\n#### Scenario: A requirement without an error scenario gets one\n\n- **GIVEN** a plan whose spec has a requirement with only a nominal scenario\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the requirement gains an error or edge-case scenario, or a stated\n  reason why none applies\n- **AND** a task's verification covers the new scenario\n\n#### Scenario: A spec file missing from the proposal is listed\n\n- **GIVEN** a plan with a spec file whose capability is not listed in the\n  proposal\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the proposal lists the capability, or the spec file is removed\n  if the capability is out of scope\n\n#### Scenario: A scenario covered only by a manual check gets an automated test\n\n- **GIVEN** a plan where a scenario is covered only by a manual check whose\n  task gives no reason why automation is impossible\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** a task adds or updates an automated test covering that scenario\n\n#### Scenario: A behavior change without documentation gets a documentation task\n\n- **GIVEN** a plan that changes observable behavior, with no documentation\n  task and no statement that no documentation is affected\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** `tasks.md` gains a task updating the affected documentation, or\n  an explicit statement that none is affected\n\n#### Scenario: A complete plan is left unchanged\n\n- **GIVEN** a plan where capabilities, spec files, scenarios, automated\n  tests, the documentation task, the final full-suite task and task\n  verifications all cover each other\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** no artifact is modified by the check\n"
+  },
+  "validate": {
+    "plan-requires-docs-and-tests": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "plan-requires-docs-and-tests",
+          "path": "_codev/changes/plan-requires-docs-and-tests"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-docs-and-tests-in-done-5",
+      "status": []
+    }
+  }
+}

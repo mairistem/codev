@@ -1,0 +1,193 @@
+{
+  "format": 2,
+  "case": "privacy-code-python-soft-delete",
+  "error": null,
+  "costUsd": 0.32003560000000003,
+  "durationMs": 25340,
+  "consumption": {
+    "durationApiMs": 25290,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1172,
+      "cacheCreation": 28736,
+      "cacheRead": 194328,
+      "output": 2516
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7399,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7399
+        }
+      },
+      {
+        "cacheCreation": 16251,
+        "cacheRead": 29538,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4901,
+          "skill": 11350
+        }
+      },
+      {
+        "cacheCreation": 2256,
+        "cacheRead": 45789,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2256
+        }
+      },
+      {
+        "cacheCreation": 772,
+        "cacheRead": 48045,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 772
+        }
+      },
+      {
+        "cacheCreation": 2058,
+        "cacheRead": 48817,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 1608,
+          "edit": 450
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Account deletion keeps the member's personal data in the users row) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-account-deletion",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "\"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/account.py:18-21",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal promises that \"Delete my account\" erases the member's personal data (GDPR Art. 17), but delete_account only soft-deletes: it sets deleted_at and clears password_hash, while email, display_name, phone and postal_address (app/schema.sql:3-6) stay in the users table forever. Scenario: Ada deletes her account; SELECT email, phone, postal_address FROM users WHERE id = 1 still returns her e-mail, phone and address. Because orders.user_id references that row, her kept orders also stay linked to her identity, contradicting \"kept for accounting, without personal data\". Overwrite or NULL every personal column on deletion (e.g. email to a unique non-identifying placeholder such as 'deleted-<id>', display_name to a placeholder, phone and postal_address to NULL) so the row only anchors the orders, and add a test asserting those columns no longer hold the member's data after delete_account. Also state how backups holding the old values are purged (retention of backups is not defined by the change).",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Account deletion keeps the member's personal data in the users row"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def analytics_id(user_id: int) -> str:\n    \"\"\"The pseudonymous id analytics events carry instead of the user id.\"\"\"\n    return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 36,
+        "location": "app/account.py:11-13",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change adds a deterministic pseudonymous id for analytics, derived from a global salt and the user id; it is pseudonymous, not anonymous, data (still personal data under GDPR), yet delete_account does nothing about analytics events carrying it, and anyone holding the salt can recompute the link to a user id still present in users and orders. The analytics pipeline was not visible in the change, hence low confidence. Ask the team whether analytics events keyed by analytics_id must be erased or unlinked on account deletion (e.g. a per-user salt deleted with the account), and identify the analytics processor receiving these ids; the function is also unused within this change, so consider dropping it from this change if it has no purpose here.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Analytics pseudonym survives erasure and is not reached by deletion"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-account-deletion/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

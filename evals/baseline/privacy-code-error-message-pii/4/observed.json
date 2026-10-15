@@ -1,0 +1,281 @@
+{
+  "format": 2,
+  "case": "privacy-code-error-message-pii",
+  "error": null,
+  "costUsd": 0.3887824,
+  "durationMs": 36244,
+  "consumption": {
+    "durationApiMs": 36491,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1178,
+      "cacheCreation": 30825,
+      "cacheRead": 343507,
+      "output": 3624
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7387,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7387
+        }
+      },
+      {
+        "cacheCreation": 12523,
+        "cacheRead": 29526,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12523
+        }
+      },
+      {
+        "cacheCreation": 5738,
+        "cacheRead": 42049,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 5738
+        }
+      },
+      {
+        "cacheCreation": 545,
+        "cacheRead": 47787,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 545
+        }
+      },
+      {
+        "cacheCreation": 2251,
+        "cacheRead": 48332,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2251
+        }
+      },
+      {
+        "cacheCreation": 735,
+        "cacheRead": 50583,
+        "input": 2,
+        "output": 49,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 735
+        }
+      },
+      {
+        "cacheCreation": 455,
+        "cacheRead": 51318,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "output": 111,
+          "shell": 344
+        }
+      },
+      {
+        "cacheCreation": 1191,
+        "cacheRead": 51773,
+        "input": 2,
+        "output": 286,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 1013,
+          "edit": 178
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Customer e-mail address written to the error log on a failed lookup) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-2 (Chat vendor Helply receives phone, birth date and address to greet by name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-support-lookup",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "throw new NotFoundError(`no customer with e-mail ${email}`);\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "src/support.ts:20",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Keep the e-mail address out of the error message — e.g. `throw new NotFoundError(\"no customer with this e-mail\")`. `errorHandler` (src/server.ts) logs `error: err.message` for every failed request, so each lookup of an unknown address writes the typed e-mail (a customer's or a mistyped one) to the application logs, with no purpose and no retention rule (GDPR Art. 5(1)(c), 5(1)(e)). The same applies to any future message built from personal data.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Customer e-mail address written to the error log on a failed lookup"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "id: String(customer.id),\nname: customer.name,\nemail: customer.email,\nphone: customer.phone,\nbirthDate: customer.birth_date,\naddress: customer.address,\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 37,
+        "location": "src/support.ts:41-48",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Send Helply only what the stated purpose needs — the proposal says the widget \"greets the signed-in customer by name, so that the agent knows who they talk to\": the opaque `id` and `name` (and `email` only if the team decides agents need it in the chat). Drop `phone`, `birthDate` and `address` from `chatWidgetSettings`, and select only the needed columns in `customerById`. Sending more to a processor than the purpose needs breaks data minimisation (GDPR Art. 5(1)(c), Art. 25); these settings are also served to the browser by `GET /chat/settings`, where the widget script can read them.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Chat vendor Helply receives phone, birth date and address to greet by name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"SELECT id, email, name, phone, birth_date, address FROM customers WHERE lower(email) = lower($1)\",\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 70,
+        "location": "src/support.ts:16",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The purpose is that agents stop asking customers to repeat who they are; confirm with the team which fields an agent needs to identify the customer, and return only those (likely `id`, `name`, `email`) instead of the whole record, birth date and address included (GDPR Art. 5(1)(c)). Confidence is low: what agents need is not stated in the plan.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Support lookup returns the full customer record, birth date and address included"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "/** What the Helply chat widget is started with, for the signed-in customer. */\nexport function chatWidgetSettings(customer: Customer) {\n  return {\n    appId: process.env.HELPLY_APP_ID,\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-4",
+        "line": 89,
+        "location": "src/support.ts:37-40",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Question for the team: the proposal names the chat vendor as a recipient but not whether a processing agreement (GDPR Art. 28) covers Helply, where it stores the data (Chapter V if outside the EEA), how long it keeps chat identities, and how erasure requests reach it. Record these in the plan or the record of processing (Art. 30); the code cannot answer them.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Helply is a new processor with no stated agreement or transfer location"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-support-lookup/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

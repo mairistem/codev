@@ -1,0 +1,248 @@
+{
+  "format": 2,
+  "case": "skeptic-plan-scope-creep",
+  "error": null,
+  "costUsd": 0.391331,
+  "durationMs": 35255,
+  "consumption": {
+    "durationApiMs": 35147,
+    "turns": 9,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 30602,
+      "cacheRead": 385310,
+      "output": 3423
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 14307,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14307
+        }
+      },
+      {
+        "cacheCreation": 1962,
+        "cacheRead": 43832,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1962
+        }
+      },
+      {
+        "cacheCreation": 355,
+        "cacheRead": 45794,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 355
+        }
+      },
+      {
+        "cacheCreation": 416,
+        "cacheRead": 46149,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 416
+        }
+      },
+      {
+        "cacheCreation": 2259,
+        "cacheRead": 46565,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2259
+        }
+      },
+      {
+        "cacheCreation": 1357,
+        "cacheRead": 48824,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1311,
+          "output": 46
+        }
+      },
+      {
+        "cacheCreation": 2120,
+        "cacheRead": 50181,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2120
+        }
+      },
+      {
+        "cacheCreation": 440,
+        "cacheRead": 52301,
+        "input": 2,
+        "output": 163,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 440
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-csv-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Drop the plugin system from this change. The Why (\"Accountants copy invoices one by one into their spreadsheet at the end of each month.\") is met by a single CSV route; no PDF, XLSX, XML or JSON export is requested. Replace design.md \"Decision: Exports go through a plugin registry\" with a plain CSV renderer (the rejected alternative \"a single CSV function (not extensible)\" is the one the Why supports — extensibility is not a stated need), remove task 1.2 (`npm test -- registry`), and remove `src/export/plugins/` from Impact. The registry also adds a start-up module-discovery step whose only consumer is the CSV format; the \"No plugin\" scenario even describes a state (no CSV) the route `GET /invoices.csv` could not be in.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Plugin system for future export formats nobody asked for"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 35,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Remove this requirement, its scenarios, task 2.1, the What Changes bullet \"A settings page where each user picks their preferred export format.\" and `web/src/settings/` from Impact. With CSV as the only format and an endpoint named `/invoices.csv`, a preference has nothing to choose between; the scenario \"WHEN a user picks CSV THEN exports use CSV\" cannot fail and so verifies nothing, and nothing says where the preference is stored (it would need a new per-user column the plan does not mention). The release note (\"Added: Export a month's invoices as CSV.\") does not mention it either. If a format preference is wanted later, it belongs in the change that adds a second format.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Settings page for a preferred export format nobody asked for"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 59,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The plan adds `GET /invoices.csv`, a new endpoint that exports a month's invoices with their customer names in bulk, and changes the settings page (`web/src/settings/` in Impact). No spec scenario says who may call the export (no unauthorized case), and `src/server.ts` today only has `/health`, so no existing guard covers it. Tick `security` and `personal-data` so their experts review the endpoint's access control and the bulk export of customer data; tick `user-interface` if the settings page stays in scope (see R-skeptic-2), otherwise leave it unticked with that reason on its line.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Domains touched by the plan are all unticked without a reason"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-csv-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,82 @@
+{
+  "format": 2,
+  "case": "tracer-plan-scenario-without-task",
+  "error": null,
+  "costUsd": 0.2882694,
+  "durationMs": 19672,
+  "consumption": {
+    "durationApiMs": 19886,
+    "turns": 10,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1088,
+      "cacheCreation": 26465,
+      "cacheRead": 176632,
+      "output": 2018
+    },
+    "toolCalls": 9,
+    "orientationCalls": 7,
+    "calls": [
+      {
+        "cacheCreation": 7296,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7296
+        }
+      },
+      {
+        "cacheCreation": 2470,
+        "cacheRead": 29435,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "skill": 2470
+        }
+      },
+      {
+        "cacheCreation": 13879,
+        "cacheRead": 31905,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "codev roles": 1442,
+          "skill": 12437
+        }
+      },
+      {
+        "cacheCreation": 1585,
+        "cacheRead": 45784,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1585
+        }
+      },
+      {
+        "cacheCreation": 1235,
+        "cacheRead": 47369,
+        "input": 2,
+        "output": 153,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 1235
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/add-magic-links/tasks.md": "# Tasks\n\n## 1. Links\n\n- [ ] 1.1 Link creation and e-mail, verified by test `a_link_is_emailed`\n- [ ] 1.2 Sign-in from a link, verified by test `a_valid_link_signs_in` (\"A valid link\")\n- [ ] 1.3 Reject an expired link and ask for a new one, verified by test `an_expired_link_is_refused` (\"An expired link\")\n- [ ] 1.4 Reject a link already used (its row is deleted on first use), verified by test `a_used_link_is_refused` (\"A link already used\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe magic links in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+  }
+}

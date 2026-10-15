@@ -1,0 +1,270 @@
+{
+  "format": 2,
+  "case": "skeptic-plan-scope-creep",
+  "error": null,
+  "costUsd": 0.44297900000000007,
+  "durationMs": 39885,
+  "consumption": {
+    "durationApiMs": 39561,
+    "turns": 13,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1168,
+      "cacheCreation": 33193,
+      "cacheRead": 495630,
+      "output": 3865
+    },
+    "toolCalls": 12,
+    "orientationCalls": 10,
+    "calls": [
+      {
+        "cacheCreation": 7381,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7381
+        }
+      },
+      {
+        "cacheCreation": 12812,
+        "cacheRead": 29520,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12812
+        }
+      },
+      {
+        "cacheCreation": 2332,
+        "cacheRead": 42332,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 2332
+        }
+      },
+      {
+        "cacheCreation": 3770,
+        "cacheRead": 44664,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 359,
+          "file": 3411
+        }
+      },
+      {
+        "cacheCreation": 395,
+        "cacheRead": 48434,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 395
+        }
+      },
+      {
+        "cacheCreation": 304,
+        "cacheRead": 48829,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 304
+        }
+      },
+      {
+        "cacheCreation": 2192,
+        "cacheRead": 49133,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 1862,
+          "output": 40,
+          "shell": 290
+        }
+      },
+      {
+        "cacheCreation": 408,
+        "cacheRead": 51325,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 408
+        }
+      },
+      {
+        "cacheCreation": 900,
+        "cacheRead": 51733,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 900
+        }
+      },
+      {
+        "cacheCreation": 2255,
+        "cacheRead": 52633,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2255
+        }
+      },
+      {
+        "cacheCreation": 444,
+        "cacheRead": 54888,
+        "input": 2,
+        "output": 185,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 444
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-csv-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- A plugin system for export formats, so that PDF, XLSX, XML and JSON exports can be added later by dropping a module in `src/export/plugins/`.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "proposal.md#What Changes",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The Why is only \"Accountants copy invoices one by one into their spreadsheet at the end of each month.\" — a single CSV route solves it. Drop the plugin system from What Changes, replace \"Decision: Exports go through a plugin registry\" in design.md (the rejected \"single CSV function\" is the simpler solution the Why calls for) and remove task 1.2 (\"Plugin registry discovering `src/export/plugins/`\"), which traces to no requirement of specs/invoice-export/spec.md. This also removes the unverified assumption that `registry.ts` can discover modules in `src/export/plugins/` at start-up once compiled by `tsc -p .`. A plugin system can be proposed in its own change when a second format is actually requested.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A plugin system for future formats nobody asked for"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The settings page SHALL let a user choose their preferred export format among the installed plugins.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 34,
+        "location": "specs/invoice-export/spec.md#Requirement: Users choose their export format",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Nothing in the Why asks for a format preference, and with CSV as the only format the choice has no effect: the route is `GET /invoices.csv`, so the scenario \"A preference\" (\"**WHEN** a user picks CSV / **THEN** exports use CSV\") cannot fail and verifies nothing. Remove this requirement and its scenarios, the \"A settings page where each user picks their preferred export format.\" line of proposal.md#What Changes, `web/src/settings/` from proposal.md#Impact, the last sentence of the design decision (\"A settings page stores each user's preferred format.\") and task 2.1. Note that it would also need a storage for the preference that the plan never describes, and a user-visible change absent from the release note.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "A per-user export-format settings page nobody asked for"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 57,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The new route `GET /invoices.csv?month=YYYY-MM` exposes a whole month of invoices, with each customer's name, and neither the proposal nor the spec says who may call it (no \"unauthorized\" scenario): tick `security` and `personal-data` so that their experts review it, or give the reason on the line. While the settings page stays in scope (see R-skeptic-2), tick `user-interface` too — the plan modifies `web/src/settings/`.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Domains the plan touches are all unticked, with no reason"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-csv-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

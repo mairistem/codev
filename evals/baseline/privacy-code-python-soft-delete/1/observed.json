@@ -1,0 +1,269 @@
+{
+  "format": 2,
+  "case": "privacy-code-python-soft-delete",
+  "error": null,
+  "costUsd": 0.3796689999999999,
+  "durationMs": 31480,
+  "consumption": {
+    "durationApiMs": 31107,
+    "turns": 10,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1182,
+      "cacheCreation": 29276,
+      "cacheRead": 420320,
+      "output": 3019
+    },
+    "toolCalls": 9,
+    "orientationCalls": 7,
+    "calls": [
+      {
+        "cacheCreation": 7398,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7398
+        }
+      },
+      {
+        "cacheCreation": 12336,
+        "cacheRead": 29537,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 12336
+        }
+      },
+      {
+        "cacheCreation": 262,
+        "cacheRead": 41873,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 262
+        }
+      },
+      {
+        "cacheCreation": 2095,
+        "cacheRead": 42135,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2095
+        }
+      },
+      {
+        "cacheCreation": 235,
+        "cacheRead": 44230,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 235
+        }
+      },
+      {
+        "cacheCreation": 2935,
+        "cacheRead": 44465,
+        "input": 2,
+        "output": 39,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2935
+        }
+      },
+      {
+        "cacheCreation": 1133,
+        "cacheRead": 47400,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1102,
+          "output": 31
+        }
+      },
+      {
+        "cacheCreation": 592,
+        "cacheRead": 48533,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 592
+        }
+      },
+      {
+        "cacheCreation": 1758,
+        "cacheRead": 49125,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1758
+        }
+      },
+      {
+        "cacheCreation": 532,
+        "cacheRead": 50883,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 532
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-privacy-1 (Account deletion keeps the member's e-mail, name, phone and postal address) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-account-deletion",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "_conn.execute(\n    \"UPDATE users SET deleted_at = datetime('now'), password_hash = NULL WHERE id = ?\",\n    (user_id,),\n)\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-1",
+        "line": 11,
+        "location": "app/account.py:18-21",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The proposal promises that the button \"erases the member's personal data\", but delete_account only soft-deletes the row: email, display_name, phone and postal_address (app/schema.sql) stay in `users` forever. Scenario: member 1 (ada@example.org, 'Ada') deletes their account; the row still holds 'ada@example.org' and 'Ada', and orders still reference it through orders.user_id, so the orders kept \"for accounting, without personal data\" remain linked to the member's identity. This breaks the right to erasure (GDPR Art. 17) and storage limitation (Art. 5(1)(e)). Overwrite or null every personal column in the same UPDATE (e.g. email = 'deleted-<id>@invalid' to keep the UNIQUE NOT NULL constraint, display_name = '', phone = NULL, postal_address = NULL), and add a test asserting that no personal column of the deleted row still holds the original values.",
+        "reported": true,
+        "role": "privacy",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Account deletion keeps the member's e-mail, name, phone and postal address"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "def analytics_id(user_id: int) -> str:\n    \"\"\"The pseudonymous id analytics events carry instead of the user id.\"\"\"\n    return hashlib.sha256(f\"{_SALT}:{user_id}\".encode()).hexdigest()\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-2",
+        "line": 40,
+        "location": "app/account.py:11-13",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "The change adds a pseudonymous id for analytics events, derived from the user id with one global salt. It is personal data (pseudonymised data stays personal under GDPR Recital 26): anyone with the salt can recompute it for any user id and re-link the events. delete_account does nothing about these events, so a deleted member's analytics history stays linked to them. The analytics store and its processor are not visible in the diff: state the purpose and retention of these events, identify the analytics processor (Art. 28, transfers outside the EEA), and make deletion either purge the member's events or break the link (e.g. a per-user random id deleted with the account instead of a salted hash of the user id).",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Erasure does not reach analytics events keyed by the stable analytics_id"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "\"\"\"Deletes the member's account; their orders are kept for accounting.\"\"\"\n",
+        "history": [
+          {
+            "by": "privacy",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-privacy-3",
+        "line": 66,
+        "location": "app/account.py:17",
+        "raisedBy": [
+          "privacy"
+        ],
+        "recommendation": "Neither the code nor the proposal says how long the deleted `users` row and the orders kept for accounting are retained, nor how deletion reaches backups of members.db. Ask the team to state the accounting retention period for orders, a purge of the soft-deleted rows after it, and how restored backups re-apply past deletions.",
+        "reported": false,
+        "role": "privacy",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "No retention or purge defined for deleted accounts, backups included"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-account-deletion/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

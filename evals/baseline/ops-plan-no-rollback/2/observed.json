@@ -1,0 +1,217 @@
+{
+  "format": 2,
+  "case": "ops-plan-no-rollback",
+  "error": null,
+  "costUsd": 0.33239520000000006,
+  "durationMs": 27833,
+  "consumption": {
+    "durationApiMs": 27728,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1160,
+      "cacheCreation": 27882,
+      "cacheRead": 283911,
+      "output": 2579
+    },
+    "toolCalls": 7,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 15407,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15407
+        }
+      },
+      {
+        "cacheCreation": 278,
+        "cacheRead": 44932,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 278
+        }
+      },
+      {
+        "cacheCreation": 266,
+        "cacheRead": 45210,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 266
+        }
+      },
+      {
+        "cacheCreation": 2063,
+        "cacheRead": 45476,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2063
+        }
+      },
+      {
+        "cacheCreation": 1551,
+        "cacheRead": 47539,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1551
+        }
+      },
+      {
+        "cacheCreation": 931,
+        "cacheRead": 49090,
+        "input": 2,
+        "output": 191,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 681,
+          "edit": 173,
+          "output": 77
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (The switch to Paylane has no way back) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (The nightly settlement worker fails unseen) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "switch-payment-provider",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The Stripe client is deleted and replaced by the Paylane client in the same\nrelease. There is no switch between the two: keeping both would double the\ncode to maintain. The Stripe account is closed the day after the release.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 15,
+        "location": "design.md#Decision: All traffic moves at deploy",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Keep a way back until Paylane is proven in production: keep the Stripe client behind a configuration switch (provider selected per environment, flipped without a release), and keep the Stripe account open until a stated exit criterion is met (for example N days of Paylane payments with an error rate under a threshold). Write the rollback procedure in the design. Failure scenario: Paylane starts failing authorizations or captures after the release (outage, integration bug, account suspended); the next deploy is about a week away, and redeploying the previous blue version sends payments to a Stripe account already closed — so no card payment can be taken at all, and the operator has no switch to flip.\n",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The switch to Paylane has no way back"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "A new worker, `settlement-worker`, runs at 02:00, fetches the day's Paylane\npayments and matches them to orders. It runs as a Kubernetes CronJob and\nwrites its result to the database.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 41,
+        "location": "design.md#Decision: A worker settles payments nightly",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Decide in the design how an operator learns that a run failed or did not run: a structured log at start and end of each run (run date, payments fetched, matched, unmatched), a metric or heartbeat for the last successful run, and an alert when a run fails or no successful run is recorded by a deadline. Add the matching task to tasks.md. Failure scenario: the Paylane API is unreachable at 02:00, or the CronJob is never scheduled (bad manifest, suspended job); the worker exits or never starts, nothing is written, and the only alert the spec defines — the finance-channel alert for an unmatched payment — never fires, so a missed settlement looks exactly like a night where everything matched.\n",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The nightly settlement worker fails unseen"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/switch-payment-provider/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

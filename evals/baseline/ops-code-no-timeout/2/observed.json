@@ -1,0 +1,256 @@
+{
+  "format": 2,
+  "case": "ops-code-no-timeout",
+  "error": null,
+  "costUsd": 0.32226959999999993,
+  "durationMs": 32806,
+  "consumption": {
+    "durationApiMs": 32663,
+    "turns": 8,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1162,
+      "cacheCreation": 27253,
+      "cacheRead": 190018,
+      "output": 3263
+    },
+    "toolCalls": 7,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7376,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7376
+        }
+      },
+      {
+        "cacheCreation": 14869,
+        "cacheRead": 29515,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3237,
+          "skill": 11632
+        }
+      },
+      {
+        "cacheCreation": 1115,
+        "cacheRead": 44384,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1115
+        }
+      },
+      {
+        "cacheCreation": 2982,
+        "cacheRead": 45499,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 2579,
+          "edit": 403
+        }
+      },
+      {
+        "cacheCreation": 911,
+        "cacheRead": 48481,
+        "input": 2,
+        "output": 146,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 719,
+          "edit": 192
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (Unbounded retry of a non-idempotent charge can bill an order several times) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (The payment call has no timeout and can hang the checkout path) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-3 (Payment failures are swallowed without any log) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "charge-orders",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "while True:\n    try:\n        response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException:\n        time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 15,
+        "location": "app/payments.py:12-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Bound the retries (a few attempts with exponential backoff and jitter) and retry only errors that are safe to repeat: connection errors before the request was sent, 429 and 5xx — never 4xx such as a declined card or a bad amount, which today loop forever. Make the POST idempotent by sending an idempotency key derived from the order (e.g. an `Idempotency-Key: <order_id>` header, if the provider supports it) so a retry after a read timeout or a 5xx that was in fact processed does not create a second charge. After the last attempt, raise an error naming the order and the provider status.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Unbounded retry of a non-idempotent charge can bill an order several times"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "response = requests.post(PAYMENT_URL, json={\"order\": order_id, \"amount\": amount_cents})\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 45,
+        "location": "app/payments.py:14",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Pass an explicit `timeout=` (connect and read, e.g. `timeout=(3, 10)`) to `requests.post`, and treat a read timeout as an outcome of unknown state — retried only with the idempotency key of R-ops-1.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "The payment call has no timeout and can hang the checkout path"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "except requests.RequestException:\n    time.sleep(1)\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-3",
+        "line": 64,
+        "location": "app/payments.py:17-18",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Log each failed attempt with structured fields — `order_id`, attempt number, HTTP status or exception class, provider error code — at warning level, and at error level when giving up; never log the request body beyond the order and amount. Consider a counter metric of charge attempts and failures by outcome so a provider outage is visible on a dashboard.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Payment failures are swallowed without any log"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "PAYMENT_URL = \"https://payments.example.com/v2/charges\"\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-4",
+        "line": 86,
+        "location": "app/payments.py:7",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Read the provider URL from the environment or the application's configuration (e.g. `PAYMENT_URL = os.environ[\"PAYMENT_URL\"]`), so staging and tests target the sandbox and production the live endpoint.",
+        "reported": true,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The provider URL is hard-coded instead of read from configuration"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/charge-orders/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

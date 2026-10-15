@@ -1,0 +1,196 @@
+{
+  "format": 2,
+  "case": "migration-code-serde-rename-all",
+  "error": null,
+  "costUsd": 0.2963872,
+  "durationMs": 20844,
+  "consumption": {
+    "durationApiMs": 20693,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1172,
+      "cacheCreation": 27154,
+      "cacheRead": 191491,
+      "output": 1994
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7383,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7383
+        }
+      },
+      {
+        "cacheCreation": 14959,
+        "cacheRead": 29522,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3367,
+          "skill": 11592
+        }
+      },
+      {
+        "cacheCreation": 2621,
+        "cacheRead": 44481,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2621
+        }
+      },
+      {
+        "cacheCreation": 1145,
+        "cacheRead": 47102,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1145
+        }
+      },
+      {
+        "cacheCreation": 1046,
+        "cacheRead": 48247,
+        "input": 2,
+        "output": 291,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 1046
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (rename_all = \"camelCase\" renames every existing order JSON field) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Existing config.toml files without default_currency stop the service from starting) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-order-currency",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "#[serde(rename_all = \"camelCase\")]\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/api.rs:6",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Remove `#[serde(rename_all = \"camelCase\")]` so `order_id`, `customer_id`, `total_cents` and `status` keep their names and only `currency` is added. Today `GET /orders/{id}` returns `orderId`, `customerId`, `totalCents` instead of the snake_case fields that docs/api.md still lists and partners' integrations read; they break silently on the release, with no **BREAKING** item in the release note and against the documented rule of two releases of deprecation before a rename. If a camelCase API is wanted, it is a separate change that serves both names during the deprecation window.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "rename_all = \"camelCase\" renames every existing order JSON field"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "/// The currency of orders that do not name one (ISO 4217).\npub default_currency: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 25,
+        "location": "src/config.rs:9-10",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Give the field a default (`#[serde(default = \"...\")]` returning \"EUR\", the currency orders had before this change) so an existing `config.toml` holding only `database_url` and `listen` still loads; today `toml::from_str` fails with \"missing field `default_currency`\" and the service refuses to start after the upgrade. Add a test loading the old two-key config. If the key is meant to be required, mark it **BREAKING** in the release note with the line operators must add.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Existing config.toml files without default_currency stop the service from starting"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-order-currency/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

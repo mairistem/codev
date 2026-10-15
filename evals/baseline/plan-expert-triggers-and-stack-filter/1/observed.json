@@ -1,0 +1,331 @@
+{
+  "format": 2,
+  "case": "plan-expert-triggers-and-stack-filter",
+  "error": null,
+  "costUsd": 1.7986984,
+  "durationMs": 329087,
+  "consumption": {
+    "durationApiMs": 326705,
+    "turns": 31,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1171,
+      "cacheCreation": 96196,
+      "cacheRead": 2036137,
+      "output": 31042
+    },
+    "toolCalls": 30,
+    "orientationCalls": 16,
+    "calls": [
+      {
+        "cacheCreation": 7842,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7842
+        }
+      },
+      {
+        "cacheCreation": 14346,
+        "cacheRead": 29981,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14346
+        }
+      },
+      {
+        "cacheCreation": 2376,
+        "cacheRead": 44327,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2376
+        }
+      },
+      {
+        "cacheCreation": 1133,
+        "cacheRead": 46703,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1133
+        }
+      },
+      {
+        "cacheCreation": 7409,
+        "cacheRead": 47836,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7409
+        }
+      },
+      {
+        "cacheCreation": 1876,
+        "cacheRead": 55245,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1876
+        }
+      },
+      {
+        "cacheCreation": 976,
+        "cacheRead": 57121,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 51,
+          "shell": 925
+        }
+      },
+      {
+        "cacheCreation": 3778,
+        "cacheRead": 58097,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 3778
+        }
+      },
+      {
+        "cacheCreation": 4764,
+        "cacheRead": 61875,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4764
+        }
+      },
+      {
+        "cacheCreation": 1449,
+        "cacheRead": 66639,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1449
+        }
+      },
+      {
+        "cacheCreation": 3269,
+        "cacheRead": 68088,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3269
+        }
+      },
+      {
+        "cacheCreation": 3174,
+        "cacheRead": 71357,
+        "input": 2,
+        "output": 47,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3174
+        }
+      },
+      {
+        "cacheCreation": 2523,
+        "cacheRead": 74531,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2490,
+          "output": 33
+        }
+      },
+      {
+        "cacheCreation": 4223,
+        "cacheRead": 77054,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4223
+        }
+      },
+      {
+        "cacheCreation": 995,
+        "cacheRead": 81277,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 995
+        }
+      },
+      {
+        "cacheCreation": 2457,
+        "cacheRead": 82272,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 2457
+        }
+      },
+      {
+        "cacheCreation": 611,
+        "cacheRead": 84729,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 611
+        }
+      },
+      {
+        "cacheCreation": 2260,
+        "cacheRead": 85340,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2073,
+          "output": 187
+        }
+      },
+      {
+        "cacheCreation": 3389,
+        "cacheRead": 87600,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 3187,
+          "edit": 157,
+          "output": 45
+        }
+      },
+      {
+        "cacheCreation": 4064,
+        "cacheRead": 90989,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2366,
+          "output": 1574,
+          "shell": 124
+        }
+      },
+      {
+        "cacheCreation": 844,
+        "cacheRead": 95053,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "search": 844
+        }
+      },
+      {
+        "cacheCreation": 7485,
+        "cacheRead": 95897,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 7485
+        }
+      },
+      {
+        "cacheCreation": 4892,
+        "cacheRead": 103382,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 4622,
+          "edit": 235,
+          "output": 35
+        }
+      },
+      {
+        "cacheCreation": 2142,
+        "cacheRead": 108274,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2142
+        }
+      },
+      {
+        "cacheCreation": 2093,
+        "cacheRead": 110416,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2093
+        }
+      },
+      {
+        "cacheCreation": 4897,
+        "cacheRead": 112509,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 4032,
+          "output": 865
+        }
+      },
+      {
+        "cacheCreation": 929,
+        "cacheRead": 117406,
+        "input": 2,
+        "output": 722,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 510,
+          "edit": 419
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/expert-triggers-and-stack-filter/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/expert-triggers-and-stack-filter/design.md": "# Design: Suggest experts from the diff and filter their knowledge by stack\n\n## Context\n\nObserved in the code today:\n\n- The six experts are Markdown files in `assets/roles/` (YAML frontmatter\n  then knowledge), embedded with `include_str!` and parsed by\n  `codev_core::roles::parse_role_file` into a `Role`. The frontmatter has\n  `id`, `name`, `at`, `question`, `required`, `domains`, `done_when`.\n- Activation is computed by `codev_core::roles::resolve` from the ticked\n  domains that `codev_core::domains::parse` extracts from the proposal.\n  The parser already accepts free text after the domain name\n  (`- [ ] security — reason`) but discards it; each item must fit on one\n  line, a continuation line being `domains_invalid`.\n- Every expert's `## By stack` section is a list of items\n  `- **<Language>**: …`, possibly wrapped over several lines, for Rust,\n  TypeScript/JavaScript, Python, Go and Java. `accessibility` lists only\n  TypeScript/JavaScript, so a Rust project has no item left for it.\n- `codev init` detects a single primary stack\n  (`codev_engine::detect::run`, first manifest found), for the\n  configuration it writes. Nothing detects every language present.\n- Git is reached only through the `ProcessRunner` port, from\n  `codev_engine::changelog`, tested with `MockProcessRunner`.\n- The `codev roles` JSON is `RolesV1` in `codev-cli::contract::v1`, built\n  from `commands::RolesOutcome`.\n- `globset` is already a dependency of `codev-core`.\n\nConstraints: decision [0001](../../decisions/0001-functional-core-imperative-shell.md)\n(the core decides, the shell executes — no process or disk access in\n`codev-core`), decision [0002](../../decisions/0002-crate-graph-as-dependency-rule.md)\n(the crate graph is the dependency rule), decision\n[0006](../../decisions/0006-serde-norway-for-yaml.md) (YAML through\n`serde_norway`), and the project context: the JSON contract never derives\nfrom the domain model.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- One extra pass of `git` per `codev roles --change` call, bounded in\n  time by the file and line limits of the spec.\n- Triggers, diff parsing, matching, suggestion states and By stack\n  filtering all pure and unit-tested in `codev-core`.\n- An additive JSON contract: a skill installed by an older codev keeps\n  working.\n\n**Non-Goals**\n\n- Project-defined triggers, or triggers for a custom role.\n- Activating an expert from a suggestion.\n- Reporting suggestions in `codev validate`.\n- Changing what `codev init` detects or writes.\n\n## Decisions\n\n### Decision: Triggers live in each expert's frontmatter\n\nA new optional `triggers:` mapping in the role frontmatter, with three\nlists:\n\n```yaml\ntriggers:\n  paths: [Dockerfile, \"**/Dockerfile\", \"docker-compose*.yml\", \".github/workflows/**\", \"*.tf\", \"helm/**\"]\n  dependencies: [prometheus, opentelemetry, sentry]\n  lines: [timeout, retry]\n```\n\n`parse_role_file` reads it into `Role::triggers: Triggers { paths,\ndependencies, lines }` (empty for every non-expert). The six files receive\nthe lists of the spec, which are a floor: implementation may add a few\nevident ones, each exercised by a test.\n\nPath patterns are compiled once with `globset` — a pattern without `/`\nmatches the file name at any depth, as `.gitignore` does, so `*.tsx`\nmatches `web/src/Login.tsx`. Line patterns are case-insensitive\nsubstrings, not regular expressions: enough for the signals listed, no\nnew dependency, and no pathological pattern to fear. Dependency names are\nmatched as a whole token (delimited by quotes, spaces, `=`, `@`, `/`,\n`[` or line ends) on an added line of a manifest, so `react` does not\nmatch `react-native-…` only by accident — `react-dom` matching `react`\nis accepted.\n\n**Alternatives considered**: a separate `assets/triggers.yaml` keyed by\ndomain — rejected, a role's file is where a reader looks for everything\nthe role does; regular expressions via the `regex` crate — rejected as\nover-powered for keyword lists.\n\n### Decision: The core parses a unified diff; the engine only runs git\n\nFollowing 0001, `codev-core` gains a `diff` module:\n\n- `diff::parse(unified: &str, limits: Limits) -> Diff`, where `Diff`\n  holds, per file, its new path, its status (added, modified, renamed,\n  deleted), whether it is binary, and its added lines with their numbers\n  in the new file, the limits (2,000 files, 20,000 added lines) applied\n  in order and setting `truncated`;\n- `diff::Diff::with_untracked(path, contents)` to add an untracked file\n  as all-added lines, under the same limits;\n- planning files (under the planning root, given by the `Layout`) are\n  counted under `skipped.planning` before any line is kept.\n\n`codev-engine` gains `diff::read(runner, fs, layout) -> DiffRead`, which\nruns, from the project root:\n\n1. `git rev-parse --is-inside-work-tree` — failure: `not_a_git_repository`;\n   a spawn error of kind `NotFound`: `git_not_found`;\n2. `git symbolic-ref --quiet --short refs/remotes/origin/HEAD`, else\n   `git rev-parse --verify --quiet main`, else `master` — none:\n   `no_default_branch`. `base` is the branch name without `origin/`;\n3. `git merge-base <base-ref> HEAD`;\n4. `git diff --no-color --no-ext-diff --unified=0 -M <merge-base>` — the\n   merge base against the working tree, which covers committed, staged\n   and unstaged changes at once; `--unified=0` keeps the output to the\n   added and removed lines;\n5. `git ls-files --others --exclude-standard -z`, each file read through\n   `FileSystem`; a file that is not valid UTF-8 counts as binary.\n\nAny other non-zero exit is `git_failed`. The engine never fails the\ncommand on these: it returns `DiffRead::Unavailable(reason)`.\n\n**Alternatives considered**: a git library (`gix`, `git2`) — rejected, a\nnew heavy dependency for five commands the port already supports;\n`git diff <base>...HEAD` plus `git diff HEAD` — rejected, two outputs to\nmerge where one command against the working tree suffices.\n\n### Decision: Suggestions are computed in the core from the diff and the Domains entries\n\n`codev_core::domains` gains `entries(proposal) -> Vec<DomainEntry\n{ domain, ticked, comment }>`, sharing the line scanner of `parse`, which\nis unchanged. `comment` is the text after the domain name with leading\nwhitespace, `—`, `–`, `-` and `:` stripped, `None` when empty.\n\n`codev_core::triggers::suggest(diff, experts, entries) -> Vec<Suggestion>`\nwalks the files in diff order: path triggers on every file (deleted ones\nincluded), dependency triggers on the added lines of a file whose name is\na known manifest, line triggers on the added lines of any other file\nexcept `*.md`, `*.markdown`, `*.txt` and `*.rst`. It keeps the first five\nmatches per domain and counts the rest, then sets `state` and `reason`\nfrom the entries. Output order follows `domains::DOMAINS`.\n\n`codev_engine::roles::resolve` is untouched; a new\n`codev_engine::roles::suggestions(ctx, runner)` reads the diff and calls\n`suggest` only when `--change` is given, so `codev roles` without a change\nspawns no process.\n\n### Decision: Languages are detected anew, without touching `codev init`\n\n`codev_core::stacks` defines `Language` (`Rust`, `TypeScriptJavaScript`,\n`Python`, `Go`, `Java`), its display label as written in the By stack\nitems, the canonical order, and `Language::parse` for the `stacks:` key\n(case-insensitive, `TypeScript` and `JavaScript` as aliases).\n\n`codev_engine::stacks::detect(fs, root) -> Vec<Language>` checks the\nmanifests of the spec at the root and in each first-level directory\nreturned by `list_dir`, skipping hidden ones, `node_modules`, `target`\nand `vendor`; it only tests existence, never parses. `detect::run` for\n`codev init` keeps its first-manifest logic: its purpose — one primary\nstack for the configuration's context — differs.\n\n**Alternatives considered**: reuse `detect::run` — rejected, it stops at\nthe first manifest and parses it, which is both too little and too much;\nscanning file extensions in the tree — rejected, costly on large\nrepositories and fooled by vendored code.\n\n### Decision: By stack filtering is a text transform at serving time\n\n`codev_core::roles::filter_by_stack(knowledge, kept) -> String` finds the\n`## By stack` section, splits it into items (a line starting with\n`- **`, plus its indented continuation lines), keeps the items whose label\nis a kept language, and replaces an emptied section by the line of the\nspec. The other sections are byte-for-byte unchanged. It is applied where\n`ResolvedRole::knowledge` is served, after resolution, so the catalog\nstays the full text and the existing test that every expert names the\nfive languages keeps holding on the embedded files.\n\nThe kept languages are computed once per command from the configuration\nand the detection: `Kept::Project(list)`, `Kept::All` (with `stacks: all`\nor nothing detected) or `Kept::Detected(list)`, which maps directly to\n`stacks.filter`.\n\n### Decision: `stacks:` is a configuration key checked like role settings\n\n`codev_core::config` parses `stacks:` as `all` or a non-empty sequence of\nstrings; anything else, or an unknown language, gives a finding\n`invalid_stacks`, collected with the role findings by\n`codev_engine::roles::project_findings` so that `codev validate`,\n`status`, `instructions` and `roles` report it exactly as an invalid role\nsetting, under the `config` item. `stacks` is added to the known\ntop-level keys; the inherited sources' configuration is not read for it,\nas for `roles:`.\n\n### Decision: The JSON contract grows three DTOs\n\n`contract::v1` gains `StacksV1 { detected, filter }`, `DiffV1 { available,\nreason, base, files, scanned, skipped, truncated }` (with `skipped` a\n`BTreeMap<&'static str, usize>` holding only non-zero reasons) and\n`SuggestionV1 { domain, role, state, reason, matches, moreMatches }` with\n`MatchV1 { kind, file, line, text, trigger }`, built from new fields of\n`RolesOutcome`, never by serializing the core types. `roles_shape` (the\nfailure document) gains `stacks`, `diff: null` and `suggestions: []`.\nAll additions are new keys: an installed skill that ignores them is\nunaffected. Paths use `/` on every OS, per the json-output spec.\n\n### Decision: The skills read what codev serves\n\n`assets/workflows/propose.md` gains, in its Roles section, the sentence\nthat By stack is served filtered; at the writing of `## Domains`, the\nreading of `diff` and `suggestions`; at `plan.challenge`, the skeptic's\nreading of `unticked` and `justified` suggestions. `apply.md` gains the\nRoles sentence and, at `code.review`, the **To decide** treatment of\n`unticked` suggestions. No language name appears in either body. The\ninstalled skills are regenerated by `codev update`.\n\n## Risks / Trade-offs\n\n- [Line triggers are noisy: `cache`, `timeout` or `email` appear in code\n  unrelated to the domain] → a suggestion only asks for a tick or a\n  one-line reason, matches are capped at five, prose files are excluded,\n  and a `justified` state persists the answer so the question is not asked\n  again.\n- [A large branch makes every `codev roles --change` call slow] →\n  `--unified=0`, the file and line limits, and no diff without\n  `--change`; the skills call it a handful of times per action.\n- [The default branch is guessed wrong (a repository whose trunk is\n  `develop`, no `origin/HEAD`)] → `diff.base` is printed and served, so\n  the reader sees which branch was used; `git remote set-head origin -a`\n  fixes the guess. A configurable base is left for later.\n- [Filtering hides a pitfall that matters: a Rust project with a small\n  TypeScript front end in a deeper directory] → first-level directories\n  are scanned, and `stacks:` lets the project list its languages.\n- [Older installed skills do not read the suggestions] → the contract is\n  additive; `codev update` brings the new workflow bodies.\n\n## Migration Plan\n\nNo data to migrate. Existing projects get filtered knowledge on upgrade,\nwhich changes what their experts receive but no file; `stacks: all`\nrestores the previous behavior. Rollback is reverting to the previous\ncodev: an unknown `stacks:` key then only warns.\n",
+    "_codev/changes/expert-triggers-and-stack-filter/proposal.md": "# Proposal: Suggest experts from the diff and filter their knowledge by stack\n\n## Why\n\nExperts only review a change whose proposal ticks their domain, so a change\nthat ends up adding a login form or a Dockerfile without ticking `security`\nor `operations` goes unreviewed by the expert who matters. And every active\nexpert receives pitfalls for five languages when the project uses one or\ntwo, which dilutes the knowledge that applies. Both gaps grew with the\nbuilt-in experts landing; they are cheap to close now, before more domains\nare added.\n\n## What Changes\n\n- Each built-in expert declares **triggers**: path patterns (`Dockerfile`,\n  `**/migrations/**`, `*.tsx`), dependency names added to a manifest\n  (`jsonwebtoken`, `bcrypt`, `prometheus`), and patterns in added lines\n  (`password`, `ALTER TABLE`, `aria-`).\n- With `--change`, `codev roles` reads the change's diff against the\n  repository's default branch — committed, staged, unstaged and untracked\n  files, `_codev/` planning files skipped — and serves a `diff` summary\n  plus `suggestions`: one entry per domain whose triggers match, with the\n  matching file, manifest dependency or added line, and a `state`:\n  `ticked` (the proposal ticks it), `justified` (unticked with a reason on\n  its line) or `unticked`.\n- A suggestion never activates an expert on its own: only the proposal's\n  ticks do. The `propose` skill reads the suggestions when writing\n  `## Domains` and either ticks each one or keeps it unticked with a\n  reason; at `plan.challenge` the skeptic raises every `unticked`\n  suggestion as a finding; at `code.review` the `apply` skill puts every\n  `unticked` suggestion under **To decide**.\n- codev detects the project's languages from its manifests at the root\n  (Rust, TypeScript/JavaScript, Python, Go, Java — every one present, not\n  only the first) and serves each role's **By stack** knowledge filtered to\n  them. `codev roles --json` gains a `stacks` object (`detected`,\n  `filter`).\n- A new top-level `stacks:` key in `_codev/config.yaml` overrides the\n  detection: a list of languages, or `all` to keep every one. When nothing\n  is detected and the key is absent, the full By stack is served.\n- `codev roles` without `--json` prints the suggestions and the stacks.\n\nAssumptions made without asking (an evaluation run, no user available):\n\n- Suggestions suggest; they do not activate experts automatically, which\n  keeps the proposal the single source of activation and avoids experts\n  appearing because of an incidental word in a diff.\n- Triggers are built into the experts; letting a project declare its own\n  triggers is left for a later change.\n- `codev validate` does not report unticked suggestions: its result would\n  then depend on the branch it runs on.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- roles\n- skills\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/roles/*.md`: a `triggers:` block in the frontmatter of each of\n  the six experts.\n- `codev-core`: trigger matching over a parsed diff, suggestion states from\n  the parsed `## Domains`, multi-stack detection from manifests, By stack\n  filtering of a knowledge text — all pure.\n- `codev-engine`: reading the diff through the `ProcessRunner` port (`git`)\n  and the manifests through `FileSystem`; the `stacks:` configuration key.\n- `codev-cli`: `diff`, `suggestions` and `stacks` in the `codev roles`\n  JSON contract (`contract::v1`, additive), and their human rendering.\n- `assets/workflows/propose.md` and `apply.md`: reading the suggestions at\n  `## Domains`, `plan.challenge` and `code.review`, and the By stack served\n  pre-filtered.\n- Documentation, in `docs/en` and `docs/fr`: `roles.md` (Experts and\n  domains, Domains), `reference/configuration.md` (`stacks:`),\n  `reference/json-output.md` (`codev roles`), `reference/cli.md`.\n\n## Domains\n\n- [ ] security — the diff is read with fixed `git` arguments and only pattern-matched, never executed\n- [ ] personal-data\n- [ ] user-interface\n- [x] performance — scanning a large branch's diff on every `codev roles --change` call must stay bounded\n- [ ] operations — a missing `git` or a non-repository degrades to `diff.available: false`\n- [x] migration — the `codev roles` JSON contract read by installed skills grows, and served knowledge changes\n\n## Release note\n\n- Added: `codev roles --change` now reads the change's diff and suggests\n  the domains it probably touches — a Dockerfile, an authentication\n  dependency, a migration — so the skills ask you to tick or justify each\n  one instead of letting an expert be skipped silently.\n- Changed: experts now receive the per-language pitfalls of the languages\n  your project uses only; set `stacks:` in `_codev/config.yaml` to choose\n  them yourself, or `stacks: all` to keep every language.\n",
+    "_codev/changes/expert-triggers-and-stack-filter/specs/roles/spec.md": "## ADDED Requirements\n\n### Requirement: Each expert declares the triggers of its domain\n\nEach built-in expert SHALL declare triggers: the signs, in a diff, that a\nchange probably touches its domain. A trigger is of one of three kinds:\n\n- `path` — a pattern matched against the path of a file the change adds,\n  modifies, renames or deletes;\n- `dependency` — a dependency name, matched when an added line of a\n  dependency manifest (`Cargo.toml`, `package.json`, `pyproject.toml`,\n  `requirements*.txt`, `go.mod`, `pom.xml`, `build.gradle`,\n  `build.gradle.kts`) declares it;\n- `line` — a pattern matched, case-insensitively, against the lines the\n  change adds to any other file except Markdown and plain text files.\n\nThe built-in triggers SHALL include at least:\n\n- `security`: the paths `**/auth/**`, `**/login*` and `.env*`; the\n  dependencies `jsonwebtoken`, `bcrypt`, `argon2` and `passport`; the\n  lines `password`, `type=\"password\"` and `unsafe {`;\n- `personal-data`: the lines `email`, `phone`, `date_of_birth`, `address`\n  and `iban`;\n- `user-interface`: the paths `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`,\n  `*.html` and `*.css`; the dependencies `react`, `vue` and `svelte`; the\n  lines `aria-`, `<button` and `<input`;\n- `performance`: the paths `benches/**`; the dependencies `rayon`,\n  `criterion` and `redis`; the lines `cache` and `Mutex`;\n- `operations`: the paths `Dockerfile`, `**/Dockerfile`,\n  `docker-compose*.yml`, `.github/workflows/**`, `*.tf` and `helm/**`; the\n  dependencies `prometheus`, `opentelemetry` and `sentry`; the lines\n  `timeout` and `retry`;\n- `migration`: the paths `**/migrations/**` and `*.sql`; the lines\n  `ALTER TABLE`, `DROP COLUMN` and `deprecated`.\n\n#### Scenario: A Dockerfile points to operations\n\n- **GIVEN** a change whose diff adds the file `Dockerfile`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `suggestions` holds `operations` with a match of kind `path`\n  on `Dockerfile`\n\n#### Scenario: An authentication dependency points to security\n\n- **GIVEN** a change whose diff adds the line `jsonwebtoken = \"9\"` to\n  `Cargo.toml`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `suggestions` holds `security` with a match of kind\n  `dependency` on `Cargo.toml`, at that line, naming `jsonwebtoken`\n\n#### Scenario: A login form points to security and the user interface\n\n- **GIVEN** a change whose diff adds `src/Login.tsx` with the line\n  `<input type=\"password\" name=\"pwd\">`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `suggestions` holds `security` with a match of kind `line` on\n  `src/Login.tsx` at that line\n- **AND** it holds `user-interface` with matches of kind `path` and `line`\n\n#### Scenario: Prose does not trigger line patterns\n\n- **GIVEN** a change whose diff only adds the line `Never log the\n  password.` to `docs/en/src/guide.md`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `suggestions` is empty\n\n### Requirement: `codev roles` reads the change's diff\n\nWith `--change`, `codev roles` SHALL read the change's diff: every file\nthat differs between the merge base of the default branch and `HEAD`, and\nthe working tree — committed, staged and unstaged changes, and untracked\nfiles that are not ignored. The default branch is the target of\n`origin/HEAD` when it is set, otherwise the local `main`, otherwise the\nlocal `master`. Files under the planning root `_codev/` and binary files\nSHALL be counted but not scanned. Deleted files SHALL be matched by path\nonly. Reading SHALL stop at 2,000 files or 20,000 added lines, whichever\ncomes first, the rest left unscanned.\n\nThe JSON document SHALL carry `diff`: `null` without `--change`, otherwise\nan object with `available`, `reason` (`null` when available, otherwise\n`not_a_git_repository`, `git_not_found`, `no_default_branch` or\n`git_failed`), `base` (the default branch's name, `null` when unknown),\n`files` (the files that differ), `scanned` (the files scanned),\n`skipped` (a mapping from `planning` or `binary` to the files skipped for\nthat reason, a reason with no file left out) and `truncated` (whether a\nlimit stopped the reading). A diff that cannot be read MUST NOT fail the\ncommand: its exit code and its `status` are unchanged.\n\n#### Scenario: Only planning files\n\n- **GIVEN** a change whose branch adds only `_codev/changes/<name>/proposal.md`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `diff` has `available: true`, `base: \"main\"`, `files: 1`,\n  `scanned: 0`, `skipped: { \"planning\": 1 }` and `truncated: false`\n- **AND** `suggestions` is empty\n\n#### Scenario: Untracked and uncommitted files count\n\n- **GIVEN** a change on the default branch itself, with an untracked\n  `Dockerfile` and an unstaged edit to `src/main.rs`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `diff.files` is 2 and `suggestions` holds `operations`\n\n#### Scenario: Outside a git repository\n\n- **GIVEN** a project that is not a git repository\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** the exit code is 0, `diff` has `available: false` and\n  `reason: \"not_a_git_repository\"`, and `suggestions` is empty\n\n#### Scenario: Without a change, no diff is read\n\n- **WHEN** the user runs `codev roles --at plan.understand --json`\n- **THEN** `diff` is `null` and `suggestions` is empty\n\n#### Scenario: A large diff is truncated\n\n- **GIVEN** a change whose diff adds 30,000 lines\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** `diff.truncated` is `true` and the suggestions come from the\n  lines read before the limit\n\n### Requirement: `codev roles` suggests the domains the diff points to\n\nWith `--change`, `codev roles` SHALL serve `suggestions`: one entry per\ndomain at least one trigger of which matches the diff, in the order of\nthe domains in the proposal template, each with `domain`, `role` (the id\nof the expert bound to it), `state`, `reason` and `matches`. `state` SHALL\nbe `ticked` when the proposal's `## Domains` ticks the domain, `justified`\nwhen its line leaves it unticked with text after the domain name, and\n`unticked` otherwise — the proposal absent, the section absent or saying\n`None` included. `reason` SHALL be that text, without its leading dash,\nfor a `justified` suggestion, and `null` otherwise. `matches` SHALL hold at\nmost five matches, in diff order, each with `kind` (`path`, `dependency`\nor `line`), `file`, `line` (the added line's number in the new file,\n`null` for a `path` match), `text` (the added line, trimmed and cut at 120\ncharacters, `null` for a `path` match) and `trigger` (the pattern or the\ndependency name that matched); `moreMatches` SHALL count those left out.\n\nA suggestion SHALL NOT activate its expert: activation still follows\nonly the proposal's ticks and the `roles:` settings. The suggestions are\nthe same at every `--at`, and without it.\n\nWithout `--json`, with `--change`, `codev roles` SHALL print after the\nroles a \"Suggested domains\" block: one line per suggestion with its\ndomain, its state, its first match as `<file>:<line>` and its trigger,\nand the reason of a `justified` one; or a line saying the diff suggests\nno domain; or, when the diff is unavailable, a line naming its reason.\n\n#### Scenario: A suggestion the proposal ticks\n\n- **GIVEN** a change whose diff adds `Dockerfile` and whose proposal ticks\n  `operations`\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>\n  --json`\n- **THEN** `suggestions` holds `operations` with `role: \"ops\"`,\n  `state: \"ticked\"` and `reason: null`\n- **AND** `roles` holds `ops` with `activatedBy: \"domain:operations\"`\n\n#### Scenario: A suggestion kept unticked with a reason\n\n- **GIVEN** the same diff and a proposal whose line reads\n  `- [ ] operations — the Dockerfile is a local test fixture`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** the `operations` suggestion has `state: \"justified\"` and\n  `reason: \"the Dockerfile is a local test fixture\"`\n\n#### Scenario: An unticked suggestion does not activate its expert\n\n- **GIVEN** the same diff and a proposal whose `## Domains` says `None`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** the `operations` suggestion has `state: \"unticked\"`\n- **AND** `roles` holds no `ops`\n\n#### Scenario: Matches are capped\n\n- **GIVEN** a change whose diff adds eight lines containing `password`\n- **WHEN** the user runs `codev roles --change <name> --json`\n- **THEN** the `security` suggestion holds five matches and\n  `moreMatches: 3`\n\n#### Scenario: Suggestions in the human output\n\n- **GIVEN** a change whose diff adds `Dockerfile` and whose proposal says\n  `None`\n- **WHEN** the user runs `codev roles --at plan.challenge --change <name>`\n- **THEN** it prints a \"Suggested domains\" block with a line naming\n  `operations`, `unticked` and `Dockerfile`\n\n### Requirement: Knowledge is served for the project's languages\n\ncodev SHALL detect the project's languages from the dependency manifests\nat its root and in its first-level subdirectories, hidden directories,\n`node_modules`, `target` and `vendor` left aside: `Cargo.toml` for Rust;\n`package.json` or `tsconfig.json` for TypeScript/JavaScript;\n`pyproject.toml`, `setup.py` or `requirements.txt` for Python; `go.mod`\nfor Go; `pom.xml`, `build.gradle` or `build.gradle.kts` for Java.\n\nThe top-level `stacks:` key of `_codev/config.yaml` SHALL accept either\n`all`, or a non-empty list of languages among `Rust`,\n`TypeScript/JavaScript` (also written `TypeScript` or `JavaScript`),\n`Python`, `Go` and `Java`, matched case-insensitively. Any other value\nMUST be reported with the code `invalid_stacks`, naming the accepted\nvalues, as an invalid role setting is: an error under the `config` item\nof `codev validate`, and a failure with exit code 1 of `codev status`,\n`codev instructions` and `codev roles`. The `stacks:` key of an inherited\nsource's configuration MUST be ignored. `stacks` SHALL be a known\ntop-level key: it never produces an `unknown_config_key` warning.\n\nThe kept languages SHALL be those of the `stacks:` list when it is set,\nevery language with `stacks: all` or when the key is absent and no\nlanguage is detected, and the detected ones otherwise. Wherever codev\nserves a role's knowledge, its **By stack** section SHALL hold only the\nitems of the kept languages, in their original order; when none is left,\nthe section SHALL hold the single line `No pitfall listed for this\nproject's languages.`. The other sections are served unchanged.\n\nThe JSON document of `codev roles` SHALL carry `stacks`, with `detected`\n(the detected languages, in the order Rust, TypeScript/JavaScript, Python,\nGo, Java) and `filter`: `project` when `stacks:` lists languages, `all`\nwhen every language is kept, `detected` otherwise. Without `--json`, with\n`--knowledge`, `codev roles` SHALL print the kept languages before the\nroles.\n\n#### Scenario: A Rust project receives the Rust pitfalls only\n\n- **GIVEN** a project with a `Cargo.toml` at its root and no other\n  manifest, and a change whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** `stacks` is `{ \"detected\": [\"Rust\"], \"filter\": \"detected\" }`\n- **AND** the `security` entry's By stack names Rust and none of\n  TypeScript/JavaScript, Python, Go or Java\n\n#### Scenario: Several languages are detected\n\n- **GIVEN** a project with a `Cargo.toml` at its root and a\n  `web/package.json`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** `stacks.detected` is `[\"Rust\", \"TypeScript/JavaScript\"]`\n\n#### Scenario: No pitfall left for a role\n\n- **GIVEN** a Rust-only project and a change whose proposal ticks\n  `user-interface`\n- **WHEN** the user runs `codev roles --at code.review --change <name>\n  --json`\n- **THEN** the `accessibility` entry's knowledge still holds the five\n  sections, its By stack being the line `No pitfall listed for this\n  project's languages.`\n\n#### Scenario: The project chooses its languages\n\n- **GIVEN** a Rust-only project whose configuration holds\n  `stacks: [rust, python]`\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `stacks` is `{ \"detected\": [\"Rust\"], \"filter\": \"project\" }`\n- **AND** the `newcomer` entry's By stack names Rust and Python only\n\n#### Scenario: Every language kept\n\n- **GIVEN** a configuration with `stacks: all`\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `stacks.filter` is `all` and the `newcomer` entry's By stack\n  names the five languages\n\n#### Scenario: Nothing detected\n\n- **GIVEN** a project with no manifest and no `stacks:` key\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** `stacks` is `{ \"detected\": [], \"filter\": \"all\" }`\n\n#### Scenario: An invalid `stacks:` value\n\n- **GIVEN** a configuration with `stacks: [Cobol]`\n- **WHEN** the user runs `codev validate --json`\n- **THEN** the `config` item holds an error `invalid_stacks` naming\n  `Cobol` and the accepted values\n- **AND** `codev roles --json` exits with code 1 and `status[0].code`\n  `invalid_stacks`\n\n#### Scenario: No warning for `stacks`\n\n- **GIVEN** a configuration with `stacks: all`\n- **WHEN** the user runs `codev status --json`\n- **THEN** `status` holds no `unknown_config_key` warning\n\n## MODIFIED Requirements\n\n### Requirement: `codev roles` serves the roles of a step\n\n`codev roles [--at <step>] [--change <name>] [--knowledge] [--json]` SHALL\nresolve the roles against the change's schema, its `change.yaml` and the\ndomains of its proposal with `--change`, otherwise against the configured\nschema and the project configuration alone. With `--at`, it SHALL list the\nroles active at that step; without it, every role of the catalog with its\nactivation. It reads files, writes none, and exits with code 0.\n\nWith `--json`, the document SHALL carry `changeName` (`null` without\n`--change`), `schemaName`, `at` (`null` without `--at`), `language`,\n`stacks`, `diff`, `suggestions`, `roles` and `status`. Each role SHALL\ncarry `id`, `name` (its display name\nin the configured `language`, English when the role has none in that\nlanguage), `kind` (`step` or `artifact`), `at` (the step asked with `--at`,\notherwise the role's first step), `steps` (every step the role serves, in\nworkflow order), `artifact` (the artifact id of an artifact role, `null`\notherwise), `domains` (the domains that activate it, empty for a role bound\nto none), `question`, `when` (`always`, `never` or `on_domain`),\n`whenOrigin` (`default`, `project` or `change`), `activatedBy`,\n`disableable`, `knowledge`, and `doneWhen`, a list of criteria each with\nits `origin` (`built-in`, `schema:<name>` or `project`) and its `text`.\n\n`activatedBy` SHALL say why an active role is active: `always` for the\ndefault activation, `project` or `change` when that file set `always`, and\n`domain:<name>` for an `on_domain` role, naming its first domain the\nproposal ticks. It is `null` for an inactive role. `knowledge` SHALL be the\nrole's knowledge text for an active role that has one, and `null`\notherwise.\n\nWithout `--json`, with `--at`, it SHALL print each active role's id and\nname, its question, and its criteria each prefixed with its origin in\nparentheses — or a line saying no role is active at that step — and, with\n`--knowledge`, each role's knowledge after its criteria. Without `--at`, it\nSHALL print one line per role: id, name, step or artifact, and activation\nwith its origin when not the default, marking the roles that cannot be\ndisabled.\n\nAn `--at` that is not one of the steps SHALL fail with `unknown_step`,\nnaming the valid steps. With `--json`, a failure keeps the document's\nshape, with `roles` empty, `diff` `null` and `suggestions` empty.\n\n#### Scenario: The roles of a step, as JSON\n\n- **GIVEN** a project with no `roles:` key and a change `add-auth`\n- **WHEN** the user runs `codev roles --at plan.trace --change add-auth\n  --json`\n- **THEN** `roles` holds one entry, `tracer`, with `kind: \"step\"`,\n  `at: \"plan.trace\"`, `steps: [\"plan.trace\"]`, `artifact: null`,\n  `domains: []`, `when: \"always\"`, `whenOrigin: \"default\"`,\n  `activatedBy: \"always\"`, `knowledge: null` and its criteria with the\n  origin `built-in`\n- **AND** the document carries `stacks`, `diff` and `suggestions`\n\n#### Scenario: Artifact roles at `plan.write`\n\n- **WHEN** the user runs `codev roles --at plan.write --json`\n- **THEN** `roles` holds `product`, `qa`, `architect` and `lead`, with\n  `artifact` `proposal`, `specs`, `design` and `tasks`, and criteria with\n  the origin `schema:spec-driven`\n\n#### Scenario: Display names follow the configured language\n\n- **GIVEN** a configuration with `language: fr`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `skeptic` entry has `name: \"Contradicteur\"`\n- **AND** with `language: de`, it has `name: \"Skeptic\"`\n\n#### Scenario: An unknown step\n\n- **WHEN** the user runs `codev roles --at plan.review --json`\n- **THEN** the exit code is 1 and `status[0].code` is `unknown_step`\n- **AND** its message lists the valid steps, `roles` is empty, `diff` is\n  `null` and `suggestions` is empty\n\n#### Scenario: Human output of every role\n\n- **GIVEN** a configuration with `roles: { newcomer: never }`\n- **WHEN** the user runs `codev roles`\n- **THEN** it prints one line per role, the `newcomer` line saying `never`\n  and `project`, the `security` line saying `on_domain`, and the `product`\n  line saying it cannot be disabled\n\n#### Scenario: Knowledge in the human output\n\n- **GIVEN** a change `add-auth` whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth`\n- **THEN** it prints the criteria of `newcomer` and `security` without\n  their knowledge\n- **AND** with `--knowledge`, it also prints the knowledge of each\n",
+    "_codev/changes/expert-triggers-and-stack-filter/specs/skills/spec.md": "## ADDED Requirements\n\n### Requirement: The `propose` skill confronts the Domains section with the diff\n\nBefore writing the proposal's `## Domains` section, the `propose` skill\nSHALL run `codev roles --change <name> --json` and read its `diff` and\n`suggestions`. For each suggestion, it MUST either tick the domain, or\nkeep it unticked with, on the domain's line, the reason the matches do\nnot mean the change touches it: `- [ ] <domain> — <reason>`. It MUST NOT\nleave a suggestion unticked without a reason. When `diff.available` is\n`false`, or the diff holds only planning files, the skill MUST tick by\njudgement alone and say there is no diff to go by.\n\n#### Scenario: The propose body reads the suggestions at Domains\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` workflow is resolved\n- **THEN** its body names `codev roles --change` with `suggestions` at the\n  writing of `## Domains`, and the line form `- [ ] <domain> — <reason>`\n\n#### Scenario: A suggested domain the change does not touch\n\n- **GIVEN** a change whose diff adds a `Dockerfile` used only as a test\n  fixture\n- **WHEN** `/codev-propose` writes the proposal\n- **THEN** the `operations` line of `## Domains` is either ticked or reads\n  `- [ ] operations — <reason>`\n\n### Requirement: The skeptic raises unticked suggestions at `plan.challenge`\n\nAt `plan.challenge`, the `propose` skill SHALL have the `skeptic` read the\n`suggestions` of `codev roles --at plan.challenge --change <name> --json`:\nevery suggestion whose `state` is `unticked` MUST be a finding located at\n`proposal.md#Domains`, and every `justified` one MUST be checked against\nthe files and lines in its `matches`, a reason that does not answer them\nbeing a finding.\n\n#### Scenario: The propose body has the skeptic read the suggestions\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` workflow is resolved\n- **THEN** its `plan.challenge` step names `suggestions`, the states\n  `unticked` and `justified`, and the location `proposal.md#Domains`\n\n#### Scenario: An unticked suggestion becomes a finding\n\n- **GIVEN** a change whose `codev roles --at plan.challenge` output holds\n  an `unticked` suggestion `security`\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the review record holds, under `## plan.challenge` and the\n  `skeptic`, a finding located at `proposal.md#Domains` naming `security`\n\n### Requirement: The `apply` skill puts unticked suggestions to the user at `code.review`\n\nAt `code.review`, the `apply` skill SHALL read the `suggestions` of\n`codev roles --at code.review --change <name> --json`, which then reflect\nthe code written. Every suggestion whose `state` is `unticked` MUST be\nlisted under **To decide**, with its first match and two choices: tick the\ndomain, after which the skill asks for the roles of the step again and\nruns that expert's review, or keep it unticked with a reason on its line.\nThe skill MUST NOT edit the proposal's `## Domains` itself.\n\n#### Scenario: The apply body reads the suggestions at code review\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `apply` workflow is resolved\n- **THEN** its `code.review` step names `suggestions`, `unticked` and\n  **To decide**, and says the proposal is not edited by the skill\n\n#### Scenario: An implementation adds a login form\n\n- **GIVEN** a change whose proposal ticks no domain and whose\n  implementation adds `src/Login.tsx` with a password input\n- **WHEN** `/codev-apply` reaches the code review\n- **THEN** its summary lists `security` and `user-interface` under\n  **To decide**, each with its first match\n\n### Requirement: The `propose` and `apply` skills use the knowledge as served\n\nThe `propose` and `apply` skill bodies SHALL say that a role's **By\nstack** knowledge comes already filtered to the project's languages\n(`stacks`) and is to be used as served. They MUST NOT name languages to\nkeep or to drop.\n\n#### Scenario: The skill bodies defer to the served stacks\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` workflows are resolved\n- **THEN** each body names `By stack` and `stacks` in its Roles section\n- **AND** neither names Rust, Python, Go or Java\n"
+  },
+  "validate": {
+    "expert-triggers-and-stack-filter": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "expert-triggers-and-stack-filter",
+          "path": "_codev/changes/expert-triggers-and-stack-filter"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-expert-triggers-and-stack-filter-1",
+      "status": []
+    }
+  }
+}

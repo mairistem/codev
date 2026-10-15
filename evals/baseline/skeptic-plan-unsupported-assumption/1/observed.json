@@ -1,0 +1,310 @@
+{
+  "format": 2,
+  "case": "skeptic-plan-unsupported-assumption",
+  "error": null,
+  "costUsd": 0.4464104,
+  "durationMs": 43316,
+  "consumption": {
+    "durationApiMs": 43198,
+    "turns": 12,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1168,
+      "cacheCreation": 32796,
+      "cacheRead": 492442,
+      "output": 4228
+    },
+    "toolCalls": 11,
+    "orientationCalls": 9,
+    "calls": [
+      {
+        "cacheCreation": 7410,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7410
+        }
+      },
+      {
+        "cacheCreation": 15494,
+        "cacheRead": 29549,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15494
+        }
+      },
+      {
+        "cacheCreation": 287,
+        "cacheRead": 45043,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 287
+        }
+      },
+      {
+        "cacheCreation": 1727,
+        "cacheRead": 45330,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 276,
+          "file": 1451
+        }
+      },
+      {
+        "cacheCreation": 708,
+        "cacheRead": 47057,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 708
+        }
+      },
+      {
+        "cacheCreation": 1205,
+        "cacheRead": 47765,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1205
+        }
+      },
+      {
+        "cacheCreation": 332,
+        "cacheRead": 48970,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 128,
+          "shell": 204
+        }
+      },
+      {
+        "cacheCreation": 1531,
+        "cacheRead": 49302,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1531
+        }
+      },
+      {
+        "cacheCreation": 1337,
+        "cacheRead": 50833,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1337
+        }
+      },
+      {
+        "cacheCreation": 2114,
+        "cacheRead": 52170,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2114
+        }
+      },
+      {
+        "cacheCreation": 651,
+        "cacheRead": 54284,
+        "input": 2,
+        "output": 187,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 651
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-skeptic-1 (The merge key rests on an assumption the design's own context refutes) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-skeptic-2 (Merged records are deleted with no way back) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "merge-duplicate-customers",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "Since an e-mail address identifies exactly one person, the job groups\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-1",
+        "line": 11,
+        "location": "design.md#Decision: Customers are merged by e-mail",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The design's Context states the opposite: \"Business customers often share a purchasing mailbox (`orders@acme.example`) between several buyers, each with their own customer record and billing address.\" Under the decision as written, the nightly job collapses every buyer behind `orders@acme.example` into the oldest record: their orders are attached to another buyer, and their own name and billing address are deleted (`app/schema.sql` keeps `name` and `billing_address` per customer row). Choose a key that distinguishes the guest duplicates of the Why from distinct people sharing a mailbox (e.g. e-mail plus name and/or billing address, or restricting the merge to guest-created records), state the fact that justifies it, and add a spec scenario \"Two buyers share a mailbox → both records remain\".",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The merge key rests on an assumption the design's own context refutes"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "moves the others' orders to it and deletes the others.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-2",
+        "line": 36,
+        "location": "design.md#Decision: Customers are merged by e-mail",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "Deletion is irreversible and the plan has no rollback, audit trail or staged rollout: a wrong merge (see R-skeptic-1) cannot be undone, since the original `customer_id` of each moved order and the deleted rows' name and billing address are lost. Record each merge (survivor id, merged id, moved order ids, the deleted row) or soft-delete the merged records, provide a dry-run mode for the first runs, and add a task that verifies a merge can be reverted.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Merged records are deleted with no way back"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "A nightly job SHALL merge customer records that share an e-mail address into the oldest one, moving their orders to it.\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-3",
+        "line": 57,
+        "location": "specs/customer-merge/spec.md#Requirement: Duplicate customers are merged",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The requirement does not say how e-mails are compared, while the design groups \"by lower-cased e-mail\": `Ada@example.org` and `ada@example.org` are duplicates per the design but not per the spec, so the requirement cannot be checked against the implementation. Add scenarios for case (and surrounding whitespace) variants of one address, for three or more records of one address (all orders end on the oldest), for ties on `created_at` (which record is \"the oldest\"), and for the shared-mailbox case of R-skeptic-1; extend task 1.1 to cite those scenarios' tests.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The spec covers only the happy path"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [ ] operations\n- [ ] migration\n",
+        "history": [
+          {
+            "by": "skeptic",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-skeptic-4",
+        "line": 79,
+        "location": "proposal.md#Domains",
+        "raisedBy": [
+          "skeptic"
+        ],
+        "recommendation": "The change adds a new scheduled job (\"A nightly job merges customers that share an e-mail address.\") and rewrites production data in place (moves orders, deletes customers), yet `operations` and `migration` are unticked with no reason on their line, so no expert reviews the scheduling, monitoring and failure handling of the job, nor the irreversible data rewrite. Tick them, or keep them unticked with the reason on the line.",
+        "reported": true,
+        "role": "skeptic",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Operations and migration are unticked with no reason"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/merge-duplicate-customers/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

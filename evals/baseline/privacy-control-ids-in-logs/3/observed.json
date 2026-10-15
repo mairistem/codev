@@ -1,0 +1,140 @@
+{
+  "format": 2,
+  "case": "privacy-control-ids-in-logs",
+  "error": null,
+  "costUsd": 0.29420599999999997,
+  "durationMs": 32742,
+  "consumption": {
+    "durationApiMs": 32801,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1187,
+      "cacheCreation": 27482,
+      "cacheRead": 187415,
+      "output": 1796
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7411,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7411
+        }
+      },
+      {
+        "cacheCreation": 13063,
+        "cacheRead": 29550,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3495,
+          "skill": 9568
+        }
+      },
+      {
+        "cacheCreation": 1871,
+        "cacheRead": 42613,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1871
+        }
+      },
+      {
+        "cacheCreation": 4145,
+        "cacheRead": 44484,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "file": 4145
+        }
+      },
+      {
+        "cacheCreation": 992,
+        "cacheRead": 48629,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 599,
+          "edit": 393
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "log-fulfilment-batches",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/log-fulfilment-batches/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "privacy"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "privacy"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "privacy",
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

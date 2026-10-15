@@ -1,0 +1,124 @@
+{
+  "format": 2,
+  "case": "accessibility-control-labelled-form",
+  "error": null,
+  "costUsd": 0.2670412,
+  "durationMs": 15095,
+  "consumption": {
+    "durationApiMs": 14963,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1170,
+      "cacheCreation": 26095,
+      "cacheRead": 144661,
+      "output": 1419
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7397,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7397
+        }
+      },
+      {
+        "cacheCreation": 16258,
+        "cacheRead": 29536,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4880,
+          "skill": 11378
+        }
+      },
+      {
+        "cacheCreation": 1398,
+        "cacheRead": 45794,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1398
+        }
+      },
+      {
+        "cacheCreation": 1042,
+        "cacheRead": 47192,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 606,
+          "edit": 436
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-newsletter-form",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-newsletter-form/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

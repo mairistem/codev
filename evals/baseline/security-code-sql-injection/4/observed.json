@@ -1,0 +1,175 @@
+{
+  "format": 2,
+  "case": "security-code-sql-injection",
+  "error": null,
+  "costUsd": 0.3072436,
+  "durationMs": 22505,
+  "consumption": {
+    "durationApiMs": 22338,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 27647,
+      "cacheRead": 233913,
+      "output": 1915
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7376,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7376
+        }
+      },
+      {
+        "cacheCreation": 12916,
+        "cacheRead": 29515,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3314,
+          "skill": 9602
+        }
+      },
+      {
+        "cacheCreation": 1617,
+        "cacheRead": 42431,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1617
+        }
+      },
+      {
+        "cacheCreation": 2401,
+        "cacheRead": 44048,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2401
+        }
+      },
+      {
+        "cacheCreation": 2882,
+        "cacheRead": 46449,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2882
+        }
+      },
+      {
+        "cacheCreation": 455,
+        "cacheRead": 49331,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 455
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (SQL injection through the `q` search term) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-user-search",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "const sql = \"SELECT id, name FROM users WHERE name LIKE '%\" + term + \"%' ORDER BY name LIMIT 50\";\nreturn query<UserRow>(sql);\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/users.ts:10-11",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Bind the term as a parameter instead of concatenating it (CWE-89), as `query` in src/db.ts expects (\"values go in `params`, never in `sql`\"): `query<UserRow>(\"SELECT id, name FROM users WHERE name LIKE $1 ORDER BY name LIMIT 50\", [\"%\" + term + \"%\"])`. Attack today: any session with the `support` role sends `GET /users/search?q=x' UNION SELECT id, password_hash FROM users --` (src/server.ts:12-18 only trims and checks the length, 2 to 100 characters, which fits the payload) and reads any column of any table the database user can see, or alters data, beyond the id and name the endpoint is meant to expose. Consider also escaping `%`, `_` and `\\` in the term so a search for them matches literally.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "SQL injection through the `q` search term"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-user-search/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

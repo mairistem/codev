@@ -1,0 +1,349 @@
+{
+  "format": 2,
+  "case": "plan-role-precision-from-baseline",
+  "error": null,
+  "costUsd": 1.8054752,
+  "durationMs": 231764,
+  "consumption": {
+    "durationApiMs": 229776,
+    "turns": 33,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1195,
+      "cacheCreation": 104777,
+      "cacheRead": 2506376,
+      "output": 23242
+    },
+    "toolCalls": 32,
+    "orientationCalls": 20,
+    "calls": [
+      {
+        "cacheCreation": 7844,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 15,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7844
+        }
+      },
+      {
+        "cacheCreation": 13624,
+        "cacheRead": 29983,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13624
+        }
+      },
+      {
+        "cacheCreation": 2956,
+        "cacheRead": 43607,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2956
+        }
+      },
+      {
+        "cacheCreation": 8513,
+        "cacheRead": 46563,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 8513
+        }
+      },
+      {
+        "cacheCreation": 1806,
+        "cacheRead": 55076,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1806
+        }
+      },
+      {
+        "cacheCreation": 4796,
+        "cacheRead": 56882,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 492,
+          "skill": 4304
+        }
+      },
+      {
+        "cacheCreation": 458,
+        "cacheRead": 61678,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 301,
+          "output": 157
+        }
+      },
+      {
+        "cacheCreation": 14463,
+        "cacheRead": 62136,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 14436,
+          "search": 27
+        }
+      },
+      {
+        "cacheCreation": 1896,
+        "cacheRead": 76599,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1896
+        }
+      },
+      {
+        "cacheCreation": 994,
+        "cacheRead": 78495,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 994
+        }
+      },
+      {
+        "cacheCreation": 2909,
+        "cacheRead": 79489,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2909
+        }
+      },
+      {
+        "cacheCreation": 1709,
+        "cacheRead": 82398,
+        "input": 2,
+        "output": 49,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1709
+        }
+      },
+      {
+        "cacheCreation": 5573,
+        "cacheRead": 84107,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5534,
+          "output": 39
+        }
+      },
+      {
+        "cacheCreation": 1714,
+        "cacheRead": 89680,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1694,
+          "output": 20
+        }
+      },
+      {
+        "cacheCreation": 2805,
+        "cacheRead": 91394,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2805
+        }
+      },
+      {
+        "cacheCreation": 2522,
+        "cacheRead": 94199,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2522
+        }
+      },
+      {
+        "cacheCreation": 4480,
+        "cacheRead": 96721,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4480
+        }
+      },
+      {
+        "cacheCreation": 3301,
+        "cacheRead": 101201,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3301
+        }
+      },
+      {
+        "cacheCreation": 948,
+        "cacheRead": 104502,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 948
+        }
+      },
+      {
+        "cacheCreation": 2298,
+        "cacheRead": 105450,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2099,
+          "output": 199
+        }
+      },
+      {
+        "cacheCreation": 2448,
+        "cacheRead": 107748,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2448
+        }
+      },
+      {
+        "cacheCreation": 685,
+        "cacheRead": 110196,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 685
+        }
+      },
+      {
+        "cacheCreation": 527,
+        "cacheRead": 110881,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 2,
+        "sources": {
+          "file": 527
+        }
+      },
+      {
+        "cacheCreation": 3862,
+        "cacheRead": 111408,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3663,
+          "output": 199
+        }
+      },
+      {
+        "cacheCreation": 4391,
+        "cacheRead": 115270,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 4133,
+          "edit": 258
+        }
+      },
+      {
+        "cacheCreation": 831,
+        "cacheRead": 119661,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 831
+        }
+      },
+      {
+        "cacheCreation": 1419,
+        "cacheRead": 120492,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1419
+        }
+      },
+      {
+        "cacheCreation": 4599,
+        "cacheRead": 121911,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 4599
+        }
+      },
+      {
+        "cacheCreation": 406,
+        "cacheRead": 126510,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 406
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/precise-reviewing-roles/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/precise-reviewing-roles/design.md": "# Design: Precise reviewing roles\n\n## Context\n\nThe roles are data: each built-in role is a file of `assets/roles/`\n(front matter with `done_when`, then knowledge sections), embedded in\n`codev-core` and served by `codev roles` (decision 0001: the core embeds\nthem and touches no disk). The rules every reviewing role follows when it\nwrites a finding live once, in `assets/workflows/_review-record.md`, which\n`codev-agents` renders into both the `propose` and `apply` skills, with\nthe severity and confidence scales substituted at `{{REVIEW_SCALE}}`\n(decision 0004: one rendered skill per workflow, no separate command\nfile).\n\nToday that fragment says how to write a finding, not when a concern is\nnot one. The expert files say what they look at, and some say what they\nleave aside, but in one clause that the baseline shows is not heeded. The\n`skeptic`'s criteria end with \"apply these lenses only when the proposal's\nImpact touches them: security & privacy, compatibility & migration,\noperability, performance, accessibility & UX\", which makes it review the\nexperts' domains.\n\nThe baseline (`evals/baseline/report.md`) gives the classes of false\npositives this design targets, per role:\n\n| Role | False positives | Recurring classes |\n|---|---|---|\n| ops | 11 | hard-coded settings; no kill switch where a redeploy rolls back; observability of what the change does not add; refinements of a bounded retry; error-type plumbing |\n| skeptic | 9 | spec or task details with no failure; domain concerns (migration, security); alternatives to a working plan |\n| privacy | 8 | lawful basis and purpose; missing tests; data the change does not add; minimization nitpicks on already-masked data |\n| newcomer | 6 | missing tests and `tasks.md`; type design; behavior questions that are not readability |\n| migration | 5 | missing tests; additive or aliased changes; version-bump policy; deprecation warnings |\n| performance | 5 | costs that do not grow with data; dependency choice; per-item work on a cold path |\n| accessibility | 4 | a native element \"would do\" when the custom one works; behaviors beyond the WCAG criteria |\n| security | 4 | hardening with no attack path in the change; documentation-only changes |\n\nDuplicates — one flaw reported several times through its consequences —\ncome on top, for every role.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Every role meets the evaluation's thresholds on a new baseline: at most\n  two false positives, recall at least 0.50, evidence validity at least\n  0.80.\n- No true positive of the current baseline is lost without being looked\n  at.\n\n**Non-Goals**\n\n- Severity agreement (0/2 for the `newcomer`, 1/4 for `performance`): a\n  separate calibration.\n- A change to the record's format, to `codev validate`'s checks, to the\n  JSON contract or to the evaluation's scoring.\n- The tracer, which already passes.\n\n## Decisions\n\n### Decision: The precision rules live once, in the shared review-record fragment\n\nThe grading rule (a `medium` or `high` finding at confidence `high`\nquotes its line and states its failure scenario, otherwise it is `low`),\nthe one-defect rule and the five cases that are not findings go into\n`_review-record.md`, under the description of `severity` and\n`confidence`. Both skills receive them, every role applies them, and\n`codev-agents`' golden tests of the rendered skills check they are\nthere. The roles spec's rule that skill texts do not restate the\ncriteria served as data still holds: these are rules about writing a\nfinding, like the scales, not a role's criteria.\n\n**Alternatives considered**:\n\n- Repeat the rules in each role's `Reporting` section: eight copies that\n  drift, and a project role added through `done_when:` would not get\n  them.\n- Add them to the scale text in `codev-core::review`: the scale is also\n  printed by the documentation and the checks, where these rules are out\n  of place.\n\n### Decision: The failure scenario is written in the recommendation; the record's format is unchanged\n\nA finding states its failure scenario in its `recommendation`, before\nthe fix: \"Fails when <input or state>: <what goes wrong>. <Fix>.\" No new\nfield is added, and nothing about it is checked by `codev validate`.\n\n**Alternatives considered**:\n\n- A `failure:` field required for `medium` and `high` findings at\n  confidence `high`: a format change (marker `codev-review: 2`), in-flight\n  records of other projects turning invalid and blocking `codev archive`,\n  a JSON contract change, and the `migration` domain brought in — all for\n  a check that can only test that the text is not empty. The evaluation,\n  which judges findings, is the right judge of whether the scenario\n  holds.\n\n### Decision: What a role does not report is a list at the end of its Scope\n\nEach reviewing role's `## Scope` ends with a line `**Not reported**:`\nfollowed by bullets, one class per bullet, phrased generally rather than\nafter a fixture. The `skeptic` and the `newcomer` gain a `## Scope`\nsection, before their `Signals`. The five knowledge sections, their\norder and the `By stack` filter are unchanged, so `parse_role_file` and\n`filter_by_stack` are untouched; the tests of `roles.rs` add that every\nreviewing role's Scope holds the list.\n\nThe content, drawn from the table above:\n\n- **security**: hardening with no attack path the change opens; a\n  documentation-only change; data exposure in logs or to processors\n  (privacy); availability and timeouts (ops).\n- **privacy**: the lawful basis, the purpose and an impact assessment —\n  the controller's decisions (the `Reporting` sentence asking to raise\n  them as questions is removed); data the change neither adds, copies nor\n  exposes; data already masked or reduced by a rule the change states;\n  access control (security).\n- **accessibility**: a custom control that meets the criteria, where a\n  native one \"would do\"; behavior no WCAG success criterion requires;\n  visual taste.\n- **performance**: a cost that does not grow with data or traffic; work\n  on a path that runs once per process or per batch; the choice or size\n  of a dependency unless the binary or bundle size is in the change's\n  scope; a cost that depends on a size or an index the reviewer cannot\n  see (recorded `low`).\n- **ops**: a value hard-coded that has no reason to vary between\n  environments; the lack of a switch when a redeploy of the previous\n  version rolls back; health and metrics of a component the change does\n  not add; refinements of a retry policy that is already bounded; how\n  errors are typed or wrapped in code (newcomer).\n- **migration**: a change that is additive, or that keeps the old name\n  readable (an alias, a default); a version-numbering policy when the\n  breaking change is marked **BREAKING**; a warning for a tolerated old\n  name.\n- **newcomer**: the plan artifacts (`proposal.md`, `specs/`, `design.md`,\n  `tasks.md`); whether the behavior is right, which other roles own; type\n  design when names and signatures read clearly.\n- **skeptic**: security, personal data, user interface, performance,\n  operations and migration, whether or not their expert is active; a\n  detail a spec leaves to the implementation when no requirement depends\n  on it; a simpler alternative when the plan works.\n\nMissing tests, code the change does not touch and matters of taste are\nnot repeated per role: the shared fragment covers them for all.\n\n**Alternatives considered**:\n\n- A sixth section `Not reported`: changes `KNOWLEDGE_SECTIONS`, the roles\n  spec's section list and every reader of it, for content that is the\n  other half of Scope.\n\n### Decision: The skeptic hands domains to the experts through `## Domains`\n\nIn `assets/roles/skeptic.md`, the lens criterion is replaced by one\nasking for a finding against `proposal.md#Domains` when the plan touches\nan expert's domain that the proposal does not tick, naming the domain;\nthe criteria name irreversible steps explicitly. The `Hidden migration`\nsignal, which is the `migration` expert's, becomes `Domain left\nunticked`; `One-way door without a way back` stays — the baseline\nexpects the skeptic to find `irreversible-merge`. The `propose` workflow\nalready turns `unticked` suggestions into such findings; the new\ncriterion covers what the plan's text shows and no trigger matched.\n\n**Alternatives considered**:\n\n- Keep the lenses only when the domain's expert is inactive: the skeptic\n  would still produce domain findings without the expert's knowledge,\n  and an inactive expert usually means the domain should be ticked — the\n  right fix is to tick it.\n\n### Decision: The change is measured with the evaluation suite before and after\n\nAs the role-evaluation spec requires for a change to `assets/roles/`,\nthe suite is run on the changed roles, the scores before (the current\nbaseline) and after are compared role by role, the baseline is recorded\nagain, and `codev-evals -- docs` regenerates the reliability chapter in\nboth languages. Each true positive of the current baseline that becomes\na miss is examined: if a `Not reported` item caused it, the item is\nnarrowed.\n\n## Risks / Trade-offs\n\n- [Recall drops: a role suppresses a real defect as \"not reported\" or\n  demotes it to `low`] → compare true positives case by case with the\n  current baseline; recall must stay at or above 0.50 and every lost true\n  positive is examined before the baseline is recorded.\n- [Lists overfit the fixtures and the evaluation stops measuring\n  generalization] → phrase each item as a class of concern, never with a\n  fixture's names; the control cases are not edited.\n- [A real concern lands in `low` and nobody reads it] → it stays in the\n  record, `codev review` lists it, and a `high` severity still needs the\n  human when its confidence is low and a decision is asked.\n- [The skeptic no longer catches a domain problem when nobody ticks the\n  domain] → its new criterion asks it to name the domain, and the domain\n  suggestions already flag the triggers; the expert then reviews with its\n  knowledge.\n- [One run per case is noisy] → a role near a threshold is run again\n  before concluding, and the report says so.\n\n## Migration Plan\n\nNothing to migrate: the record's format, the configuration and the JSON\noutput are unchanged. Projects get the new rules when they run\n`codev update`, which renders the skills again; a project's extra\n`done_when:` criteria are still appended to the new built-in ones.\n",
+    "_codev/changes/precise-reviewing-roles/proposal.md": "# Proposal: Precise reviewing roles\n\n## Why\n\nThe last role evaluation (`evals/baseline/report.md`, 2026-10-13) fails on\neight of the nine reviewing roles for the same reason: recall is 1.00\neverywhere, but every role except the tracer reports more than the two\nfalse positives allowed — 11 for `ops`, 9 for the `skeptic`, 8 for\n`privacy` — on top of many duplicates, so the true defects drown in noise\nand a human stops reading the \"Points to challenge\". The roles are now\nmeasured, so their precision can be fixed and proven before more teams\nrely on them.\n\n## What Changes\n\n- **Graded with proof.** A finding of severity `medium` or `high` is\n  recorded with confidence `high` only when it quotes the line it is\n  about and states the failure scenario: the input, state or operation,\n  and what goes wrong. A concern that depends on something the reviewer\n  could not see — load, data volume, a caller, a configuration, a later\n  change — or a preference with no failure, is recorded with confidence\n  `low`: kept in the record, not presented to the human. The rule reaches\n  the `propose` and `apply` skills with the scales.\n- **One defect per finding.** The consequences of one flaw go into its\n  recommendation, not into findings of their own; two defects needing two\n  different fixes stay two findings.\n- **What is never a finding**, for every reviewing role: a concern another\n  role owns, even when that role is not active; code or data the change\n  neither adds nor modifies; what the plan explicitly excludes, unless the\n  exclusion breaks one of the change's own requirements; a missing test,\n  unless the role's criteria ask for one; a matter of taste, or an\n  alternative design when the current one works.\n- **Each reviewing role says what it does not report.** The six experts,\n  the `skeptic` and the `newcomer` carry a `Scope` section ending with a\n  **Not reported** list, specific to the role and drawn from the false\n  positives of the baseline (for example, `performance` does not report a\n  cost that does not grow with data or traffic; `privacy` does not report\n  a missing lawful basis, which is the controller's decision).\n- **The skeptic stops doing the experts' work.** Its criterion applying\n  the security & privacy, compatibility & migration, operability,\n  performance and accessibility lenses is removed. When the plan touches a\n  domain its proposal does not tick, the skeptic records one finding\n  against `proposal.md#Domains` naming the domain — so its expert is\n  brought in — instead of reviewing that domain itself. It keeps the need,\n  scope, specs, decisions, assumptions, tasks and irreversible steps.\n- The evaluation baseline is recorded again with the new roles, and the\n  reliability chapter regenerated from it.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- `review-record`\n- `roles`\n- `skills`\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/roles/*.md`: the knowledge of `security`, `privacy`,\n  `accessibility`, `performance`, `ops`, `migration`, `newcomer` and\n  `skeptic`; the `skeptic`'s criteria.\n- `assets/workflows/_review-record.md`: the grading, one-defect and\n  not-a-finding rules shared by the `propose` and `apply` skills; the\n  `propose` workflow's description of the skeptic.\n- `crates/codev-core/src/roles.rs` tests on the knowledge sections, and the\n  golden tests of the rendered skills in `codev-agents`.\n- `evals/baseline/` recorded again; `docs/en/src/reliability.md` and\n  `docs/fr/src/reliability.md` regenerated with `codev-evals -- docs`.\n- Documentation, in both `docs/en` and `docs/fr`: the Roles chapter (what\n  each role does not report, the skeptic without lenses) and the review\n  record guide (grading with a failure scenario, one defect per finding).\n- No change to the record's format, the JSON contract, the configuration\n  or the CLI. Projects that added criteria through `roles: { skeptic:\n  { done_when: [...] } }` keep them.\n\n**Assumptions** (no user was available to ask; each is the most reasonable\nreading of the request):\n\n- \"Confidence high\" in the request means the existing `confidence: high`\n  of the review record; the failure scenario is written in the finding's\n  `recommendation`, so the record's format and its checks are unchanged.\n- The skeptic still owns irreversible steps (a one-way door with no way\n  back): the baseline expects it to find `irreversible-merge`, a planning\n  risk, not an operations review.\n- Success is the evaluation's existing thresholds — at most two false\n  positives per role, recall at least 0.50, evidence validity at least\n  0.80 — met by every role on the new baseline; severity agreement is not\n  in scope.\n\n## Domains\n\nNone\n\n## Release note\n\n- Changed: The reviewing roles report fewer, better-proven findings: a\n  finding is presented to you only when it quotes the line at fault and\n  states how it fails, each defect is reported once, and each expert says\n  what it does not report.\n- Changed: The skeptic no longer reviews security, privacy, migration,\n  operations, performance or accessibility itself; when the plan touches\n  one of these domains without ticking it, it asks you to tick it so the\n  expert reviews it.\n",
+    "_codev/changes/precise-reviewing-roles/specs/review-record/spec.md": "## MODIFIED Requirements\n\n### Requirement: Findings are graded on a shared severity and confidence scale\n\nEvery finding SHALL carry a severity among:\n\n- `high` — The change would break a requirement, lose or expose data, or\n  open a vulnerability, and must not be archived until it is fixed or a\n  human accepts the risk.\n- `medium` — A real defect or risk with a limited impact or a workaround,\n  to fix in this change or to defer deliberately.\n- `low` — An improvement, such as readability, consistency or a minor\n  cost, that does not decide whether the change is correct.\n\nand a confidence among:\n\n- `high` — The evidence shows the problem directly.\n- `low` — The problem depends on something the reviewer could not see or\n  verify.\n\nA finding with a low confidence is kept in the record and answered like\nany other, but is not presented to the human unless a decision is asked\nof them. The scales MUST be the same in the skills, the documentation and\nthe checks; any other value is a `review_invalid` error.\n\nThe skills SHALL grade with evidence: a finding of severity `medium` or\n`high` MAY carry the confidence `high` only when its `evidence` quotes the\nline it is about and its `recommendation` states the failure scenario —\nthe input, state or operation, and what goes wrong. A concern that\ndepends on something the reviewer could not see or verify — load, data\nvolume, a caller, a configuration, a later change — and a preference with\nno failure MUST be recorded with the confidence `low`. The `propose` and\n`apply` skills SHALL carry this rule with the scales.\n\n#### Scenario: The scales reach the skills\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` skills are rendered\n- **THEN** each carries the three severities and the two confidences with\n  their definitions\n- **AND** each carries the rule that a `medium` or `high` finding with\n  confidence `high` quotes its line and states its failure scenario\n\n#### Scenario: An unknown severity\n\n- **GIVEN** a review record with a finding whose severity is `critical`\n- **WHEN** the user runs `codev validate <change>`\n- **THEN** a `review_invalid` error names `critical` and the valid values\n\n#### Scenario: A concern without a failure scenario is not presented\n\n- **GIVEN** a reviewing role that suspects a query will be slow but cannot\n  see the table's size or its indexes\n- **WHEN** the skill records the finding\n- **THEN** the finding has the confidence `low`\n- **AND** `codev review --change <name>` marks it `(low confidence)` and\n  the skill's summary does not present it\n\n#### Scenario: A proven defect is presented\n\n- **GIVEN** a change whose handler builds an SQL query by concatenating a\n  request field\n- **WHEN** the `security` role records the finding\n- **THEN** its `evidence` quotes the concatenating line, its\n  `recommendation` states the input that changes the query and what the\n  attacker gets, and its confidence is `high`\n\n## ADDED Requirements\n\n### Requirement: A finding is one defect its role owns\n\nThe `propose` and `apply` skills SHALL tell every reviewing role that a\nfinding is one defect: the consequences of one flaw go into its\nrecommendation, never into findings of their own, and two defects that\nneed two different fixes are two findings, even at the same place.\n\nThe skills SHALL tell every reviewing role that these are not findings:\n\n- a concern another role owns, even when that role is not active;\n- code or data the change neither adds nor modifies;\n- what the plan explicitly excludes, unless the exclusion breaks one of\n  the change's own requirements;\n- a missing test, unless the role's criteria ask for one;\n- a matter of taste, or an alternative design when the current one works.\n\n#### Scenario: The rules reach the skills\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `propose` and `apply` skills are rendered\n- **THEN** each carries the one-defect rule and the five cases that are\n  not findings\n\n#### Scenario: Consequences of one flaw are one finding\n\n- **GIVEN** a design that deletes merged records with no way back, which\n  also leaves no audit trail\n- **WHEN** a reviewing role records it\n- **THEN** the record holds one finding for the irreversible deletion,\n  whose recommendation also covers the audit trail\n\n#### Scenario: Two flaws at the same place stay two findings\n\n- **GIVEN** a payment call with no timeout and an unbounded retry around it\n- **WHEN** the `ops` role records them\n- **THEN** the record holds two findings, one per fix\n\n#### Scenario: A missing test is not a finding of an expert\n\n- **GIVEN** a change ticking `migration` whose tasks add no test for the\n  old configuration key\n- **WHEN** the `migration` role challenges the plan\n- **THEN** it records no finding about the missing test\n",
+    "_codev/changes/precise-reviewing-roles/specs/roles/spec.md": "## MODIFIED Requirements\n\n### Requirement: Each built-in role may carry knowledge\n\nA built-in role SHALL be able to carry knowledge: a text that gives the\nrole what it needs to check its criteria well, served by `codev roles` to\nthe active roles only. The knowledge of a role is organized in sections,\nalways in this order and using only these: **Scope** (what the role looks\nat, and what it leaves aside), **Signals** (concrete patterns to spot,\neach with a one-line example), **By stack** (pitfalls per language among\nRust, TypeScript/JavaScript, Python, Go and Java), **References** (the\nauthoritative standards) and **Reporting** (how to report a finding).\nEvery expert SHALL carry all five sections. The `newcomer` SHALL carry\ncomplexity signals per language, and the `skeptic` planning smells; the\nother step roles MAY carry no knowledge. References SHALL name only\nestablished standards — an identifier, such as an article or weakness\nnumber, is cited only when it is the standard's own.\n\nEvery reviewing role — the six experts, the `skeptic` and the `newcomer`\n— SHALL carry a **Scope** section that ends with a **Not reported** list:\nthe concerns that role never records as a finding, each on its own line.\nThe `skeptic`'s list SHALL name the six expert domains (security,\npersonal data, user interface, performance, operations, migration). The\n`newcomer`'s list SHALL name the plan artifacts, which it does not review.\n\n#### Scenario: An expert's knowledge\n\n- **GIVEN** a change `add-auth` whose proposal ticks `security`\n- **WHEN** the user runs `codev roles --at code.review --change add-auth\n  --json`\n- **THEN** the `security` entry's `knowledge` holds the sections Scope,\n  Signals, By stack, References and Reporting, in that order\n- **AND** its References name the OWASP Top 10, the OWASP ASVS and the CWE\n- **AND** its Scope ends with a **Not reported** list\n\n#### Scenario: The skeptic is told what the experts own\n\n- **GIVEN** a change `add-auth`\n- **WHEN** the user runs `codev roles --at plan.challenge --change add-auth\n  --json`\n- **THEN** the `skeptic` entry's `knowledge` starts with a Scope section\n  followed by Signals\n- **AND** its **Not reported** list names security, personal data, user\n  interface, performance, operations and migration\n\n#### Scenario: The newcomer is told it does not review the plan\n\n- **WHEN** the user runs `codev roles --at code.review --json`\n- **THEN** the `newcomer` entry's `knowledge` holds a Scope section whose\n  **Not reported** list names the plan artifacts\n\n#### Scenario: A role without knowledge\n\n- **WHEN** the user runs `codev roles --at plan.trace --json`\n- **THEN** the `tracer` entry has `knowledge: null`\n\n#### Scenario: Knowledge is not served to an inactive role\n\n- **GIVEN** a configuration with `roles: { newcomer: never }`\n- **WHEN** the user runs `codev roles --json`\n- **THEN** the `newcomer` entry has `knowledge: null` and\n  `activatedBy: null`\n\n## ADDED Requirements\n\n### Requirement: The skeptic's criteria leave the domains to the experts\n\nThe `skeptic`'s built-in criteria SHALL cover the need, the scope, the\nspecs, the decisions, the assumptions, the tasks and the irreversible\nsteps of the plan, and MUST NOT ask it to review security, personal\ndata, user interface, performance, operations or migration. One criterion\nSHALL ask it to record a finding against `proposal.md#Domains` when the\nplan touches one of these domains without the proposal ticking it,\nnaming the domain. A project's extra criteria are still added after the\nbuilt-in ones.\n\n#### Scenario: The skeptic's criteria name no lens\n\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** no `skeptic` criterion of origin `built-in` names the security\n  & privacy, compatibility & migration, operability, performance or\n  accessibility & UX lenses\n- **AND** one criterion of origin `built-in` names `proposal.md#Domains`\n\n#### Scenario: A project still adds an operations criterion to the skeptic\n\n- **GIVEN** a configuration where `skeptic` has `done_when:` with the entry\n  `The rollback plan is stated`\n- **WHEN** the user runs `codev roles --at plan.challenge --json`\n- **THEN** the `skeptic` entry's `doneWhen` ends with `The rollback plan is\n  stated`, of origin `project`\n",
+    "_codev/changes/precise-reviewing-roles/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The `propose` skill challenges the plan and reports points to challenge\n\nAfter the traceability check, the `propose` skill SHALL re-read the\nartifacts as reviewers who did not write them: every role\n`codev roles --at plan.challenge --change <name> --json` returns — the\n`skeptic` and the experts the change's domains activate — each along its\ncriteria, the project's extra criteria included, and using its\n`knowledge` when it has one. The `skeptic`'s grid covers the need (does\nthe change solve the Why, is there a simpler solution or one without\ncode), the scope (anything nobody asked for, an obvious case missing), the\nspecs (error and edge cases, each requirement verifiable), the decisions\n(a silent contradiction with a decision in effect), the assumptions (the\none that would bring the plan down if wrong), the tasks (each one\nverifiable) and the irreversible steps (one with no way back), as well as\nthe project's `rules:` received through `codev instructions`. The\n`skeptic` MUST NOT review security, personal data, user interface,\nperformance, operations or migration, whether or not their expert is\nactive: when the plan touches one of these domains and the proposal does\nnot tick it, the `skeptic` records one finding against\n`proposal.md#Domains` naming the domain, so that its expert is brought\nin. An expert asks whether the design addresses its domain.\n\nEach finding MUST be written to the change's review record under\n`## plan.challenge`, then answered as the review record's answer loop\ndescribes: the author fixes what is unambiguous directly in the artifacts\nor disputes it, the reviewer re-checks once, and what remains is for the\nhuman. The pass MUST NOT add scope.\n\nThe final summary of the skill MUST end with a \"Points to challenge\" block:\nat most five items in total across the roles, taken from the findings the\nrecord reports to the human (confidence `high`) that were not rejected,\nranked by severity, each on one line tagged with the id of the role that\nraised it and giving its finding id, its status, what, why it matters and\nthe artifact concerned. When the pass finds nothing worth raising, the\nblock MUST say \"No point to challenge found\" instead of inventing points.\n\nWhen no role is active at `plan.challenge`, the skill MUST skip the pass,\nand the \"Points to challenge\" block MUST say that the skeptic is disabled\nby configuration instead of listing points.\n\n#### Scenario: Points to challenge are reported\n\n- **GIVEN** a plan whose design rests on an unverified assumption\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary contains a \"Points to challenge\" block naming the\n  assumption, why it matters and the artifact concerned, tagged `skeptic`\n- **AND** the same point is a finding of `review.md` under\n  `## plan.challenge`, with its status\n\n#### Scenario: At most five points\n\n- **GIVEN** a plan in which the skeptic finds four weak points and the\n  `security` expert four more\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the \"Points to challenge\" block lists at most five items in\n  total, the most severe first, each tagged with its role id\n- **AND** all eight are findings of the record\n\n#### Scenario: An active expert challenges the design\n\n- **GIVEN** a change whose proposal ticks `personal-data` and whose design\n  stores a new e-mail field with no retention rule\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the missing retention rule is a finding of the record under\n  `### privacy`, fixed in the design or raised as a point to challenge\n\n#### Scenario: Nothing to challenge\n\n- **GIVEN** a plan in which the contrarian pass finds nothing worth raising\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** the summary says \"No point to challenge found\"\n- **AND** lists no invented point\n- **AND** each role's section of the record says `No finding.`\n\n#### Scenario: The skeptic leaves an active expert's domain to it\n\n- **GIVEN** a change whose proposal ticks `migration` and whose design\n  renames a public JSON field with no deprecation\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the rename is a finding under `### migration`\n- **AND** the `skeptic`'s section holds no finding about it\n\n#### Scenario: An unticked domain is sent to its expert\n\n- **GIVEN** a change whose proposal says `None` under `## Domains` and\n  whose design stores API tokens in clear\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the `skeptic` records one finding located at\n  `proposal.md#Domains` naming `security`\n- **AND** records no finding about how the tokens are stored\n\n#### Scenario: The skeptic keeps irreversible steps\n\n- **GIVEN** a design that deletes duplicate records with no rollback and\n  whose proposal ticks no domain\n- **WHEN** `/codev-propose` challenges the plan\n- **THEN** the irreversible deletion is a finding under `### skeptic`\n\n#### Scenario: The pass does not add scope\n\n- **GIVEN** a plan for which the reviewer thinks of a useful but unrequested\n  feature\n- **WHEN** the contrarian pass runs\n- **THEN** the feature is not added to the artifacts\n\n#### Scenario: The skeptic disabled by configuration\n\n- **GIVEN** a configuration with `roles: { skeptic: never }` and a change\n  that ticks no domain\n- **WHEN** `/codev-propose` presents the plan\n- **THEN** no contrarian pass has run\n- **AND** the \"Points to challenge\" block says the skeptic is disabled by\n  configuration\n\n#### Scenario: A project criterion joins the grid\n\n- **GIVEN** a configuration where `skeptic` has the extra criterion\n  `The rollback plan is stated`\n- **WHEN** the contrarian pass runs on a plan with no rollback plan\n- **THEN** the missing rollback plan is fixed or raised as a point to\n  challenge\n"
+  },
+  "validate": {
+    "precise-reviewing-roles": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "precise-reviewing-roles",
+          "path": "_codev/changes/precise-reviewing-roles"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792067476/plan-role-precision-from-baseline-3",
+      "status": []
+    }
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "format": 2,
+  "case": "ops-control-graceful-shutdown",
+  "error": null,
+  "costUsd": 0.3982014,
+  "durationMs": 45704,
+  "consumption": {
+    "durationApiMs": 45558,
+    "turns": 9,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1176,
+      "cacheCreation": 31469,
+      "cacheRead": 297182,
+      "output": 4301
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 14664,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14664
+        }
+      },
+      {
+        "cacheCreation": 3527,
+        "cacheRead": 44196,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 3527
+        }
+      },
+      {
+        "cacheCreation": 1398,
+        "cacheRead": 47723,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1398
+        }
+      },
+      {
+        "cacheCreation": 2869,
+        "cacheRead": 49121,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2869
+        }
+      },
+      {
+        "cacheCreation": 491,
+        "cacheRead": 51990,
+        "input": 2,
+        "output": 47,
+        "toolCalls": 3,
+        "sources": {
+          "codev review": 491
+        }
+      },
+      {
+        "cacheCreation": 1127,
+        "cacheRead": 52481,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 631,
+          "edit": 438,
+          "output": 57
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-mail-worker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "Err(SendError::Unavailable) => {\n    let delay = RETRY_STEP * job.attempts;\n    queue.release(job.id, delay);\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "src/worker.rs:46-48",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Check how the `Mailer` implementation maps a timeout reached after DATA was sent. If it returns `Unavailable`, the relay may already have accepted the message and the release sends it again (up to 12 times during an outage with slow answers). Either distinguish an ambiguous timeout from a refused connection in the worker's handling, or make the send idempotent (a stable Message-ID per job that the relay deduplicates). Not verified: the mailer implementation is not in the change.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "A send that times out after the relay accepted it is retried, duplicating the e-mail"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "health.beat();\nlet Some(job) = queue.next(POLL) else {\n    continue;\n};\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 28,
+        "location": "src/worker.rs:26-29",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "`Queue::next` returns `None` both for an empty queue and, depending on its implementation, for a database it cannot reach; the worker beats before polling, so `/healthz` stays green and no log is written while no job can be taken. If the implementation swallows database errors, beat only after a successful poll (or have `next` return a `Result` and log the error with fields). Not verified: the queue implementation is not in the change.",
+        "reported": false,
+        "role": "ops",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "The health beat does not depend on the queue being reachable"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-mail-worker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "ops"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

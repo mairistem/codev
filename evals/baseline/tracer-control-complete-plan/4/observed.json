@@ -1,0 +1,105 @@
+{
+  "format": 2,
+  "case": "tracer-control-complete-plan",
+  "error": null,
+  "costUsd": 0.30713619999999997,
+  "durationMs": 24388,
+  "consumption": {
+    "durationApiMs": 24694,
+    "turns": 12,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1092,
+      "cacheCreation": 26384,
+      "cacheRead": 266626,
+      "output": 2093
+    },
+    "toolCalls": 11,
+    "calls": [
+      {
+        "cacheCreation": 7292,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7292
+        }
+      },
+      {
+        "cacheCreation": 2461,
+        "cacheRead": 29431,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "skill": 2461
+        }
+      },
+      {
+        "cacheCreation": 10839,
+        "cacheRead": 31892,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 4,
+        "sources": {
+          "codev roles": 1071,
+          "search": 94,
+          "skill": 9675
+        }
+      },
+      {
+        "cacheCreation": 1546,
+        "cacheRead": 42731,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1546
+        }
+      },
+      {
+        "cacheCreation": 3649,
+        "cacheRead": 44277,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3649
+        }
+      },
+      {
+        "cacheCreation": 304,
+        "cacheRead": 47926,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 304
+        }
+      },
+      {
+        "cacheCreation": 293,
+        "cacheRead": 48230,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "file": 251,
+          "output": 42
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/add-session-timeout/proposal.md": "# Proposal: Idle session timeout\n\n## Why\n\nShared computers at our customers' branches stay signed in all day.\n\n## What Changes\n\n- A session expires after 30 minutes without a request.\n\n## Capabilities\n\n### New Capabilities\n\n- `session-timeout`\n\n### Modified Capabilities\n\nNone.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `src/auth/session.rs`, `docs/sign-in.md`.\n\n## Domains\n\n- [x] security — session lifetime\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [ ] migration\n\n## Release note\n\n- Changed: You are signed out after 30 minutes without activity.\n",
+    "_codev/changes/add-session-timeout/specs/session-timeout/spec.md": "## Purpose\n\nSigns idle members out.\n\n## ADDED Requirements\n\n### Requirement: Idle sessions expire\n\nA session SHALL expire after 30 minutes without a request; a request with an expired session SHALL be answered 401.\n\n#### Scenario: An active session\n\n- **WHEN** a member sends a request 10 minutes after the previous one\n- **THEN** the request is served\n\n#### Scenario: An idle session\n\n- **WHEN** a member sends a request 31 minutes after the previous one\n- **THEN** the service answers 401\n",
+    "_codev/changes/add-session-timeout/tasks.md": "# Tasks\n\n## 1. Sessions\n\n- [ ] 1.1 Idle expiry in `src/auth/session.rs`, verified by tests `an_active_session_is_served` (\"An active session\") and `an_idle_session_is_refused` (\"An idle session\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe the 30-minute idle timeout in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+  }
+}

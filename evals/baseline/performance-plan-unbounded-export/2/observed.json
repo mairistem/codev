@@ -1,0 +1,238 @@
+{
+  "format": 2,
+  "case": "performance-plan-unbounded-export",
+  "error": null,
+  "costUsd": 0.3642926,
+  "durationMs": 35236,
+  "consumption": {
+    "durationApiMs": 35342,
+    "turns": 9,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 27981,
+      "cacheRead": 382058,
+      "output": 3152
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7380,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7380
+        }
+      },
+      {
+        "cacheCreation": 15359,
+        "cacheRead": 29519,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15359
+        }
+      },
+      {
+        "cacheCreation": 234,
+        "cacheRead": 44878,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 234
+        }
+      },
+      {
+        "cacheCreation": 1513,
+        "cacheRead": 45112,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1513
+        }
+      },
+      {
+        "cacheCreation": 997,
+        "cacheRead": 46625,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 997
+        }
+      },
+      {
+        "cacheCreation": 503,
+        "cacheRead": 47622,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 503
+        }
+      },
+      {
+        "cacheCreation": 268,
+        "cacheRead": 48125,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 192,
+          "search": 76
+        }
+      },
+      {
+        "cacheCreation": 1252,
+        "cacheRead": 48393,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1252
+        }
+      },
+      {
+        "cacheCreation": 475,
+        "cacheRead": 49645,
+        "input": 2,
+        "output": 204,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 475
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-performance-1 (The export loads the whole audit log into memory and builds one CSV string) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-audit-export",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`, loads the rows into an array, builds the whole CSV string with\n`rows.map(toCsvLine).join(\"\\n\")`, and sends it.\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-1",
+        "line": 11,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Stream the export: read the rows with a server-side cursor or keyset batches on (org_id, created_at, id), turn each batch into CSV lines and write them to the response stream with backpressure, so memory stays bounded by the batch size whatever the log's size. This keeps the spec's \"every event, oldest first\" unchanged. The same streaming also fixes the event-loop stall: with the rows and the CSV built in one synchronous `map`/`join`, the instance's single event loop (design.md#Context) serves no other request until the whole string is built. Select only the columns the CSV needs instead of `SELECT *`. Record the streaming choice and its rejected alternative under \"Alternatives considered\".",
+        "reported": true,
+        "role": "performance",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The export loads the whole audit log into memory and builds one CSV string"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "The handler runs `SELECT * FROM audit_events WHERE org_id = $1 ORDER BY\ncreated_at`\n",
+        "history": [
+          {
+            "by": "performance",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-performance-2",
+        "line": 46,
+        "location": "design.md#Decision: The export loads every event, then writes the CSV",
+        "raisedBy": [
+          "performance"
+        ],
+        "recommendation": "Check that `audit_events` has an index on (org_id, created_at) — the schema is not in the repository — and run EXPLAIN on the export query against a production-sized table; add the index in this change if it is missing, so the ordered read neither scans the whole table nor sorts millions of rows.",
+        "reported": false,
+        "role": "performance",
+        "severity": "medium",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "No index is shown for the export's filter and sort"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-audit-export/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

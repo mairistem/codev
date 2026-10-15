@@ -1,0 +1,218 @@
+{
+  "format": 2,
+  "case": "migration-control-serde-alias",
+  "error": null,
+  "costUsd": 0.351288,
+  "durationMs": 37650,
+  "consumption": {
+    "durationApiMs": 37536,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1178,
+      "cacheCreation": 27636,
+      "cacheRead": 327270,
+      "output": 3188
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7395,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7395
+        }
+      },
+      {
+        "cacheCreation": 13774,
+        "cacheRead": 29534,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13774
+        }
+      },
+      {
+        "cacheCreation": 316,
+        "cacheRead": 43308,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 316
+        }
+      },
+      {
+        "cacheCreation": 1900,
+        "cacheRead": 43624,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1900
+        }
+      },
+      {
+        "cacheCreation": 1010,
+        "cacheRead": 45524,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1010
+        }
+      },
+      {
+        "cacheCreation": 694,
+        "cacheRead": 46534,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 694
+        }
+      },
+      {
+        "cacheCreation": 2151,
+        "cacheRead": 47228,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1377,
+          "output": 774
+        }
+      },
+      {
+        "cacheCreation": 396,
+        "cacheRead": 49379,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 396
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-listen-setting",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "#[serde(alias = \"listen\")]\npub bind_address: String,\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 11,
+        "location": "src/config.rs:10-11",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The crate `orders` is a library (`src/lib.rs` exports `pub mod api; pub mod config;`), and the change renames two public struct fields at the Rust level — `Config::listen` → `Config::bind_address` and `OrderResponse::customer_id` → `OrderResponse::buyer_id` (src/api.rs:11-12). The serde attributes keep the TOML and JSON compatible, but any Rust code that reads `config.listen` or builds `OrderResponse { customer_id, .. }` stops compiling on upgrade to 4.2, with no deprecation period and no **BREAKING** item in the proposal's release note. If the crate has Rust consumers outside this repository (not verifiable here), add a **BREAKING** release-note item naming both fields and the replacement, or keep a deprecated accessor (e.g. `#[deprecated] pub fn listen(&self) -> &str`) for one release; if it has none, say so in the proposal's Impact.",
+        "reported": false,
+        "role": "migration",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Public Rust fields renamed with no deprecation or BREAKING note"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- [x] 1.1 `bind_address` with the `listen` alias in `src/config.rs` and `config.example.toml`, verified by starting the service on staging with an old and a new file\n- [x] 1.2 `buyer_id` in `src/api.rs`, verified by comparing the order endpoint's response on staging before and after\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 37,
+        "location": "tasks.md#1. Implementation",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "The role asks that the migration path for existing configuration and API consumers be tested. Both compatibility guarantees — an existing `config.toml` with `listen = \"…\"` still loading via `#[serde(alias = \"listen\")]`, and the JSON of `OrderResponse` still emitting `customer_id` (docs/api.md promises partners no rename without two releases of deprecation) — rest on a one-off staging check. Nothing in the repository fails if a later edit drops the `alias` or the `rename`. Add two unit tests: `config::load(\"database_url = \\\"x\\\"\\nlisten = \\\"0.0.0.0:8080\\\"\")` yields `bind_address == \"0.0.0.0:8080\"`, and `serde_json::to_value(OrderResponse { .. })` has a `customer_id` key and no `buyer_id` key.",
+        "reported": true,
+        "role": "migration",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Compatibility paths verified only by a manual staging check, no test"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-listen-setting/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "migration"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

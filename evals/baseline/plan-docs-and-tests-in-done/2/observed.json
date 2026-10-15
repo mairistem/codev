@@ -1,0 +1,274 @@
+{
+  "format": 2,
+  "case": "plan-docs-and-tests-in-done",
+  "error": null,
+  "costUsd": 1.0968509999999998,
+  "durationMs": 142973,
+  "consumption": {
+    "durationApiMs": 141442,
+    "turns": 24,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1158,
+      "cacheCreation": 68857,
+      "cacheRead": 1414150,
+      "output": 13105
+    },
+    "toolCalls": 23,
+    "orientationCalls": 13,
+    "calls": [
+      {
+        "cacheCreation": 7697,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7697
+        }
+      },
+      {
+        "cacheCreation": 14343,
+        "cacheRead": 29836,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14343
+        }
+      },
+      {
+        "cacheCreation": 3734,
+        "cacheRead": 44179,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3734
+        }
+      },
+      {
+        "cacheCreation": 1736,
+        "cacheRead": 47913,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1736
+        }
+      },
+      {
+        "cacheCreation": 635,
+        "cacheRead": 49649,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 635
+        }
+      },
+      {
+        "cacheCreation": 1965,
+        "cacheRead": 50284,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1965
+        }
+      },
+      {
+        "cacheCreation": 766,
+        "cacheRead": 52249,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "output": 68,
+          "search": 698
+        }
+      },
+      {
+        "cacheCreation": 4627,
+        "cacheRead": 53015,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4627
+        }
+      },
+      {
+        "cacheCreation": 6242,
+        "cacheRead": 57642,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 6242
+        }
+      },
+      {
+        "cacheCreation": 3338,
+        "cacheRead": 63884,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3338
+        }
+      },
+      {
+        "cacheCreation": 2291,
+        "cacheRead": 67222,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2291
+        }
+      },
+      {
+        "cacheCreation": 1711,
+        "cacheRead": 69513,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1711
+        }
+      },
+      {
+        "cacheCreation": 2009,
+        "cacheRead": 71224,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 1924,
+          "output": 85
+        }
+      },
+      {
+        "cacheCreation": 2434,
+        "cacheRead": 73233,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2434
+        }
+      },
+      {
+        "cacheCreation": 1873,
+        "cacheRead": 75667,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1873
+        }
+      },
+      {
+        "cacheCreation": 836,
+        "cacheRead": 77540,
+        "input": 2,
+        "output": 28,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 275,
+          "edit": 561
+        }
+      },
+      {
+        "cacheCreation": 2537,
+        "cacheRead": 78376,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 2528,
+          "output": 9
+        }
+      },
+      {
+        "cacheCreation": 2592,
+        "cacheRead": 80913,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2592
+        }
+      },
+      {
+        "cacheCreation": 3200,
+        "cacheRead": 83505,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3193,
+          "output": 7
+        }
+      },
+      {
+        "cacheCreation": 2595,
+        "cacheRead": 86705,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2595
+        }
+      },
+      {
+        "cacheCreation": 862,
+        "cacheRead": 89300,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 862
+        }
+      },
+      {
+        "cacheCreation": 834,
+        "cacheRead": 90162,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 834
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/require-docs-and-tests-in-done/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
+    "_codev/changes/require-docs-and-tests-in-done/design.md": "# Design: Require documentation and automated tests in a plan's definition of done\n\n## Context\n\nTwo texts embedded in the binary define what \"done\" means, and both are\nplain prose read by the agent:\n\n- `assets/schemas/spec-driven/schema.yaml` — the `tasks` instruction opens\n  with the tech lead's `Role:` / `Done when:` block (three criteria today:\n  session-sized tasks, a named verification per task, every scenario covered\n  by a verification). `codev instructions tasks --json` serves it verbatim,\n  with `templates/tasks.md` as `template`. The test\n  `spec_driven_instructions_start_with_a_role_block` in\n  `crates/codev-engine/src/instructions.rs` pins one criterion per role.\n- `assets/workflows/apply.md` — the body of the `codev-apply` skill,\n  embedded by `crates/codev-agents/src/workflows.rs` via `include_str!`.\n  Step 5 (\"Finish\") announces \"ready to be archived\" as soon as every box is\n  checked; nothing runs the suite as a whole. `apply` is already the only\n  workflow with general `Bash`, so it can run any test command.\n\ncodev's own `_codev/config.yaml` already carries equivalent project `rules:`\nfor `tasks`; this change makes the defaults carry the generic version.\n\nThe installed codev binary is more recent than this snapshot (its\ninstructions also expose structured roles with `doneWhen`). The change\ntargets the snapshot's sources; the criteria are worded so that they read\nthe same once split into structured `doneWhen` entries.\n\n## Goals / Non-Goals\n\nGoals:\n\n- the default tech-lead criteria require a doc task (or an explicit \"none\"),\n  one automated test per scenario following project and language\n  conventions, and a final full-suite task;\n- `apply` runs the full suite before any \"done / ready to archive\" message.\n\nNon-Goals:\n\n- codev itself does not execute tests, nor parse or detect a test command;\n- no new configuration key (`test_command`, `docs_paths`…);\n- no change to custom schemas, to `codev validate`, or to the JSON contract;\n- no per-language catalogue of conventions shipped with codev.\n\n## Decisions\n\n### Decision: The criteria live in the schema's tech-lead block, in prose\n\nFour bullets are added to the `Done when:` list of the `tasks` instruction\n(doc task or explicit \"no documentation affected\"; one automated test per\nscenario, manual only when impossible and justified; tests follow the\nproject's context, rules and existing tests, and its language's conventions\nfor location, naming and framework; a final task runs the full suite). The\nbody of the instruction gets matching guidance sentences. This keeps the\nexisting rule that roles belong to the schema: a custom schema gets none of\nit (requirement \"A custom schema gets no role block\").\n\n**Alternatives considered**:\n\n- A `codev validate` rule that checks `tasks.md` for a doc task and a test\n  per scenario — rejected: it would need to parse free-form task prose and\n  guess what a \"doc task\" is, producing false positives; the request is\n  about the criteria the planner applies, and the `propose` traceability\n  and challenge passes already check plans against them.\n- Ship the rules as default project `rules:` written by `codev init` —\n  rejected: existing projects would not get them, and a project could\n  delete them silently; the definition of done belongs to the schema role.\n\n### Decision: The template shows the doc task and the final suite task\n\n`templates/tasks.md` gains a documentation group/task and a closing\n\"Run the full test suite\" task. The template is the shape the agent copies,\nso it is the cheapest way to make the criteria followed in practice.\n\n**Alternatives considered**: leaving the template unchanged and relying on\nthe criteria alone — rejected, the template is what the agent reproduces\nand an unchanged one invites plans without these tasks.\n\n### Decision: `apply` resolves the suite command by precedence, and never guesses past it\n\nIn step 5 of `apply.md`, before the summary, the skill runs the full suite,\nresolved in this order: the command named by the project's `context` or\n`rules` (as served by `codev instructions`); otherwise the conventional\ncommand of the language detected from the project's manifests (e.g.\n`cargo test --workspace`, `npm test`, `pytest`, `go test ./...`); otherwise\nit asks the user. A failure keeps the change \"not done\": the skill lists the\nfailures and stops, and the existing guardrail against `#[ignore]` and\nsimilar workarounds is extended to cover the final run. The same check runs\nwhen `/codev-apply` is invoked on a change whose boxes are all already\nchecked. This follows decision 0001 (deciding is not executing): the\nbinary decides nothing here, the agent — already the only workflow with\ngeneral `Bash` — executes. Decision 0004 is unaffected: the skill keeps its\nsingle identity, only its body changes.\n\n**Alternatives considered**:\n\n- A new `codev test` command or a `test_command` config key — rejected:\n  adds CLI surface and a contract for a value the project's rules already\n  express in prose; can be added later without breaking this design.\n- Running the suite after every task — rejected: the per-task verification\n  already exists; the request is about the final declaration of done, and a\n  full run per task multiplies the cost on large suites.\n\n## Risks / Trade-offs\n\n- [The conventional command for a language is wrong for a given project\n  (e.g. a monorepo)] → the project's `context`/`rules` take precedence, and\n  the skill reports the command it ran so the user can correct it.\n- [A slow suite lengthens every `apply`] → it runs once, at the end, not per\n  task.\n- [Pre-existing failures unrelated to the change block \"done\"] → intended:\n  the skill reports them and stops; the user decides. It never disables a\n  test to get through.\n- [Purely internal changes forced into an empty doc task] → the explicit\n  \"no documentation is affected\" statement satisfies the criterion.\n- [The skill-body tests in `workflows.rs` only check strings] → they pin the\n  presence of the full-suite step and its failure rule; behavior is\n  otherwise prose, as for every other skill.\n\n## Migration Plan\n\nNo data migration. Already installed `codev-apply` skills keep the old body\nuntil the project runs `codev update` with the new binary (a hand-edited\nskill is left in place unless `--force`); the changelog entry says so. Rollback is reverting\nthe three asset files.\n",
+    "_codev/changes/require-docs-and-tests-in-done/proposal.md": "# Proposal: Require documentation and automated tests in a plan's definition of done\n\n## Why\n\nToday a codev plan can be considered complete without any task updating the\ndocumentation, with scenarios \"covered\" only by a manual check, and\n`/codev-apply` can announce that a change is finished without ever running\nthe project's whole test suite: documentation drifts and regressions slip\nthrough. Projects currently have to restate these expectations in their own\n`rules:` (codev's own `config.yaml` does), so every other project is left\nunprotected by default.\n\n## What Changes\n\n- The tech lead's `Done when:` criteria of the embedded `spec-driven` schema\n  (the `tasks` artifact) require, in addition to the existing criteria:\n  - a task that updates the user documentation affected by the change, or an\n    explicit statement in `tasks.md` that no documentation is affected;\n  - one automated test per spec scenario, added or updated by a named task;\n    a manual check is accepted only when automation is impossible, and the\n    task says why;\n  - tests written following the project's conventions (its `context` and\n    `rules`, and the tests already in the codebase) and those of its\n    language (location, naming, framework), not generic ones;\n  - a final task that runs the project's full test suite.\n- The `tasks.md` template shows a documentation task and a final full-suite\n  task, so the expected shape is visible.\n- The `apply` skill runs the project's full test suite after the last task\n  and before announcing that the change is done. If the suite fails, it\n  reports the failures, does not declare the change ready to archive, and\n  does not invent a workaround. If it cannot determine how to run the suite,\n  it says so and asks rather than declaring the change done.\n- Custom (project) schemas are unaffected: their instructions are still\n  returned as written.\n\nAssumptions made without asking (evaluation run, no user):\n\n- \"Documentation\" means the project's user-facing documentation; the escape\n  hatch \"no documentation is affected\", stated explicitly, is kept so that\n  purely internal changes are not forced into an empty doc task.\n- \"The full suite\" is the test command the project names in its `context` or\n  `rules`; failing that, the conventional command of its detected language\n  (for example `cargo test --workspace` for a Cargo workspace).\n- \"Conventions of the project and its language\" are criteria the agent\n  applies; codev does not add a new configuration key to declare them.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- skills\n\n### Removed Capabilities\n\n## Impact\n\n- `assets/schemas/spec-driven/schema.yaml` — the `tasks` instruction and its\n  `Done when:` list.\n- `assets/schemas/spec-driven/templates/tasks.md` — the template.\n- `assets/workflows/apply.md` — the body of the installed `codev-apply`\n  skill; projects pick it up on their next `codev update`.\n- Tests: `crates/codev-engine/src/instructions.rs` (role block test) and\n  `crates/codev-agents/src/workflows.rs` (skill body tests).\n- Documentation: `docs/en` and `docs/fr` — the `concepts` and `skills`\n  chapters.\n- No change to the CLI, the JSON contract v1 or any dependency.\n\n## Domains\n\nNone\n\n## Release note\n\n- Changed: Plans produced with the default `spec-driven` schema now require a documentation task (or an explicit \"no documentation affected\"), one automated test per spec scenario written to the project's and its language's conventions, and a final full test-suite run.\n- Changed: `/codev-apply` runs the project's whole test suite before declaring a change done, and does not declare it ready to archive while the suite fails.\n",
+    "_codev/changes/require-docs-and-tests-in-done/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The default schema gives each artifact a role with \"Done when\" criteria\n\nThe instruction of each artifact of the embedded `spec-driven` schema, as\nreturned by `codev instructions <artifact> --json`, SHALL start with a role\nblock: a `Role:` line naming the role and what it owns, followed by a\n`Done when:` list of checkable criteria. The roles are:\n\n- `proposal` — product owner, owns why and what;\n- `specs` — QA analyst, owns observable behavior;\n- `design` — architect, owns how;\n- `tasks` — tech lead, owns sequencing and verification.\n\nThe tech lead's `Done when:` list MUST also require that:\n\n- the tasks include one that updates the user documentation affected by the\n  change, or `tasks.md` states explicitly that no documentation is affected;\n- every spec scenario is covered by an automated test, added or updated by a\n  named task; a manual check is accepted only when automation is\n  impossible, and the task states why;\n- the tests follow the conventions of the project (its context, its rules\n  and the tests it already has) and of its language (location, naming,\n  framework);\n- a final task runs the project's full test suite.\n\nThe `tasks` template returned by `codev instructions tasks --json` MUST show\na documentation task and a final task running the full test suite.\n\nThe rest of each instruction MUST stay as before. A custom schema's\ninstructions MUST be returned as written, without any role block added by\ncodev.\n\n#### Scenario: The proposal instruction starts with the product owner role\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `instruction` starts with `Role: product owner`\n- **AND** it contains a `Done when:` list that includes marking every\n  breaking change with **BREAKING**\n\n#### Scenario: The tasks criteria cover every spec scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `instruction` starts with `Role: tech lead`\n- **AND** its `Done when:` list requires every spec scenario to be covered\n  by at least one task's verification\n\n#### Scenario: The tasks criteria require a documentation task\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires a task that updates the affected\n  documentation\n- **AND** it accepts instead an explicit statement that no documentation is\n  affected\n\n#### Scenario: The tasks criteria require an automated test per scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires every spec scenario to be covered\n  by an automated test added or updated by a task\n- **AND** it accepts a manual check only when automation is impossible and\n  the task states why\n\n#### Scenario: The tasks criteria require the project's and language's test conventions\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires the tests to follow the\n  conventions of the project and of its language\n\n#### Scenario: The tasks criteria and template require a full-suite run\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires a final task that runs the\n  project's full test suite\n- **AND** `template` shows a documentation task and a final full-suite task\n\n#### Scenario: A custom schema gets no role block\n\n- **GIVEN** a change using a project schema whose artifact instruction has\n  no role block\n- **WHEN** the user runs `codev instructions <artifact> --change <name>\n  --json`\n- **THEN** `instruction` is the schema's text, with no `Role:` line added\n- **AND** none of the documentation or test criteria above is added to it\n\n## ADDED Requirements\n\n### Requirement: The `apply` skill runs the full test suite before declaring a change done\n\nOnce every task of `tasks.md` is checked, and before announcing that the\nchange is done or ready to be archived, the `apply` skill SHALL run the\nproject's full test suite: the command the project's context or rules name,\nor failing that the conventional command of the project's language. It\nMUST report the command it ran and its outcome.\n\nWhen the suite fails, the skill MUST NOT declare the change done nor invite\nthe user to archive it: it MUST report the failing tests and stop, without\nskipping, ignoring or weakening a test to make the suite pass. When it\ncannot determine how to run the suite, it MUST say so and ask the user\ninstead of declaring the change done.\n\n#### Scenario: A passing suite lets the change be declared done\n\n- **GIVEN** a change whose tasks are all checked and a project whose full\n  test suite passes\n- **WHEN** `/codev-apply` finishes the last task\n- **THEN** the skill runs the full test suite and reports the command and\n  that it passed\n- **AND** only then reports that the change is ready to be archived\n\n#### Scenario: A failing suite blocks the declaration of done\n\n- **GIVEN** a change whose tasks are all checked, and a test outside the\n  change's own tests that now fails\n- **WHEN** `/codev-apply` runs the full test suite\n- **THEN** the skill reports the failing test\n- **AND** does not report the change as done nor invite the user to archive\n  it\n- **AND** does not disable or ignore the failing test\n\n#### Scenario: An unknown test command is asked for, not guessed away\n\n- **GIVEN** a project whose context and rules name no test command and\n  whose language has no conventional one the skill can identify\n- **WHEN** `/codev-apply` reaches the end of the tasks\n- **THEN** the skill says it could not determine how to run the full suite\n- **AND** asks the user for the command instead of declaring the change done\n\n#### Scenario: Resuming a change whose tasks are already all checked\n\n- **GIVEN** a change whose tasks were all checked in an earlier session\n- **WHEN** the user types `/codev-apply`\n- **THEN** the skill runs the full test suite before reporting that the\n  change is ready to be archived\n"
+  },
+  "validate": {
+    "require-docs-and-tests-in-done": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "require-docs-and-tests-in-done",
+          "path": "_codev/changes/require-docs-and-tests-in-done"
+        }
+      ],
+      "root": "/private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1792049302/plan-docs-and-tests-in-done-2",
+      "status": []
+    }
+  }
+}

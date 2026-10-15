@@ -1,0 +1,259 @@
+{
+  "format": 2,
+  "case": "accessibility-code-icon-button",
+  "error": null,
+  "costUsd": 0.29479879999999997,
+  "durationMs": 23868,
+  "consumption": {
+    "durationApiMs": 23679,
+    "turns": 6,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1164,
+      "cacheCreation": 25277,
+      "cacheRead": 231839,
+      "output": 2262
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7387,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7387
+        }
+      },
+      {
+        "cacheCreation": 14139,
+        "cacheRead": 29526,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 14139
+        }
+      },
+      {
+        "cacheCreation": 1037,
+        "cacheRead": 43665,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 1037
+        }
+      },
+      {
+        "cacheCreation": 351,
+        "cacheRead": 44702,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 351
+        }
+      },
+      {
+        "cacheCreation": 1701,
+        "cacheRead": 45053,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1701
+        }
+      },
+      {
+        "cacheCreation": 662,
+        "cacheRead": 46754,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 662
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-1 (Delete action is a clickable div, unreachable and inoperable by keyboard) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-accessibility-2 (Icon-only delete control has no accessible name) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-toolbar",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/Toolbar.tsx:13-15",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Render the delete action as a native `<button type=\"button\" className=\"icon-button\" onClick={onDelete}>`. A keyboard user pressing Tab never lands on the div (no tabindex), and Enter or Space does nothing (no key handler), so they cannot delete a document — the change's only feature. A screen reader announces no button role either. WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value. Keep the existing visual style and make sure the focus indicator stays visible (2.4.7).",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete action is a clickable div, unreachable and inoperable by keyboard"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n  <TrashIcon />\n</div>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 32,
+        "location": "src/components/Toolbar.tsx:13-15",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The only content is `TrashIcon`, whose `<svg>` is `aria-hidden=\"true\"` (src/components/icons.tsx), so the control has no text at all: a screen reader user reaching it hears nothing (or \"button\" once it is a button) and cannot tell it deletes the document. Give the button a name, e.g. `aria-label=\"Delete document\"` or visually hidden text. WCAG 1.1.1 Non-text Content, 4.1.2 Name, Role, Value.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Icon-only delete control has no accessible name"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "<img className=\"avatar\" src={avatarUrl} />\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-3",
+        "line": 52,
+        "location": "src/components/Toolbar.tsx:12",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "With no `alt`, screen readers fall back to announcing the image URL or file name, and the owner identity the proposal says the toolbar shows is not conveyed. Pass the owner's name in and set `alt={`${ownerName}'s avatar`}` (or `alt=\"\"` if the name is shown as text next to it). WCAG 1.1.1 Non-text Content.",
+        "reported": true,
+        "role": "accessibility",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Owner avatar image has no alt attribute"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "<div className=\"icon-button\" onClick={onDelete}>\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-4",
+        "line": 70,
+        "location": "src/components/Toolbar.tsx:13",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The icon is 16 by 16 and the `icon-button` stylesheet is not in the change: check that the control is at least 24 by 24 CSS pixels (or spaced) and has a visible focus indicator and 3:1 non-text contrast. WCAG 2.5.8 Target Size (Minimum), 2.4.7 Focus Visible, 1.4.11 Non-text Contrast.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Delete target size and focus style not verifiable"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-toolbar/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

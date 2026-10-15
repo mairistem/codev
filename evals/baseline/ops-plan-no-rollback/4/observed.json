@@ -1,0 +1,205 @@
+{
+  "format": 2,
+  "case": "ops-plan-no-rollback",
+  "error": null,
+  "costUsd": 0.31248940000000003,
+  "durationMs": 22806,
+  "consumption": {
+    "durationApiMs": 22923,
+    "turns": 6,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1158,
+      "cacheCreation": 27559,
+      "cacheRead": 237242,
+      "output": 2180
+    },
+    "toolCalls": 5,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7388,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7388
+        }
+      },
+      {
+        "cacheCreation": 15406,
+        "cacheRead": 29527,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15406
+        }
+      },
+      {
+        "cacheCreation": 234,
+        "cacheRead": 44933,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 234
+        }
+      },
+      {
+        "cacheCreation": 1815,
+        "cacheRead": 45167,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1815
+        }
+      },
+      {
+        "cacheCreation": 1512,
+        "cacheRead": 46982,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1512
+        }
+      },
+      {
+        "cacheCreation": 1204,
+        "cacheRead": 48494,
+        "input": 2,
+        "output": 137,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 1204
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-1 (The switch to Paylane has no way back once the Stripe account is closed) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-ops-2 (The nightly settlement worker can fail or not run without anyone seeing it) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "switch-payment-provider",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "The Stripe client is deleted and replaced by the Paylane client in the same\nrelease. There is no switch between the two: keeping both would double the\ncode to maintain. The Stripe account is closed the day after the release.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-1",
+        "line": 11,
+        "location": "design.md#Decision: All traffic moves at deploy",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Keep a way back for the provider switch-over. When Paylane fails in production (outage, authorizations declined, capture errors) after the Stripe account is closed, redeploying the previous version brings back a Stripe client with no account behind it, and the next blue/green release is about a week away: card payments stay down. Keep the Stripe account open until Paylane has run in production for an agreed period, and either keep the Stripe client behind a configuration switch (the provider chosen from the environment) or state explicitly that the rollback is a redeploy of the previous version, valid as long as the Stripe account stays open. Add a task for the rollback path and for closing the Stripe account only after that period.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The switch to Paylane has no way back once the Stripe account is closed"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "A new worker, `settlement-worker`, runs at 02:00, fetches the day's Paylane\npayments and matches them to orders. It runs as a Kubernetes CronJob and\nwrites its result to the database.\n",
+        "history": [
+          {
+            "by": "ops",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-ops-2",
+        "line": 38,
+        "location": "design.md#Decision: A worker settles payments nightly",
+        "raisedBy": [
+          "ops"
+        ],
+        "recommendation": "Decide how an operator sees the worker fail. If the Paylane API is down at 02:00, the CronJob crashes or is never scheduled, nothing is reconciled and nothing alerts: the only alert the spec defines is for an unmatched payment, which a run that did not happen never raises. Have the worker log its start and end with structured fields (date settled, payments fetched, matched, unmatched), emit a metric or a last-success timestamp, and alert when a run fails or no successful run is recorded for the day; add this to the spec (\"Payments are settled nightly\") and to task 1.2.",
+        "reported": true,
+        "role": "ops",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "The nightly settlement worker can fail or not run without anyone seeing it"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/switch-payment-provider/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "ops"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "ops",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "ops",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

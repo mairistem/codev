@@ -1,0 +1,117 @@
+{
+  "format": 2,
+  "case": "newcomer-control-plain-code",
+  "error": null,
+  "costUsd": 0.23154479999999997,
+  "durationMs": 12335,
+  "consumption": {
+    "durationApiMs": 12257,
+    "turns": 5,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1180,
+      "cacheCreation": 23159,
+      "cacheRead": 139019,
+      "output": 876
+    },
+    "toolCalls": 4,
+    "orientationCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7405,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7405
+        }
+      },
+      {
+        "cacheCreation": 13251,
+        "cacheRead": 29544,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 13251
+        }
+      },
+      {
+        "cacheCreation": 1746,
+        "cacheRead": 42795,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1746
+        }
+      },
+      {
+        "cacheCreation": 757,
+        "cacheRead": 44541,
+        "input": 2,
+        "output": 129,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 328,
+          "edit": 256,
+          "output": 173
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoice-due-dates",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoice-due-dates/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "no-finding"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

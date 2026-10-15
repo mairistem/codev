@@ -1,0 +1,83 @@
+{
+  "format": 2,
+  "case": "tracer-control-complete-plan",
+  "error": null,
+  "costUsd": 0.20204520000000004,
+  "durationMs": 16867,
+  "consumption": {
+    "durationApiMs": 16768,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1088,
+      "cacheCreation": 17251,
+      "cacheRead": 152571,
+      "output": 1633
+    },
+    "toolCalls": 8,
+    "calls": [
+      {
+        "cacheCreation": 7298,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7298
+        }
+      },
+      {
+        "cacheCreation": 2516,
+        "cacheRead": 29437,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 2516
+        }
+      },
+      {
+        "cacheCreation": 1522,
+        "cacheRead": 31953,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1522
+        }
+      },
+      {
+        "cacheCreation": 2092,
+        "cacheRead": 33475,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 5,
+        "sources": {
+          "skill": 2092
+        }
+      },
+      {
+        "cacheCreation": 3823,
+        "cacheRead": 35567,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "file": 2958,
+          "skill": 864
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/add-session-timeout/proposal.md": "# Proposal: Idle session timeout\n\n## Why\n\nShared computers at our customers' branches stay signed in all day.\n\n## What Changes\n\n- A session expires after 30 minutes without a request.\n\n## Capabilities\n\n### New Capabilities\n\n- `session-timeout`\n\n### Modified Capabilities\n\nNone.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `src/auth/session.rs`, `docs/sign-in.md`.\n\n## Domains\n\n- [x] security — session lifetime\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [ ] migration\n\n## Release note\n\n- Changed: You are signed out after 30 minutes without activity.\n",
+    "_codev/changes/add-session-timeout/specs/session-timeout/spec.md": "## Purpose\n\nSigns idle members out.\n\n## ADDED Requirements\n\n### Requirement: Idle sessions expire\n\nA session SHALL expire after 30 minutes without a request; a request with an expired session SHALL be answered 401.\n\n#### Scenario: An active session\n\n- **WHEN** a member sends a request 10 minutes after the previous one\n- **THEN** the request is served\n\n#### Scenario: An idle session\n\n- **WHEN** a member sends a request 31 minutes after the previous one\n- **THEN** the service answers 401\n",
+    "_codev/changes/add-session-timeout/tasks.md": "# Tasks\n\n## 1. Sessions\n\n- [ ] 1.1 Idle expiry in `src/auth/session.rs`, verified by tests `an_active_session_is_served` (\"An active session\") and `an_idle_session_is_refused` (\"An idle session\")\n\n## 2. Documentation\n\n- [ ] 2.1 Describe the 30-minute idle timeout in `docs/sign-in.md`, verified by `cargo test docs_cover_sign_in`\n"
+  }
+}

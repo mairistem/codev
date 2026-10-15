@@ -1,0 +1,200 @@
+{
+  "format": 2,
+  "case": "accessibility-control-custom-listbox",
+  "error": null,
+  "costUsd": 0.35520360000000006,
+  "durationMs": 37194,
+  "consumption": {
+    "durationApiMs": 36876,
+    "turns": 9,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1174,
+      "cacheCreation": 29182,
+      "cacheRead": 243713,
+      "output": 3601
+    },
+    "toolCalls": 8,
+    "orientationCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7390,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7390
+        }
+      },
+      {
+        "cacheCreation": 15592,
+        "cacheRead": 29529,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4034,
+          "skill": 11558
+        }
+      },
+      {
+        "cacheCreation": 2082,
+        "cacheRead": 45121,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2082
+        }
+      },
+      {
+        "cacheCreation": 2410,
+        "cacheRead": 47203,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2410
+        }
+      },
+      {
+        "cacheCreation": 495,
+        "cacheRead": 49613,
+        "input": 2,
+        "output": 52,
+        "toolCalls": 3,
+        "sources": {
+          "codev review": 495
+        }
+      },
+      {
+        "cacheCreation": 1213,
+        "cacheRead": 50108,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 701,
+          "edit": 442,
+          "output": 71
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-size-picker",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "<div\n  ref={combo}\n  role=\"combobox\"\n  tabIndex={0}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-1",
+        "line": 11,
+        "location": "src/components/SizePicker.tsx:70-73",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "The focusable `div` relies on a stylesheet the change does not include. Check that `.size-picker [role=\"combobox\"]:focus-visible` keeps a visible outline (no `outline: none` without replacement) with at least 3:1 contrast against its background (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast); keyboard users otherwise cannot see where focus is.",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Focus indicator of the combobox cannot be checked from the change"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "low",
+        "evidence": "className={index === active ? \"option option--active\" : \"option\"}\n",
+        "history": [
+          {
+            "by": "accessibility",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-accessibility-2",
+        "line": 29,
+        "location": "src/components/SizePicker.tsx:92",
+        "raisedBy": [
+          "accessibility"
+        ],
+        "recommendation": "Focus stays on the combobox and the highlighted option is the only visual cue of the keyboard position (`aria-activedescendant`). Check that `.option--active` is styled with an indicator other than colour alone and with at least 3:1 contrast (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast, 1.4.1 Use of Color), and that the highlighted option is scrolled into view when the list overflows (WCAG 2.4.11 Focus Not Obscured).",
+        "reported": false,
+        "role": "accessibility",
+        "severity": "low",
+        "status": "open",
+        "step": "code.review",
+        "title": "Highlighted option is shown only through a class whose style is not in the change"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-size-picker/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "accessibility"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "accessibility"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "accessibility",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

@@ -1,0 +1,134 @@
+{
+  "format": 2,
+  "case": "performance-control-preloaded-helper",
+  "error": null,
+  "costUsd": 0.2920634,
+  "durationMs": 21002,
+  "consumption": {
+    "durationApiMs": 20794,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1172,
+      "cacheCreation": 26655,
+      "cacheRead": 190332,
+      "output": 1989
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7393,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7393
+        }
+      },
+      {
+        "cacheCreation": 15055,
+        "cacheRead": 29532,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3430,
+          "skill": 11625
+        }
+      },
+      {
+        "cacheCreation": 2015,
+        "cacheRead": 44587,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2015
+        }
+      },
+      {
+        "cacheCreation": 870,
+        "cacheRead": 46602,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "file": 870
+        }
+      },
+      {
+        "cacheCreation": 1322,
+        "cacheRead": 47472,
+        "input": 2,
+        "output": 294,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 766,
+          "edit": 556
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-monthly-report",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-monthly-report/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "performance"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "performance"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "performance",
+            "state": "no-finding"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

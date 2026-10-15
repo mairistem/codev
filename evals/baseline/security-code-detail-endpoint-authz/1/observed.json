@@ -1,0 +1,202 @@
+{
+  "format": 2,
+  "case": "security-code-detail-endpoint-authz",
+  "error": null,
+  "costUsd": 0.3300502,
+  "durationMs": 25530,
+  "consumption": {
+    "durationApiMs": 25349,
+    "turns": 7,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1179,
+      "cacheCreation": 28873,
+      "cacheRead": 244056,
+      "output": 2464
+    },
+    "toolCalls": 6,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7400,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7400
+        }
+      },
+      {
+        "cacheCreation": 15743,
+        "cacheRead": 29539,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 4236,
+          "skill": 11507
+        }
+      },
+      {
+        "cacheCreation": 2811,
+        "cacheRead": 45282,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2811
+        }
+      },
+      {
+        "cacheCreation": 822,
+        "cacheRead": 48093,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 822
+        }
+      },
+      {
+        "cacheCreation": 1173,
+        "cacheRead": 48915,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1173
+        }
+      },
+      {
+        "cacheCreation": 924,
+        "cacheRead": 50088,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 924
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## plan.challenge` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-security-1 (Invoice detail endpoint returns any organization's invoice (IDOR)) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-invoices-api",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "\"SELECT id, org_id, number, total_cents, issued_on FROM invoices WHERE id = $1\",\n[id],\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-1",
+        "line": 11,
+        "location": "src/invoices.ts:32-35",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Scope the lookup to the caller's organization: call `currentUser(req)` and query `WHERE id = $1 AND org_id = $2` with `[id, user.orgId]`, answering 404 when no row matches so other organizations' ids are not confirmed. Add a test asserting the detail query is bound to the caller's `orgId`, as the list test does (CWE-639 / CWE-862). Attack: any signed-in user of organization A sends `GET /invoices/42`, `GET /invoices/43`, ... and receives the number, total and date of every other organization's invoices, since ids are sequential integers.",
+        "reported": true,
+        "role": "security",
+        "severity": "high",
+        "status": "open",
+        "step": "code.review",
+        "title": "Invoice detail endpoint returns any organization's invoice (IDOR)"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "res.status(500).json({ error: err.message, stack: err.stack });\n",
+        "history": [
+          {
+            "by": "security",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-security-2",
+        "line": 33,
+        "location": "src/server.ts:15-18",
+        "raisedBy": [
+          "security"
+        ],
+        "recommendation": "Keep `console.error(err)` for the server log, but answer only a generic body such as `{ error: \"internal error\" }` (CWE-209). The handler is registered globally, so it also handles errors raised by `express.json()` before `requireUser`: an unauthenticated client posting a malformed JSON body to any route receives the error message and the stack with the server's file paths and module layout; any error forwarded from `query` would likewise reveal database messages (table, column, constraint names).",
+        "reported": true,
+        "role": "security",
+        "severity": "medium",
+        "status": "open",
+        "step": "code.review",
+        "title": "Error handler sends the stack trace to the client"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-invoices-api/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic",
+          "security"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "security"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "security",
+            "state": "findings"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "newcomer",
+            "state": "disabled"
+          }
+        ],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

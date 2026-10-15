@@ -1,0 +1,140 @@
+{
+  "format": 2,
+  "case": "skeptic-control-small-flag",
+  "error": null,
+  "costUsd": 0.3643184,
+  "durationMs": 27062,
+  "consumption": {
+    "durationApiMs": 26855,
+    "turns": 9,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1158,
+      "cacheCreation": 33192,
+      "cacheRead": 240667,
+      "output": 2484
+    },
+    "toolCalls": 8,
+    "orientationCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7386,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7386
+        }
+      },
+      {
+        "cacheCreation": 7693,
+        "cacheRead": 29525,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev roles": 7625,
+          "skill": 68
+        }
+      },
+      {
+        "cacheCreation": 9732,
+        "cacheRead": 37218,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 22,
+          "skill": 9710
+        }
+      },
+      {
+        "cacheCreation": 4090,
+        "cacheRead": 46950,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 1,
+        "sources": {
+          "search": 4090
+        }
+      },
+      {
+        "cacheCreation": 2755,
+        "cacheRead": 51040,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "output": 25,
+          "search": 2730
+        }
+      },
+      {
+        "cacheCreation": 1536,
+        "cacheRead": 53795,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 604,
+          "edit": 481,
+          "output": 451
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "add-quiet-flag",
+    "exists": true,
+    "findings": [],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/add-quiet-flag/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "skeptic"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "no-finding"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}

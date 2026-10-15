@@ -1,0 +1,208 @@
+{
+  "format": 2,
+  "case": "migration-plan-breaking-rename",
+  "error": null,
+  "costUsd": 0.3042858,
+  "durationMs": 28590,
+  "consumption": {
+    "durationApiMs": 28561,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1158,
+      "cacheCreation": 26773,
+      "cacheRead": 235939,
+      "output": 2098
+    },
+    "toolCalls": 8,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7382,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7382
+        }
+      },
+      {
+        "cacheCreation": 15182,
+        "cacheRead": 29521,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15182
+        }
+      },
+      {
+        "cacheCreation": 239,
+        "cacheRead": 44703,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 239
+        }
+      },
+      {
+        "cacheCreation": 1508,
+        "cacheRead": 44942,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 197,
+          "file": 1311
+        }
+      },
+      {
+        "cacheCreation": 1734,
+        "cacheRead": 46450,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "codev review": 1397,
+          "edit": 337
+        }
+      },
+      {
+        "cacheCreation": 728,
+        "cacheRead": 48184,
+        "input": 2,
+        "output": 160,
+        "toolCalls": 0,
+        "sources": {
+          "codev review": 488,
+          "edit": 240
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": {
+    "archive": {
+      "blockers": [
+        {
+          "code": "review_step_missing",
+          "message": "the review record has no `## code.review` section, while roles were active at it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-1 (Public field removed with no deprecation or transition period) is high and still open; fix it, or a human accepts the risk or defers it"
+        },
+        {
+          "code": "review_unresolved",
+          "message": "R-migration-2 (Breaking rename not marked BREAKING in the release note) is high and still open; fix it, or a human accepts the risk or defers it"
+        }
+      ],
+      "ready": false
+    },
+    "changeName": "rename-order-status",
+    "exists": true,
+    "findings": [
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "`OrderResponse.status` becomes `OrderResponse.state`; the old name is not\nkept. The OpenAPI file is regenerated.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-1",
+        "line": 15,
+        "location": "design.md#Decision: The field is renamed in place",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Use expand and contract: return both `status` and `state` (same value) for a stated deprecation period, mark `status` deprecated in `openapi.yaml`, and remove it only in a later change once partners have moved. Add a task and a scenario that check a response still holds `status` during the transition, so the migration path is tested. The rejected alternative \"keeping both fields (duplication)\" is the compatibility path the public contract needs.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Public field removed with no deprecation or transition period"
+      },
+      {
+        "awaiting": "author",
+        "confidence": "high",
+        "evidence": "- Changed: The order's `status` field is now called `state`.\n",
+        "history": [
+          {
+            "by": "migration",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          }
+        ],
+        "id": "R-migration-2",
+        "line": 42,
+        "location": "proposal.md#Release note",
+        "raisedBy": [
+          "migration"
+        ],
+        "recommendation": "Mark the item **BREAKING**, state what partners must do (read `state` instead of `status`, and by when the old field disappears if a deprecation period is adopted), and name the affected endpoint `GET /orders/{id}`. Bump the API's major version if it follows semantic versioning.",
+        "reported": true,
+        "role": "migration",
+        "severity": "high",
+        "status": "open",
+        "step": "plan.challenge",
+        "title": "Breaking rename not marked BREAKING in the release note"
+      }
+    ],
+    "format": 1,
+    "issues": [],
+    "path": "_codev/changes/rename-order-status/review.md",
+    "status": [],
+    "steps": [
+      {
+        "activeRoles": [
+          "migration"
+        ],
+        "mode": "inline",
+        "recorded": true,
+        "roles": [
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "skeptic",
+            "state": "disabled"
+          },
+          {
+            "credited": [],
+            "fallback": null,
+            "role": "migration",
+            "state": "findings"
+          }
+        ],
+        "step": "plan.challenge",
+        "summarized": []
+      },
+      {
+        "activeRoles": [
+          "migration",
+          "newcomer"
+        ],
+        "mode": null,
+        "recorded": false,
+        "roles": [],
+        "step": "code.review",
+        "summarized": []
+      }
+    ]
+  },
+  "files": {}
+}
