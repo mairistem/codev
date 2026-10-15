@@ -30,6 +30,6 @@
 
 ## 6. Checks
 
-- [ ] 6.0 Time `codev search <query>` and `codev search <query> --archive` on this repository with a release build (`hyperfine`, ten runs each), paste the numbers in the pull request, and replace the design's estimate with the measured figure; verified by the numbers in the pull request and the corrected sentence in `design.md`
+- [x] 6.0 Time `codev search <query>` and `codev search <query> --archive` on this repository with a release build (`hyperfine`, ten runs each), paste the numbers in the pull request, and replace the design's estimate with the measured figure; verified by the numbers in the pull request and the corrected sentence in `design.md`
 
 - [ ] 6.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing

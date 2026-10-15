@@ -49,10 +49,10 @@ indexing scenarios apart — more results naming the same requirement.
 ### Decision: The index is rebuilt at each call
 
 The project's specs are a few hundred requirements: building the index in
-memory is estimated well under 100 ms in Rust (0.4 s measured in the Python
-prototype for 217 documents; a task times the Rust command, with and
-without `--archive`, on this repository and the design is corrected with
-the measured figure), so `codev search` rebuilds it every time and keeps nothing
+memory takes 30 ms for this repository's 210 requirements and 9 decisions,
+and 62 ms with `--archive` over its 53 archived changes (2.4 MB), measured
+with a release build (`hyperfine`, ten runs each), so `codev search`
+rebuilds it every time and keeps nothing
 on disk — nothing to invalidate when a spec changes, nothing to commit or
 ignore.
 
