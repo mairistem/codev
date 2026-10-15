@@ -10,6 +10,10 @@ role is judged on scores rather than on a reading of its text.
 
 ### Requirement: A case declares its fixture, its step, its role and what it expects
 
+This requirement describes a review case; a planning case, whose step is
+`plan.write`, is declared as the `planning-evaluation` capability says,
+and the suite loads both kinds from `evals/cases/`.
+
 The repository SHALL hold an evaluation suite under `evals/cases/`, one
 directory per case, named by the case's id. A case holds:
 
@@ -135,6 +139,13 @@ category, when a category has no term or a key is unknown.
 - **WHEN** the case is loaded
 - **THEN** it is refused, and the message names `sqli`
 
+#### Scenario: Review and planning cases side by side
+
+- **GIVEN** `evals/cases/` holding review cases with `base/` and
+  `change/`, and planning cases holding only a `case.yaml`
+- **WHEN** the suite loads its cases
+- **THEN** both kinds load, each checked by the rules of its kind
+
 ### Requirement: The suite covers every reviewing role
 
 The suite SHALL hold, for each expert (`security`, `privacy`,
@@ -177,14 +188,17 @@ Python case.
 `codev-evals run` SHALL, for each selected case, in a new directory
 outside the repository:
 
-- create a git repository whose branch `main` holds `base/` with codev
-  initialized (configuration and skills, non-interactive), and a branch
-  holding `change/` on top of it, both committed;
-- write the change's `change.yaml` so that every reviewing role serving
+- for a review case, create a git repository whose branch `main` holds
+  `base/` with codev initialized (configuration and skills,
+  non-interactive), and a branch holding `change/` on top of it, both
+  committed; a planning case builds its fixture as the
+  `planning-evaluation` capability says;
+- for a review case, write the change's `change.yaml` so that every reviewing role serving
   the case's step other than the evaluated one is set to `never` — the
   evaluated role reviews alone;
-- run Claude Code non-interactively in that directory with a prompt that
-  names the skill step to run and the evaluation mode: at
+- run Claude Code non-interactively in that directory, reading the stream
+  of events it prints rather than its final document alone, with a
+  prompt that names the skill step to run and the evaluation mode: at
   `plan.challenge` and `code.review`, write the findings to the review
   record and leave every finding `open`, without the author's answer and
   without modifying any other file; at `plan.trace`, fix the gaps in the
@@ -205,8 +219,21 @@ outside the repository:
   reports it — the cost, the duration and the API duration, the number
   of turns, the input tokens read without the cache, written to the
   cache and read from the cache, and the output tokens, each summed over
-  every model the run used, the models it used, and the number of
-  permission denials — or the error that stopped it. A measure Claude
+  every model the run used, the models it used, the number of
+  permission denials, the number of tool calls, and how many of them
+  came before the run first wrote a file under `_codev/changes/` (its
+  orientation; absent when it wrote none), and every call to the model —
+  or the error that stopped it. For each call, the observation SHALL hold
+  the tokens it wrote to the cache, read from it, read without it and
+  produced, the tool calls it asked for, and where the tokens it wrote
+  came from: each tool result returned since the previous call, and the
+  previous call's own output, gets a share of the call's cache writes in
+  proportion to its length, under its source — `skill` (a file under
+  `.claude/skills/`), `codev <subcommand>` (a shell command that runs
+  codev), `file` (another file read), `search` (a search over files),
+  `shell` (another shell command), `edit` (the result of a write or an
+  edit), `output` (the model's previous output) — and the first call's
+  writes go to `prompt` (Claude Code's own prompt and the request). A measure Claude
   Code does not report is recorded as absent, never as zero.
 
 With `--repeat N` (default 1, at least 1), the runner SHALL run each
@@ -217,11 +244,18 @@ any case runs, naming the flag.
 
 The model SHALL be the one named by the environment variable
 `CODEV_EVAL_MODEL`, else Claude Code's default. Each case SHALL run under
-a budget (`CODEV_EVAL_BUDGET_USD`, default 3) and a timeout
-(`CODEV_EVAL_TIMEOUT_SECS`, default 600). Before any case runs, the
+a budget (`CODEV_EVAL_BUDGET_USD`, default 3 for a review case) and a
+timeout (`CODEV_EVAL_TIMEOUT_SECS`, default 600 for a review case); a
+planning case's defaults are given by the `planning-evaluation`
+capability. Before any case runs, the
 runner SHALL check that `claude`, `git` and the `codev` binary can be
 executed, and exit with code 2 naming the missing one otherwise. A case
-that fails or times out is recorded as an error; the others still run.
+that fails or times out is recorded as an error; the others still run —
+except when Claude Code reports that the account's usage limit is reached:
+the runner then records that run as an error, starts no other run, lets
+the runs already started end, and exits with 1 saying the limit was
+reached, so that running it again on the same directory resumes where it
+stopped.
 
 #### Scenario: Only the evaluated role reviews
 
@@ -304,6 +338,15 @@ that fails or times out is recorded as an error; the others still run.
 - **THEN** its tokens and turns are absent, not zero, and the case is in
   error
 
+#### Scenario: The account's usage limit is reached
+
+- **GIVEN** a run of 40 cases, one job at a time, whose third run ends
+  with Claude Code reporting "You've hit your session limit"
+- **WHEN** the runner records it
+- **THEN** that run is recorded as an error, no fourth run starts, and the
+  runner exits with 1 saying the usage limit was reached
+- **AND** running the same command again runs that case and the 37 others
+
 #### Scenario: Each case repeated
 
 - **GIVEN** two selected cases
@@ -315,6 +358,29 @@ that fails or times out is recorded as an error; the others still run.
 - **WHEN** the user runs `codev-evals run --repeat 0`
 - **THEN** it exits with code 2 before setting up any case, and the
   message names `--repeat`
+
+#### Scenario: Tool calls and orientation are recorded
+
+- **GIVEN** a run whose events hold 27 tool calls, the twelfth of which
+  writes `_codev/changes/add-search/proposal.md`
+- **WHEN** its observation is recorded
+- **THEN** it holds 27 tool calls and an orientation of 11
+
+#### Scenario: Where a call's tokens come from
+
+- **GIVEN** a call that wrote 6,000 tokens to the cache after two tool
+  results: `codev roles --at code.review --json`, 9,000 characters long,
+  and a read of `src/users.ts`, 3,000 characters long, the previous call
+  having produced no text
+- **WHEN** its observation is recorded
+- **THEN** the call attributes 4,500 tokens to `codev roles` and 1,500 to
+  `file`
+
+#### Scenario: A run that writes nothing under the changes
+
+- **GIVEN** a run whose agent writes no file under `_codev/changes/`
+- **WHEN** its observation is recorded
+- **THEN** its orientation is absent, not zero
 
 ### Requirement: A finding matches an expected finding by role, location and category
 
@@ -541,10 +607,17 @@ Each case's outcome and findings SHALL be given per repetition.
 
 The report SHALL also give what the runs consumed: per case, the median
 over its repetitions of the cost, the duration, the API duration, the
-turns, each kind of token and the permission denials; per role and for
-the whole suite, the sum of those medians. A measure absent from a
+turns, each kind of token, the permission denials, the input per call
+(the tokens written to and read from the cache and read without it,
+divided by the calls) and the output per call; per role and for
+the whole suite, the sum of those medians, except the input and the
+output per call, which do not add up: there, the cases' medians weighted
+by their calls. A measure absent from a
 repetition is left out of its median; a measure absent from every
-repetition is shown as `—`.
+repetition is shown as `—`. It SHALL give, for the whole suite and per
+step, where the tokens go: each source with the sum of its per-case
+median tokens written to the cache and its share of the cost they make,
+ranked from the most to the least costly.
 
 A role SHALL fail when the median of its recall is under `--min-recall`
 (default 0.5), the median of its false positives exceeds
@@ -553,7 +626,8 @@ validity is under `--min-evidence` (default 0.8); each threshold
 can also be set by `CODEV_EVAL_MIN_RECALL`,
 `CODEV_EVAL_MAX_FALSE_POSITIVES` and `CODEV_EVAL_MIN_EVIDENCE`, the flag
 winning. The command SHALL exit with 0 when every role passes and no
-repetition of a case is in error, 1 otherwise, naming each failing role
+repetition of a case is in error — a planning run that created no change
+(`no-plan`) counting as in error — 1 otherwise, naming each failing role
 and measure and each case in error with its repetition, and 2 on
 an invalid threshold, an invalid case or a missing tool. With a single
 repetition, the measures and the verdict SHALL be those of that run.
@@ -608,6 +682,20 @@ repetition, the measures and the verdict SHALL be those of that run.
 - **THEN** the case shows 320 000 tokens read from the cache, and the
   suite's total counts 320 000 for it
 
+#### Scenario: Where the tokens go
+
+- **GIVEN** runs whose calls attribute, per case and as medians, 60,000
+  tokens to `skill`, 25,000 to `codev roles` and 15,000 to `file`
+- **WHEN** the report is written
+- **THEN** its sources table lists `skill`, then `codev roles`, then
+  `file`, with their tokens and their share of the cost
+
+#### Scenario: A planning run that planned nothing
+
+- **GIVEN** observations where one planning run created no change
+- **WHEN** the user runs `codev-evals score <dir>`
+- **THEN** it exits with 1, naming the case and its repetition
+
 ### Requirement: Recorded runs are scored again without a model, and resumed
 
 Each repetition's observation SHALL be written as
@@ -622,7 +710,9 @@ error, unless `--rerun` is given — a repetition recorded in error is run
 again — so that an interrupted run is resumed and a run asked for more
 repetitions than recorded runs only the missing ones; it SHALL refuse,
 with code 2 and naming both models, to resume a directory recorded with
-another model than the one asked. An observation whose format marker
+another model than the one asked, and, naming both versions, one recorded
+with another version of Claude Code than the one installed, so that runs
+added to a directory are never credited to another version. An observation whose format marker
 is above the one the runner knows SHALL be refused with a message naming
 the case. An observation of an earlier format SHALL be read, the measures
 it does not hold being absent.
@@ -676,6 +766,14 @@ it does not hold being absent.
 - **GIVEN** an `observed.json` with format 3
 - **WHEN** the user runs `codev-evals score <dir>`
 - **THEN** it exits with 2, naming the case and the format
+
+#### Scenario: Resuming with another Claude Code
+
+- **GIVEN** an output directory whose `run.json` records Claude Code
+  2.1.289, and Claude Code 2.1.301 installed
+- **WHEN** the user runs `codev-evals run --out <dir>`
+- **THEN** it exits with code 2 before running any case, naming both
+  versions
 
 ### Requirement: A committed baseline is the reference for role changes
 
@@ -746,7 +844,13 @@ printing that the evaluations were skipped and why.
 modifying a file of `assets/roles/` runs the evaluations and pastes the
 output of `codev-evals compare --quality-only` against the baseline;
 that a pull request meant to reduce what the skills consume pastes the
-output of `codev-evals compare` against the baseline; that the candidate
+output of `codev-evals compare` against the baseline — the same quality
+of answer, fewer tokens; that any other pull request that changes what a
+skill does — a file of `assets/workflows/`, or the JSON a skill reads,
+`crates/codev-cli/src/contract.rs` — pastes the output of
+`codev-evals compare --quality-only`, which still reports what its runs
+consume; and that both run on the cases of the steps the pull request
+touches (`--step`); that the candidate
 of a comparison runs with at least three repetitions (`--repeat 3`); that
 a run confines the agent in Claude Code's sandbox, and what the sandbox
 needs on Linux; and that recording the baseline
@@ -761,7 +865,8 @@ change is judged with `codev-evals compare`.
 - **WHEN** the test suite of `codev-evals` runs
 - **THEN** it fails if one of them does not name `evals/baseline` or
   `codev-evals compare`, if a contributing guide does not name
-  `assets/roles/`, `codev-evals -- docs` or `--repeat 3`
+  `assets/roles/`, `assets/workflows/`, `codev-evals -- docs` or
+  `--repeat 3`
 
 #### Scenario: A guide that forgets the rule
 
@@ -769,6 +874,13 @@ change is judged with `codev-evals compare`.
   `assets/roles/`
 - **WHEN** the documentation check runs
 - **THEN** it fails and names `CONTRIBUTING.fr.md`
+
+#### Scenario: A guide that forgets the skills
+
+- **GIVEN** an English contributing guide that does not name
+  `assets/workflows/`
+- **WHEN** the documentation check runs
+- **THEN** it fails and names `CONTRIBUTING.md` and `assets/workflows/`
 
 ### Requirement: A reliability chapter is generated from the committed baseline
 
@@ -794,6 +906,14 @@ and the French books from the committed baseline's `report.json` and
   icon;
 - the thresholds, and, when a role fails one, a statement naming how
   many roles fail and on which measure;
+- when the baseline holds planning cases, the planning figures: the
+  median, minimum and maximum of the primary recall, the collateral
+  recall, the probable duplicates, the decisions ignored and the invalid
+  plans;
+- what a run of the suite consumes: the cost, the input and output per
+  call, and where the tokens go — each source with its tokens and its
+  share of the cost, ranked, as a table and a chart drawn as the other
+  charts are;
 - the limits of the measure — among them that each score is the median
   of the repetitions, whose number it names — how to run the suite, and
   a link to `evals/baseline` in the repository.
@@ -862,7 +982,19 @@ baseline.
 
 #### Scenario: A report of another run
 
-- **GIVEN** a baseline directory whose `report.json
+- **GIVEN** a baseline directory whose `report.json` records the date
+  2026-10-13 and whose `run.json` records 2026-11-02
+- **WHEN** the user runs `codev-evals docs`
+- **THEN** it exits with 2, names `report.json` and `run.json`, and
+  writes no page
+
+#### Scenario: The planning figures and the sources on the page
+
+- **GIVEN** a baseline with planning cases whose calls attribute most of
+  the cost to `skill`
+- **WHEN** the page is generated
+- **THEN** it gives the planning figures, and its sources table and chart
+  list `skill` first, in both languages
 ### Requirement: Two runs are compared, with a verdict on quality and consumption
 
 `codev-evals compare <baseline> <candidate>` SHALL read two output
@@ -879,8 +1011,13 @@ compared.
 The verdict SHALL fail on quality when, for a role, the candidate's
 median recall is under the baseline's minimum recall, its median false
 positives are above the baseline's maximum, or its median evidence
-validity is under the baseline's minimum; a measure without a value in
-either run decides nothing. A run's total cost is the sum, over the
+validity is under the baseline's minimum; and, for the planning step
+`plan.write`, when the candidate's median recall of the primary
+requirements is under the baseline's minimum, or its median of probable
+duplicates, of decisions ignored or of plans that do not validate is
+above the baseline's maximum. A measure without a value in
+either run decides nothing. The report SHALL give the planning measures
+in a section of their own, next to the roles. A run's total cost is the sum, over the
 compared cases, of each case's median cost. It SHALL fail on consumption
 when the candidate's total cost is not lower than the baseline's floor —
 the sum, over the compared cases, of each case's lowest cost over its
@@ -891,6 +1028,15 @@ run; `--quality-only` SHALL leave
 consumption out of the verdict while still reporting it. The duration
 SHALL be reported and SHALL never decide. A repetition in error in either
 run SHALL fail the verdict, naming the run, the case and the repetition.
+
+The report SHALL also compare the input per call and the output per call
+of both runs, and where the tokens go, source by source, with each
+relative change. The output never decides: it carries the model's
+reasoning, which the quality measures guard. The report SHALL name every
+quality measure on which the candidate's median does better than the
+best repetition of the baseline — a recall or an evidence validity above
+its maximum, false positives, duplicates, decisions ignored or invalid
+plans under its minimum — as quality improved.
 
 The command SHALL exit with 0 when the verdict passes, 1 when it fails,
 naming each failing role and measure with both values, and each cause on
@@ -999,8 +1145,27 @@ same time, and say so when either differs.
 - **GIVEN** a baseline and a candidate that share no case
 - **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
 - **THEN** it exits with 2 and says no case is in common
-` records the date
-  2026-10-13 and whose `run.json` records 2026-11-02
-- **WHEN** the user runs `codev-evals docs`
-- **THEN** it exits with 2, names `report.json` and `run.json`, and
-  writes no page
+
+#### Scenario: Quality improved
+
+- **GIVEN** a baseline whose `skeptic` has from 3 to 6 false positives,
+  and a candidate whose median is 2
+- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **THEN** the report says the quality of `skeptic` improved on false
+  positives, from 3 at best to 2
+
+#### Scenario: Lighter calls
+
+- **GIVEN** a candidate whose input per call falls from 38,000 to 31,000
+  tokens and whose `skill` source falls by half
+- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **THEN** the report shows both changes, the input per call at −18 %
+  and the `skill` source at −50 %
+
+#### Scenario: A plan that misses more requirements
+
+- **GIVEN** a baseline whose planning cases have a primary recall from
+  0.60 to 0.75, and a cheaper candidate whose median is 0.50
+- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **THEN** it exits with 1, naming `plan.write`, the recall 0.50 and the
+  baseline's minimum 0.60
