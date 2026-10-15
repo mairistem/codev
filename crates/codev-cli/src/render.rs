@@ -430,6 +430,19 @@ pub fn instructions(instructions: &Instructions) -> String {
         }
     }
 
+    if !instructions.related.is_empty() {
+        let _ = writeln!(out);
+        let _ = writeln!(out, "Existing requirements this change likely touches:");
+        for r in &instructions.related {
+            let _ = writeln!(out, "  {}::{} — {}", r.capability, r.requirement, r.excerpt);
+        }
+        let _ = writeln!(
+            out,
+            "  Read one with `codev show <capability>::<requirement>`. A requirement the change \
+             alters is modified, in a MODIFIED block copied from its spec, not added again."
+        );
+    }
+
     for (title, blocks) in [
         ("Project context", &instructions.context),
         ("Rules for this artifact", &instructions.rules),
@@ -1432,6 +1445,7 @@ apply:
                 path: PathBuf::from("_codev/decisions/0001-foundation.md"),
                 origin: "project".into(),
             }],
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -1459,6 +1473,7 @@ apply:
             dependencies: Vec::<Dependency>::new(),
             unlocks: Vec::new(),
             decisions: Vec::new(),
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -1738,10 +1753,42 @@ apply:
             dependencies: Vec::new(),
             unlocks: vec!["specs".into()],
             decisions: Vec::new(),
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
         }
+    }
+
+    #[test]
+    fn the_human_instructions_list_the_related_requirements() {
+        let mut instr = bare_instructions();
+        instr.artifact_id = "design".into();
+        instr.dependencies = vec![codev_engine::instructions::Dependency {
+            id: "proposal".into(),
+            path: std::path::PathBuf::from("/p/_codev/changes/add-auth/proposal.md"),
+            done: true,
+        }];
+        instr.related = vec![codev_engine::search::RelatedRequirement {
+            capability: "decisions".into(),
+            requirement: "Creating a decision through the CLI".into(),
+            excerpt: "`codev decision new` SHALL create a decision.".into(),
+        }];
+        let rendered = super::instructions(&instr);
+        let read = rendered.find("Read before writing:").unwrap();
+        let section = rendered
+            .find("Existing requirements this change likely touches:")
+            .expect("the section");
+        assert!(read < section, "{rendered}");
+        assert!(rendered.contains(
+            "  decisions::Creating a decision through the CLI — `codev decision new` SHALL create a decision."
+        ));
+        assert!(
+            rendered.contains("`codev show <capability>::<requirement>`"),
+            "{rendered}"
+        );
+        assert!(rendered.contains("not added again"), "{rendered}");
+        assert!(!super::instructions(&bare_instructions()).contains("Existing requirements"));
     }
 
     #[test]

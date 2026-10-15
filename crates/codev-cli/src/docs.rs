@@ -521,7 +521,7 @@ mod tests {
     #[test]
     fn both_languages_document_search_and_show() {
         for lang in [Lang::En, Lang::Fr] {
-            for path in ["reference/cli.md", "reference/json-output.md", "skills.md"] {
+            for path in ["reference/cli.md", "reference/json-output.md"] {
                 let source = lang
                     .chapters()
                     .iter()
@@ -535,6 +535,32 @@ mod tests {
                     );
                 }
             }
+        }
+    }
+
+    #[test]
+    fn both_languages_document_the_related_requirements() {
+        for lang in [Lang::En, Lang::Fr] {
+            let chapter = |path: &str| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .map(|(_, source)| *source)
+                    .unwrap_or_else(|| panic!("{lang:?}: no chapter {path}"))
+            };
+            assert!(
+                chapter("reference/json-output.md").contains("| `related` |"),
+                "{lang:?}"
+            );
+            assert!(
+                chapter("reference/cli.md").contains("`spec_unreadable`"),
+                "{lang:?}"
+            );
+            let skills = chapter("skills.md");
+            assert!(
+                !skills.contains("codev search"),
+                "{lang:?}: skills.md still says the skill searches"
+            );
         }
     }
 

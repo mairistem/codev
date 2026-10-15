@@ -567,6 +567,14 @@ architecture decisions in effect, and the artifact's [role](../roles.md)
 with its criteria. Without `ARTIFACT`, it picks the first
 artifact that is ready to write. It writes no file.
 
+Once the change's proposal is written, the instructions of the artifacts
+that require it directly — `specs` and `design` — also list the existing
+requirements the change likely touches, ranked against the proposal's
+`Why` and `What Changes`, at most 10, each with an excerpt, and say that
+one is read with `codev show <capability>::<requirement>` and that a
+requirement the change alters is modified rather than added again. A spec
+that cannot be read is left out with a warning `spec_unreadable`.
+
 For an artifact disabled by `skip_specs`, it says the artifact must not be
 created, with a warning `artifact_skipped`. It fails with `unknown_artifact`
 when `ARTIFACT` is not an artifact of the change's schema, with

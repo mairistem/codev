@@ -145,14 +145,13 @@ conversation — the user may have edited the files in the meantime.
 roles of this step once, before the first artifact, and apply the
 investigator's criteria before writing each one.
 
-Find the existing behavior the request touches with `codev search
-<words>`, the words in the language of the specs whatever the request's
-language; search again with other words when the results miss its
-subject. Read each requirement it names with `codev show
-<capability>::<requirement>`, and a whole `spec.md` only when the change
-rewrites much of it. The search points to where to read; it never
-replaces reading: read a requirement before you modify it. With no specs
-yet, skip the search; `codev list --specs` names every capability.
+Once the proposal is written, the instructions list the existing
+requirements the change likely touches (`related`). Read each one before
+writing the delta specs and the design, and modify, in a `MODIFIED` block
+copied whole from its spec, every one the change alters, rather than add a
+requirement beside it. The list is a starting point ranked by relevance,
+not a complete one: a requirement it does not name may still be
+concerned. With no listed requirement, work from the request and the code.
 
 **d. Write the file**, using `template` as its structure. Then check that it
 exists at the expected location.

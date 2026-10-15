@@ -433,6 +433,13 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
       "origin": "project"
     }
   ],
+  "related": [
+    {
+      "capability": "decisions",
+      "requirement": "Creating a decision through the CLI",
+      "excerpt": "`codev decision new <title>` SHALL create a new ADR in the project…"
+    }
+  ],
   "skipped": false,
   "role": {
     "id": "architect",
@@ -462,6 +469,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 | `resolvedOutputPath` | Où écrire ; peut être un motif glob comme `…/specs/**/*.md` |
 | `instruction`, `template` | Issus du schéma ; `null` lorsque le schéma n'en définit pas |
 | `language` | La langue des artefacts, `en` par défaut |
+| `related` | Les exigences existantes que le change touche probablement, classées par rapport au `Why` et au `What Changes` de la proposition, au plus 10, chacune avec `capability`, `requirement` et `excerpt` — pour les artefacts qui requièrent directement la proposition (`specs`, `design`), une fois celle-ci écrite ; un tableau vide sinon |
 | `context`, `rules` | Blocs ordonnés de la source la plus générale jusqu'au projet, chacun avec son `origin` (`project`, `path:<path>` ou `git:<url>`) |
 | `dependencies` | Les artefacts dont celui-ci dépend, avec leur chemin et leur état d'achèvement |
 | `unlocks` | Les artefacts qui deviennent rédigeables dès que celui-ci existe |

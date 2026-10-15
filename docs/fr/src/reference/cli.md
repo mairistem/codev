@@ -594,6 +594,15 @@ commande liste aussi les décisions d'architecture en vigueur, et le
 `ARTIFACT`, elle choisit le premier artefact prêt à être rédigé. Elle n'écrit
 aucun fichier.
 
+Une fois la proposition du change écrite, les instructions des artefacts qui
+la requièrent directement — `specs` et `design` — listent aussi les exigences
+existantes que le change touche probablement, classées par rapport au `Why`
+et au `What Changes` de la proposition, au plus 10, chacune avec un extrait,
+et indiquent qu'on en lit une avec `codev show <capacité>::<exigence>` et
+qu'une exigence que le change altère se modifie au lieu d'être ajoutée de
+nouveau. Une spec illisible est écartée avec un avertissement
+`spec_unreadable`.
+
 Pour un artefact désactivé par `skip_specs`, elle indique qu'il ne doit pas
 être créé, avec un avertissement `artifact_skipped`. Elle échoue avec
 `unknown_artifact` lorsque `ARTIFACT` n'est pas un artefact du schéma du

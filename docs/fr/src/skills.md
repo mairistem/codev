@@ -83,12 +83,10 @@ ce qu'elle y trouve, et signale les contradictions avec les specs existantes
 au lieu de les trancher seule. Elle rédige la prose dans la
 [langue des artefacts](guides/artifact-language.md) du projet.
 
-Pour trouver le comportement existant que touche une demande, elle lance
-`codev search` avec des mots dans la langue de vos specs, puis ne lit que
-les exigences que les résultats désignent, avec
-`codev show <capacité>::<exigence>` — la spec entière seulement quand le
-change en réécrit une grande partie. La recherche indique où lire : la
-skill lit toujours une exigence avant de la modifier.
+Une fois la proposition écrite, les instructions qu'elle lit listent les
+exigences existantes que le change touche probablement. La skill les lit et
+modifie celles que le change altère au lieu d'en ajouter de nouvelles à
+côté ; la liste est un point de départ, pas une liste complète.
 
 La demande n'autorise que la planification, même si elle dit « construis » ou
 « corrige » : la skill s'arrête une fois les artefacts rédigés et attend votre

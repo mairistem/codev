@@ -227,6 +227,38 @@ pub fn corpus_lang(specs: impl IntoIterator<Item = Lang>) -> Lang {
     }
 }
 
+/// The language to stem in: the project's prose language (`language:` in
+/// the configuration) when the catalog knows it, else the language of the
+/// specs' structural keywords — which the skills keep in English whatever
+/// the prose, hence the prose first.
+pub fn stemming_lang(prose: &str, keywords: impl IntoIterator<Item = Lang>) -> Lang {
+    Lang::all()
+        .find(|l| l.code() == prose)
+        .unwrap_or_else(|| corpus_lang(keywords))
+}
+
+/// The text of a proposal to rank the existing requirements against: its
+/// `Why` and `What Changes` sections, its whole text when it has neither.
+pub fn proposal_query(proposal: &str) -> String {
+    let mut out = String::new();
+    let mut keep = false;
+    for line in proposal.lines() {
+        if let Some(heading) = line.strip_prefix("## ") {
+            keep = matches!(heading.trim(), "Why" | "What Changes");
+            continue;
+        }
+        if keep {
+            out.push_str(line);
+            out.push('\n');
+        }
+    }
+    if out.trim().is_empty() {
+        proposal.to_string()
+    } else {
+        out
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -370,5 +402,22 @@ Le système DOIT la sceller.\n\n#### Scénario : Sceller\n\n- **QUAND** on accep
         let spec = crate::parser::parse_spec(source).value;
         assert_eq!(spec.lang, fr());
         assert_eq!(corpus_lang([spec.lang, spec.lang]), fr());
+    }
+
+    #[test]
+    fn the_prose_language_wins_over_the_keywords() {
+        assert_eq!(stemming_lang("fr", [Lang::EN, Lang::EN]), fr());
+        assert_eq!(stemming_lang("en", [fr(), fr()]), Lang::EN);
+        // A language the catalog does not know: the keywords decide.
+        assert_eq!(stemming_lang("xx", [fr()]), fr());
+    }
+
+    #[test]
+    fn the_query_is_the_why_and_what_changes() {
+        let proposal = "# Proposal: X\n\n## Why\n\nDrafts.\n\n## What Changes\n\n- a draft status\n\n## Impact\n\nThe CLI.\n";
+        let query = proposal_query(proposal);
+        assert!(query.contains("Drafts.") && query.contains("a draft status"));
+        assert!(!query.contains("The CLI."));
+        assert_eq!(proposal_query("Just text."), "Just text.");
     }
 }

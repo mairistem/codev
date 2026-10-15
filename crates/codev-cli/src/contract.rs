@@ -546,11 +546,24 @@ pub struct InstructionsV1 {
     /// artifact, present but empty for the others. The consumer tests
     /// `decisions.length` without a conditional branch.
     pub decisions: Vec<DecisionRefV1>,
+    /// The existing requirements the change likely touches, the most
+    /// relevant first: for the artifacts that require the proposal
+    /// directly, once it is written; empty otherwise. Additive in v1.
+    pub related: Vec<RelatedRequirementV1>,
     pub skipped: bool,
     /// The role that owns the artifact; `null` when the schema declares
     /// none. Additive in v1.
     pub role: Option<RoleV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// An existing requirement a change likely touches.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelatedRequirementV1 {
+    pub capability: String,
+    pub requirement: String,
+    pub excerpt: String,
 }
 
 /// A role, as `codev roles` and the `role` field of `codev instructions`
@@ -903,6 +916,15 @@ impl From<&Instructions> for InstructionsV1 {
                     tags: d.tags.clone(),
                     path: json_path(&d.path),
                     origin: d.origin.clone(),
+                })
+                .collect(),
+            related: instructions
+                .related
+                .iter()
+                .map(|r| RelatedRequirementV1 {
+                    capability: r.capability.clone(),
+                    requirement: r.requirement.clone(),
+                    excerpt: r.excerpt.clone(),
                 })
                 .collect(),
             skipped: instructions.skipped,
@@ -1869,6 +1891,7 @@ apply:
                 path: PathBuf::from("_codev\\decisions\\0001-foundation.md"),
                 origin: "project".into(),
             }],
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -2216,6 +2239,7 @@ apply:
             dependencies: Vec::new(),
             unlocks: Vec::new(),
             decisions: Vec::new(),
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -2564,6 +2588,23 @@ apply:
         let failure = failure(search_shape("seal"), "search_query_empty", "empty");
         assert_eq!(failure["results"], serde_json::json!([]));
         assert_eq!(failure["status"][0]["code"], "search_query_empty");
+    }
+
+    #[test]
+    fn the_instructions_document_carries_related() {
+        let mut instructions = bare_instructions();
+        instructions.related = vec![codev_engine::search::RelatedRequirement {
+            capability: "decisions".into(),
+            requirement: "Listing decisions".into(),
+            excerpt: "It lists them.".into(),
+        }];
+        let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
+        assert_eq!(
+            json["related"],
+            serde_json::json!([{"capability": "decisions", "requirement": "Listing decisions", "excerpt": "It lists them."}])
+        );
+        let empty = serde_json::to_value(InstructionsV1::from(&bare_instructions())).unwrap();
+        assert_eq!(empty["related"], serde_json::json!([]));
     }
 
     #[test]

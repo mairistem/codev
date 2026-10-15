@@ -1503,6 +1503,7 @@ fn instructions_shape(language: &str) -> serde_json::Value {
         "dependencies": [],
         "unlocks": [],
         "decisions": [],
+        "related": [],
         "skipped": false,
         "role": null,
     })

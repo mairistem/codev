@@ -8,13 +8,13 @@ use codev_core::Layout;
 use codev_core::decisions::DecisionStatus;
 use codev_core::parser::parse_spec;
 use codev_core::search::{
-    Document, SearchError, corpus_lang, find_requirement, rank, requirement_document,
-    requirement_source,
+    Document, SearchError, find_requirement, proposal_query, rank, requirement_document,
+    requirement_source, stemming_lang,
 };
 
 use crate::config::ResolvedConfig;
 use crate::decisions::{self, Origin};
-use crate::error::{EngineError, Result};
+use crate::error::{EngineError, Result, Warning};
 use crate::ports::{Env, FileSystem};
 use crate::specs;
 
@@ -81,35 +81,38 @@ fn excerpt(text: &str) -> String {
     format!("{}…", cut.trim_end())
 }
 
-/// Ranks the requirements of the main specs and the decisions of the index
-/// against `query`, and with `archive` the archived changes apart; at most
-/// `limit` of each.
-pub fn search(
-    fs: &dyn FileSystem,
-    env: &dyn Env,
-    layout: &Layout,
-    config: &ResolvedConfig,
-    query: &str,
-    limit: usize,
-    archive: bool,
-) -> Result<SearchResult> {
-    if !(1..=MAX_LIMIT).contains(&limit) {
-        return Err(EngineError::SearchLimitInvalid {
-            limit,
-            max: MAX_LIMIT,
-        });
-    }
+/// The requirements of the main specs, as documents and as results.
+struct Corpus {
+    documents: Vec<Document>,
+    hits: BTreeMap<String, Hit>,
+    /// The language of each spec's structural keywords.
+    langs: Vec<codev_core::keywords::Lang>,
+    /// The specs that could not be read, when reading leniently.
+    unreadable: Vec<String>,
+}
+
+/// Reads every main spec. `lenient`: a spec that cannot be read is left
+/// out and named in `unreadable`; otherwise it is an error.
+fn load_requirements(fs: &dyn FileSystem, layout: &Layout, lenient: bool) -> Result<Corpus> {
     let mut documents = Vec::new();
     let mut hits: BTreeMap<String, Hit> = BTreeMap::new();
     let mut langs = Vec::new();
+    let mut unreadable = Vec::new();
     for capability in specs::list(fs, layout) {
         let path = layout.spec_file(&capability);
-        let source = fs
-            .read_to_string(&path)
-            .map_err(|e| EngineError::Unreadable {
-                path: path.clone(),
-                reason: e.to_string(),
-            })?;
+        let source = match fs.read_to_string(&path) {
+            Ok(source) => source,
+            Err(_) if lenient => {
+                unreadable.push(capability);
+                continue;
+            }
+            Err(e) => {
+                return Err(EngineError::Unreadable {
+                    path: path.clone(),
+                    reason: e.to_string(),
+                });
+            }
+        };
         let spec = parse_spec(&source).value;
         langs.push(spec.lang);
         for requirement in &spec.requirements {
@@ -134,7 +137,100 @@ pub fn search(
             documents.push(document);
         }
     }
-    let lang = corpus_lang(langs);
+    Ok(Corpus {
+        documents,
+        hits,
+        langs,
+        unreadable,
+    })
+}
+
+/// An existing requirement a change likely touches.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RelatedRequirement {
+    pub capability: String,
+    pub requirement: String,
+    pub excerpt: String,
+}
+
+/// The requirements of the main specs most relevant to a proposal's text,
+/// at most `limit`. Never fails: a proposal with nothing to rank gives an
+/// empty list, and a spec that cannot be read is left out, named in a
+/// warning.
+pub fn related_requirements(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    language: &str,
+    proposal: &str,
+    limit: usize,
+) -> (Vec<RelatedRequirement>, Vec<Warning>) {
+    let Ok(Corpus {
+        documents,
+        mut hits,
+        langs,
+        unreadable,
+    }) = load_requirements(fs, layout, true)
+    else {
+        return (Vec::new(), Vec::new());
+    };
+    let warnings = unreadable
+        .iter()
+        .map(|capability| {
+            Warning::new(
+                "spec_unreadable",
+                format!(
+                    "the spec `{capability}` cannot be read: it is left out of the requirements \
+                     this change likely touches"
+                ),
+            )
+        })
+        .collect();
+    let lang = stemming_lang(language, langs);
+    let ranked = rank(&documents, &proposal_query(proposal), lang).unwrap_or_default();
+    let related = ranked
+        .into_iter()
+        .take(limit)
+        .filter_map(|r| match hits.remove(&r.id) {
+            Some(Hit::Requirement {
+                capability,
+                requirement,
+                excerpt,
+            }) => Some(RelatedRequirement {
+                capability,
+                requirement,
+                excerpt,
+            }),
+            _ => None,
+        })
+        .collect();
+    (related, warnings)
+}
+
+/// Ranks the requirements of the main specs and the decisions of the index
+/// against `query`, and with `archive` the archived changes apart; at most
+/// `limit` of each.
+pub fn search(
+    fs: &dyn FileSystem,
+    env: &dyn Env,
+    layout: &Layout,
+    config: &ResolvedConfig,
+    query: &str,
+    limit: usize,
+    archive: bool,
+) -> Result<SearchResult> {
+    if !(1..=MAX_LIMIT).contains(&limit) {
+        return Err(EngineError::SearchLimitInvalid {
+            limit,
+            max: MAX_LIMIT,
+        });
+    }
+    let Corpus {
+        mut documents,
+        mut hits,
+        langs,
+        ..
+    } = load_requirements(fs, layout, false)?;
+    let lang = stemming_lang(&config.language, langs);
 
     let index = decisions::index(fs, env, layout, config)?;
     let in_effect: BTreeSet<String> = index.in_effect.iter().map(|q| q.as_str()).collect();
@@ -547,13 +643,14 @@ mod tests {
 
     #[test]
     fn search_in_a_french_project_matches_accentless_plurals() {
-        let source = "# Décisions\n\n## Objectif\n\nLes décisions.\n\n## Exigences\n\n\
-### Exigence : Une décision acceptée est scellée\n\nLe système DOIT sceller une décision acceptée.\n\n\
-#### Scénario : Sceller\n\n- **QUAND** on accepte\n- **ALORS** il scelle\n\n\
-### Exigence : Lister\n\nLe système DOIT lister les fichiers.\n\n\
-#### Scénario : Lister\n\n- **QUAND** on demande\n- **ALORS** il liste\n";
+        // English keywords, as the skills write them, French prose.
+        let source = "# Décisions\n\n## Purpose\n\nLes décisions.\n\n## Requirements\n\n\
+### Requirement: Une décision acceptée est scellée\n\nLe système SHALL sceller une décision acceptée.\n\n\
+#### Scenario: Sceller\n\n- **WHEN** on accepte\n- **THEN** il scelle\n\n\
+### Requirement: Lister\n\nLe système SHALL lister les fichiers.\n\n\
+#### Scenario: Lister\n\n- **WHEN** on demande\n- **THEN** il liste\n";
         let fs = MemoryFileSystem::new()
-            .with_file("/p/_codev/config.yaml", "")
+            .with_file("/p/_codev/config.yaml", "language: fr\n")
             .with_file("/p/_codev/specs/decisions/spec.md", source);
         let result = run(&fs, "decisions acceptees", 10, false).unwrap();
         assert_eq!(result.language, "fr");
