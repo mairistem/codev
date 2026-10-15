@@ -41,7 +41,7 @@
 
 ## 7. Repair of the main spec
 
-- [ ] 7.0 Through this change's delta, restore the scenario "A report of another run" that the archive of `measure-consumption` cut and glued at the end of "No case in common" in `_codev/specs/role-evaluation/spec.md`; verified after the sync by the new suite test `the_role_evaluation_spec_has_no_cut_scenario` (every scenario of the main spec has a GIVEN or WHEN and a THEN, and no line starts with a stray backquote). The merge defect itself is fixed in its own change
+- [x] 7.0 Through this change's delta, restore the scenario "A report of another run" that the archive of `measure-consumption` cut and glued at the end of "No case in common" in `_codev/specs/role-evaluation/spec.md`; verified after the sync by the new suite test `the_role_evaluation_spec_has_no_cut_scenario` (every scenario of the main spec has a GIVEN or WHEN and a THEN, and no line starts with a stray backquote). The merge defect itself is fixed in its own change
 
 ## 8. Checks
 

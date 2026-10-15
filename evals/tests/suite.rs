@@ -423,3 +423,47 @@ fn no_request_copies_its_proposal() {
         "requests copied from an archived proposal"
     );
 }
+
+/// The main spec of role evaluations as the next sync leaves it: with this
+/// change's delta merged while the change is active, as it stands after.
+fn role_evaluation_spec() -> String {
+    use codev_core::merge::{apply_edits, merge_into_existing};
+    use codev_core::parser::{parse_delta, parse_spec};
+    let main = read("_codev/specs/role-evaluation/spec.md");
+    let delta = repo().join("_codev/changes/evaluate-planning/specs/role-evaluation/spec.md");
+    let Ok(delta) = fs::read_to_string(delta) else {
+        return main;
+    };
+    let spec = parse_spec(&main).value;
+    let plan = merge_into_existing(&main, &spec, &parse_delta(&delta).value, false)
+        .unwrap_or_else(|e| panic!("the delta merges: {e}"));
+    apply_edits(&main, &plan.edits)
+}
+
+#[test]
+fn the_role_evaluation_spec_has_no_cut_scenario() {
+    let text = role_evaluation_spec();
+    let spec = codev_core::parser::parse_spec(&text).value;
+    let mut cut = Vec::new();
+    for requirement in &spec.requirements {
+        for scenario in &requirement.scenarios {
+            let body = &scenario.body;
+            let starts = body.contains("**GIVEN**") || body.contains("**WHEN**");
+            if !starts || !body.contains("**THEN**") {
+                cut.push(format!("{} / {}", requirement.name, scenario.name));
+            }
+        }
+    }
+    assert_eq!(
+        cut,
+        Vec::<String>::new(),
+        "scenarios without GIVEN/WHEN and THEN"
+    );
+    let stray: Vec<&str> = text.lines().filter(|l| l.starts_with("` ")).collect();
+    assert_eq!(
+        stray,
+        Vec::<&str>::new(),
+        "lines starting with a stray backquote"
+    );
+    assert!(text.contains("#### Scenario: A report of another run"));
+}
