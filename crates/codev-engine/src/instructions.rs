@@ -205,7 +205,7 @@ pub fn for_artifact(
         .find(|a| a.generates == "proposal.md")
         .map(|a| a.id.clone());
     let related = match proposal {
-        Some(id) if artifact.requires.iter().any(|r| *r == id) => {
+        Some(id) if artifact.requires.contains(&id) => {
             match fs.read_to_string(&change_dir.join("proposal.md")) {
                 Ok(text) => {
                     let (related, unreadable) = crate::search::related_requirements(
