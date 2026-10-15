@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Quand je retouche une skill générée à la main, la mise à jour de codev ne devrait pas écraser mes modifications sans prévenir."
+summary: "A request written against existing requirements."
+expected:
+  modified:
+    - "skills::`codev update` regenerates the skills of the configured workflows"
+  collateral: []
+  decisions: []

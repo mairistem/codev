@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: c8f5575893d92bc1fb59e6e5f2dc581a103d51fe
+request: "Ce que trouvent les relecteurs reste perdu dans la conversation : pas de preuve vérifiable, une sévérité au feeling, et on peut archiver avec un défaut grave encore ouvert. Je veux un registre de relecture par changement, avec des remarques identifiées, une sévérité, une citation, un historique de statut, une commande pour le consulter et une validation qui bloque l'archivage si besoin."
+summary: "Replays the change 2026-10-13-review-record (feat(review): a review record with evidence and severity that gates archiving (#30))."
+expected:
+  modified:
+    - "skills::The `propose` skill challenges the plan and reports points to challenge"
+    - "skills::The `apply` skill reviews the change's code as a newcomer"
+  collateral: []
+  decisions: []

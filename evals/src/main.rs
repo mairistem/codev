@@ -87,6 +87,11 @@ struct RunArgs {
     /// Run only the cases of this role (repeatable)
     #[arg(long = "role")]
     roles: Vec<String>,
+    /// Run only the cases of this step (repeatable): `review` for the three
+    /// review steps, or `plan.challenge`, `code.review`, `plan.trace`,
+    /// `plan.write`
+    #[arg(long = "step")]
+    steps: Vec<String>,
     /// Output directory (default: target/evals/run-<timestamp>); a directory
     /// that already holds observations is resumed
     #[arg(long)]
@@ -308,8 +313,12 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
             return usage(format!("no case `{id}`"));
         }
     }
-    let selected: Vec<case::Case> = cases
-        .iter()
+    let by_step = match runner::select_steps(cases, &args.steps) {
+        Ok(selected) => selected,
+        Err(e) => return usage(e),
+    };
+    let selected: Vec<case::Case> = by_step
+        .into_iter()
         .filter(|c| args.cases.is_empty() || args.cases.contains(&c.id))
         .filter(|c| args.roles.is_empty() || args.roles.contains(&c.role))
         .cloned()
@@ -352,7 +361,11 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
             Ok(r) => r,
             Err(e) => return usage(e),
         };
-        if let Err(e) = runner::check_resume(&resumed, info.model.as_deref()) {
+        if let Err(e) = runner::check_resume(
+            &resumed,
+            info.model.as_deref(),
+            info.claude_version.as_deref(),
+        ) {
             return usage(e);
         }
     }

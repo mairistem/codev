@@ -4,7 +4,7 @@
 
 use std::fmt::Write as _;
 
-use crate::score::{Class, Measure, Measures, Outcome, Spread, SuiteScore, number};
+use crate::score::{Class, Measure, Measures, Outcome, SourceShare, Spread, SuiteScore, number};
 
 pub fn json(score: &SuiteScore) -> String {
     let mut text = serde_json::to_string_pretty(score).expect("the report serializes");
@@ -51,6 +51,19 @@ fn consumption_header() -> String {
         .map(|m| m.column())
         .collect::<Vec<_>>()
         .join(" | ")
+}
+
+fn sources_table(out: &mut String, ranked: &[SourceShare]) {
+    let _ = writeln!(out, "| Source | Tokens | Share |\n|---|---:|---:|");
+    for r in ranked {
+        let _ = writeln!(
+            out,
+            "| {} | {} | {:.0} % |",
+            r.source,
+            number(r.tokens),
+            r.share * 100.0
+        );
+    }
 }
 
 pub fn markdown(score: &SuiteScore) -> String {
@@ -154,13 +167,41 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
+    if let Some(p) = &score.planning {
+        let spread = |s: Option<Spread>, ratio: bool| match s {
+            None => "—".to_string(),
+            Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
+            Some(s) => count_range(s.median, Some(s), repeated),
+        };
+        let _ = writeln!(
+            out,
+            "\n## `plan.write`\n\nPer repetition, every planning run pooled; then the median over the repetitions, \
+             with its range. No threshold: `codev-evals compare` judges these against the baseline.\n"
+        );
+        let _ = writeln!(
+            out,
+            "| Cases | Primary recall | Collateral recall | Probable duplicates | Decisions ignored | Plans that do not validate | Cost (USD) |\n|---|---|---|---|---|---|---|"
+        );
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} | {} | {} | {} | {} |",
+            p.cases,
+            spread(p.primary_recall, true),
+            spread(p.collateral_recall, true),
+            spread(p.duplicates, false),
+            spread(p.decisions_ignored, false),
+            spread(p.invalid, false),
+            Measure::Cost.show(p.consumption.cost_usd, 2),
+        );
+    }
+
     let _ = writeln!(out, "\n## Consumption\n");
     let _ = writeln!(
         out,
         "Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.\n"
     );
     let _ = writeln!(out, "| Role | {} |", consumption_header());
-    let _ = writeln!(out, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|");
+    let _ = writeln!(out, "|---|{}", "---:|".repeat(Measure::ALL.len()));
     for r in &score.roles {
         let _ = writeln!(
             out,
@@ -174,6 +215,20 @@ pub fn markdown(score: &SuiteScore) -> String {
         "| **Suite** | {} |",
         consumption_cells(&score.consumption)
     );
+    if !score.sources.is_empty() {
+        let _ = writeln!(
+            out,
+            "\n## Where the tokens go\n\nThe tokens written to the cache, by source: per case the median over its runs, \
+             summed over the cases; their share is their share of what those writes cost.\n"
+        );
+        sources_table(&mut out, &score.sources);
+        if score.sources_by_step.len() > 1 {
+            for (step, ranked) in &score.sources_by_step {
+                let _ = writeln!(out, "\n### `{step}`\n");
+                sources_table(&mut out, ranked);
+            }
+        }
+    }
     let _ = writeln!(out, "\n## Failures\n");
     if score.failures.is_empty() {
         let _ = writeln!(out, "None.");
@@ -209,7 +264,9 @@ pub fn markdown(score: &SuiteScore) -> String {
                 out,
                 "- Outcome: {}",
                 match &c.outcome {
-                    Outcome::Scored | Outcome::NoRecord => c.outcome.label().to_string(),
+                    Outcome::Scored | Outcome::NoRecord | Outcome::NoPlan => {
+                        c.outcome.label().to_string()
+                    }
                     Outcome::Error(reason)
                     | Outcome::RecordInvalid(reason)
                     | Outcome::RoleNotRun(reason) => format!("{} ({reason})", c.outcome.label()),
@@ -217,6 +274,40 @@ pub fn markdown(score: &SuiteScore) -> String {
             );
             if let (Some(cost), Some(ms)) = (c.cost_usd, c.duration_ms) {
                 let _ = writeln!(out, "- Cost: {cost:.2} USD, {} s", ms / 1000);
+            }
+            if let Some(tools) = c.consumption.as_ref().and_then(|m| m.tool_calls) {
+                let orientation = c
+                    .consumption
+                    .as_ref()
+                    .and_then(|m| m.orientation_calls)
+                    .map_or_else(
+                        || ", no artifact written".to_string(),
+                        |n| format!(", {n} before the first artifact"),
+                    );
+                let _ = writeln!(out, "- Tool calls: {tools}{orientation}");
+            }
+            if let Some(p) = &c.plan {
+                for id in &p.primary_found {
+                    let _ = writeln!(out, "- Requirement `{id}`: modified");
+                }
+                for id in &p.primary_missed {
+                    let _ = writeln!(out, "- Requirement `{id}`: **missed**");
+                }
+                for id in &p.collateral_found {
+                    let _ = writeln!(out, "- Collateral `{id}`: modified");
+                }
+                for id in &p.collateral_missed {
+                    let _ = writeln!(out, "- Collateral `{id}`: missed");
+                }
+                for id in &p.duplicates {
+                    let _ = writeln!(out, "- Added `{id}`: **probable duplicate**");
+                }
+                for id in &p.decisions_ignored {
+                    let _ = writeln!(out, "- Decision {id}: **ignored**");
+                }
+                if p.outcome == crate::plan::PlanOutcome::Planned && !p.valid {
+                    let _ = writeln!(out, "- The plan does not validate");
+                }
             }
             for e in &c.expected {
                 let _ = match &e.matched_by {
@@ -383,5 +474,59 @@ mod tests {
             md.contains("| **Suite** | 1.00 | 2 | — | — | — | — | — | — | — |"),
             "{md}"
         );
+    }
+
+    #[test]
+    fn the_report_gives_the_planning_section() {
+        use crate::case::{Kind, PlanCase, RequirementId, Step};
+        use crate::plan::AtRef;
+        use crate::score::tests::{a_case, observed, run};
+        use crate::score::{Thresholds, case, plan_case, suite};
+        let mut plan = a_case("planner", Kind::Seeded, &[]);
+        plan.id = "plan-a".into();
+        plan.step = Step::PlanWrite;
+        plan.plan = Some(PlanCase {
+            git_ref: "abc".into(),
+            request: "r".into(),
+            modified: vec![RequirementId::parse("d::One").unwrap()],
+            collateral: vec![],
+            decisions: vec![],
+        });
+        let mut o = observed("findings", &[], serde_json::json!([]));
+        o.review = None;
+        o.files.insert(
+            "_codev/changes/c/proposal.md".into(),
+            Some("# Proposal\n".into()),
+        );
+        o.consumption = Some(crate::observed::Consumption {
+            tool_calls: Some(27),
+            orientation_calls: Some(11),
+            ..Default::default()
+        });
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        let s = suite(
+            run(),
+            vec![
+                case(&review, &observed("no-finding", &[], serde_json::json!([]))),
+                plan_case(&plan, &o, &AtRef::default()),
+            ],
+            Thresholds::default(),
+        );
+        let md = markdown(&s);
+        assert!(md.contains("## `plan.write`"), "{md}");
+        assert!(md.contains("| 1 | 0.00 | — | 0 | 0 | 1 |"), "{md}");
+        assert!(md.contains("- Requirement `d::One`: **missed**"), "{md}");
+        assert!(
+            md.contains("- Tool calls: 27, 11 before the first artifact"),
+            "{md}"
+        );
+        assert!(md.contains("- The plan does not validate"), "{md}");
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["planning"]["cases"], 1);
+        assert!(!markdown(&scores()).contains("plan.write"));
     }
 }

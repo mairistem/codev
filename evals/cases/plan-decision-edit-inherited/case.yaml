@@ -1,0 +1,12 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Je veux pouvoir corriger directement dans mon projet une décision héritée d'un dépôt source partagé."
+summary: "A request written against decision 0005."
+expected:
+  modified:
+    - "decisions::Inherited decisions taken into account"
+    - "decisions::The `codev decision deviate` command creates a deviation ADR"
+  collateral: []
+  decisions:
+    - { id: "0005", expect: follow }

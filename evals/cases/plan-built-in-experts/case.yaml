@@ -1,0 +1,17 @@
+step: plan.write
+kind: seeded
+ref: ec7b3dca094b6fd2f78a5552aef7fce2ba51edd6
+request: "Nos rôles de relecture disent quoi vérifier mais pas comment, et personne ne couvre la sécu, les données perso, l'accessibilité, la perf, l'exploitation ou les migrations. J'aimerais ajouter des rôles d'experts avec de vraies connaissances par stack, qui s'activent seulement quand la proposition coche le domaine concerné."
+summary: "Replays the change 2026-10-12-built-in-experts (feat(roles): built-in experts with their own knowledge, activated by domains (#29))."
+expected:
+  modified:
+    - "roles::codev knows a catalog of roles bound to workflow steps"
+    - "skills::The `propose` skill challenges the plan and reports points to challenge"
+    - "skills::The `apply` skill reviews the change's code as a newcomer"
+  collateral:
+    - "docs::The Roles chapter lists exactly the catalog's roles"
+    - "roles::The project configures roles under `roles:`"
+    - "roles::Invalid role settings are reported with stable codes"
+    - "roles::`codev roles` serves the roles of a step"
+    - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
+  decisions: []

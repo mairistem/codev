@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::case::{Case, Expected, Kind, Location, Step};
 use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
+use crate::plan::{AtRef, PlanOutcome, PlanScore, score_plan};
 
 /// Evidence and location codes of `codev review`, by their effect here.
 const EVIDENCE_INVALID: [&str; 2] = ["review_evidence_not_found", "review_location_missing"];
@@ -27,6 +28,8 @@ pub enum Outcome {
     RecordInvalid(String),
     /// The evaluated role has no section, or reads disabled.
     RoleNotRun(String),
+    /// A planning run that created no change.
+    NoPlan,
 }
 
 impl Outcome {
@@ -37,6 +40,7 @@ impl Outcome {
             Outcome::NoRecord => "no-record",
             Outcome::RecordInvalid(_) => "record-invalid",
             Outcome::RoleNotRun(_) => "role-not-run",
+            Outcome::NoPlan => "no-plan",
         }
     }
 }
@@ -119,9 +123,16 @@ pub struct CaseScore {
     /// The repetition this run is, from 1.
     pub repetition: u32,
     pub consumption: Option<Consumption>,
+    /// A planning run's score; `None` for a review run.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub plan: Option<PlanScore>,
 }
 
 impl CaseScore {
+    fn is_planning(&self) -> bool {
+        self.step == Step::PlanWrite.as_str()
+    }
+
     /// The same score, as repetition `n`.
     pub fn at(mut self, n: u32) -> CaseScore {
         self.repetition = n;
@@ -147,12 +158,53 @@ pub fn case(case: &Case, observed: &Observed) -> CaseScore {
         duration_ms: observed.duration_ms,
         repetition: 1,
         consumption: observed.consumption.clone(),
+        plan: None,
     };
     if case.step == Step::PlanTrace {
         trace(case, observed, &mut score);
     } else {
         review(case, observed, &mut score);
     }
+    score
+}
+
+/// Scores one run of a planning case, against the repository at its
+/// `ref`, as repetition 1. A run that stopped is scored as a plan that
+/// modifies nothing, as a review that stopped misses what it expected.
+pub fn plan_case(case: &Case, observed: &Observed, at_ref: &AtRef) -> CaseScore {
+    let mut score = CaseScore {
+        id: case.id.clone(),
+        role: case.role.clone(),
+        step: case.step.as_str().into(),
+        kind: case.kind.as_str().into(),
+        outcome: Outcome::Scored,
+        expected: Vec::new(),
+        findings: Vec::new(),
+        changed: Vec::new(),
+        strayed: observed.strayed.clone(),
+        answered: Vec::new(),
+        record_errors: Vec::new(),
+        cost_usd: observed.cost_usd,
+        duration_ms: observed.duration_ms,
+        repetition: 1,
+        consumption: observed.consumption.clone(),
+        plan: None,
+    };
+    let Some(expect) = &case.plan else {
+        return score;
+    };
+    let empty = BTreeMap::new();
+    let (files, validate) = match &observed.error {
+        Some(_) => (&empty, &BTreeMap::new()),
+        None => (&observed.files, &observed.validate),
+    };
+    let plan = score_plan(expect, files, validate, at_ref);
+    score.outcome = match &observed.error {
+        Some(error) => Outcome::Error(error.clone()),
+        None if plan.outcome == PlanOutcome::NoPlan => Outcome::NoPlan,
+        None => Outcome::Scored,
+    };
+    score.plan = Some(plan);
     score
 }
 
@@ -624,6 +676,15 @@ pub struct Measures {
     pub cache_creation_tokens: Option<f64>,
     pub cache_read_tokens: Option<f64>,
     pub output_tokens: Option<f64>,
+    /// The calls to the model; `None` without the event stream.
+    #[serde(default)]
+    pub calls: Option<f64>,
+    /// The tokens a call reads — written to the cache, read from it, read
+    /// without it — divided by the calls.
+    #[serde(default)]
+    pub input_per_call: Option<f64>,
+    #[serde(default)]
+    pub output_per_call: Option<f64>,
 }
 
 /// One consumption measure: what it is called in the reports and how its
@@ -639,10 +700,13 @@ pub enum Measure {
     CacheWrites,
     CacheReads,
     OutputTokens,
+    Calls,
+    InputPerCall,
+    OutputPerCall,
 }
 
 impl Measure {
-    pub const ALL: [Measure; 9] = [
+    pub const ALL: [Measure; 12] = [
         Measure::Cost,
         Measure::Duration,
         Measure::ApiDuration,
@@ -652,6 +716,9 @@ impl Measure {
         Measure::CacheWrites,
         Measure::CacheReads,
         Measure::OutputTokens,
+        Measure::Calls,
+        Measure::InputPerCall,
+        Measure::OutputPerCall,
     ];
 
     /// Its name in a row of the comparison.
@@ -666,6 +733,9 @@ impl Measure {
             Measure::CacheWrites => "Tokens written to the cache",
             Measure::CacheReads => "Tokens read from the cache",
             Measure::OutputTokens => "Output tokens",
+            Measure::Calls => "Calls to the model",
+            Measure::InputPerCall => "Input per call",
+            Measure::OutputPerCall => "Output per call",
         }
     }
 
@@ -681,6 +751,9 @@ impl Measure {
             Measure::CacheWrites => "Cache writes",
             Measure::CacheReads => "Cache reads",
             Measure::OutputTokens => "Output",
+            Measure::Calls => "Calls",
+            Measure::InputPerCall => "Input/call",
+            Measure::OutputPerCall => "Output/call",
         }
     }
 
@@ -708,6 +781,9 @@ impl Measures {
             Measure::CacheWrites => self.cache_creation_tokens,
             Measure::CacheReads => self.cache_read_tokens,
             Measure::OutputTokens => self.output_tokens,
+            Measure::Calls => self.calls,
+            Measure::InputPerCall => self.input_per_call,
+            Measure::OutputPerCall => self.output_per_call,
         }
     }
 
@@ -722,6 +798,9 @@ impl Measures {
             Measure::CacheWrites => &mut self.cache_creation_tokens,
             Measure::CacheReads => &mut self.cache_read_tokens,
             Measure::OutputTokens => &mut self.output_tokens,
+            Measure::Calls => &mut self.calls,
+            Measure::InputPerCall => &mut self.input_per_call,
+            Measure::OutputPerCall => &mut self.output_per_call,
         }
     }
 
@@ -730,6 +809,13 @@ impl Measures {
         let consumption = c.consumption.as_ref();
         let tokens = consumption.and_then(|c| c.tokens);
         let f = |v: Option<u64>| v.map(|v| v as f64);
+        let calls = consumption
+            .map(|c| c.calls.len() as f64)
+            .filter(|n| *n > 0.0);
+        let per_call = |tokens: Option<f64>| match (tokens, calls) {
+            (Some(t), Some(n)) => Some(t / n),
+            _ => None,
+        };
         Measures {
             cost_usd: c.cost_usd,
             duration_ms: f(c.duration_ms),
@@ -740,6 +826,9 @@ impl Measures {
             cache_creation_tokens: f(tokens.map(|t| t.cache_creation)),
             cache_read_tokens: f(tokens.map(|t| t.cache_read)),
             output_tokens: f(tokens.map(|t| t.output)),
+            calls,
+            input_per_call: per_call(f(tokens.map(|t| t.input + t.cache_creation + t.cache_read))),
+            output_per_call: per_call(f(tokens.map(|t| t.output))),
         }
     }
 
@@ -753,17 +842,33 @@ impl Measures {
         out
     }
 
-    /// The sum of each measure over the items that report it.
+    /// The sum of each measure over the items that report it; a per-call
+    /// measure, which does not add up, is the items' mean weighted by
+    /// their calls: their tokens divided by their calls.
     pub fn sum_of<'a>(items: impl IntoIterator<Item = &'a Measures>) -> Measures {
         let mut out = Measures::default();
+        let mut weighted = [(0.0, 0.0); 2];
         for item in items {
             for m in Measure::ALL {
                 if let Some(v) = item.get(m) {
-                    let slot = out.slot(m);
-                    *slot = Some(round4(slot.unwrap_or(0.0) + v));
+                    match (m, item.calls) {
+                        (Measure::InputPerCall | Measure::OutputPerCall, Some(calls)) => {
+                            let w = &mut weighted[usize::from(m == Measure::OutputPerCall)];
+                            w.0 += v * calls;
+                            w.1 += calls;
+                        }
+                        (Measure::InputPerCall | Measure::OutputPerCall, None) => {}
+                        _ => {
+                            let slot = out.slot(m);
+                            *slot = Some(round4(slot.unwrap_or(0.0) + v));
+                        }
+                    }
                 }
             }
         }
+        let mean = |(tokens, calls): (f64, f64)| (calls > 0.0).then(|| (tokens / calls).round());
+        out.input_per_call = mean(weighted[0]);
+        out.output_per_call = mean(weighted[1]);
         out
     }
 }
@@ -774,8 +879,48 @@ impl Measures {
 pub struct CaseConsumption {
     pub id: String,
     pub role: String,
+    #[serde(default)]
+    pub step: String,
     pub repetitions: u32,
     pub measures: Measures,
+    /// The tokens written to the cache by source: per source, the median
+    /// over the runs that record their calls.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub sources: BTreeMap<String, f64>,
+}
+
+/// Where the tokens go: one source, the sum of its per-case median
+/// tokens written to the cache, and its share of what those writes cost.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceShare {
+    pub source: String,
+    pub tokens: f64,
+    pub share: f64,
+}
+
+/// The sources of `cases`, ranked from the most to the least costly. A
+/// token written to the cache costs the same whatever wrote it, so the
+/// share of the tokens is the share of the cost.
+pub fn rank_sources<'a>(cases: impl IntoIterator<Item = &'a CaseConsumption>) -> Vec<SourceShare> {
+    let mut sums: BTreeMap<&str, f64> = BTreeMap::new();
+    for c in cases {
+        for (source, tokens) in &c.sources {
+            *sums.entry(source.as_str()).or_default() += tokens;
+        }
+    }
+    let total: f64 = sums.values().sum();
+    let mut ranked: Vec<SourceShare> = sums
+        .into_iter()
+        .filter(|(_, tokens)| *tokens > 0.0)
+        .map(|(source, tokens)| SourceShare {
+            source: source.to_string(),
+            tokens: tokens.round(),
+            share: round3(tokens / total),
+        })
+        .collect();
+    ranked.sort_by(|a, b| b.tokens.total_cmp(&a.tokens).then(a.source.cmp(&b.source)));
+    ranked
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -803,6 +948,45 @@ pub struct SuiteScore {
     pub cases: Vec<CaseScore>,
     /// Every case's consumption, by case.
     pub case_consumption: Vec<CaseConsumption>,
+    /// Where the tokens go, for the whole suite; empty when no run recorded
+    /// its calls.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<SourceShare>,
+    /// Where the tokens go, per step.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub sources_by_step: BTreeMap<String, Vec<SourceShare>>,
+    /// The step `plan.write`, when the suite has planning runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub planning: Option<PlanningScore>,
+}
+
+/// One repetition of the planning runs, pooled as a role's tally is.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanRepetition {
+    pub repetition: u32,
+    pub runs: u32,
+    pub primary_recall: Option<f64>,
+    pub collateral_recall: Option<f64>,
+    pub duplicates: u32,
+    pub decisions_ignored: u32,
+    pub invalid: u32,
+}
+
+/// The step `plan.write`: its measures per repetition, then their median
+/// and range. No threshold: `compare` judges them against the baseline.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanningScore {
+    pub cases: u32,
+    pub repetitions: Vec<PlanRepetition>,
+    pub primary_recall: Option<Spread>,
+    pub collateral_recall: Option<Spread>,
+    pub duplicates: Option<Spread>,
+    pub decisions_ignored: Option<Spread>,
+    pub invalid: Option<Spread>,
+    /// The sums of every planning case's median consumption.
+    pub consumption: Measures,
 }
 
 /// Rounded to three decimals: the report shows ratios, not float noise.
@@ -897,7 +1081,10 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
     let repetitions: Vec<Repetition> = numbers
         .iter()
         .map(|n| {
-            let runs: Vec<&CaseScore> = cases.iter().filter(|c| c.repetition == *n).collect();
+            let runs: Vec<&CaseScore> = cases
+                .iter()
+                .filter(|c| c.repetition == *n && !c.is_planning())
+                .collect();
             let tallies = tally(&runs);
             Repetition { runs, tallies }
         })
@@ -907,7 +1094,12 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
     let mut role_ids: Vec<String> = repetitions
         .iter()
         .flat_map(|r| r.tallies.keys().cloned())
-        .chain(cases.iter().map(|c| c.role.clone()))
+        .chain(
+            cases
+                .iter()
+                .filter(|c| !c.is_planning())
+                .map(|c| c.role.clone()),
+        )
         .collect();
     role_ids.sort();
     role_ids.dedup();
@@ -917,11 +1109,27 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         .collect();
     let mut failures: Vec<String> = roles.iter().flat_map(|r| r.failures.clone()).collect();
     for c in &cases {
-        if let Outcome::Error(reason) = &c.outcome {
-            failures.push(format!(
+        match &c.outcome {
+            Outcome::Error(reason) => failures.push(format!(
                 "case `{}` (repetition {}) stopped: {reason}",
                 c.id, c.repetition
-            ));
+            )),
+            Outcome::NoPlan => failures.push(format!(
+                "case `{}` (repetition {}) planned nothing: no change was created",
+                c.id, c.repetition
+            )),
+            _ => {}
+        }
+    }
+    let planning = planning_score(&numbers, &cases, &case_consumption);
+    let sources = rank_sources(&case_consumption);
+    let mut sources_by_step = BTreeMap::new();
+    for step in case_consumption.iter().map(|c| c.step.as_str()) {
+        if !sources_by_step.contains_key(step) {
+            let ranked = rank_sources(case_consumption.iter().filter(|c| c.step == step));
+            if !ranked.is_empty() {
+                sources_by_step.insert(step.to_string(), ranked);
+            }
         }
     }
 
@@ -941,7 +1149,74 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         roles,
         cases,
         case_consumption,
+        sources,
+        sources_by_step,
+        planning,
     }
+}
+
+/// The planning section: each repetition's runs pooled, then medians and
+/// ranges; `None` without a planning run.
+fn planning_score(
+    numbers: &[u32],
+    cases: &[CaseScore],
+    case_consumption: &[CaseConsumption],
+) -> Option<PlanningScore> {
+    let planning: Vec<&CaseScore> = cases.iter().filter(|c| c.is_planning()).collect();
+    if planning.is_empty() {
+        return None;
+    }
+    let repetitions: Vec<PlanRepetition> = numbers
+        .iter()
+        .filter_map(|n| {
+            let plans: Vec<&PlanScore> = planning
+                .iter()
+                .filter(|c| c.repetition == *n)
+                .filter_map(|c| c.plan.as_ref())
+                .collect();
+            if plans.is_empty() {
+                return None;
+            }
+            let count =
+                |f: fn(&PlanScore) -> usize| plans.iter().map(|p| f(p)).sum::<usize>() as u32;
+            let pooled = |found: u32, missed: u32| ratio(found, found + missed);
+            Some(PlanRepetition {
+                repetition: *n,
+                runs: plans.len() as u32,
+                primary_recall: pooled(
+                    count(|p| p.primary_found.len()),
+                    count(|p| p.primary_missed.len()),
+                ),
+                collateral_recall: pooled(
+                    count(|p| p.collateral_found.len()),
+                    count(|p| p.collateral_missed.len()),
+                ),
+                duplicates: count(|p| p.duplicates.len()),
+                decisions_ignored: count(|p| p.decisions_ignored.len()),
+                invalid: count(|p| usize::from(!p.valid)),
+            })
+        })
+        .collect();
+    let values = |f: fn(&PlanRepetition) -> Option<f64>| -> Vec<f64> {
+        repetitions.iter().filter_map(f).collect()
+    };
+    let mut distinct: Vec<&str> = planning.iter().map(|c| c.id.as_str()).collect();
+    distinct.dedup();
+    Some(PlanningScore {
+        cases: distinct.len() as u32,
+        primary_recall: spread(&values(|r| r.primary_recall)),
+        collateral_recall: spread(&values(|r| r.collateral_recall)),
+        duplicates: spread(&values(|r| Some(f64::from(r.duplicates)))),
+        decisions_ignored: spread(&values(|r| Some(f64::from(r.decisions_ignored)))),
+        invalid: spread(&values(|r| Some(f64::from(r.invalid)))),
+        consumption: Measures::sum_of(
+            case_consumption
+                .iter()
+                .filter(|c| distinct.contains(&c.id.as_str()))
+                .map(|c| &c.measures),
+        ),
+        repetitions,
+    })
 }
 
 /// Each case's consumption: the medians over its runs not in error.
@@ -955,11 +1230,41 @@ fn case_consumption(cases: &[CaseScore]) -> Vec<CaseConsumption> {
                 .filter(|r| !matches!(r.outcome, Outcome::Error(_)))
                 .map(Measures::of)
                 .collect();
+            let traced: Vec<BTreeMap<String, u64>> = runs
+                .iter()
+                .filter(|r| !matches!(r.outcome, Outcome::Error(_)))
+                .filter_map(|r| r.consumption.as_ref())
+                .filter(|c| !c.calls.is_empty())
+                .map(|c| {
+                    let mut by_source: BTreeMap<String, u64> = BTreeMap::new();
+                    for call in &c.calls {
+                        for (source, tokens) in &call.sources {
+                            *by_source.entry(source.clone()).or_default() += tokens;
+                        }
+                    }
+                    by_source
+                })
+                .collect();
+            let mut names: Vec<&String> = traced.iter().flat_map(|s| s.keys()).collect();
+            names.sort();
+            names.dedup();
+            let sources = names
+                .into_iter()
+                .filter_map(|name| {
+                    let values: Vec<f64> = traced
+                        .iter()
+                        .map(|s| s.get(name).copied().unwrap_or(0) as f64)
+                        .collect();
+                    median(&values).map(|m| (name.clone(), m))
+                })
+                .collect();
             CaseConsumption {
                 id: runs[0].id.clone(),
                 role: runs[0].role.clone(),
+                step: runs[0].step.clone(),
                 repetitions: runs.len() as u32,
                 measures: Measures::median_of(&measured),
+                sources,
             }
         })
         .collect()
@@ -1152,6 +1457,7 @@ pub(crate) mod tests {
             fixed: vec![],
             unchanged: vec![],
             planned: vec![],
+            plan: None,
         }
     }
 
@@ -1202,7 +1508,229 @@ pub(crate) mod tests {
                 "steps": [{"step": "code.review", "recorded": true, "roles": roles}],
                 "findings": findings, "issues": issues})),
             files: BTreeMap::new(),
+            validate: BTreeMap::new(),
         }
+    }
+
+    fn a_planning_case(id: &str, modified: &[&str]) -> Case {
+        let mut c = a_case("planner", Kind::Seeded, &[]);
+        c.id = id.into();
+        c.step = Step::PlanWrite;
+        c.plan = Some(crate::case::PlanCase {
+            git_ref: "abc".into(),
+            request: "r".into(),
+            modified: modified
+                .iter()
+                .map(|m| crate::case::RequirementId::parse(m).unwrap())
+                .collect(),
+            collateral: vec![],
+            decisions: vec![],
+        });
+        c
+    }
+
+    /// A planning run whose delta of `cap` modifies `modified`; no change
+    /// at all when `modified` is `None`.
+    fn a_planning_run(id: &str, cap: &str, modified: Option<&str>) -> Observed {
+        let mut o = observed("findings", &[], json!([]));
+        o.case = id.into();
+        o.review = None;
+        if let Some(name) = modified {
+            o.files.insert(
+                format!("_codev/changes/c/specs/{cap}/spec.md"),
+                Some(format!(
+                    "## MODIFIED Requirements\n\n### Requirement: {name}\n\nIt SHALL.\n\n#### Scenario: S\n\n- **WHEN** w\n- **THEN** t\n"
+                )),
+            );
+            o.validate
+                .insert("c".into(), json!({"items": [{"findings": []}]}));
+        }
+        o
+    }
+
+    /// A call: cache writes, cache reads, uncached input, output, and its
+    /// writes by source.
+    type TestCall<'a> = (u64, u64, u64, u64, &'a [(&'a str, u64)]);
+
+    fn with_calls(mut o: Observed, calls: &[TestCall]) -> Observed {
+        use crate::observed::{Call, Tokens};
+        let calls: Vec<Call> = calls
+            .iter()
+            .map(
+                |(cache_creation, cache_read, input, output, sources)| Call {
+                    cache_creation: *cache_creation,
+                    cache_read: *cache_read,
+                    input: *input,
+                    output: *output,
+                    tool_calls: 1,
+                    sources: sources.iter().map(|(s, n)| (s.to_string(), *n)).collect(),
+                },
+            )
+            .collect();
+        let tokens = calls.iter().fold(Tokens::default(), |t, c| Tokens {
+            input: t.input + c.input,
+            cache_creation: t.cache_creation + c.cache_creation,
+            cache_read: t.cache_read + c.cache_read,
+            output: t.output + c.output,
+        });
+        o.consumption = Some(Consumption {
+            tokens: Some(tokens),
+            calls,
+            ..Consumption::default()
+        });
+        o
+    }
+
+    #[test]
+    fn input_and_output_per_call_are_medians_per_case() {
+        let c = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        let run = |input_per_call: u64, output: u64| {
+            with_calls(
+                observed("no-finding", &[], json!([])),
+                &[
+                    (input_per_call, 0, 0, output, &[]),
+                    (0, input_per_call, 0, output, &[]),
+                ],
+            )
+        };
+        let scores = vec![
+            case(&c, &run(30_000, 100)).at(1),
+            case(&c, &run(38_000, 300)).at(2),
+            case(&c, &run(90_000, 200)).at(3),
+        ];
+        let s = suite(super::tests::run(), scores, Thresholds::default());
+        let m = &s.case_consumption[0].measures;
+        assert_eq!(m.calls, Some(2.0));
+        assert_eq!(m.input_per_call, Some(38_000.0));
+        assert_eq!(m.output_per_call, Some(200.0));
+        // The suite's figure is per call too, never a sum of per-call figures.
+        assert_eq!(s.consumption.input_per_call, Some(38_000.0));
+        assert_eq!(s.roles[0].consumption.output_per_call, Some(200.0));
+    }
+
+    #[test]
+    fn the_sources_are_ranked_by_cost() {
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        let traced = with_calls(
+            observed("no-finding", &[], json!([])),
+            &[
+                (100_000, 0, 0, 10, &[("prompt", 0), ("file", 15_000)]),
+                (0, 0, 0, 10, &[("skill", 60_000), ("codev roles", 25_000)]),
+            ],
+        );
+        let s = suite(run(), vec![case(&review, &traced)], Thresholds::default());
+        let ranked: Vec<(&str, f64, f64)> = s
+            .sources
+            .iter()
+            .map(|r| (r.source.as_str(), r.tokens, r.share))
+            .collect();
+        assert_eq!(
+            ranked,
+            [
+                ("skill", 60_000.0, 0.6),
+                ("codev roles", 25_000.0, 0.25),
+                ("file", 15_000.0, 0.15)
+            ]
+        );
+        assert_eq!(s.sources_by_step["code.review"], s.sources);
+        let md = crate::report::markdown(&s);
+        let at = |needle: &str| {
+            md.find(needle)
+                .unwrap_or_else(|| panic!("{needle} in {md}"))
+        };
+        assert!(at("## Where the tokens go") < at("| skill | 60000 | 60 % |"));
+        assert!(at("| skill |") < at("| codev roles |") && at("| codev roles |") < at("| file |"));
+    }
+
+    #[test]
+    fn review_and_planning_runs_are_scored_apart() {
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        let found = observed(
+            "findings",
+            &[("R-security-1", "security", "src/users.ts:12", "high")],
+            json!([]),
+        );
+        let plan_a = a_planning_case("plan-a", &["d::One", "d::Two"]);
+        let plan_b = a_planning_case("plan-b", &["d::Three"]);
+        let scores = vec![
+            case(&review, &found),
+            plan_case(
+                &plan_a,
+                &a_planning_run("plan-a", "d", Some("One")),
+                &AtRef::default(),
+            ),
+            plan_case(
+                &plan_b,
+                &a_planning_run("plan-b", "d", Some("Three")),
+                &AtRef::default(),
+            ),
+        ];
+        let s = suite(run(), scores, Thresholds::default());
+        assert_eq!(
+            s.roles.iter().map(|r| r.role.as_str()).collect::<Vec<_>>(),
+            ["security"]
+        );
+        assert_eq!(s.roles[0].recall, Some(1.0));
+        assert_eq!(s.figures.expected, 1.0);
+        let planning = s.planning.expect("a planning section");
+        assert_eq!(planning.cases, 2);
+        // Two of the three expected requirements, pooled over the runs.
+        assert_eq!(planning.primary_recall.unwrap().median, 0.667);
+        assert_eq!(planning.invalid.unwrap().median, 0.0);
+        assert!(s.pass, "{:?}", s.failures);
+    }
+
+    #[test]
+    fn a_suite_of_review_cases_has_no_planning_section() {
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        let s = suite(
+            run(),
+            vec![case(&review, &observed("no-finding", &[], json!([])))],
+            Thresholds::default(),
+        );
+        assert!(s.planning.is_none());
+        assert!(serde_json::to_value(&s).unwrap().get("planning").is_none());
+    }
+
+    #[test]
+    fn a_no_plan_run_fails_the_suite() {
+        let plan = a_planning_case("plan-a", &["d::One"]);
+        let score = plan_case(
+            &plan,
+            &a_planning_run("plan-a", "d", None),
+            &AtRef::default(),
+        )
+        .at(2);
+        assert_eq!(score.outcome, Outcome::NoPlan);
+        let s = suite(run(), vec![score], Thresholds::default());
+        assert!(!s.pass);
+        assert_eq!(exit_code(&s), 1);
+        assert!(
+            s.failures
+                .iter()
+                .any(|f| f.contains("plan-a") && f.contains("repetition 2")),
+            "{:?}",
+            s.failures
+        );
+        let planning = s.planning.unwrap();
+        assert_eq!(planning.primary_recall.unwrap().median, 0.0);
+        assert_eq!(planning.invalid.unwrap().median, 1.0);
     }
 
     fn classes(score: &CaseScore) -> Vec<(String, Class)> {

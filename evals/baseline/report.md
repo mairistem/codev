@@ -36,18 +36,18 @@
 
 Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.
 
-| Role | Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| accessibility | 1.59 | 139 | 137 | 34 | 3 | 5840 | 137658 | 1107000 | 12903 |
-| migration | 1.59 | 127 | 124 | 39 | 4 | 5848 | 134844 | 1405799 | 10895 |
-| newcomer | 0.79 | 55 | 54 | 16 | 0 | 3506 | 73990 | 558680 | 4476 |
-| ops | 1.63 | 156 | 155 | 36 | 1 | 5845 | 137894 | 1111433 | 14290 |
-| performance | 1.50 | 114 | 112 | 36 | 3 | 5863 | 129564 | 1274546 | 9761 |
-| privacy | 2.11 | 195 | 193 | 50 | 6 | 7067 | 171359 | 1784957 | 18343 |
-| security | 1.80 | 140 | 137 | 41 | 1 | 7034 | 160148 | 1342306 | 11949 |
-| skeptic | 1.20 | 126 | 125 | 30 | 6 | 3492 | 92667 | 1164124 | 11656 |
-| tracer | 0.57 | 43 | 43 | 22 | 4 | 2180 | 51181 | 419731 | 4052 |
-| **Suite** | 12.80 | 1094 | 1081 | 304 | 28 | 46675 | 1089305 | 10168576 | 98325 |
+| Role | Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| accessibility | 1.59 | 139 | 137 | 34 | 3 | 5840 | 137658 | 1107000 | 12903 | — | — | — |
+| migration | 1.59 | 127 | 124 | 39 | 4 | 5848 | 134844 | 1405799 | 10895 | — | — | — |
+| newcomer | 0.79 | 55 | 54 | 16 | 0 | 3506 | 73990 | 558680 | 4476 | — | — | — |
+| ops | 1.63 | 156 | 155 | 36 | 1 | 5845 | 137894 | 1111433 | 14290 | — | — | — |
+| performance | 1.50 | 114 | 112 | 36 | 3 | 5863 | 129564 | 1274546 | 9761 | — | — | — |
+| privacy | 2.11 | 195 | 193 | 50 | 6 | 7067 | 171359 | 1784957 | 18343 | — | — | — |
+| security | 1.80 | 140 | 137 | 41 | 1 | 7034 | 160148 | 1342306 | 11949 | — | — | — |
+| skeptic | 1.20 | 126 | 125 | 30 | 6 | 3492 | 92667 | 1164124 | 11656 | — | — | — |
+| tracer | 0.57 | 43 | 43 | 22 | 4 | 2180 | 51181 | 419731 | 4052 | — | — | — |
+| **Suite** | 12.80 | 1094 | 1081 | 304 | 28 | 46675 | 1089305 | 10168576 | 98325 | — | — | — |
 
 ## Failures
 
@@ -58,8 +58,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### accessibility-code-dropdown-keyboard-trap
 
 - Role: accessibility at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.31 · 25 · 25 · 6 · 0 · 1172 · 28149 · 196251 · 2328
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.31 · 25 · 25 · 6 · 0 · 1172 · 28149 · 196251 · 2328 · — · — · —
 
 #### Run 1
 
@@ -109,8 +109,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### accessibility-code-icon-button
 
 - Role: accessibility at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.31 · 27 · 27 · 6 · 0 · 1162 · 26255 · 189214 · 2693
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.31 · 27 · 27 · 6 · 0 · 1162 · 26255 · 189214 · 2693 · — · — · —
 
 #### Run 1
 
@@ -169,8 +169,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### accessibility-control-custom-listbox
 
 - Role: accessibility at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.35 · 38 · 37 · 8 · 0 · 1174 · 29050 · 243451 · 3402
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.35 · 38 · 37 · 8 · 0 · 1174 · 29050 · 243451 · 3402 · — · — · —
 
 #### Run 1
 
@@ -206,8 +206,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### accessibility-control-labelled-form
 
 - Role: accessibility at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.26 · 15 · 15 · 6 · 0 · 1170 · 25799 · 144484 · 1353
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.26 · 15 · 15 · 6 · 0 · 1170 · 25799 · 144484 · 1353 · — · — · —
 
 #### Run 1
 
@@ -237,8 +237,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### accessibility-plan-colour-only
 
 - Role: accessibility at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.36 · 34 · 34 · 8 · 3 · 1162 · 28405 · 333600 · 3127
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.36 · 34 · 34 · 8 · 3 · 1162 · 28405 · 333600 · 3127 · — · — · —
 
 #### Run 1
 
@@ -284,8 +284,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### migration-code-drop-and-rename
 
 - Role: migration at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.30 · 24 · 24 · 7 · 1 · 1176 · 25462 · 275555 · 2232
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.30 · 24 · 24 · 7 · 1 · 1176 · 25462 · 275555 · 2232 · — · — · —
 
 #### Run 1
 
@@ -335,8 +335,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### migration-code-serde-rename-all
 
 - Role: migration at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 25 · 25 · 7 · 0 · 1176 · 26843 · 278440 · 2421
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 25 · 25 · 7 · 0 · 1176 · 26843 · 278440 · 2421 · — · — · —
 
 #### Run 1
 
@@ -386,8 +386,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### migration-control-additive-field
 
 - Role: migration at `plan.challenge`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 21 · 21 · 8 · 2 · 1160 · 27963 · 282641 · 1719
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 21 · 21 · 8 · 2 · 1160 · 27963 · 282641 · 1719 · — · — · —
 
 #### Run 1
 
@@ -417,8 +417,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### migration-control-serde-alias
 
 - Role: migration at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.30 · 26 · 26 · 8 · 0 · 1174 · 26518 · 237646 · 1896
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.30 · 26 · 26 · 8 · 0 · 1174 · 26518 · 237646 · 1896 · — · — · —
 
 #### Run 1
 
@@ -452,8 +452,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### migration-plan-breaking-rename
 
 - Role: migration at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.35 · 30 · 29 · 9 · 1 · 1162 · 28058 · 331517 · 2627
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.35 · 30 · 29 · 9 · 1 · 1162 · 28058 · 331517 · 2627 · — · — · —
 
 #### Run 1
 
@@ -498,8 +498,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### newcomer-code-clever-one-liner
 
 - Role: newcomer at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.29 · 24 · 24 · 6 · 0 · 1164 · 24880 · 231202 · 2019
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.29 · 24 · 24 · 6 · 0 · 1164 · 24880 · 231202 · 2019 · — · — · —
 
 #### Run 1
 
@@ -539,8 +539,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### newcomer-code-deep-nesting
 
 - Role: newcomer at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.27 · 19 · 19 · 5 · 0 · 1162 · 25111 · 187615 · 1601
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.27 · 19 · 19 · 5 · 0 · 1162 · 25111 · 187615 · 1601 · — · — · —
 
 #### Run 1
 
@@ -580,8 +580,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### newcomer-control-plain-code
 
 - Role: newcomer at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.24 · 12 · 11 · 5 · 0 · 1180 · 23999 · 139863 · 856
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.24 · 12 · 11 · 5 · 0 · 1180 · 23999 · 139863 · 856 · — · — · —
 
 #### Run 1
 
@@ -611,8 +611,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### ops-code-no-timeout
 
 - Role: ops at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 32 · 31 · 7 · 0 · 1162 · 26874 · 189043 · 3172
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 32 · 31 · 7 · 0 · 1162 · 26874 · 189043 · 3172 · — · — · —
 
 #### Run 1
 
@@ -673,8 +673,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### ops-code-retry-without-backoff
 
 - Role: ops at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.35 · 39 · 38 · 9 · 0 · 1181 · 28141 · 285147 · 3582
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.35 · 39 · 38 · 9 · 0 · 1181 · 28141 · 285147 · 3582 · — · — · —
 
 #### Run 1
 
@@ -726,8 +726,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### ops-control-bounded-retries
 
 - Role: ops at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.27 · 19 · 19 · 6 · 0 · 1170 · 25425 · 143969 · 1537
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.27 · 19 · 19 · 6 · 0 · 1170 · 25425 · 143969 · 1537 · — · — · —
 
 #### Run 1
 
@@ -757,8 +757,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### ops-control-graceful-shutdown
 
 - Role: ops at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.37 · 39 · 39 · 7 · 0 · 1174 · 30083 · 249060 · 3758
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.37 · 39 · 39 · 7 · 0 · 1174 · 30083 · 249060 · 3758 · — · — · —
 
 #### Run 1
 
@@ -794,8 +794,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### ops-plan-no-rollback
 
 - Role: ops at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 27 · 28 · 7 · 1 · 1158 · 27371 · 244214 · 2241
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 27 · 28 · 7 · 1 · 1158 · 27371 · 244214 · 2241 · — · — · —
 
 #### Run 1
 
@@ -845,8 +845,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### performance-code-hidden-n-plus-one
 
 - Role: performance at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.33 · 28 · 28 · 8 · 0 · 1176 · 27414 · 283327 · 2604
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.33 · 28 · 28 · 8 · 0 · 1176 · 27414 · 283327 · 2604 · — · — · —
 
 #### Run 1
 
@@ -896,8 +896,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### performance-code-n-plus-one
 
 - Role: performance at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.28 · 17 · 17 · 7 · 0 · 1179 · 24642 · 236309 · 1539
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.28 · 17 · 17 · 7 · 0 · 1179 · 24642 · 236309 · 1539 · — · — · —
 
 #### Run 1
 
@@ -937,8 +937,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### performance-control-batched-query
 
 - Role: performance at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.25 · 16 · 16 · 6 · 0 · 1172 · 23798 · 184403 · 1290
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.25 · 16 · 16 · 6 · 0 · 1172 · 23798 · 184403 · 1290 · — · — · —
 
 #### Run 1
 
@@ -968,8 +968,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### performance-control-preloaded-helper
 
 - Role: performance at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.28 · 21 · 21 · 6 · 0 · 1172 · 25958 · 190000 · 1477
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.28 · 21 · 21 · 6 · 0 · 1172 · 25958 · 190000 · 1477 · — · — · —
 
 #### Run 1
 
@@ -1000,8 +1000,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### performance-plan-unbounded-export
 
 - Role: performance at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.36 · 32 · 31 · 9 · 3 · 1164 · 27752 · 380507 · 2851
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.36 · 32 · 31 · 9 · 3 · 1164 · 27752 · 380507 · 2851 · — · — · —
 
 #### Run 1
 
@@ -1046,8 +1046,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-code-email-in-logs
 
 - Role: privacy at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 26 · 26 · 7 · 0 · 1164 · 27291 · 241212 · 2520
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 26 · 26 · 7 · 0 · 1164 · 27291 · 241212 · 2520 · — · — · —
 
 #### Run 1
 
@@ -1104,8 +1104,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-code-error-message-pii
 
 - Role: privacy at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.35 · 30 · 29 · 8 · 0 · 1176 · 28912 · 286629 · 2867
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.35 · 30 · 29 · 8 · 0 · 1176 · 28912 · 286629 · 2867 · — · — · —
 
 #### Run 1
 
@@ -1165,8 +1165,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-code-python-soft-delete
 
 - Role: privacy at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.38 · 36 · 36 · 11 · 3 · 1180 · 29761 · 384864 · 3231
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.38 · 36 · 36 · 11 · 3 · 1180 · 29761 · 384864 · 3231 · — · — · —
 
 #### Run 1
 
@@ -1214,8 +1214,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-control-ids-in-logs
 
 - Role: privacy at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.27 · 18 · 18 · 6 · 0 · 1187 · 25684 · 188706 · 1523
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.27 · 18 · 18 · 6 · 0 · 1187 · 25684 · 188706 · 1523 · — · — · —
 
 #### Run 1
 
@@ -1245,8 +1245,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-control-masked-logs
 
 - Role: privacy at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.38 · 43 · 42 · 7 · 1 · 1186 · 28327 · 287032 · 4033
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.38 · 43 · 42 · 7 · 1 · 1186 · 28327 · 287032 · 4033 · — · — · —
 
 #### Run 1
 
@@ -1293,8 +1293,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### privacy-plan-birth-date-retention
 
 - Role: privacy at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.41 · 42 · 42 · 11 · 2 · 1174 · 31384 · 396514 · 4169
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.41 · 42 · 42 · 11 · 2 · 1174 · 31384 · 396514 · 4169 · — · — · —
 
 #### Run 1
 
@@ -1357,8 +1357,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-code-detail-endpoint-authz
 
 - Role: security at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.32 · 25 · 24 · 7 · 0 · 1179 · 28273 · 243373 · 2230
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.32 · 25 · 24 · 7 · 0 · 1179 · 28273 · 243373 · 2230 · — · — · —
 
 #### Run 1
 
@@ -1409,8 +1409,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-code-python-path-traversal
 
 - Role: security at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.29 · 23 · 23 · 6 · 0 · 1177 · 25770 · 187642 · 2226
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.29 · 23 · 23 · 6 · 0 · 1177 · 25770 · 187642 · 2226 · — · — · —
 
 #### Run 1
 
@@ -1455,8 +1455,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-code-sql-injection
 
 - Role: security at `code.review`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.29 · 23 · 23 · 6 · 0 · 1174 · 25389 · 234493 · 1764
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.29 · 23 · 23 · 6 · 0 · 1174 · 25389 · 234493 · 1764 · — · — · —
 
 #### Run 1
 
@@ -1496,8 +1496,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-control-docs-only
 
 - Role: security at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.28 · 18 · 18 · 7 · 0 · 1174 · 24952 · 235070 · 1377
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.28 · 18 · 18 · 7 · 0 · 1174 · 24952 · 235070 · 1377 · — · — · —
 
 #### Run 1
 
@@ -1527,8 +1527,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-control-dynamic-query
 
 - Role: security at `code.review`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.26 · 16 · 15 · 6 · 0 · 1170 · 24996 · 143317 · 1369
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.26 · 16 · 15 · 6 · 0 · 1170 · 24996 · 143317 · 1369 · — · — · —
 
 #### Run 1
 
@@ -1558,8 +1558,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### security-plan-tokens-in-clear
 
 - Role: security at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.37 · 35 · 35 · 9 · 1 · 1160 · 30768 · 298411 · 2983
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.37 · 35 · 35 · 9 · 1 · 1160 · 30768 · 298411 · 2983 · — · — · —
 
 #### Run 1
 
@@ -1612,8 +1612,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### skeptic-control-small-flag
 
 - Role: skeptic at `plan.challenge`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.42 · 47 · 46 · 12 · 2 · 1166 · 32218 · 443160 · 4319
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.42 · 47 · 46 · 12 · 2 · 1166 · 32218 · 443160 · 4319 · — · — · —
 
 #### Run 1
 
@@ -1656,8 +1656,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### skeptic-plan-scope-creep
 
 - Role: skeptic at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.38 · 39 · 39 · 8 · 2 · 1162 · 29994 · 334142 · 3533
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.38 · 39 · 39 · 8 · 2 · 1162 · 29994 · 334142 · 3533 · — · — · —
 
 #### Run 1
 
@@ -1710,8 +1710,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### skeptic-plan-unsupported-assumption
 
 - Role: skeptic at `plan.challenge`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.40 · 40 · 40 · 10 · 2 · 1164 · 30455 · 386822 · 3804
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.40 · 40 · 40 · 10 · 2 · 1164 · 30455 · 386822 · 3804 · — · — · —
 
 #### Run 1
 
@@ -1773,8 +1773,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### tracer-control-complete-plan
 
 - Role: tracer at `plan.trace`, control
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.27 · 20 · 20 · 11 · 2 · 1090 · 25039 · 195584 · 1838
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.27 · 20 · 20 · 11 · 2 · 1090 · 25039 · 195584 · 1838 · — · — · —
 
 #### Run 1
 
@@ -1804,8 +1804,8 @@ Per case, the median over its runs not in error; per role and for the suite, the
 ### tracer-plan-scenario-without-task
 
 - Role: tracer at `plan.trace`, seeded
-- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output
-  0.30 · 23 · 23 · 11 · 2 · 1090 · 26142 · 224147 · 2214
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.30 · 23 · 23 · 11 · 2 · 1090 · 26142 · 224147 · 2214 · — · — · —
 
 #### Run 1
 

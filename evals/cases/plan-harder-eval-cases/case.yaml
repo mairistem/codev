@@ -1,0 +1,12 @@
+step: plan.write
+kind: seeded
+ref: 7ddb31e34b76328e8feabcf3d69430848a42f030
+request: "Notre banc d'évaluation des rôles ne distingue rien : tout le monde trouve tous les défauts, des faux positifs viennent de fixtures incohérentes, et l'appariement se fait juste sur l'emplacement. Il faudrait vérifier la cohérence des fixtures, apparier aussi par type de défaut, et ajouter des cas plus subtils et des cas propres qui ont l'air suspects."
+summary: "Replays the change 2026-10-13-harder-eval-cases (feat(evals): harder cases, matched by category, and a new baseline (#34))."
+expected:
+  modified:
+    - "role-evaluation::A case declares its fixture, its step, its role and what it expects"
+    - "role-evaluation::The suite covers every reviewing role"
+    - "role-evaluation::What a role invents is counted, and only that"
+  collateral: []
+  decisions: []

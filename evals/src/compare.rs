@@ -7,7 +7,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 use crate::observed::RunInfo;
-use crate::score::{Measure, Measures, Outcome, RoleScore, Spread, SuiteScore, number};
+use crate::score::{
+    Measure, Measures, Outcome, PlanningScore, RoleScore, SourceShare, Spread, SuiteScore, number,
+};
 
 /// The verdict and the report of a comparison.
 #[derive(Debug, Clone, PartialEq)]
@@ -122,6 +124,110 @@ fn quality(base: &RoleScore, cand: &RoleScore) -> Vec<String> {
     out
 }
 
+/// The quality failures of the planning step: a primary recall under the
+/// baseline's minimum, or more duplicates, decisions ignored or invalid
+/// plans than its maximum. The collateral recall is reported, never
+/// decides: it measures thoroughness on chores.
+fn planning_quality(base: &PlanningScore, cand: &PlanningScore) -> Vec<String> {
+    let mut out = Vec::new();
+    if let (Some(c), Some(range)) = (cand.primary_recall, base.primary_recall)
+        && c.median < range.min
+    {
+        out.push(format!(
+            "plan.write: primary recall {:.2} is under the baseline's minimum {:.2}",
+            c.median, range.min
+        ));
+    }
+    for (what, c, b) in [
+        ("probable duplicate(s)", cand.duplicates, base.duplicates),
+        (
+            "decision(s) ignored",
+            cand.decisions_ignored,
+            base.decisions_ignored,
+        ),
+        ("plan(s) that do not validate", cand.invalid, base.invalid),
+    ] {
+        if let (Some(c), Some(range)) = (c, b)
+            && c.median > range.max
+        {
+            out.push(format!(
+                "plan.write: {} {what} exceed the baseline's maximum {}",
+                number(c.median),
+                number(range.max)
+            ));
+        }
+    }
+    out
+}
+
+/// Every quality measure on which the candidate's median does better than
+/// the baseline's best repetition.
+fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
+    let mut out = Vec::new();
+    let candidate_roles = roles(candidate);
+    for b in &baseline.roles {
+        let Some(c) = candidate_roles.get(b.role.as_str()) else {
+            continue;
+        };
+        if let (Some(v), Some(r)) = (c.recall, b.ranges.recall)
+            && v > r.max
+        {
+            out.push(format!(
+                "{}: recall, from {:.2} at best to {v:.2}",
+                b.role, r.max
+            ));
+        }
+        if let Some(r) = b.ranges.false_positives
+            && c.false_positives < r.min
+        {
+            out.push(format!(
+                "{}: false positives, from {} at best to {}",
+                b.role,
+                number(r.min),
+                number(c.false_positives)
+            ));
+        }
+        if let (Some(v), Some(r)) = (c.evidence_validity, b.ranges.evidence_validity)
+            && v > r.max
+        {
+            out.push(format!(
+                "{}: evidence validity, from {:.2} at best to {v:.2}",
+                b.role, r.max
+            ));
+        }
+    }
+    if let (Some(b), Some(c)) = (&baseline.planning, &candidate.planning) {
+        if let (Some(v), Some(r)) = (c.primary_recall, b.primary_recall)
+            && v.median > r.max
+        {
+            out.push(format!(
+                "plan.write: primary recall, from {:.2} at best to {:.2}",
+                r.max, v.median
+            ));
+        }
+        for (what, v, r) in [
+            ("probable duplicates", c.duplicates, b.duplicates),
+            (
+                "decisions ignored",
+                c.decisions_ignored,
+                b.decisions_ignored,
+            ),
+            ("plans that do not validate", c.invalid, b.invalid),
+        ] {
+            if let (Some(v), Some(r)) = (v, r)
+                && v.median < r.min
+            {
+                out.push(format!(
+                    "plan.write: {what}, from {} at best to {}",
+                    number(r.min),
+                    number(v.median)
+                ));
+            }
+        }
+    }
+    out
+}
+
 /// What decides the verdict.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -157,6 +263,10 @@ pub fn compare(
             failures.extend(quality(base, cand));
         }
     }
+    if let (Some(base), Some(cand)) = (&baseline.planning, &candidate.planning) {
+        failures.extend(planning_quality(base, cand));
+    }
+    let improved = improvements(baseline, candidate);
     let base_floor = floor(baseline);
     let consumption_failures = consumption(baseline, candidate, base_floor);
     if mode == Mode::QualityAndCost {
@@ -171,7 +281,10 @@ pub fn compare(
     let report = [
         header(baseline, candidate, &verdict),
         quality_section(baseline, candidate),
+        planning_section(baseline, candidate),
+        improved_section(&improved),
         consumption_section(baseline, candidate, &verdict),
+        sources_section(baseline, candidate),
         per_case_section(baseline, candidate),
         not_compared_section(not_compared),
         failures_section(&verdict),
@@ -337,6 +450,122 @@ fn quality_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
     out
 }
 
+fn planning_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+    let (Some(b), Some(c)) = (&baseline.planning, &candidate.planning) else {
+        return String::new();
+    };
+    let mut out = String::new();
+    let _ = writeln!(out, "\n## `plan.write`\n");
+    let _ = writeln!(
+        out,
+        "The candidate's primary recall must not fall under the baseline's minimum, nor its \
+         duplicates, decisions ignored and invalid plans rise above its maximum; the collateral \
+         recall is reported and never decides.\n"
+    );
+    let _ = writeln!(
+        out,
+        "| Measure | Baseline (min–max) | Candidate |\n|---|---|---|"
+    );
+    let median = |s: Option<Spread>, ratio: bool| {
+        s.map_or_else(
+            || "—".to_string(),
+            |s| {
+                if ratio {
+                    format!("{:.2}", s.median)
+                } else {
+                    number(s.median)
+                }
+            },
+        )
+    };
+    for (label, bs, cs, is_ratio) in [
+        ("Primary recall", b.primary_recall, c.primary_recall, true),
+        (
+            "Collateral recall",
+            b.collateral_recall,
+            c.collateral_recall,
+            true,
+        ),
+        ("Probable duplicates", b.duplicates, c.duplicates, false),
+        (
+            "Decisions ignored",
+            b.decisions_ignored,
+            c.decisions_ignored,
+            false,
+        ),
+        ("Plans that do not validate", b.invalid, c.invalid, false),
+    ] {
+        let base = if is_ratio {
+            ratio_range(bs)
+        } else {
+            count_range(bs)
+        };
+        let _ = writeln!(out, "| {label} | {base} | {} |", median(cs, is_ratio));
+    }
+    out
+}
+
+fn improved_section(improved: &[String]) -> String {
+    if improved.is_empty() {
+        return String::new();
+    }
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "\n## Quality improved\n\nThe candidate's median does better than the baseline's best repetition:\n"
+    );
+    for i in improved {
+        let _ = writeln!(out, "- {i}");
+    }
+    out
+}
+
+/// Where the tokens go in both runs, source by source, ranked by the
+/// baseline's tokens then the candidate's.
+fn sources_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+    if baseline.sources.is_empty() && candidate.sources.is_empty() {
+        return String::new();
+    }
+    let tokens = |ranked: &[SourceShare]| -> BTreeMap<String, f64> {
+        ranked
+            .iter()
+            .map(|s| (s.source.clone(), s.tokens))
+            .collect()
+    };
+    let (b, c) = (tokens(&baseline.sources), tokens(&candidate.sources));
+    let mut names: Vec<&String> = b.keys().chain(c.keys()).collect();
+    names.sort();
+    names.dedup();
+    names.sort_by(|x, y| {
+        let get = |m: &BTreeMap<String, f64>, k: &String| m.get(k).copied().unwrap_or(0.0);
+        get(&b, y)
+            .total_cmp(&get(&b, x))
+            .then(get(&c, y).total_cmp(&get(&c, x)))
+    });
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "\n## Where the tokens go\n\nTokens written to the cache, by source: per case the median over its \
+         repetitions, summed over the compared cases. Reported, never deciding: the cost decides.\n"
+    );
+    let _ = writeln!(
+        out,
+        "| Source | Baseline | Candidate | Change |\n|---|---:|---:|---:|"
+    );
+    for name in names {
+        let (bv, cv) = (b.get(name).copied(), c.get(name).copied());
+        let show = |v: Option<f64>| v.map_or_else(|| "—".to_string(), number);
+        let _ = writeln!(
+            out,
+            "| {name} | {} | {} | {} |",
+            show(bv),
+            show(cv),
+            change(bv.or(Some(0.0)), cv.or(Some(0.0)))
+        );
+    }
+    out
+}
+
 fn consumption_section(baseline: &SuiteScore, candidate: &SuiteScore, verdict: &Verdict) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "\n## Consumption\n");
@@ -344,7 +573,8 @@ fn consumption_section(baseline: &SuiteScore, candidate: &SuiteScore, verdict: &
         out,
         "Sums, over the compared cases, of each case's median over its repetitions. The \
          candidate's cost must be lower than the baseline's floor, {:.4} USD: each case at its \
-         cheapest run. The duration is reported and never decides.\n",
+         cheapest run. The duration and the output are reported and never decide: the output \
+         carries the model's reasoning, which the quality measures guard.\n",
         verdict.floor
     );
     let _ = writeln!(out, "| Measure | Baseline | Candidate | Change |");
@@ -623,5 +853,122 @@ mod tests {
         assert!(err.contains("claude-opus-5-5") && err.contains("claude-sonnet-5-5"));
         assert_eq!(models_differ(&base, &opus, &base, &none), None);
         assert_eq!(models_differ(&base, &opus, &base, &opus), None);
+    }
+
+    fn planning(primary: (f64, f64, f64), duplicates: (f64, f64, f64)) -> PlanningScore {
+        let s = |(median, min, max): (f64, f64, f64)| Some(Spread { median, min, max });
+        PlanningScore {
+            cases: 25,
+            repetitions: vec![],
+            primary_recall: s(primary),
+            collateral_recall: None,
+            duplicates: s(duplicates),
+            decisions_ignored: s((1.0, 1.0, 2.0)),
+            invalid: s((0.0, 0.0, 1.0)),
+            consumption: Measures::default(),
+        }
+    }
+
+    #[test]
+    fn a_plan_that_misses_more_requirements_fails() {
+        let mut base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        base.planning = Some(planning((0.7, 0.6, 0.75), (1.0, 0.0, 2.0)));
+        let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
+        cand.planning = Some(planning((0.5, 0.5, 0.5), (1.0, 1.0, 1.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert!(!result.pass);
+        assert_eq!(
+            result.failures,
+            ["plan.write: primary recall 0.50 is under the baseline's minimum 0.60"]
+        );
+        assert!(
+            result.report.contains("## `plan.write`"),
+            "{}",
+            result.report
+        );
+    }
+
+    #[test]
+    fn planning_within_the_range_passes() {
+        let mut base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        base.planning = Some(planning((0.7, 0.6, 0.75), (1.0, 0.0, 2.0)));
+        let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
+        cand.planning = Some(planning((0.6, 0.6, 0.6), (2.0, 2.0, 2.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert!(result.pass, "{:?}", result.failures);
+        cand.planning = Some(planning((0.6, 0.6, 0.6), (3.0, 3.0, 3.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert_eq!(
+            result.failures,
+            ["plan.write: 3 probable duplicate(s) exceed the baseline's maximum 2"]
+        );
+    }
+
+    #[test]
+    fn a_better_median_than_the_best_repetition_is_quality_improved() {
+        let mut base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        base.roles[0].ranges.false_positives = Some(Spread {
+            median: 4.0,
+            min: 3.0,
+            max: 6.0,
+        });
+        base.roles[0].false_positives = 4.0;
+        base.planning = Some(planning((0.7, 0.6, 0.75), (1.0, 1.0, 2.0)));
+        let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
+        cand.roles[0].false_positives = 2.0;
+        cand.planning = Some(planning((0.8, 0.8, 0.8), (0.0, 0.0, 0.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert!(result.pass, "{:?}", result.failures);
+        let report = &result.report;
+        assert!(report.contains("## Quality improved"), "{report}");
+        assert!(
+            report.contains("- security: false positives, from 3 at best to 2"),
+            "{report}"
+        );
+        assert!(
+            report.contains("- plan.write: primary recall, from 0.75 at best to 0.80"),
+            "{report}"
+        );
+        assert!(
+            report.contains("- plan.write: probable duplicates, from 1 at best to 0"),
+            "{report}"
+        );
+        let same = compare(&base, &base, &[], Mode::QualityOnly).report;
+        assert!(!same.contains("Quality improved"), "{same}");
+    }
+
+    #[test]
+    fn lighter_calls_are_shown_per_call_and_per_source() {
+        let share = |source: &str, tokens: f64| SourceShare {
+            source: source.into(),
+            tokens,
+            share: 0.0,
+        };
+        let mut base = runs(&[(true, 1.0, 1.0)]);
+        base.consumption.input_per_call = Some(38_000.0);
+        base.sources = vec![share("skill", 60_000.0), share("file", 10_000.0)];
+        let mut cand = runs(&[(true, 0.5, 0.5)]);
+        cand.consumption.input_per_call = Some(31_000.0);
+        cand.sources = vec![share("skill", 30_000.0), share("file", 10_000.0)];
+        let report = compare(&base, &cand, &[], Mode::QualityAndCost).report;
+        assert!(
+            report.contains("| Input per call | 38000 | 31000 | -18.4 % |"),
+            "{report}"
+        );
+        assert!(
+            report.contains("| skill | 60000 | 30000 | -50.0 % |"),
+            "{report}"
+        );
+        assert!(report.find("| skill |").unwrap() < report.find("| file |").unwrap());
+    }
+
+    #[test]
+    fn more_output_alone_never_fails() {
+        let base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
+        cand.consumption.output_tokens = Some(1_000_000.0);
+        cand.consumption.output_per_call = Some(50_000.0);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert!(result.pass, "{:?}", result.failures);
     }
 }

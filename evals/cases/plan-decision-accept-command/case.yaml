@@ -1,0 +1,13 @@
+step: plan.write
+kind: seeded
+ref: 99e32fb60065e774123605ece7a9e7f4d783e48f
+request: "Quand je crée une nouvelle décision, elle est direct acceptée et scellée avec le texte bidon du modèle, du coup dès que je la rédige la validation plante et je suis obligé de forcer le sceau. Je voudrais qu'une décision naisse en brouillon, qu'on puisse l'éditer tranquille, et qu'une commande dédiée la passe en acceptée et la scelle d'un coup quand le texte est prêt."
+summary: "Replays the change 2026-09-30-decision-accept-command (feat(decisions): `codev decision accept`; `decision new` creates a proposed decision)."
+expected:
+  modified:
+    - "decisions::Creating a decision through the CLI"
+    - "decisions::Body seal recorded by the CLI"
+    - "decisions::`decision new` writes the ADR and the seal in the same plan"
+  collateral:
+    - "decisions::Stable JSON contract for all commands"
+  decisions: []

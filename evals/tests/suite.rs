@@ -294,3 +294,73 @@ fn the_baseline_is_recorded_with_the_pinned_claude_code() {
          raise the pin and record the baseline again together"
     );
 }
+
+#[test]
+fn the_planning_suite_covers_past_changes_and_decisions() {
+    use codev_evals::case::{DecisionExpect, Step};
+    let cases = suite::load_cases(&repo()).unwrap();
+    assert!(
+        cases.iter().any(|c| c.step.is_review()) && cases.iter().any(|c| c.step == Step::PlanWrite),
+        "review and planning cases load side by side"
+    );
+    let plans: Vec<_> = cases.iter().filter_map(|c| c.plan.as_ref()).collect();
+    let historical = plans
+        .iter()
+        .filter(|p| p.decisions.is_empty() && !p.modified.is_empty())
+        .count();
+    let with_decision = plans.iter().filter(|p| !p.decisions.is_empty()).count();
+    let to_supersede = plans
+        .iter()
+        .flat_map(|p| &p.decisions)
+        .filter(|d| d.expect == DecisionExpect::Supersede)
+        .count();
+    assert!(
+        historical >= 17,
+        "{historical} planning cases with a modified requirement, 17 needed"
+    );
+    assert!(
+        with_decision >= 4,
+        "{with_decision} planning cases with a decision, 4 needed"
+    );
+    assert!(
+        to_supersede >= 1,
+        "no planning case expects a decision to be superseded"
+    );
+}
+
+/// The runs of more than twelve words of `text`, lowercased.
+fn word_runs(text: &str, n: usize) -> BTreeSet<String> {
+    let words: Vec<String> = text
+        .split(|c: char| !c.is_alphanumeric() && c != '\'')
+        .filter(|w| !w.is_empty())
+        .map(str::to_lowercase)
+        .collect();
+    words.windows(n).map(|w| w.join(" ")).collect()
+}
+
+#[test]
+fn no_request_copies_its_proposal() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    let archive = repo().join("_codev").join("changes").join("archive");
+    let mut proposals = BTreeSet::new();
+    for entry in fs::read_dir(&archive).unwrap().filter_map(|e| e.ok()) {
+        if let Ok(text) = fs::read_to_string(entry.path().join("proposal.md")) {
+            proposals.extend(word_runs(&text, 13));
+        }
+    }
+    let copied: Vec<String> = cases
+        .iter()
+        .filter_map(|c| c.plan.as_ref().map(|p| (c, p)))
+        .filter(|(_, p)| {
+            word_runs(&p.request, 13)
+                .iter()
+                .any(|r| proposals.contains(r))
+        })
+        .map(|(c, _)| c.id.clone())
+        .collect();
+    assert_eq!(
+        copied,
+        Vec::<String>::new(),
+        "requests copied from an archived proposal"
+    );
+}

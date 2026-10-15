@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Remplaçons la bibliothèque YAML qu'on utilise par serde_yaml, c'est plus standard."
+summary: "A request written against decision 0006."
+expected:
+  modified: []
+  collateral: []
+  decisions:
+    - { id: "0006", expect: follow }

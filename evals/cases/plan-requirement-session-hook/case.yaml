@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "À l'init, installe aussi un hook Claude Code de démarrage de session dans .claude/settings.json, sans écraser ce que l'utilisateur y a mis."
+summary: "A request written against existing requirements."
+expected:
+  modified:
+    - "init::`codev init` integrates codev into the repository"
+    - "init::codev's text lives in managed sections that never touch user content"
+  collateral: []
+  decisions: []

@@ -1,0 +1,16 @@
+step: plan.write
+kind: seeded
+ref: b4a77ebeed4aa355e78fd167eb86eee4d0aac77a
+request: "Les rôles sont décrits en prose un peu partout dans les prompts et la doc, donc à chaque modif ça diverge. Je voudrais qu'ils deviennent des données déclarées une seule fois, et qu'une équipe puisse désactiver un rôle ou ajouter ses propres critères de fin dans la config du projet, voire pour un changement précis."
+summary: "Replays the change 2026-10-12-declarative-roles (feat(roles): serve roles as data, configurable per project and per change (#28))."
+expected:
+  modified:
+    - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
+    - "skills::The `propose` skill checks traceability before presenting the plan"
+    - "skills::The `propose` skill challenges the plan and reports points to challenge"
+    - "skills::The `apply` skill reviews the change's code as a newcomer"
+  collateral:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+    - "instructions::`codev instructions` describes one artifact of a change"
+    - "instructions::The human output of `codev instructions` reads top to bottom"
+  decisions: []

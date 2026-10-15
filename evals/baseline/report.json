@@ -57,7 +57,10 @@
     "inputTokens": 46675.0,
     "cacheCreationTokens": 1089305.0,
     "cacheReadTokens": 10168576.0,
-    "outputTokens": 98325.0
+    "outputTokens": 98325.0,
+    "calls": null,
+    "inputPerCall": null,
+    "outputPerCall": null
   },
   "failures": [
     "skeptic: 5 false positive(s) exceed 2"
@@ -112,7 +115,10 @@
         "inputTokens": 5840.0,
         "cacheCreationTokens": 137658.0,
         "cacheReadTokens": 1107000.0,
-        "outputTokens": 12903.0
+        "outputTokens": 12903.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -165,7 +171,10 @@
         "inputTokens": 5848.0,
         "cacheCreationTokens": 134844.0,
         "cacheReadTokens": 1405799.0,
-        "outputTokens": 10895.0
+        "outputTokens": 10895.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -218,7 +227,10 @@
         "inputTokens": 3506.0,
         "cacheCreationTokens": 73990.0,
         "cacheReadTokens": 558680.0,
-        "outputTokens": 4476.0
+        "outputTokens": 4476.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -271,7 +283,10 @@
         "inputTokens": 5845.0,
         "cacheCreationTokens": 137894.0,
         "cacheReadTokens": 1111433.0,
-        "outputTokens": 14290.0
+        "outputTokens": 14290.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -324,7 +339,10 @@
         "inputTokens": 5863.0,
         "cacheCreationTokens": 129564.0,
         "cacheReadTokens": 1274546.0,
-        "outputTokens": 9761.0
+        "outputTokens": 9761.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -377,7 +395,10 @@
         "inputTokens": 7067.0,
         "cacheCreationTokens": 171359.0,
         "cacheReadTokens": 1784957.0,
-        "outputTokens": 18343.0
+        "outputTokens": 18343.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -430,7 +451,10 @@
         "inputTokens": 7034.0,
         "cacheCreationTokens": 160148.0,
         "cacheReadTokens": 1342306.0,
-        "outputTokens": 11949.0
+        "outputTokens": 11949.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     },
@@ -483,7 +507,10 @@
         "inputTokens": 3492.0,
         "cacheCreationTokens": 92667.0,
         "cacheReadTokens": 1164124.0,
-        "outputTokens": 11656.0
+        "outputTokens": 11656.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": [
         "skeptic: 5 false positive(s) exceed 2"
@@ -534,7 +561,10 @@
         "inputTokens": 2180.0,
         "cacheCreationTokens": 51181.0,
         "cacheReadTokens": 419731.0,
-        "outputTokens": 4052.0
+        "outputTokens": 4052.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       },
       "failures": []
     }
@@ -12749,6 +12779,7 @@
     {
       "id": "accessibility-code-dropdown-keyboard-trap",
       "role": "accessibility",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3073,
@@ -12759,12 +12790,16 @@
         "inputTokens": 1172.0,
         "cacheCreationTokens": 28149.0,
         "cacheReadTokens": 196251.0,
-        "outputTokens": 2328.0
+        "outputTokens": 2328.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "accessibility-code-icon-button",
       "role": "accessibility",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3079,
@@ -12775,12 +12810,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 26255.0,
         "cacheReadTokens": 189214.0,
-        "outputTokens": 2693.0
+        "outputTokens": 2693.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "accessibility-control-custom-listbox",
       "role": "accessibility",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3519,
@@ -12791,12 +12830,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 29050.0,
         "cacheReadTokens": 243451.0,
-        "outputTokens": 3402.0
+        "outputTokens": 3402.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "accessibility-control-labelled-form",
       "role": "accessibility",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2647,
@@ -12807,12 +12850,16 @@
         "inputTokens": 1170.0,
         "cacheCreationTokens": 25799.0,
         "cacheReadTokens": 144484.0,
-        "outputTokens": 1353.0
+        "outputTokens": 1353.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "accessibility-plan-colour-only",
       "role": "accessibility",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3575,
@@ -12823,12 +12870,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 28405.0,
         "cacheReadTokens": 333600.0,
-        "outputTokens": 3127.0
+        "outputTokens": 3127.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "migration-code-drop-and-rename",
       "role": "migration",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3025,
@@ -12839,12 +12890,16 @@
         "inputTokens": 1176.0,
         "cacheCreationTokens": 25462.0,
         "cacheReadTokens": 275555.0,
-        "outputTokens": 2232.0
+        "outputTokens": 2232.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "migration-code-serde-rename-all",
       "role": "migration",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3153,
@@ -12855,12 +12910,16 @@
         "inputTokens": 1176.0,
         "cacheCreationTokens": 26843.0,
         "cacheReadTokens": 278440.0,
-        "outputTokens": 2421.0
+        "outputTokens": 2421.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "migration-control-additive-field",
       "role": "migration",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3244,
@@ -12871,12 +12930,16 @@
         "inputTokens": 1160.0,
         "cacheCreationTokens": 27963.0,
         "cacheReadTokens": 282641.0,
-        "outputTokens": 1719.0
+        "outputTokens": 1719.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "migration-control-serde-alias",
       "role": "migration",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2986,
@@ -12887,12 +12950,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 26518.0,
         "cacheReadTokens": 237646.0,
-        "outputTokens": 1896.0
+        "outputTokens": 1896.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "migration-plan-breaking-rename",
       "role": "migration",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3536,
@@ -12903,12 +12970,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 28058.0,
         "cacheReadTokens": 331517.0,
-        "outputTokens": 2627.0
+        "outputTokens": 2627.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "newcomer-code-clever-one-liner",
       "role": "newcomer",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2867,
@@ -12919,12 +12990,16 @@
         "inputTokens": 1164.0,
         "cacheCreationTokens": 24880.0,
         "cacheReadTokens": 231202.0,
-        "outputTokens": 2019.0
+        "outputTokens": 2019.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "newcomer-code-deep-nesting",
       "role": "newcomer",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2702,
@@ -12935,12 +13010,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 25111.0,
         "cacheReadTokens": 187615.0,
-        "outputTokens": 1601.0
+        "outputTokens": 1601.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "newcomer-control-plain-code",
       "role": "newcomer",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.238,
@@ -12951,12 +13030,16 @@
         "inputTokens": 1180.0,
         "cacheCreationTokens": 23999.0,
         "cacheReadTokens": 139863.0,
-        "outputTokens": 856.0
+        "outputTokens": 856.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "ops-code-no-timeout",
       "role": "ops",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3183,
@@ -12967,12 +13050,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 26874.0,
         "cacheReadTokens": 189043.0,
-        "outputTokens": 3172.0
+        "outputTokens": 3172.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "ops-code-retry-without-backoff",
       "role": "ops",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3548,
@@ -12983,12 +13070,16 @@
         "inputTokens": 1181.0,
         "cacheCreationTokens": 28141.0,
         "cacheReadTokens": 285147.0,
-        "outputTokens": 3582.0
+        "outputTokens": 3582.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "ops-control-bounded-retries",
       "role": "ops",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2727,
@@ -12999,12 +13090,16 @@
         "inputTokens": 1170.0,
         "cacheCreationTokens": 25425.0,
         "cacheReadTokens": 143969.0,
-        "outputTokens": 1537.0
+        "outputTokens": 1537.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "ops-control-graceful-shutdown",
       "role": "ops",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.366,
@@ -13015,12 +13110,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 30083.0,
         "cacheReadTokens": 249060.0,
-        "outputTokens": 3758.0
+        "outputTokens": 3758.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "ops-plan-no-rollback",
       "role": "ops",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3208,
@@ -13031,12 +13130,16 @@
         "inputTokens": 1158.0,
         "cacheCreationTokens": 27371.0,
         "cacheReadTokens": 244214.0,
-        "outputTokens": 2241.0
+        "outputTokens": 2241.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "performance-code-hidden-n-plus-one",
       "role": "performance",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3292,
@@ -13047,12 +13150,16 @@
         "inputTokens": 1176.0,
         "cacheCreationTokens": 27414.0,
         "cacheReadTokens": 283327.0,
-        "outputTokens": 2604.0
+        "outputTokens": 2604.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "performance-code-n-plus-one",
       "role": "performance",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2821,
@@ -13063,12 +13170,16 @@
         "inputTokens": 1179.0,
         "cacheCreationTokens": 24642.0,
         "cacheReadTokens": 236309.0,
-        "outputTokens": 1539.0
+        "outputTokens": 1539.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "performance-control-batched-query",
       "role": "performance",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2535,
@@ -13079,12 +13190,16 @@
         "inputTokens": 1172.0,
         "cacheCreationTokens": 23798.0,
         "cacheReadTokens": 184403.0,
-        "outputTokens": 1290.0
+        "outputTokens": 1290.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "performance-control-preloaded-helper",
       "role": "performance",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2824,
@@ -13095,12 +13210,16 @@
         "inputTokens": 1172.0,
         "cacheCreationTokens": 25958.0,
         "cacheReadTokens": 190000.0,
-        "outputTokens": 1477.0
+        "outputTokens": 1477.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "performance-plan-unbounded-export",
       "role": "performance",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3557,
@@ -13111,12 +13230,16 @@
         "inputTokens": 1164.0,
         "cacheCreationTokens": 27752.0,
         "cacheReadTokens": 380507.0,
-        "outputTokens": 2851.0
+        "outputTokens": 2851.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-code-email-in-logs",
       "role": "privacy",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3235,
@@ -13127,12 +13250,16 @@
         "inputTokens": 1164.0,
         "cacheCreationTokens": 27291.0,
         "cacheReadTokens": 241212.0,
-        "outputTokens": 2520.0
+        "outputTokens": 2520.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-code-error-message-pii",
       "role": "privacy",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3483,
@@ -13143,12 +13270,16 @@
         "inputTokens": 1176.0,
         "cacheCreationTokens": 28912.0,
         "cacheReadTokens": 286629.0,
-        "outputTokens": 2867.0
+        "outputTokens": 2867.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-code-python-soft-delete",
       "role": "privacy",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3807,
@@ -13159,12 +13290,16 @@
         "inputTokens": 1180.0,
         "cacheCreationTokens": 29761.0,
         "cacheReadTokens": 384864.0,
-        "outputTokens": 3231.0
+        "outputTokens": 3231.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-control-ids-in-logs",
       "role": "privacy",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2728,
@@ -13175,12 +13310,16 @@
         "inputTokens": 1187.0,
         "cacheCreationTokens": 25684.0,
         "cacheReadTokens": 188706.0,
-        "outputTokens": 1523.0
+        "outputTokens": 1523.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-control-masked-logs",
       "role": "privacy",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3753,
@@ -13191,12 +13330,16 @@
         "inputTokens": 1186.0,
         "cacheCreationTokens": 28327.0,
         "cacheReadTokens": 287032.0,
-        "outputTokens": 4033.0
+        "outputTokens": 4033.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "privacy-plan-birth-date-retention",
       "role": "privacy",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.4083,
@@ -13207,12 +13350,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 31384.0,
         "cacheReadTokens": 396514.0,
-        "outputTokens": 4169.0
+        "outputTokens": 4169.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-code-detail-endpoint-authz",
       "role": "security",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.32,
@@ -13223,12 +13370,16 @@
         "inputTokens": 1179.0,
         "cacheCreationTokens": 28273.0,
         "cacheReadTokens": 243373.0,
-        "outputTokens": 2230.0
+        "outputTokens": 2230.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-code-python-path-traversal",
       "role": "security",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2902,
@@ -13239,12 +13390,16 @@
         "inputTokens": 1177.0,
         "cacheCreationTokens": 25770.0,
         "cacheReadTokens": 187642.0,
-        "outputTokens": 2226.0
+        "outputTokens": 2226.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-code-sql-injection",
       "role": "security",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2852,
@@ -13255,12 +13410,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 25389.0,
         "cacheReadTokens": 234493.0,
-        "outputTokens": 1764.0
+        "outputTokens": 1764.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-control-docs-only",
       "role": "security",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2776,
@@ -13271,12 +13430,16 @@
         "inputTokens": 1174.0,
         "cacheCreationTokens": 24952.0,
         "cacheReadTokens": 235070.0,
-        "outputTokens": 1377.0
+        "outputTokens": 1377.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-control-dynamic-query",
       "role": "security",
+      "step": "code.review",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2624,
@@ -13287,12 +13450,16 @@
         "inputTokens": 1170.0,
         "cacheCreationTokens": 24996.0,
         "cacheReadTokens": 143317.0,
-        "outputTokens": 1369.0
+        "outputTokens": 1369.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "security-plan-tokens-in-clear",
       "role": "security",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3685,
@@ -13303,12 +13470,16 @@
         "inputTokens": 1160.0,
         "cacheCreationTokens": 30768.0,
         "cacheReadTokens": 298411.0,
-        "outputTokens": 2983.0
+        "outputTokens": 2983.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "skeptic-control-small-flag",
       "role": "skeptic",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.4249,
@@ -13319,12 +13490,16 @@
         "inputTokens": 1166.0,
         "cacheCreationTokens": 32218.0,
         "cacheReadTokens": 443160.0,
-        "outputTokens": 4319.0
+        "outputTokens": 4319.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "skeptic-plan-scope-creep",
       "role": "skeptic",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3787,
@@ -13335,12 +13510,16 @@
         "inputTokens": 1162.0,
         "cacheCreationTokens": 29994.0,
         "cacheReadTokens": 334142.0,
-        "outputTokens": 3533.0
+        "outputTokens": 3533.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "skeptic-plan-unsupported-assumption",
       "role": "skeptic",
+      "step": "plan.challenge",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.395,
@@ -13351,12 +13530,16 @@
         "inputTokens": 1164.0,
         "cacheCreationTokens": 30455.0,
         "cacheReadTokens": 386822.0,
-        "outputTokens": 3804.0
+        "outputTokens": 3804.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "tracer-control-complete-plan",
       "role": "tracer",
+      "step": "plan.trace",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.2706,
@@ -13367,12 +13550,16 @@
         "inputTokens": 1090.0,
         "cacheCreationTokens": 25039.0,
         "cacheReadTokens": 195584.0,
-        "outputTokens": 1838.0
+        "outputTokens": 1838.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     },
     {
       "id": "tracer-plan-scenario-without-task",
       "role": "tracer",
+      "step": "plan.trace",
       "repetitions": 5,
       "measures": {
         "costUsd": 0.3007,
@@ -13383,7 +13570,10 @@
         "inputTokens": 1090.0,
         "cacheCreationTokens": 26142.0,
         "cacheReadTokens": 224147.0,
-        "outputTokens": 2214.0
+        "outputTokens": 2214.0,
+        "calls": null,
+        "inputPerCall": null,
+        "outputPerCall": null
       }
     }
   ]

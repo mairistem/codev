@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: 6457c0a49c28cdd964ff1ab6c3dfac27b6d07c17
+request: "Une équipe qui écrit ses specs en français doit quand même mettre les mots-clés structurels en anglais, sinon la validation refuse, et ces mots-clés sont codés en dur un peu partout. Je voudrais un catalogue de mots-clés par langue pour que l'outil reconnaisse aussi les versions françaises, et que la fusion des specs garde la langue de la spec qu'elle modifie."
+summary: "Replays the change 2026-10-14-read-french-keywords (feat(specs): read structural keywords from a per-language catalog, French included (#38))."
+expected:
+  modified:
+    - "spec-parsing::Localized structural defects"
+    - "validation::Structural rules beyond the parser"
+  collateral: []
+  decisions: []

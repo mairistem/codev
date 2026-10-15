@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: 84f1cd9c6e7331da796961625ae8cc16ff3fb9ab
+request: "Aujourd'hui un plan peut être considéré comme fini sans mettre à jour la doc ni écrire de tests automatisés. Je veux que les critères exigent une tâche de doc et un test auto par scénario, écrit selon les conventions du projet et de son langage, et que l'implémentation lance toute la suite avant de dire que c'est terminé."
+summary: "Replays the change 2026-10-12-docs-and-tests-in-done (feat(workflow): documentation and tests in every plan's definition of done (#16))."
+expected:
+  modified:
+    - "skills::The default schema gives each artifact a role with \"Done when\" criteria"
+    - "skills::The `propose` skill checks traceability before presenting the plan"
+  collateral: []
+  decisions: []

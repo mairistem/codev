@@ -11,6 +11,7 @@ pub mod checks;
 pub mod compare;
 pub mod lint;
 pub mod observed;
+pub mod plan;
 pub mod reliability;
 pub mod report;
 pub mod runner;

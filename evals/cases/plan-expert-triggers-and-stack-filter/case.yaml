@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: cc02a41d7a1858a004b30b85b37fe1a4af5d3e58
+request: "Les experts ne passent que si la proposition coche leur domaine, donc un changement qui ajoute finalement un formulaire de login ou un Dockerfile sans l'avoir coché passe sous le radar. J'aimerais détecter à partir du diff git les domaines probablement concernés pour suggérer les experts, et ne leur donner que les conseils des langages vraiment utilisés dans le projet."
+summary: "Replays the change 2026-10-13-expert-triggers-and-stack-filter (feat(roles): expert triggers suggest domains from the diff, and knowledge fits the stack (#31))."
+expected:
+  modified:
+    - "roles::`codev roles` serves the roles of a step"
+  collateral: []
+  decisions: []

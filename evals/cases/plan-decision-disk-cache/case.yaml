@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Ajoute un cache sur disque des specs déjà parsées, directement dans le parseur, pour accélérer codev validate sur les gros projets."
+summary: "A request written against decision 0001."
+expected:
+  modified: []
+  collateral: []
+  decisions:
+    - { id: "0001", expect: follow }

@@ -1,0 +1,10 @@
+step: plan.write
+kind: seeded
+ref: 8fb72d7f5c8876a123876122c9690468e956ed4d
+request: "Les commandes qu'on a écrites au tout début (création de changement, liste, statut, instructions, schémas, affichage d'une décision, mise à jour) n'ont aucune spec, donc rien ne dit ce qu'il faut préserver. Il faudrait les spécifier telles qu'elles fonctionnent aujourd'hui, sans toucher au code, en ajoutant les tests manquants."
+summary: "Replays the change 2026-10-12-specify-core-commands (docs(specs): specify the core commands that predate codev's own specs (#23))."
+expected:
+  modified:
+    - "decisions::Showing a decision through the CLI"
+  collateral: []
+  decisions: []

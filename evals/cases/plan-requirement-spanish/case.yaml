@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: da6e0223bd27d58e005d34d5732fed71f3ba78d9
+request: "Pouvoir écrire les titres structurels des specs en espagnol, comme on peut déjà le faire en français."
+summary: "A request written against existing requirements."
+expected:
+  modified:
+    - "keyword-languages::Every structural keyword has a key and a text per language"
+    - "keyword-languages::A keyword is recognized in every catalog language"
+  collateral: []
+  decisions: []

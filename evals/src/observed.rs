@@ -33,6 +33,10 @@ pub struct Observed {
     /// The checked files after the run; `null` for a file that is gone.
     #[serde(default)]
     pub files: BTreeMap<String, Option<String>>,
+    /// `codev validate <change> --json` on each change a planning run
+    /// created, by change name.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub validate: BTreeMap<String, serde_json::Value>,
 }
 
 /// What Claude Code reports a run consumed, besides its cost and duration.
@@ -49,6 +53,31 @@ pub struct Consumption {
     #[serde(default)]
     pub models: Vec<String>,
     pub tokens: Option<Tokens>,
+    /// The tool calls the run made; `None` without the event stream.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<u64>,
+    /// The tool calls made before the first write of a file under
+    /// `_codev/changes/`; `None` when the run wrote none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub orientation_calls: Option<u64>,
+    /// Every call to the model, in order; empty without the event stream.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub calls: Vec<Call>,
+}
+
+/// One call to the model: what it cost, and where the tokens it wrote to
+/// the cache came from.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Call {
+    pub cache_creation: u64,
+    pub cache_read: u64,
+    pub input: u64,
+    pub output: u64,
+    pub tool_calls: u64,
+    /// The call's cache writes shared among their sources, by name.
+    #[serde(default)]
+    pub sources: std::collections::BTreeMap<String, u64>,
 }
 
 /// Tokens summed over every model the run used.

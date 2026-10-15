@@ -1,0 +1,11 @@
+step: plan.write
+kind: seeded
+ref: 4b59a2c20cee1baf7456e08c0e7180b7cea9d010
+request: "Les relecteurs tournent dans la même conversation que celle qui a écrit le plan ou le code, donc ils ont tendance à être d'accord avec l'auteur. Je voudrais une option pour lancer chaque relecteur dans un sous-agent isolé qui ne voit que son rôle et le matériel, puis consolider leurs retours ensuite, comme une vraie équipe."
+summary: "Replays the change 2026-10-13-isolated-review (feat(review): isolated review, each reviewer alone then the meeting (#37))."
+expected:
+  modified:
+    - "skills::The `propose` and `apply` skills take their roles from `codev roles`"
+  collateral:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+  decisions: []
