@@ -400,18 +400,33 @@ pub fn source_of(tool: &str, input: &serde_json::Value) -> String {
         "Grep" | "Glob" => "search".into(),
         "Write" | "Edit" | "MultiEdit" | "NotebookEdit" => "edit".into(),
         "Bash" => {
-            let command = field("command").trim_start();
-            match command.strip_prefix("codev ") {
-                Some(rest) => {
-                    let sub = rest.split_whitespace().next().unwrap_or("");
-                    format!("codev {sub}")
-                }
-                None if command.contains(".claude/skills/") => "skill".into(),
-                None => "shell".into(),
+            let command = without_cd(field("command"));
+            if command.contains(".claude/skills/") && !command.starts_with("codev ") {
+                return "skill".into();
+            }
+            let mut words = command.split(|c: char| c.is_whitespace() || ";&|)".contains(c));
+            match words.next().unwrap_or("") {
+                "codev" => format!("codev {}", words.find(|w| !w.is_empty()).unwrap_or("")),
+                "grep" | "rg" | "find" | "fd" | "ag" => "search".into(),
+                "cat" | "sed" | "head" | "tail" | "less" | "awk" | "nl" => "file".into(),
+                _ => "shell".into(),
             }
         }
         other => other.to_lowercase(),
     }
+}
+
+/// A command without the `cd <dir> &&` (or `;`) that opens it: what runs
+/// is what follows.
+fn without_cd(command: &str) -> &str {
+    let mut rest = command.trim_start();
+    while let Some(after) = rest.strip_prefix("cd ") {
+        let Some(at) = after.find(['&', ';']) else {
+            break;
+        };
+        rest = after[at..].trim_start_matches(['&', ';']).trim_start();
+    }
+    rest
 }
 
 fn is_planning_write(tool: &str, input: &serde_json::Value) -> bool {
@@ -1769,6 +1784,30 @@ mod tests {
         assert_eq!(
             source_of("Bash", &json!({"command": "codev review --change x"})),
             "codev review"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "codev validate; git status"})),
+            "codev validate"
+        );
+        assert_eq!(
+            source_of(
+                "Bash",
+                &json!({"command": "cd \"$PWD\" && codev roles --json"})
+            ),
+            "codev roles"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "grep -rn x _codev/specs"})),
+            "search"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "cd /tmp/x; sed -n 1,80p a.md"})),
+            "file"
+        );
+        assert_eq!(source_of("Bash", &json!({"command": "ls _codev"})), "shell");
+        assert_eq!(
+            source_of("Bash", &json!({"command": "codev --version&&ls"})),
+            "codev --version"
         );
         assert_eq!(
             source_of(

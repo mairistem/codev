@@ -34,7 +34,7 @@
 
 ## 6. Baseline
 
-- [ ] 6.1 Run every planning case once (`run --step plan.write`), with the Claude Code version the baseline records, and fix what fails in the fixtures or the labels; verified by a run of the 24 cases with no repetition in error, and by reading one fixture: its specs at `ref`, its skills from the binary under test
+- [x] 6.1 Run every planning case once (`run --step plan.write`), with the Claude Code version the baseline records, and fix what fails in the fixtures or the labels; verified by a run of the 24 cases with no repetition in error, and by reading one fixture: its specs at `ref`, its skills from the binary under test
 - [ ] 6.2 Record the baseline again in full — every review and planning case, five runs each, with the Claude Code version the workflow pins (`run --out evals/baseline --repeat 5 --jobs 4` into an emptied `evals/baseline/`) — then score it and regenerate the reliability chapter; verified by the suite tests `every_baseline_case_has_five_repetitions`, `no_baseline_repetition_is_in_error`, `the_baseline_is_recorded_with_the_pinned_claude_code` and `the_baseline_agrees_with_the_scoring`, and by every observation holding its calls
 - [ ] 6.2.b Read the baseline's sources table and write, in the pull request, the ranking of where codev's tokens go per step and the first cuts it points to, each to be its own measured change; verified by the table being in `evals/baseline/report.md` and the ranking in the pull request description
 - [ ] 6.3 Compare the baseline with itself: `compare evals/baseline evals/baseline --quality-only` exits 0 and shows the planning section; verified by that command
