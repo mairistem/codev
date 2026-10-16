@@ -168,6 +168,14 @@ related requirements in the instructions. The pull request pastes the
 comparisons of both arms and their sources tables, and ships the arm
 that passes — or neither, with the numbers.
 
+**Outcome.** Neither arm fell under the cost floor (35.87 USD). The first
+arm cost 7 % less (39.23 USD) for a primary recall of 0.73 and 9
+duplicates; the second kept the cost (42.26 USD, +0.2 %) and beat the
+baseline's best repetition on quality — primary recall 0.82 against 0.78
+at best, collateral recall 0.50 against 0.44, 5 duplicates against 6 at
+best. The user chose the second arm; the review steps keep their quality
+with it (the quality-only comparison passes, cost +0.6 %).
+
 **Alternatives considered**: measuring planning alone — the review steps
 read the same skill and could pay for its longer text unseen.
 
