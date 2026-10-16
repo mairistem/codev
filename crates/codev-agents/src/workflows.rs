@@ -263,6 +263,51 @@ mod tests {
         }
     }
 
+    /// The text of `propose`'s `plan.investigate` step, up to step d, its
+    /// whitespace collapsed.
+    fn investigate_step() -> String {
+        let body = find("propose").unwrap().body;
+        let start = body.find("plan.investigate`.**").expect("the step exists");
+        let end = start + body[start..].find("**d. ").expect("step d follows");
+        body[start..end]
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    #[test]
+    fn propose_reads_the_related_requirements() {
+        let step = investigate_step();
+        assert!(
+            step.contains("the instructions list the existing requirements"),
+            "{step}"
+        );
+        assert!(step.contains("`MODIFIED` block"), "{step}");
+        assert!(
+            step.contains("rather than add a requirement beside it"),
+            "{step}"
+        );
+        assert!(step.contains("a starting point"), "{step}");
+    }
+
+    #[test]
+    fn no_search_command_is_imposed() {
+        let body = find("propose").unwrap().body;
+        assert!(
+            !body.contains("codev search"),
+            "the skill names a search command"
+        );
+    }
+
+    #[test]
+    fn the_skill_goes_on_without_related_requirements() {
+        let step = investigate_step();
+        assert!(
+            step.contains("With no listed requirement, work from the request and the code."),
+            "{step}"
+        );
+    }
+
     #[test]
     fn explore_cannot_write() {
         // Its "writes no files" promise must be structural.

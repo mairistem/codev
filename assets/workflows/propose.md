@@ -145,6 +145,14 @@ conversation — the user may have edited the files in the meantime.
 roles of this step once, before the first artifact, and apply the
 investigator's criteria before writing each one.
 
+Once the proposal is written, the instructions list the existing
+requirements the change likely touches (`related`). Read each one before
+writing the delta specs and the design, and modify, in a `MODIFIED` block
+copied whole from its spec, every one the change alters, rather than add a
+requirement beside it. The list is a starting point ranked by relevance,
+not a complete one: a requirement it does not name may still be
+concerned. With no listed requirement, work from the request and the code.
+
 **d. Write the file**, using `template` as its structure. Then check that it
 exists at the expected location.
 

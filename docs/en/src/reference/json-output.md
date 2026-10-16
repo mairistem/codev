@@ -251,6 +251,66 @@ Warnings in `status`: `release_note_missing`, `release_note_invalid`,
 
 With `--specs`, the array is named `specs` and lists capability paths.
 
+### search
+
+`codev search --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "query": "decision seal",
+  "language": "en",
+  "results": [
+    {
+      "kind": "requirement",
+      "id": "decisions::Body seal recorded by the CLI",
+      "capability": "decisions",
+      "requirement": "Body seal recorded by the CLI",
+      "excerpt": "The CLI SHALL maintain a `_codev/decisions/seal.yaml` file…"
+    },
+    {
+      "kind": "decision",
+      "id": "project/0003",
+      "decision": "0003",
+      "title": "The planning folder is hidden",
+      "origin": "project",
+      "status": "superseded",
+      "inEffect": false,
+      "supersededBy": "project/0009",
+      "excerpt": "…"
+    }
+  ],
+  "archived": [
+    { "change": "2026-09-09-enforce-decision-immutability", "excerpt": "…" }
+  ],
+  "status": []
+}
+```
+
+`language` is the language the words were stemmed in. A result carries the
+fields of its kind only; `archived` is present only with `--archive`. Inside
+a result, `status` is the decision's status, not the root array of errors.
+
+### show
+
+`codev show --json`:
+
+```json
+{
+  "root": "/home/you/acme-app",
+  "capability": "decisions",
+  "requirement": {
+    "name": "Creating a decision through the CLI",
+    "text": "### Requirement: Creating a decision through the CLI\n\n…"
+  },
+  "status": []
+}
+```
+
+`codev show <capability>` carries `requirements`, the requirement names, and
+`purpose` instead of `requirement`. A failure carries `capability: null`
+and its code in `status`.
+
 ### status
 
 ```json
@@ -365,6 +425,13 @@ see the [codes](cli.md#codev-self-update).
       "origin": "project"
     }
   ],
+  "related": [
+    {
+      "capability": "decisions",
+      "requirement": "Creating a decision through the CLI",
+      "excerpt": "`codev decision new <title>` SHALL create a new ADR in the project…"
+    }
+  ],
   "skipped": false,
   "role": {
     "id": "architect",
@@ -394,6 +461,7 @@ see the [codes](cli.md#codev-self-update).
 | `resolvedOutputPath` | Where to write; may be a glob such as `…/specs/**/*.md` |
 | `instruction`, `template` | From the schema; `null` when the schema defines none |
 | `language` | The artifact language, `en` by default |
+| `related` | The existing requirements the change likely touches, ranked against the proposal's `Why` and `What Changes`, at most 10, each with `capability`, `requirement` and `excerpt` — for the artifacts that require the proposal directly (`specs`, `design`), once it is written; an empty array otherwise |
 | `context`, `rules` | Blocks ordered from the most general source to the project, each with its `origin` (`project`, `path:<path>` or `git:<url>`) |
 | `dependencies` | The artifacts this one requires, with their path and whether they are done |
 | `unlocks` | Artifacts that become writable once this one exists |

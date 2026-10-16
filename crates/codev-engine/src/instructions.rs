@@ -75,6 +75,10 @@ pub struct Instructions {
     /// consumer can test `decisions.length` without a conditional
     /// branch.
     pub decisions: Vec<DecisionRef>,
+    /// The existing requirements the change likely touches, ranked against
+    /// the proposal — for the artifacts that require the proposal directly,
+    /// once it is written; empty for the others, which read no main spec.
+    pub related: Vec<crate::search::RelatedRequirement>,
     /// True when the change has disabled this artifact: it must **not** be
     /// created.
     pub skipped: bool,
@@ -83,6 +87,11 @@ pub struct Instructions {
     pub role: Option<ResolvedRole>,
     pub warnings: Vec<Warning>,
 }
+
+/// The most related requirements the instructions give: enough to point to
+/// the specs a change touches, bounded so that the cost does not grow with
+/// the project.
+pub const RELATED_LIMIT: usize = 10;
 
 /// Assembles the instructions for an artifact.
 ///
@@ -184,6 +193,10 @@ pub fn for_artifact(
         Vec::new()
     };
 
+    let (related, unreadable_warnings) =
+        related_for(fs, layout, config, &ctx.schema.graph, artifact, &change_dir);
+    warnings.extend(unreadable_warnings);
+
     Ok(Instructions {
         change: ctx.change.clone(),
         schema_name: ctx.schema.name().to_string(),
@@ -204,10 +217,39 @@ pub fn for_artifact(
             .map(|id| id.to_string())
             .collect(),
         decisions,
+        related,
         skipped: state == ArtifactState::Skipped,
         role: roles.for_artifact(&artifact.id).cloned(),
         warnings,
     })
+}
+
+/// The related requirements: only for the artifacts that require the
+/// proposal directly — the specs and the design write deltas and choices
+/// about existing behavior; the others only need the context and rules,
+/// and must not pay for reading every main spec.
+fn related_for(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+    graph: &codev_core::ArtifactGraph,
+    artifact: &codev_core::Artifact,
+    change_dir: &std::path::Path,
+) -> (Vec<crate::search::RelatedRequirement>, Vec<Warning>) {
+    let Some(proposal) = graph
+        .artifacts()
+        .iter()
+        .find(|a| a.generates == "proposal.md")
+    else {
+        return (Vec::new(), Vec::new());
+    };
+    if !artifact.requires.contains(&proposal.id) {
+        return (Vec::new(), Vec::new());
+    }
+    let Ok(text) = fs.read_to_string(&change_dir.join(&proposal.generates)) else {
+        return (Vec::new(), Vec::new());
+    };
+    crate::search::related_requirements(fs, layout, &config.language, &text, RELATED_LIMIT)
 }
 
 /// Converts the index's `in_effect` entries into `DecisionRef`s ready for
@@ -827,6 +869,157 @@ mod tests {
                 ("path:~/shared".to_string(), "Shared rule".to_string()),
                 ("project".to_string(), "Project rule".to_string()),
             ]
+        );
+    }
+
+    const DECISIONS_SPEC: &str = "# Decisions\n\n## Purpose\n\nRecord decisions.\n\n## Requirements\n\n\
+### Requirement: Creating a decision through the CLI\n\n`codev decision new` SHALL create a decision file from the command line.\n\n\
+#### Scenario: Create\n\n- **WHEN** asked\n- **THEN** it creates\n\n\
+### Requirement: Listing decisions\n\n`codev decision list` SHALL list them.\n\n\
+#### Scenario: List\n\n- **WHEN** asked\n- **THEN** it lists\n";
+
+    const DRAFT_PROPOSAL: &str = "# Proposal: Draft decisions\n\n## Why\n\nA user wants to create a decision as a draft \
+from the command line.\n\n## What Changes\n\n- `codev decision new` creates a draft decision.\n\n## Impact\n\nNone.\n";
+
+    fn drafting(proposal: Option<&str>) -> MemoryFileSystem {
+        let mut files = vec![
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
+            ("/p/_codev/specs/decisions/spec.md", DECISIONS_SPEC),
+        ];
+        if let Some(text) = proposal {
+            files.push(("/p/_codev/changes/add-auth/proposal.md", text));
+        }
+        project(&files)
+    }
+
+    #[test]
+    fn instructions_name_the_requirements_the_proposal_touches() {
+        let fs = drafting(Some(DRAFT_PROPOSAL));
+        for artifact in ["specs", "design"] {
+            let instr = instructions(&fs, Some(artifact)).unwrap();
+            assert_eq!(
+                instr.related[0].requirement, "Creating a decision through the CLI",
+                "{artifact}"
+            );
+            assert_eq!(instr.related[0].capability, "decisions");
+            assert!(
+                instr.related[0]
+                    .excerpt
+                    .contains("SHALL create a decision file")
+            );
+            assert!(instr.related.len() <= RELATED_LIMIT);
+        }
+    }
+
+    #[test]
+    fn the_artifacts_that_do_not_require_the_proposal_read_no_spec() {
+        let fs = drafting(Some(DRAFT_PROPOSAL));
+        for artifact in ["proposal", "tasks"] {
+            let instr = instructions(&fs, Some(artifact)).unwrap();
+            assert!(instr.related.is_empty(), "{artifact}");
+        }
+        assert!(
+            !fs.reads().iter().any(|p| p.starts_with("/p/_codev/specs")),
+            "{:?}",
+            fs.reads()
+        );
+    }
+
+    #[test]
+    fn no_related_requirements_before_the_proposal() {
+        let instr = instructions(&drafting(None), Some("specs")).unwrap();
+        assert!(instr.related.is_empty());
+    }
+
+    #[test]
+    fn an_empty_proposal_ranks_nothing() {
+        let instr = instructions(&drafting(Some("")), Some("specs")).unwrap();
+        assert!(instr.related.is_empty());
+        let instr = instructions(&drafting(Some("the of a")), Some("design")).unwrap();
+        assert!(instr.related.is_empty());
+    }
+
+    #[test]
+    fn no_related_requirements_without_specs() {
+        let fs = project(&[
+            (
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            ),
+            ("/p/_codev/changes/add-auth/proposal.md", DRAFT_PROPOSAL),
+        ]);
+        assert!(instructions(&fs, Some("specs")).unwrap().related.is_empty());
+    }
+
+    /// A file system whose reads of one path fail.
+    struct Unreadable<'a> {
+        inner: &'a MemoryFileSystem,
+        path: &'a str,
+    }
+
+    impl FileSystem for Unreadable<'_> {
+        fn exists(&self, path: &std::path::Path) -> bool {
+            self.inner.exists(path)
+        }
+        fn read_to_string(&self, path: &std::path::Path) -> std::io::Result<String> {
+            if path == std::path::Path::new(self.path) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::PermissionDenied,
+                    "denied",
+                ));
+            }
+            self.inner.read_to_string(path)
+        }
+        fn len(&self, path: &std::path::Path) -> std::io::Result<u64> {
+            self.inner.len(path)
+        }
+        fn is_regular_file(&self, path: &std::path::Path) -> bool {
+            self.inner.is_regular_file(path)
+        }
+        fn write(&self, path: &std::path::Path, contents: &str) -> std::io::Result<()> {
+            self.inner.write(path, contents)
+        }
+        fn create_dir_all(&self, path: &std::path::Path) -> std::io::Result<()> {
+            self.inner.create_dir_all(path)
+        }
+        fn walk_files(&self, dir: &std::path::Path) -> std::io::Result<Vec<String>> {
+            self.inner.walk_files(dir)
+        }
+        fn list_dir(&self, dir: &std::path::Path) -> std::io::Result<Vec<String>> {
+            self.inner.list_dir(dir)
+        }
+        fn rename(&self, from: &std::path::Path, to: &std::path::Path) -> std::io::Result<()> {
+            self.inner.rename(from, to)
+        }
+        fn remove_file(&self, path: &std::path::Path) -> std::io::Result<()> {
+            self.inner.remove_file(path)
+        }
+    }
+
+    #[test]
+    fn an_unreadable_spec_is_left_out_with_a_warning() {
+        let mem = drafting(Some(DRAFT_PROPOSAL)).with_file("/p/_codev/specs/billing/spec.md", "x");
+        let fs = Unreadable {
+            inner: &mem,
+            path: "/p/_codev/specs/billing/spec.md",
+        };
+        let layout = Layout::new("/p");
+        let e = env();
+        let config = crate::config::resolve(&fs, &e, &layout).unwrap();
+        let ctx =
+            change::load(&fs, &layout, &config, ChangeId::parse("add-auth").unwrap()).unwrap();
+        let instr = for_artifact(&fs, &e, &layout, &ctx, &config, Some("specs")).unwrap();
+        assert_eq!(instr.related[0].capability, "decisions");
+        assert!(
+            instr
+                .warnings
+                .iter()
+                .any(|w| w.code == "spec_unreadable" && w.message.contains("billing")),
+            "{:?}",
+            instr.warnings
         );
     }
 }

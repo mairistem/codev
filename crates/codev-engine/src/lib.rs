@@ -31,6 +31,7 @@ pub mod roles;
 pub mod root;
 pub mod scaffold;
 pub mod schemas;
+pub mod search;
 pub mod sources;
 pub mod specs;
 pub mod suggest;

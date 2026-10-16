@@ -51,6 +51,31 @@ pub enum EngineError {
     #[error("change `{change}` has errors; run `codev validate {change}` for details")]
     ValidationFailed { change: String },
 
+    /// Nothing is left of a `codev search` query once its common words are
+    /// removed.
+    #[error("the query holds no word to search: give words that name the behavior")]
+    SearchQueryEmpty,
+
+    /// `codev search --limit` outside the range it accepts.
+    #[error("--limit must be from 1 to {max}, got {limit}")]
+    SearchLimitInvalid { limit: usize, max: usize },
+
+    /// A capability `codev show` does not know: not one of the main specs.
+    #[error("no capability `{capability}` in the specs — `codev list --specs` lists them")]
+    UnknownCapability { capability: String },
+
+    /// A requirement the capability does not hold; the message lists the
+    /// ones it does.
+    #[error(
+        "capability `{capability}` has no requirement `{requirement}`; its requirements are: {}",
+        known.join(", ")
+    )]
+    UnknownRequirement {
+        capability: String,
+        requirement: String,
+        known: Vec<String>,
+    },
+
     /// The review record does not let the change be archived: missing for
     /// a step where roles were active, a `high` finding unresolved, or a
     /// format this codev cannot read. Its own code, as `ValidationFailed`.
@@ -107,6 +132,10 @@ impl EngineError {
             Self::InvalidCodevVersion { .. } => "invalid_codev_version",
             Self::InvalidReviewMode { .. } => "invalid_review_mode",
             Self::ValidationFailed { .. } => "validation_failed",
+            Self::SearchQueryEmpty => "search_query_empty",
+            Self::SearchLimitInvalid { .. } => "search_limit_invalid",
+            Self::UnknownCapability { .. } => "unknown_capability",
+            Self::UnknownRequirement { .. } => "unknown_requirement",
             Self::ReviewBlocked { .. } => "review_blocked",
             Self::Write { .. } => "write_failed",
             Self::RoleSetting { code, .. } => code,

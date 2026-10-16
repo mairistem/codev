@@ -22,6 +22,8 @@ Commands:
   doctor        Check what the project's codev setup still lacks, and how to fix it
   new           Create a new item
   list          List active changes, or specified capabilities with --specs
+  search        Search the requirements and decisions that match a query
+  show          Print one requirement, or the requirement names of a capability
   status        Show the state of a change's artifacts
   instructions  Print everything needed to write an artifact
   roles         List the roles active at a workflow step, with their criteria
@@ -465,6 +467,74 @@ nommé exactement `spec.md`, dossiers imbriqués compris. Les autres fichiers,
 comme un `README.md` ou `notes/myspec.md`, ne sont pas des specs et sont
 ignorés, par `codev validate` également.
 
+### codev search
+
+```text
+Search the requirements and decisions that match a query
+
+Usage: codev search [OPTIONS] <QUERY>...
+
+Arguments:
+  <QUERY>...  Words naming the behavior, in the language the specs are written in
+
+Options:
+      --limit <LIMIT>  Results to print, from 1 to 50 [default: 10]
+      --archive        Also list the matching archived changes, in a section of their own
+      --json
+  -h, --help           Print help
+```
+
+Classe les exigences des specs principales — chacune avec sa description et
+ses scénarios — et les décisions, héritées comprises, selon leur
+correspondance avec la requête, et affiche les meilleures : le type,
+l'identifiant (`<capacité>::<exigence>`, ou l'identifiant et le titre de la
+décision avec son statut et si elle est en vigueur) et un extrait. La
+casse, les accents et les mots vides sont ignorés, et les mots se
+rapprochent par leur racine dans la langue des specs : écrivez la requête
+dans cette langue, ainsi `decisions` trouve `decision`. La sortie contient
+10 résultats, sauf si `--limit` en demande de 1 à 50, quelle que soit la
+taille du projet. `--archive` ajoute les changes archivés qui
+correspondent, dans une section à part, jamais classés avec les exigences.
+Une requête qui ne trouve rien le dit et se termine avec le code 0 ; une
+requête faite seulement de mots vides échoue avec `search_query_empty`, et
+un `--limit` hors limites avec `search_limit_invalid`. La commande ne fait
+que lire.
+
+```bash
+codev search create a decision from the command line
+codev search "decision seal" --archive
+```
+
+### codev show
+
+```text
+Print one requirement, or the requirement names of a capability
+
+Usage: codev show [OPTIONS] <TARGET>
+
+Arguments:
+  <TARGET>  `<capability>::<requirement name>`, or `<capability>` for its index
+
+Options:
+      --json
+  -h, --help  Print help
+```
+
+`codev show <capacité>::<nom de l'exigence>` affiche cette exigence telle que
+sa spec principale la contient — titre, description et scénarios, à
+l'identique — et rien d'autre de la spec ; le nom est comparé sans tenir
+compte de la casse ni des espaces. `codev show <capacité>` affiche
+l'objectif de la capacité et les noms de ses exigences, sous la forme
+`<capacité>::<nom>` que la commande accepte. La capacité doit être l'une de
+celles que nomme `codev list --specs` : toute autre valeur échoue avec
+`unknown_capability`, et une exigence que la capacité ne contient pas avec
+`unknown_requirement`, qui liste celles qu'elle contient.
+
+```bash
+codev show decisions
+codev show "decisions::Creating a decision through the CLI"
+```
+
 ### codev status
 
 ```text
@@ -523,6 +593,15 @@ commande liste aussi les décisions d'architecture en vigueur, et le
 [rôle](../roles.md) de l'artefact avec ses critères. Sans
 `ARTIFACT`, elle choisit le premier artefact prêt à être rédigé. Elle n'écrit
 aucun fichier.
+
+Une fois la proposition du change écrite, les instructions des artefacts qui
+la requièrent directement — `specs` et `design` — listent aussi les exigences
+existantes que le change touche probablement, classées par rapport au `Why`
+et au `What Changes` de la proposition, au plus 10, chacune avec un extrait,
+et indiquent qu'on en lit une avec `codev show <capacité>::<exigence>` et
+qu'une exigence que le change altère se modifie au lieu d'être ajoutée de
+nouveau. Une spec illisible est écartée avec un avertissement
+`spec_unreadable`.
 
 Pour un artefact désactivé par `skip_specs`, elle indique qu'il ne doit pas
 être créé, avec un avertissement `artifact_skipped`. Elle échoue avec

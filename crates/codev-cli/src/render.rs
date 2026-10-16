@@ -18,9 +18,10 @@ use crate::commands::{
     ChangelogOutcome, ChangesOutcome, DecisionAcceptedOutcome, DecisionCreatedOutcome,
     DecisionDeviatedOutcome, DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome,
     DecisionShowOutcome, DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome, ReviewOutcome,
-    SchemasOutcome, SetupOutcome, SourcesListOutcome, SourcesShowOutcome, SourcesUpdateOutcome,
-    SpecsOutcome,
+    SchemasOutcome, SearchOutcome, SetupOutcome, ShowOutcome, SourcesListOutcome,
+    SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
 };
+use codev_engine::search::{Hit, ShowResult};
 
 /// Warnings go to stderr, never to stdout: a `codev list` redirected to a
 /// file must not get polluted by them.
@@ -427,6 +428,19 @@ pub fn instructions(instructions: &Instructions) -> String {
                 dep.path.display()
             );
         }
+    }
+
+    if !instructions.related.is_empty() {
+        let _ = writeln!(out);
+        let _ = writeln!(out, "Existing requirements this change likely touches:");
+        for r in &instructions.related {
+            let _ = writeln!(out, "  {}::{} — {}", r.capability, r.requirement, r.excerpt);
+        }
+        let _ = writeln!(
+            out,
+            "  Read one with `codev show <capability>::<requirement>`. A requirement the change \
+             alters is modified, in a MODIFIED block copied from its spec, not added again."
+        );
     }
 
     for (title, blocks) in [
@@ -1047,6 +1061,90 @@ pub fn specs(outcome: &SpecsOutcome) -> String {
     out
 }
 
+/// Human rendering of `codev search`: each result's kind, identifier and
+/// excerpt, the archived changes after.
+pub fn search(outcome: &SearchOutcome) -> String {
+    let r = &outcome.result;
+    let mut out = String::new();
+    if r.results.is_empty() {
+        let _ = writeln!(
+            out,
+            "Nothing matched `{}`. `codev list --specs` lists the capabilities.",
+            r.query
+        );
+    }
+    for (i, hit) in r.results.iter().enumerate() {
+        match hit {
+            Hit::Requirement {
+                capability,
+                requirement,
+                excerpt,
+            } => {
+                let _ = writeln!(
+                    out,
+                    "{:>2}. requirement  {capability}::{requirement}",
+                    i + 1
+                );
+                let _ = writeln!(out, "    {excerpt}");
+            }
+            Hit::Decision { decision, excerpt } => {
+                let mut state = decision.status.clone();
+                if decision.in_effect {
+                    state.push_str(", in effect");
+                } else if let Some(by) = &decision.superseded_by {
+                    state = format!("{state}, superseded by {by}");
+                } else {
+                    state.push_str(", not in effect");
+                }
+                if decision.origin != "project" {
+                    state = format!("{}, {state}", decision.origin);
+                }
+                let _ = writeln!(
+                    out,
+                    "{:>2}. decision     {} {} [{state}]",
+                    i + 1,
+                    decision.id,
+                    decision.title
+                );
+                let _ = writeln!(out, "    {excerpt}");
+            }
+        }
+    }
+    if let Some(archived) = &r.archived {
+        let _ = writeln!(out, "\nArchived changes:");
+        if archived.is_empty() {
+            let _ = writeln!(out, "  none matched");
+        }
+        for a in archived {
+            let _ = writeln!(out, "  {} — {}", a.change, a.excerpt);
+        }
+    }
+    out
+}
+
+/// Human rendering of `codev show`: the requirement as the spec holds it,
+/// or the capability's purpose and requirement names.
+pub fn show(outcome: &ShowOutcome) -> String {
+    match &outcome.result {
+        ShowResult::Requirement { text, .. } => format!("{text}\n"),
+        ShowResult::Capability {
+            capability,
+            purpose,
+            requirements,
+        } => {
+            let mut out = format!("Capability: {capability}\n");
+            if let Some(purpose) = purpose {
+                let _ = writeln!(out, "\n{purpose}");
+            }
+            let _ = writeln!(out, "\nRequirements:");
+            for name in requirements {
+                let _ = writeln!(out, "  {capability}::{name}");
+            }
+            out
+        }
+    }
+}
+
 pub fn schemas(outcome: &SchemasOutcome) -> String {
     let mut out = String::from("Available schemas:\n");
     for schema in &outcome.schemas {
@@ -1347,6 +1445,7 @@ apply:
                 path: PathBuf::from("_codev/decisions/0001-foundation.md"),
                 origin: "project".into(),
             }],
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -1374,6 +1473,7 @@ apply:
             dependencies: Vec::<Dependency>::new(),
             unlocks: Vec::new(),
             decisions: Vec::new(),
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
@@ -1653,10 +1753,42 @@ apply:
             dependencies: Vec::new(),
             unlocks: vec!["specs".into()],
             decisions: Vec::new(),
+            related: Vec::new(),
             skipped: false,
             role: None,
             warnings: Vec::new(),
         }
+    }
+
+    #[test]
+    fn the_human_instructions_list_the_related_requirements() {
+        let mut instr = bare_instructions();
+        instr.artifact_id = "design".into();
+        instr.dependencies = vec![codev_engine::instructions::Dependency {
+            id: "proposal".into(),
+            path: std::path::PathBuf::from("/p/_codev/changes/add-auth/proposal.md"),
+            done: true,
+        }];
+        instr.related = vec![codev_engine::search::RelatedRequirement {
+            capability: "decisions".into(),
+            requirement: "Creating a decision through the CLI".into(),
+            excerpt: "`codev decision new` SHALL create a decision.".into(),
+        }];
+        let rendered = super::instructions(&instr);
+        let read = rendered.find("Read before writing:").unwrap();
+        let section = rendered
+            .find("Existing requirements this change likely touches:")
+            .expect("the section");
+        assert!(read < section, "{rendered}");
+        assert!(rendered.contains(
+            "  decisions::Creating a decision through the CLI — `codev decision new` SHALL create a decision."
+        ));
+        assert!(
+            rendered.contains("`codev show <capability>::<requirement>`"),
+            "{rendered}"
+        );
+        assert!(rendered.contains("not added again"), "{rendered}");
+        assert!(!super::instructions(&bare_instructions()).contains("Existing requirements"));
     }
 
     #[test]

@@ -79,6 +79,11 @@ it finds, and reports contradictions with existing specs instead of settling
 them alone. It writes the prose in the project's
 [artifact language](guides/artifact-language.md).
 
+Once the proposal is written, the instructions it reads list the existing
+requirements the change likely touches. The skill reads them and modifies
+those the change alters rather than adding new ones beside them; the list
+is a starting point, not a complete one.
+
 The request authorizes planning only, even if it says "build" or "fix": the
 skill stops once the artifacts are written and waits for you.
 
