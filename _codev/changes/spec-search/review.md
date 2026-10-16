@@ -360,3 +360,163 @@ history:
 ```
 
 Second pass, on the revised plan: its finding was merged into R-skeptic-9.
+
+## code.review
+
+Mode: isolated.
+Summarized: crates/codev-agents/src/workflows.rs, crates/codev-cli/src/commands.rs, contract.rs, main.rs, render.rs — over the material limit; summarized by one sub-agent for these five files rather than one per file, to save tokens.
+Summarized: crates/codev-engine/src/instructions.rs, docs/en/src/reference/cli.md, docs/fr/src/reference/cli.md, docs/fr/src/reference/json-output.md — over the material limit; summarized by one sub-agent for these four files.
+
+### security
+
+No finding.
+
+### performance
+
+No finding.
+
+### newcomer
+
+#### R-newcomer-1 `search` mixes five jobs and re-implements `as_str` in two matches
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/search.rs:260-275"
+evidence: |
+          let status = match &entry.decision.status {
+              DecisionStatus::Unknown(raw) => raw.clone(),
+              other => other.as_str().to_string(),
+          };
+recommendation: "`DecisionStatus::as_str` already returns `raw` for `Unknown`, and `Origin::as_str` already returns \"project\": use them. Move the decision documents and hits into their own function, so that `search` reads as validate, load, add decisions, rank, archive."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-engine/src/search.rs: add_decisions; status and origin through as_str"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 `load_requirements(…, true)` boolean flag and an else branch that cannot run
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/search.rs:167-175"
+evidence: |
+      }) = load_requirements(fs, layout, true)
+      else {
+          return (Vec::new(), Vec::new());
+      };
+recommendation: "Replace the bare boolean with a small enum or two entry points; in the lenient path, return the corpus directly so the dead `else` goes away; say why the `filter_map` cannot hit its `None` arm, or keep requirements apart."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-engine/src/search.rs: the Unreadable enum (Skip, Fail); the skipped path says why it cannot fail; a comment on why hits holds requirements only"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 `search_archive` special-cases one file inside a two-file loop and re-parses `## Why` its own way
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/search.rs:323-333"
+evidence: |
+          for file in ["proposal.md", "design.md"] {
+              if let Ok(content) = fs.read_to_string(&dir.join(&name).join(file)) {
+                  if file == "proposal.md" {
+recommendation: "Read the two files with two plain statements, and add a pure `proposal_section(proposal, \"Why\")` in codev-core next to `proposal_query`, used by both, so there is one definition of a proposal's section."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-engine/src/search.rs: two plain reads; crates/codev-core/src/search.rs: proposal_section, used by proposal_query and the archive"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The `// French` marker sits at the end of an English line in `COMMON_WORDS`
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/search.rs:51"
+evidence: |
+          "with", "would", "you", "your", // French
+recommendation: "Split the list into English and French constants, or keep the comment on its own line."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-core/src/search.rs: ENGLISH_COMMON_WORDS and FRENCH_COMMON_WORDS, is_common"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 `rank` indexes documents as an anonymous tuple, and `f` means two different things
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/search.rs:121-164"
+evidence: |
+      let indexed: Vec<(BTreeMap<&str, f64>, f64)> = documents
+recommendation: "A private `IndexedDocument { frequencies, length }` and names `doc` and `frequency`, so that the IDF table and the BM25 formula read without decoding a tuple."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-core/src/search.rs: IndexedDocument { frequencies, length }; doc and frequency"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-6 The related-requirements block nests three matches inside the already long `for_artifact`
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/instructions.rs:207-224"
+evidence: |
+      let related = match proposal {
+          Some(id) if artifact.requires.contains(&id) => {
+              match fs.read_to_string(&change_dir.join("proposal.md")) {
+recommendation: "Extract a function with early returns; rename `unreadable` to `warnings`; take the file name from the `generates` found just above rather than repeating \"proposal.md\"."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-engine/src/instructions.rs: related_for with early returns; the file name from generates"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-7 Some test names hide part of what the test checks
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/search.rs:346-355"
+evidence: |
+      fn the_same_input_ranks_the_same_way() {
+recommendation: "Move the \"a query matching nothing ranks nothing\" assertion into its own test, and split `requirement_document`'s checks out of `a_requirement_is_sliced_verbatim`."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-core/src/search.rs: tests a_query_matching_nothing_ranks_nothing and a_requirement_document_is_named_capability_colon_colon_name"
+  - status: fixed
+    by: newcomer
+```
+

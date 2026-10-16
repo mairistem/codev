@@ -193,36 +193,9 @@ pub fn for_artifact(
         Vec::new()
     };
 
-    // The related requirements: only for the artifacts that require the
-    // proposal directly — the specs and the design write deltas and choices
-    // about existing behavior; the others only need the context and rules,
-    // and must not pay for reading every main spec.
-    let proposal = ctx
-        .schema
-        .graph
-        .artifacts()
-        .iter()
-        .find(|a| a.generates == "proposal.md")
-        .map(|a| a.id.clone());
-    let related = match proposal {
-        Some(id) if artifact.requires.contains(&id) => {
-            match fs.read_to_string(&change_dir.join("proposal.md")) {
-                Ok(text) => {
-                    let (related, unreadable) = crate::search::related_requirements(
-                        fs,
-                        layout,
-                        &config.language,
-                        &text,
-                        RELATED_LIMIT,
-                    );
-                    warnings.extend(unreadable);
-                    related
-                }
-                Err(_) => Vec::new(),
-            }
-        }
-        _ => Vec::new(),
-    };
+    let (related, unreadable_warnings) =
+        related_for(fs, layout, config, &ctx.schema.graph, artifact, &change_dir);
+    warnings.extend(unreadable_warnings);
 
     Ok(Instructions {
         change: ctx.change.clone(),
@@ -249,6 +222,34 @@ pub fn for_artifact(
         role: roles.for_artifact(&artifact.id).cloned(),
         warnings,
     })
+}
+
+/// The related requirements: only for the artifacts that require the
+/// proposal directly — the specs and the design write deltas and choices
+/// about existing behavior; the others only need the context and rules,
+/// and must not pay for reading every main spec.
+fn related_for(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+    graph: &codev_core::ArtifactGraph,
+    artifact: &codev_core::Artifact,
+    change_dir: &std::path::Path,
+) -> (Vec<crate::search::RelatedRequirement>, Vec<Warning>) {
+    let Some(proposal) = graph
+        .artifacts()
+        .iter()
+        .find(|a| a.generates == "proposal.md")
+    else {
+        return (Vec::new(), Vec::new());
+    };
+    if !artifact.requires.contains(&proposal.id) {
+        return (Vec::new(), Vec::new());
+    }
+    let Ok(text) = fs.read_to_string(&change_dir.join(&proposal.generates)) else {
+        return (Vec::new(), Vec::new());
+    };
+    crate::search::related_requirements(fs, layout, &config.language, &text, RELATED_LIMIT)
 }
 
 /// Converts the index's `in_effect` entries into `DecisionRef`s ready for

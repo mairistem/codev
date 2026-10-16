@@ -8,12 +8,12 @@ use codev_core::Layout;
 use codev_core::decisions::DecisionStatus;
 use codev_core::parser::parse_spec;
 use codev_core::search::{
-    Document, SearchError, find_requirement, proposal_query, rank, requirement_document,
-    requirement_source, stemming_lang,
+    Document, SearchError, find_requirement, proposal_query, proposal_section, rank,
+    requirement_document, requirement_source, stemming_lang,
 };
 
 use crate::config::ResolvedConfig;
-use crate::decisions::{self, Origin};
+use crate::decisions;
 use crate::error::{EngineError, Result, Warning};
 use crate::ports::{Env, FileSystem};
 use crate::specs;
@@ -91,9 +91,21 @@ struct Corpus {
     unreadable: Vec<String>,
 }
 
-/// Reads every main spec. `lenient`: a spec that cannot be read is left
-/// out and named in `unreadable`; otherwise it is an error.
-fn load_requirements(fs: &dyn FileSystem, layout: &Layout, lenient: bool) -> Result<Corpus> {
+/// What to do with a main spec that cannot be read.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Unreadable {
+    /// Leave it out, named in `Corpus::unreadable`.
+    Skip,
+    /// Fail with `EngineError::Unreadable`.
+    Fail,
+}
+
+/// Reads every main spec, a spec that cannot be read handled as `on_unreadable` says.
+fn load_requirements(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    on_unreadable: Unreadable,
+) -> Result<Corpus> {
     let mut documents = Vec::new();
     let mut hits: BTreeMap<String, Hit> = BTreeMap::new();
     let mut langs = Vec::new();
@@ -102,7 +114,7 @@ fn load_requirements(fs: &dyn FileSystem, layout: &Layout, lenient: bool) -> Res
         let path = layout.spec_file(&capability);
         let source = match fs.read_to_string(&path) {
             Ok(source) => source,
-            Err(_) if lenient => {
+            Err(_) if on_unreadable == Unreadable::Skip => {
                 unreadable.push(capability);
                 continue;
             }
@@ -164,14 +176,15 @@ pub fn related_requirements(
     proposal: &str,
     limit: usize,
 ) -> (Vec<RelatedRequirement>, Vec<Warning>) {
+    // Skipping unreadable specs, loading cannot fail.
     let Ok(Corpus {
         documents,
         mut hits,
         langs,
         unreadable,
-    }) = load_requirements(fs, layout, true)
+    }) = load_requirements(fs, layout, Unreadable::Skip)
     else {
-        return (Vec::new(), Vec::new());
+        unreachable!("unreadable specs are skipped, never an error");
     };
     let warnings = unreadable
         .iter()
@@ -190,6 +203,7 @@ pub fn related_requirements(
     let related = ranked
         .into_iter()
         .take(limit)
+        // `hits` holds requirements only here: no decision was added.
         .filter_map(|r| match hits.remove(&r.id) {
             Some(Hit::Requirement {
                 capability,
@@ -229,10 +243,40 @@ pub fn search(
         mut hits,
         langs,
         ..
-    } = load_requirements(fs, layout, false)?;
+    } = load_requirements(fs, layout, Unreadable::Fail)?;
     let lang = stemming_lang(&config.language, langs);
 
     let index = decisions::index(fs, env, layout, config)?;
+    add_decisions(&index, &mut documents, &mut hits);
+
+    let ranked = rank(&documents, query, lang)
+        .map_err(|SearchError::EmptyQuery| EngineError::SearchQueryEmpty)?;
+    let results = ranked
+        .into_iter()
+        .take(limit)
+        .filter_map(|r| hits.remove(&r.id))
+        .collect();
+
+    let archived = if archive {
+        Some(search_archive(fs, layout, query, lang, limit)?)
+    } else {
+        None
+    };
+    Ok(SearchResult {
+        query: query.to_string(),
+        language: lang.code().to_string(),
+        results,
+        archived,
+    })
+}
+
+/// Every decision of the index as a document and a result, with its status,
+/// whether it is in effect and what supersedes it.
+fn add_decisions(
+    index: &decisions::DecisionIndex,
+    documents: &mut Vec<Document>,
+    hits: &mut BTreeMap<String, Hit>,
+) {
     let in_effect: BTreeSet<String> = index.in_effect.iter().map(|q| q.as_str()).collect();
     let mut superseded_by: BTreeMap<String, String> = BTreeMap::new();
     for entry in &index.entries {
@@ -257,10 +301,6 @@ pub fn search(
             id: id.clone(),
             text: format!("{}\n{}", entry.decision.title, body.join("\n")),
         });
-        let status = match &entry.decision.status {
-            DecisionStatus::Unknown(raw) => raw.clone(),
-            other => other.as_str().to_string(),
-        };
         let first = body.iter().find(|b| !b.trim().is_empty()).unwrap_or(&"");
         hits.insert(
             id,
@@ -269,11 +309,8 @@ pub fn search(
                     id: entry.decision.id.clone(),
                     qualified_id: qualified.clone(),
                     title: entry.decision.title.clone(),
-                    origin: match &entry.qualified_id.origin {
-                        Origin::Project => "project".into(),
-                        other => other.as_str(),
-                    },
-                    status,
+                    origin: entry.qualified_id.origin.as_str(),
+                    status: entry.decision.status.as_str().to_string(),
                     in_effect: in_effect.contains(&qualified),
                     superseded_by: superseded_by.get(&entry.decision.id).cloned(),
                 },
@@ -281,26 +318,6 @@ pub fn search(
             },
         );
     }
-
-    let ranked = rank(&documents, query, lang)
-        .map_err(|SearchError::EmptyQuery| EngineError::SearchQueryEmpty)?;
-    let results = ranked
-        .into_iter()
-        .take(limit)
-        .filter_map(|r| hits.remove(&r.id))
-        .collect();
-
-    let archived = if archive {
-        Some(search_archive(fs, layout, query, lang, limit)?)
-    } else {
-        None
-    };
-    Ok(SearchResult {
-        query: query.to_string(),
-        language: lang.code().to_string(),
-        results,
-        archived,
-    })
 }
 
 /// The archived changes, each its proposal and design, ranked on their own
@@ -318,26 +335,20 @@ fn search_archive(
     let mut documents = Vec::new();
     let mut excerpts = BTreeMap::new();
     for name in names {
-        let mut text = String::new();
-        let mut why = String::new();
-        for file in ["proposal.md", "design.md"] {
-            if let Ok(content) = fs.read_to_string(&dir.join(&name).join(file)) {
-                if file == "proposal.md" {
-                    why = content
-                        .lines()
-                        .skip_while(|l| !l.starts_with("## Why"))
-                        .skip(1)
-                        .take_while(|l| !l.starts_with("## "))
-                        .collect::<Vec<_>>()
-                        .join(" ");
-                }
-                text.push_str(&content);
-                text.push('\n');
-            }
-        }
-        if text.is_empty() {
+        let proposal = fs.read_to_string(&dir.join(&name).join("proposal.md")).ok();
+        let design = fs.read_to_string(&dir.join(&name).join("design.md")).ok();
+        if proposal.is_none() && design.is_none() {
             continue;
         }
+        let why = proposal
+            .as_deref()
+            .map(|p| proposal_section(p, "Why"))
+            .unwrap_or_default();
+        let text = format!(
+            "{}\n{}",
+            proposal.unwrap_or_default(),
+            design.unwrap_or_default()
+        );
         excerpts.insert(name.clone(), excerpt(&why));
         documents.push(Document { id: name, text });
     }

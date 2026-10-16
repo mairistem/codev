@@ -37,24 +37,30 @@ pub enum SearchError {
     EmptyQuery,
 }
 
-/// Words without meaning for a search, in the languages specs are written
-/// in. Both lists apply whatever the language, so that a query mixing
-/// languages loses its filler words too. Already folded: no accents.
-const COMMON_WORDS: &[&str] = &[
-    // English
+/// Words without meaning for a search, in English and in French. Both
+/// lists apply whatever the language, so that a query mixing languages
+/// loses its filler words too. Already folded: no accents.
+const ENGLISH_COMMON_WORDS: &[&str] = &[
     "a", "about", "after", "all", "also", "an", "and", "any", "are", "as", "at", "be", "been",
     "before", "but", "by", "can", "could", "do", "does", "each", "for", "from", "had", "has",
     "have", "how", "i", "if", "in", "into", "is", "it", "its", "may", "more", "must", "no", "not",
     "of", "on", "one", "or", "other", "our", "shall", "should", "so", "some", "such", "than",
     "that", "the", "their", "them", "then", "there", "these", "they", "this", "those", "to", "too",
     "under", "up", "was", "we", "were", "what", "when", "where", "which", "while", "who", "will",
-    "with", "would", "you", "your", // French
+    "with", "would", "you", "your",
+];
+
+const FRENCH_COMMON_WORDS: &[&str] = &[
     "au", "aux", "avec", "ce", "ces", "cet", "cette", "dans", "de", "des", "doit", "du", "elle",
     "en", "est", "et", "il", "ils", "je", "la", "le", "les", "leur", "leurs", "lui", "mais", "me",
     "mes", "mon", "ne", "nous", "on", "ou", "par", "pas", "pour", "qu", "que", "qui", "sa", "se",
     "ses", "son", "sont", "sur", "ta", "te", "tes", "ton", "tu", "un", "une", "vos", "votre",
     "vous", "y",
 ];
+
+fn is_common(word: &str) -> bool {
+    ENGLISH_COMMON_WORDS.contains(&word) || FRENCH_COMMON_WORDS.contains(&word)
+}
 
 /// The Snowball algorithm of a catalog language; English for a language
 /// Snowball does not know.
@@ -102,9 +108,32 @@ pub fn terms(text: &str, lang: Lang) -> Vec<String> {
     }
     folded
         .split(|c: char| !c.is_alphanumeric())
-        .filter(|w| !w.is_empty() && !COMMON_WORDS.contains(w))
+        .filter(|w| !w.is_empty() && !is_common(w))
         .map(|w| stemmer.stem(w).into_owned())
         .collect()
+}
+
+/// A document as BM25 reads it: how often each term of the query occurs in
+/// it, and its length in terms.
+struct IndexedDocument<'q> {
+    frequencies: BTreeMap<&'q str, f64>,
+    length: f64,
+}
+
+impl<'q> IndexedDocument<'q> {
+    fn new(text: &str, query_terms: &'q BTreeSet<String>, lang: Lang) -> Self {
+        let words = terms(text, lang);
+        let mut frequencies: BTreeMap<&'q str, f64> = BTreeMap::new();
+        for word in &words {
+            if let Some(term) = query_terms.get(word) {
+                *frequencies.entry(term.as_str()).or_default() += 1.0;
+            }
+        }
+        IndexedDocument {
+            frequencies,
+            length: words.len() as f64,
+        }
+    }
 }
 
 /// Ranks `documents` against `query` with BM25, in `lang`: every document
@@ -116,26 +145,15 @@ pub fn rank(documents: &[Document], query: &str, lang: Lang) -> Result<Vec<Ranke
     if query_terms.is_empty() {
         return Err(SearchError::EmptyQuery);
     }
-    // Each document's term frequencies, for the query's terms only, and
-    // its length in terms.
-    let indexed: Vec<(BTreeMap<&str, f64>, f64)> = documents
+    let indexed: Vec<IndexedDocument> = documents
         .iter()
-        .map(|d| {
-            let words = terms(&d.text, lang);
-            let mut frequencies: BTreeMap<&str, f64> = BTreeMap::new();
-            for word in &words {
-                if let Some(term) = query_terms.get(word) {
-                    *frequencies.entry(term.as_str()).or_default() += 1.0;
-                }
-            }
-            (frequencies, words.len() as f64)
-        })
+        .map(|d| IndexedDocument::new(&d.text, &query_terms, lang))
         .collect();
     let count = documents.len() as f64;
     let average_length = if documents.is_empty() {
         0.0
     } else {
-        indexed.iter().map(|(_, len)| len).sum::<f64>() / count
+        indexed.iter().map(|doc| doc.length).sum::<f64>() / count
     };
     // A rare term weighs more than a frequent one.
     let idf: BTreeMap<&str, f64> = query_terms
@@ -143,7 +161,7 @@ pub fn rank(documents: &[Document], query: &str, lang: Lang) -> Result<Vec<Ranke
         .map(|term| {
             let holding = indexed
                 .iter()
-                .filter(|(f, _)| f.contains_key(term.as_str()))
+                .filter(|doc| doc.frequencies.contains_key(term.as_str()))
                 .count() as f64;
             let weight = ((count - holding + 0.5) / (holding + 0.5) + 1.0).ln();
             (term.as_str(), weight)
@@ -152,16 +170,17 @@ pub fn rank(documents: &[Document], query: &str, lang: Lang) -> Result<Vec<Ranke
     let mut ranked: Vec<Ranked> = documents
         .iter()
         .zip(&indexed)
-        .filter(|(_, (frequencies, _))| !frequencies.is_empty())
-        .map(|(document, (frequencies, length))| {
+        .filter(|(_, doc)| !doc.frequencies.is_empty())
+        .map(|(document, doc)| {
             let norm = if average_length > 0.0 {
-                K1 * (1.0 - B + B * length / average_length)
+                K1 * (1.0 - B + B * doc.length / average_length)
             } else {
                 K1
             };
-            let score = frequencies
+            let score = doc
+                .frequencies
                 .iter()
-                .map(|(term, f)| idf[term] * f * (K1 + 1.0) / (f + norm))
+                .map(|(term, frequency)| idf[term] * frequency * (K1 + 1.0) / (frequency + norm))
                 .sum();
             Ranked {
                 id: document.id.clone(),
@@ -237,14 +256,14 @@ pub fn stemming_lang(prose: &str, keywords: impl IntoIterator<Item = Lang>) -> L
         .unwrap_or_else(|| corpus_lang(keywords))
 }
 
-/// The text of a proposal to rank the existing requirements against: its
-/// `Why` and `What Changes` sections, its whole text when it has neither.
-pub fn proposal_query(proposal: &str) -> String {
+/// The lines of a proposal's `## <heading>` section, the heading itself
+/// left out; empty when the proposal has no such section.
+pub fn proposal_section(proposal: &str, heading: &str) -> String {
     let mut out = String::new();
     let mut keep = false;
     for line in proposal.lines() {
-        if let Some(heading) = line.strip_prefix("## ") {
-            keep = matches!(heading.trim(), "Why" | "What Changes");
+        if let Some(title) = line.strip_prefix("## ") {
+            keep = title.trim() == heading;
             continue;
         }
         if keep {
@@ -252,10 +271,17 @@ pub fn proposal_query(proposal: &str) -> String {
             out.push('\n');
         }
     }
-    if out.trim().is_empty() {
+    out
+}
+
+/// The text of a proposal to rank the existing requirements against: its
+/// `Why` and `What Changes` sections, its whole text when it has neither.
+pub fn proposal_query(proposal: &str) -> String {
+    let query = proposal_section(proposal, "Why") + &proposal_section(proposal, "What Changes");
+    if query.trim().is_empty() {
         proposal.to_string()
     } else {
-        out
+        query
     }
 }
 
@@ -352,6 +378,11 @@ mod tests {
         let first = rank(&documents, "review finding severity", Lang::EN).unwrap();
         let second = rank(&documents, "review finding severity", Lang::EN).unwrap();
         assert_eq!(first, second);
+    }
+
+    #[test]
+    fn a_query_matching_nothing_ranks_nothing() {
+        let documents = docs(&[("x", "The review record keeps every finding.")]);
         assert!(rank(&documents, "xylophone", Lang::EN).unwrap().is_empty());
     }
 
@@ -372,6 +403,12 @@ mod tests {
         assert!(!text.contains("Listing decisions"));
         let last = find_requirement(&spec, "Listing decisions").unwrap();
         assert!(requirement_source(SPEC, last).ends_with("- **THEN** it lists"));
+    }
+
+    #[test]
+    fn a_requirement_document_is_named_capability_colon_colon_name() {
+        let spec = crate::parser::parse_spec(SPEC).value;
+        let requirement = find_requirement(&spec, "Creating a decision through the CLI").unwrap();
         let document = requirement_document("decisions", requirement);
         assert_eq!(
             document.id,
