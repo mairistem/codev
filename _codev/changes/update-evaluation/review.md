@@ -107,3 +107,90 @@ history:
   - status: fixed
     by: skeptic
 ```
+
+## code.review
+
+Mode: isolated.
+Summarized: evals/src/update.rs — over the material limit with the whole change (745,491 bytes against 163,840).
+Summarized: evals/src/runner.rs — over the material limit with the whole change (745,491 bytes against 163,840).
+Summarized: evals/src/case.rs — over the material limit with the whole change (745,491 bytes against 163,840).
+
+### newcomer
+
+#### R-newcomer-1 score_update picks "the" validation report without saying which one
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/update.rs:140-144"
+evidence: |
+  observed.validate.values().next()
+recommendation: "Look the report up by the change name, and say that the loader guarantees every expected path is a key of case.files."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "The report is looked up by the change's name; a comment states the loader's guarantee."
+    ref: "evals/src/update.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The test named for a tool output builds no tool output
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/update.rs:377-387"
+evidence: |
+  fn a_ripple_named_only_in_a_tool_output_is_not_named() {
+recommendation: "Rename it to what it checks."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "Renamed a_ripple_the_agent_never_mentions_is_not_named; the tool-output exclusion is tested in runner.rs."
+    ref: "evals/src/update.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The update fixture test copies the planning setup and uses "change" for something else
+
+```yaml
+severity: low
+confidence: high
+location: "evals/tests/fixture.rs:104-126"
+evidence: |
+  write(&repo.join("_codev/specs/a/spec.md"), "before the change\n");
+recommendation: "Reword the texts, extend the module doc, and extract the shared setup."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "The texts say \"at the ref\" / \"after the ref\" and the module doc covers update cases; the shared setup stays duplicated, two short tests."
+    ref: "evals/tests/fixture.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 run_case spreads the update step over three branches far apart
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:1257-1324"
+evidence: |
+  if case.step == Step::PlanUpdate {
+recommendation: "Move the update observations into named helpers, and say why only update runs keep the messages."
+history:
+  - status: open
+    by: newcomer
+  - status: deferred
+    by: developer
+    to: "the next change to the runner"
+    note: "A comment now says why only update runs keep the messages; splitting run_case into helpers is left for a change that touches the runner again, to keep this diff reviewable."
+```

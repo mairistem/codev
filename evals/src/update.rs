@@ -104,6 +104,8 @@ pub fn score_update(case: &UpdateCase, change_dir: &str, observed: &Observed) ->
     } else {
         observed.messages.join("\n")
     };
+    // The loader checked that every expected path is a file of `change/`,
+    // so `case.files[path]` exists for each of them.
     let unchanged = |path: &str| {
         after
             .get(path)
@@ -137,10 +139,13 @@ pub fn score_update(case: &UpdateCase, change_dir: &str, observed: &Observed) ->
             .any(|revised| loose(revised).contains(&wanted));
         check(format!("holds \"{text}\""), held);
     }
+    // An update run records one report after the run, under its change's
+    // name, the last segment of `change_dir`.
+    let change = change_dir.rsplit('/').next().unwrap_or(change_dir);
     let validate_after = if stopped {
         None
     } else {
-        observed.validate.values().next()
+        observed.validate.get(change)
     };
     let added = added_errors(observed.validate_before.as_ref(), validate_after);
     check(
@@ -321,7 +326,7 @@ mod tests {
             strayed: vec![],
             review: None,
             files,
-            validate: BTreeMap::from([("c".to_string(), validate(&[]))]),
+            validate: BTreeMap::from([("forward-compatible-config".to_string(), validate(&[]))]),
             validate_before: Some(validate(&[])),
             messages: messages.iter().map(|m| m.to_string()).collect(),
         }
@@ -375,7 +380,7 @@ mod tests {
     }
 
     #[test]
-    fn a_ripple_named_only_in_a_tool_output_is_not_named() {
+    fn a_ripple_the_agent_never_mentions_is_not_named() {
         let c = case(&["proposal.md"], &[], &["specs/doctor/spec.md"], false);
         let o = run(
             &c,
@@ -417,11 +422,12 @@ mod tests {
         let mut o = run(&c, &[("design.md", "# Design\n\nRevised.\n")], &[]);
         let existing = [("_codev/changes/c/review.md", "review_role_missing")];
         o.validate_before = Some(validate(&existing));
-        o.validate.insert("c".into(), validate(&existing));
+        o.validate
+            .insert("forward-compatible-config".into(), validate(&existing));
         let score = score_update(&c, CHANGE_DIR, &o);
         assert!(score.passed, "{:?}", failed(&score));
         o.validate.insert(
-            "c".into(),
+            "forward-compatible-config".into(),
             validate(&[
                 existing[0],
                 ("_codev/changes/c/design.md", "decision_missing"),

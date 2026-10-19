@@ -1,6 +1,6 @@
-//! A planning case's fixture, built from a repository's history with a
-//! stand-in `codev`: the state at the case's `ref`, the skills of the codev
-//! under test.
+//! The fixtures of planning and update cases, built from a repository's
+//! history with a stand-in `codev`: the state at the case's `ref`, an update
+//! case's change laid on it, the skills of the codev under test.
 
 #![cfg(unix)]
 
@@ -106,11 +106,11 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
     let repo = root.join("repo");
     fs::create_dir_all(&repo).unwrap();
     git(&repo, &["init", "-q", "-b", "main"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "before the change\n");
+    write(&repo.join("_codev/specs/a/spec.md"), "at the ref\n");
     git(&repo, &["add", "-A"]);
     git(&repo, &["commit", "-q", "-m", "one"]);
     let first = git(&repo, &["rev-parse", "HEAD"]);
-    write(&repo.join("_codev/specs/a/spec.md"), "after the change\n");
+    write(&repo.join("_codev/specs/a/spec.md"), "after the ref\n");
     git(&repo, &["commit", "-q", "-am", "two"]);
 
     let bin = root.join("bin");
@@ -162,7 +162,7 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
     runner::setup_plan(&case, &repo, &dir, &tools).unwrap();
 
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
-    assert_eq!(read("_codev/specs/a/spec.md"), "before the change\n");
+    assert_eq!(read("_codev/specs/a/spec.md"), "at the ref\n");
     assert_eq!(read("_codev/changes/add-auth/design.md"), "# Design\n");
     assert_eq!(read("_codev/changes/add-auth/specs/a/spec.md"), "# Delta\n");
     assert_eq!(

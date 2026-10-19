@@ -1278,6 +1278,8 @@ pub fn run_case(
             observed.duration_ms = output.duration_ms;
             observed.consumption = output.consumption;
             observed.error = output.error;
+            // Only the update score reads the agent's messages; keeping them
+            // for the other steps would only make `observed.json` larger.
             if case.step == Step::PlanUpdate {
                 observed.messages = output.messages;
             }
