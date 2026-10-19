@@ -1,0 +1,159 @@
+{
+  "format": 2,
+  "case": "update-specs-scenario",
+  "error": null,
+  "costUsd": 0.2811426,
+  "durationMs": 25267,
+  "consumption": {
+    "durationApiMs": 25419,
+    "turns": 8,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1118,
+      "cacheCreation": 24179,
+      "cacheRead": 215383,
+      "output": 2186
+    },
+    "toolCalls": 7,
+    "orientationCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7667,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7667
+        }
+      },
+      {
+        "cacheCreation": 7978,
+        "cacheRead": 29806,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 65,
+          "skill": 7913
+        }
+      },
+      {
+        "cacheCreation": 2042,
+        "cacheRead": 37784,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 1,
+        "sources": {
+          "codev list": 2042
+        }
+      },
+      {
+        "cacheCreation": 890,
+        "cacheRead": 39826,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 858,
+          "output": 32
+        }
+      },
+      {
+        "cacheCreation": 4396,
+        "cacheRead": 40716,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 4396
+        }
+      },
+      {
+        "cacheCreation": 1206,
+        "cacheRead": 45112,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 918,
+          "edit": 288
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/docs-and-tests-in-done/change.yaml": "schema: spec-driven\ncreated: 2026-10-12\n",
+    "_codev/changes/docs-and-tests-in-done/design.md": "# Design: Documentation and tests in the definition of done\n\n## Context\n\nThe `spec-driven` schema (`assets/schemas/spec-driven/schema.yaml`) is\nembedded in the binary; each artifact instruction opens with the role block\nintroduced by `propose-review-roles`. The `propose`, `apply` and `configure`\nworkflows are Markdown bodies in `assets/workflows/`, rendered into\n`.claude/skills/codev-<id>/SKILL.md` by `codev update`. They are prompts:\nevery line costs tokens on every run, and a line repeated in two places\ndrifts. `apply.md` already says \"verify, then check off\" (step 3d, the\n\"Verify before checking off\" guardrail) but not which command runs the tests\nnor that the whole suite runs at the end. `configure.md` caps its reading\nat 5 docs and 8 source files and has no Bash beyond `codev`.\n\nThe init probe (`codev_core::detect::stack`) extracts the language, edition,\ncrate count and up to ten dependency names from the manifest; `codev init`\nrenders them into the generated `context:`.\n\n## Goals / Non-Goals\n\n**Goals:**\n\n- Documentation and automated tests become explicit completion criteria of\n  every plan written with the default schema, checked at planning time by\n  `/codev-propose` and enforced at implementation time by `/codev-apply`.\n- Test conventions come from the project first, from a short reference\n  second.\n\n**Non-Goals:**\n\n- A machine check of these criteria in `codev validate`: they are guidance\n  for the agent, like the rest of the role block.\n- Recording the test framework in the init probe (see the last decision).\n- Running tests from `/codev-configure`: it stays without general Bash.\n\n## Decisions\n\n### Decision: The criteria live in the tech lead's role block\n\nThe three new criteria are appended to the `tasks` \"Done when\" list, and the\n`proposal` Impact guidance names documentation, in the same format as the\nexisting ones. The schema is where a project already redefines artifacts, so\na custom schema keeps its own definition of done. `/codev-propose` and\n`/codev-update` both read these instructions, so both inherit the criteria.\n\n**Alternatives considered**: putting the criteria in `propose.md` only (a\ncustom schema with no tests artifact would get them anyway, and\n`/codev-update` would not see them); a project `rules:` default written by\n`codev init` (only new projects would get it, and it duplicates the schema).\n\n### Decision: Each skill adds only what it alone does\n\n`propose.md` extends its existing traceability bullets — the scenario bullet\ngains \"names an automated test\", one bullet covers documentation — instead\nof a new step. `apply.md` amends steps 3c and 3d in place (tests after the\nexisting suite; the test command found from `context`/`rules`, manifest or\nCI, never guessed) and adds one step before the final summary: run the full\nsuite once. The existing \"verify before checking off\" guardrail already\nstates the check-off rule, so no new guardrail is added. `configure.md`\nadds testing rules to the `rules:` it drafts, a small allowance to read\nexisting tests within its budget, and the conventions reference.\n\nThis follows `_codev/decisions/0004-single-identity-for-skill-and-command.md`:\nthe existing skills are extended, no new skill is shipped.\n\n**Alternatives considered**: a dedicated \"testing\" step in each skill\n(repeats the role block and the guardrails, longer prompts for no new\nbehavior); a shared include file for the conventions (the workflow bodies\nare self-contained `include_str!` assets and have no include mechanism).\n\n### Decision: The conventions reference lives in `configure.md`, after the principle\n\nThe reference is a compact list, one or two lines per language (Rust,\nTypeScript/JavaScript, Python, Go, Java), preceded by \"the project's existing\npractice wins\". It is in `configure` because that is where rules are\nwritten once and then reach every artifact through `codev instructions`;\n`apply` reads `rules` and the existing suite, so it needs no copy.\n\n**Alternatives considered**: the reference in `apply.md` (applied on every\ntask, but invisible to the plan and repeated at each run); in the schema\n(it would apply to every project whatever its language).\n\n### Decision: The stack probe is left unchanged\n\nRecording the test framework in the detected context would change the\n`init` golden outputs and the `init` spec for little gain: `/codev-configure`\nreads the manifest and the existing tests anyway, and it is the step that\nturns them into rules. The probe stays pure and its output stable\n(`_codev/decisions/0001-functional-core-imperative-shell.md` is unaffected\neither way).\n\n**Alternatives considered**: parsing dev-dependencies for vitest, jest,\npytest and others in `stack.rs` (more parsing per manifest format, a new\nfield in the generated `context:`, and a second source of truth next to\nthe rules `configure` writes).\n\n## Risks / Trade-offs\n\n- [Longer prompts cost tokens on every run] → Each skill gains a handful of\n  lines; the reference is one line per language.\n- [The full suite is slow on large projects] → It runs once, at the end of\n  `apply`, not after each task; each task runs only the verification it\n  cites.\n- [The agent invents a test command] → `apply` names where to find it and\n  asks the user when none is found.\n- [A small change gets a documentation task it does not need] → The\n  criterion accepts \"the plan states none is affected\".\n- [Tests quoting the old instruction or skill text break] → The existing\n  text is kept; only additions, asserted by new tests.\n",
+    "_codev/changes/docs-and-tests-in-done/proposal.md": "# Proposal: Documentation and tests in the definition of done\n\n## Why\n\nA plan is not complete if it leaves the documentation stale or the behavior\nuntested, whatever the project. Today the default workflow only asks each\ntask to name \"its verification\": nothing requires a documentation update or\nan automated test, and nothing says tests must follow the conventions of the\nproject's language.\n\n## What Changes\n\n- The tech lead's \"Done when\" criteria of the `spec-driven` `tasks`\n  instruction gain three items: the affected documentation is updated in a\n  task (or the plan states none is affected); every spec scenario is covered\n  by an automated test written in a task, a manual check only when\n  automation is impossible and with the reason; tests follow the project's\n  existing test suite, the conventions of its language, and its `rules`.\n- The `proposal` instruction asks Impact to name the affected documentation.\n- `/codev-propose`'s traceability check also verifies that a documentation\n  task exists when Impact touches documented behavior, and that each\n  scenario's covering task names an automated test.\n- `/codev-apply` writes tests following the existing suite first, then the\n  language's conventions and the project's `rules`; it finds the test command\n  from the project instead of guessing, checks a task off only once its\n  verification passes, and runs the full suite once before reporting the\n  change as done.\n- `/codev-configure` proposes testing rules for `tasks`, grounded in the\n  project's existing tests, with a compact reference of mainstream\n  conventions (Rust, TypeScript/JavaScript, Python, Go, Java) to fall back on\n  when the project has no tests yet.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `skills` — the tech lead criteria of the default schema, the `propose`\n  traceability check, and the `apply` verification and testing behavior.\n- `configure` — testing rules among the proposed `rules:`.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `assets/schemas/spec-driven/schema.yaml` (`proposal` and `tasks`\n  instructions), `assets/workflows/propose.md`, `apply.md` and\n  `configure.md`; the regenerated skills under `.claude/skills/`.\n- Tests asserting on instruction and skill text in `codev-engine` and\n  `codev-agents`.\n- Documentation, in `docs/en` and `docs/fr`: `skills.md` (propose, apply,\n  configure), `workflow.md` (apply step), `reference/configuration.md`\n  (testing rules example); CHANGELOG.\n- No change to the CLI, the JSON contract, the file formats or the init\n  probe. Plans written by custom schemas are unaffected.\n",
+    "_codev/changes/docs-and-tests-in-done/specs/configure/spec.md": "## ADDED Requirements\n\n### Requirement: The `configure` skill proposes testing rules grounded in the project's tests\n\nIn addition to the one or two rules it proposes for `tasks`, the\n`configure` skill SHALL propose testing rules for the project's language:\nthe test framework, where tests live, how they are named and the commands\nthat run and check them. These rules MUST describe the practice of the\nproject's existing tests when there are any; the existing practice wins\nover any general convention. Only when the project has no tests yet SHALL\nthe skill fall back on the mainstream conventions of the language, from a\nreference it carries for at least Rust, TypeScript/JavaScript, Python, Go\nand Java.\n\n#### Scenario: Testing rules follow the existing tests\n\n- **GIVEN** a TypeScript project whose `package.json` runs Jest and whose\n  tests sit in `__tests__/` directories\n- **WHEN** the user runs `/codev-configure`\n- **THEN** the proposed `tasks` rules name Jest and `__tests__/`\n- **AND** they do not recommend another runner\n\n#### Scenario: Testing rules follow an existing pytest suite\n\n- **GIVEN** a Python project whose tests are written for pytest and sit in\n  `tests/`\n- **WHEN** the user runs `/codev-configure`\n- **THEN** the proposed `tasks` rules name pytest and `tests/`\n- **AND** they do not recommend unittest\n\n#### Scenario: A project without tests gets the language's conventions\n\n- **GIVEN** a Go project with no `_test.go` file\n- **WHEN** the user runs `/codev-configure`\n- **THEN** the proposed `tasks` rules describe table-driven `_test.go`\n  tests in the same package, run with `go test ./...` and checked with\n  `go vet`\n\n#### Scenario: The skill carries the conventions reference\n\n- **GIVEN** the codev workflow catalog\n- **WHEN** the `configure` workflow is resolved\n- **THEN** its `body` states that the project's existing practice wins\n- **AND** it carries conventions for Rust, TypeScript/JavaScript, Python, Go\n  and Java\n",
+    "_codev/changes/docs-and-tests-in-done/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: The default schema gives each artifact a role with \"Done when\" criteria\n\nThe instruction of each artifact of the embedded `spec-driven` schema, as\nreturned by `codev instructions <artifact> --json`, SHALL start with a role\nblock: a `Role:` line naming the role and what it owns, followed by a\n`Done when:` list of checkable criteria. The roles are:\n\n- `proposal` — product owner, owns why and what;\n- `specs` — QA analyst, owns observable behavior;\n- `design` — architect, owns how;\n- `tasks` — tech lead, owns sequencing and verification.\n\nThe tech lead's criteria MUST require that the documentation affected by\nthe change is updated in a task, or that the plan states none is affected;\nthat every spec scenario is covered by an automated test written in a task,\na manual check being acceptable only when automation is impossible and with\nthe reason stated; and that tests follow the project's existing test suite,\nthe testing conventions of its language, and its `rules`. The `proposal`\ninstruction MUST ask the Impact section to name the affected documentation.\n\nThe rest of each instruction MUST stay as before. A custom schema's\ninstructions MUST be returned as written, without any role block added by\ncodev.\n\n#### Scenario: The proposal instruction starts with the product owner role\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `instruction` starts with `Role: product owner`\n- **AND** it contains a `Done when:` list that includes marking every\n  breaking change with **BREAKING**\n- **AND** it asks the Impact section to name the affected documentation\n\n#### Scenario: The tasks criteria cover every spec scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `instruction` starts with `Role: tech lead`\n- **AND** its `Done when:` list requires every spec scenario to be covered\n  by at least one task's verification\n\n#### Scenario: The tasks criteria require documentation and automated tests\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires the affected documentation to be\n  updated in a task, or the plan to state that none is affected\n- **AND** it requires every spec scenario to be covered by an automated\n  test, a manual check only when automation is impossible, with the reason\n- **AND** it requires tests to follow the project's existing test suite,\n  the conventions of its language and its `rules`\n\n#### Scenario: A custom schema gets no role block\n\n- **GIVEN** a change using a project schema whose artifact instruction has\n  no role block\n- **WHEN** the user runs `codev instructions <artifact> --change <name>\n  --json`\n- **THEN** `instruction` is the schema's text, with no `Role:` line added\n\n### Requirement: The `propose` skill checks traceability before presenting the plan\n\nOnce every required artifact is written and before showing the final\nstatus, the `propose` skill SHALL re-read the artifacts from disk and check\nthat:\n\n- every capability listed in the proposal has its spec file, and every spec\n  file is listed in the proposal;\n- every requirement has a nominal scenario and an error or edge-case\n  scenario, or states why none applies;\n- every scenario is covered by a task whose verification refers to it and\n  names an automated test, or says why automation is impossible;\n- a task updates the documentation when the proposal's Impact touches\n  documented behavior, or the plan states that none is affected;\n- every task names a concrete verification.\n\nThe skill MUST fix the gaps it finds directly in the artifacts. The check\nMUST NOT modify any code file.\n\n#### Scenario: A requirement without an error scenario gets one\n\n- **GIVEN** a plan whose spec has a requirement with only a nominal scenario\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the requirement gains an error or edge-case scenario, or a stated\n  reason why none applies\n- **AND** a task's verification covers the new scenario\n\n#### Scenario: A spec file missing from the proposal is listed\n\n- **GIVEN** a plan with a spec file whose capability is not listed in the\n  proposal\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the proposal lists the capability, or the spec file is removed\n  if the capability is out of scope\n\n#### Scenario: A plan without a documentation task gets one\n\n- **GIVEN** a plan whose Impact changes a documented command and whose\n  tasks update no documentation\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the tasks gain a documentation task, or the plan states why no\n  documentation is affected\n\n#### Scenario: A scenario verified only by hand gets an automated test\n\n- **GIVEN** a plan whose only task covering a scenario is verified by a\n  manual check, with no reason given\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** the covering task names an automated test, or states why\n  automation is impossible\n\n#### Scenario: A complete plan is left unchanged\n\n- **GIVEN** a plan where capabilities, spec files, scenarios, automated\n  tests, documentation tasks and task verifications all cover each other\n- **WHEN** `/codev-propose` reaches the traceability check\n- **THEN** no artifact is modified by the check\n\n## ADDED Requirements\n\n### Requirement: The `apply` skill tests by the project's conventions and verifies before checking off\n\nWhen it implements a task, the `apply` skill SHALL write tests that follow\nthe project's existing test suite first, then the conventions of the\nproject's language and the project's `rules`. It MUST run the project's\ntest command, found from the project's `context` or `rules`, its manifest or\nits CI configuration, and MUST NOT invent one. It MUST check a task off only\nonce the task's verification passes. Before reporting the change as done, it\nMUST run the project's full test suite once and report a failure instead of\nthe completion summary.\n\n#### Scenario: Tests follow the existing suite\n\n- **GIVEN** a project whose tests live in a dedicated directory with a\n  naming pattern\n- **WHEN** `/codev-apply` implements a task that adds behavior\n- **THEN** the new tests are placed and named like the existing ones\n\n#### Scenario: A failing verification keeps the task unchecked\n\n- **GIVEN** a task whose cited test fails after implementation\n- **WHEN** `/codev-apply` verifies the task\n- **THEN** the task stays `- [ ]` until the test passes\n\n#### Scenario: The full suite runs before the change is reported done\n\n- **GIVEN** a change whose tasks are all checked\n- **WHEN** `/codev-apply` finishes\n- **THEN** it has run the project's full test suite once\n- **AND** a failure is reported instead of the \"ready to be archived\"\n  summary\n\n#### Scenario: No test command can be found\n\n- **GIVEN** a project whose `context`, `rules`, manifest and CI\n  configuration name no test command\n- **WHEN** `/codev-apply` needs to run the tests\n- **THEN** it asks the user for the command rather than guessing one\n",
+    "_codev/changes/docs-and-tests-in-done/tasks.md": "# Tasks\n\nThe skill scenarios describe what an agent does when it runs a skill; this\nrepository cannot run an agent in its test suite, so they are covered by\ntests asserting that the skill body carries the instruction, as in\n`propose-review-roles`.\n\n## 1. Schema\n\n- [x] 1.1 Append the documentation, automated-test and test-convention criteria to the `tasks` \"Done when\" list, and ask Impact to name the affected documentation in the `proposal` instruction, in `assets/schemas/spec-driven/schema.yaml`, verified by the new tests `tasks_criteria_require_documentation_and_automated_tests` (covers \"The tasks criteria require documentation and automated tests\") and `proposal_impact_names_the_affected_documentation` (covers \"The proposal instruction starts with the product owner role\") in `codev-engine::instructions`, plus the existing `spec_driven_instructions_start_with_a_role_block` (\"The tasks criteria cover every spec scenario\"), `a_project_schema_instruction_is_returned_as_written` (\"A custom schema gets no role block\") and `the_embedded_schema_is_valid`\n\n## 2. Skills\n\n- [x] 2.1 `assets/workflows/propose.md`: extend the traceability bullets (automated test per scenario, documentation task), verified by the new test `propose_traceability_requires_automated_tests_and_documentation` in `codev-agents::workflows` (covers \"A plan without a documentation task gets one\", \"A scenario verified only by hand gets an automated test\", \"A complete plan is left unchanged\") and the existing `propose_body_carries_the_review_steps` (\"A requirement without an error scenario gets one\", \"A spec file missing from the proposal is listed\")\n- [x] 2.2 `assets/workflows/apply.md`: tests after the existing suite, then the language and `rules`; the test command from `context`/`rules`, manifest or CI, asked when not found; the full suite once before the final summary, verified by the new test `apply_body_tests_by_the_project_conventions_and_runs_the_full_suite` (covers the four scenarios of the new `apply` requirement) and the existing `apply_is_in_the_catalog_with_the_right_tools`\n- [x] 2.3 `assets/workflows/configure.md`: testing rules in the drafted `tasks` rules, reading existing tests within the budget, the conventions reference after \"existing practice wins\", verified by the new test `configure_body_carries_testing_rules_and_the_conventions_reference` (covers the three `configure` scenarios) and the existing `configure_is_in_the_catalog_with_the_right_tools`\n- [x] 2.4 Regenerate codev's own skills, verified by `cargo run -q --bin codev -- update --force` and a diff of `.claude/skills/codev-{propose,apply}/SKILL.md` showing the new text (`configure` is not in this project's `workflows:`)\n\n## 3. Documentation\n\n- [x] 3.1 `skills.md` (propose, apply, configure), `workflow.md` (apply step) and `reference/configuration.md` (testing rules example per language) in `docs/en` and `docs/fr`, verified by `both_languages_have_the_same_chapters`, `links_between_chapters_become_in_page_anchors` and an mdbook build of both books without warnings\n- [x] 3.2 CHANGELOG entries under `[Unreleased]`, verified by reading `CHANGELOG.md`\n\n## 4. Verification\n\n- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict` and `codev doctor` reporting nothing to fix\n"
+  },
+  "validate": {
+    "docs-and-tests-in-done": {
+      "hasWarnings": true,
+      "items": [
+        {
+          "findings": [
+            {
+              "code": "release_note_missing",
+              "line": 1,
+              "message": "the proposal has no `## Release note` section; add one after `## Impact` (`- <Category>: <text>` items, or `None` for an internal change)",
+              "path": "_codev/changes/docs-and-tests-in-done/proposal.md",
+              "severity": "warning"
+            },
+            {
+              "code": "domains_missing",
+              "line": 1,
+              "message": "the proposal has no `## Domains` section; add one after `## Impact` (tick the domains the change touches among `security`, `personal-data`, `user-interface`, `performance`, `operations`, `migration`, or write `None`)",
+              "path": "_codev/changes/docs-and-tests-in-done/proposal.md",
+              "severity": "warning"
+            }
+          ],
+          "kind": "change",
+          "name": "docs-and-tests-in-done",
+          "path": "_codev/changes/docs-and-tests-in-done"
+        }
+      ],
+      "status": []
+    }
+  },
+  "validateBefore": {
+    "hasWarnings": true,
+    "items": [
+      {
+        "findings": [
+          {
+            "code": "release_note_missing",
+            "line": 1,
+            "message": "the proposal has no `## Release note` section; add one after `## Impact` (`- <Category>: <text>` items, or `None` for an internal change)",
+            "path": "_codev/changes/docs-and-tests-in-done/proposal.md",
+            "severity": "warning"
+          },
+          {
+            "code": "domains_missing",
+            "line": 1,
+            "message": "the proposal has no `## Domains` section; add one after `## Impact` (tick the domains the change touches among `security`, `personal-data`, `user-interface`, `performance`, `operations`, `migration`, or write `None`)",
+            "path": "_codev/changes/docs-and-tests-in-done/proposal.md",
+            "severity": "warning"
+          }
+        ],
+        "kind": "change",
+        "name": "docs-and-tests-in-done",
+        "path": "_codev/changes/docs-and-tests-in-done"
+      }
+    ],
+    "status": []
+  },
+  "messages": [
+    "No update info in status JSON → nothing to say about updates.",
+    "I added the scenario to the `configure` delta. `codev validate` reports 0 errors, but `tasks.md` doesn't cover the new scenario yet. Since nobody can confirm a follow-up here, I've only reported that gap and changed nothing else.\n\n**What changed:** `_codev/changes/docs-and-tests-in-done/specs/configure/spec.md` has a new scenario, placed right after \"Testing rules follow the existing tests\":\n\n```markdown\n#### Scenario: Testing rules follow an existing pytest suite\n\n- **GIVEN** a Python project whose tests are written for pytest and sit in\n  `tests/`\n- **WHEN** the user runs `/codev-configure`\n- **THEN** the proposed `tasks` rules name pytest and `tests/`\n- **AND** they do not recommend unittest\n```\n\nI kept the existing requirement unchanged and wrote the scenario in English, as `language: en` requires.\n\n**Gap in the plan (not fixed):**\n- **Task 2.3** says its test `configure_body_carries_testing_rules_and_the_conventions_reference` \"covers the three `configure` scenarios\". There are now four.\n- **No automated test** covers the new scenario yet. The project's `tasks` rules require one for every scenario.\n- **Task 2.3 is already checked off**, so the test and possibly `assets/workflows/configure.md` (if its Python entry doesn't already favour pytest over unittest) will need another pass.\n- **Suggested next step:** run `/codev-update tasks` on this change to reopen 2.3. It should name the new scenario and add a test assertion that the `configure` body covers it.\n\n**`codev validate docs-and-tests-in-done`:** 0 errors and 2 warnings, both about `proposal.md` and unrelated to this edit:\n- `release_note_missing`: no `## Release note` section.\n- `domains_missing`: no `## Domains` section.\n\n**Next:** once `tasks.md` covers the new scenario, run `/codev-apply` to implement and test it."
+  ]
+}

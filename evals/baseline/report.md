@@ -4,9 +4,9 @@
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
 - codev: codev 0.6.1
-- Cases: 65
+- Cases: 71
 - Repetitions: 5
-- Cost: 55.07 USD for one run of the suite (sum of the cases' medians), 276.46 USD in all
+- Cost: 56.94 USD for one run of the suite (sum of the cases' medians), 285.75 USD in all
 - Thresholds: recall ≥ 0.50, false positives ≤ 2, evidence validity ≥ 0.80
 - Verdict: **fail**
 
@@ -40,6 +40,14 @@ Per repetition, every planning run pooled; then the median over the repetitions,
 |---|---|---|---|---|---|---|
 | 25 | 0.69 (0.58–0.78) | 0.39 (0.28–0.44) | 14 (6–15) | 0 (0–1) | 1 (0–2) | 42.18 |
 
+## `plan.update`
+
+Per repetition, every update run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the change's folder; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 6 | 1.00 | 1.00 | 0 | 1.87 |
+
 ## Consumption
 
 Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.
@@ -55,7 +63,7 @@ Per case, the median over its runs not in error; per role and for the suite, the
 | security | 1.92 | 154 | 153 | 46 | 2 | 7042 | 167082 | 1479147 | 13753 | 38 | 44545 | 365 |
 | skeptic | 1.20 | 109 | 109 | 31 | 6 | 3488 | 95501 | 1069377 | 10733 | 25 | 46659 | 418 |
 | tracer | 0.58 | 39 | 39 | 19 | 4 | 2180 | 53041 | 444499 | 3896 | 12 | 41555 | 344 |
-| **Suite** | 55.07 | 7023 | 7631 | 1020 | 69 | 75658 | 3576753 | 62712329 | 723264 | 1025 | 63465 | 696 |
+| **Suite** | 56.94 | 7192 | 7801 | 1072 | 75 | 82304 | 3731666 | 64075509 | 739580 | 1061 | 62761 | 687 |
 
 ## Where the tokens go
 
@@ -63,21 +71,21 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| skill | 843692 | 23 % |
-| file | 791139 | 21 % |
-| prompt | 490778 | 13 % |
-| edit | 372821 | 10 % |
-| search | 338245 | 9 % |
-| shell | 205076 | 6 % |
-| output | 163212 | 4 % |
+| skill | 890289 | 23 % |
+| file | 812373 | 21 % |
+| prompt | 537138 | 14 % |
+| edit | 376693 | 10 % |
+| search | 341727 | 9 % |
+| shell | 205281 | 5 % |
+| output | 163782 | 4 % |
 | codev instructions | 158702 | 4 % |
 | codev roles | 100208 | 3 % |
-| codev review | 95800 | 3 % |
-| codev validate | 64896 | 2 % |
-| codev new | 54593 | 2 % |
+| codev review | 95800 | 2 % |
+| codev validate | 67917 | 2 % |
+| codev new | 54593 | 1 % |
+| codev list | 26508 | 1 % |
 | agent | 22404 | 1 % |
 | codev --help | 2347 | 0 % |
-| codev list | 507 | 0 % |
 | codev status | 295 | 0 % |
 
 ### `code.review`
@@ -118,6 +126,20 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | edit | 1138 | 2 % |
 | shell | 1014 | 2 % |
 | output | 59 | 0 % |
+
+### `plan.update`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| skill | 46597 | 31 % |
+| prompt | 46360 | 31 % |
+| codev list | 26001 | 17 % |
+| file | 21234 | 14 % |
+| edit | 3872 | 3 % |
+| search | 3482 | 2 % |
+| codev validate | 3021 | 2 % |
+| output | 570 | 0 % |
+| shell | 205 | 0 % |
 
 ### `plan.write`
 
@@ -3414,4 +3436,475 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Cost: 0.31 USD, 19 s
 - Tool calls: 10, 9 before the first artifact
 - Expected `_codev/changes/add-magic-links/tasks.md contains "expired"` (traceability, check): found by _codev/changes/add-magic-links/tasks.md
+
+### update-design-decision
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.33 · 37 · 37 · 10 · 2 · 1144 · 25977 · 252767 · 3647 · 7 · 40580 · 521
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.34 USD, 36 s
+- Tool calls: 8, 4 before the first artifact
+- Checks: 6 of 6 passed, the run passes
+- Check `design.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "The scope is every file the change touched": passed
+- Check no validation error added: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.33 USD, 36 s
+- Tool calls: 9, 5 before the first artifact
+- Checks: 6 of 6 passed, the run passes
+- Check `design.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "The scope is every file the change touched": passed
+- Check no validation error added: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.33 USD, 42 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 6 of 6 passed, the run passes
+- Check `design.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "The scope is every file the change touched": passed
+- Check no validation error added: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.32 USD, 35 s
+- Tool calls: 7, 5 before the first artifact
+- Checks: 6 of 6 passed, the run passes
+- Check `design.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "The scope is every file the change touched": passed
+- Check no validation error added: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.35 USD, 37 s
+- Tool calls: 11, 7 before the first artifact
+- Checks: 6 of 6 passed, the run passes
+- Check `design.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "The scope is every file the change touched": passed
+- Check no validation error added: passed
+
+### update-proposal-ripple
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.43 · 42 · 42 · 13 · 2 · 1105 · 36164 · 278859 · 4301 · 7 · 46433 · 619
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.43 USD, 39 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `proposal.md` revised: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check ripple `specs/doctor/spec.md` left unedited: passed
+- Check ripple `specs/doctor/spec.md` named: passed
+- Check no validation error added: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.42 USD, 37 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `proposal.md` revised: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check ripple `specs/doctor/spec.md` left unedited: passed
+- Check ripple `specs/doctor/spec.md` named: passed
+- Check no validation error added: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.43 USD, 46 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `proposal.md` revised: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check ripple `specs/doctor/spec.md` left unedited: passed
+- Check ripple `specs/doctor/spec.md` named: passed
+- Check no validation error added: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.44 USD, 42 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `proposal.md` revised: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check ripple `specs/doctor/spec.md` left unedited: passed
+- Check ripple `specs/doctor/spec.md` named: passed
+- Check no validation error added: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.43 USD, 43 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `proposal.md` revised: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check ripple `specs/doctor/spec.md` left unedited: passed
+- Check ripple `specs/doctor/spec.md` named: passed
+- Check no validation error added: passed
+
+### update-refuse-missing
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.17 · 13 · 13 · 3 · 0 · 1058 · 16085 · 89399 · 899 · 3 · 35514 · 300
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.17 USD, 12 s
+- Tool calls: 2, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check no validation error added: passed
+- Check change folder untouched: passed
+- Check points to `/codev-propose`: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.18 USD, 11 s
+- Tool calls: 3, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check no validation error added: passed
+- Check change folder untouched: passed
+- Check points to `/codev-propose`: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.16 USD, 10 s
+- Tool calls: 2, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check no validation error added: passed
+- Check change folder untouched: passed
+- Check points to `/codev-propose`: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.16 USD, 15 s
+- Tool calls: 2, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check no validation error added: passed
+- Check change folder untouched: passed
+- Check points to `/codev-propose`: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.17 USD, 14 s
+- Tool calls: 2, no artifact written
+- Checks: 5 of 5 passed, the run passes
+- Check `proposal.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check no validation error added: passed
+- Check change folder untouched: passed
+- Check points to `/codev-propose`: passed
+
+### update-specs-ripple-tasks
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.41 · 34 · 34 · 11 · 1 · 1106 · 30095 · 376897 · 3378 · 9 · 46055 · 390
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.37 USD, 33 s
+- Tool calls: 10, 6 before the first artifact
+- Checks: 12 of 12 passed, the run passes
+- Check `specs/skills/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `review.md` kept: passed
+- Check `specs/review-mode/spec.md` kept: passed
+- Check `specs/review-record/spec.md` kept: passed
+- Check `specs/doctor/spec.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check `specs/docs/spec.md` kept: passed
+- Check ripple `tasks.md` left unedited: passed
+- Check ripple `tasks.md` named: passed
+- Check no validation error added: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.33 USD, 27 s
+- Tool calls: 7, no artifact written
+- Checks: 12 of 12 passed, the run passes
+- Check `specs/skills/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `review.md` kept: passed
+- Check `specs/review-mode/spec.md` kept: passed
+- Check `specs/review-record/spec.md` kept: passed
+- Check `specs/doctor/spec.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check `specs/docs/spec.md` kept: passed
+- Check ripple `tasks.md` left unedited: passed
+- Check ripple `tasks.md` named: passed
+- Check no validation error added: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.41 USD, 39 s
+- Tool calls: 10, 6 before the first artifact
+- Checks: 12 of 12 passed, the run passes
+- Check `specs/skills/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `review.md` kept: passed
+- Check `specs/review-mode/spec.md` kept: passed
+- Check `specs/review-record/spec.md` kept: passed
+- Check `specs/doctor/spec.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check `specs/docs/spec.md` kept: passed
+- Check ripple `tasks.md` left unedited: passed
+- Check ripple `tasks.md` named: passed
+- Check no validation error added: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.43 USD, 33 s
+- Tool calls: 9, 6 before the first artifact
+- Checks: 12 of 12 passed, the run passes
+- Check `specs/skills/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `review.md` kept: passed
+- Check `specs/review-mode/spec.md` kept: passed
+- Check `specs/review-record/spec.md` kept: passed
+- Check `specs/doctor/spec.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check `specs/docs/spec.md` kept: passed
+- Check ripple `tasks.md` left unedited: passed
+- Check ripple `tasks.md` named: passed
+- Check no validation error added: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.41 USD, 37 s
+- Tool calls: 12, 9 before the first artifact
+- Checks: 12 of 12 passed, the run passes
+- Check `specs/skills/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `review.md` kept: passed
+- Check `specs/review-mode/spec.md` kept: passed
+- Check `specs/review-record/spec.md` kept: passed
+- Check `specs/doctor/spec.md` kept: passed
+- Check `specs/configuration/spec.md` kept: passed
+- Check `specs/docs/spec.md` kept: passed
+- Check ripple `tasks.md` left unedited: passed
+- Check ripple `tasks.md` named: passed
+- Check no validation error added: passed
+
+### update-specs-scenario
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.26 · 22 · 22 · 8 · 1 · 1116 · 22392 · 183562 · 1958 · 5 · 40113 · 367
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.26 USD, 23 s
+- Tool calls: 8, 6 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `specs/configure/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "Testing rules follow an existing pytest suite": passed
+- Check no validation error added: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.28 USD, 20 s
+- Tool calls: 5, 2 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `specs/configure/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "Testing rules follow an existing pytest suite": passed
+- Check no validation error added: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.28 USD, 25 s
+- Tool calls: 7, 5 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `specs/configure/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "Testing rules follow an existing pytest suite": passed
+- Check no validation error added: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.26 USD, 22 s
+- Tool calls: 7, 4 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `specs/configure/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "Testing rules follow an existing pytest suite": passed
+- Check no validation error added: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.23 USD, 18 s
+- Tool calls: 5, 2 before the first artifact
+- Checks: 7 of 7 passed, the run passes
+- Check `specs/configure/spec.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `tasks.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check holds "Testing rules follow an existing pytest suite": passed
+- Check no validation error added: passed
+
+### update-tasks-add
+
+- Role: planner at `plan.update`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.28 · 22 · 22 · 7 · 0 · 1117 · 24200 · 181696 · 2133 · 5 · 41398 · 427
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.26 USD, 21 s
+- Tool calls: 5, 3 before the first artifact
+- Checks: 8 of 8 passed, the run passes
+- Check `tasks.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `specs/roles/spec.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check `review.md` kept: passed
+- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check no validation error added: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.27 USD, 21 s
+- Tool calls: 6, 4 before the first artifact
+- Checks: 8 of 8 passed, the run passes
+- Check `tasks.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `specs/roles/spec.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check `review.md` kept: passed
+- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check no validation error added: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.28 USD, 28 s
+- Tool calls: 6, 4 before the first artifact
+- Checks: 8 of 8 passed, the run passes
+- Check `tasks.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `specs/roles/spec.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check `review.md` kept: passed
+- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check no validation error added: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.28 USD, 23 s
+- Tool calls: 5, 3 before the first artifact
+- Checks: 8 of 8 passed, the run passes
+- Check `tasks.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `specs/roles/spec.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check `review.md` kept: passed
+- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check no validation error added: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.29 USD, 20 s
+- Tool calls: 6, 3 before the first artifact
+- Checks: 8 of 8 passed, the run passes
+- Check `tasks.md` revised: passed
+- Check `proposal.md` kept: passed
+- Check `design.md` kept: passed
+- Check `specs/roles/spec.md` kept: passed
+- Check `specs/skills/spec.md` kept: passed
+- Check `review.md` kept: passed
+- Check holds "no_skill_body_asks_for_codev_review_json": passed
+- Check no validation error added: passed
 
