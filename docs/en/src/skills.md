@@ -69,6 +69,25 @@ The question is asked once per action, never in the middle of one:
 `codev doctor`, whose `codev_version` check says the same thing. No skill
 needs more than `Bash(codev:*)` for it.
 
+## The author's corrections
+
+When you correct the agent during `/codev-propose`, `/codev-apply` or
+`/codev-update` on how your project does things — a convention, a
+technical choice, an expectation on an artifact — it notes the correction
+once in the change's [`corrections.md`](reference/file-formats.md#correctionsmd):
+where, what it had done, what you asked, one line each. It then quotes the
+entry to you, so that you can have it changed or removed before it is
+committed. `codev review` lists the corrections, and `codev validate`
+checks their file.
+
+Only an instruction that would apply to the next change too is noted. A
+one-off preference about this change, a typo, a change of scope or a
+misunderstanding of the request is not. A project instruction goes to
+`corrections.md`, which the team shares through git, and not to Claude
+Code's personal memory. A preference about how the agent works with you
+stays in that personal memory. An entry names no person and quotes no
+personal data or secret.
+
 ## The skills in detail
 
 ### Propose (`/codev-propose`)

@@ -46,6 +46,16 @@ pub const REVIEW_ISOLATED: &str =
 
 pub const REVIEW_ISOLATED_PLACEHOLDER: &str = "{{fragment:review-isolated}}";
 
+/// How the author's corrections are noted in a change's `corrections.md`,
+/// shared by the workflows during which the author corrects the agent.
+pub const MEMORY_CAPTURE: &str =
+    include_str!("../../../assets/workflows/fragments/memory-capture.md");
+
+pub const MEMORY_CAPTURE_PLACEHOLDER: &str = "{{fragment:memory-capture}}";
+
+/// The workflows whose body carries [`MEMORY_CAPTURE_PLACEHOLDER`].
+pub const MEMORY_CAPTURE_WORKFLOWS: &[&str] = &["propose", "apply", "update"];
+
 /// The fragments of `assets/workflows/fragments/`, by name: text shared by
 /// several skills, pasted wherever a skill — or another fragment — writes
 /// `{{fragment:<name>}}`, so that its copies never drift apart.
@@ -53,6 +63,7 @@ pub const FRAGMENTS: &[(&str, &str)] = &[
     ("version-check", VERSION_CHECK),
     ("review-record", REVIEW_RECORD),
     ("review-isolated", REVIEW_ISOLATED),
+    ("memory-capture", MEMORY_CAPTURE),
 ];
 
 /// `text` with each `{{fragment:<name>}}` replaced by that fragment, its
@@ -355,6 +366,73 @@ mod tests {
                 !rendered(workflow.id).contains("{{fragment:"),
                 "`{}` keeps a fragment placeholder",
                 workflow.id
+            );
+        }
+    }
+
+    #[test]
+    fn the_editing_skills_note_corrections() {
+        for id in MEMORY_CAPTURE_WORKFLOWS {
+            assert_eq!(
+                find(id)
+                    .unwrap()
+                    .body
+                    .matches(MEMORY_CAPTURE_PLACEHOLDER)
+                    .count(),
+                1,
+                "`{id}` must carry the corrections once"
+            );
+            let skill = flat(&rendered(id));
+            for keyword in [
+                "note it once in the change's `corrections.md`",
+                "`<!-- codev-corrections: 1 -->`",
+                "`step`",
+                "`where`",
+                "`did`",
+                "`asked`",
+                "Read nothing else of the file.",
+                "quote the entry to the author, who may have it changed or removed",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` lacks `{keyword}`");
+            }
+        }
+    }
+
+    #[test]
+    fn the_skills_say_what_counts_as_a_correction() {
+        for id in MEMORY_CAPTURE_WORKFLOWS {
+            let skill = flat(&rendered(id));
+            for keyword in [
+                "It counts when it would apply to the next change too",
+                "`thiserror` in the libraries",
+                "It does not: a one-off preference about this change, a typo, a change of scope or of the request",
+                "a preference about how you talk or work with this author",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` lacks `{keyword}`");
+            }
+        }
+    }
+
+    #[test]
+    fn project_knowledge_and_personal_memory_are_kept_apart() {
+        for id in MEMORY_CAPTURE_WORKFLOWS {
+            let skill = flat(&rendered(id));
+            for keyword in [
+                "A project instruction goes here, not to your personal memory",
+                "a personal preference stays in your personal memory, never here",
+                "An entry names no person and quotes no personal data or secret",
+            ] {
+                assert!(skill.contains(keyword), "`{id}` lacks `{keyword}`");
+            }
+        }
+    }
+
+    #[test]
+    fn other_skills_do_not_note_corrections() {
+        for id in ["archive", "sync", "explore"] {
+            assert!(
+                !rendered(id).contains("corrections.md"),
+                "`{id}` mentions corrections.md"
             );
         }
     }

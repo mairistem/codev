@@ -225,6 +225,30 @@ mod tests {
         );
     }
 
+    const CORRECTIONS: &str = "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/a.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n";
+
+    #[test]
+    fn the_archive_keeps_the_corrections() {
+        let fs = well_formed_project()
+            .with_file("/p/_codev/changes/add-auth/corrections.md", CORRECTIONS);
+        let outcome = archive(&fs).unwrap();
+        assert!(
+            fs.read(outcome.moved_to.join("corrections.md"))
+                .is_some_and(|c| c.contains("C-1"))
+        );
+    }
+
+    #[test]
+    fn an_invalid_corrections_file_blocks_the_archive() {
+        let missing_asked = CORRECTIONS.replace("asked: Use thiserror.\n", "");
+        let fs = well_formed_project()
+            .with_file("/p/_codev/changes/add-auth/corrections.md", missing_asked);
+        let err = archive(&fs).unwrap_err();
+        assert_eq!(err.code(), "validation_failed");
+        assert!(err.to_string().contains("codev validate add-auth"), "{err}");
+        assert!(still_active(&fs));
+    }
+
     #[test]
     fn archive_refuses_without_a_record() {
         let fs = well_formed_project();

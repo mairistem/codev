@@ -129,6 +129,8 @@ One or two sentences:
   affects the implementation) or `/codev-archive` (if the acknowledged gap
   is closed).
 
+{{fragment:memory-capture}}
+
 ## Output
 
 The step 6 summary, preceded by the ripple report if there is one and its

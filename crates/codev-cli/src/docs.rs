@@ -565,6 +565,42 @@ mod tests {
     }
 
     #[test]
+    fn both_languages_document_the_corrections() {
+        for (lang, skills_heading) in [
+            (Lang::En, "## The author's corrections"),
+            (Lang::Fr, "## Les corrections de l'auteur"),
+        ] {
+            let chapter = |path: &str| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .map(|(_, source)| *source)
+                    .unwrap_or_else(|| panic!("{lang:?}: no chapter {path}"))
+            };
+            assert!(chapter("skills.md").contains(skills_heading), "{lang:?}");
+            let formats = chapter("reference/file-formats.md");
+            assert!(formats.contains("## corrections.md"), "{lang:?}");
+            for code in [
+                "corrections_invalid",
+                "corrections_unknown_field",
+                "corrections_too_long",
+                "corrections_format_unsupported",
+            ] {
+                assert!(
+                    formats.contains(&format!("| `{code}` |")),
+                    "{lang:?}: {code}"
+                );
+            }
+            let json = chapter("reference/json-output.md");
+            assert!(json.contains("| `correctionsIssues` |"), "{lang:?}");
+            assert!(
+                chapter("reference/cli.md").contains("file-formats.md#correctionsmd"),
+                "{lang:?}"
+            );
+        }
+    }
+
+    #[test]
     fn roles_chapters_carry_the_review_scales() {
         use codev_core::review::{Confidence, Severity};
         let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");

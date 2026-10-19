@@ -583,6 +583,8 @@ lists main specs removed by a change that retires a capability.
       { "code": "review_unresolved", "message": "R-security-1 (Session tokens are stored in clear) is high and still disputed; fix it, or a human accepts the risk or defers it" }
     ]
   },
+  "corrections": [],
+  "correctionsIssues": [],
   "status": []
 }
 ```
@@ -602,6 +604,8 @@ lists main specs removed by a change that retires a capability.
 | `findings[].awaiting` | Who acts next: `author` (open), `reviewer` (a fix to verify, a dispute to answer), `human` (a dispute the reviewer maintained), or `null` |
 | `issues` | The record's defects, in the shape of `validate`'s findings, with the `review_*` codes |
 | `archive.blockers[].code` | `review_record_missing`, `review_step_missing`, `review_unresolved` or `review_format_unsupported` |
+| `corrections` | The author's corrections from `corrections.md`, in file order, each with `id`, `title`, `step`, `where`, `did` and `asked`; empty without the file or its format marker |
+| `correctionsIssues` | The defects of `corrections.md`, with the `corrections_*` codes; never in `issues`, never in the exit status |
 
 The exit status is `1` only when `issues` holds an error. Fields the file
 leaves out or gets wrong are `null`.

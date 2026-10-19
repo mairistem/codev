@@ -1405,7 +1405,24 @@ pub struct ReviewV1 {
     /// The record's defects, as `codev validate` reports them.
     pub issues: Vec<FindingV1>,
     pub archive: ReviewGateV1,
+    /// The change's corrections, in file order. Additive in v1.
+    pub corrections: Vec<CorrectionV1>,
+    /// The defects of `corrections.md`, never among `issues`. Additive in
+    /// v1.
+    pub corrections_issues: Vec<FindingV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// An instruction the author gave the agent, as `corrections.md` records it.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CorrectionV1 {
+    pub id: String,
+    pub title: String,
+    pub step: String,
+    pub r#where: String,
+    pub did: String,
+    pub asked: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1525,6 +1542,32 @@ impl From<&crate::commands::ReviewOutcome> for ReviewV1 {
                     })
                     .collect(),
             },
+            corrections: outcome
+                .corrections
+                .corrections
+                .entries
+                .iter()
+                .map(|c| CorrectionV1 {
+                    id: c.id.clone(),
+                    title: c.title.clone(),
+                    step: c.step.clone(),
+                    r#where: c.r#where.clone(),
+                    did: c.did.clone(),
+                    asked: c.asked.clone(),
+                })
+                .collect(),
+            corrections_issues: outcome
+                .corrections
+                .findings
+                .iter()
+                .map(|f| FindingV1 {
+                    path: json_path(&outcome.corrections.path),
+                    line: f.line,
+                    severity: severity_label(f.severity),
+                    code: f.code,
+                    message: f.message.clone(),
+                })
+                .collect(),
             status: statuses(&outcome.warnings),
         }
     }
@@ -1627,6 +1670,8 @@ pub fn review_shape() -> serde_json::Value {
         "findings": [],
         "issues": [],
         "archive": { "ready": false, "blockers": [] },
+        "corrections": [],
+        "correctionsIssues": [],
     })
 }
 
@@ -1930,6 +1975,40 @@ apply:
     }
 
     #[test]
+    fn the_review_document_carries_corrections() {
+        let parsed = codev_core::corrections::parse(
+            "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/a.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n\n### C-2\n",
+        );
+        let outcome = crate::commands::ReviewOutcome {
+            change: ChangeId::parse("add-auth").unwrap(),
+            check: codev_engine::review::ReviewCheck {
+                path: "_codev/changes/add-auth/review.md".into(),
+                record: None,
+                findings: Vec::new(),
+                steps: Vec::new(),
+                blockers: Vec::new(),
+            },
+            corrections: codev_engine::corrections::CorrectionsCheck {
+                path: "_codev/changes/add-auth/corrections.md".into(),
+                corrections: parsed.value,
+                findings: parsed.findings,
+            },
+            warnings: Vec::new(),
+        };
+        let json = serde_json::to_value(ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(
+            json["corrections"],
+            serde_json::json!([{"id": "C-1", "title": "Typed errors", "step": "apply", "where": "src/a.rs", "did": "Returned anyhow.", "asked": "Use thiserror."}])
+        );
+        assert_eq!(json["correctionsIssues"][0]["code"], "corrections_invalid");
+        assert_eq!(
+            json["correctionsIssues"][0]["path"],
+            "_codev/changes/add-auth/corrections.md"
+        );
+        assert_eq!(json["issues"], serde_json::json!([]));
+    }
+
+    #[test]
     fn review_document_exposes_the_contract_fields() {
         let record = codev_core::review::parse(
             "## code.review\n\n### newcomer\n\n#### R-newcomer-1 T\n\n```yaml\nseverity: low\nconfidence: high\nlocation: a.rs:1\nevidence: x\nrecommendation: y\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: abc\n```\n",
@@ -1947,6 +2026,7 @@ apply:
                 }],
                 blockers: Vec::new(),
             },
+            corrections: Default::default(),
             warnings: Vec::new(),
         };
         let json = serde_json::to_value(ReviewV1::from(&outcome)).unwrap();
@@ -1959,6 +2039,8 @@ apply:
             "findings",
             "issues",
             "archive",
+            "corrections",
+            "correctionsIssues",
             "status",
         ] {
             assert!(json.get(field).is_some(), "missing `{field}`");

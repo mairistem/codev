@@ -331,7 +331,8 @@ enum Command {
     /// findings with their severity, status and location, and who must act
     /// next (author, reviewer or human). Lists the record's defects, as
     /// `codev validate` does, and whether the review lets the change be
-    /// archived. Exits with 1 when the record has an error.
+    /// archived. Exits with 1 when the record has an error. Also lists the
+    /// author's corrections from `corrections.md`, apart from the record.
     Review {
         /// Change name (inferred when there is only one)
         #[arg(long)]

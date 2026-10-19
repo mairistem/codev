@@ -320,6 +320,23 @@ mod tests {
     }
 
     #[test]
+    fn sync_leaves_the_corrections_in_place() {
+        let fs = project_with_added_delta()
+            .with_file("/p/_codev/changes/add-auth/corrections.md", "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/a.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n");
+        execute_sync(
+            &fs,
+            &Layout::new("/p"),
+            &resolved(&fs),
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        assert!(
+            fs.read("/p/_codev/changes/add-auth/corrections.md")
+                .is_some()
+        );
+    }
+
+    #[test]
     fn sync_ignores_the_review_record() {
         // An open high finding blocks `archive`, never `sync`, and the
         // record stays where it is.

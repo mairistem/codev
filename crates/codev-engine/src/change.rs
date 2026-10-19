@@ -161,6 +161,33 @@ mod tests {
     }
 
     #[test]
+    fn status_ignores_the_corrections() {
+        let without = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            );
+        let with = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file("/p/_codev/changes/add-auth/corrections.md", "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/a.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n");
+        let layout = Layout::new("/p");
+        let states = |fs: &MemoryFileSystem| {
+            status(fs, &layout, &context(fs, "add-auth"))
+                .unwrap()
+                .artifacts
+                .iter()
+                .map(|a| (a.id.clone(), a.state))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(states(&with), states(&without));
+    }
+
+    #[test]
     fn status_ignores_the_review_record() {
         let without = MemoryFileSystem::new()
             .with_file("/p/_codev/config.yaml", "")
