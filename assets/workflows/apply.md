@@ -168,6 +168,8 @@ Otherwise, summarize:
 
 **Do not archive yourself.** The user must review first.
 
+{{fragment:memory-capture}}
+
 ## Output
 
 A final summary, as described in step 6.

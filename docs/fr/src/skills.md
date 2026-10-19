@@ -73,6 +73,25 @@ la pose avant la première tâche. `/codev-explore`, `/codev-onboard` et
 `codev doctor`, dont la vérification `codev_version` dit la même chose.
 Aucune skill n'a besoin de plus que `Bash(codev:*)` pour cela.
 
+## Les corrections de l'auteur
+
+Quand vous corrigez l'agent pendant `/codev-propose`, `/codev-apply` ou
+`/codev-update` sur la manière de faire de votre projet — une convention,
+un choix technique, une attente sur un artefact —, il note la correction
+une fois dans le [`corrections.md`](reference/file-formats.md#correctionsmd)
+du change : où, ce qu'il avait fait, ce que vous avez demandé, une ligne
+chacun. Il vous cite ensuite l'entrée, pour que vous puissiez la faire
+modifier ou retirer avant le commit. `codev review` liste les corrections,
+et `codev validate` vérifie leur fichier.
+
+Seule une consigne qui vaudrait aussi pour le change suivant est notée. Une
+préférence ponctuelle sur ce change, une faute de frappe, un changement de
+périmètre ou un malentendu sur la demande ne le sont pas. Une consigne du
+projet va dans `corrections.md`, que l'équipe partage par git, et non dans
+la mémoire personnelle de Claude Code. Une préférence sur la façon dont
+l'agent travaille avec vous reste dans cette mémoire personnelle. Une
+entrée ne nomme personne et ne cite ni donnée personnelle ni secret.
+
 ## Les skills en détail
 
 ### Propose (`/codev-propose`)

@@ -387,6 +387,56 @@ nouvelle étape ou un nouveau champ obligatoire relève au contraire le
 marqueur de format, qu'un codev plus ancien refuse de vérifier. Les transitions et les contrôles
 sont dans [Compte rendu de revue](../guides/review-record.md#ce-que-codev-vérifie).
 
+## corrections.md
+
+Chemin : `_codev/changes/<name>/corrections.md`. Les consignes que
+l'auteur a données à l'agent sur la manière de faire du projet, notées par
+`/codev-propose`, `/codev-apply` et `/codev-update` — voir
+[les corrections de l'auteur](../skills.md#les-corrections-de-lauteur).
+Comme `review.md`, ce n'est pas un artefact de planification : `codev
+status` et `codev changelog` l'ignorent, `codev sync` le laisse en place,
+`codev archive` le déplace avec le change, et les relecteurs ne le
+reçoivent pas.
+
+````markdown
+# Corrections: add-sessions
+
+<!-- codev-corrections: 1 -->
+
+### C-1 Erreurs typées dans les bibliothèques
+
+```yaml
+step: apply
+where: crates/sessions/src/store.rs
+did: A renvoyé une erreur anyhow depuis le store.
+asked: Utiliser un type thiserror ; anyhow reste dans la CLI.
+```
+````
+
+Le marqueur de format est obligatoire : un fichier qui ne l'a pas est un
+autre document du même nom, que codev ne vérifie ni ne liste. Chaque
+entrée est un titre `### C-<n> <titre>`, `<n>` unique à partir de 1, suivi
+d'un bloc `yaml` :
+
+| Champ | Signification |
+|---|---|
+| `step` | `propose`, `apply` ou `update` : la skill pendant laquelle l'auteur a corrigé l'agent |
+| `where` | Le fichier ou l'artefact concerné |
+| `did` | Ce que l'agent avait fait, en une ligne |
+| `asked` | Ce que l'auteur a demandé à la place, en une ligne |
+
+Un champ que ce codev ne connaît pas est un avertissement,
+`corrections_unknown_field`, et il est ignoré. Un `did` ou un `asked` de
+plus de 300 caractères est un avertissement, `corrections_too_long` : une
+entrée énonce une consigne, jamais la conversation. Seuls les changes
+actifs sont vérifiés.
+
+Une entrée ne nomme personne et ne cite ni donnée personnelle ni secret.
+Elle est conservée aussi longtemps que l'archive. Pour en retirer une qui
+serait passée, modifiez-la ou supprimez-la dans son change, archivé ou
+non — codev ne revérifie jamais un change archivé —, et réécrivez
+l'historique si le commit a déjà été poussé.
+
 ## Décision (ADR)
 
 Chemin : `_codev/decisions/NNNN-<slug>.md`. Chaque fichier `.md` de ce
@@ -551,6 +601,10 @@ peuvent être reformulés d'une version à l'autre ; les codes, non.
 | `review_unknown_section` | avertissement | Une étape ou un rôle que le compte rendu ne devrait pas contenir ; il est ignoré |
 | `review_unknown_field` | avertissement | Un champ de constat que ce codev ne connaît pas ; il est ignoré |
 | `review_format_unsupported` | avertissement | Le compte rendu vient d'un codev plus récent ; rien n'y est vérifié |
+| `corrections_invalid` | erreur | Une entrée de `corrections.md` a un titre ou un identifiant faux, pas de bloc `yaml`, ou un champ absent, vide ou invalide |
+| `corrections_unknown_field` | avertissement | Un champ de correction que ce codev ne connaît pas ; il est ignoré |
+| `corrections_too_long` | avertissement | Le `did` ou le `asked` d'une correction dépasse 300 caractères |
+| `corrections_format_unsupported` | avertissement | `corrections.md` vient d'un codev plus récent ; rien n'y est vérifié |
 | `delta_section_empty` | avertissement | Une section de delta ne comporte aucune entrée : rien n'en est fusionné |
 | `decision_unsealed` | avertissement | Une décision locale acceptée ou remplacée n'a pas de sceau |
 | `unknown_config_key` | avertissement | `_codev/config.yaml` contient une clé de premier niveau ou de `mcp` que ce codev ne connaît pas — voir [Clés inconnues](configuration.md#clés-inconnues) |

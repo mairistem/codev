@@ -62,6 +62,13 @@ pub fn validate_change(
             .into_iter()
             .map(|finding| LocatedFinding::from_finding(finding, review.path.clone())),
     );
+    let corrections = crate::corrections::check(fs, layout, change_id)?;
+    findings.extend(
+        corrections
+            .findings
+            .into_iter()
+            .map(|finding| LocatedFinding::from_finding(finding, corrections.path.clone())),
+    );
 
     // Each delta is read once and parsed once: the parser's findings and
     // the rules' findings come out of the same pass.
@@ -1057,6 +1064,88 @@ mod tests {
                 .iter()
                 .flat_map(|i| &i.findings)
                 .all(|f| !f.finding.code.starts_with("review_")),
+            "{:?}",
+            report.items
+        );
+    }
+
+    // ─────────────── corrections ───────────────
+
+    const CORRECTION: &str = "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/auth.rs\ndid: Returned anyhow.\nasked: Use thiserror.\n```\n";
+
+    fn corrections_codes(fs: &MemoryFileSystem) -> (Vec<&'static str>, ItemReport) {
+        let cfg = config(fs);
+        let report = validate_change(
+            fs,
+            &Layout::new("/p"),
+            &cfg,
+            &ChangeId::parse("add-auth").unwrap(),
+        )
+        .unwrap();
+        let codes = report
+            .findings
+            .iter()
+            .map(|f| f.finding.code)
+            .filter(|code| code.starts_with("corrections_"))
+            .collect();
+        (codes, report)
+    }
+
+    #[test]
+    fn a_change_without_corrections_has_no_finding() {
+        let (codes, _) = corrections_codes(&project_with_well_formed_change());
+        assert!(codes.is_empty(), "{codes:?}");
+    }
+
+    #[test]
+    fn well_formed_corrections_have_no_finding() {
+        let fs = project_with_well_formed_change()
+            .with_file("/p/_codev/changes/add-auth/corrections.md", CORRECTION);
+        let (codes, _) = corrections_codes(&fs);
+        assert!(codes.is_empty(), "{codes:?}");
+    }
+
+    #[test]
+    fn a_corrections_error_fails_validation() {
+        let fs = project_with_well_formed_change().with_file(
+            "/p/_codev/changes/add-auth/corrections.md",
+            CORRECTION.replace("did: Returned anyhow.\n", ""),
+        );
+        let (codes, report) = corrections_codes(&fs);
+        assert_eq!(codes, ["corrections_invalid"]);
+        assert!(report.has_errors());
+        let finding = report
+            .findings
+            .iter()
+            .find(|f| f.finding.code == "corrections_invalid")
+            .unwrap();
+        assert_eq!(
+            finding.path,
+            PathBuf::from("_codev/changes/add-auth/corrections.md")
+        );
+        assert_eq!(finding.finding.line, 5);
+    }
+
+    #[test]
+    fn archived_corrections_are_not_checked() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/change.yaml",
+                "schema: spec-driven",
+            )
+            .with_file(
+                "/p/_codev/changes/archive/2026-01-01-old/corrections.md",
+                "<!-- codev-corrections: 1 -->\n\n### C-1 Broken\n",
+            );
+        let cfg = config(&fs);
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &cfg).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|i| &i.findings)
+                .all(|f| !f.finding.code.starts_with("corrections_")),
             "{:?}",
             report.items
         );

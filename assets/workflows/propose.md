@@ -260,6 +260,8 @@ Ask the user only if a finding changes the scope materially.
 codev status --change "<name>"
 ```
 
+{{fragment:memory-capture}}
+
 ## Output
 
 Summarize:

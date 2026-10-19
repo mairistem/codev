@@ -591,6 +591,8 @@ les specs principales supprimées par un change qui retire une capacité.
       { "code": "review_unresolved", "message": "R-security-1 (Session tokens are stored in clear) is high and still disputed; fix it, or a human accepts the risk or defers it" }
     ]
   },
+  "corrections": [],
+  "correctionsIssues": [],
   "status": []
 }
 ```
@@ -610,6 +612,8 @@ les specs principales supprimées par un change qui retire une capacité.
 | `findings[].awaiting` | Qui agit ensuite : `author` (ouvert), `reviewer` (une correction à vérifier, une contestation à laquelle répondre), `human` (une contestation que le relecteur a maintenue), ou `null` |
 | `issues` | Les défauts du compte rendu, sous la forme des constats de `validate`, avec les codes `review_*` |
 | `archive.blockers[].code` | `review_record_missing`, `review_step_missing`, `review_unresolved` ou `review_format_unsupported` |
+| `corrections` | Les corrections de l'auteur tirées de `corrections.md`, dans l'ordre du fichier, chacune avec `id`, `title`, `step`, `where`, `did` et `asked` ; vide sans le fichier ou sans son marqueur de format |
+| `correctionsIssues` | Les défauts de `corrections.md`, avec les codes `corrections_*` ; jamais dans `issues`, jamais dans le code de sortie |
 
 Le code de sortie vaut `1` seulement quand `issues` contient une erreur. Les
 champs que le fichier omet ou rend invalides valent `null`.

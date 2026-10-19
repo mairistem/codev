@@ -638,7 +638,7 @@ Relancée, la commande indique que les specs sont inchangées. Voir
 ```text
 Show a change's review record and what is left to decide
 
-Reads `_codev/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `codev validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error.
+Reads `_codev/changes/<name>/review.md`: per step and per role, the findings with their severity, status and location, and who must act next (author, reviewer or human). Lists the record's defects, as `codev validate` does, and whether the review lets the change be archived. Exits with 1 when the record has an error. Also lists the author's corrections from `corrections.md`, apart from the record.
 
 Usage: codev review [OPTIONS]
 
@@ -659,7 +659,10 @@ les défauts du compte rendu (les codes `review_*` de
 [`codev validate`](#codev-validate)) et si la revue permet d'archiver le
 change. Sans compte rendu, la commande le dit et réussit. Le verrou
 d'archivage ne change pas le code de sortie : c'est `codev archive` qui
-l'applique. JSON : [`review`](json-output.md#review).
+l'applique. Elle liste ensuite les [corrections](file-formats.md#correctionsmd)
+de l'auteur sous `Corrections`, avec les défauts de leur fichier : elles ne
+décident ni de l'archivage ni du code de sortie. JSON :
+[`review`](json-output.md#review).
 
 ### codev archive
 

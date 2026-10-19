@@ -7,6 +7,7 @@ use std::path::Path;
 
 use codev_core::ChangeId;
 use codev_core::Layout;
+use codev_core::corrections::FILE as CORRECTIONS_FILE;
 use codev_core::layout::slashed;
 use codev_core::review::FILE as REVIEW_FILE;
 use codev_core::review::material::{self, Material};
@@ -99,7 +100,12 @@ fn plan_files(
     };
     listed
         .into_iter()
-        .filter(|relative| relative != CHANGE_METADATA && relative != REVIEW_FILE)
+        // The metadata, the reviews and the author's corrections are not the
+        // plan: briefing every reviewer with them would cost tokens for
+        // nothing the plan does not already follow.
+        .filter(|relative| {
+            relative != CHANGE_METADATA && relative != REVIEW_FILE && relative != CORRECTIONS_FILE
+        })
         .filter_map(|relative| {
             let path = dir.join(&relative);
             if !fs.is_regular_file(&path) {
@@ -188,7 +194,7 @@ mod tests {
     }
 
     #[test]
-    fn plan_material_skips_change_yaml_and_review_md() {
+    fn plan_material_skips_change_yaml_review_md_and_corrections_md() {
         let dir = "/p/_codev/changes/add-auth";
         let fs = MemoryFileSystem::new()
             .with_file(format!("{dir}/proposal.md"), "p".repeat(10))
@@ -196,7 +202,11 @@ mod tests {
             .with_file(format!("{dir}/tasks.md"), "t")
             .with_file(format!("{dir}/specs/auth/spec.md"), "s".repeat(5))
             .with_file(format!("{dir}/change.yaml"), "schema: spec-driven\n")
-            .with_file(format!("{dir}/review.md"), "# Review record\n");
+            .with_file(format!("{dir}/review.md"), "# Review record\n")
+            .with_file(
+                format!("{dir}/corrections.md"),
+                "<!-- codev-corrections: 1 -->\n",
+            );
         let unavailable = Diff::Unavailable {
             reason: "not needed".into(),
         };

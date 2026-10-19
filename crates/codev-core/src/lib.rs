@@ -15,6 +15,7 @@
 
 pub mod changelog;
 pub mod config;
+pub mod corrections;
 pub mod decisions;
 pub mod detect;
 pub mod doctor;

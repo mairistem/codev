@@ -15,6 +15,7 @@ pub mod archive;
 pub mod change;
 pub mod changelog;
 pub mod config;
+pub mod corrections;
 pub mod decisions;
 pub mod decisions_actions;
 pub mod design;

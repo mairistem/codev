@@ -1129,6 +1129,9 @@ pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
 pub struct ReviewOutcome {
     pub change: ChangeId,
     pub check: engine_review::ReviewCheck,
+    /// The change's `corrections.md`: listed beside the record, never in
+    /// its issues, its exit code or its archive gate.
+    pub corrections: codev_engine::corrections::CorrectionsCheck,
     pub warnings: Vec<Warning>,
 }
 
@@ -1150,6 +1153,7 @@ pub fn review(ctx: &Ctx, requested: Option<&str>) -> Result<ReviewOutcome> {
     let change_ctx = change::load(ctx.fs, &layout, &config, change.clone())?;
     Ok(ReviewOutcome {
         check: engine_review::check(ctx.fs, &layout, &config, &change_ctx)?,
+        corrections: codev_engine::corrections::check(ctx.fs, &layout, &change)?,
         change,
         warnings: config.warnings,
     })
@@ -3436,6 +3440,102 @@ edition = "2024"
         );
     }
 
+    const CORRECTION: &str = "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/auth.rs\ndid: Returned anyhow.\nasked: Use thiserror; anyhow stays in the CLI.\n```\n";
+
+    fn corrected_change(review: &str, corrections: &str) -> Harness {
+        let h = reviewed_change(review);
+        write_helper(&h, "/p/_codev/changes/add-auth/corrections.md", corrections);
+        h
+    }
+
+    #[test]
+    fn review_lists_the_corrections() {
+        let h = corrected_change("", CORRECTION);
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        let entry = &json["corrections"][0];
+        assert_eq!(entry["id"], "C-1");
+        assert_eq!(entry["title"], "Typed errors");
+        assert_eq!(entry["step"], "apply");
+        assert_eq!(entry["where"], "src/auth.rs");
+        assert_eq!(entry["did"], "Returned anyhow.");
+        assert_eq!(entry["asked"], "Use thiserror; anyhow stays in the CLI.");
+        assert_eq!(json["correctionsIssues"], serde_json::json!([]));
+        let text = crate::render::review(&outcome);
+        assert!(
+            text.contains("Corrections\n  C-1 [apply] src/auth.rs — Use thiserror"),
+            "{text}"
+        );
+    }
+
+    #[test]
+    fn corrections_do_not_block_the_archive() {
+        let settled = "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\n### newcomer\n\nNo finding.\n";
+        let two = format!(
+            "{CORRECTION}\n### C-2 Tests by behavior\n\n```yaml\nstep: propose\nwhere: tasks.md\ndid: Named a test after its function.\nasked: Name tests after the behavior.\n```\n"
+        );
+        let h = corrected_change(settled, &two);
+        let outcome = review(&h.ctx(), None).unwrap();
+        assert_eq!(outcome.corrections.corrections.entries.len(), 2);
+        assert!(
+            outcome.check.blockers.is_empty(),
+            "{:?}",
+            outcome.check.blockers
+        );
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["archive"]["ready"], true);
+    }
+
+    #[test]
+    fn a_change_without_corrections_has_no_section() {
+        let h = reviewed_change("");
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["corrections"], serde_json::json!([]));
+        assert_eq!(json["correctionsIssues"], serde_json::json!([]));
+        assert!(!crate::render::review(&outcome).contains("Corrections"));
+    }
+
+    #[test]
+    fn review_lists_a_corrections_error_apart() {
+        let h = corrected_change("", &CORRECTION.replace("did: Returned anyhow.\n", ""));
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        assert_eq!(outcome.exit_code(), 0);
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["issues"], serde_json::json!([]));
+        let issue = &json["correctionsIssues"][0];
+        assert_eq!(issue["code"], "corrections_invalid");
+        assert_eq!(issue["path"], "_codev/changes/add-auth/corrections.md");
+        assert_eq!(issue["line"], 5);
+        let text = crate::render::review(&outcome);
+        assert!(!text.contains("Issues in the record"), "{text}");
+        assert!(
+            text.contains("Corrections\n  error [corrections_invalid] line 5"),
+            "{text}"
+        );
+    }
+
+    #[test]
+    fn review_lists_no_entry_from_a_newer_format() {
+        let h = corrected_change("", "<!-- codev-corrections: 2 -->\n\n### C-1 Later\n");
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["corrections"], serde_json::json!([]));
+        assert_eq!(
+            json["correctionsIssues"][0]["code"],
+            "corrections_format_unsupported"
+        );
+    }
+
+    #[test]
+    fn review_lists_no_entry_without_the_marker() {
+        let h = corrected_change("", "# Notes\n\n### Meeting\n\nFree text.\n");
+        let outcome = review(&h.ctx(), Some("add-auth")).unwrap();
+        let json = serde_json::to_value(crate::contract::ReviewV1::from(&outcome)).unwrap();
+        assert_eq!(json["corrections"], serde_json::json!([]));
+        assert_eq!(json["correctionsIssues"], serde_json::json!([]));
+    }
+
     #[test]
     fn archive_json_refusal_carries_review_blocked() {
         let h = reviewed_change(&security_finding("high", ""));
@@ -4975,6 +5075,29 @@ The rationale for the choice.
         let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
         // A warning: the exit code only flips under --strict.
         assert!(!report.has_errors());
+        assert!(report.has_warnings());
+    }
+
+    #[test]
+    fn a_corrections_warning_fails_strict_validation() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "add-auth", None, None).unwrap();
+        write_helper(
+            &h,
+            "/p/_codev/changes/add-auth/corrections.md",
+            "<!-- codev-corrections: 1 -->\n\n### C-1 Typed errors\n\n```yaml\nstep: apply\nwhere: src/auth.rs\ndid: Returned anyhow.\nasked: Use thiserror.\ncategory: style\n```\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let codes: Vec<&str> = report
+            .items
+            .iter()
+            .flat_map(|i| &i.findings)
+            .map(|f| f.finding.code)
+            .filter(|c| c.starts_with("corrections_"))
+            .collect();
+        assert_eq!(codes, ["corrections_unknown_field"]);
+        // A warning: the exit code flips under --strict only.
         assert!(report.has_warnings());
     }
 

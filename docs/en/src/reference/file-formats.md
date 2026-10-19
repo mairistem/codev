@@ -374,6 +374,52 @@ format. A new status, step or required field raises the format marker
 instead, which an older codev refuses to check. The transitions and the checks are in
 [Review record](../guides/review-record.md#what-codev-checks).
 
+## corrections.md
+
+Path: `_codev/changes/<name>/corrections.md`. The instructions the author
+gave the agent about how the project does things, noted by
+`/codev-propose`, `/codev-apply` and `/codev-update` — see
+[the author's corrections](../skills.md#the-authors-corrections). Like
+`review.md`, it is not a planning artifact: `codev status` and
+`codev changelog` ignore it, `codev sync` leaves it, `codev archive` moves
+it with the change, and reviewers are not briefed with it.
+
+````markdown
+# Corrections: add-sessions
+
+<!-- codev-corrections: 1 -->
+
+### C-1 Typed errors in the libraries
+
+```yaml
+step: apply
+where: crates/sessions/src/store.rs
+did: Returned an anyhow error from the store.
+asked: Use a thiserror type; anyhow stays in the CLI.
+```
+````
+
+The format marker is required: a file without it is some other document
+of the same name, which codev neither checks nor lists. Each entry is a
+`### C-<n> <title>` heading, `<n>` unique from 1, and one `yaml` block:
+
+| Field | Meaning |
+|---|---|
+| `step` | `propose`, `apply` or `update`: the skill during which the author corrected the agent |
+| `where` | The file or artifact concerned |
+| `did` | What the agent had done, in one line |
+| `asked` | What the author asked instead, in one line |
+
+A field this codev does not know is a warning, `corrections_unknown_field`,
+and is ignored. A `did` or `asked` over 300 characters is a warning,
+`corrections_too_long`: an entry states an instruction, never the
+conversation. Only active changes are checked.
+
+An entry names no person and quotes no personal data or secret. It is
+kept as long as the archive. To remove one that slipped through, edit or
+delete it in its change, archived or not — codev never checks archived
+changes again — and rewrite the history if the commit was already pushed.
+
 ## Decision (ADR)
 
 Path: `_codev/decisions/NNNN-<slug>.md`. Every `.md` file in this folder is
@@ -533,6 +579,10 @@ may be reworded between versions; codes are not.
 | `review_unknown_section` | warning | A step or a role the record should not hold; it is ignored |
 | `review_unknown_field` | warning | A finding field this codev does not know; it is ignored |
 | `review_format_unsupported` | warning | The record comes from a newer codev; nothing in it is checked |
+| `corrections_invalid` | error | An entry of `corrections.md` has a wrong heading or id, no `yaml` block, or a missing, empty or invalid field |
+| `corrections_unknown_field` | warning | A correction field this codev does not know; it is ignored |
+| `corrections_too_long` | warning | A correction's `did` or `asked` is over 300 characters |
+| `corrections_format_unsupported` | warning | `corrections.md` comes from a newer codev; nothing in it is checked |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
 | `unknown_config_key` | warning | `_codev/config.yaml` holds a top-level or `mcp` key this codev does not know — see [Unknown keys](configuration.md#unknown-keys) |

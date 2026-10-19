@@ -306,7 +306,9 @@ pub fn pending<'a>(
 /// The files `git status --porcelain -z --untracked-files=all` lists that
 /// the step does not allow: `review.md` at the review steps, the change's
 /// directory at `plan.trace` and `plan.update`, anything under
-/// `_codev/changes/` at `plan.write`.
+/// `_codev/changes/` at `plan.write` but a `corrections.md`: no author
+/// corrects the agent in an evaluation run, so a correction noted there is
+/// one it invented.
 pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     let change_dir = format!("{}/", case.change_dir());
     let review = format!("{change_dir}review.md");
@@ -323,7 +325,7 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
         }
         let allowed = match case.step {
             Step::PlanTrace | Step::PlanUpdate => path.starts_with(&change_dir),
-            Step::PlanWrite => path.starts_with(CHANGES_DIR),
+            Step::PlanWrite => path.starts_with(CHANGES_DIR) && !path.ends_with("/corrections.md"),
             _ => path == review,
         };
         if !allowed {
@@ -2210,6 +2212,17 @@ mod tests {
         let set = ClaudeSettings::from_env(&env).unwrap();
         assert_eq!(budget(claude_args("p", &set, Step::PlanWrite)), "2");
         assert_eq!(set.timeout_for(Step::PlanWrite), Duration::from_secs(900));
+    }
+
+    #[test]
+    fn an_invented_correction_is_modified_outside_the_step() {
+        let case = planning_case("r");
+        let status =
+            "?? _codev/changes/draft/proposal.md\0?? _codev/changes/draft/corrections.md\0";
+        assert_eq!(
+            strayed(status, &case),
+            ["_codev/changes/draft/corrections.md"]
+        );
     }
 
     #[test]

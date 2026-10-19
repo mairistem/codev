@@ -85,7 +85,9 @@ and `summarized` (whether any file is to be summarized).
 
 - At `plan.trace` and `plan.challenge`, the material is the change's
   planning files: every file of the change's directory except
-  `change.yaml` and `review.md`.
+  `change.yaml`, `review.md` and `corrections.md`, which hold the
+  change's metadata, its reviews and the author's corrections, not its
+  plan.
 - At `code.review`, the material is the files of the change's diff, as
   the `domain-suggestions` capability reads it, other than planning
   files, vendored and generated files, lock files, binary files and
@@ -120,11 +122,11 @@ sizes, never their content, and writes nothing.
 #### Scenario: The plan is the material of the challenge
 
 - **GIVEN** a change with `proposal.md`, `design.md`, `tasks.md`, one
-  spec delta, a `change.yaml` and a `review.md`
+  spec delta, a `change.yaml`, a `review.md` and a `corrections.md`
 - **WHEN** the user runs `codev roles --at plan.challenge --change <name>
   --json`
 - **THEN** `review.material.files` lists the four planning files and
-  neither `change.yaml` nor `review.md`
+  neither `change.yaml`, `review.md` nor `corrections.md`
 
 #### Scenario: No material without a reviewing step
 

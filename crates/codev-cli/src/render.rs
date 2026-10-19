@@ -585,6 +585,7 @@ pub fn review(outcome: &ReviewOutcome) -> String {
     );
     let Some(record) = &check.record else {
         let _ = writeln!(out, "\n  No review record yet.");
+        review_corrections(&mut out, &outcome.corrections);
         review_gate(&mut out, check);
         return out;
     };
@@ -692,8 +693,30 @@ pub fn review(outcome: &ReviewOutcome) -> String {
             let _ = writeln!(out, "  {label} [{}] line {}: {}", f.code, f.line, f.message);
         }
     }
+    review_corrections(&mut out, &outcome.corrections);
     review_gate(&mut out, check);
     out
+}
+
+/// The author's corrections and the defects of their file, apart from the
+/// record's: they never decide the archive.
+fn review_corrections(out: &mut String, check: &codev_engine::corrections::CorrectionsCheck) {
+    let entries = &check.corrections.entries;
+    if entries.is_empty() && check.findings.is_empty() {
+        return;
+    }
+    let _ = writeln!(out, "\nCorrections");
+    for c in entries {
+        let _ = writeln!(out, "  {} [{}] {} — {}", c.id, c.step, c.r#where, c.asked);
+    }
+    for f in &check.findings {
+        let label = if f.severity == Severity::Error {
+            "error"
+        } else {
+            "warning"
+        };
+        let _ = writeln!(out, "  {label} [{}] line {}: {}", f.code, f.line, f.message);
+    }
 }
 
 fn review_gate(out: &mut String, check: &codev_engine::review::ReviewCheck) {
@@ -1867,6 +1890,7 @@ apply:
                     message: "R-x-1 is high and still open".into(),
                 }],
             },
+            corrections: Default::default(),
             warnings: Vec::new(),
         };
         let text = review(&outcome);
@@ -1901,6 +1925,7 @@ apply:
                 steps: Vec::new(),
                 blockers: Vec::new(),
             },
+            corrections: Default::default(),
             warnings: Vec::new(),
         };
         let text = review(&outcome);

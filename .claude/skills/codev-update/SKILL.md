@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "2aa1bd51237d4eace7ccbe42fb362d7ba42a75d88e708c5c4f586984a79accfd"
+  checksum: "c79cbb9bf97804a8f1e651cf14a3f9537a05c047ebbf8826faa1e7658a94542c"
 ---
 
 Revise an already written planning artifact of an active codev change —
@@ -155,6 +155,30 @@ One or two sentences:
 - the recommended next action — often `/codev-apply` (if the revision
   affects the implementation) or `/codev-archive` (if the acknowledged gap
   is closed).
+
+## The author's corrections
+
+When the author corrects what you did with an instruction about how this
+project does things — a convention, a technical choice, an expectation on
+an artifact — note it once in the change's `corrections.md`: the line
+`<!-- codev-corrections: 1 -->` first when the file is new, then
+`### C-<n> <the instruction in a few words>`, `<n>` the next free number,
+and a `yaml` block with `step` (`propose`, `apply` or `update`), `where`
+(the file or artifact), `did` (what you had done) and `asked` (what the
+author asked instead), one line each. Read nothing else of the file. Then
+quote the entry to the author, who may have it changed or removed.
+
+It counts when it would apply to the next change too: "errors go through
+`thiserror` in the libraries, `anyhow` stays in the CLI"; "every scenario
+is covered by a test named after the behavior"; "a new JSON field is
+additive, never renamed". It does not: a one-off preference about this
+change, a typo, a change of scope or of the request, a misunderstanding
+of the request, or a preference about how you talk or work with this
+author.
+
+A project instruction goes here, not to your personal memory; a personal
+preference stays in your personal memory, never here. An entry names no
+person and quotes no personal data or secret.
 
 ## Output
 
