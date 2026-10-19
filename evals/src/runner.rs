@@ -325,9 +325,7 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
         }
         let allowed = match case.step {
             Step::PlanTrace | Step::PlanUpdate => path.starts_with(&change_dir),
-            Step::PlanWrite => {
-                path.starts_with(CHANGES_DIR) && !path.ends_with("/corrections.md")
-            }
+            Step::PlanWrite => path.starts_with(CHANGES_DIR) && !path.ends_with("/corrections.md"),
             _ => path == review,
         };
         if !allowed {
