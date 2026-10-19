@@ -25,8 +25,9 @@ it adds text to `/codev-update` that nothing can measure.
   expected text, the change's validity, and nothing written outside the
   change's folder. The report and `codev-evals compare` give the
   update measures next to the planning and review ones.
-- Six cases drawn from archived changes, and their runs recorded in the
-  baseline.
+- Six cases drawn from archived changes, and five runs of each recorded
+  in the baseline. `capture-corrections` (#48) is then measured on them in
+  its own pull request.
 
 ## Capabilities
 

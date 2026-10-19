@@ -65,11 +65,13 @@ reply that states what was revised and the ripple found. It runs under
 the planning cases' budget and timeout. `--step plan.update` SHALL
 select the update cases; `--step review` does not.
 
-The observation SHALL hold the files of the change's folder after the
-run, the agent's final reply, and what `codev validate <change> --json`
-reports. A file modified outside the change's folder, and a
-`corrections.md` written in it, SHALL be recorded as modified outside the
-step: no author corrects the agent in an evaluation run.
+Before the run, the runner SHALL record what `codev validate <change>
+--json` reports on the fixture. The observation SHALL hold the files of
+the change's folder after the run, the text of every message the agent
+wrote — the skill reports the ripple at its own step, before its
+summary —, and what `codev validate <change> --json` reports after the
+run. A file modified outside the change's folder SHALL be recorded as
+modified outside the step.
 
 #### Scenario: The prompt of an update case
 
@@ -92,13 +94,14 @@ Scoring an update run SHALL apply these checks, without a model:
 
 - each `revised` path differs from the case's `change/`;
 - each `kept` path is byte-identical to it, and so is each `ripple` path;
-- each `ripple` path is named in the agent's final reply, by its path
+- each `ripple` path is named in the agent's messages, by its path
   relative to the change's folder;
 - each `contains` text is in one of the `revised` files once revised,
   compared ignoring case and runs of whitespace;
-- `codev validate` reports no error on the change;
+- `codev validate` reports no error on the change that it did not report
+  on the fixture before the run;
 - for a refusing case: no file of the change's folder is created, changed
-  or removed, and the reply names `/codev-propose`.
+  or removed, and the agent's messages name `/codev-propose`.
 
 A run SHALL be given its checks passed and failed, and it passes when
 every check passes. The update measures SHALL be, per repetition over the
@@ -117,9 +120,16 @@ that modify a file outside the step.
 #### Scenario: A refusal well made
 
 - **GIVEN** a refusing case for a `design` the change does not have, and
-  a run that creates nothing and whose reply points to `/codev-propose`
+  a run that creates nothing and whose messages point to `/codev-propose`
 - **WHEN** the run is scored
 - **THEN** every check passes and the run passes
+
+#### Scenario: An error already in the fixture
+
+- **GIVEN** a case whose change, laid on `ref`, already has a validation
+  error, and a run that revises the design without adding any
+- **WHEN** the run is scored
+- **THEN** the validity check passes
 
 #### Scenario: Expected text written differently
 
@@ -160,7 +170,8 @@ The suite SHALL hold update cases drawn from archived changes covering,
 at least: a proposal revision whose ripple reaches a delta spec, a delta
 spec revision, a design revision, a tasks revision, a revision whose
 ripple reaches the tasks, and a refusal for an artifact the change does
-not have. The baseline SHALL hold their runs.
+not have. The baseline SHALL hold five runs of each, recorded with the
+Claude Code version the evaluation workflow pins.
 
 #### Scenario: The update cases of the suite
 

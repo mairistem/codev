@@ -21,7 +21,8 @@ the other steps.
 
 **Non-goals**: judging the prose of a revision (no model as judge);
 measuring `/codev-update`'s cost against a floor before a baseline exists
-(this change records it); covering `sync`, `archive` or `apply` outside
+(this change records it); judging `capture-corrections` (#48), which does
+that in its own pull request; covering `sync`, `archive` or `apply` outside
 `code.review`.
 
 ## Decisions
@@ -42,7 +43,7 @@ its pull request's branch — branches are deleted after merge.
 ### Decision: Deterministic checks, like the planning scorer
 
 A run is scored by file comparisons, a substring search in the agent's
-final reply, `codev validate`, and the modified-outside-the-step rule. No
+messages, `codev validate`, and the modified-outside-the-step rule. No
 model judges the revision: a check a reader can redo by hand is what lets
 `compare` tell a regression from noise. What the checks cannot see,
 whether the new prose is good, is left to the author's review of the
@@ -53,15 +54,32 @@ a second source of drift to calibrate. Scoring only validity — it would
 pass a run that edits the ripple instead of reporting it, which is the
 skill's main guardrail.
 
-### Decision: The reply is the agent's last message
+### Decision: The ripple is looked for in every message the agent wrote
 
-Claude Code's JSON output carries the final `result`. The ripple check
-looks for each `ripple` path, relative to the change's folder, in it. The
-prompt asks the agent to end with what was revised and the ripple found,
-which the skill's summary step already does.
+The skill reports the ripple at its own step, before it runs `codev
+validate`, and its summary lists the files touched, the verdict and the
+next action, not the ripple. So the check reads the text of every message
+the agent wrote, from the transcript, and looks for each `ripple` path,
+relative to the change's folder, in it. Tool calls and their outputs are
+left out, so a path read in passing does not count. The prompt does not
+ask for a summary of the ripple: the check measures what the skill makes
+the agent do.
 
-**Alternatives considered**: reading the whole transcript — a path read
-in passing would count as reported.
+**Alternatives considered**: the final `result` alone — it holds the
+summary, where the skill does not put the ripple; asking for the ripple
+in the final reply — it would measure the prompt, not the skill.
+
+### Decision: Validity counts only the errors the run adds
+
+The archived changes were written by earlier codevs. Laid on `ref`, one
+may already have a validation error under the codev being measured, for
+example a review record without a section for a role active today. So the
+runner validates the fixture before the run, and the check fails only on
+an error that was not there before.
+
+**Alternatives considered**: requiring no error at all — a case would
+fail whatever the agent does. Editing the archived files until they
+validate — the case would no longer be the change as it was.
 
 ### Decision: Six cases from archived changes
 
@@ -76,13 +94,25 @@ in passing would count as reported.
 
 Each `ref` is the parent of the commit that brought the change to `main`.
 
-### Decision: The baseline gains the update runs, and #48 is judged on them
+### Decision: The baseline gains the update runs alone, five of each
 
-Following decision 0008, this change records the update runs of the
-current `main` in `evals/baseline/`, three repetitions per case. Then
-`capture-corrections` (#48), which adds text to `/codev-update`, is run on
-the update cases and compared with `--quality-only`, the same way as its
-planning and review steps.
+The baseline holds five runs of every case, recorded with the Claude Code
+version `.github/workflows/evals.yml` pins (2.1.289), with codev 0.6.1.
+This change adds the update cases and leaves the existing cases and their
+scoring untouched. So it records only the update cases, five repetitions
+each, with the same Claude Code and the same codev, into `evals/baseline/`.
+It then scores the baseline again, committing `report.json` and
+`report.md`. CONTRIBUTING says when that is enough: a new step's cases,
+recorded with the pinned version, while changed cases or a changed scoring
+still require a full recording.
+
+`capture-corrections` (#48) is then measured on the update cases in its
+own pull request, as decision 0008 puts the comparison in the change that
+touches the workflow.
+
+**Alternatives considered**: recording the whole baseline again — about
+270 dollars for runs whose inputs did not change. Three repetitions — the
+suite's tests require five, and the medians would be thinner.
 
 ## Risks / Trade-offs
 
@@ -90,8 +120,8 @@ planning and review steps.
   Three repetitions, and `compare` judges against the baseline's minimum,
   as for planning.
 - [The ripple check misses a ripple named in other words, such as "the
-  doctor spec"] → The prompt asks for paths; the check is documented, and
-  a miss shows in the per-run report for a reader to see.
+  doctor spec"] → The skill names files, the check is documented, and a
+  miss shows in the per-run report for a reader to see.
 - [A case's request leaves room for two valid revisions] → The checks ask
   only what any valid revision must do: change the target, leave the
   rest, report the ripple.
