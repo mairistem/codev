@@ -16,8 +16,8 @@
   },
   "pass": false,
   "repetitions": 5,
-  "costUsd": 55.0708,
-  "totalCostUsd": 276.4646,
+  "costUsd": 56.9411,
+  "totalCostUsd": 285.7451,
   "figures": {
     "expected": 39.0,
     "truePositives": {
@@ -49,18 +49,18 @@
     }
   },
   "consumption": {
-    "costUsd": 55.0708,
-    "durationMs": 7022755.0,
-    "durationApiMs": 7630661.0,
-    "turns": 1020.0,
-    "permissionDenials": 69.0,
-    "inputTokens": 75658.0,
-    "cacheCreationTokens": 3576753.0,
-    "cacheReadTokens": 62712329.0,
-    "outputTokens": 723264.0,
-    "calls": 1025.0,
-    "inputPerCall": 63465.0,
-    "outputPerCall": 696.0
+    "costUsd": 56.9411,
+    "durationMs": 7192280.0,
+    "durationApiMs": 7801349.0,
+    "turns": 1072.0,
+    "permissionDenials": 75.0,
+    "inputTokens": 82304.0,
+    "cacheCreationTokens": 3731666.0,
+    "cacheReadTokens": 64075509.0,
+    "outputTokens": 739580.0,
+    "calls": 1061.0,
+    "inputPerCall": 62761.0,
+    "outputPerCall": 687.0
   },
   "failures": [
     "skeptic: 4 false positive(s) exceed 2",
@@ -73058,6 +73058,3963 @@
           }
         ]
       }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3393492,
+      "durationMs": 36929,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 36928,
+        "turns": 9,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1144,
+          "cacheCreation": 26290,
+          "cacheRead": 275866,
+          "output": 3647
+        },
+        "toolCalls": 8,
+        "orientationCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 7798,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7798
+            }
+          },
+          {
+            "cacheCreation": 7457,
+            "cacheRead": 29937,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7457
+            }
+          },
+          {
+            "cacheCreation": 7854,
+            "cacheRead": 37394,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 7854
+            }
+          },
+          {
+            "cacheCreation": 1172,
+            "cacheRead": 45248,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev decision": 1172
+            }
+          },
+          {
+            "cacheCreation": 274,
+            "cacheRead": 46420,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 3,
+            "sources": {
+              "search": 274
+            }
+          },
+          {
+            "cacheCreation": 1340,
+            "cacheRead": 46694,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "edit": 1083,
+              "output": 258
+            }
+          },
+          {
+            "cacheCreation": 395,
+            "cacheRead": 48034,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 395
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`design.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"The scope is every file the change touched\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.327631,
+      "durationMs": 36804,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 37047,
+        "turns": 10,
+        "permissionDenials": 3,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1144,
+          "cacheCreation": 25444,
+          "cacheRead": 249990,
+          "output": 3659
+        },
+        "toolCalls": 9,
+        "orientationCalls": 5,
+        "calls": [
+          {
+            "cacheCreation": 7797,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7797
+            }
+          },
+          {
+            "cacheCreation": 7671,
+            "cacheRead": 29936,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7671
+            }
+          },
+          {
+            "cacheCreation": 421,
+            "cacheRead": 37607,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 421
+            }
+          },
+          {
+            "cacheCreation": 312,
+            "cacheRead": 38028,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 312
+            }
+          },
+          {
+            "cacheCreation": 422,
+            "cacheRead": 38340,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 422
+            }
+          },
+          {
+            "cacheCreation": 6416,
+            "cacheRead": 38762,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 4,
+            "sources": {
+              "codev list": 6416
+            }
+          },
+          {
+            "cacheCreation": 2405,
+            "cacheRead": 45178,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 1290,
+              "edit": 831,
+              "output": 283
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`design.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"The scope is every file the change touched\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.32996539999999996,
+      "durationMs": 42433,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 42689,
+        "turns": 13,
+        "permissionDenials": 2,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1144,
+          "cacheCreation": 25977,
+          "cacheRead": 252767,
+          "output": 3534
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7793,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7793
+            }
+          },
+          {
+            "cacheCreation": 5135,
+            "cacheRead": 29932,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 5135
+            }
+          },
+          {
+            "cacheCreation": 271,
+            "cacheRead": 35067,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 271
+            }
+          },
+          {
+            "cacheCreation": 2639,
+            "cacheRead": 35338,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 5,
+            "sources": {
+              "skill": 2639
+            }
+          },
+          {
+            "cacheCreation": 7577,
+            "cacheRead": 37977,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 567,
+              "file": 7010
+            }
+          },
+          {
+            "cacheCreation": 1206,
+            "cacheRead": 45554,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 3,
+            "sources": {
+              "codev decision": 1206
+            }
+          },
+          {
+            "cacheCreation": 1356,
+            "cacheRead": 46760,
+            "input": 2,
+            "output": 635,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 581,
+              "edit": 696,
+              "output": 80
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`design.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"The scope is every file the change touched\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3244102,
+      "durationMs": 35682,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 35930,
+        "turns": 8,
+        "permissionDenials": 3,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1146,
+          "cacheCreation": 25665,
+          "cacheRead": 297831,
+          "output": 2930
+        },
+        "toolCalls": 7,
+        "orientationCalls": 5,
+        "calls": [
+          {
+            "cacheCreation": 7793,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7793
+            }
+          },
+          {
+            "cacheCreation": 7548,
+            "cacheRead": 29932,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7548
+            }
+          },
+          {
+            "cacheCreation": 393,
+            "cacheRead": 37480,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 393
+            }
+          },
+          {
+            "cacheCreation": 282,
+            "cacheRead": 37873,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 282
+            }
+          },
+          {
+            "cacheCreation": 394,
+            "cacheRead": 38155,
+            "input": 2,
+            "output": 34,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 394
+            }
+          },
+          {
+            "cacheCreation": 7760,
+            "cacheRead": 38549,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 7743,
+              "output": 17
+            }
+          },
+          {
+            "cacheCreation": 1085,
+            "cacheRead": 46309,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "edit": 1085
+            }
+          },
+          {
+            "cacheCreation": 410,
+            "cacheRead": 47394,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 410
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`design.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"The scope is every file the change touched\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.34563,
+      "durationMs": 37229,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 37296,
+        "turns": 12,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1142,
+          "cacheCreation": 27641,
+          "cacheRead": 226620,
+          "output": 3915
+        },
+        "toolCalls": 11,
+        "orientationCalls": 7,
+        "calls": [
+          {
+            "cacheCreation": 7792,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7792
+            }
+          },
+          {
+            "cacheCreation": 8014,
+            "cacheRead": 29931,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 122,
+              "skill": 7892
+            }
+          },
+          {
+            "cacheCreation": 2531,
+            "cacheRead": 37945,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 4,
+            "sources": {
+              "codev list": 2531
+            }
+          },
+          {
+            "cacheCreation": 6823,
+            "cacheRead": 40476,
+            "input": 2,
+            "output": 10,
+            "toolCalls": 2,
+            "sources": {
+              "file": 6823
+            }
+          },
+          {
+            "cacheCreation": 1531,
+            "cacheRead": 47299,
+            "input": 2,
+            "output": 57,
+            "toolCalls": 2,
+            "sources": {
+              "edit": 1532
+            }
+          },
+          {
+            "cacheCreation": 950,
+            "cacheRead": 48830,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 677,
+              "edit": 196,
+              "output": 78
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`design.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"The scope is every file the change touched\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4328614,
+      "durationMs": 39268,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 39198,
+        "turns": 13,
+        "permissionDenials": 2,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1105,
+          "cacheCreation": 36038,
+          "cacheRead": 299502,
+          "output": 4189
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7644,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7644
+            }
+          },
+          {
+            "cacheCreation": 8201,
+            "cacheRead": 29783,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 627,
+              "skill": 7574
+            }
+          },
+          {
+            "cacheCreation": 316,
+            "cacheRead": 37984,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "codev list": 316
+            }
+          },
+          {
+            "cacheCreation": 17614,
+            "cacheRead": 38300,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 2120,
+              "file": 15495
+            }
+          },
+          {
+            "cacheCreation": 1651,
+            "cacheRead": 55914,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "edit": 1049,
+              "output": 602
+            }
+          },
+          {
+            "cacheCreation": 252,
+            "cacheRead": 57565,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 252
+            }
+          },
+          {
+            "cacheCreation": 360,
+            "cacheRead": 57817,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 360
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4195506,
+      "durationMs": 37548,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 37827,
+        "turns": 13,
+        "permissionDenials": 2,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1103,
+          "cacheCreation": 35892,
+          "cacheRead": 241603,
+          "output": 4159
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7643,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7643
+            }
+          },
+          {
+            "cacheCreation": 8140,
+            "cacheRead": 29782,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 505,
+              "skill": 7635
+            }
+          },
+          {
+            "cacheCreation": 329,
+            "cacheRead": 37922,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "codev list": 329
+            }
+          },
+          {
+            "cacheCreation": 17617,
+            "cacheRead": 38251,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 2,
+            "sources": {
+              "codev list": 2120,
+              "file": 15496
+            }
+          },
+          {
+            "cacheCreation": 1773,
+            "cacheRead": 55868,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 486,
+              "edit": 1287
+            }
+          },
+          {
+            "cacheCreation": 390,
+            "cacheRead": 57641,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 390
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4326108000000001,
+      "durationMs": 46610,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 46815,
+        "turns": 13,
+        "permissionDenials": 3,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1105,
+          "cacheCreation": 36164,
+          "cacheRead": 278859,
+          "output": 4331
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7644,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7644
+            }
+          },
+          {
+            "cacheCreation": 5093,
+            "cacheRead": 29783,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "skill": 5093
+            }
+          },
+          {
+            "cacheCreation": 3135,
+            "cacheRead": 34876,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 48,
+              "skill": 3087
+            }
+          },
+          {
+            "cacheCreation": 2304,
+            "cacheRead": 38011,
+            "input": 2,
+            "output": 17,
+            "toolCalls": 5,
+            "sources": {
+              "codev list": 2304
+            }
+          },
+          {
+            "cacheCreation": 15477,
+            "cacheRead": 40315,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 2,
+            "sources": {
+              "file": 15476
+            }
+          },
+          {
+            "cacheCreation": 2151,
+            "cacheRead": 55792,
+            "input": 2,
+            "output": 38,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 589,
+              "edit": 1562
+            }
+          },
+          {
+            "cacheCreation": 360,
+            "cacheRead": 57943,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 318,
+              "output": 42
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4433716,
+      "durationMs": 42023,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 42265,
+        "turns": 13,
+        "permissionDenials": 2,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1105,
+          "cacheCreation": 36267,
+          "cacheRead": 299868,
+          "output": 4617
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7647,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7647
+            }
+          },
+          {
+            "cacheCreation": 8171,
+            "cacheRead": 29786,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 572,
+              "skill": 7599
+            }
+          },
+          {
+            "cacheCreation": 313,
+            "cacheRead": 37957,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 6,
+            "sources": {
+              "codev list": 313
+            }
+          },
+          {
+            "cacheCreation": 17612,
+            "cacheRead": 38270,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 2119,
+              "file": 15493
+            }
+          },
+          {
+            "cacheCreation": 1906,
+            "cacheRead": 55882,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "edit": 1244,
+              "output": 662
+            }
+          },
+          {
+            "cacheCreation": 258,
+            "cacheRead": 57788,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 258
+            }
+          },
+          {
+            "cacheCreation": 360,
+            "cacheRead": 58046,
+            "input": 2,
+            "output": 2,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 360
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4321862,
+      "durationMs": 43910,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 44244,
+        "turns": 13,
+        "permissionDenials": 3,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1105,
+          "cacheCreation": 36357,
+          "cacheRead": 272016,
+          "output": 4301
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7649,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7649
+            }
+          },
+          {
+            "cacheCreation": 3772,
+            "cacheRead": 29788,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "skill": 3772
+            }
+          },
+          {
+            "cacheCreation": 3166,
+            "cacheRead": 33560,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 56,
+              "skill": 3110
+            }
+          },
+          {
+            "cacheCreation": 2304,
+            "cacheRead": 36726,
+            "input": 2,
+            "output": 17,
+            "toolCalls": 5,
+            "sources": {
+              "codev list": 2304
+            }
+          },
+          {
+            "cacheCreation": 15477,
+            "cacheRead": 39030,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 2,
+            "sources": {
+              "file": 15476
+            }
+          },
+          {
+            "cacheCreation": 1759,
+            "cacheRead": 54507,
+            "input": 2,
+            "output": 40,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 482,
+              "edit": 1277
+            }
+          },
+          {
+            "cacheCreation": 2230,
+            "cacheRead": 56266,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 1949,
+              "output": 281
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `specs/doctor/spec.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1696572,
+      "durationMs": 12835,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 13158,
+        "turns": 3,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1058,
+          "cacheCreation": 16738,
+          "cacheRead": 89911,
+          "output": 849
+        },
+        "toolCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7710,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7710
+            }
+          },
+          {
+            "cacheCreation": 8074,
+            "cacheRead": 29849,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 8074
+            }
+          },
+          {
+            "cacheCreation": 954,
+            "cacheRead": 37923,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 0,
+            "sources": {
+              "codev list": 954
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          },
+          {
+            "check": "change folder untouched",
+            "passed": true
+          },
+          {
+            "check": "points to `/codev-propose`",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.17762220000000004,
+      "durationMs": 11432,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 11994,
+        "turns": 4,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1058,
+          "cacheCreation": 17731,
+          "cacheRead": 91041,
+          "output": 838
+        },
+        "toolCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 7709,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7709
+            }
+          },
+          {
+            "cacheCreation": 9206,
+            "cacheRead": 29848,
+            "input": 2,
+            "output": 35,
+            "toolCalls": 1,
+            "sources": {
+              "search": 2609,
+              "skill": 6597
+            }
+          },
+          {
+            "cacheCreation": 816,
+            "cacheRead": 39054,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "codev list": 791,
+              "output": 25
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          },
+          {
+            "check": "change folder untouched",
+            "passed": true
+          },
+          {
+            "check": "points to `/codev-propose`",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.156929,
+      "durationMs": 10915,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 11434,
+        "turns": 3,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1058,
+          "cacheCreation": 15064,
+          "cacheRead": 88380,
+          "output": 899
+        },
+        "toolCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7709,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7709
+            }
+          },
+          {
+            "cacheCreation": 6545,
+            "cacheRead": 29848,
+            "input": 2,
+            "output": 29,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 6545
+            }
+          },
+          {
+            "cacheCreation": 810,
+            "cacheRead": 36393,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "codev list": 790,
+              "output": 20
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          },
+          {
+            "check": "change folder untouched",
+            "passed": true
+          },
+          {
+            "check": "points to `/codev-propose`",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.157777,
+      "durationMs": 15753,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 16040,
+        "turns": 3,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1058,
+          "cacheCreation": 14946,
+          "cacheRead": 88290,
+          "output": 988
+        },
+        "toolCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7708,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7708
+            }
+          },
+          {
+            "cacheCreation": 6457,
+            "cacheRead": 29847,
+            "input": 2,
+            "output": 33,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 6457
+            }
+          },
+          {
+            "cacheCreation": 781,
+            "cacheRead": 36304,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 0,
+            "sources": {
+              "codev list": 752,
+              "output": 29
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          },
+          {
+            "check": "change folder untouched",
+            "passed": true
+          },
+          {
+            "check": "points to `/codev-propose`",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.1658008,
+      "durationMs": 14441,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 15231,
+        "turns": 3,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1058,
+          "cacheCreation": 16085,
+          "cacheRead": 89399,
+          "output": 921
+        },
+        "toolCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7705,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7705
+            }
+          },
+          {
+            "cacheCreation": 7572,
+            "cacheRead": 29844,
+            "input": 2,
+            "output": 31,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7572
+            }
+          },
+          {
+            "cacheCreation": 808,
+            "cacheRead": 37416,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 0,
+            "sources": {
+              "codev list": 792,
+              "output": 16
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          },
+          {
+            "check": "change folder untouched",
+            "passed": true
+          },
+          {
+            "check": "points to `/codev-propose`",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.3659604,
+      "durationMs": 33383,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 33233,
+        "turns": 11,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1106,
+          "cacheCreation": 28262,
+          "cacheRead": 376897,
+          "output": 3179
+        },
+        "toolCalls": 10,
+        "orientationCalls": 6,
+        "calls": [
+          {
+            "cacheCreation": 7774,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7774
+            }
+          },
+          {
+            "cacheCreation": 9017,
+            "cacheRead": 29913,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 2183,
+              "skill": 6834
+            }
+          },
+          {
+            "cacheCreation": 3806,
+            "cacheRead": 38930,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 3806
+            }
+          },
+          {
+            "cacheCreation": 4202,
+            "cacheRead": 42736,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "file": 4202
+            }
+          },
+          {
+            "cacheCreation": 1069,
+            "cacheRead": 46938,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "file": 1069
+            }
+          },
+          {
+            "cacheCreation": 237,
+            "cacheRead": 48007,
+            "input": 2,
+            "output": 49,
+            "toolCalls": 2,
+            "sources": {
+              "file": 237
+            }
+          },
+          {
+            "cacheCreation": 1578,
+            "cacheRead": 48244,
+            "input": 2,
+            "output": 11,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 1044,
+              "edit": 377,
+              "output": 157
+            }
+          },
+          {
+            "cacheCreation": 346,
+            "cacheRead": 49822,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 346
+            }
+          },
+          {
+            "cacheCreation": 233,
+            "cacheRead": 50168,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 0,
+            "sources": {
+              "file": 233
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/skills/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-mode/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-record/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/doctor/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/docs/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.32712179999999996,
+      "durationMs": 27361,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 27592,
+        "turns": 8,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1102,
+          "cacheCreation": 26992,
+          "cacheRead": 278684,
+          "output": 2728
+        },
+        "toolCalls": 7,
+        "calls": [
+          {
+            "cacheCreation": 7774,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7774
+            }
+          },
+          {
+            "cacheCreation": 7609,
+            "cacheRead": 29913,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7609
+            }
+          },
+          {
+            "cacheCreation": 8195,
+            "cacheRead": 37522,
+            "input": 2,
+            "output": 10,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 8195
+            }
+          },
+          {
+            "cacheCreation": 1468,
+            "cacheRead": 45717,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "search": 1468
+            }
+          },
+          {
+            "cacheCreation": 619,
+            "cacheRead": 47185,
+            "input": 2,
+            "output": 55,
+            "toolCalls": 1,
+            "sources": {
+              "search": 619
+            }
+          },
+          {
+            "cacheCreation": 600,
+            "cacheRead": 47804,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "file": 382,
+              "output": 218
+            }
+          },
+          {
+            "cacheCreation": 727,
+            "cacheRead": 48404,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 522,
+              "shell": 205
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/skills/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-mode/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-record/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/doctor/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/docs/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4066482,
+      "durationMs": 39165,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 42769,
+        "turns": 11,
+        "permissionDenials": 2,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1108,
+          "cacheCreation": 30095,
+          "cacheRead": 429351,
+          "output": 3953
+        },
+        "toolCalls": 10,
+        "orientationCalls": 6,
+        "calls": [
+          {
+            "cacheCreation": 7775,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7775
+            }
+          },
+          {
+            "cacheCreation": 7605,
+            "cacheRead": 29914,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7605
+            }
+          },
+          {
+            "cacheCreation": 3945,
+            "cacheRead": 37519,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 3945
+            }
+          },
+          {
+            "cacheCreation": 6538,
+            "cacheRead": 41464,
+            "input": 2,
+            "output": 43,
+            "toolCalls": 1,
+            "sources": {
+              "file": 6538
+            }
+          },
+          {
+            "cacheCreation": 393,
+            "cacheRead": 48002,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "output": 181,
+              "shell": 212
+            }
+          },
+          {
+            "cacheCreation": 474,
+            "cacheRead": 48395,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 474
+            }
+          },
+          {
+            "cacheCreation": 1125,
+            "cacheRead": 48869,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "file": 1125
+            }
+          },
+          {
+            "cacheCreation": 1187,
+            "cacheRead": 49994,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 413,
+              "edit": 774
+            }
+          },
+          {
+            "cacheCreation": 693,
+            "cacheRead": 51181,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 693
+            }
+          },
+          {
+            "cacheCreation": 360,
+            "cacheRead": 51874,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "file": 360
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/skills/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-mode/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-record/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/doctor/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/docs/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4251572,
+      "durationMs": 33573,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 33535,
+        "turns": 10,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1104,
+          "cacheCreation": 35816,
+          "cacheRead": 350711,
+          "output": 3378
+        },
+        "toolCalls": 9,
+        "orientationCalls": 6,
+        "calls": [
+          {
+            "cacheCreation": 7774,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7774
+            }
+          },
+          {
+            "cacheCreation": 7624,
+            "cacheRead": 29913,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7624
+            }
+          },
+          {
+            "cacheCreation": 7979,
+            "cacheRead": 37537,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 7979
+            }
+          },
+          {
+            "cacheCreation": 596,
+            "cacheRead": 45516,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "search": 596
+            }
+          },
+          {
+            "cacheCreation": 9478,
+            "cacheRead": 46112,
+            "input": 2,
+            "output": 33,
+            "toolCalls": 1,
+            "sources": {
+              "file": 9478
+            }
+          },
+          {
+            "cacheCreation": 667,
+            "cacheRead": 55590,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 2,
+            "sources": {
+              "file": 528,
+              "output": 139
+            }
+          },
+          {
+            "cacheCreation": 1390,
+            "cacheRead": 56257,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 483,
+              "edit": 907
+            }
+          },
+          {
+            "cacheCreation": 308,
+            "cacheRead": 57647,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "search": 308
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/skills/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-mode/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-record/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/doctor/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/docs/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.4073964000000001,
+      "durationMs": 37305,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 37309,
+        "turns": 13,
+        "permissionDenials": 3,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1108,
+          "cacheCreation": 30298,
+          "cacheRead": 440572,
+          "output": 3797
+        },
+        "toolCalls": 12,
+        "orientationCalls": 9,
+        "calls": [
+          {
+            "cacheCreation": 7773,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7773
+            }
+          },
+          {
+            "cacheCreation": 11246,
+            "cacheRead": 29912,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 6296,
+              "skill": 4950
+            }
+          },
+          {
+            "cacheCreation": 6257,
+            "cacheRead": 41158,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 6257
+            }
+          },
+          {
+            "cacheCreation": 888,
+            "cacheRead": 47415,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 888
+            }
+          },
+          {
+            "cacheCreation": 781,
+            "cacheRead": 48303,
+            "input": 2,
+            "output": 41,
+            "toolCalls": 1,
+            "sources": {
+              "search": 781
+            }
+          },
+          {
+            "cacheCreation": 365,
+            "cacheRead": 49084,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "output": 78,
+              "shell": 287
+            }
+          },
+          {
+            "cacheCreation": 558,
+            "cacheRead": 49449,
+            "input": 2,
+            "output": 26,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 558
+            }
+          },
+          {
+            "cacheCreation": 998,
+            "cacheRead": 50007,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "file": 987,
+              "output": 11
+            }
+          },
+          {
+            "cacheCreation": 1095,
+            "cacheRead": 51005,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 381,
+              "edit": 714
+            }
+          },
+          {
+            "cacheCreation": 337,
+            "cacheRead": 52100,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "search": 337
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/skills/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-mode/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/review-record/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/doctor/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/configuration/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/docs/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` left unedited",
+            "passed": true
+          },
+          {
+            "check": "ripple `tasks.md` named",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.25717,
+      "durationMs": 23366,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 23511,
+        "turns": 9,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1116,
+          "cacheCreation": 22392,
+          "cacheRead": 175665,
+          "output": 2105
+        },
+        "toolCalls": 8,
+        "orientationCalls": 6,
+        "calls": [
+          {
+            "cacheCreation": 7667,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7667
+            }
+          },
+          {
+            "cacheCreation": 8237,
+            "cacheRead": 29806,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 3,
+            "sources": {
+              "search": 654,
+              "skill": 7583
+            }
+          },
+          {
+            "cacheCreation": 4234,
+            "cacheRead": 38043,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 1937,
+              "file": 2297
+            }
+          },
+          {
+            "cacheCreation": 1123,
+            "cacheRead": 42277,
+            "input": 2,
+            "output": 40,
+            "toolCalls": 2,
+            "sources": {
+              "search": 1123
+            }
+          },
+          {
+            "cacheCreation": 1131,
+            "cacheRead": 43400,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 738,
+              "edit": 308,
+              "output": 85
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/configure/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"Testing rules follow an existing pytest suite\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.28134440000000005,
+      "durationMs": 20186,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 20307,
+        "turns": 6,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1116,
+          "cacheCreation": 25792,
+          "cacheRead": 183562,
+          "output": 1868
+        },
+        "toolCalls": 5,
+        "orientationCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7669,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7669
+            }
+          },
+          {
+            "cacheCreation": 7632,
+            "cacheRead": 29808,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 7632
+            }
+          },
+          {
+            "cacheCreation": 9200,
+            "cacheRead": 37440,
+            "input": 2,
+            "output": 4,
+            "toolCalls": 2,
+            "sources": {
+              "codev list": 9200
+            }
+          },
+          {
+            "cacheCreation": 895,
+            "cacheRead": 46640,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 432,
+              "edit": 463
+            }
+          },
+          {
+            "cacheCreation": 396,
+            "cacheRead": 47535,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 396
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/configure/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"Testing rules follow an existing pytest suite\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2811426,
+      "durationMs": 25267,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 25419,
+        "turns": 8,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1118,
+          "cacheCreation": 24179,
+          "cacheRead": 215383,
+          "output": 2186
+        },
+        "toolCalls": 7,
+        "orientationCalls": 5,
+        "calls": [
+          {
+            "cacheCreation": 7667,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7667
+            }
+          },
+          {
+            "cacheCreation": 7978,
+            "cacheRead": 29806,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 65,
+              "skill": 7913
+            }
+          },
+          {
+            "cacheCreation": 2042,
+            "cacheRead": 37784,
+            "input": 2,
+            "output": 40,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 2042
+            }
+          },
+          {
+            "cacheCreation": 890,
+            "cacheRead": 39826,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "file": 858,
+              "output": 32
+            }
+          },
+          {
+            "cacheCreation": 4396,
+            "cacheRead": 40716,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 2,
+            "sources": {
+              "file": 4396
+            }
+          },
+          {
+            "cacheCreation": 1206,
+            "cacheRead": 45112,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 918,
+              "edit": 288
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/configure/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"Testing rules follow an existing pytest suite\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.259856,
+      "durationMs": 22273,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 22369,
+        "turns": 8,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1118,
+          "cacheCreation": 22002,
+          "cacheRead": 218830,
+          "output": 1958
+        },
+        "toolCalls": 7,
+        "orientationCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 7672,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7672
+            }
+          },
+          {
+            "cacheCreation": 8282,
+            "cacheRead": 29811,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "search": 732,
+              "skill": 7550
+            }
+          },
+          {
+            "cacheCreation": 3973,
+            "cacheRead": 38093,
+            "input": 2,
+            "output": 6,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 3973
+            }
+          },
+          {
+            "cacheCreation": 905,
+            "cacheRead": 42066,
+            "input": 2,
+            "output": 57,
+            "toolCalls": 2,
+            "sources": {
+              "search": 905
+            }
+          },
+          {
+            "cacheCreation": 779,
+            "cacheRead": 42971,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 291,
+              "edit": 312,
+              "output": 176
+            }
+          },
+          {
+            "cacheCreation": 391,
+            "cacheRead": 43750,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 391
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/configure/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"Testing rules follow an existing pytest suite\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2324976,
+      "durationMs": 18964,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 19243,
+        "turns": 6,
+        "permissionDenials": 1,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1116,
+          "cacheCreation": 20095,
+          "cacheRead": 170983,
+          "output": 1837
+        },
+        "toolCalls": 5,
+        "orientationCalls": 2,
+        "calls": [
+          {
+            "cacheCreation": 7665,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7665
+            }
+          },
+          {
+            "cacheCreation": 6356,
+            "cacheRead": 29804,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 6356
+            }
+          },
+          {
+            "cacheCreation": 4877,
+            "cacheRead": 36160,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 2,
+            "sources": {
+              "codev list": 4877
+            }
+          },
+          {
+            "cacheCreation": 806,
+            "cacheRead": 41037,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 389,
+              "edit": 417
+            }
+          },
+          {
+            "cacheCreation": 391,
+            "cacheRead": 41843,
+            "input": 2,
+            "output": 743,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 391
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`specs/configure/spec.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`tasks.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"Testing rules follow an existing pytest suite\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.26395,
+      "durationMs": 21892,
+      "repetition": 1,
+      "consumption": {
+        "durationApiMs": 22314,
+        "turns": 6,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1117,
+          "cacheCreation": 23844,
+          "cacheRead": 181180,
+          "output": 1805
+        },
+        "toolCalls": 5,
+        "orientationCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 7777,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7777
+            }
+          },
+          {
+            "cacheCreation": 9542,
+            "cacheRead": 29916,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 9542
+            }
+          },
+          {
+            "cacheCreation": 4894,
+            "cacheRead": 39458,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 4894
+            }
+          },
+          {
+            "cacheCreation": 963,
+            "cacheRead": 44352,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "search": 963
+            }
+          },
+          {
+            "cacheCreation": 668,
+            "cacheRead": 45315,
+            "input": 2,
+            "output": 11,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 255,
+              "edit": 413
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`tasks.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/roles/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"no_skill_body_asks_for_codev_review_json\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2703062,
+      "durationMs": 21840,
+      "repetition": 2,
+      "consumption": {
+        "durationApiMs": 21699,
+        "turns": 7,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1117,
+          "cacheCreation": 23800,
+          "cacheRead": 181696,
+          "output": 2133
+        },
+        "toolCalls": 6,
+        "orientationCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 7774,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7774
+            }
+          },
+          {
+            "cacheCreation": 10205,
+            "cacheRead": 29913,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 4647,
+              "skill": 5558
+            }
+          },
+          {
+            "cacheCreation": 4237,
+            "cacheRead": 40118,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 4237
+            }
+          },
+          {
+            "cacheCreation": 816,
+            "cacheRead": 44355,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 2,
+            "sources": {
+              "skill": 816
+            }
+          },
+          {
+            "cacheCreation": 768,
+            "cacheRead": 45171,
+            "input": 2,
+            "output": 541,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 294,
+              "edit": 474
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`tasks.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/roles/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"no_skill_body_asks_for_codev_review_json\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2775402,
+      "durationMs": 28214,
+      "repetition": 3,
+      "consumption": {
+        "durationApiMs": 28337,
+        "turns": 7,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1117,
+          "cacheCreation": 24491,
+          "cacheRead": 182926,
+          "output": 2209
+        },
+        "toolCalls": 6,
+        "orientationCalls": 4,
+        "calls": [
+          {
+            "cacheCreation": 7773,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "prompt": 7773
+            }
+          },
+          {
+            "cacheCreation": 10120,
+            "cacheRead": 29912,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "shell": 4537,
+              "skill": 5583
+            }
+          },
+          {
+            "cacheCreation": 4977,
+            "cacheRead": 40032,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 4977
+            }
+          },
+          {
+            "cacheCreation": 825,
+            "cacheRead": 45009,
+            "input": 2,
+            "output": 3,
+            "toolCalls": 2,
+            "sources": {
+              "search": 825
+            }
+          },
+          {
+            "cacheCreation": 796,
+            "cacheRead": 45834,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 304,
+              "edit": 492
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`tasks.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/roles/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"no_skill_body_asks_for_codev_review_json\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.2754368,
+      "durationMs": 23224,
+      "repetition": 4,
+      "consumption": {
+        "durationApiMs": 23563,
+        "turns": 6,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1117,
+          "cacheCreation": 24200,
+          "cacheRead": 181674,
+          "output": 2232
+        },
+        "toolCalls": 5,
+        "orientationCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 7770,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7770
+            }
+          },
+          {
+            "cacheCreation": 9544,
+            "cacheRead": 29909,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 1,
+            "sources": {
+              "skill": 9544
+            }
+          },
+          {
+            "cacheCreation": 5168,
+            "cacheRead": 39453,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 1,
+            "sources": {
+              "codev list": 5168
+            }
+          },
+          {
+            "cacheCreation": 931,
+            "cacheRead": 44621,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 2,
+            "sources": {
+              "search": 931
+            }
+          },
+          {
+            "cacheCreation": 787,
+            "cacheRead": 45552,
+            "input": 2,
+            "output": 7,
+            "toolCalls": 0,
+            "sources": {
+              "codev validate": 301,
+              "edit": 486
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`tasks.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/roles/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"no_skill_body_asks_for_codev_review_json\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "kind": "seeded",
+      "outcome": "scored",
+      "expected": [],
+      "findings": [],
+      "changed": [],
+      "strayed": [],
+      "answered": [],
+      "recordErrors": [],
+      "costUsd": 0.29365600000000003,
+      "durationMs": 20322,
+      "repetition": 5,
+      "consumption": {
+        "durationApiMs": 20356,
+        "turns": 7,
+        "permissionDenials": 0,
+        "models": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-5-5"
+        ],
+        "tokens": {
+          "input": 1117,
+          "cacheCreation": 26831,
+          "cacheRead": 187630,
+          "output": 2031
+        },
+        "toolCalls": 6,
+        "orientationCalls": 3,
+        "calls": [
+          {
+            "cacheCreation": 7773,
+            "cacheRead": 22139,
+            "input": 2,
+            "output": 21,
+            "toolCalls": 1,
+            "sources": {
+              "prompt": 7773
+            }
+          },
+          {
+            "cacheCreation": 9568,
+            "cacheRead": 29912,
+            "input": 2,
+            "output": 16,
+            "toolCalls": 2,
+            "sources": {
+              "skill": 9568
+            }
+          },
+          {
+            "cacheCreation": 8117,
+            "cacheRead": 39480,
+            "input": 2,
+            "output": 8,
+            "toolCalls": 2,
+            "sources": {
+              "codev list": 6240,
+              "file": 1877
+            }
+          },
+          {
+            "cacheCreation": 905,
+            "cacheRead": 47597,
+            "input": 2,
+            "output": 5,
+            "toolCalls": 1,
+            "sources": {
+              "codev validate": 346,
+              "edit": 559
+            }
+          },
+          {
+            "cacheCreation": 468,
+            "cacheRead": 48502,
+            "input": 2,
+            "output": 432,
+            "toolCalls": 0,
+            "sources": {
+              "search": 468
+            }
+          }
+        ]
+      },
+      "update": {
+        "passed": true,
+        "checks": [
+          {
+            "check": "`tasks.md` revised",
+            "passed": true
+          },
+          {
+            "check": "`proposal.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`design.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/roles/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`specs/skills/spec.md` kept",
+            "passed": true
+          },
+          {
+            "check": "`review.md` kept",
+            "passed": true
+          },
+          {
+            "check": "holds \"no_skill_body_asks_for_codev_review_json\"",
+            "passed": true
+          },
+          {
+            "check": "no validation error added",
+            "passed": true
+          }
+        ]
+      }
     }
   ],
   "caseConsumption": [
@@ -75086,68 +79043,252 @@
         "shell": 219.0,
         "skill": 14907.0
       }
+    },
+    {
+      "id": "update-design-decision",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.33,
+        "durationMs": 36929.0,
+        "durationApiMs": 37047.0,
+        "turns": 10.0,
+        "permissionDenials": 2.0,
+        "inputTokens": 1144.0,
+        "cacheCreationTokens": 25977.0,
+        "cacheReadTokens": 252767.0,
+        "outputTokens": 3647.0,
+        "calls": 7.0,
+        "inputPerCall": 40580.25,
+        "outputPerCall": 521.0
+      },
+      "sources": {
+        "codev decision": 0.0,
+        "codev list": 7571.0,
+        "codev validate": 581.0,
+        "edit": 1083.0,
+        "file": 0.0,
+        "output": 80.0,
+        "prompt": 7793.0,
+        "search": 0.0,
+        "skill": 7671.0
+      }
+    },
+    {
+      "id": "update-proposal-ripple",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.4326,
+        "durationMs": 42023.0,
+        "durationApiMs": 42265.0,
+        "turns": 13.0,
+        "permissionDenials": 2.0,
+        "inputTokens": 1105.0,
+        "cacheCreationTokens": 36164.0,
+        "cacheReadTokens": 278859.0,
+        "outputTokens": 4301.0,
+        "calls": 7.0,
+        "inputPerCall": 46433.0,
+        "outputPerCall": 618.7143
+      },
+      "sources": {
+        "codev list": 2432.0,
+        "codev validate": 876.0,
+        "edit": 1277.0,
+        "file": 15493.0,
+        "output": 281.0,
+        "prompt": 7644.0,
+        "search": 505.0,
+        "skill": 7599.0
+      }
+    },
+    {
+      "id": "update-refuse-missing",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.1658,
+        "durationMs": 12835.0,
+        "durationApiMs": 13158.0,
+        "turns": 3.0,
+        "permissionDenials": 0.0,
+        "inputTokens": 1058.0,
+        "cacheCreationTokens": 16085.0,
+        "cacheReadTokens": 89399.0,
+        "outputTokens": 899.0,
+        "calls": 3.0,
+        "inputPerCall": 35514.0,
+        "outputPerCall": 299.6667
+      },
+      "sources": {
+        "codev list": 791.0,
+        "output": 20.0,
+        "prompt": 7709.0,
+        "search": 0.0,
+        "skill": 6597.0
+      }
+    },
+    {
+      "id": "update-specs-ripple-tasks",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.4066,
+        "durationMs": 33573.0,
+        "durationApiMs": 33535.0,
+        "turns": 11.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 1106.0,
+        "cacheCreationTokens": 30095.0,
+        "cacheReadTokens": 376897.0,
+        "outputTokens": 3378.0,
+        "calls": 9.0,
+        "inputPerCall": 46055.4,
+        "outputPerCall": 389.7143
+      },
+      "sources": {
+        "codev list": 6257.0,
+        "codev validate": 483.0,
+        "edit": 714.0,
+        "file": 5741.0,
+        "output": 157.0,
+        "prompt": 7774.0,
+        "search": 2087.0,
+        "shell": 205.0,
+        "skill": 7605.0
+      }
+    },
+    {
+      "id": "update-specs-scenario",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.2599,
+        "durationMs": 22273.0,
+        "durationApiMs": 22369.0,
+        "turns": 8.0,
+        "permissionDenials": 1.0,
+        "inputTokens": 1116.0,
+        "cacheCreationTokens": 22392.0,
+        "cacheReadTokens": 183562.0,
+        "outputTokens": 1958.0,
+        "calls": 5.0,
+        "inputPerCall": 40113.3333,
+        "outputPerCall": 367.4
+      },
+      "sources": {
+        "codev list": 3973.0,
+        "codev validate": 780.0,
+        "edit": 312.0,
+        "file": 0.0,
+        "output": 32.0,
+        "prompt": 7667.0,
+        "search": 65.0,
+        "skill": 7583.0
+      }
+    },
+    {
+      "id": "update-tasks-add",
+      "role": "planner",
+      "step": "plan.update",
+      "repetitions": 5,
+      "measures": {
+        "costUsd": 0.2754,
+        "durationMs": 21892.0,
+        "durationApiMs": 22314.0,
+        "turns": 7.0,
+        "permissionDenials": 0.0,
+        "inputTokens": 1117.0,
+        "cacheCreationTokens": 24200.0,
+        "cacheReadTokens": 181696.0,
+        "outputTokens": 2133.0,
+        "calls": 5.0,
+        "inputPerCall": 41398.2,
+        "outputPerCall": 426.6
+      },
+      "sources": {
+        "codev list": 4977.0,
+        "codev validate": 301.0,
+        "edit": 486.0,
+        "file": 0.0,
+        "prompt": 7773.0,
+        "search": 825.0,
+        "shell": 0.0,
+        "skill": 9542.0
+      }
     }
   ],
   "sources": [
     {
       "source": "skill",
-      "tokens": 843692.0,
-      "share": 0.228
+      "tokens": 890289.0,
+      "share": 0.231
     },
     {
       "source": "file",
-      "tokens": 791139.0,
-      "share": 0.214
+      "tokens": 812373.0,
+      "share": 0.211
     },
     {
       "source": "prompt",
-      "tokens": 490778.0,
-      "share": 0.132
+      "tokens": 537138.0,
+      "share": 0.139
     },
     {
       "source": "edit",
-      "tokens": 372821.0,
-      "share": 0.101
+      "tokens": 376693.0,
+      "share": 0.098
     },
     {
       "source": "search",
-      "tokens": 338245.0,
-      "share": 0.091
+      "tokens": 341727.0,
+      "share": 0.089
     },
     {
       "source": "shell",
-      "tokens": 205076.0,
-      "share": 0.055
+      "tokens": 205281.0,
+      "share": 0.053
     },
     {
       "source": "output",
-      "tokens": 163212.0,
-      "share": 0.044
+      "tokens": 163782.0,
+      "share": 0.042
     },
     {
       "source": "codev instructions",
       "tokens": 158702.0,
-      "share": 0.043
+      "share": 0.041
     },
     {
       "source": "codev roles",
       "tokens": 100208.0,
-      "share": 0.027
+      "share": 0.026
     },
     {
       "source": "codev review",
       "tokens": 95800.0,
-      "share": 0.026
+      "share": 0.025
     },
     {
       "source": "codev validate",
-      "tokens": 64896.0,
+      "tokens": 67917.0,
       "share": 0.018
     },
     {
       "source": "codev new",
       "tokens": 54593.0,
-      "share": 0.015
+      "share": 0.014
+    },
+    {
+      "source": "codev list",
+      "tokens": 26508.0,
+      "share": 0.007
     },
     {
       "source": "agent",
@@ -75158,11 +79299,6 @@
       "source": "codev --help",
       "tokens": 2347.0,
       "share": 0.001
-    },
-    {
-      "source": "codev list",
-      "tokens": 507.0,
-      "share": 0.0
     },
     {
       "source": "codev status",
@@ -75294,6 +79430,53 @@
       {
         "source": "output",
         "tokens": 59.0,
+        "share": 0.001
+      }
+    ],
+    "plan.update": [
+      {
+        "source": "skill",
+        "tokens": 46597.0,
+        "share": 0.308
+      },
+      {
+        "source": "prompt",
+        "tokens": 46360.0,
+        "share": 0.306
+      },
+      {
+        "source": "codev list",
+        "tokens": 26001.0,
+        "share": 0.172
+      },
+      {
+        "source": "file",
+        "tokens": 21234.0,
+        "share": 0.14
+      },
+      {
+        "source": "edit",
+        "tokens": 3872.0,
+        "share": 0.026
+      },
+      {
+        "source": "search",
+        "tokens": 3482.0,
+        "share": 0.023
+      },
+      {
+        "source": "codev validate",
+        "tokens": 3021.0,
+        "share": 0.02
+      },
+      {
+        "source": "output",
+        "tokens": 570.0,
+        "share": 0.004
+      },
+      {
+        "source": "shell",
+        "tokens": 205.0,
         "share": 0.001
       }
     ],
@@ -75462,6 +79645,90 @@
       "calls": 776.0,
       "inputPerCall": 69572.0,
       "outputPerCall": 792.0
+    }
+  },
+  "update": {
+    "cases": 6,
+    "repetitions": [
+      {
+        "repetition": 1,
+        "runs": 6,
+        "passed": 6,
+        "checks": 45,
+        "checksPassed": 45,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 2,
+        "runs": 6,
+        "passed": 6,
+        "checks": 45,
+        "checksPassed": 45,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 3,
+        "runs": 6,
+        "passed": 6,
+        "checks": 45,
+        "checksPassed": 45,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 4,
+        "runs": 6,
+        "passed": 6,
+        "checks": 45,
+        "checksPassed": 45,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      },
+      {
+        "repetition": 5,
+        "runs": 6,
+        "passed": 6,
+        "checks": 45,
+        "checksPassed": 45,
+        "strayed": 0,
+        "passRate": 1.0,
+        "checkRate": 1.0
+      }
+    ],
+    "passRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "checkRate": {
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "strayed": {
+      "median": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "consumption": {
+      "costUsd": 1.8703,
+      "durationMs": 169525.0,
+      "durationApiMs": 170688.0,
+      "turns": 52.0,
+      "permissionDenials": 6.0,
+      "inputTokens": 6646.0,
+      "cacheCreationTokens": 154913.0,
+      "cacheReadTokens": 1363180.0,
+      "outputTokens": 16316.0,
+      "calls": 36.0,
+      "inputPerCall": 42714.0,
+      "outputPerCall": 454.0
     }
   }
 }

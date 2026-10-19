@@ -1,0 +1,13 @@
+# Revision of an artifact of `2026-10-12-forward-compatible-config`, laid on the commit
+# before the pull request that brought it to main.
+step: plan.update
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+change: forward-compatible-config
+artifact: proposal
+request: "Je sors la partie `codev doctor` de ce change : le nouveau check `config.keys` et la correction de `codev self-update --version` partiront dans un change séparé. Retire la capacité `doctor` de la proposition, pour qu'elle ne couvre plus que la configuration tolérante aux clés inconnues."
+summary: "Dropping the doctor capability from the proposal: the proposal is revised, its delta spec is named as orphaned and left alone."
+expected:
+  revised: [proposal.md]
+  kept: [design.md, tasks.md, specs/configuration/spec.md]
+  ripple: [specs/doctor/spec.md]

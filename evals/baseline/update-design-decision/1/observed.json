@@ -1,0 +1,152 @@
+{
+  "format": 2,
+  "case": "update-design-decision",
+  "error": null,
+  "costUsd": 0.3393492,
+  "durationMs": 36929,
+  "consumption": {
+    "durationApiMs": 36928,
+    "turns": 9,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1144,
+      "cacheCreation": 26290,
+      "cacheRead": 275866,
+      "output": 3647
+    },
+    "toolCalls": 8,
+    "orientationCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7798,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7798
+        }
+      },
+      {
+        "cacheCreation": 7457,
+        "cacheRead": 29937,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 7457
+        }
+      },
+      {
+        "cacheCreation": 7854,
+        "cacheRead": 37394,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev list": 7854
+        }
+      },
+      {
+        "cacheCreation": 1172,
+        "cacheRead": 45248,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev decision": 1172
+        }
+      },
+      {
+        "cacheCreation": 274,
+        "cacheRead": 46420,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 3,
+        "sources": {
+          "search": 274
+        }
+      },
+      {
+        "cacheCreation": 1340,
+        "cacheRead": 46694,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1083,
+          "output": 258
+        }
+      },
+      {
+        "cacheCreation": 395,
+        "cacheRead": 48034,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 395
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/newcomer-readability-review/change.yaml": "schema: spec-driven\ncreated: 2026-10-12\n",
+    "_codev/changes/newcomer-readability-review/design.md": "# Design: Newcomer readability review in /codev-apply\n\n## Context\n\n`assets/workflows/apply.md` is a prompt rendered into\n`.claude/skills/codev-apply/SKILL.md` by `codev update`. Its steps are: 1\nresolve the change, 2 read the tasks, 3 work through each task (3c already\nfetches `context` and `rules` with `codev instructions tasks`), 4 stop on\nambiguity, 5 finish — run the full suite once, then summarize. The\narchitect's role block opens the `design` instruction in\n`assets/schemas/spec-driven/schema.yaml`. Every line of either text costs\ntokens on every run.\n\n## Goals / Non-Goals\n\n**Goals:**\n\n- One pass, once per change, that leaves the change's code readable by\n  someone who has not seen its history.\n- Simplicity as an explicit criterion of the design.\n\n**Non-Goals:**\n\n- A machine check (complexity metrics, lint) in `codev validate`.\n- Built-in size thresholds: a project states them in its `rules`.\n- Refactoring files the change did not touch.\n\n## Decisions\n\nNo decision in `_codev/decisions/` constrains this change: it edits two\nembedded texts and adds no code path, crate or dependency.\n\n### Decision: A numbered step between the tasks and the finish\n\nThe review becomes step 5, \"Review as a newcomer\"; \"Finish\" becomes step 6.\nIt runs once, when every box is checked, so the full suite of step 6 also\ncovers the simplifications. A stop at a blocker (step 4) never reaches it.\n\n**Alternatives considered**: a review per task, in step 3 (misses what only\nappears across tasks, and multiplies the cost); folding it into \"Finish\"\n(mixes reviewing and reporting, and the review would follow the full suite\ninstead of preceding it).\n\n### Decision: The scope is every file the change touched\n\nThe review re-reads, in full, every file the change modified: a badly\nchosen name right next to the added lines hinders the newcomer just as\nmuch as one inside them. Files the change did not touch stay out of the\nreview.\n\n**Alternatives considered**: only the lines the change added or modified,\na concern in surrounding code becoming at most a note (leaves the newcomer\nstuck on the code right beside the diff).\n\n### Decision: Notes inform, they do not gate\n\nThe \"Readability notes\" block goes into the final summary, which still\noffers archiving. The user decides at review time, like the Points to\nchallenge of `/codev-propose`, whose cap-and-never-invent form it reuses\n(three items rather than five: the review covers one diff, not a plan).\n\n**Alternatives considered**: stopping on a note (turns taste into a\nblocker nobody asked for).\n\n### Decision: Only the architect gains a criterion\n\n\"The simplest approach that satisfies the specs, followable by a newcomer\"\nbelongs to whoever chooses the how. The tech lead's criteria are about\nsequencing and verification; a simplicity criterion there would repeat the\narchitect's.\n\n**Alternatives considered**: a tech lead criterion as well (duplication).\n\n## Risks / Trade-offs\n\n- [A simplification breaks working code] → the affected tests run again at\n  once, and the full suite runs right after the step; behavior changes are\n  forbidden outright.\n- [Notes become noise or are invented] → capped at three, with \"No\n  readability concern found\" as the honest empty answer.\n- [Readability is a matter of taste] → anything ambiguous is a note, not an\n  edit; the project's `rules` take precedence over the generic grid.\n- [Re-reading whole files widens the diff and its review burden] →\n  simplifications outside the added lines stay as unambiguous as inside\n  them, never change behavior, and anything larger is a note.\n- [The skill text grows] → one step and one summary line, no new guardrail\n  repeating what the step says.\n",
+    "_codev/changes/newcomer-readability-review/proposal.md": "# Proposal: Newcomer readability review in /codev-apply\n\n## Why\n\nNo role checks that the code a change produces can be understood and\nmaintained by a human. The contrarian of `/codev-propose` challenges the\nplan, not the code; `/codev-apply` checks that tests pass, not that a\nnewcomer can follow the result — correct, tested, approved code can still\nbe obscure.\n\n## What Changes\n\n- `/codev-apply` gains a \"Review as a newcomer\" step, after every task is\n  implemented and before the full test suite runs: it re-reads only the code\n  the change touched, as a developer who has seen neither the plan nor the\n  conversation, along a fixed grid (understandable without context, names,\n  size and nesting, cleverness, comments, tests as a description of the\n  behavior) plus the project's `rules`.\n- The step simplifies what is unambiguous, without changing behavior,\n  widening the scope or touching code outside the change, and re-runs the\n  affected tests. What it does not simplify alone goes into a \"Readability\n  notes\" block of the final summary — at most three items — or \"No\n  readability concern found\".\n- The architect's \"Done when\" criteria of the `spec-driven` `design`\n  instruction gain: the approach is the simplest that satisfies the specs,\n  and a newcomer can follow the design without knowing its history.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `skills` — the `apply` readability review, and the architect criteria of\n  the default schema.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `assets/workflows/apply.md`, `assets/schemas/spec-driven/schema.yaml`\n  (`design` instruction); the regenerated skills under `.claude/skills/`.\n- Tests asserting on skill and instruction text in `codev-agents` and\n  `codev-engine`.\n- Documentation, in `docs/en` and `docs/fr`: `roles.md` (newcomer reviewer\n  role, architect criterion), `skills.md` (apply), `workflow.md` (apply\n  step).\n- No change to the CLI, the JSON contract or the file formats. Plans written\n  by custom schemas are unaffected.\n\n## Release note\n\n- Added: `/codev-apply` reviews the code a change touched as a newcomer\n  would, simplifies what is unambiguous without changing behavior, and\n  reports up to three readability notes in its summary.\n- Changed: The architect's criteria of the default schema require the\n  simplest approach that satisfies the specs, and a design a newcomer can\n  follow without knowing its history.\n",
+    "_codev/changes/newcomer-readability-review/specs/skills/spec.md": "## ADDED Requirements\n\n### Requirement: The `apply` skill reviews the change's code as a newcomer\n\nOnce every task is checked and before running the full test suite, the\n`apply` skill SHALL re-read only the code the change added or modified, as a\ndeveloper joining the project who has seen neither the plan nor the\nconversation, along a fixed grid: each changed function makes sense without\nthe plan or the conversation; names say what things do, with no obscure\nabbreviation; a function too long or too nested is split when it splits\nsimply; dense one-liners, premature genericity and single-use abstractions\ngive way to the simple version unless the clever one is justified; comments\nexplain the why where it is not obvious and never paraphrase the code; tests\nread as a description of the behavior. It MUST also apply the project's\n`rules` received through `codev instructions`.\n\nThe skill MUST simplify directly what is unambiguous and re-run the affected\ntests. The review MUST NOT change behavior, MUST NOT widen the change's\nscope and MUST NOT modify code the change did not add or modify.\n\nThe final summary MUST carry a \"Readability notes\" block listing what the\nreview did not simplify alone: at most three items, each giving what, where\nand why. When the review finds nothing worth raising, the block MUST say \"No\nreadability concern found\" instead of inventing notes.\n\n#### Scenario: A needlessly clever construction is simplified\n\n- **GIVEN** a change whose tasks are all checked, and whose code contains a\n  dense one-liner with a simple equivalent\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the one-liner is replaced by the simple version\n- **AND** the affected tests are run again and pass\n\n#### Scenario: The review keeps behavior and scope\n\n- **GIVEN** a change whose code could be simplified by also changing an edge\n  case's behavior, or by adding an unrequested helper\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** the behavior and the scope of the change stay as implemented\n- **AND** the tests that passed before the review still pass\n\n#### Scenario: At most three readability notes\n\n- **GIVEN** a review that finds five concerns it does not simplify alone\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the \"Readability notes\" block lists at most three items, each\n  with what, where and why\n\n#### Scenario: Nothing to note\n\n- **GIVEN** a change whose code raises no readability concern\n- **WHEN** `/codev-apply` presents its final summary\n- **THEN** the summary says \"No readability concern found\"\n- **AND** lists no invented note\n\n#### Scenario: Code outside the change is untouched\n\n- **GIVEN** a change that calls an obscure function it did not modify\n- **WHEN** `/codev-apply` reviews the change as a newcomer\n- **THEN** that function is left unchanged\n- **AND** it appears, at most, as a readability note\n\n## MODIFIED Requirements\n\n### Requirement: The default schema gives each artifact a role with \"Done when\" criteria\n\nThe instruction of each artifact of the embedded `spec-driven` schema, as\nreturned by `codev instructions <artifact> --json`, SHALL start with a role\nblock: a `Role:` line naming the role and what it owns, followed by a\n`Done when:` list of checkable criteria. The roles are:\n\n- `proposal` — product owner, owns why and what;\n- `specs` — QA analyst, owns observable behavior;\n- `design` — architect, owns how;\n- `tasks` — tech lead, owns sequencing and verification.\n\nThe tech lead's criteria MUST require that the documentation affected by\nthe change is updated in a task, or that the plan states none is affected;\nthat every spec scenario is covered by an automated test written in a task,\na manual check being acceptable only when automation is impossible and with\nthe reason stated; and that tests follow the project's existing test suite,\nthe testing conventions of its language, and its `rules`. The `proposal`\ninstruction MUST ask the Impact section to name the affected documentation,\nand MUST describe a `## Release note` section, after `## Impact`: bullets\n`- <Category>: <text>` with Category among `Added`, `Changed`,\n`Deprecated`, `Removed`, `Fixed` and `Security`, breaking items starting\nwith `**BREAKING**`, or the single line `None` for an internal change. The\nproduct owner's criteria MUST require that the release note is written for\nend users, categorized, with breaking items marked, or `None`. The\nembedded proposal template MUST carry the `## Release note` section. The\narchitect's criteria MUST require that the approach is the simplest that\nsatisfies the specs, and that a newcomer can follow the design without\nknowing its history.\n\nThe rest of each instruction MUST stay as before. A custom schema's\ninstructions MUST be returned as written, without any role block added by\ncodev.\n\n#### Scenario: The proposal instruction starts with the product owner role\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions proposal --change <name> --json`\n- **THEN** `instruction` starts with `Role: product owner`\n- **AND** it contains a `Done when:` list that includes marking every\n  breaking change with **BREAKING**\n- **AND** it asks the Impact section to name the affected documentation\n- **AND** its `Done when:` list requires a release note written for end\n  users, categorized, with breaking items marked, or `None`\n- **AND** `template` has a `## Release note` section after `## Impact`\n\n#### Scenario: The tasks criteria cover every spec scenario\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** `instruction` starts with `Role: tech lead`\n- **AND** its `Done when:` list requires every spec scenario to be covered\n  by at least one task's verification\n\n#### Scenario: The tasks criteria require documentation and automated tests\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions tasks --change <name> --json`\n- **THEN** its `Done when:` list requires the affected documentation to be\n  updated in a task, or the plan to state that none is affected\n- **AND** it requires every spec scenario to be covered by an automated\n  test, a manual check only when automation is impossible, with the reason\n- **AND** it requires tests to follow the project's existing test suite,\n  the conventions of its language and its `rules`\n\n#### Scenario: The design criteria require the simplest approach\n\n- **GIVEN** a change using the `spec-driven` schema\n- **WHEN** the user runs `codev instructions design --change <name> --json`\n- **THEN** `instruction` starts with `Role: architect`\n- **AND** its `Done when:` list requires the approach to be the simplest\n  that satisfies the specs, and the design to be followable by a newcomer\n  without knowing its history\n\n#### Scenario: A custom schema gets no role block\n\n- **GIVEN** a change using a project schema whose artifact instruction has\n  no role block\n- **WHEN** the user runs `codev instructions <artifact> --change <name>\n  --json`\n- **THEN** `instruction` is the schema's text, with no `Role:` line added\n",
+    "_codev/changes/newcomer-readability-review/tasks.md": "# Tasks\n\nThe `apply` scenarios describe what an agent does when it runs the skill;\nthis repository cannot run an agent in its test suite, so they are covered\nby tests asserting that the skill body carries the instruction, as in\n`docs-and-tests-in-done`.\n\n## 1. Schema\n\n- [x] 1.1 Append the simplicity criterion to the architect's \"Done when\" list in `assets/schemas/spec-driven/schema.yaml`, verified by the new test `design_criteria_require_the_simplest_approach_a_newcomer_can_follow` in `codev-engine::instructions` (covers \"The design criteria require the simplest approach\"), plus the existing `spec_driven_instructions_start_with_a_role_block`, `tasks_criteria_require_documentation_and_automated_tests` and `proposal_template_and_instruction_carry_the_release_note` (the unchanged scenarios of the modified requirement), `a_project_schema_instruction_is_returned_as_written` (\"A custom schema gets no role block\") and `the_embedded_schema_is_valid`\n\n## 2. Skill\n\n- [x] 2.1 `assets/workflows/apply.md`: new step \"5. Review as a newcomer\" (scope, grid, project `rules`, simplify and re-run the affected tests, guardrails), \"Finish\" renumbered 6 with the \"Readability notes\" block in its summary, verified by the new tests in `codev-agents::workflows` `apply_reviews_the_change_as_a_newcomer_before_the_full_suite` (covers \"A needlessly clever construction is simplified\"), `apply_newcomer_review_keeps_behavior_scope_and_outside_code` (covers \"The review keeps behavior and scope\", \"Code outside the change is untouched\") and `apply_summary_caps_readability_notes_and_never_invents_them` (covers \"At most three readability notes\", \"Nothing to note\"), plus the existing `apply_body_tests_by_the_project_conventions_and_runs_the_full_suite` and `action_skills_carry_the_update_notice_once`\n- [x] 2.2 Regenerate codev's own skills, verified by `codev update --force` and a diff of `.claude/skills/codev-apply/SKILL.md` showing the new step\n\n## 3. Documentation\n\n- [x] 3.1 `roles.md` (newcomer reviewer role in the `/codev-apply` part, architect criterion), `skills.md` (apply) and `workflow.md` (apply step) in `docs/en` and `docs/fr`, verified by `both_languages_have_the_same_chapters`, `links_between_chapters_become_in_page_anchors`, an mdbook build of both books without warnings, and no duplicate heading anchor in either book\n\n## 4. Verification\n\n- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict` and `codev doctor --strict` reporting nothing to fix\n"
+  },
+  "validate": {
+    "newcomer-readability-review": {
+      "hasWarnings": true,
+      "items": [
+        {
+          "findings": [
+            {
+              "code": "domains_missing",
+              "line": 1,
+              "message": "the proposal has no `## Domains` section; add one after `## Impact` (tick the domains the change touches among `security`, `personal-data`, `user-interface`, `performance`, `operations`, `migration`, or write `None`)",
+              "path": "_codev/changes/newcomer-readability-review/proposal.md",
+              "severity": "warning"
+            }
+          ],
+          "kind": "change",
+          "name": "newcomer-readability-review",
+          "path": "_codev/changes/newcomer-readability-review"
+        }
+      ],
+      "status": []
+    }
+  },
+  "validateBefore": {
+    "hasWarnings": true,
+    "items": [
+      {
+        "findings": [
+          {
+            "code": "domains_missing",
+            "line": 1,
+            "message": "the proposal has no `## Domains` section; add one after `## Impact` (tick the domains the change touches among `security`, `personal-data`, `user-interface`, `performance`, `operations`, `migration`, or write `None`)",
+            "path": "_codev/changes/newcomer-readability-review/proposal.md",
+            "severity": "warning"
+          }
+        ],
+        "kind": "change",
+        "name": "newcomer-readability-review",
+        "path": "_codev/changes/newcomer-readability-review"
+      }
+    ],
+    "status": []
+  },
+  "messages": [
+    "Now the edits to `design.md`: replace the decision, move the old option to alternatives, and keep the Non-Goals and Risks consistent with it.",
+    "I replaced the scope decision in `design.md`. The specs still say the opposite, so the plan now contradicts itself until they are updated.\n\n**What changed in `_codev/changes/newcomer-readability-review/design.md`**\n- **New decision:** \"The scope is every file the change touched\". The review re-reads in full every file the change modified, because a badly chosen name right next to the added lines hinders the newcomer just as much. Files the change did not touch stay out of the review.\n- **Old option moved to the rejected alternatives:** \"only the lines the change added or modified, a concern in surrounding code becoming at most a note\". It was rejected because it leaves the newcomer stuck on the code right beside the diff.\n- **Two follow-on edits to keep the design consistent** (my assumption, since there was no one to ask):\n  - The Non-Goal \"Refactoring code the change did not write\" became \"Refactoring files the change did not touch\".\n  - I added a risk: re-reading whole files makes the diff bigger and the review longer. The mitigation is that edits outside the added lines follow the same rules as inside them: only clear-cut simplifications, no behavior change, and anything larger becomes a note.\n\nNo decision in `_codev/decisions/` (0001–0006) covers how far this review reaches, so none is broken.\n\n**Ripple (reported, not applied)**\n- **`specs/skills/spec.md`**, in the requirement \"The `apply` skill reviews the change's code as a newcomer\":\n  - It says the skill re-reads \"only the code the change added or modified\".\n  - It says the review \"MUST NOT modify code the change did not add or modify\".\n  - The scenario \"Code outside the change is untouched\" leaves an obscure function unchanged and turns it into a note, even when it sits in a touched file.\n\n  All three contradict the new decision. Suggested next step: `/codev-update specs` to widen the scope to the touched files, with untouched files still off-limits.\n- **`proposal.md`**: \"re-reads only the code the change touched\" fits the new scope, but the explicit wording \"files the change touched\" would remove the ambiguity. This one is optional.\n- **`tasks.md`**: task 2.1 relies on the test `apply_newcomer_review_keeps_behavior_scope_and_outside_code` and on the \"outside code\" scenario. Its wording will need to follow the updated specs.\n- **Implementation:** every task is already ticked, but `assets/workflows/apply.md` has no \"newcomer\" review step in it. Once the specs and tasks are realigned, `/codev-apply` should implement the step with the new scope.\n\n**`codev validate newcomer-readability-review`:** 0 errors, 1 warning that predates this edit:\n```\nwarning proposal.md:1: domains_missing — the proposal has no `## Domains` section; add one after `## Impact` …\n```\n\n**Summary:** the only file I touched is `_codev/changes/newcomer-readability-review/design.md`, and validation passes with that one warning. Recommended next action is `/codev-update specs` on this change, then `tasks`, then `/codev-apply`."
+  ]
+}

@@ -1,0 +1,12 @@
+# Revision of an artifact of `2026-10-12-specify-core-commands`, laid on the commit
+# before the pull request that brought it to main.
+step: plan.update
+kind: seeded
+ref: 8fb72d7f5c8876a123876122c9690468e956ed4d
+change: specify-core-commands
+artifact: design
+request: "Dans le design de ce change, ajoute une décision qui explique pourquoi ces specs décrivent le comportement actuel des commandes sans rien y changer."
+summary: "A design the change does not have: refused, pointing to /codev-propose."
+expected:
+  kept: [proposal.md, tasks.md]
+  refuse: true

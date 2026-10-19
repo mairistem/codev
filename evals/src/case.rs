@@ -24,6 +24,9 @@ pub enum Step {
     PlanTrace,
     /// `/codev-propose` writing a plan for a request: a planning case.
     PlanWrite,
+    /// `/codev-update` revising one artifact of an active change: an
+    /// update case.
+    PlanUpdate,
 }
 
 impl Step {
@@ -33,6 +36,7 @@ impl Step {
             "code.review" => Some(Step::CodeReview),
             "plan.trace" => Some(Step::PlanTrace),
             "plan.write" => Some(Step::PlanWrite),
+            "plan.update" => Some(Step::PlanUpdate),
             _ => None,
         }
     }
@@ -43,12 +47,18 @@ impl Step {
             Step::CodeReview => "code.review",
             Step::PlanTrace => "plan.trace",
             Step::PlanWrite => "plan.write",
+            Step::PlanUpdate => "plan.update",
         }
     }
 
     /// The review steps, those of a review case.
     pub fn is_review(self) -> bool {
-        !matches!(self, Step::PlanWrite)
+        !matches!(self, Step::PlanWrite | Step::PlanUpdate)
+    }
+
+    /// The steps whose fixture is this repository at a past commit.
+    pub fn replays_history(self) -> bool {
+        matches!(self, Step::PlanWrite | Step::PlanUpdate)
     }
 
     /// Whether the step writes a review record (the tracer fixes instead).
@@ -307,6 +317,8 @@ pub struct Case {
     pub planned: Vec<String>,
     /// What a planning case replays and expects; `None` for a review case.
     pub plan: Option<PlanCase>,
+    /// What an update case replays and expects; `None` for any other case.
+    pub update: Option<UpdateCase>,
 }
 
 /// A requirement named as `<capability>::<requirement name>`.
@@ -359,6 +371,58 @@ pub struct PlanCase {
     pub decisions: Vec<ExpectedDecision>,
 }
 
+/// The planning artifact an update case revises.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Artifact {
+    Proposal,
+    Specs,
+    Design,
+    Tasks,
+}
+
+impl Artifact {
+    pub fn parse(text: &str) -> Option<Artifact> {
+        match text {
+            "proposal" => Some(Artifact::Proposal),
+            "specs" => Some(Artifact::Specs),
+            "design" => Some(Artifact::Design),
+            "tasks" => Some(Artifact::Tasks),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Artifact::Proposal => "proposal",
+            Artifact::Specs => "specs",
+            Artifact::Design => "design",
+            Artifact::Tasks => "tasks",
+        }
+    }
+}
+
+/// An update case: an active change laid on the repository at `git_ref`,
+/// the author's request to revise one of its artifacts, and what must
+/// result. Every path is relative to the change's folder.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UpdateCase {
+    pub git_ref: String,
+    pub artifact: Artifact,
+    pub request: String,
+    /// The files the revision must change.
+    pub revised: Vec<String>,
+    /// The files it must leave byte-identical.
+    pub kept: Vec<String>,
+    /// The files whose consequence the agent must name without editing them.
+    pub ripple: Vec<String>,
+    /// Text the revised files must hold once revised.
+    pub contains: Vec<String>,
+    /// Whether the skill must refuse the request.
+    pub refuse: bool,
+    /// The change's files as the case lays them, by path.
+    pub files: BTreeMap<String, String>,
+}
+
 /// What the repository's history says at a commit, read by the shell.
 pub trait History {
     fn has_commit(&self, git_ref: &str) -> bool;
@@ -374,6 +438,9 @@ pub trait History {
 /// expected requirements and decisions existed at that commit, and the
 /// state does not already hold the case — its answer.
 pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError> {
+    if let Some(update) = &case.update {
+        return check_update_history(case, update, history);
+    }
     let Some(plan) = &case.plan else {
         return Ok(());
     };
@@ -415,6 +482,40 @@ pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError
         return Err(fail(format!(
             "the tree at {} already holds `evals/cases/{}/`, which would hand the agent the answer",
             plan.git_ref, case.id
+        )));
+    }
+    Ok(())
+}
+
+/// Checks an update case against the history: its commit exists, and the
+/// tree there holds neither the change it lays nor the case itself.
+fn check_update_history(
+    case: &Case,
+    update: &UpdateCase,
+    history: &dyn History,
+) -> Result<(), CaseError> {
+    let fail = |message: String| CaseError {
+        case: case.id.clone(),
+        message,
+    };
+    if !history.has_commit(&update.git_ref) {
+        return Err(fail(format!(
+            "`ref` {} is not a commit of the repository's history; the update cases need \
+             the full history (a shallow clone lacks it: fetch with --unshallow or fetch-depth 0)",
+            update.git_ref
+        )));
+    }
+    let change_dir = case.change_dir();
+    if history.has_path(&update.git_ref, &change_dir) {
+        return Err(fail(format!(
+            "the tree at {} already holds `{change_dir}/`, which the case's `change/` would overwrite",
+            update.git_ref
+        )));
+    }
+    if history.has_path(&update.git_ref, &format!("evals/cases/{}", case.id)) {
+        return Err(fail(format!(
+            "the tree at {} already holds `evals/cases/{}/`, which would hand the agent the answer",
+            update.git_ref, case.id
         )));
     }
     Ok(())
@@ -663,6 +764,148 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
             collateral,
             decisions,
         }),
+        update: None,
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct UpdateCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
+    #[allow(dead_code)]
+    step: String,
+    kind: String,
+    #[serde(rename = "ref")]
+    git_ref: String,
+    change: String,
+    artifact: String,
+    request: String,
+    summary: String,
+    expected: UpdateExpectedFile,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct UpdateExpectedFile {
+    #[serde(default)]
+    revised: Vec<String>,
+    #[serde(default)]
+    kept: Vec<String>,
+    #[serde(default)]
+    ripple: Vec<String>,
+    #[serde(default)]
+    contains: Vec<String>,
+    #[serde(default)]
+    refuse: bool,
+}
+
+/// Loads an update case: a `case.yaml` and its `change/`, the files of
+/// `_codev/changes/<change>/` by path relative to that folder.
+fn load_update(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: UpdateCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for an update case; expected seeded",
+            file.kind
+        )));
+    }
+    if file.git_ref.trim().is_empty() {
+        return Err(fail("`ref` is empty".into()));
+    }
+    if file.change.trim().is_empty() {
+        return Err(fail("`change` is empty".into()));
+    }
+    if file.request.trim().is_empty() {
+        return Err(fail("the request is empty".into()));
+    }
+    let artifact = Artifact::parse(&file.artifact).ok_or_else(|| {
+        fail(format!(
+            "unknown artifact `{}`; expected proposal, specs, design or tasks",
+            file.artifact
+        ))
+    })?;
+    if !fixture.base.is_empty() {
+        return Err(fail(
+            "an update case has no `base/`: its fixture is the repository at `ref`".into(),
+        ));
+    }
+    if fixture.change.is_empty() {
+        return Err(fail(
+            "`change/` is missing: it holds the files of the change the case revises".into(),
+        ));
+    }
+    check_fixture_files(fixture).map_err(fail)?;
+    let files: BTreeMap<String, String> = fixture
+        .change
+        .iter()
+        .map(|(path, bytes)| (path.clone(), String::from_utf8_lossy(bytes).into_owned()))
+        .collect();
+    let paths = |field: &str, list: &[String]| -> Result<Vec<String>, CaseError> {
+        list.iter()
+            .map(|p| {
+                let path = normalize_path(p);
+                if files.contains_key(&path) {
+                    Ok(path)
+                } else {
+                    Err(fail(format!(
+                        "`{field}` names `{path}`, which the case's `change/` does not hold"
+                    )))
+                }
+            })
+            .collect()
+    };
+    let expected = &file.expected;
+    let revised = paths("revised", &expected.revised)?;
+    let kept = paths("kept", &expected.kept)?;
+    let ripple = paths("ripple", &expected.ripple)?;
+    let contains: Vec<String> = expected
+        .contains
+        .iter()
+        .map(|t| t.trim().to_string())
+        .collect();
+    if contains.iter().any(String::is_empty) {
+        return Err(fail("an expected `contains` text is empty".into()));
+    }
+    if expected.refuse && (!revised.is_empty() || !contains.is_empty()) {
+        return Err(fail(
+            "a refusing case expects no `revised` path and no `contains` text".into(),
+        ));
+    }
+    if !expected.refuse && revised.is_empty() {
+        return Err(fail(
+            "a case that does not refuse expects at least one `revised` path".into(),
+        ));
+    }
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step: Step::PlanUpdate,
+        change: file.change.trim().to_string(),
+        stacks: Vec::new(),
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: None,
+        update: Some(UpdateCase {
+            git_ref: file.git_ref.trim().to_string(),
+            artifact,
+            request: file.request.trim().to_string(),
+            revised,
+            kept,
+            ripple,
+            contains,
+            refuse: expected.refuse,
+            files,
+        }),
     })
 }
 
@@ -680,15 +923,17 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         step: Option<String>,
     }
     let peek: Option<StepOnly> = serde_norway::from_str(yaml).ok();
-    if peek.and_then(|p| p.step).as_deref() == Some("plan.write") {
-        return load_plan(id, yaml, fixture);
+    match peek.and_then(|p| p.step).as_deref() {
+        Some("plan.write") => return load_plan(id, yaml, fixture),
+        Some("plan.update") => return load_update(id, yaml, fixture),
+        _ => {}
     }
     let file: CaseFile =
         serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
 
     let step = Step::parse(&file.step).ok_or_else(|| {
         fail(format!(
-            "unknown step `{}`; expected plan.challenge, code.review, plan.trace or plan.write",
+            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write or plan.update",
             file.step
         ))
     })?;
@@ -842,6 +1087,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         unchanged,
         planned,
         plan: None,
+        update: None,
     })
 }
 
@@ -1290,6 +1536,7 @@ pub(crate) mod tests {
             unchanged: vec![],
             planned: vec![],
             plan: None,
+            update: None,
         }
     }
 
@@ -1526,6 +1773,114 @@ pub(crate) mod tests {
                 .unwrap_err()
                 .message
                 .contains("`0007`")
+        );
+    }
+
+    const UPDATE_YAML: &str = "step: plan.update\nkind: seeded\nref: abc1234\nchange: add-auth\nartifact: design\nrequest: \"Remplace la décision des jetons par des sessions en Redis.\"\nsummary: A decision replaced.\nexpected:\n  revised: [design.md]\n  kept: [proposal.md, tasks.md]\n  contains: [\"Sessions live in Redis\"]\n";
+
+    fn update_fixture() -> Fixture {
+        let mut f = Fixture::default();
+        for path in ["proposal.md", "design.md", "tasks.md"] {
+            f.change
+                .insert(path.into(), format!("# {path}\n").into_bytes());
+        }
+        f
+    }
+
+    fn update_case(yaml: &str) -> Result<Case, CaseError> {
+        load(
+            "update-design",
+            yaml,
+            &update_fixture(),
+            &Catalog::default(),
+        )
+    }
+
+    #[test]
+    fn an_update_case_loads() {
+        let case = update_case(UPDATE_YAML).unwrap();
+        assert_eq!(case.step, Step::PlanUpdate);
+        assert_eq!(case.change, "add-auth");
+        assert_eq!(case.change_dir(), "_codev/changes/add-auth");
+        let update = case.update.unwrap();
+        assert_eq!(update.artifact, Artifact::Design);
+        assert_eq!(update.revised, ["design.md"]);
+        assert_eq!(update.kept, ["proposal.md", "tasks.md"]);
+        assert_eq!(update.contains, ["Sessions live in Redis"]);
+        assert!(!update.refuse);
+        assert_eq!(update.files["design.md"], "# design.md\n");
+        assert!(case.plan.is_none());
+    }
+
+    #[test]
+    fn an_update_path_the_change_does_not_hold_fails() {
+        let yaml = UPDATE_YAML.replace("kept: [proposal.md, tasks.md]", "kept: [notes.md]");
+        let err = update_case(&yaml).unwrap_err();
+        assert_eq!(err.case, "update-design");
+        assert!(err.message.contains("notes.md"), "{err}");
+    }
+
+    #[test]
+    fn a_refusing_case_that_expects_a_revision_fails() {
+        let yaml = UPDATE_YAML.replace("  contains: [\"Sessions live in Redis\"]\n", "")
+            + "  refuse: true\n";
+        let err = update_case(&yaml).unwrap_err();
+        assert_eq!(err.case, "update-design");
+        assert!(err.message.contains("refusing"), "{err}");
+        let refusing = yaml.replace("  revised: [design.md]\n", "");
+        assert!(update_case(&refusing).unwrap().update.unwrap().refuse);
+    }
+
+    #[test]
+    fn an_update_case_without_its_change_or_request_fails() {
+        let err = load("u", UPDATE_YAML, &Fixture::default(), &Catalog::default()).unwrap_err();
+        assert!(err.message.contains("`change/` is missing"), "{err}");
+        let empty = UPDATE_YAML.replace(
+            "Remplace la décision des jetons par des sessions en Redis.",
+            " ",
+        );
+        assert!(
+            update_case(&empty)
+                .unwrap_err()
+                .message
+                .contains("request is empty")
+        );
+        let unknown = UPDATE_YAML.replace("summary:", "role: planner\nsummary:");
+        assert!(update_case(&unknown).unwrap_err().message.contains("role"));
+        let not_revising = UPDATE_YAML
+            .replace("  revised: [design.md]\n", "")
+            .replace("  contains: [\"Sessions live in Redis\"]\n", "");
+        assert!(
+            update_case(&not_revising)
+                .unwrap_err()
+                .message
+                .contains("at least one `revised`")
+        );
+    }
+
+    #[test]
+    fn an_update_ref_holding_the_change_or_outside_the_history_fails() {
+        let case = update_case(UPDATE_YAML).unwrap();
+        assert!(check_history(&case, &good_history()).is_ok());
+        let mut h = good_history();
+        h.paths.push("_codev/changes/add-auth".into());
+        let err = check_history(&case, &h).unwrap_err();
+        assert!(err.message.contains("_codev/changes/add-auth/"), "{err}");
+        let mut h = good_history();
+        h.paths.push("evals/cases/update-design".into());
+        assert!(
+            check_history(&case, &h)
+                .unwrap_err()
+                .message
+                .contains("answer")
+        );
+        let mut h = good_history();
+        h.commits.clear();
+        assert!(
+            check_history(&case, &h)
+                .unwrap_err()
+                .message
+                .contains("full history")
         );
     }
 

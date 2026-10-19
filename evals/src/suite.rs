@@ -331,6 +331,8 @@ pub fn score_dir_only(
                 std::collections::btree_map::Entry::Vacant(e) => e.insert(at_ref(case, &history)?),
             };
             score::plan_case(case, observed, at)
+        } else if case.step == case::Step::PlanUpdate {
+            score::update_case(case, observed)
         } else {
             score::case(case, observed)
         };

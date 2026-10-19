@@ -17,3 +17,4 @@ pub mod report;
 pub mod runner;
 pub mod score;
 pub mod suite;
+pub mod update;

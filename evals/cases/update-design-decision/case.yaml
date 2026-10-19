@@ -1,0 +1,14 @@
+# Revision of an artifact of `2026-10-12-newcomer-readability-review`, laid on the commit
+# before the pull request that brought it to main.
+step: plan.update
+kind: seeded
+ref: 78bb5efef5bf4f5506bcd47ccecad9c41c12764a
+change: newcomer-readability-review
+artifact: design
+request: "Je change d'avis sur la portée de la revue dans le design. Remplace la décision « The scope is what the change added or modified » par « Decision: The scope is every file the change touched » : la revue relit en entier chaque fichier que le change a modifié, parce qu'un nom mal choisi juste à côté des lignes ajoutées gêne autant le nouveau venu. L'ancienne option passe dans les alternatives écartées."
+summary: "A design decision replaced by an alternative, the other artifacts untouched."
+expected:
+  revised: [design.md]
+  kept: [proposal.md, tasks.md, specs/skills/spec.md]
+  contains:
+    - "The scope is every file the change touched"

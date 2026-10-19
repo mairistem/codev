@@ -178,6 +178,34 @@ fn contributing_and_roles_chapters_name_the_baseline() {
     assert_eq!(gaps, Vec::<String>::new());
 }
 
+#[test]
+fn contributing_chapters_document_the_update_cases() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = Vec::new();
+    for needle in [
+        "step: plan.update",
+        "--step plan.update",
+        "`revised`",
+        "`kept`",
+        "`ripple`",
+        "`contains`",
+        "`refuse`",
+        "/codev-propose",
+        "codev validate <change> --json",
+        // A new step's cases recorded alone into the baseline.
+        "run --step plan.update --out evals/baseline --repeat 5",
+    ] {
+        gaps.extend(missing_mention(&files, needle));
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
 /// The `run:` scripts of a workflow, each with its following indented lines.
 fn scripts(workflow: &str) -> Vec<String> {
     let mut out = Vec::new();
@@ -386,6 +414,71 @@ fn the_planning_suite_covers_past_changes_and_decisions() {
         to_supersede >= 1,
         "no planning case expects a decision to be superseded"
     );
+}
+
+#[test]
+fn the_suite_covers_the_update_behaviors() {
+    use codev_evals::case::{Artifact, Step};
+    let cases = suite::load_cases(&repo()).unwrap();
+    let updates: Vec<_> = cases
+        .iter()
+        .filter(|c| c.step == Step::PlanUpdate)
+        .filter_map(|c| c.update.as_ref().map(|u| (c, u)))
+        .collect();
+    assert_eq!(updates.len(), 6, "six plan.update cases");
+    for artifact in [
+        Artifact::Proposal,
+        Artifact::Specs,
+        Artifact::Design,
+        Artifact::Tasks,
+    ] {
+        assert!(
+            updates
+                .iter()
+                .any(|(_, u)| u.artifact == artifact && !u.refuse),
+            "no case revises the {}",
+            artifact.as_str()
+        );
+    }
+    assert!(
+        updates.iter().any(|(_, u)| u.refuse),
+        "no case expects a refusal"
+    );
+    let ripple_to = |test: fn(&str) -> bool| {
+        updates
+            .iter()
+            .any(|(_, u)| u.ripple.iter().any(|p| test(p)))
+    };
+    assert!(
+        ripple_to(|p| p.starts_with("specs/") && p.ends_with("/spec.md")),
+        "no case expects a ripple to a delta spec"
+    );
+    assert!(
+        ripple_to(|p| p == "tasks.md"),
+        "no case expects a ripple to the tasks"
+    );
+    // Each case's change is an archived change, copied as the archive
+    // keeps it.
+    let archive = repo().join("_codev").join("changes").join("archive");
+    let archived: Vec<String> = fs::read_dir(&archive)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    for (case, update) in &updates {
+        let dir = archived
+            .iter()
+            .find(|d| d.len() > 11 && d[11..] == case.change)
+            .unwrap_or_else(|| panic!("{}: `{}` is not an archived change", case.id, case.change));
+        for (path, text) in &update.files {
+            let original = read(&format!("_codev/changes/archive/{dir}/{path}"));
+            assert!(
+                original == *text,
+                "{}: `change/{path}` differs from the archive",
+                case.id
+            );
+        }
+    }
 }
 
 /// A run of this many words shared with an archived proposal is a copy,
