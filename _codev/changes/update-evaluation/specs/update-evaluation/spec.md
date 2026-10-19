@@ -60,8 +60,9 @@ commit. It SHALL then run Claude Code with a prompt that names the
 `codev-update` skill, the change, the artifact and the request, and the
 evaluation mode: ask no question — make the most reasonable assumption —;
 report a ripple as the skill says, without applying it, since no one
-will confirm; modify nothing outside the change's folder; and end with a
-reply that states what was revised and the ripple found. It runs under
+will confirm; and modify nothing outside the change's folder. The prompt
+asks for no summary of the ripple: the check measures what the skill makes
+the agent report. It runs under
 the planning cases' budget and timeout. `--step plan.update` SHALL
 select the update cases; `--step review` does not.
 
