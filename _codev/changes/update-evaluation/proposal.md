@@ -44,7 +44,9 @@ it adds text to `/codev-update` that nothing can measure.
   `plan.update`, the scoring, the report, the comparison, six cases under
   `evals/cases/`, and `evals/baseline/`.
 - No change to codev itself: `evals/` is not shipped.
-- Documentation: the evaluation chapter of `docs/en` and `docs/fr`.
+- Documentation: the generated reliability page (`evals/src/reliability.rs`,
+  `docs/{en,fr}/src/reliability.md`) and `CONTRIBUTING.md` /
+  `CONTRIBUTING.fr.md`.
 
 ## Domains
 

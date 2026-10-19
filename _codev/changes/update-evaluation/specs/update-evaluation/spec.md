@@ -168,3 +168,9 @@ not have. The baseline SHALL hold their runs.
 - **WHEN** the user runs `codev-evals list`
 - **THEN** six `plan.update` cases are listed, covering the behaviors
   above
+
+#### Scenario: An update case without its baseline runs
+
+- **GIVEN** an update case with no observation in `evals/baseline/`
+- **WHEN** the suite's tests run
+- **THEN** they fail, naming the case

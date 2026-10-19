@@ -9,12 +9,12 @@
 
 ## 2. The cases and the baseline
 
-- [ ] 2.1 Write the six cases of the design under `evals/cases/`, each `change/` copied from its archived change and `ref` the parent of the commit that brought it to `main`; verified by `codev-evals list` listing them (scenario "The update cases of the suite") and the loading test of the suite passing on them
-- [ ] 2.2 Record the update runs of the current `main` in `evals/baseline/`, three repetitions per case, with the binary built from `main`; verified by `codev-evals score evals/baseline` giving the `plan.update` section, pasted in the pull request
+- [ ] 2.1 Write the six cases of the design under `evals/cases/`, each `change/` copied from its archived change and `ref` the parent of the commit that brought it to `main`; verified by the new test `the_suite_covers_the_update_behaviors` in `evals/tests/suite.rs` (scenario "The update cases of the suite": six `plan.update` cases, one per artifact kind, a refusing one, one whose `ripple` names a delta spec and one whose `ripple` names `tasks.md`) and the existing `every_case_of_the_suite_loads`
+- [ ] 2.2 Record the update runs of the current `main` in `evals/baseline/`, three repetitions per case, with the binary built from `main`; verified by the existing test `every_case_has_a_baseline_observation` (scenario "An update case without its baseline runs") and by `codev-evals score evals/baseline` giving the `plan.update` section, pasted in the pull request
 
 ## 3. Documentation
 
-- [ ] 3.1 In the evaluation chapter of `docs/en` and `docs/fr` (French in vouvoiement): the update cases, their checks, `--step plan.update`; verified by the unit test `both_languages_document_the_update_cases` in `crates/codev-cli/src/docs.rs`
+- [ ] 3.1 In `evals/src/reliability.rs`, a `plan.update` section of the generated reliability page, in both languages, regenerated with `cargo run -p codev-evals -- docs` once 2.2 has recorded the baseline; in `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` (French in vouvoiement), the update cases, their checks and `--step plan.update`; verified by the existing test `the_reliability_pages_follow_the_baseline` and the new test `contributing_chapters_document_the_update_cases` in `evals/tests/suite.rs`
 
 ## 4. Measure `capture-corrections` on the new step (decision 0008)
 
