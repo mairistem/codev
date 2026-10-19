@@ -108,7 +108,10 @@ exit with code 2, naming the valid ones.
 The observation SHALL hold, next to what every case records, the files
 of every change the run created under `_codev/changes/`, and what `codev
 validate` reports on each, as JSON. A file modified outside
-`_codev/changes/` SHALL be recorded as modified outside the step.
+`_codev/changes/` SHALL be recorded as modified outside the step, and so
+SHALL a `corrections.md` written under `_codev/changes/`: no author
+corrects the agent in an evaluation run, so a correction noted there is
+one the agent invented.
 
 #### Scenario: The prompt of a planning case
 
@@ -147,6 +150,13 @@ validate` reports on each, as JSON. A file modified outside
 - **WHEN** the runner builds its fixture
 - **THEN** the fixture's specs and decisions are those at `ref`, and its
   skills are the ones the codev under test renders
+
+#### Scenario: A planning run that invents a correction
+
+- **GIVEN** a planning run that writes its change and a
+  `corrections.md` in it
+- **WHEN** its observation is recorded
+- **THEN** it lists that `corrections.md` as modified outside the step
 
 ### Requirement: A plan is scored on the requirements it modifies, its added duplicates, its decisions and its validity
 
