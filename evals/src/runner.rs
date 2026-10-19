@@ -92,6 +92,25 @@ pub fn prompt(case: &Case) -> String {
                  (plan.challenge). Modify no file outside `_codev/changes/`. End with a one-line summary."
             )
         }
+        Step::PlanUpdate => {
+            let (artifact, request) = case
+                .update
+                .as_ref()
+                .map_or(("", ""), |u| (u.artifact.as_str(), u.request.as_str()));
+            // The prompt does not ask for the ripple in the final reply: the
+            // check reads every message the agent wrote, so it measures what
+            // the skill makes the agent report, not what the prompt asks.
+            format!(
+                "Run the `codev-update` skill (read .claude/skills/codev-update/SKILL.md and follow it) on the \
+                 change `{change}`, artifact `{artifact}`, for this request of the author:\n\
+                 \n\
+                 « {request} »\n\
+                 \n\
+                 This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+                 make the most reasonable assumption. No one will confirm anything: report a ripple as the skill \
+                 says, without applying it. Modify no file outside `_codev/changes/{change}/`."
+            )
+        }
         Step::PlanTrace => format!(
             "This is a codev role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -162,7 +181,7 @@ impl ClaudeSettings {
     /// The budget of a run at `step`: the environment's, else the step's.
     pub fn budget_for(&self, step: Step) -> f64 {
         self.budget_usd.unwrap_or(match step {
-            Step::PlanWrite => PLAN_BUDGET_USD,
+            Step::PlanWrite | Step::PlanUpdate => PLAN_BUDGET_USD,
             _ => DEFAULT_BUDGET_USD,
         })
     }
@@ -170,7 +189,7 @@ impl ClaudeSettings {
     /// How long a run at `step` may take: the environment's, else the step's.
     pub fn timeout_for(&self, step: Step) -> Duration {
         self.timeout.unwrap_or(Duration::from_secs(match step {
-            Step::PlanWrite => PLAN_TIMEOUT_SECS,
+            Step::PlanWrite | Step::PlanUpdate => PLAN_TIMEOUT_SECS,
             _ => DEFAULT_TIMEOUT_SECS,
         }))
     }
@@ -227,12 +246,13 @@ pub fn claude_args(prompt: &str, settings: &ClaudeSettings, step: Step) -> Vec<S
 
 /// The steps `--step` accepts: `review` for the three review steps, or a
 /// step's own name.
-pub const STEP_SELECTORS: [&str; 5] = [
+pub const STEP_SELECTORS: [&str; 6] = [
     "review",
     "plan.challenge",
     "code.review",
     "plan.trace",
     "plan.write",
+    "plan.update",
 ];
 
 /// The cases of the steps named, all of them when none is; an unknown name
@@ -285,8 +305,8 @@ pub fn pending<'a>(
 
 /// The files `git status --porcelain -z --untracked-files=all` lists that
 /// the step does not allow: `review.md` at the review steps, the change's
-/// directory at `plan.trace`, anything under `_codev/changes/` at
-/// `plan.write`.
+/// directory at `plan.trace` and `plan.update`, anything under
+/// `_codev/changes/` at `plan.write`.
 pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     let change_dir = format!("{}/", case.change_dir());
     let review = format!("{change_dir}review.md");
@@ -302,7 +322,7 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
             entries.next();
         }
         let allowed = match case.step {
-            Step::PlanTrace => path.starts_with(&change_dir),
+            Step::PlanTrace | Step::PlanUpdate => path.starts_with(&change_dir),
             Step::PlanWrite => path.starts_with(CHANGES_DIR),
             _ => path == review,
         };
@@ -350,6 +370,9 @@ pub struct ClaudeOutput {
     pub consumption: Option<Consumption>,
     /// Why the run ended in error, if it did.
     pub error: Option<String>,
+    /// The text of every message the agent wrote; empty without the event
+    /// stream.
+    pub messages: Vec<String>,
 }
 
 /// What Claude Code's event stream (`--output-format stream-json`) reports:
@@ -374,6 +397,7 @@ pub fn parse_claude_stream(stdout: &str) -> ClaudeOutput {
         };
     };
     let mut output = parse_claude_output(&result.to_string());
+    output.messages = agent_messages(&events);
     if let Some(consumption) = output.consumption.as_mut() {
         let stream = read_calls(&events);
         consumption.tool_calls = Some(stream.tool_calls);
@@ -381,6 +405,43 @@ pub fn parse_claude_stream(stdout: &str) -> ClaudeOutput {
         consumption.calls = stream.calls;
     }
     output
+}
+
+/// The text of every message the agent wrote, in order: the text blocks
+/// of the assistant events, those of one message joined. Tool calls and
+/// their outputs are left out, so a path the agent only read does not
+/// count as named.
+pub fn agent_messages(events: &[serde_json::Value]) -> Vec<String> {
+    let mut messages: Vec<(Option<String>, String)> = Vec::new();
+    for event in events {
+        if event.get("type").and_then(|t| t.as_str()) != Some("assistant") {
+            continue;
+        }
+        let message = &event["message"];
+        let id = message
+            .get("id")
+            .and_then(|i| i.as_str())
+            .map(str::to_string);
+        let text: Vec<&str> = message["content"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|b| b.get("type").and_then(|t| t.as_str()) == Some("text"))
+            .filter_map(|b| b.get("text").and_then(|t| t.as_str()))
+            .collect();
+        if text.is_empty() {
+            continue;
+        }
+        let text = text.join("\n");
+        match messages.last_mut() {
+            Some((last, body)) if id.is_some() && *last == id => {
+                body.push('\n');
+                body.push_str(&text);
+            }
+            _ => messages.push((id, text)),
+        }
+    }
+    messages.into_iter().map(|(_, text)| text).collect()
 }
 
 /// What the events say about each call to the model.
@@ -618,6 +679,7 @@ pub fn parse_claude_output(stdout: &str) -> ClaudeOutput {
         duration_ms: duration,
         consumption: Some(consumption(&value)),
         error,
+        messages: Vec::new(),
     }
 }
 
@@ -969,16 +1031,19 @@ pub fn setup(
     Ok(())
 }
 
-/// Builds a planning case's project in `dir`: the tree of `repo` at the
-/// case's `ref`, one commit, then the skills the codev under test renders
-/// (`codev update --force`, over skills edited since), committed.
+/// Builds a planning or update case's project in `dir`: the tree of `repo`
+/// at the case's `ref` — for an update case, with its `change/` written to
+/// `_codev/changes/<change>/`, the change as it stood while active — one
+/// commit, then the skills the codev under test renders (`codev update
+/// --force`, over skills edited since), committed.
 pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
     let io = |e: std::io::Error| format!("setting up the fixture: {e}");
     let git_ref = case
         .plan
         .as_ref()
         .map(|p| p.git_ref.as_str())
-        .ok_or_else(|| "not a planning case".to_string())?;
+        .or_else(|| case.update.as_ref().map(|u| u.git_ref.as_str()))
+        .ok_or_else(|| "not a planning or update case".to_string())?;
     if dir.exists() {
         fs::remove_dir_all(dir).map_err(io)?;
     }
@@ -1004,6 +1069,14 @@ pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result
             "extracting `{git_ref}`: {}",
             String::from_utf8_lossy(&untar.stderr).trim()
         ));
+    }
+    if let Some(update) = &case.update {
+        let change: BTreeMap<String, Vec<u8>> = update
+            .files
+            .iter()
+            .map(|(path, text)| (path.clone(), text.clone().into_bytes()))
+            .collect();
+        write_tree(&dir.join(case.change_dir()), &change).map_err(io)?;
     }
     git(tools, dir, &["init", "-q", "-b", "main"])?;
     git(tools, dir, &["add", "-A"])?;
@@ -1165,12 +1238,14 @@ pub fn run_case(
         review: None,
         files: BTreeMap::new(),
         validate: BTreeMap::new(),
+        validate_before: None,
+        messages: Vec::new(),
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    let built = if case.step == Step::PlanWrite {
+    let built = if case.step.replays_history() {
         setup_plan(case, repo, work_dir, tools)
     } else {
         setup(case, case_dir, work_dir, tools, date)
@@ -1178,6 +1253,17 @@ pub fn run_case(
     if let Err(e) = built {
         observed.error = Some(e);
         return observed;
+    }
+    if case.step == Step::PlanUpdate {
+        // The errors the archived change already has under the codev being
+        // measured: the run is judged only on those it adds.
+        match codev_json(tools, work_dir, &["validate", &case.change, "--json"]) {
+            Ok(value) => observed.validate_before = Some(without_root(value)),
+            Err(e) => {
+                observed.error = Some(e);
+                return observed;
+            }
+        }
     }
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
     let args = claude_args(&prompt(case), settings, case.step);
@@ -1192,6 +1278,9 @@ pub fn run_case(
             observed.duration_ms = output.duration_ms;
             observed.consumption = output.consumption;
             observed.error = output.error;
+            if case.step == Step::PlanUpdate {
+                observed.messages = output.messages;
+            }
         }
     }
     if observed.error.is_none() {
@@ -1222,6 +1311,17 @@ pub fn run_case(
             }
         }
     }
+    if case.step == Step::PlanUpdate {
+        observed.files = change_files(case, work_dir);
+        match codev_json(tools, work_dir, &["validate", &case.change, "--json"]) {
+            Ok(value) => {
+                observed
+                    .validate
+                    .insert(case.change.clone(), without_root(value));
+            }
+            Err(e) => observed.error = Some(e),
+        }
+    }
     if case.step.records_findings() {
         match codev_json(
             tools,
@@ -1240,6 +1340,26 @@ pub fn run_case(
         observed.files.insert(path, content);
     }
     observed
+}
+
+/// The files of an update case's change folder after the run, by path from
+/// the project root; a file the case laid and the run removed is `None`.
+fn change_files(case: &Case, work_dir: &Path) -> BTreeMap<String, Option<String>> {
+    let change_dir = case.change_dir();
+    let mut files: BTreeMap<String, Option<String>> = read_tree(&work_dir.join(&change_dir))
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(path, bytes)| {
+            (
+                format!("{change_dir}/{path}"),
+                Some(String::from_utf8_lossy(&bytes).into_owned()),
+            )
+        })
+        .collect();
+    for path in case.update.iter().flat_map(|u| u.files.keys()) {
+        files.entry(format!("{change_dir}/{path}")).or_insert(None);
+    }
+    files
 }
 
 /// Everything a suite run needs.
@@ -2101,6 +2221,129 @@ mod tests {
         assert!(
             created_changes(" M _codev/changes/old/tasks.md\0?? _codev/changes/archive/x/a.md\0")
                 .is_empty()
+        );
+    }
+
+    fn update_case(change: &str, artifact: crate::case::Artifact, request: &str) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = "update-x".into();
+        case.step = Step::PlanUpdate;
+        case.change = change.into();
+        case.update = Some(crate::case::UpdateCase {
+            git_ref: "abc123".into(),
+            artifact,
+            request: request.into(),
+            revised: vec!["design.md".into()],
+            kept: vec![],
+            ripple: vec![],
+            contains: vec![],
+            refuse: false,
+            files: BTreeMap::from([("design.md".to_string(), "# Design\n".to_string())]),
+        });
+        case
+    }
+
+    #[test]
+    fn the_update_prompt_names_the_skill_and_the_request() {
+        let text = prompt(&update_case(
+            "add-auth",
+            crate::case::Artifact::Design,
+            "remplace la décision X par Y",
+        ));
+        for needle in [
+            "`codev-update`",
+            ".claude/skills/codev-update/SKILL.md",
+            "change `add-auth`",
+            "artifact `design`",
+            "« remplace la décision X par Y »",
+            "ask no question",
+            "report a ripple as the skill says, without applying it",
+            "Modify no file outside `_codev/changes/add-auth/`",
+        ] {
+            assert!(text.contains(needle), "missing {needle} in {text}");
+        }
+        assert!(
+            !text.to_lowercase().contains("summary"),
+            "the prompt asks for no summary of the ripple: {text}"
+        );
+    }
+
+    #[test]
+    fn an_update_run_that_edits_the_code_strays() {
+        let case = update_case("add-auth", crate::case::Artifact::Design, "r");
+        let status = " M _codev/changes/add-auth/design.md\0?? _codev/changes/add-auth/notes.md\0 M src/lib.rs\0?? _codev/changes/other/proposal.md\0";
+        assert_eq!(
+            strayed(status, &case),
+            ["_codev/changes/other/proposal.md", "src/lib.rs"]
+        );
+    }
+
+    #[test]
+    fn review_does_not_select_update_cases() {
+        let mut review = a_case("security", Kind::Seeded, &[]);
+        review.id = "r".into();
+        let update = update_case("add-auth", crate::case::Artifact::Design, "r");
+        let cases = vec![review, update];
+        let ids = |steps: &[&str]| -> Vec<String> {
+            select_steps(
+                &cases,
+                &steps.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()
+            .iter()
+            .map(|c| c.id.clone())
+            .collect()
+        };
+        assert_eq!(ids(&["review"]), ["r"]);
+        assert_eq!(ids(&["plan.update"]), ["update-x"]);
+        assert_eq!(ids(&["plan.write"]), Vec::<String>::new());
+    }
+
+    #[test]
+    fn an_update_case_runs_under_the_planning_budget_and_timeout() {
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        assert_eq!(defaults.budget_for(Step::PlanUpdate), PLAN_BUDGET_USD);
+        assert_eq!(
+            defaults.timeout_for(Step::PlanUpdate),
+            Duration::from_secs(PLAN_TIMEOUT_SECS)
+        );
+    }
+
+    #[test]
+    fn the_agent_messages_leave_out_tool_calls_and_outputs() {
+        let stream = [
+            assistant(
+                "m1",
+                10,
+                1,
+                json!([{"type": "text", "text": "I read the change."},
+                       tool_use("t1", "Read", json!({"file_path": "/p/specs/doctor/spec.md"}))]),
+            ),
+            json!({"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": "specs/doctor/spec.md"}]}})
+            .to_string(),
+            assistant(
+                "m2",
+                10,
+                1,
+                json!([{"type": "thinking", "thinking": "specs/tasks.md"}]),
+            ),
+            assistant(
+                "m2",
+                10,
+                1,
+                json!([{"type": "text", "text": "Ripple: `specs/doctor/spec.md` is orphaned."}]),
+            ),
+            RESULT.to_string(),
+        ]
+        .join("\n");
+        let out = parse_claude_stream(&stream);
+        assert_eq!(
+            out.messages,
+            [
+                "I read the change.",
+                "Ripple: `specs/doctor/spec.md` is orphaned."
+            ]
         );
     }
 

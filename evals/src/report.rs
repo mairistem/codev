@@ -195,6 +195,34 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
+    if let Some(u) = &score.update {
+        let spread = |s: Option<Spread>, ratio: bool| match s {
+            None => "—".to_string(),
+            Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
+            Some(s) => count_range(s.median, Some(s), repeated),
+        };
+        let _ = writeln!(
+            out,
+            "\n## `plan.update`\n\nPer repetition, every update run pooled: the share of runs whose every check \
+             passes, the share of checks that pass, the runs that modified a file outside the change's folder; \
+             then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges \
+             these against the baseline.\n"
+        );
+        let _ = writeln!(
+            out,
+            "| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |\n|---|---|---|---|---|"
+        );
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} | {} | {} |",
+            u.cases,
+            spread(u.pass_rate, true),
+            spread(u.check_rate, true),
+            spread(u.strayed, false),
+            Measure::Cost.show(u.consumption.cost_usd, 2),
+        );
+    }
+
     let _ = writeln!(out, "\n## Consumption\n");
     let _ = writeln!(
         out,
@@ -307,6 +335,23 @@ pub fn markdown(score: &SuiteScore) -> String {
                 }
                 if p.outcome == crate::plan::PlanOutcome::Planned && !p.valid {
                     let _ = writeln!(out, "- The plan does not validate");
+                }
+            }
+            if let Some(u) = &c.update {
+                let _ = writeln!(
+                    out,
+                    "- Checks: {} of {} passed, the run {}",
+                    u.checks_passed(),
+                    u.checks.len(),
+                    if u.passed { "passes" } else { "**fails**" }
+                );
+                for check in &u.checks {
+                    let _ = writeln!(
+                        out,
+                        "- Check {}: {}",
+                        check.check,
+                        if check.passed { "passed" } else { "**failed**" }
+                    );
                 }
             }
             for e in &c.expected {
@@ -528,5 +573,100 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
         assert_eq!(json["planning"]["cases"], 1);
         assert!(!markdown(&scores()).contains("plan.write"));
+    }
+
+    fn update_suite() -> SuiteScore {
+        use crate::case::{Artifact, Step, UpdateCase};
+        use crate::score::update_case;
+        use std::collections::BTreeMap;
+        let mut c = a_case("planner", Kind::Seeded, &[]);
+        c.id = "update-proposal-ripple".into();
+        c.step = Step::PlanUpdate;
+        c.change = "c".into();
+        c.update = Some(UpdateCase {
+            git_ref: "abc".into(),
+            artifact: Artifact::Proposal,
+            request: "r".into(),
+            revised: vec!["proposal.md".into()],
+            kept: vec![],
+            ripple: vec!["specs/doctor/spec.md".into()],
+            contains: vec![],
+            refuse: false,
+            files: BTreeMap::from([
+                ("proposal.md".to_string(), "# P\n".to_string()),
+                ("specs/doctor/spec.md".to_string(), "# D\n".to_string()),
+            ]),
+        });
+        let mut o = observed("findings", &[], json!([]));
+        o.review = None;
+        o.files = BTreeMap::from([
+            (
+                "_codev/changes/c/proposal.md".to_string(),
+                Some("# P, revised\n".to_string()),
+            ),
+            (
+                "_codev/changes/c/specs/doctor/spec.md".to_string(),
+                Some("# D\n".to_string()),
+            ),
+        ]);
+        o.validate
+            .insert("c".into(), json!({"items": [{"findings": []}]}));
+        o.validate_before = Some(json!({"items": [{"findings": []}]}));
+        o.strayed = vec!["src/lib.rs".into()];
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        suite(
+            run(),
+            vec![
+                case(&review, &observed("no-finding", &[], json!([]))),
+                update_case(&c, &o),
+            ],
+            Thresholds::default(),
+        )
+    }
+
+    #[test]
+    fn the_report_has_an_update_section() {
+        let s = update_suite();
+        let md = markdown(&s);
+        assert!(md.contains("## `plan.update`"), "{md}");
+        assert!(md.contains("| 1 | 0.00 | 0.75 | 1 | 0.50 |"), "{md}");
+        assert!(
+            md.contains("- Checks: 3 of 4 passed, the run **fails**"),
+            "{md}"
+        );
+        assert!(md.contains("- Check `proposal.md` revised: passed"), "{md}");
+        assert!(
+            md.contains("- Check ripple `specs/doctor/spec.md` named: **failed**"),
+            "{md}"
+        );
+        assert!(
+            md.contains("- Modified outside the step: `src/lib.rs`"),
+            "{md}"
+        );
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["update"]["cases"], 1);
+        assert_eq!(json["update"]["passRate"]["median"], 0.0);
+        let run = json["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == "update-proposal-ripple")
+            .unwrap();
+        assert_eq!(run["update"]["passed"], false);
+        assert_eq!(run["update"]["checks"][0]["check"], "`proposal.md` revised");
+        assert_eq!(run["update"]["checks"][0]["passed"], true);
+    }
+
+    #[test]
+    fn a_report_without_update_cases_has_no_section() {
+        let s = scores();
+        assert!(!markdown(&s).contains("plan.update"));
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert!(json.get("update").is_none());
+        assert!(json["cases"][0].get("update").is_none());
     }
 }

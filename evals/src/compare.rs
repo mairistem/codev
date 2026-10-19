@@ -10,6 +10,7 @@ use crate::observed::RunInfo;
 use crate::score::{
     Measure, Measures, Outcome, PlanningScore, RoleScore, SourceShare, Spread, SuiteScore, number,
 };
+use crate::update::UpdateStepScore;
 
 /// The verdict and the report of a comparison.
 #[derive(Debug, Clone, PartialEq)]
@@ -160,6 +161,33 @@ fn planning_quality(base: &PlanningScore, cand: &PlanningScore) -> Vec<String> {
     out
 }
 
+/// The quality failures of the update step, judged as the planning step
+/// is: a share of runs passing under the baseline's minimum, or more runs
+/// modifying a file outside the step than its maximum. The share of checks
+/// passing is reported and never decides: the runs passing already judge
+/// the checks, a run at a time.
+fn update_quality(base: &UpdateStepScore, cand: &UpdateStepScore) -> Vec<String> {
+    let mut out = Vec::new();
+    if let (Some(c), Some(range)) = (cand.pass_rate, base.pass_rate)
+        && c.median < range.min
+    {
+        out.push(format!(
+            "plan.update: update pass rate {:.2} is under the baseline's minimum {:.2}",
+            c.median, range.min
+        ));
+    }
+    if let (Some(c), Some(range)) = (cand.strayed, base.strayed)
+        && c.median > range.max
+    {
+        out.push(format!(
+            "plan.update: {} run(s) modifying a file outside the step exceed the baseline's maximum {}",
+            number(c.median),
+            number(range.max)
+        ));
+    }
+    out
+}
+
 /// Every quality measure on which the candidate's median does better than
 /// the baseline's best repetition.
 fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
@@ -225,6 +253,25 @@ fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
             }
         }
     }
+    if let (Some(b), Some(c)) = (&baseline.update, &candidate.update) {
+        if let (Some(v), Some(r)) = (c.pass_rate, b.pass_rate)
+            && v.median > r.max
+        {
+            out.push(format!(
+                "plan.update: update pass rate, from {:.2} at best to {:.2}",
+                r.max, v.median
+            ));
+        }
+        if let (Some(v), Some(r)) = (c.strayed, b.strayed)
+            && v.median < r.min
+        {
+            out.push(format!(
+                "plan.update: runs modifying a file outside the step, from {} at best to {}",
+                number(r.min),
+                number(v.median)
+            ));
+        }
+    }
     out
 }
 
@@ -266,6 +313,9 @@ pub fn compare(
     if let (Some(base), Some(cand)) = (&baseline.planning, &candidate.planning) {
         failures.extend(planning_quality(base, cand));
     }
+    if let (Some(base), Some(cand)) = (&baseline.update, &candidate.update) {
+        failures.extend(update_quality(base, cand));
+    }
     let improved = improvements(baseline, candidate);
     let base_floor = floor(baseline);
     let consumption_failures = consumption(baseline, candidate, base_floor);
@@ -282,6 +332,7 @@ pub fn compare(
         header(baseline, candidate, &verdict),
         quality_section(baseline, candidate),
         planning_section(baseline, candidate),
+        update_section(baseline, candidate),
         improved_section(&improved),
         consumption_section(baseline, candidate, &verdict),
         sources_section(baseline, candidate),
@@ -501,6 +552,54 @@ fn planning_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
             count_range(bs)
         };
         let _ = writeln!(out, "| {label} | {base} | {} |", median(cs, is_ratio));
+    }
+    out
+}
+
+fn update_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+    let (Some(b), Some(c)) = (&baseline.update, &candidate.update) else {
+        return String::new();
+    };
+    let mut out = String::new();
+    let _ = writeln!(out, "\n## `plan.update`\n");
+    let _ = writeln!(
+        out,
+        "The candidate's share of runs passing must not fall under the baseline's minimum, nor its \
+         runs modifying a file outside the step rise above its maximum; the share of checks passing \
+         is reported and never decides.\n"
+    );
+    let _ = writeln!(
+        out,
+        "| Measure | Baseline (min–max) | Candidate |\n|---|---|---|"
+    );
+    let show = |s: Option<Spread>, is_ratio: bool| {
+        s.map_or_else(
+            || "—".to_string(),
+            |s| {
+                if is_ratio {
+                    format!("{:.2}", s.median)
+                } else {
+                    number(s.median)
+                }
+            },
+        )
+    };
+    for (label, bs, cs, is_ratio) in [
+        ("Runs passing", b.pass_rate, c.pass_rate, true),
+        ("Checks passing", b.check_rate, c.check_rate, true),
+        (
+            "Runs modifying a file outside the step",
+            b.strayed,
+            c.strayed,
+            false,
+        ),
+    ] {
+        let base = if is_ratio {
+            ratio_range(bs)
+        } else {
+            count_range(bs)
+        };
+        let _ = writeln!(out, "| {label} | {base} | {} |", show(cs, is_ratio));
     }
     out
 }
@@ -935,6 +1034,54 @@ mod tests {
         );
         let same = compare(&base, &base, &[], Mode::QualityOnly).report;
         assert!(!same.contains("Quality improved"), "{same}");
+    }
+
+    fn updating(pass: (f64, f64, f64), strayed: (f64, f64, f64)) -> UpdateStepScore {
+        let s = |(median, min, max): (f64, f64, f64)| Some(Spread { median, min, max });
+        UpdateStepScore {
+            cases: 6,
+            repetitions: vec![],
+            pass_rate: s(pass),
+            check_rate: s((0.9, 0.9, 0.95)),
+            strayed: s(strayed),
+            consumption: Measures::default(),
+        }
+    }
+
+    #[test]
+    fn an_update_regression_fails_the_comparison() {
+        let mut base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        base.update = Some(updating((1.0, 0.83, 1.0), (0.0, 0.0, 1.0)));
+        let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
+        cand.update = Some(updating((0.5, 0.5, 0.5), (0.0, 0.0, 0.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert!(!result.pass);
+        assert_eq!(
+            result.failures,
+            ["plan.update: update pass rate 0.50 is under the baseline's minimum 0.83"]
+        );
+        assert!(
+            result.report.contains("## `plan.update`"),
+            "{}",
+            result.report
+        );
+        assert!(
+            result
+                .report
+                .contains("| Runs passing | 1.00 (0.83–1.00) | 0.50 |"),
+            "{}",
+            result.report
+        );
+        cand.update = Some(updating((0.83, 0.83, 0.83), (2.0, 2.0, 2.0)));
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        assert_eq!(
+            result.failures,
+            [
+                "plan.update: 2 run(s) modifying a file outside the step exceed the baseline's maximum 1"
+            ]
+        );
+        cand.update = Some(updating((0.83, 0.83, 0.83), (1.0, 1.0, 1.0)));
+        assert!(compare(&base, &cand, &[], Mode::QualityAndCost).pass);
     }
 
     #[test]

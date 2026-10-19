@@ -37,6 +37,13 @@ pub struct Observed {
     /// created, by change name.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub validate: BTreeMap<String, serde_json::Value>,
+    /// `codev validate <change> --json` on an update case's fixture, before
+    /// the run: the errors the archived change already had.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub validate_before: Option<serde_json::Value>,
+    /// The text of every message the agent wrote, for an update case.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub messages: Vec<String>,
 }
 
 /// What Claude Code reports a run consumed, besides its cost and duration.

@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::case::{Case, Expected, Kind, Location, Step};
 use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
 use crate::plan::{AtRef, PlanOutcome, PlanScore, score_plan};
+use crate::update::{UpdateScore, UpdateStepScore, score_update};
 
 /// Evidence and location codes of `codev review`, by their effect here.
 const EVIDENCE_INVALID: [&str; 2] = ["review_evidence_not_found", "review_location_missing"];
@@ -126,11 +127,20 @@ pub struct CaseScore {
     /// A planning run's score; `None` for a review run.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plan: Option<PlanScore>,
+    /// An update run's checks; `None` for any other run.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update: Option<UpdateScore>,
 }
 
 impl CaseScore {
     fn is_planning(&self) -> bool {
         self.step == Step::PlanWrite.as_str()
+    }
+
+    /// A run of a reviewing role, which the role measures count: neither a
+    /// planning run nor an update run.
+    fn is_review(&self) -> bool {
+        !self.is_planning() && self.step != Step::PlanUpdate.as_str()
     }
 
     /// The same score, as repetition `n`.
@@ -171,7 +181,22 @@ fn unscored(case: &Case, observed: &Observed) -> CaseScore {
         repetition: 1,
         consumption: observed.consumption.clone(),
         plan: None,
+        update: None,
     }
+}
+
+/// Scores one run of an update case by its checks, as repetition 1.
+pub fn update_case(case: &Case, observed: &Observed) -> CaseScore {
+    let mut score = unscored(case, observed);
+    let Some(expect) = &case.update else {
+        return score;
+    };
+    score.outcome = match &observed.error {
+        Some(error) => Outcome::Error(error.clone()),
+        None => Outcome::Scored,
+    };
+    score.update = Some(score_update(expect, &case.change_dir(), observed));
+    score
 }
 
 /// Scores one run of a planning case, against the repository at its
@@ -951,6 +976,9 @@ pub struct SuiteScore {
     /// The step `plan.write`, when the suite has planning runs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub planning: Option<PlanningScore>,
+    /// The step `plan.update`, when the suite has update runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub update: Option<UpdateStepScore>,
 }
 
 /// One repetition of the planning runs, pooled as a role's tally is.
@@ -983,7 +1011,7 @@ pub struct PlanningScore {
 }
 
 /// Rounded to three decimals: the report shows ratios, not float noise.
-fn ratio(numerator: u32, denominator: u32) -> Option<f64> {
+pub(crate) fn ratio(numerator: u32, denominator: u32) -> Option<f64> {
     (denominator > 0)
         .then(|| (f64::from(numerator) / f64::from(denominator) * 1000.0).round() / 1000.0)
 }
@@ -1076,7 +1104,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         .map(|n| {
             let runs: Vec<&CaseScore> = cases
                 .iter()
-                .filter(|c| c.repetition == *n && !c.is_planning())
+                .filter(|c| c.repetition == *n && c.is_review())
                 .collect();
             let tallies = tally(&runs);
             Repetition { runs, tallies }
@@ -1090,7 +1118,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         .chain(
             cases
                 .iter()
-                .filter(|c| !c.is_planning())
+                .filter(|c| c.is_review())
                 .map(|c| c.role.clone()),
         )
         .collect();
@@ -1115,6 +1143,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         }
     }
     let planning = planning_score(&numbers, &cases, &case_consumption);
+    let update = crate::update::step_score(&numbers, &cases, &case_consumption);
     let sources = rank_sources(&case_consumption);
     let mut sources_by_step = BTreeMap::new();
     for step in case_consumption.iter().map(|c| c.step.as_str()) {
@@ -1145,6 +1174,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         sources,
         sources_by_step,
         planning,
+        update,
     }
 }
 
@@ -1451,6 +1481,7 @@ pub(crate) mod tests {
             unchanged: vec![],
             planned: vec![],
             plan: None,
+            update: None,
         }
     }
 
@@ -1502,6 +1533,8 @@ pub(crate) mod tests {
                 "findings": findings, "issues": issues})),
             files: BTreeMap::new(),
             validate: BTreeMap::new(),
+            validate_before: None,
+            messages: Vec::new(),
         }
     }
 
