@@ -166,6 +166,17 @@ pub struct PlanningFigures {
     pub invalid: Option<Spread>,
 }
 
+/// The update figures of `report.json`: medians and ranges over the
+/// repetitions.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateFigures {
+    pub cases: u32,
+    pub pass_rate: Option<Spread>,
+    pub check_rate: Option<Spread>,
+    pub strayed: Option<Spread>,
+}
+
 /// What the page is built from: the run, the thresholds and the roles.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Baseline {
@@ -184,6 +195,8 @@ pub struct Baseline {
     pub roles: Vec<RoleRow>,
     /// The planning step, when the baseline holds planning cases.
     pub planning: Option<PlanningFigures>,
+    /// The update step, when the baseline holds update runs.
+    pub update: Option<UpdateFigures>,
     /// The sums of the cases' median consumption.
     pub consumption: Option<Measures>,
     /// Where the tokens go, ranked by cost; empty when no run recorded its
@@ -207,6 +220,8 @@ struct ReportFile {
     cases: Vec<CaseId>,
     #[serde(default)]
     planning: Option<PlanningFigures>,
+    #[serde(default)]
+    update: Option<UpdateFigures>,
     #[serde(default)]
     consumption: Option<Measures>,
     #[serde(default)]
@@ -264,6 +279,7 @@ impl Baseline {
             figures: report.figures,
             roles: report.roles,
             planning: report.planning,
+            update: report.update,
             consumption: report.consumption,
             sources: report.sources,
         })
@@ -490,13 +506,20 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     let _ = writeln!(out, "## {}\n", lang.pick("The run", "L'exécution"));
     // The planning cases are counted with the others: name them, so that
     // seeded and controls add up to the total.
-    let planning = b.planning.as_ref().map_or_else(String::new, |p| {
+    let mut planning = b.planning.as_ref().map_or_else(String::new, |p| {
         format!(
             ", {} {}",
             p.cases,
             lang.pick("planning", "de planification")
         )
     });
+    if let Some(u) = &b.update {
+        planning.push_str(&format!(
+            ", {} {}",
+            u.cases,
+            lang.pick("revision", "de révision")
+        ));
+    }
     let model = b.run.model.as_deref().map_or_else(
         || {
             lang.pick("Claude Code's default", "celui de Claude Code par défaut")
@@ -701,6 +724,9 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
 
     if let Some(p) = &b.planning {
         planning_section(&mut out, p, lang);
+    }
+    if let Some(u) = &b.update {
+        update_section(&mut out, u, lang);
     }
     if let Some(m) = &b.consumption {
         consumption_section(&mut out, b, m, lang);
@@ -1008,6 +1034,71 @@ fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
                 "Plans qui ne passent pas la validation",
             ),
             p.invalid,
+            false,
+        ),
+    ] {
+        let _ = writeln!(out, "| {label} | {} |", spread_text(lang, s, ratio));
+    }
+    out.push('\n');
+}
+
+/// The update step: its three measures, median and range.
+fn update_section(out: &mut String, u: &UpdateFigures, lang: Lang) {
+    let _ = writeln!(
+        out,
+        "## {}\n",
+        lang.pick("Revising a plan", "La révision d'un plan")
+    );
+    let _ = writeln!(
+        out,
+        "{}\n",
+        match lang {
+            Lang::En => format!(
+                "{} revision cases lay an archived change on the repository as it was before it, \
+                 and ask `/codev-update` to revise one of its artifacts as its author would. Each \
+                 run is checked without a model: the artifact asked for is revised, the other \
+                 files are left as they were, a consequence on another artifact is named rather \
+                 than applied, the change still validates, and a request for an artifact the \
+                 change does not have is refused. A run **passes** when every check passes. Each \
+                 figure is the median over the repetitions, with its range.",
+                u.cases
+            ),
+            Lang::Fr => format!(
+                "{} cas de révision posent un change archivé sur le dépôt tel qu'il était avant \
+                 lui, et demandent à `/codev-update` de réviser l'un de ses artefacts comme le \
+                 ferait son auteur. Chaque exécution est vérifiée sans modèle{c}l'artefact demandé \
+                 est révisé, les autres fichiers restent tels quels, une conséquence sur un autre \
+                 artefact est signalée plutôt qu'appliquée, le change passe toujours la \
+                 validation, et une demande portant sur un artefact que le change n'a pas est \
+                 refusée. Une exécution **réussit** quand toutes ses vérifications réussissent. \
+                 Chaque chiffre est la médiane sur les répétitions, avec son écart.",
+                u.cases,
+                c = lang.colon()
+            ),
+        }
+    );
+    let _ = writeln!(
+        out,
+        "| {} |\n|---|---:|",
+        lang.pick("Measure | Median (range)", "Mesure | Médiane (écart)")
+    );
+    for (label, s, ratio) in [
+        (
+            lang.pick("Runs that pass", "Exécutions qui réussissent"),
+            u.pass_rate,
+            true,
+        ),
+        (
+            lang.pick("Checks that pass", "Vérifications qui réussissent"),
+            u.check_rate,
+            true,
+        ),
+        (
+            lang.pick(
+                "Runs that modify a file outside the change",
+                "Exécutions qui modifient un fichier hors du change",
+            ),
+            u.strayed,
             false,
         ),
     ] {
@@ -1759,6 +1850,7 @@ mod tests {
             figures: None,
             roles,
             planning: None,
+            update: None,
             consumption: None,
             sources: vec![],
         }
@@ -1998,6 +2090,52 @@ mod tests {
         assert!(
             !page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En).contains("## Planning")
         );
+    }
+
+    #[test]
+    fn the_page_gives_the_update_figures_when_the_baseline_has_update_runs() {
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        let s = |median, min, max| Some(Spread { median, min, max });
+        b.update = Some(UpdateFigures {
+            cases: 6,
+            pass_rate: s(0.833, 0.667, 1.0),
+            check_rate: s(0.95, 0.95, 0.95),
+            strayed: s(0.0, 0.0, 1.0),
+        });
+        let en = page(&b, Lang::En);
+        assert!(en.contains("## Revising a plan"), "{en}");
+        assert!(en.contains("| Runs that pass | 0.83 (0.67–1.00) |"), "{en}");
+        assert!(en.contains("| Checks that pass | 0.95 |"), "{en}");
+        assert!(
+            en.contains("| Runs that modify a file outside the change | 0 (0–1) |"),
+            "{en}"
+        );
+        assert!(en.contains("controls, 6 revision)"), "{en}");
+        let fr = page(&b, Lang::Fr);
+        assert!(fr.contains("## La révision d'un plan"), "{fr}");
+        assert!(
+            fr.contains("| Exécutions qui réussissent | 0,83 (0,67–1,00) |"),
+            "{fr}"
+        );
+        assert!(fr.contains("témoins propres, 6 de révision)"), "{fr}");
+        assert!(!fr.contains("{NBSP}") && !fr.contains("{c}"), "{fr}");
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("## Revising a plan"));
+        assert!(!without.contains("revision)"));
+    }
+
+    #[test]
+    fn the_baseline_reads_the_update_figures_of_a_report() {
+        let report = report_json("2026-10-13", 2).replace(
+            r#""cases":[{"id":"a"}"#,
+            r#""update":{"cases":6,"passRate":{"median":0.5,"min":0.5,"max":1.0},"checkRate":null,"strayed":null,"repetitions":[]},"cases":[{"id":"a"}"#,
+        );
+        let b = Baseline::parse(&report, RUN_JSON).unwrap();
+        let u = b.update.unwrap();
+        assert_eq!(u.cases, 6);
+        assert_eq!(u.pass_rate.unwrap().max, 1.0);
+        let none = Baseline::parse(&report_json("2026-10-13", 2), RUN_JSON).unwrap();
+        assert!(none.update.is_none());
     }
 
     #[test]

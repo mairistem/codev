@@ -87,7 +87,8 @@ pull request that changes what a skill does — a file of
 `cargo run -p codev-evals -- compare --quality-only`, which still reports
 what its runs consume. Run both on the cases of the steps the pull
 request touches, with `--step` (repeatable): `review` for the review
-steps, `plan.write` for the planning of `/codev-propose`. Accepted
+steps, `plan.write` for the planning of `/codev-propose`, `plan.update`
+for the revisions of `/codev-update`. Accepted
 decision 0008 makes this the rule for every change to the workflow.
 Record the candidate with `--repeat 3` at least, and with the baseline's `--jobs`
 (4), so that both runs share the prompt cache alike.
@@ -96,13 +97,15 @@ The suite needs [Claude Code](https://claude.com/claude-code) installed and
 signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a run of the
 40 review cases costs about fifteen US dollars, each case capped at 3 by
 default; a planning case costs about 1.65 dollars and takes several
-minutes, capped at 6 dollars and 1,800 seconds by default.
+minutes, capped at 6 dollars and 1,800 seconds by default, as is an update
+case.
 
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # the cases
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
+cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
 cargo run -p codev-evals -- score target/evals/mine    # score again, no model
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -182,6 +185,44 @@ the cases and names the commit (`git fetch --unshallow`). Loading also
 refuses a requirement or a decision that did not exist at `ref`, and a
 `ref` whose tree already holds the case.
 
+### Writing an update case
+
+An update case replays an author's request to revise one artifact of an
+active change with `/codev-update`. No commit of `main` holds an active
+change — pull requests are squash-merged with their archive — so the case
+carries the change: its `change/` holds the files of an archived change,
+copied as the archive keeps them, which the runner writes to
+`_codev/changes/<change>/` on the tree of `ref`, the parent of the commit
+that brought the change to `main`. `case.yaml` gives `step: plan.update`,
+`kind: seeded`, `ref`, `change` (the change's name), `artifact`
+(`proposal`, `specs`, `design` or `tasks`), `request` (the author's words,
+in any language), `summary`, and `expected`, whose paths are relative to
+the change's folder: `revised`, the files the revision must change;
+`kept`, those it must leave byte-identical; `ripple`, those whose
+consequence the agent must name without editing them; `contains`, text the
+revised files must hold; and `refuse`, for a request the skill must refuse
+(it then expects no `revised` path and no `contains`). Loading refuses a
+path `change/` does not hold, and a `ref` whose tree already holds the
+change or the case.
+
+Before the run, the runner records `codev validate <change> --json` on the
+fixture; the prompt names the skill, the change, the artifact and the
+request, and says to ask no question, to report a ripple without applying
+it, and to modify nothing outside the change's folder. A run is scored
+without a model, by checks a reader can redo by hand: each `revised` file
+differs from `change/`; each `kept` and `ripple` file is unchanged; each
+`ripple` path is named in the agent's messages — every message it wrote,
+tool calls and their outputs left out; each `contains` text is in a
+revised file, ignoring case and runs of whitespace; `codev validate`
+reports no error the fixture did not already have; and a refusal leaves the
+change's folder as it was and names `/codev-propose`. A run passes when
+every check passes. The report's `plan.update` section gives, per
+repetition, the share of runs passing, the share of checks passing and the
+runs modifying a file outside the change's folder, and each run's checks;
+`compare` fails when the share of runs passing falls under the baseline's
+minimum, or the runs modifying a file outside the step rise above its
+maximum.
+
 Changing a term of the vocabulary changes the scores: score the baseline
 again (`cargo run -p codev-evals -- score evals/baseline`) and say which
 findings it re-classifies.
@@ -194,7 +235,15 @@ with the Claude Code version `.github/workflows/evals.yml` pins
 `evals/baseline/run.json` against the pin) — remove `evals/baseline/`, then
 `cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
 (about 270 dollars and several hours, planning cases included) — which
-the tests check: five runs of every case, none in error. Claude Code's
+the tests check: five runs of every case, none in error. The cases of a
+new step — the update cases when `plan.update` came — may be recorded
+alone, into the existing baseline, when the other cases and the scoring are
+unchanged: with the pinned Claude Code and the codev the baseline names,
+`cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
+resumes it with the new cases' runs only (a resume refuses another Claude
+Code version), then `cargo run -p codev-evals -- score evals/baseline`
+and `cargo run -p codev-evals -- docs`. A changed case or a changed scoring
+still requires recording the whole baseline again. Claude Code's
 raw output of each run (`claude.jsonl`, `claude.stderr`) stays out of
 version control.
 

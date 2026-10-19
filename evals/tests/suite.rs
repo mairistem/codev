@@ -178,6 +178,34 @@ fn contributing_and_roles_chapters_name_the_baseline() {
     assert_eq!(gaps, Vec::<String>::new());
 }
 
+#[test]
+fn contributing_chapters_document_the_update_cases() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = Vec::new();
+    for needle in [
+        "step: plan.update",
+        "--step plan.update",
+        "`revised`",
+        "`kept`",
+        "`ripple`",
+        "`contains`",
+        "`refuse`",
+        "/codev-propose",
+        "codev validate <change> --json",
+        // A new step's cases recorded alone into the baseline.
+        "run --step plan.update --out evals/baseline --repeat 5",
+    ] {
+        gaps.extend(missing_mention(&files, needle));
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
 /// The `run:` scripts of a workflow, each with its following indented lines.
 fn scripts(workflow: &str) -> Vec<String> {
     let mut out = Vec::new();

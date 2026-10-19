@@ -100,7 +100,8 @@ qu'une skill lit, `crates/codev-cli/src/contract.rs` — colle la sortie de
 toujours ce que ses exécutions consomment. Lancez l'une et l'autre sur
 les cas des étapes que la pull request touche, avec `--step`
 (répétable) : `review` pour les étapes de revue, `plan.write` pour la
-planification de `/codev-propose`. La décision acceptée 0008 en fait la
+planification de `/codev-propose`, `plan.update` pour les révisions de
+`/codev-update`. La décision acceptée 0008 en fait la
 règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
@@ -110,13 +111,14 @@ connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
 exécution des 40 cas de revue coûte une quinzaine de dollars américains,
 chaque cas étant plafonné à 3 par défaut ; un cas de planification coûte
 environ 1,65 dollar et prend plusieurs minutes, plafonné par défaut à
-6 dollars et 1 800 secondes.
+6 dollars et 1 800 secondes, tout comme un cas de révision.
 
 ```bash
 cargo build --bin codev
 cargo run -p codev-evals -- list                       # les cas
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
+cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
 cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -204,6 +206,48 @@ charge pas les cas et nomme le commit (`git fetch --unshallow`). Le
 chargement refuse aussi une exigence ou une décision qui n'existait pas
 à `ref`, et un `ref` dont l'arbre contient déjà le cas.
 
+### Écrire un cas de révision
+
+Un cas de révision rejoue la demande d'un auteur qui veut réviser un
+artefact d'un change actif avec `/codev-update`. Aucun commit de `main` ne
+contient de change actif — les pull requests sont fusionnées en un seul
+commit avec leur archivage —, aussi le cas apporte-t-il le change : son
+`change/` contient les fichiers d'un change archivé, copiés tels que
+l'archive les garde, que le lanceur écrit dans `_codev/changes/<change>/`
+sur l'arbre de `ref`, le parent du commit qui a amené le change sur
+`main`. `case.yaml` donne `step: plan.update`, `kind: seeded`, `ref`,
+`change` (le nom du change), `artifact` (`proposal`, `specs`, `design` ou
+`tasks`), `request` (les mots de l'auteur, dans n'importe quelle langue),
+`summary`, et `expected`, dont les chemins sont relatifs au dossier du
+change : `revised`, les fichiers que la révision doit modifier ; `kept`,
+ceux qu'elle doit laisser identiques à l'octet près ; `ripple`, ceux dont
+l'agent doit nommer la conséquence sans les modifier ; `contains`, un texte
+que les fichiers révisés doivent contenir ; et `refuse`, pour une demande
+que la skill doit refuser (le cas n'attend alors ni chemin `revised` ni
+`contains`). Le chargement refuse un chemin que `change/` ne contient pas,
+et un `ref` dont l'arbre contient déjà le change ou le cas.
+
+Avant l'exécution, le lanceur enregistre `codev validate <change> --json`
+sur le projet ; le prompt nomme la skill, le change, l'artefact et la
+demande, et dit de ne poser aucune question, de signaler une répercussion
+sans l'appliquer et de ne rien modifier hors du dossier du change. Une
+exécution est notée sans modèle, par des vérifications qu'un lecteur peut
+refaire à la main : chaque fichier `revised` diffère de `change/` ; chaque
+fichier `kept` et `ripple` est inchangé ; chaque chemin `ripple` est nommé
+dans les messages de l'agent — tous les messages qu'il a écrits, appels
+d'outils et leurs sorties exclus ; chaque texte `contains` figure dans un
+fichier révisé, sans tenir compte de la casse ni des suites d'espaces ;
+`codev validate` ne signale aucune erreur que le projet n'avait pas déjà ;
+et un refus laisse le dossier du change tel quel et nomme `/codev-propose`.
+Une exécution réussit quand toutes ses vérifications réussissent. La
+section `plan.update` du rapport donne, par répétition, la part des
+exécutions qui réussissent, la part des vérifications qui réussissent et
+les exécutions qui modifient un fichier hors du dossier du change, ainsi
+que les vérifications de chaque exécution ; `compare` échoue quand la part
+des exécutions qui réussissent passe sous le minimum de la ligne de base,
+ou quand les exécutions qui modifient un fichier hors de l'étape dépassent
+son maximum.
+
 Changer un terme du vocabulaire change les scores : renotez la ligne de
 base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
 constats il reclasse.
@@ -219,7 +263,16 @@ vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
 `cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
 (environ 270 dollars et plusieurs heures, cas de planification compris) —,
 ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
-erreur. La sortie brute de Claude Code de chaque exécution
+erreur. Les cas d'une nouvelle étape — les cas de révision à l'arrivée de
+`plan.update` — peuvent être enregistrés seuls, dans la ligne de base
+existante, quand les autres cas et la notation n'ont pas changé : avec le
+Claude Code épinglé et le codev que nomme la ligne de base,
+`cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
+la reprend en n'y ajoutant que les exécutions des nouveaux cas (une reprise
+refuse une autre version de Claude Code), puis lancez
+`cargo run -p codev-evals -- score evals/baseline` et
+`cargo run -p codev-evals -- docs`. Un cas modifié ou une notation modifiée
+demande toujours d'enregistrer de nouveau toute la ligne de base. La sortie brute de Claude Code de chaque exécution
 (`claude.jsonl`, `claude.stderr`) reste hors du contrôle de version.
 
 ## Commits
