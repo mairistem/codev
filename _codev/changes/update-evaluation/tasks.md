@@ -9,7 +9,7 @@
 
 ## 2. The cases and the baseline
 
-- [ ] 2.1 Write the six cases of the design under `evals/cases/`, each `change/` copied from its archived change and `ref` the parent of the commit that brought it to `main`; verified by the new test `the_suite_covers_the_update_behaviors` in `evals/tests/suite.rs` (scenario "The update cases of the suite": six `plan.update` cases, one per artifact kind, a refusing one, one whose `ripple` names a delta spec and one whose `ripple` names `tasks.md`) and the existing `every_case_of_the_suite_loads`
+- [x] 2.1 Write the six cases of the design under `evals/cases/`, each `change/` copied from its archived change and `ref` the parent of the commit that brought it to `main`; verified by the new test `the_suite_covers_the_update_behaviors` in `evals/tests/suite.rs` (scenario "The update cases of the suite": six `plan.update` cases, one per artifact kind, a refusing one, one whose `ripple` names a delta spec and one whose `ripple` names `tasks.md`) and the existing `every_case_of_the_suite_loads`
 - [ ] 2.2 Record the update cases alone in `evals/baseline/`, five repetitions each, with the pinned Claude Code (2.1.289) and the binary built from `main` (codev 0.6.1), then `codev-evals score evals/baseline` and commit its `report.json` and `report.md`; in `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`, say that a new step's cases may be recorded alone with the pinned version, changed cases or scoring still requiring a full recording; verified by the existing tests `every_case_has_a_baseline_observation` (scenario "An update case without its baseline runs"), `every_baseline_case_has_five_repetitions` and `the_baseline_agrees_with_the_scoring`
 
 ## 3. Documentation

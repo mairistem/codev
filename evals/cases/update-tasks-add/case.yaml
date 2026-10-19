@@ -1,0 +1,14 @@
+# Revision of an artifact of `2026-10-14-fewer-review-turns`, laid on the commit
+# before the pull request that brought it to main.
+step: plan.update
+kind: seeded
+ref: e9a65e9cd98783981fda33513577f8af330b8c49
+change: fewer-review-turns
+artifact: tasks
+request: "Ajoute une tâche au groupe 2 des tâches : vérifier qu'aucun skill installé ne demande plus `codev review --json` pour reprendre ou contrôler le compte rendu, vérifiée par un nouveau test `no_skill_body_asks_for_codev_review_json` dans `crates/codev-agents/src/workflows.rs`."
+summary: "A task added, the plan untouched."
+expected:
+  revised: [tasks.md]
+  kept: [proposal.md, design.md, specs/roles/spec.md, specs/skills/spec.md, review.md]
+  contains:
+    - "no_skill_body_asks_for_codev_review_json"

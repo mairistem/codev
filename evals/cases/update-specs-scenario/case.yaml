@@ -1,0 +1,14 @@
+# Revision of an artifact of `2026-10-12-docs-and-tests-in-done`, laid on the commit
+# before the pull request that brought it to main.
+step: plan.update
+kind: seeded
+ref: 84f1cd9c6e7331da796961625ae8cc16ff3fb9ab
+change: docs-and-tests-in-done
+artifact: specs
+request: "Il manque un cas au delta de `configure` : un projet Python qui a déjà des tests pytest dans `tests/`. Ajoute à l'exigence du skill `configure` un scénario nommé « Testing rules follow an existing pytest suite » : les règles proposées pour `tasks` citent pytest et `tests/`, et ne recommandent pas unittest."
+summary: "A named scenario added to the configure delta, which still validates."
+expected:
+  revised: [specs/configure/spec.md]
+  kept: [proposal.md, design.md, tasks.md, specs/skills/spec.md]
+  contains:
+    - "Testing rules follow an existing pytest suite"
