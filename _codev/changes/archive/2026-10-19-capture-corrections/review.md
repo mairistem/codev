@@ -70,6 +70,10 @@ history:
   - status: disputed
     by: skeptic
     note: "Decision 0008 says a step the suite does not cover is covered first, by its own change; shipping before that is an exception only a person can accept."
+  - status: fixed
+    by: human:Ludovic
+    note: "The author chose to cover /codev-update first: #49 adds its cases and baseline; this change passes them (18/18 runs, cost -2.4 %)."
+    ref: "#49"
 ```
 
 ### privacy
