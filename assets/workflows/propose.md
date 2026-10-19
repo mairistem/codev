@@ -95,7 +95,7 @@ If the user asks which workflows exist: `codev schemas --json`.
 codev status --change "<name>" --json
 ```
 
-{{UPDATE_NOTICE}}
+{{fragment:version-check}}
 
 Fields to use:
 
@@ -250,7 +250,7 @@ suggestion whose `state` is `unticked` is a finding located at
 `proposal.md#Domains`, and every `justified` one is checked — does its
 reason answer the files and lines in its `matches`?
 
-{{REVIEW_RECORD}}
+{{fragment:review-record}}
 
 Ask the user only if a finding changes the scope materially.
 

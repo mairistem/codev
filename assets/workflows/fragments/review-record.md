@@ -12,7 +12,7 @@ a. **Resume first.** Run `codev review --change "<name>"`. A finding it
    before anything new. The record is the state: a session that stopped
    half-way picks up from it.
 
-{{ISOLATED_REVIEW}}
+{{fragment:review-isolated}}
 
 b. **Write a section per role.** Under `## <step>` (create the file with
    `# Review record: <name>` and `<!-- codev-review: 1 -->` if it does not

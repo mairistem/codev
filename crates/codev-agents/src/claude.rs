@@ -166,15 +166,9 @@ impl ClaudeCode {
             &substitute_jira_mcp(workflow.allowed_tools, ctx.jira_mcp_tool.as_deref()),
             ctx.review_mode,
         );
-        let body = substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref())
-            .replace(
-                crate::workflows::UPDATE_NOTICE_PLACEHOLDER,
-                crate::workflows::UPDATE_NOTICE.trim_end(),
-            )
-            .replace(
-                crate::workflows::REVIEW_RECORD_PLACEHOLDER,
-                &crate::workflows::review_record(),
-            );
+        let body = crate::workflows::with_review_scale(&crate::workflows::expand_fragments(
+            &substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref()),
+        ));
         let unsealed = format!(
             "---\n\
              name: {name}\n\

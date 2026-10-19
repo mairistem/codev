@@ -20,30 +20,55 @@ pub struct Workflow {
     pub body: &'static str,
 }
 
-/// The update notice shared by the action workflows: substituted for
-/// [`UPDATE_NOTICE_PLACEHOLDER`] right after their first
-/// `codev status --json`, so the five copies can never drift apart.
-pub const UPDATE_NOTICE: &str = include_str!("../../../assets/workflows/_update-notice.md");
+/// The version check shared by the action workflows — whether the project
+/// requires a newer codev, or a newer one is available —, pasted right after
+/// their first `codev status --json`.
+pub const VERSION_CHECK: &str =
+    include_str!("../../../assets/workflows/fragments/version-check.md");
 
-pub const UPDATE_NOTICE_PLACEHOLDER: &str = "{{UPDATE_NOTICE}}";
+pub const VERSION_CHECK_PLACEHOLDER: &str = "{{fragment:version-check}}";
 
 /// The review record procedure — writing findings, the author's answer, the
 /// reviewer's single re-check, the human's decisions — shared by the
-/// challenge of `propose` and the review of `apply`, substituted for
-/// [`REVIEW_RECORD_PLACEHOLDER`] so the two copies never drift apart.
-pub const REVIEW_RECORD: &str = include_str!("../../../assets/workflows/_review-record.md");
+/// challenge of `propose` and the review of `apply`.
+pub const REVIEW_RECORD: &str =
+    include_str!("../../../assets/workflows/fragments/review-record.md");
 
-pub const REVIEW_RECORD_PLACEHOLDER: &str = "{{REVIEW_RECORD}}";
+pub const REVIEW_RECORD_PLACEHOLDER: &str = "{{fragment:review-record}}";
 
 /// The isolated review procedure — a sub-agent per role, the brief, the
 /// failure handling, the meeting — shared by the trace and challenge of
-/// `propose` and the review of `apply`, substituted for
-/// [`ISOLATED_REVIEW_PLACEHOLDER`] (inside [`REVIEW_RECORD`] too). Rendered
-/// in both modes: a change may override the project's mode, and
+/// `propose` and the review of `apply` (inside [`REVIEW_RECORD`] too).
+/// Rendered in both modes: a change may override the project's mode, and
 /// `codev roles` tells the skill which one applies.
-pub const ISOLATED_REVIEW: &str = include_str!("../../../assets/workflows/_isolated-review.md");
+pub const REVIEW_ISOLATED: &str =
+    include_str!("../../../assets/workflows/fragments/review-isolated.md");
 
-pub const ISOLATED_REVIEW_PLACEHOLDER: &str = "{{ISOLATED_REVIEW}}";
+pub const REVIEW_ISOLATED_PLACEHOLDER: &str = "{{fragment:review-isolated}}";
+
+/// The fragments of `assets/workflows/fragments/`, by name: text shared by
+/// several skills, pasted wherever a skill — or another fragment — writes
+/// `{{fragment:<name>}}`, so that its copies never drift apart.
+pub const FRAGMENTS: &[(&str, &str)] = &[
+    ("version-check", VERSION_CHECK),
+    ("review-record", REVIEW_RECORD),
+    ("review-isolated", REVIEW_ISOLATED),
+];
+
+/// `text` with each `{{fragment:<name>}}` replaced by that fragment, its
+/// own fragments expanded in turn.
+pub fn expand_fragments(text: &str) -> String {
+    FRAGMENTS
+        .iter()
+        .fold(text.to_string(), |text, (name, body)| {
+            let placeholder = format!("{{{{fragment:{name}}}}}");
+            if text.contains(&placeholder) {
+                text.replace(&placeholder, &expand_fragments(body.trim_end()))
+            } else {
+                text
+            }
+        })
+}
 
 /// Inside [`REVIEW_RECORD`]: the severity and confidence scales, generated
 /// from `codev-core::review`, their single source.
@@ -55,6 +80,12 @@ pub const REVIEW_RECORD_WORKFLOWS: &[&str] = &["propose", "apply"];
 /// [`REVIEW_RECORD`] with the scales in place, indented as the list item
 /// that holds them, and the isolated review procedure.
 pub fn review_record() -> String {
+    with_review_scale(&expand_fragments(REVIEW_RECORD_PLACEHOLDER))
+}
+
+/// `text` with the review scales in place of [`REVIEW_SCALE_PLACEHOLDER`],
+/// indented as the list item that holds them.
+pub fn with_review_scale(text: &str) -> String {
     let scale: String = codev_core::review::scale_markdown()
         .lines()
         .map(|line| {
@@ -65,15 +96,12 @@ pub fn review_record() -> String {
             }
         })
         .collect();
-    REVIEW_RECORD
-        .trim_end()
-        .replace(REVIEW_SCALE_PLACEHOLDER, scale.trim_end())
-        .replace(ISOLATED_REVIEW_PLACEHOLDER, ISOLATED_REVIEW.trim_end())
+    text.replace(REVIEW_SCALE_PLACEHOLDER, scale.trim_end())
 }
 
-/// The workflows whose body carries [`UPDATE_NOTICE_PLACEHOLDER`]: the ones
+/// The workflows whose body carries [`VERSION_CHECK_PLACEHOLDER`]: the ones
 /// that act. `explore`, `onboard` and `configure` never offer an update.
-pub const UPDATE_NOTICE_WORKFLOWS: &[&str] = &["propose", "apply", "update", "sync", "archive"];
+pub const VERSION_CHECK_WORKFLOWS: &[&str] = &["propose", "apply", "update", "sync", "archive"];
 
 /// The workflows shipped by this version.
 ///
@@ -306,6 +334,29 @@ mod tests {
             step.contains("With no listed requirement, work from the request and the code."),
             "{step}"
         );
+    }
+
+    #[test]
+    fn every_fragment_is_used_and_expanded() {
+        let sources: Vec<&str> = CATALOG
+            .iter()
+            .map(|w| w.body)
+            .chain(FRAGMENTS.iter().map(|(_, body)| *body))
+            .collect();
+        for (name, _) in FRAGMENTS {
+            let placeholder = format!("{{{{fragment:{name}}}}}");
+            assert!(
+                sources.iter().any(|s| s.contains(&placeholder)),
+                "the fragment `{name}` is used nowhere"
+            );
+        }
+        for workflow in CATALOG {
+            assert!(
+                !rendered(workflow.id).contains("{{fragment:"),
+                "`{}` keeps a fragment placeholder",
+                workflow.id
+            );
+        }
     }
 
     #[test]
@@ -1217,10 +1268,10 @@ mod tests {
 
     #[test]
     fn action_skills_carry_the_update_notice_once() {
-        for id in UPDATE_NOTICE_WORKFLOWS {
+        for id in VERSION_CHECK_WORKFLOWS {
             let body = find(id).unwrap().body;
             assert_eq!(
-                body.matches(UPDATE_NOTICE_PLACEHOLDER).count(),
+                body.matches(VERSION_CHECK_PLACEHOLDER).count(),
                 1,
                 "`{id}` must carry the notice exactly once"
             );
@@ -1228,20 +1279,20 @@ mod tests {
             let status = body
                 .find("codev status --change \"<name>\" --json")
                 .unwrap();
-            let notice = body.find(UPDATE_NOTICE_PLACEHOLDER).unwrap();
+            let notice = body.find(VERSION_CHECK_PLACEHOLDER).unwrap();
             assert!(status < notice, "`{id}`: the notice reads that JSON");
             assert!(
                 body[status..notice].matches("```").count() == 1,
                 "`{id}`: the notice follows the first status block directly"
             );
             let skill = rendered(id);
-            assert!(!skill.contains(UPDATE_NOTICE_PLACEHOLDER), "{id}");
+            assert!(!skill.contains(VERSION_CHECK_PLACEHOLDER), "{id}");
             assert_eq!(skill.matches("codev self-update --snooze").count(), 1);
         }
         // `apply` asks before its first task, never between tasks.
         let apply = find("apply").unwrap().body;
         assert!(
-            apply.find(UPDATE_NOTICE_PLACEHOLDER).unwrap()
+            apply.find(VERSION_CHECK_PLACEHOLDER).unwrap()
                 < apply.find("### 2. Read the tasks").unwrap()
         );
     }
@@ -1250,10 +1301,10 @@ mod tests {
     fn read_only_skills_never_offer_an_update() {
         for workflow in CATALOG
             .iter()
-            .filter(|w| !UPDATE_NOTICE_WORKFLOWS.contains(&w.id))
+            .filter(|w| !VERSION_CHECK_WORKFLOWS.contains(&w.id))
         {
             assert!(
-                !workflow.body.contains(UPDATE_NOTICE_PLACEHOLDER)
+                !workflow.body.contains(VERSION_CHECK_PLACEHOLDER)
                     && !workflow.body.contains("self-update"),
                 "`{}` must not offer an update",
                 workflow.id
@@ -1262,7 +1313,7 @@ mod tests {
         assert_eq!(
             CATALOG
                 .iter()
-                .filter(|w| !UPDATE_NOTICE_WORKFLOWS.contains(&w.id))
+                .filter(|w| !VERSION_CHECK_WORKFLOWS.contains(&w.id))
                 .map(|w| w.id)
                 .collect::<Vec<_>>(),
             ["explore", "onboard", "configure"]
@@ -1271,7 +1322,7 @@ mod tests {
 
     #[test]
     fn update_notice_offers_now_and_later_with_self_update() {
-        let notice = flat(UPDATE_NOTICE);
+        let notice = flat(VERSION_CHECK);
         for needle in [
             "once per action, before acting",
             "versionRequirement.satisfied",

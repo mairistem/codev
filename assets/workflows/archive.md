@@ -35,7 +35,7 @@ Then:
 codev status --change "<name>" --json
 ```
 
-{{UPDATE_NOTICE}}
+{{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name what
 is missing and suggest `/codev-propose`; do not run `archive`.

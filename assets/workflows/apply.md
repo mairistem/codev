@@ -49,7 +49,7 @@ Then check the planning:
 codev status --change "<name>" --json
 ```
 
-{{UPDATE_NOTICE}}
+{{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Say which
 artifacts are missing and suggest `/codev-propose` or editing by hand.
@@ -140,7 +140,7 @@ roles of the step again and run that expert's review — or keep it
 unticked with a reason on its line. Do not edit the proposal yourself:
 the user decides.
 
-{{REVIEW_RECORD}}
+{{fragment:review-record}}
 
 ### 6. Finish — suggest archiving as an explicit next step
 

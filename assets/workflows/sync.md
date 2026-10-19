@@ -33,7 +33,7 @@ Then:
 codev status --change "<name>" --json
 ```
 
-{{UPDATE_NOTICE}}
+{{fragment:version-check}}
 
 If `isPlanningComplete` is `false`, stop: planning is not ready. Name the
 missing artifacts and suggest `/codev-propose` or `/codev-continue`

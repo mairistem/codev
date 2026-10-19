@@ -43,7 +43,7 @@ Then:
 codev status --change "<name>" --json
 ```
 
-{{UPDATE_NOTICE}}
+{{fragment:version-check}}
 
 Find the requested artifact in `artifacts[]`:
 
