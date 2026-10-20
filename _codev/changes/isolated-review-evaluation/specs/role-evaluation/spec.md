@@ -6,21 +6,32 @@
 isolated }` into each review case's `_codev/config.yaml` before the
 skills of the codev under test are rendered, so that the skill runs the
 evaluated role as its own sub-agent, as a project in that mode does; the
-sub-agent tool is then granted like `codev`, and a case whose rendered
-`codev-propose` or `codev-apply` skill does not list that tool SHALL end
-in error, naming the skill, rather than run inline unnoticed.
-`--fixture-config <file>`
-SHALL append the YAML of `<file>` to each case's `_codev/config.yaml` at
-the same moment, for a setting a measure needs, such as a role's model.
-Without these options a case's configuration is unchanged; the review
-mode defaults to `inline`, and the planning and update cases ignore both.
-`run.json` SHALL record the review mode and the appended configuration,
-and a run resumed with other values SHALL exit with code 2, as for
-another model; a `run.json` without them, of the earlier format, reads as
-`inline` with nothing appended.
+sub-agent tool is then granted like `codev`. `--fixture-config <file>`
+SHALL append the YAML of `<file>` to each review case's
+`_codev/config.yaml` at the same moment, for a setting a measure needs.
+Planning and update cases ignore both options. `--review-mode` accepts
+`inline` (the default) and `isolated`; an unknown mode, a
+`--fixture-config` file that is missing or not a YAML mapping, or one
+holding `review:` together with `--review-mode`, SHALL exit with code 2
+before any case runs. `run.json` SHALL record the review mode and the
+appended configuration; a run resumed with other values SHALL exit with
+code 2, as for another model; a `run.json` without them, of the earlier
+format, reads as `inline` with nothing appended.
 
-The run's cost and tokens SHALL include its sub-agents', as Claude Code
-reports them for the whole session.
+After an isolated case's run, the runner SHALL check that the role
+actually ran alone: the review record's step says `Mode: isolated.`,
+holds no `Fallback:` line, and the session started at least one
+sub-agent. A case that fails the check ends in error, naming what was
+missing, since the skill falls back to the inline mode by design
+(decision 0007).
+
+The run's cost and token totals SHALL be those Claude Code reports for
+the whole session, its sub-agents included. The per-call measures SHALL
+count the session's own calls; the tokens of the totals that the
+session's calls do not account for SHALL be reported as the source
+`sub-agents`, so that each token of an isolated run is traced to a source
+(decision 0008). A run whose totals fall below the sum of its own calls
+ends in error.
 
 #### Scenario: A review case in the isolated mode
 
@@ -28,16 +39,37 @@ reports them for the whole session.
 - **WHEN** the user runs `codev-evals run --case <it> --review-mode
   isolated`
 - **THEN** the case's configuration holds `review: { mode: isolated }`,
-  its `codev-propose` skill lists the sub-agent tool, and `run.json`
-  records `isolated`
+  and `run.json` records `isolated`
+
+#### Scenario: A case that fell back to the inline mode
+
+- **GIVEN** an isolated case whose review record holds `Mode: isolated.`
+  and a `Fallback:` line, or whose session started no sub-agent
+- **WHEN** its run is checked
+- **THEN** it ends in error, naming what was missing
+
+#### Scenario: The sub-agents' tokens
+
+- **GIVEN** an isolated run whose session totals hold 120,000 input tokens
+  and whose own calls hold 70,000
+- **WHEN** its consumption is recorded
+- **THEN** the source `sub-agents` holds the 50,000 others
 
 #### Scenario: A configuration appended to every case
 
-- **GIVEN** a file holding `roles: { skeptic: { model: inherit } }`
+- **GIVEN** a file holding `roles: { skeptic: { done_when: ["The rollback
+  plan is stated"] } }`
 - **WHEN** the user runs `codev-evals run --step review --fixture-config
   <file>`
 - **THEN** each review case's configuration ends with that text, and
   `run.json` records it
+
+#### Scenario: Options that cannot be applied
+
+- **GIVEN** `--review-mode sometimes`, or a `--fixture-config` file that
+  does not exist, or one holding `review:` with `--review-mode isolated`
+- **WHEN** the user runs `codev-evals run`
+- **THEN** it exits with code 2 before any case runs, naming the cause
 
 #### Scenario: Resuming in another mode
 
@@ -59,13 +91,6 @@ reports them for the whole session.
 - **WHEN** it is read
 - **THEN** it reads as `inline` with nothing appended, and resuming it
   without the options continues
-
-#### Scenario: An isolated skill that cannot start sub-agents
-
-- **GIVEN** an isolated review case whose rendered `codev-propose` skill
-  does not list the sub-agent tool
-- **WHEN** the runner builds its fixture
-- **THEN** the case ends in error, naming the skill
 
 ## MODIFIED Requirements
 
@@ -116,8 +141,10 @@ The command SHALL exit with 0 when the verdict passes, 1 when it fails,
 naming each failing role and measure with both values, and each cause on
 consumption; and 2, writing no report, when a directory cannot be read,
 when the two runs were recorded with different models, naming both, unless
-`--across-models` is given, or in different review modes, naming both, or
-when they have no case in common. Two runs are recorded with different
+`--across-models` is given, or, when both hold review cases, in
+different review modes, naming both, or when they have no case in
+common. The report SHALL name both runs' appended configurations and say
+when they differ. Two runs are recorded with different
 models when the models they asked for differ, or when the models their
 observations record as used differ; observations that record none, of
 the earlier format, compare by the model asked alone. `--across-models`
@@ -219,6 +246,13 @@ same time, and say so when either differs.
   --across-models`
 - **THEN** it compares them, and the report names both runs' models at
   its top
+
+#### Scenario: Different appended configurations
+
+- **GIVEN** a baseline and a candidate recorded with different
+  `--fixture-config` texts
+- **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
+- **THEN** the report names both texts and says they differ
 
 #### Scenario: Two review modes
 
