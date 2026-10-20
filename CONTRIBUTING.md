@@ -142,6 +142,30 @@ baseline. Maintainers can also start the **Role evaluations** workflow by
 hand; it needs the `ANTHROPIC_API_KEY` repository secret and skips
 otherwise.
 
+The review cases run in the `inline` mode by default. `--review-mode
+isolated` plays them in the `isolated` mode: each case's
+`_codev/config.yaml` gets `review: { mode: isolated }` before the skills
+are rendered, the sub-agent tool (`Agent`) is granted, and a case whose
+role did not run alone — no `Mode: isolated.` line, a `Fallback:` line,
+or no sub-agent started — ends in error. The tokens the session's totals
+hold beyond its own calls go to the source `sub-agents`; a run whose
+totals fall below its own calls ends in error. `--fixture-config <file>`
+appends a YAML mapping to every review case's `_codev/config.yaml`, for a
+setting a measure needs; it may not set `review:` together with
+`--review-mode`. Planning and update cases ignore both options.
+`run.json` records them, and a run resumed with other values stops.
+`compare` refuses two runs whose review cases ran in different modes,
+and names both runs' appended configurations, saying when they differ.
+To measure a change of model, pass `--across-models`: `compare` then
+compares two runs whose models differ and names both at the top of its
+report. Record both runs the same day, in the same mode:
+
+```bash
+cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/opus
+CODEV_EVAL_MODEL=claude-sonnet-5-5 cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/sonnet
+cargo run -p codev-evals -- compare target/evals/opus target/evals/sonnet --across-models --quality-only
+```
+
 The documentation's [reliability chapter](docs/en/src/reliability.md)
 shows the baseline to readers. It is generated, never edited by hand:
 each time `evals/baseline/` changes — recorded or scored again — run

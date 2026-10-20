@@ -12,7 +12,7 @@
 
 ## 3. Documentation
 
-- [ ] 3.1 In `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` (French in vouvoiement), the two run options and `--across-models`; verified by the test `contributing_chapters_document_the_isolated_mode` in `evals/tests/suite.rs`
+- [x] 3.1 In `CONTRIBUTING.md` and `CONTRIBUTING.fr.md` (French in vouvoiement), the two run options and `--across-models`; verified by the test `contributing_chapters_document_the_isolated_mode` in `evals/tests/suite.rs`
 
 ## 4. Checks
 

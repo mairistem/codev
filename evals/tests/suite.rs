@@ -206,6 +206,31 @@ fn contributing_chapters_document_the_update_cases() {
     assert_eq!(gaps, Vec::<String>::new());
 }
 
+#[test]
+fn contributing_chapters_document_the_isolated_mode() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = Vec::new();
+    for needle in [
+        "--review-mode isolated",
+        "review: { mode: isolated }",
+        "`Agent`",
+        "`Fallback:`",
+        "`sub-agents`",
+        "--fixture-config",
+        "--across-models",
+        "run.json",
+    ] {
+        gaps.extend(missing_mention(&files, needle));
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
 /// The `run:` scripts of a workflow, each with its following indented lines.
 fn scripts(workflow: &str) -> Vec<String> {
     let mut out = Vec::new();

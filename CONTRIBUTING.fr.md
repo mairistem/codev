@@ -159,6 +159,34 @@ peuvent aussi lancer à la main le workflow **Role evaluations** ; il
 demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
 sinon.
 
+Les cas de revue tournent par défaut dans le mode `inline`.
+`--review-mode isolated` les joue dans le mode `isolated` : le
+`_codev/config.yaml` de chaque cas reçoit `review: { mode: isolated }`
+avant le rendu des skills, l'outil de sous-agent (`Agent`) est accordé,
+et un cas dont le rôle n'a pas tourné seul — pas de ligne
+`Mode: isolated.`, une ligne `Fallback:`, ou aucun sous-agent lancé —
+s'arrête en erreur. Les tokens que les totaux de la session comptent
+au-delà de ses propres appels vont à la source `sub-agents` ; une
+exécution dont les totaux sont inférieurs à ses propres appels s'arrête
+en erreur. `--fixture-config <fichier>` ajoute un mapping YAML au
+`_codev/config.yaml` de chaque cas de revue, pour un réglage dont une
+mesure a besoin ; il ne peut pas définir `review:` en même temps que
+`--review-mode`. Les cas de planification et de révision ignorent ces
+deux options. `run.json` les enregistre, et une exécution reprise avec
+d'autres valeurs s'arrête. `compare` refuse deux exécutions dont les cas
+de revue ont tourné dans des modes différents, et nomme les
+configurations ajoutées des deux exécutions, en signalant quand elles
+diffèrent. Pour mesurer un changement de modèle, passez
+`--across-models` : `compare` compare alors deux exécutions dont les
+modèles diffèrent et nomme les deux en tête de son rapport. Enregistrez
+les deux exécutions le même jour, dans le même mode :
+
+```bash
+cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/opus
+CODEV_EVAL_MODEL=claude-sonnet-5-5 cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/sonnet
+cargo run -p codev-evals -- compare target/evals/opus target/evals/sonnet --across-models --quality-only
+```
+
 Le [chapitre sur la fiabilité](docs/fr/src/reliability.md) de la
 documentation présente la ligne de base aux lecteurs. Il est généré,
 jamais modifié à la main : chaque fois que `evals/baseline/` change —
