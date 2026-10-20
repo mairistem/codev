@@ -6,14 +6,18 @@
 isolated }` into each review case's `_codev/config.yaml` before the
 skills of the codev under test are rendered, so that the skill runs the
 evaluated role as its own sub-agent, as a project in that mode does; the
-sub-agent tool is then granted like `codev`. `--fixture-config <file>`
+sub-agent tool is then granted like `codev`, and a case whose rendered
+`codev-propose` or `codev-apply` skill does not list that tool SHALL end
+in error, naming the skill, rather than run inline unnoticed.
+`--fixture-config <file>`
 SHALL append the YAML of `<file>` to each case's `_codev/config.yaml` at
 the same moment, for a setting a measure needs, such as a role's model.
 Without these options a case's configuration is unchanged; the review
 mode defaults to `inline`, and the planning and update cases ignore both.
 `run.json` SHALL record the review mode and the appended configuration,
 and a run resumed with other values SHALL exit with code 2, as for
-another model.
+another model; a `run.json` without them, of the earlier format, reads as
+`inline` with nothing appended.
 
 The run's cost and tokens SHALL include its sub-agents', as Claude Code
 reports them for the whole session.
@@ -41,6 +45,27 @@ reports them for the whole session.
 - **WHEN** the user runs `codev-evals run --out <it> --review-mode
   isolated`
 - **THEN** it exits with code 2, naming both modes
+
+#### Scenario: Resuming with another appended configuration
+
+- **GIVEN** an output directory recorded with one `--fixture-config`
+- **WHEN** the user resumes it with another file's text
+- **THEN** it exits with code 2
+
+#### Scenario: A run recorded before these options
+
+- **GIVEN** a `run.json` without a review mode nor an appended
+  configuration
+- **WHEN** it is read
+- **THEN** it reads as `inline` with nothing appended, and resuming it
+  without the options continues
+
+#### Scenario: An isolated skill that cannot start sub-agents
+
+- **GIVEN** an isolated review case whose rendered `codev-propose` skill
+  does not list the sub-agent tool
+- **WHEN** the runner builds its fixture
+- **THEN** the case ends in error, naming the skill
 
 ## MODIFIED Requirements
 

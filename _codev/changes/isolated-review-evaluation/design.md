@@ -49,8 +49,11 @@ other comparison from a silent model change.
 
 - [A sub-agent's tokens are not in the session's figures] → Claude Code
   reports the session's cost with its sub-agents; the change checks it on
-  one isolated run before any measure, by comparing the session's cost
-  with the per-call sum of its transcript.
+  one isolated run before any measure (task 1.2, with its pass condition),
+  and no isolated measure is used if it fails.
+- [A skill rendered without the sub-agent tool runs the role inline,
+  unnoticed] → The runner checks the rendered skills and ends the case in
+  error.
 - [Appended YAML duplicates a key the fixture already has] → The review
   fixtures' configuration, from `codev init`, holds neither `review:` nor
   `roles:`; a duplicate key fails the case's codev commands, which the run
