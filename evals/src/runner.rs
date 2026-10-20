@@ -1761,6 +1761,7 @@ fn run_implementation(
     if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
         let _ = fs::write(log.join("review.md"), record);
     }
+    // `--repo .` is relative: the resolved path is the one to look for.
     let roots: Vec<PathBuf> = [repo.to_path_buf()]
         .into_iter()
         .chain(fs::canonicalize(repo).ok())

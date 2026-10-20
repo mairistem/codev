@@ -219,10 +219,12 @@ pub fn tool_reads(events: &[serde_json::Value]) -> Vec<String> {
 /// The reads that name `root`, a directory outside the case's: an absolute
 /// path under it, or a command that names it. Both spellings of `root` are
 /// tried — as given and resolved — since a temporary directory is often
-/// reached through a link.
+/// reached through a link. A relative root names nothing: `.` would match
+/// every path.
 pub fn reads_under(reads: &[String], roots: &[PathBuf]) -> Vec<String> {
     let names: BTreeSet<String> = roots
         .iter()
+        .filter(|r| r.is_absolute())
         .map(|r| r.to_string_lossy().trim_end_matches('/').to_string())
         .filter(|r| !r.is_empty())
         .collect();
@@ -772,5 +774,14 @@ mod tests {
                 "`lints` fails on the merged commit"
             ]
         );
+    }
+
+    #[test]
+    fn a_relative_root_names_no_read() {
+        let reads = vec![
+            "cat /tmp/w/case/src/lib.rs".to_string(),
+            "ls ./src".to_string(),
+        ];
+        assert!(reads_under(&reads, &[PathBuf::from(".")]).is_empty());
     }
 }
