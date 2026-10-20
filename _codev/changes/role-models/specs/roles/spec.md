@@ -11,9 +11,11 @@ suite measured unchanged on that model, and none for every other role.
 A role's mapping under `roles:` in `_codev/config.yaml` MAY set `model:`
 to one of `opus`, `sonnet`, `haiku`, or `inherit` for none; it replaces
 the role's default. Any other value SHALL be reported with the code
-`invalid_role_model`, naming the role, the file and the accepted values,
-like the other invalid role settings. A change's `change.yaml` sets no
-model.
+`invalid_role_model`, naming the role, the file and the accepted values:
+`codev validate` reports it as an error finding, and `codev status`,
+`codev instructions` and `codev roles` fail with exit code 1 and that
+code, as for the other invalid role settings. A change's `change.yaml`
+sets no model.
 
 With `--json`, `codev roles` SHALL give each role `model` (`opus`,
 `sonnet`, `haiku` or `null`) and `modelOrigin` (`default` or
@@ -32,7 +34,7 @@ runs in the session's model.
 
 - **GIVEN** a configuration with `roles: { privacy: { model: sonnet },
   skeptic: { model: inherit } }`
-- **WHEN** the user runs `codev roles --at plan.challenge --json`
+- **WHEN** the user runs `codev roles --json`
 - **THEN** `privacy` has `model: "sonnet"` and `skeptic` has
   `model: null`, both with `modelOrigin: "project"`
 
@@ -42,6 +44,8 @@ runs in the session's model.
 - **WHEN** the user runs `codev validate --json`
 - **THEN** the `config` item holds an error `invalid_role_model` naming
   `skeptic` and the accepted values
+- **AND** `codev roles --json` fails with exit code 1 and
+  `status[0].code` `invalid_role_model`
 
 ## MODIFIED Requirements
 

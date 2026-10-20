@@ -40,7 +40,7 @@ chosen per role, not per session, and a team must be able to change it.
 - `codev-core::roles` and `assets/roles/*.md`: the model of each role,
   its default, its project setting and its validation.
 - `codev-cli`: `model` and `modelOrigin` in the roles document of
-  `contract::v1` (additions), and the human output of `codev roles`.
+  `contract::v1` (additions).
 - `assets/workflows/fragments/review-isolated.md`: the sub-agent's model.
 - Documentation in `docs/en` and `docs/fr`: the roles chapter, the
   configuration reference, the JSON reference.
@@ -49,7 +49,7 @@ chosen per role, not per session, and a team must be able to change it.
 
 - [ ] security — no new input reaches a command; the model name is chosen from four fixed values
 - [ ] personal-data — no personal data is read or written
-- [ ] user-interface — no interface beyond the CLI's text output, which gains one column
+- [ ] user-interface — no interface beyond the CLI's JSON output, which gains two fields
 - [x] performance
 - [ ] operations — no log, metric, timeout or deployment changes
 - [x] migration
@@ -57,4 +57,4 @@ chosen per role, not per session, and a team must be able to change it.
 ## Release note
 
 - Changed: Reviewers that the evaluation suite measured unchanged on Sonnet — the tracer, the skeptic, the newcomer, and the security, performance and migration experts — now run on Sonnet in the isolated review mode, for about half the cost; every other role keeps the session's model.
-- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on.
+- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on; a project that sets it should first raise `codev_version` to this release, since an older codev refuses the key.
