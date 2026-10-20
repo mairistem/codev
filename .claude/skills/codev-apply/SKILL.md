@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "ffeb5e6440188a2db9c66cb78d72708690e03027e5568d58bc30286cbaff5188"
+  checksum: "a78de0e290bf5320579e3c850c6c4e6975a60bf1b7c1a4f3b161cd30a3d18d99"
 ---
 
 Implement the tasks of a codev change — work through each `- [ ]` box in
@@ -221,8 +221,10 @@ ii. **Summaries come from a sub-agent too.** When
 
 iii. **Run them in parallel.** Start every sub-agent of the step at
      once, with the `Agent` tool, choosing a sub-agent type without
-     file-editing tools when the platform offers one. If the tool is
-     unavailable, review every role inline and give each role the line
+     file-editing tools when the platform offers one. Pass each role's
+     sub-agent its role's `model` from `codev roles`, or no model when it
+     is `null`. If the tool is unavailable, review every role inline and
+     give each role the line
      `Fallback: the sub-agent tool is unavailable.`.
 
 iv. **Retry once, then fall back.** A sub-agent fails when the platform

@@ -7,7 +7,7 @@
 
 ## 2. The skills
 
-- [ ] 2.1 In `assets/workflows/fragments/review-isolated.md`, start each role's sub-agent on its role's `model`, or without one when it is `null`; run `codev update`; verified by the unit test `a_reviewer_runs_on_its_role_s_model` in `codev-agents` (scenario "A reviewer runs on its role's model") and the existing tests kept: `propose_and_apply_describe_the_isolated_review` (scenarios "The skills describe the isolated review", "Two roles report the same defect", "A sub-agent fails twice", "Material over the limit" and "A change reviewed inline in an isolated project": it checks the merge, the retry and fallback, the summaries and the review-mode reading) and `the_brief_never_carries_the_conversation`
+- [x] 2.1 In `assets/workflows/fragments/review-isolated.md`, start each role's sub-agent on its role's `model`, or without one when it is `null`; run `codev update`; verified by the unit test `a_reviewer_runs_on_its_role_s_model` in `codev-agents` (scenario "A reviewer runs on its role's model") and the existing tests kept: `propose_and_apply_describe_the_isolated_review` (scenarios "The skills describe the isolated review", "Two roles report the same defect", "A sub-agent fails twice", "Material over the limit" and "A change reviewed inline in an isolated project": it checks the merge, the retry and fallback, the summaries and the review-mode reading) and `the_brief_never_carries_the_conversation`
 
 ## 3. Documentation
 
