@@ -342,6 +342,37 @@ de son côté :
   relecteur et ce qui vous revient sous **À décider** fonctionnent
   exactement comme plus haut.
 
+### Les modèles des relecteurs
+
+En mode isolé, le sous-agent de chaque relecteur tourne sur le modèle de
+son rôle — `model` dans `codev roles --json`, fixé par le rôle
+(`modelOrigin: "default"`) ou par votre projet (`"project"`) :
+
+| Rôles | Modèle |
+|---|---|
+| `tracer`, `skeptic`, `newcomer`, `security`, `performance`, `migration` | `sonnet` |
+| tous les autres rôles | aucun : le modèle de la session |
+
+Ces valeurs par défaut suivent une mesure sur la
+[suite d'évaluation](#mesurer-les-rôles), faite avec toute la session de
+revue sur Sonnet — des exécutions en une seule session, 40 cas joués trois
+fois chacun, comparés à la référence sur Opus. Les six rôles ci-dessus ont
+trouvé chaque défaut semé, avec des preuves valides et pas plus de faux
+positifs que la référence n'en admet, pour environ la moitié du coût.
+`accessibility`, `ops` et `privacy` ont relevé un faux positif de plus que
+la référence ne l'admet : ils gardent donc le modèle de la session, comme
+la planification et l'implémentation, qui perdent du rappel sur Sonnet.
+Sur le chemin isolé, la session garde son modèle et seul chaque relecteur
+change, si bien que l'économie y est plus faible que le chiffre mesuré en
+une seule session.
+
+Le modèle ne s'applique qu'en mode isolé, où un rôle tourne comme son
+propre sous-agent : en mode en ligne, chaque rôle relit dans la session,
+sur le modèle de la session. Pour garder un rôle sur le modèle de la
+session, indiquez `model: inherit` ; pour en choisir un autre,
+`model: opus`, `sonnet` ou `haiku` — voir
+[Configurer les rôles](#configurer-les-rôles).
+
 La revue isolée coûte plus cher : chaque relecteur lit la matière, que la
 revue en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
 par défaut ; voyez la [configuration](reference/configuration.md#review)
@@ -359,6 +390,7 @@ roles:
     when: always             # facultatif, always par défaut
     done_when:               # ajoutés après les critères propres du rôle
       - Le plan de retour arrière est indiqué
+    model: inherit           # opus | sonnet | haiku | inherit
 ```
 
 - **Activation.** `always`, `never` ou `on_domain`. Une étape dont tous les
@@ -371,6 +403,13 @@ roles:
   les critères propres du rôle, sans jamais les remplacer. Elles portent
   l'origine `project`, comme votre
   [`context` et vos `rules`](reference/configuration.md#context).
+- **Modèle.** `opus`, `sonnet` ou `haiku` remplace le modèle par défaut du
+  rôle, et `inherit` garde celui de la session — voir
+  [Les modèles des relecteurs](#les-modèles-des-relecteurs). Il s'applique
+  aux rôles de `plan.trace`, `plan.challenge` et `code.review` en mode
+  isolé. Relevez d'abord
+  [`codev_version`](reference/configuration.md#codev_version) : un codev
+  plus ancien refuse la clé.
 - **Par change.** Le `change.yaml` d'un change peut changer l'activation
   pour ce change seulement :
 
@@ -390,9 +429,12 @@ roles:
 `codev validate` signale un identifiant de rôle inconnu (`unknown_role`),
 une activation autre que `always`, `never` ou `on_domain`, ou `on_domain`
 sur un rôle sans domaine (`invalid_role_activation`), et `never` sur un
-rôle qui ne peut pas être désactivé (`role_not_disableable`) ;
+rôle qui ne peut pas être désactivé (`role_not_disableable`), et un modèle
+autre que `opus`, `sonnet`, `haiku` ou `inherit` (`invalid_role_model`) ;
 `codev status`, `codev instructions` et `codev roles` échouent avec le même
-code. `codev doctor` liste les rôles actifs, les rôles actifs selon le
+code. Un modèle sur un rôle qui ne sert aucune étape de relecture ne
+s'applique jamais : `codev validate` le signale par l'avertissement
+`role_model_unused`. `codev doctor` liste les rôles actifs, les rôles actifs selon le
 domaine avec leurs domaines, et les rôles désactivés.
 
 ## Implémenter un change (`/codev-apply`)

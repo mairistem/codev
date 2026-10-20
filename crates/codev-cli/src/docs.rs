@@ -518,6 +518,73 @@ mod tests {
         }
     }
 
+    /// What a language's chapters fail to say about the role models.
+    fn missing_role_model_docs(lang: Lang) -> Vec<String> {
+        let chapter = |name: &str| {
+            lang.chapters()
+                .iter()
+                .find(|(path, _)| *path == name)
+                .map(|(_, source)| *source)
+                .unwrap_or_default()
+        };
+        let roles_section = chapter("reference/configuration.md")
+            .split("\n## roles\n")
+            .nth(1)
+            .and_then(|rest| rest.split("\n## ").next())
+            .unwrap_or_default();
+        let checks: [(&str, &str, &[&str]); 3] = [
+            (
+                "roles.md",
+                chapter("roles.md"),
+                &[
+                    "| `tracer`, `skeptic`, `newcomer`, `security`, `performance`, `migration` | `sonnet` |",
+                    "`accessibility`, `ops`",
+                    "Sonnet",
+                    "Opus",
+                    "40",
+                    "`isolated`",
+                    "`model: inherit`",
+                    "`invalid_role_model`",
+                    "`role_model_unused`",
+                ],
+            ),
+            (
+                "reference/configuration.md#roles",
+                roles_section,
+                &[
+                    "| `model` |",
+                    "`inherit`",
+                    "`invalid_role_model`",
+                    "`role_model_unused`",
+                    "[`codev_version`](#codev_version)",
+                    "[`inherits`](#inherits)",
+                ],
+            ),
+            (
+                "reference/json-output.md",
+                chapter("reference/json-output.md"),
+                &["`roles[].model`, `roles[].modelOrigin`", "\"modelOrigin\""],
+            ),
+        ];
+        checks
+            .iter()
+            .flat_map(|(name, text, needles)| {
+                needles
+                    .iter()
+                    .filter(|needle| !text.contains(*needle))
+                    .map(move |needle| format!("{name}: {needle}"))
+            })
+            .collect()
+    }
+
+    #[test]
+    fn both_languages_document_the_role_models() {
+        for lang in [Lang::En, Lang::Fr] {
+            let missing = missing_role_model_docs(lang);
+            assert!(missing.is_empty(), "{lang:?}: missing {missing:?}");
+        }
+    }
+
     #[test]
     fn both_languages_document_search_and_show() {
         for lang in [Lang::En, Lang::Fr] {

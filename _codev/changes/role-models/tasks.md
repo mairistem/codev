@@ -11,7 +11,7 @@
 
 ## 3. Documentation
 
-- [ ] 3.1 In `docs/en` and `docs/fr` (French in vouvoiement): the roles chapter (each role's model, the measure behind the defaults, the isolated mode), the configuration reference (`model:`, and to raise `codev_version` first), the JSON reference (`model`, `modelOrigin`); verified by the unit test `both_languages_document_the_role_models` in `crates/codev-cli/src/docs.rs`
+- [x] 3.1 In `docs/en` and `docs/fr` (French in vouvoiement): the roles chapter (each role's model, the measure behind the defaults, the isolated mode), the configuration reference (`model:`, and to raise `codev_version` first), the JSON reference (`model`, `modelOrigin`); verified by the unit test `both_languages_document_the_role_models` in `crates/codev-cli/src/docs.rs`
 
 ## 4. Measure (decision 0008)
 

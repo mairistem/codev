@@ -453,6 +453,8 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
     "when": "always",
     "whenOrigin": "default",
     "activatedBy": "always",
+    "model": null,
+    "modelOrigin": "default",
     "disableable": false,
     "knowledge": null,
     "doneWhen": [
@@ -672,6 +674,8 @@ champs que le fichier omet ou rend invalides valent `null`.
       "when": "always",
       "whenOrigin": "project",
       "activatedBy": "project",
+      "model": "sonnet",
+      "modelOrigin": "default",
       "disableable": true,
       "knowledge": "## Signals\n\nPlanning smells — each one is a question to raise, not a verdict.\n…",
       "doneWhen": [
@@ -692,6 +696,8 @@ champs que le fichier omet ou rend invalides valent `null`.
       "when": "on_domain",
       "whenOrigin": "default",
       "activatedBy": "domain:user-interface",
+      "model": null,
+      "modelOrigin": "default",
       "disableable": true,
       "knowledge": "## Scope\n\nLook at the user interface the change adds or modifies…",
       "doneWhen": [
@@ -733,6 +739,7 @@ champs que le fichier omet ou rend invalides valent `null`.
 | `roles[].domains` | Les domaines qui activent un expert, comme `["personal-data"]` ; vide pour les autres rôles |
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` ou `on_domain`, fixé par `default`, `project` ou `change` |
 | `roles[].activatedBy` | Pourquoi le rôle est actif : `always`, `project`, `change`, ou `domain:<nom>` pour un expert dont la proposal coche le domaine ; `null` lorsqu'il est inactif |
+| `roles[].model`, `roles[].modelOrigin` | Le modèle sur lequel tourne le sous-agent du rôle dans le mode de revue `isolated` — `opus`, `sonnet` ou `haiku`, ou `null` pour le modèle de la session —, fixé par `default` (celui du rôle) ou `project` (`model:` sous [`roles`](configuration.md#roles), `inherit` donnant `null`). Le mode en ligne l'ignore |
 | `roles[].disableable` | `false` pour les rôles d'artefact, l'`analyst` et le `developer` |
 | `roles[].knowledge` | Les connaissances du rôle, en markdown dans les sections Scope, Signals, By stack, References et Reporting, pour un rôle actif qui en a, sa partie `By stack` filtrée comme l'indique `stacks.filter` ; `null` sinon |
 | `roles[].doneWhen` | Les critères du rôle, puis ceux du projet, chacun avec son `origin` : `built-in`, `schema:<name>` ou `project` |
