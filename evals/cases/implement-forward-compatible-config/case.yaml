@@ -1,0 +1,22 @@
+# The implementation of `2026-10-12-forward-compatible-config`, replayed on
+# the commit before the pull request that brought it to main: a
+# configuration that tolerates the keys of a newer codev, and doctor fixes
+# that name the version to install.
+step: code.implement
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+merged: 2d5edc4b2541b0a4af1ccbb5d3cf1c9b7bae66f9
+change: forward-compatible-config
+summary: "Replays the change 2026-10-12-forward-compatible-config (feat(config): forward-compatible configuration and doctor downgrade fix, #20). Tasks 4.1 and 4.2 are reworded: the sandbox has no `mdbook`, so \"both books building\" becomes the docs tests of `cargo test -p codev-cli`."
+expected:
+  docs: true
+  acceptance:
+    - unknown-top-level-key-warns-with-the-requirement
+    - misspelled-top-level-key-warns
+    - unknown-mcp-key-keeps-the-update
+    - unknown-changelog-key-fails-quoting-the-requirement
+    - strict-validation-reports-a-config-item
+    - non-strict-validation-warns-and-succeeds
+    - doctor-reports-the-unknown-key
+    - clean-configuration-has-no-config-item
+    - doctor-fixes-a-codev-above-the-requirement

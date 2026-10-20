@@ -101,7 +101,8 @@ toujours ce que ses exécutions consomment. Lancez l'une et l'autre sur
 les cas des étapes que la pull request touche, avec `--step`
 (répétable) : `review` pour les étapes de revue, `plan.write` pour la
 planification de `/codev-propose`, `plan.update` pour les révisions de
-`/codev-update`. La décision acceptée 0008 en fait la
+`/codev-update`, `code.implement` pour l'implémentation de
+`/codev-apply`. La décision acceptée 0008 en fait la
 règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
@@ -111,7 +112,9 @@ connecté (ou `ANTHROPIC_API_KEY` défini). Elle appelle un modèle : une
 exécution des 40 cas de revue coûte une quinzaine de dollars américains,
 chaque cas étant plafonné à 3 par défaut ; un cas de planification coûte
 environ 1,65 dollar et prend plusieurs minutes, plafonné par défaut à
-6 dollars et 1 800 secondes, tout comme un cas de révision.
+6 dollars et 1 800 secondes, tout comme un cas de révision ; un cas
+d'implémentation écrit, construit et relit un change entier, plafonné par
+défaut à 30 dollars et 5 400 secondes.
 
 ```bash
 cargo build --bin codev
@@ -119,6 +122,8 @@ cargo run -p codev-evals -- list                       # les cas
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
+cargo run -p codev-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
+cargo run -p codev-evals -- calibrate implement-decision-accept-command   # éprouver un script, sans modèle
 cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -276,6 +281,53 @@ des exécutions qui réussissent passe sous le minimum de la ligne de base,
 ou quand les exécutions qui modifient un fichier hors de l'étape dépassent
 son maximum.
 
+### Écrire un cas d'implémentation
+
+Un cas d'implémentation rejoue l'implémentation d'un change archivé avec
+`/codev-apply`. `case.yaml` donne `step: code.implement`, `kind: seeded`,
+`ref` (le parent du commit qui a apporté le change sur `main`), `merged`
+(ce commit), `change`, `summary` et `expected` : `refuse`, pour un plan que
+la skill doit refuser d'implémenter ; `docs`, quand l'exécution doit
+toucher `docs/en/` et `docs/fr/` ; et `acceptance`, les noms des assertions
+d'acceptation. Son `change/` contient les fichiers de planification du
+change archivé, toutes les tâches décochées et sans `review.md` ; une
+tâche dont la vérification demande un outil absent du bac à sable, comme
+`mdbook`, est reformulée en une vérification que le bac à sable peut
+lancer, et `summary` le dit. Un cas de refus n'a ni `tasks.md` ni script.
+
+À côté de `case.yaml`, `acceptance.sh` est la vérification cachée : écrit
+d'après les scénarios des specs delta du change, il est lancé par `bash`
+dans un dossier vide, `CODEV` nommant le binaire construit, en 300 secondes
+au plus, et affiche une ligne par assertion, `ok <nom>` ou `not ok <nom>` ;
+une assertion pour laquelle il n'affiche pas `ok` échoue. Avant d'utiliser
+un cas, `cargo run -p codev-evals -- calibrate <cas>` construit `merged` et
+`ref` et doit sortir avec 0 : toutes les assertions `ok` sur `merged`, son
+format, son lint et ses tests passant avec la chaîne d'outils actuelle, et
+au moins une assertion en échec sur `ref`.
+
+Le runner pose `change/` sur l'arbre de `ref`, installe les skills,
+télécharge et construit les dépendances dans un Cargo home à l'intérieur du
+projet, enregistre `codev validate <change> --json`, puis lance Claude Code
+hors ligne dans son bac à sable, avec les outils qu'accorde la skill
+`codev-apply` installée. Après l'exécution, il formate, analyse, teste et
+construit lui-même le projet, puis lance le script. Ces commandes exécutent
+hors du bac à sable du code écrit par l'agent : chacune démarre avec un
+environnement vidé — le chemin de recherche, le dossier personnel, les
+variables propres à la chaîne d'outils Rust, le dossier temporaire et la
+locale, jamais la clé d'API ni un jeton — et un délai de 1 200 secondes.
+Ne lancez cette étape que sur vos propres cas, sur une machine où c'est
+acceptable. Une exécution réussit quand toutes les tâches sont cochées, que
+les quatre commandes passent, que toutes les assertions sont `ok`, que le
+compte rendu de revue contient `code.review`, que `codev validate`
+n'ajoute aucune erreur, que rien n'a changé sous `_codev/` hors du change,
+que le change n'est pas archivé, que la documentation est touchée quand
+c'est attendu, et que l'agent n'a rien lu du dépôt d'où viennent les cas —
+ses lectures et recherches sont relevées dans ses appels d'outils. La
+section `code.implement` du rapport met les cas de refus à part ;
+`compare` échoue quand la part des exécutions qui réussissent, celle des
+assertions d'acceptation ou celle des refus qui réussissent passe sous le
+minimum de la ligne de base.
+
 Changer un terme du vocabulaire change les scores : renotez la ligne de
 base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
 constats il reclasse.
@@ -292,7 +344,8 @@ vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
 (environ 270 dollars et plusieurs heures, cas de planification compris) —,
 ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
 erreur. Les cas d'une nouvelle étape — les cas de révision à l'arrivée de
-`plan.update` — peuvent être enregistrés seuls, dans la ligne de base
+`plan.update`, les cas d'implémentation avec `code.implement` — peuvent
+être enregistrés seuls, dans la ligne de base
 existante, quand les autres cas et la notation n'ont pas changé : avec le
 Claude Code épinglé et le codev que nomme la ligne de base,
 `cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`

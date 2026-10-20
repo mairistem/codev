@@ -88,7 +88,8 @@ pull request that changes what a skill does — a file of
 what its runs consume. Run both on the cases of the steps the pull
 request touches, with `--step` (repeatable): `review` for the review
 steps, `plan.write` for the planning of `/codev-propose`, `plan.update`
-for the revisions of `/codev-update`. Accepted
+for the revisions of `/codev-update`, `code.implement` for the
+implementation of `/codev-apply`. Accepted
 decision 0008 makes this the rule for every change to the workflow.
 Record the candidate with `--repeat 3` at least, and with the baseline's `--jobs`
 (4), so that both runs share the prompt cache alike.
@@ -98,7 +99,8 @@ signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a run of the
 40 review cases costs about fifteen US dollars, each case capped at 3 by
 default; a planning case costs about 1.65 dollars and takes several
 minutes, capped at 6 dollars and 1,800 seconds by default, as is an update
-case.
+case; an implementation case writes, builds and reviews a whole change,
+capped at 30 dollars and 5,400 seconds by default.
 
 ```bash
 cargo build --bin codev
@@ -106,6 +108,8 @@ cargo run -p codev-evals -- list                       # the cases
 cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
+cargo run -p codev-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
+cargo run -p codev-evals -- calibrate implement-decision-accept-command   # prove a script, no model
 cargo run -p codev-evals -- score target/evals/mine    # score again, no model
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
@@ -247,6 +251,51 @@ runs modifying a file outside the change's folder, and each run's checks;
 minimum, or the runs modifying a file outside the step rise above its
 maximum.
 
+### Writing an implementation case
+
+An implementation case replays the implementation of an archived change
+with `/codev-apply`. `case.yaml` gives `step: code.implement`,
+`kind: seeded`, `ref` (the parent of the commit that brought the change to
+`main`), `merged` (that commit), `change`, `summary`, and `expected`:
+`refuse`, for a plan the skill must refuse to implement; `docs`, when the
+run must touch both `docs/en/` and `docs/fr/`; and `acceptance`, the names
+of the acceptance assertions. Its `change/` holds the archived change's
+planning files with every task unchecked and without `review.md`; a task
+whose verification needs a tool the sandbox does not hold, such as
+`mdbook`, is reworded into one the sandbox can run, and `summary` says so.
+A refusing case holds no `tasks.md` and no script.
+
+Next to `case.yaml`, `acceptance.sh` is the hidden check: written from the
+scenarios of the change's delta specs, it is run by `bash` in an empty
+directory with `CODEV` naming the built binary, under 300 seconds, and
+prints one line per assertion, `ok <name>` or `not ok <name>`; an
+assertion it does not print `ok` for fails. Before a case is used,
+`cargo run -p codev-evals -- calibrate <case>` builds `merged` and `ref`
+and must exit with 0: every assertion `ok` on `merged`, its format, lints
+and tests passing with today's toolchain, and at least one assertion
+failing on `ref`.
+
+The runner lays `change/` on the tree of `ref`, installs the skills,
+fetches and builds the dependencies into a Cargo home inside the fixture,
+records `codev validate <change> --json`, then runs Claude Code offline in
+its sandbox, granted the tools the installed `codev-apply` skill grants.
+After the run it formats, lints, tests and builds the fixture itself, then
+runs the script. These commands run code the agent wrote outside the
+sandbox: each starts with a cleared environment — the search path, the
+home directory, the Rust toolchain's own variables, the temporary
+directory and the locale, never the API key or a token — and a timeout of
+1,200 seconds. Run this step only on your own cases, on a machine where
+that is acceptable. A run passes when every task is checked, the four
+commands pass, every assertion is `ok`, the review record holds
+`code.review`, `codev validate` adds no error, nothing changed under
+`_codev/` outside the change, the change is not archived, the documentation
+is touched when expected, and the agent read nothing of the repository the
+cases come from — its reads and searches are recorded from its tool calls.
+The report's `code.implement` section keeps the refusing cases apart;
+`compare` fails when the share of runs passing, the share of acceptance
+assertions passing or the share of refusals passing falls under the
+baseline's minimum.
+
 Changing a term of the vocabulary changes the scores: score the baseline
 again (`cargo run -p codev-evals -- score evals/baseline`) and say which
 findings it re-classifies.
@@ -260,7 +309,8 @@ with the Claude Code version `.github/workflows/evals.yml` pins
 `cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
 (about 270 dollars and several hours, planning cases included) — which
 the tests check: five runs of every case, none in error. The cases of a
-new step — the update cases when `plan.update` came — may be recorded
+new step — the update cases when `plan.update` came, the implementation
+cases with `code.implement` — may be recorded
 alone, into the existing baseline, when the other cases and the scoring are
 unchanged: with the pinned Claude Code and the codev the baseline names,
 `cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`

@@ -77,6 +77,7 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
             decisions: Vec::new(),
         }),
         update: None,
+        implement: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),
@@ -152,6 +153,7 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
                 ("specs/a/spec.md".to_string(), "# Delta\n".to_string()),
             ]),
         }),
+        implement: None,
     };
     let tools = Tools {
         claude: PathBuf::from("claude"),

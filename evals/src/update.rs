@@ -40,7 +40,7 @@ impl UpdateScore {
 
 /// Text compared as a file is: line endings aside, so a checkout that
 /// converts them does not read as an edit.
-fn same(a: &str, b: &str) -> bool {
+pub(crate) fn same(a: &str, b: &str) -> bool {
     a.replace('\r', "") == b.replace('\r', "")
 }
 
@@ -72,7 +72,7 @@ fn errors(report: Option<&serde_json::Value>) -> BTreeMap<(String, String), usiz
 }
 
 /// The errors `after` reports beyond those `before` already had.
-fn added_errors(
+pub(crate) fn added_errors(
     before: Option<&serde_json::Value>,
     after: Option<&serde_json::Value>,
 ) -> Vec<String> {
@@ -329,6 +329,7 @@ mod tests {
             validate: BTreeMap::from([("forward-compatible-config".to_string(), validate(&[]))]),
             validate_before: Some(validate(&[])),
             messages: messages.iter().map(|m| m.to_string()).collect(),
+            implement: None,
         }
     }
 

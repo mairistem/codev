@@ -113,8 +113,12 @@ temporary directory and the locale — so that code the agent wrote never
 sees the API key or any other secret of the operator's environment; and
 under a timeout of 1,200 seconds each, the script's own aside, stopping
 every process it started. A check that times out fails, its output
-saying so; a preparation that times out records the run as an error. Claude Code SHALL run with that Cargo home
-and Cargo set offline, in the sandbox every case runs in, with a prompt
+saying so; a preparation that times out records the run as an error.
+Claude Code SHALL run with that Cargo home and Cargo set offline, in the
+sandbox every case runs in, granted the tools the installed
+`codev-apply` skill grants in its `allowed-tools` — as a user who
+invokes the skill, since the agent reads the skill file instead —, with
+a prompt
 that names the `codev-apply` skill and the change, and the evaluation
 mode: ask no question — make the most reasonable assumption —, carry the
 skill through its review, and do not archive or sync. Unless
@@ -146,6 +150,14 @@ as modified outside the step.
 - **THEN** it names `codev-apply` and the change, and says to ask no
   question, to carry the skill through its review, and not to archive or
   sync
+
+#### Scenario: The tools of an implementation run
+
+- **GIVEN** a fixture whose `codev-apply` skill grants `Bash(codev:*),
+  Read, Write, Edit, Glob, Grep, Bash, Agent`
+- **WHEN** the runner builds the Claude Code command of the run
+- **THEN** it grants those tools, so that `cargo test` runs in the
+  sandbox without a prompt
 
 #### Scenario: The budget of an implementation case
 

@@ -153,7 +153,12 @@ results. Rejected for the reason above.
 ### Decision: The run carries the whole skill, its review included, in the fixture's own review mode
 
 The prompt asks for the whole of `/codev-apply`: the tasks, then the
-`code.review` step. It must ask no question and must not archive or
+`code.review` step. The run is granted the tools the installed skill's
+`allowed-tools` grants a user who invokes it, the shell and the
+sub-agent tool included: the agent reads the skill file instead of
+invoking it, and the review cases' grant, `codev` alone, would leave
+every `cargo` command waiting for an approval no one gives, as the
+first smoke run showed. It must ask no question and must not archive or
 sync. The review is part of what a developer pays for and of what may
 change with the model. Its mode is the one the fixture's
 `_codev/config.yaml` holds at `ref`, so a case keeps the review of its

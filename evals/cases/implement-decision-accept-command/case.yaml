@@ -1,0 +1,23 @@
+# The implementation of `2026-09-30-decision-accept-command`, replayed on
+# the commit before the pull request that brought it to main: a new
+# command, `codev decision accept`, and a new default for `decision new`.
+step: code.implement
+kind: seeded
+ref: 99e32fb60065e774123605ece7a9e7f4d783e48f
+merged: 9dc1f4529982fcc3cf948bbf07613847908134a6
+change: decision-accept-command
+summary: "Replays the change 2026-09-30-decision-accept-command (feat(decisions): `codev decision accept`; `decision new` creates a proposed decision). Task 2.3 is reworded: in the fixture, `codev` on the path is the codev under test, so the help is read from the codev the change builds (`cargo run`)."
+expected:
+  docs: true
+  acceptance:
+    - new-is-proposed
+    - new-proposed-writes-no-seal
+    - new-proposed-json-has-no-hash
+    - new-accepted-is-sealed
+    - accept-moves-the-status
+    - accept-keeps-the-body
+    - accept-seals-the-body
+    - accept-json-gives-the-decision
+    - accept-then-validate-is-clean
+    - accept-twice-is-refused
+    - accept-of-an-unknown-id-is-refused

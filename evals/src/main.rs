@@ -44,6 +44,19 @@ enum Commands {
     /// Compare a candidate run with a baseline: quality within the
     /// baseline's range, cost under its floor
     Compare(CompareArgs),
+    /// Prove an implementation case's acceptance script on the real change:
+    /// every assertion ok on the merged commit, one failing before it
+    Calibrate(CalibrateArgs),
+}
+
+#[derive(Args)]
+struct CalibrateArgs {
+    /// The implementation case
+    case: String,
+    /// Where both trees are built (default: the system's temporary
+    /// directory)
+    #[arg(long)]
+    work: Option<PathBuf>,
 }
 
 #[derive(Args)]
@@ -93,7 +106,7 @@ struct RunArgs {
     roles: Vec<String>,
     /// Run only the cases of this step (repeatable): `review` for the three
     /// review steps, or `plan.challenge`, `code.review`, `plan.trace`,
-    /// `plan.write`, `plan.update`
+    /// `plan.write`, `plan.update`, `code.implement`
     #[arg(long = "step")]
     steps: Vec<String>,
     /// Output directory (default: target/evals/run-<timestamp>); a directory
@@ -207,7 +220,79 @@ fn main() -> ExitCode {
         }
         Commands::Run(args) => run(&repo, &cases, args),
         Commands::Compare(args) => compare_runs(&repo, &cases, &args),
+        Commands::Calibrate(args) => calibrate(&repo, &cases, &args),
         Commands::Docs(_) => unreachable!("handled before the cases are loaded"),
+    }
+}
+
+/// `codev-evals calibrate`: 0 when the script is calibrated, 1 naming each
+/// cause otherwise, 2 when the case is not one or a tree cannot be built.
+fn calibrate(repo: &Path, cases: &[case::Case], args: &CalibrateArgs) -> ExitCode {
+    use codev_evals::implement_run;
+    let Some(implement) = cases
+        .iter()
+        .find(|c| c.id == args.case)
+        .and_then(|c| c.implement.as_ref())
+    else {
+        return usage(format!(
+            "`{}` is not an implementation case of the suite",
+            args.case
+        ));
+    };
+    let Some(script) = &implement.script else {
+        return usage(format!(
+            "`{}` refuses: it has no acceptance script",
+            args.case
+        ));
+    };
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
+    let work = args.work.clone().unwrap_or_else(|| {
+        runner::default_work_dir(&std::env::temp_dir(), secs, std::process::id())
+    });
+    let work = work.join(&args.case);
+    let log = work.join("log");
+    let found = match implement_run::calibrate(
+        repo,
+        &implement.merged,
+        &implement.git_ref,
+        script,
+        &work,
+        &log,
+    ) {
+        Ok(found) => found,
+        Err(e) => return usage(format!("case `{}`: {e}", args.case)),
+    };
+    let show = |printed: &[(String, bool)]| {
+        implement_run::acceptance_results(printed, &implement.acceptance)
+    };
+    let (merged, before) = (show(&found.merged), show(&found.before));
+    println!("| Assertion | Merged | Before |\n|---|---|---|");
+    for name in &implement.acceptance {
+        let mark = |ok: bool| if ok { "ok" } else { "not ok" };
+        println!(
+            "| {name} | {} | {} |",
+            mark(merged[name]),
+            mark(before[name])
+        );
+    }
+    for check in &found.checks {
+        println!(
+            "- {} on the merged commit: {}",
+            check.name,
+            if check.passed { "passes" } else { "fails" }
+        );
+    }
+    let causes = implement_run::calibration_causes(&implement.acceptance, &found);
+    if causes.is_empty() {
+        println!("\n`{}` is calibrated.", args.case);
+        ExitCode::SUCCESS
+    } else {
+        for cause in &causes {
+            eprintln!("codev-evals: {cause}");
+        }
+        ExitCode::from(1)
     }
 }
 

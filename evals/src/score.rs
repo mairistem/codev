@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::case::{Case, Expected, Kind, Location, Step};
+use crate::implement::ImplementScore;
 use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
 use crate::plan::{AtRef, PlanOutcome, PlanScore, score_plan};
 use crate::update::{UpdateScore, UpdateStepScore, score_update};
@@ -130,6 +131,9 @@ pub struct CaseScore {
     /// An update run's checks; `None` for any other run.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub update: Option<UpdateScore>,
+    /// An implementation run's checks; `None` for any other run.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub implement: Option<ImplementScore>,
 }
 
 impl CaseScore {
@@ -140,7 +144,9 @@ impl CaseScore {
     /// A run of a reviewing role, which the role measures count: neither a
     /// planning run nor an update run.
     fn is_review(&self) -> bool {
-        !self.is_planning() && self.step != Step::PlanUpdate.as_str()
+        !self.is_planning()
+            && self.step != Step::PlanUpdate.as_str()
+            && self.step != Step::CodeImplement.as_str()
     }
 
     /// The same score, as repetition `n`.
@@ -182,7 +188,26 @@ fn unscored(case: &Case, observed: &Observed) -> CaseScore {
         consumption: observed.consumption.clone(),
         plan: None,
         update: None,
+        implement: None,
     }
+}
+
+/// Scores one run of an implementation case by its checks, as repetition 1.
+pub fn implement_case(case: &Case, observed: &Observed) -> CaseScore {
+    let mut score = unscored(case, observed);
+    let Some(expect) = &case.implement else {
+        return score;
+    };
+    score.outcome = match &observed.error {
+        Some(error) => Outcome::Error(error.clone()),
+        None => Outcome::Scored,
+    };
+    score.implement = Some(crate::implement::score_implement(
+        expect,
+        &case.change_dir(),
+        observed,
+    ));
+    score
 }
 
 /// Scores one run of an update case by its checks, as repetition 1.
@@ -995,6 +1020,9 @@ pub struct SuiteScore {
     /// The step `plan.update`, when the suite has update runs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub update: Option<UpdateStepScore>,
+    /// The step `code.implement`, when the suite has implementation runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub implement: Option<crate::implement::ImplementStepScore>,
 }
 
 /// One repetition of the planning runs, pooled as a role's tally is.
@@ -1160,6 +1188,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
     }
     let planning = planning_score(&numbers, &cases, &case_consumption);
     let update = crate::update::step_score(&numbers, &cases, &case_consumption);
+    let implement = crate::implement::step_score(&numbers, &cases, &case_consumption);
     let sources = rank_sources(&case_consumption);
     let mut sources_by_step = BTreeMap::new();
     for step in case_consumption.iter().map(|c| c.step.as_str()) {
@@ -1191,6 +1220,7 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         sources_by_step,
         planning,
         update,
+        implement,
     }
 }
 
@@ -1502,6 +1532,7 @@ pub(crate) mod tests {
             planned: vec![],
             plan: None,
             update: None,
+            implement: None,
         }
     }
 
@@ -1555,6 +1586,7 @@ pub(crate) mod tests {
             validate: BTreeMap::new(),
             validate_before: None,
             messages: Vec::new(),
+            implement: None,
         }
     }
 
@@ -2506,5 +2538,36 @@ pub(crate) mod tests {
         );
         let none = suite(run(), repeated(&[4]), Thresholds::default());
         assert_eq!(none.consumption.cache_read_tokens, None, "absent, not zero");
+    }
+}
+
+/// Scores built by hand, for the tests of the step modules.
+#[cfg(test)]
+pub(crate) mod tests_support {
+    use super::*;
+
+    /// A scored run of case `id` at `step`, repetition `n`, with no
+    /// measure of its own.
+    pub fn bare_score(id: &str, step: &str, n: u32) -> CaseScore {
+        CaseScore {
+            id: id.into(),
+            role: "planner".into(),
+            step: step.into(),
+            kind: "seeded".into(),
+            outcome: Outcome::Scored,
+            expected: vec![],
+            findings: vec![],
+            changed: vec![],
+            strayed: vec![],
+            answered: vec![],
+            record_errors: vec![],
+            cost_usd: Some(1.0),
+            duration_ms: Some(1000),
+            repetition: n,
+            consumption: None,
+            plan: None,
+            update: None,
+            implement: None,
+        }
     }
 }
