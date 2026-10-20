@@ -1,0 +1,38 @@
+# Tasks
+
+## 1. Implementation cases
+
+- [ ] 1.1 In `evals/src/case.rs`, the step `code.implement` (`Step::CodeImplement`, in `replays_history`, not in `is_review`) and its case: `ref`, `merged`, `change`, `change/`, `acceptance.sh` and `expected` (`refuse`, `docs`, `acceptance`), loaded with every refusal the spec lists; verified by the unit tests `an_implementation_case_loads`, `a_plan_already_implemented_is_refused`, `a_refusing_case_with_an_acceptance_script_is_refused`, plus one test per other loading error (missing `change/`, a `review.md` in it, a missing script, a duplicate assertion, an unknown key)
+- [ ] 1.2 In `evals/src/suite.rs`, the history checks for an implementation case: `ref` and `merged` are commits, and the tree at `ref` holds neither the change nor the case; verified by the unit tests `an_implementation_case_whose_merged_commit_is_unknown_fails` and `an_implementation_case_whose_ref_holds_the_change_fails`
+
+## 2. The runner
+
+- [ ] 2.1 In `evals/src/runner.rs`, the prompt of an implementation case and its defaults (30 USD, 5,400 seconds), and `code.implement` in `STEP_SELECTORS`; verified by the unit tests `the_prompt_of_an_implementation_case`, `the_budget_of_an_implementation_case` and `only_the_implementation_cases_run`
+- [ ] 2.2 The runner's own commands on an implementation fixture: a cleared environment that keeps only `PATH`, `HOME`, `TMPDIR`, `LANG` and the `RUSTUP_*`/`CARGO_*` variables, its own process group and a 1,200-second timeout; verified by the unit tests `the_checks_never_see_the_api_key` (with `ANTHROPIC_API_KEY` and another variable set in the runner's environment) and `a_command_that_times_out_fails_its_check`
+- [ ] 2.3 The build preparation: a `.cargo-home/` excluded through `.git/info/exclude`, `cargo fetch --locked` and `cargo build --workspace --all-targets --locked` before Claude Code, which then runs with `CARGO_HOME` and `CARGO_NET_OFFLINE=true`; and, before the run, what `codev validate <change> --json` reports, kept in `Observed` as the update cases keep it; the pure part (the environment and the commands) verified by the unit test `an_implementation_run_builds_offline`
+- [ ] 2.4 What an implementation run is allowed to change and read: `strayed` lets an implementation run change any path but those under `_codev/` outside the change's folder, and a `corrections.md`; and the files the agent read or searched outside the case's directory, taken from its tool calls; verified by the unit tests `a_run_that_syncs_its_change`, `an_implementation_run_may_change_the_code` and `a_read_of_the_cases_repository_is_recorded`
+- [ ] 2.5 After the run: the checks (format, lints, tests, build) with the last 40 lines of each output, the acceptance script (`bash`, an empty directory, `CODEV`, 300 seconds), the change's files, the changed paths, `codev validate`, `codev review` and the agent's messages, recorded in `Observed`; then `target/` and `.cargo-home/` removed, also when the run ends in an error. The reading of the script's output is verified by the unit tests `acceptance_lines_are_read_by_name` and `an_assertion_not_printed_or_timed_out_fails`; the observation and the removal by the smoke run of 2.6 (each check recorded, `target/` gone)
+- [ ] 2.6 Smoke run: `codev-evals run --step code.implement --repeat 1` on one case with the frozen codev binary; verified by a run that ends without error, with no permission denial in its observation, no read outside the case's directory, no task left unchecked for a blocker, and with `cargo test` run by the agent inside the sandbox (seen in its `claude.jsonl`)
+
+## 3. Calibration
+
+- [ ] 3.1 `codev-evals calibrate <case>`: builds `merged` and `ref` in new directories as the runner does, runs the checks on `merged` and the script on both, prints each assertion and check, and exits with 0, 1 or 2 as the spec says; the verdict is pure and verified by the unit tests `a_script_that_cannot_tell_the_change_apart`, `a_calibrated_script` and `a_merged_commit_the_checks_reject`
+
+## 4. Scoring, report and comparison
+
+- [ ] 4.1 A new `evals/src/implement.rs`: an implementation run's checks, as the spec lists them, and the measures (shares of runs, of checks and of assertions passing, with median, minimum and maximum; runs modifying a file outside the step); verified by the unit tests `a_run_that_leaves_a_task_unchecked`, `a_run_whose_tests_fail`, `a_refusal_well_made`, `a_run_that_reads_the_merged_solution`, `a_refusal_is_kept_out_of_the_pass_share`, `a_run_that_adds_a_validation_error` (scored against the record made before the run, which already holds an error) and `a_run_without_documentation_when_expected`
+- [ ] 4.2 The `code.implement` section of `report.md` and `report.json`, absent without implementation case; verified by the unit tests `the_report_of_a_suite_with_implementation_cases` and `a_suite_without_implementation_case_has_no_such_section`
+- [ ] 4.3 `codev-evals compare`: the implementation verdict (pass share and acceptance share against the baseline's minimum, runs modifying outside against its maximum) and its section; verified by the unit tests `an_implementation_regression` and `one_more_failed_implementation_in_most_repetitions_fails`
+
+## 5. Cases and baseline
+
+- [ ] 5.1 The case `implement-decision-accept-command` (ref `9dc1f45^`, merged `9dc1f45`) with its `change/` from the archive and an `acceptance.sh` written from its delta spec's scenarios, and every task verification the sandbox cannot run (such as `mdbook`) reworded into one it can, said in the case's `summary`; verified by `codev-evals calibrate implement-decision-accept-command` exiting with 0. If its merged commit fails the checks of the installed toolchain, replace it with another archived change that adds a command, and say so in the pull request
+- [ ] 5.2 The case `implement-fix-merge-and-skill-refresh` (ref `da6e022^`, merged `da6e022`), same; verified by `codev-evals calibrate implement-fix-merge-and-skill-refresh` exiting with 0
+- [ ] 5.3 The case `implement-forward-compatible-config` (ref `2d5edc4^`, merged `2d5edc4`), same; verified by `codev-evals calibrate implement-forward-compatible-config` exiting with 0, or replaced as in 5.1
+- [ ] 5.4 The refusing case `implement-refuse-missing-tasks`: a change without `tasks.md`; verified by the suite's test `the_suite_covers_the_implementation_of_past_changes` (at least four `code.implement` cases, exactly one refusing)
+- [ ] 5.5 The baseline: `codev-evals run --step code.implement --repeat 5 --out evals/baseline`, with the Claude Code version the evaluation workflow pins, on Opus; verified by the suite's test `every_case_has_a_baseline_observation` passing and by `codev-evals score evals/baseline` giving the `code.implement` section
+
+## 6. Documentation and checks
+
+- [ ] 6.1 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`: a section « Writing an implementation case » (the case's files, the acceptance script's protocol, `calibrate`, the code built outside the sandbox with a cleared environment, and the reads of the repository the runs are checked for), and the step in the list of steps; verified by the suite's test `contributing_chapters_document_the_implementation_cases`, written like `contributing_chapters_document_the_update_cases`. The user documentation under `docs/` is not affected: `evals/` is not shipped
+- [ ] 6.2 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing
