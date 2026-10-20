@@ -395,6 +395,13 @@ pub fn record_sub_agent_tokens(consumption: &mut Consumption) -> Result<(), Stri
     Ok(())
 }
 
+/// The working folder when `--work` is not given: named after the second
+/// and the process, so that two runs started in the same second never
+/// build their fixtures in the same place.
+pub fn default_work_dir(temp: &Path, secs: u64, pid: u32) -> PathBuf {
+    temp.join(format!("codev-evals-{secs}-{pid}"))
+}
+
 /// The arguments of `claude` for one case.
 pub fn claude_args(
     prompt: &str,
@@ -3002,5 +3009,14 @@ mod tests {
         let mut consumption = parse_claude_stream(&stream).consumption.unwrap();
         let err = record_sub_agent_tokens(&mut consumption).unwrap_err();
         assert!(err.contains("20000") && err.contains("30000"), "{err}");
+    }
+
+    #[test]
+    fn two_runs_started_in_the_same_second_get_their_own_folder() {
+        let temp = Path::new("/tmp");
+        let a = default_work_dir(temp, 1_792_148_804, 101);
+        let b = default_work_dir(temp, 1_792_148_804, 202);
+        assert_ne!(a, b);
+        assert_eq!(a, Path::new("/tmp/codev-evals-1792148804-101"));
     }
 }

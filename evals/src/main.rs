@@ -428,9 +428,9 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     let options = RunOptions {
         repo: repo.to_path_buf(),
         out: out.clone(),
-        work: args
-            .work
-            .unwrap_or_else(|| std::env::temp_dir().join(format!("codev-evals-{secs}"))),
+        work: args.work.unwrap_or_else(|| {
+            runner::default_work_dir(&std::env::temp_dir(), secs, std::process::id())
+        }),
         keep: args.keep,
         jobs: args.jobs,
         tools,
