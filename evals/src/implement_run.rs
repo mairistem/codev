@@ -401,6 +401,9 @@ pub fn run_acceptance(
     binary: &Path,
     log: &Path,
 ) -> Result<(Vec<(String, bool)>, CommandCheck), String> {
+    // The script runs from its own empty folder: a relative `--out` would
+    // leave `bash` looking for it there.
+    let log = &fs::canonicalize(log).map_err(|e| format!("{}: {e}", log.display()))?;
     let file = log.join("acceptance.sh");
     fs::write(&file, script).map_err(|e| format!("{}: {e}", file.display()))?;
     let dir = log.join("acceptance-dir");
@@ -812,5 +815,27 @@ mod tests {
             "ls ./src".to_string(),
         ];
         assert!(reads_under(&reads, &[PathBuf::from(".")]).is_empty());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn the_script_runs_from_a_relative_log_folder() {
+        // A relative log folder, as `--out evals/baseline` gives: the
+        // script must still be found from its own empty folder.
+        let root = std::env::temp_dir()
+            .canonicalize()
+            .unwrap()
+            .join(format!("codev-evals-acceptance-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        let cwd = std::env::current_dir().unwrap().canonicalize().unwrap();
+        let up: PathBuf = cwd.components().skip(1).map(|_| "..").collect();
+        let log = up.join(root.strip_prefix("/").unwrap());
+        assert!(log.is_relative() && log.is_dir(), "{}", log.display());
+        let (printed, end) =
+            run_acceptance("echo ok found\n", Path::new("/bin/true"), &log).unwrap();
+        let _ = fs::remove_dir_all(&root);
+        assert!(end.passed, "{}", end.tail);
+        assert_eq!(printed, [("found".to_string(), true)]);
     }
 }
