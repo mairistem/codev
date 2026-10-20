@@ -102,7 +102,7 @@ history:
     by: skeptic
   - status: fixed
     by: qa
-    note: "Scenario \\"Options that cannot be applied\\" and its test; the mode guard in compare applies only when both runs hold review cases."
+    note: "Scenario \"Options that cannot be applied\" and its test; the mode guard in compare applies only when both runs hold review cases."
     ref: "specs/role-evaluation/spec.md"
   - status: fixed
     by: skeptic
