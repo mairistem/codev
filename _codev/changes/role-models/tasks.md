@@ -2,7 +2,7 @@
 
 ## 1. The model of a role
 
-- [ ] 1.1 In `codev-core::roles` and `assets/roles/*.md`, the role's `model` (`opus`, `sonnet`, `haiku` or none), `sonnet` in the frontmatter of `tracer`, `skeptic`, `newcomer`, `security`, `performance` and `migration`; the project's `model:` under `roles:` (`inherit` for none) and its origin; `invalid_role_model` for any other value; verified by unit tests `the_default_models_follow_the_measure` (scenario "The default models"), `a_project_sets_a_role_s_model` ("A project sets a role's model"), `an_unknown_model_is_invalid` ("An unknown model", `codev validate` and `codev roles` failing with `invalid_role_model`), and the existing tests of the configured roles kept (scenarios of "The project configures roles under `roles:`": "A role disabled by the project", "Extra criteria are added after the role's own", "A change overrides the activation", "An unknown key inside a role", "Roles of an inherited source are ignored")
+- [ ] 1.1 In `codev-core::roles` and `assets/roles/*.md`, the role's `model` (`opus`, `sonnet`, `haiku` or none), `sonnet` in the frontmatter of `tracer`, `skeptic`, `newcomer`, `security`, `performance` and `migration`; the project's `model:` under `roles:` (`inherit` for none) and its origin; `invalid_role_model` for any other value, `role_model_unused` for a model on a role serving no reviewing step; an inherited source's `roles:` skipped, not parsed; verified by unit tests `the_default_models_follow_the_measure` (scenario "The default models"), `a_project_sets_a_role_s_model` ("A project sets a role's model"), `an_unknown_model_is_invalid` ("An unknown model", `codev validate` and `codev roles` failing with `invalid_role_model`), `a_model_off_the_review_steps_is_a_warning` ("A model on a role that is never a sub-agent"), the engine test `a_source_s_unknown_role_key_keeps_its_rules` on the in-memory FileSystem ("A source's role setting from a newer codev"), and the existing tests of the configured roles kept (scenarios of "The project configures roles under `roles:`": "A role disabled by the project", "Extra criteria are added after the role's own", "A change overrides the activation", "An unknown key inside a role", "Roles of an inherited source are ignored")
 - [ ] 1.2 In `codev-cli`, `model` and `modelOrigin` in the roles document of `contract::v1` (additions); the human output is unchanged; verified by the contract test `the_roles_document_carries_the_model` (scenarios "The default models" and "A project sets a role's model", JSON side)
 
 ## 2. The skills
@@ -15,7 +15,8 @@
 
 ## 4. Measure (decision 0008)
 
-- [ ] 4.1 Paste in the pull request the per-role comparison on Sonnet of the design, then run `codev-evals run --step review --repeat 3 --jobs 4` with this branch's binary and compare with `codev-evals compare evals/baseline <out> --quality-only`; verified by both pasted in the pull request
+- [ ] 4.0 Prerequisite: the change `isolated-review-evaluation` is merged, so the suite plays the review cases in the `isolated` mode
+- [ ] 4.1 With this branch's binary, run `codev-evals run --step review --repeat 3 --jobs 4` in the `isolated` mode twice the same day: the reference with every reviewing role set to `model: inherit`, the candidate with this change's defaults; compare with `codev-evals compare <reference> <candidate>`: quality within the reference's range, cost under its floor; verified by the comparison and the sources table pasted in the pull request, and the release note's saving taken from it
 
 ## 5. Checks
 

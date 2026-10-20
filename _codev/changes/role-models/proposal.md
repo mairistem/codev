@@ -3,8 +3,10 @@
 ## Why
 
 Every review runs on the session's model, Opus. Measured on the
-evaluation suite, the reviewers on Sonnet cost 49 % less and find every
-seeded defect, with valid evidence. Six roles stay within the baseline's
+evaluation suite with the whole review session on Sonnet, the reviewers
+cost 49 % less and find every seeded defect, with valid evidence; the
+saving on the isolated path, where only each reviewer moves to Sonnet, is
+measured by this change. Six roles stay within the baseline's
 range on every measure. Three — `accessibility`, `ops` and `privacy` —
 raise one false positive more than the baseline allows. Planning on
 Sonnet, by contrast, loses a fifth of its recall. So the model must be
@@ -56,5 +58,5 @@ chosen per role, not per session, and a team must be able to change it.
 
 ## Release note
 
-- Changed: Reviewers that the evaluation suite measured unchanged on Sonnet — the tracer, the skeptic, the newcomer, and the security, performance and migration experts — now run on Sonnet in the isolated review mode, for about half the cost; every other role keeps the session's model.
-- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on; a project that sets it should first raise `codev_version` to this release, since an older codev refuses the key.
+- Changed: Reviewers that the evaluation suite measured unchanged on Sonnet — the tracer, the skeptic, the newcomer, and the security, performance and migration experts — now run on Sonnet in the isolated review mode, for a lower cost measured in the pull request; every other role keeps the session's model. To keep a role on the session's model, set `roles: { <role>: { model: inherit } }`.
+- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on; a project that sets it should first raise `codev_version` to this release, since an older codev refuses the key — and a source shared through `inherits:` should not set it until every project inheriting from it runs this release.

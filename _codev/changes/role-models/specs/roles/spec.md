@@ -15,7 +15,9 @@ the role's default. Any other value SHALL be reported with the code
 `codev validate` reports it as an error finding, and `codev status`,
 `codev instructions` and `codev roles` fail with exit code 1 and that
 code, as for the other invalid role settings. A change's `change.yaml`
-sets no model.
+sets no model. A model set on a role that serves no reviewing step
+(`plan.trace`, `plan.challenge`, `code.review`) never applies: it SHALL
+be reported with the warning `role_model_unused`, naming the role.
 
 With `--json`, `codev roles` SHALL give each role `model` (`opus`,
 `sonnet`, `haiku` or `null`) and `modelOrigin` (`default` or
@@ -47,6 +49,13 @@ runs in the session's model.
 - **AND** `codev roles --json` fails with exit code 1 and
   `status[0].code` `invalid_role_model`
 
+#### Scenario: A model on a role that is never a sub-agent
+
+- **GIVEN** a configuration with `roles: { developer: { model: sonnet } }`
+- **WHEN** the user runs `codev validate --json`
+- **THEN** the `config` item holds a warning `role_model_unused` naming
+  `developer`
+
 ## MODIFIED Requirements
 
 ### Requirement: The project configures roles under `roles:`
@@ -59,7 +68,9 @@ requirement). The `done_when:` entries SHALL be added
 after the role's own criteria, never replacing them, each with the origin
 `project`; blank entries are ignored. Any other key inside a role's mapping
 MUST make the configuration invalid, like an unknown key of `changelog`.
-The `roles:` key of an inherited source's configuration MUST be ignored.
+The `roles:` key of an inherited source's configuration MUST be ignored,
+whatever it holds: a key this codev does not know there, written for a
+newer codev, never keeps the source's context and rules from being read.
 
 A change's `change.yaml` SHALL accept a `roles:` mapping from a role id to
 an activation, which overrides the project's activation of that role for
@@ -96,6 +107,13 @@ this change only.
 - **GIVEN** a configuration where `skeptic` holds the key `done-when`
 - **WHEN** the user runs `codev status`
 - **THEN** the command fails with the code `invalid`, naming the key
+
+#### Scenario: A source's role setting from a newer codev
+
+- **GIVEN** a project inheriting from a source whose configuration holds
+  `roles: { skeptic: { cadence: weekly } }` and a context
+- **WHEN** the user runs `codev instructions proposal --change add-auth --json`
+- **THEN** the source's context is in `context`, and no error is reported
 
 #### Scenario: Roles of an inherited source are ignored
 

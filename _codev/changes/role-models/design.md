@@ -74,14 +74,43 @@ The summarizing sub-agents are unchanged.
 even in the inline mode — it would change what `inline` means, and its
 cost, without a measure.
 
-### Decision: Measured by the per-role results above, and a run of the change
+### Decision: Measured on the isolated path, after the suite covers it
 
-The defaults rest on the per-role measure above. The change also runs
-`codev-evals run --step review --repeat 3` with its own binary, compared
-quality-only with the baseline: its skill text changes, and the run checks
-nothing else moved. The suite runs each review in a single session, so it
-measures the role on a model through `CODEV_EVAL_MODEL`, not through the
-sub-agent's `model`. The two are the same model reading the same brief.
+The per-role figures above come from single-session runs: the whole
+review, writing and checking the record included, ran on Sonnet. On the
+isolated path, the session stays on Opus and only each reviewer's
+sub-agent moves, so the saving there is smaller and its quality is a
+sub-agent's, not a session's. Decision 0008 asks that this path be
+covered first, by its own change: `isolated-review-evaluation` adds a
+runner option that plays the review cases in the `isolated` mode. This
+change is then measured on that path, as 0008 says for a change aiming at
+consumption:
+
+- the reference: the review cases in the `isolated` mode, every role on
+  the session's model (`model: inherit` for each), three repetitions;
+- the candidate: the same cases in the same mode with this change's
+  defaults, three repetitions, the same day;
+- the verdict: quality within the reference's range, cost under its
+  floor, each call's tokens traced to their source.
+
+The release note states the saving the candidate shows.
+
+**Alternatives considered**: shipping on the single-session figures — they
+measure a different setup, and 0008 does not allow it.
+
+### Decision: A source's `roles:` is not parsed, and a model off the review steps is flagged
+
+The `roles:` mapping of the project is strict, and an inherited source's
+was deserialized the same way although it is ignored. A source written
+for a newer codev — a `model:` today, another key tomorrow — would then
+fail to load in a project on an older codev, and its context and rules
+would be dropped. The source's `roles:` is no longer parsed, only skipped.
+A model on a role that never runs as a sub-agent is a warning,
+`role_model_unused`: accepted, so that a project is never blocked, and
+named, so that nobody believes it applies.
+
+**Alternatives considered**: an error for a model off the review steps —
+it would block a project for a setting with no effect.
 
 ## Risks / Trade-offs
 
@@ -90,8 +119,9 @@ sub-agent's `model`. The two are the same model reading the same brief.
   new case that Sonnet misses is a reason to change a default, measured.
 - [An older codev reads a configuration with `model:`] → The `roles:`
   mapping is strict, so an older codev fails on the key. The release
-  note says to raise `codev_version` before using it; projects that do
-  not set it are unaffected.
+  note says to raise `codev_version` before using it, and that a shared
+  source should not set it until its consumers run this release; from
+  this release on, a source's `roles:` is not parsed at all.
 - [Inline projects see no saving] → The release note and the roles
   chapter say the model applies in the isolated mode.
 
