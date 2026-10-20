@@ -2734,10 +2734,7 @@ edition = "2024"
                 .clone()
         };
         let defaults = roles_json(&roles_project("", "schema: spec-driven\n"), None, None);
-        let skeptic = role_of(&defaults, "skeptic");
-        assert_eq!(skeptic["model"], "sonnet");
-        assert_eq!(skeptic["modelOrigin"], "default");
-        for id in ["privacy", "architect"] {
+        for id in ["skeptic", "privacy", "architect"] {
             let role = role_of(&defaults, id);
             assert!(role["model"].is_null(), "{id}: {role}");
             assert_eq!(role["modelOrigin"], "default");

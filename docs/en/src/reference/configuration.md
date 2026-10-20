@@ -227,7 +227,7 @@ activation, or a mapping:
 |---|---|
 | `when` | `always`, `never` or `on_domain`; the default is `on_domain` for the experts, `always` for every other role. `on_domain` activates a role only for a change whose proposal ticks one of its domains. A step whose roles are all inactive is skipped, and the skill says so |
 | `done_when` | Criteria added after the role's own, with the origin `project`; blank entries are ignored |
-| `model` | The model the role's sub-agent runs on in the `isolated` [review mode](#review): `opus`, `sonnet` or `haiku`, or `inherit` for the session's model. It replaces the role's default: `sonnet` for `tracer`, `skeptic`, `newcomer`, `security`, `performance` and `migration`, none for every other role — see [The reviewers' models](../roles.md#the-reviewers-models). In the `inline` mode every role runs on the session's model |
+| `model` | The model the role's sub-agent runs on in the `isolated` [review mode](#review): `opus`, `sonnet` or `haiku`, or `inherit` for the session's model. No role sets one by default — see [The reviewers' models](../roles.md#the-reviewers-models). In the `inline` mode every role runs on the session's model |
 
 ```yaml
 roles:

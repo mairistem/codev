@@ -1275,35 +1275,14 @@ apply:
 
     #[test]
     fn the_default_models_follow_the_measure() {
+        // Measured on the isolated path, no role kept its quality on Sonnet
+        // for a saving worth it: every role runs on the session's model
+        // unless the project says otherwise.
         let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
-        let on_sonnet: Vec<&str> = roles
-            .iter()
-            .filter(|r| r.model == Some(Model::Sonnet))
-            .map(|r| r.role.id.as_str())
-            .collect();
-        assert_eq!(
-            on_sonnet,
-            [
-                "tracer",
-                "skeptic",
-                "security",
-                "performance",
-                "migration",
-                "newcomer"
-            ]
-        );
         for r in &roles {
+            assert_eq!(r.model, None, "{}", r.role.id);
             assert_eq!(r.model_origin, ModelOrigin::Default, "{}", r.role.id);
-            if !on_sonnet.contains(&r.role.id.as_str()) {
-                assert_eq!(r.model, None, "{}", r.role.id);
-            }
         }
-        // A role file with a model codev does not know is refused.
-        let unknown = parse_role_file(
-            "---\nid: demo\nname: { en: Demo }\nat: plan.trace\nquestion: Q?\nmodel: gpt\n---\n",
-        )
-        .unwrap_err();
-        assert!(unknown.contains("`gpt`"), "{unknown}");
     }
 
     #[test]

@@ -4,7 +4,6 @@ name: { en: Performance, fr: Performance }
 at: [plan.challenge, code.review]
 domains: [performance]
 question: Does this change stay fast as data and load grow?
-model: sonnet
 done_when:
   - No query or remote call runs once per item of a loop when one call
     can serve the whole set

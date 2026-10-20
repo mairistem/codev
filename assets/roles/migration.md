@@ -4,7 +4,6 @@ name: { en: Migration, fr: Migration }
 at: [plan.challenge, code.review]
 domains: [migration]
 question: Can existing data, configuration and consumers move to this change safely?
-model: sonnet
 done_when:
   - Every breaking change is marked **BREAKING** and announced in the
     release note, with what users must do

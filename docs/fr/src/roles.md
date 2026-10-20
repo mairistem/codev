@@ -345,33 +345,24 @@ de son côté :
 ### Les modèles des relecteurs
 
 En mode isolé, le sous-agent de chaque relecteur tourne sur le modèle de
-son rôle — `model` dans `codev roles --json`, fixé par le rôle
-(`modelOrigin: "default"`) ou par votre projet (`"project"`) :
+son rôle — `model` dans `codev roles --json`. Aucun rôle n'en fixe par
+défaut : chaque relecteur tourne sur le modèle de la session tant que votre
+projet n'en choisit pas un autre, sous `roles:` — `model: opus`, `sonnet`
+ou `haiku`, ou `inherit` pour revenir au modèle de la session (voir
+[Configurer les rôles](#configurer-les-rôles)). Le modèle ne s'applique
+qu'en mode isolé, où un rôle tourne comme son propre sous-agent ; en mode
+en ligne, chaque rôle relit dans la session.
 
-| Rôles | Modèle |
-|---|---|
-| `tracer`, `skeptic`, `newcomer`, `security`, `performance`, `migration` | `sonnet` |
-| tous les autres rôles | aucun : le modèle de la session |
-
-Ces valeurs par défaut suivent une mesure sur la
-[suite d'évaluation](#mesurer-les-rôles), faite avec toute la session de
-revue sur Sonnet — des exécutions en une seule session, 40 cas joués trois
-fois chacun, comparés à la référence sur Opus. Les six rôles ci-dessus ont
-trouvé chaque défaut semé, avec des preuves valides et pas plus de faux
-positifs que la référence n'en admet, pour environ la moitié du coût.
-`accessibility`, `ops` et `privacy` ont relevé un faux positif de plus que
-la référence ne l'admet : ils gardent donc le modèle de la session, comme
-la planification et l'implémentation, qui perdent du rappel sur Sonnet.
-Sur le chemin isolé, la session garde son modèle et seul chaque relecteur
-change, si bien que l'économie y est plus faible que le chiffre mesuré en
-une seule session.
-
-Le modèle ne s'applique qu'en mode isolé, où un rôle tourne comme son
-propre sous-agent : en mode en ligne, chaque rôle relit dans la session,
-sur le modèle de la session. Pour garder un rôle sur le modèle de la
-session, indiquez `model: inherit` ; pour en choisir un autre,
-`model: opus`, `sonnet` ou `haiku` — voir
-[Configurer les rôles](#configurer-les-rôles).
+Pourquoi pas de défaut : sur la [suite d'évaluation](#mesurer-les-rôles),
+en mode isolé, passer sur Sonnet le contrôleur de traçabilité, le
+contradicteur, le nouvel arrivant et les experts sécurité, performance et
+migration a fait gagner 7 % par rapport à Opus, avec le même rappel, mais
+un faux positif de plus que la référence pour `migration` et le
+contradicteur. L'essentiel du coût d'une revue isolée vient de la
+session — lire la skill, préparer le brief, fusionner les constats, écrire
+le compte rendu —, si bien que le modèle d'un relecteur pèse peu sur la
+facture. La même mesure montre que le mode isolé coûte environ 73 % de
+plus que le mode en ligne sur les mêmes cas, avec le même rappel.
 
 La revue isolée coûte plus cher : chaque relecteur lit la matière, que la
 revue en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode

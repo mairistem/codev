@@ -2,29 +2,27 @@
 
 ## Why
 
-Every review runs on the session's model, Opus. Measured on the
-evaluation suite with the whole review session on Sonnet, the reviewers
-cost 49 % less and find every seeded defect, with valid evidence; the
-saving on the isolated path, where only each reviewer moves to Sonnet, is
-measured by this change. Six roles stay within the baseline's
-range on every measure. Three — `accessibility`, `ops` and `privacy` —
-raise one false positive more than the baseline allows. Planning on
-Sonnet, by contrast, loses a fifth of its recall. So the model must be
-chosen per role, not per session, and a team must be able to change it.
+Every review runs on the session's model. A team may want a cheaper
+model for some reviewers, or a stronger one for others, and has no way to
+say so. This change lets each project choose a role's model. It ships no
+default: measured on the evaluation suite in the isolated mode, the
+reviewers on Sonnet saved 7 % against Opus and raised one false positive
+more than the reference for `migration` and `skeptic` — below decision
+0008's bar for a default.
 
 ## What Changes
 
-- Each role carries a model: `sonnet` by default for `tracer`,
-  `skeptic`, `newcomer`, `security`, `performance` and `migration`; none
-  for every other role, which keeps the session's model — Opus for
-  planning, implementation and the three experts above.
-- A project sets a role's model under `roles:` in `_codev/config.yaml`
-  (`model: opus | sonnet | haiku | inherit`); an unknown value is
-  reported with `invalid_role_model`.
+- Each role may carry a model, set by the project under `roles:` in
+  `_codev/config.yaml` (`model: opus | sonnet | haiku | inherit`); no
+  built-in role sets one, so nothing changes until a project does. An
+  unknown value is reported with `invalid_role_model`; a model on a role
+  that never reviews, with the warning `role_model_unused`.
 - `codev roles --json` gives each role its `model` and `modelOrigin`.
 - In the `isolated` review mode, the `propose` and `apply` skills start
   each reviewer's sub-agent on its role's model. The `inline` mode is
   unchanged: every role runs in the session.
+- An inherited source's `roles:` is no longer parsed, so a key written
+  for a newer codev never drops the source's context and rules.
 
 ## Capabilities
 
@@ -58,5 +56,4 @@ chosen per role, not per session, and a team must be able to change it.
 
 ## Release note
 
-- Changed: Reviewers that the evaluation suite measured unchanged on Sonnet — the tracer, the skeptic, the newcomer, and the security, performance and migration experts — now run on Sonnet in the isolated review mode, for a lower cost measured in the pull request; every other role keeps the session's model. To keep a role on the session's model, set `roles: { <role>: { model: inherit } }`.
-- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on; a project that sets it should first raise `codev_version` to this release, since an older codev refuses the key — and a source shared through `inherits:` should not set it until every project inheriting from it runs this release.
+- Added: `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on in the isolated review mode; no role sets one by default. A project that sets it should first raise `codev_version` to this release, since an older codev refuses the key — and a source shared through `inherits:` should not set it until every project inheriting from it runs this release.

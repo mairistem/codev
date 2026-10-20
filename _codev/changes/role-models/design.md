@@ -44,23 +44,22 @@ change of its own.
 
 ## Decisions
 
-### Decision: The model is a property of the role, with a measured default
+### Decision: The model is a property of the role, chosen by the project, with no default
 
-A role's frontmatter may hold `model:`. The default is `sonnet` for the
-six roles whose every measure stays within the baseline's range on
-Sonnet, and none for the others, which keeps the session's model. A
-project overrides it per role under `roles:`, next to `when:` and
-`done_when:`. `inherit` means none, so a project can also turn a default
-back to the session's model. Four values only: Claude Code's sub-agent
-tool accepts these aliases, and a full model id would tie the
-configuration to a release.
+A role may carry `model:`, set by the project under `roles:`, next to
+`when:` and `done_when:`; `inherit` means none. No built-in role sets one.
+The measure on the isolated path (below) decided it: the saving a Sonnet
+default brings there is 7 %, under decision 0008's cost floor, and two
+roles raise one false positive more than the reference. The mechanism
+ships so that a team can choose — a cheaper model for a role it trusts on
+it, a stronger one for another — and the suite can measure any choice.
+Four values only: Claude Code's sub-agent tool accepts these aliases, and
+a full model id would tie the configuration to a release.
 
-**Alternatives considered**: one model for every reviewer — it would put
-the three experts above outside the baseline's range. A model per review
-step — the experts serve two steps and the measure is per role. Sonnet
-for the three experts as well, accepting one false positive more — that
-is a deviation from decision 0008, which only a person accepts; the
-project can set it in one line.
+**Alternatives considered**: Sonnet by default for the six roles measured
+unchanged in single-session runs — the isolated measure shows a small
+saving and a quality slip. Not shipping the mechanism — a team that wants
+a model per role would have no way to say so.
 
 ### Decision: The model applies to sub-agents, in the isolated mode
 
@@ -76,27 +75,28 @@ cost, without a measure.
 
 ### Decision: Measured on the isolated path, after the suite covers it
 
-The per-role figures above come from single-session runs: the whole
-review, writing and checking the record included, ran on Sonnet. On the
-isolated path, the session stays on Opus and only each reviewer's
-sub-agent moves, so the saving there is smaller and its quality is a
-sub-agent's, not a session's. Decision 0008 asks that this path be
-covered first, by its own change: `isolated-review-evaluation` adds a
-runner option that plays the review cases in the `isolated` mode. This
-change is then measured on that path, as 0008 says for a change aiming at
-consumption:
+`isolated-review-evaluation` (#50) made the suite play the review cases in
+the isolated mode. Two runs the same day, 40 review cases × 3, each in its
+own working folder:
 
-- the reference: the review cases in the `isolated` mode, every role on
-  the session's model (`model: inherit` for each), three repetitions;
-- the candidate: the same cases in the same mode with this change's
-  defaults, three repetitions, the same day;
-- the verdict: quality within the reference's range, cost under its
-  floor, each call's tokens traced to their source.
+| | Reference: every role on the session's model (Opus) | Candidate: Sonnet for tracer, skeptic, newcomer, security, performance, migration |
+|---|---|---|
+| Cost | 22.34 USD | 20.76 USD (−7 %) |
+| Recall | 1.00 for every role | 1.00 for every role |
+| False positives over the reference's maximum | — | `migration` 1 (max 0), `skeptic` 5 (max 4) |
+| Format fallbacks | 0 | 2 runs where the Sonnet sub-agent broke the finding format twice |
 
-The release note states the saving the candidate shows.
+In the isolated mode most of the cost is the session's — reading the
+skill, building the brief, consolidating, writing and checking the
+record — so a reviewer's model moves the bill little. The measure also
+shows the isolated mode costing 73 % more than the inline mode on the
+same cases (12.89 USD inline in the baseline), with the same recall. So
+the change ships the mechanism without a default; the cost lever this
+measure points to is the review mode, a change of its own.
 
-**Alternatives considered**: shipping on the single-session figures — they
-measure a different setup, and 0008 does not allow it.
+**Alternatives considered**: shipping on the single-session figures
+(−49 % with the whole session on Sonnet) — they measure a different
+setup, and 0008 does not allow it.
 
 ### Decision: A source's `roles:` is not parsed, and a model off the review steps is flagged
 

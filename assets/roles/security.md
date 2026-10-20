@@ -4,7 +4,6 @@ name: { en: Security, fr: Sécurité }
 at: [plan.challenge, code.review]
 domains: [security]
 question: Can an attacker abuse what this change adds?
-model: sonnet
 done_when:
   - Every input crossing a trust boundary is validated where it enters,
     with an allow-list where possible

@@ -238,7 +238,7 @@ de rôle ; sa valeur est soit une activation, soit une table :
 |---|---|
 | `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour un change dont la proposal coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la skill le signale |
 | `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
-| `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de revue](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Il remplace la valeur par défaut du rôle : `sonnet` pour `tracer`, `skeptic`, `newcomer`, `security`, `performance` et `migration`, aucun pour tous les autres rôles — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
+| `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de revue](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Aucun rôle n'en fixe par défaut — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
 
 ```yaml
 roles:

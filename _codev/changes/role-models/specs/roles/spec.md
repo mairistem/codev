@@ -3,10 +3,9 @@
 ### Requirement: A role may carry the model its sub-agent runs on
 
 Each role of the catalog SHALL carry a model: `opus`, `sonnet`, `haiku`,
-or none, meaning the model of the session that runs the skill. The
-built-in defaults SHALL be `sonnet` for `tracer`, `skeptic`, `newcomer`,
-`security`, `performance` and `migration`, whose findings the evaluation
-suite measured unchanged on that model, and none for every other role.
+or none, meaning the model of the session that runs the skill. No built-in
+role sets one: every role runs on the session's model until the project
+chooses another.
 
 A role's mapping under `roles:` in `_codev/config.yaml` MAY set `model:`
 to one of `opus`, `sonnet`, `haiku`, or `inherit` for none; it replaces
@@ -29,8 +28,8 @@ runs in the session's model.
 
 - **GIVEN** a project with no `roles:` key
 - **WHEN** the user runs `codev roles --json`
-- **THEN** `skeptic` has `model: "sonnet"` and `modelOrigin: "default"`
-- **AND** `privacy` and `architect` have `model: null`
+- **THEN** `skeptic`, `privacy` and `architect` have `model: null` and
+  `modelOrigin: "default"`
 
 #### Scenario: A project sets a role's model
 

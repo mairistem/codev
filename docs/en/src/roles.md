@@ -325,30 +325,22 @@ separately:
 ### The reviewers' models
 
 In isolated mode, each reviewer's sub-agent runs on its role's model —
-`model` in `codev roles --json`, set by the role (`modelOrigin:
-"default"`) or by your project (`"project"`):
-
-| Roles | Model |
-|---|---|
-| `tracer`, `skeptic`, `newcomer`, `security`, `performance`, `migration` | `sonnet` |
-| every other role | none: the session's model |
-
-These defaults follow a measure on the [evaluation suite](#measuring-the-roles),
-run with the whole review session on Sonnet — single-session runs, 40
-cases three times each, against the baseline on Opus. The six roles above
-found every seeded defect, with valid evidence and no more false
-positives than the baseline allows, for about half the cost.
-`accessibility`, `ops` and `privacy` raised one false positive more than
-the baseline allows, so they keep the session's model; so do planning and
-implementation, which lose recall on Sonnet. On the isolated path the
-session keeps its model and only each reviewer moves, so the saving there
-is smaller than the single-session figure.
-
+`model` in `codev roles --json`. No role sets one by default: every
+reviewer runs on the session's model until your project chooses another,
+under `roles:` — `model: opus`, `sonnet` or `haiku`, or `inherit` to go
+back to the session's model (see [Configuring roles](#configuring-roles)).
 The model applies only in the isolated mode, where a role runs as its own
-sub-agent: in the inline mode, every role reviews in the session, on the
-session's model. To keep a role on the session's model, set
-`model: inherit`; to choose another, `model: opus`, `sonnet` or `haiku` —
-see [Configuring roles](#configuring-roles).
+sub-agent; in the inline mode, every role reviews in the session.
+
+Why no default: on the [evaluation suite](#measuring-the-roles), in the
+isolated mode, moving the tracer, the skeptic, the newcomer and the
+security, performance and migration experts to Sonnet saved 7 % against
+Opus, with the same recall, but one false positive more than the
+reference for `migration` and the skeptic. Most of an isolated review's
+cost is the session's — reading the skill, building the brief, merging
+the findings, writing the record — so a reviewer's model moves the bill
+little. The same measure shows the isolated mode costing about 73 % more
+than the inline mode on the same cases, with the same recall.
 
 Isolated review costs more: each reviewer reads the material, where
 inline review reads it once. That is why `inline` stays the default; see
