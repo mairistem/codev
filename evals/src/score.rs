@@ -830,6 +830,18 @@ impl Measures {
             (Some(t), Some(n)) => Some(t / n),
             _ => None,
         };
+        // The per-call measures count the session's own calls: the totals
+        // minus `sub_agents` is the sum of those calls, which
+        // `record_sub_agent_tokens` set as totals minus that sum.
+        let own = tokens.map(|t| {
+            let sub = consumption.and_then(|c| c.sub_agents).unwrap_or_default();
+            crate::observed::Tokens {
+                input: t.input.saturating_sub(sub.input),
+                cache_creation: t.cache_creation.saturating_sub(sub.cache_creation),
+                cache_read: t.cache_read.saturating_sub(sub.cache_read),
+                output: t.output.saturating_sub(sub.output),
+            }
+        });
         Measures {
             cost_usd: c.cost_usd,
             duration_ms: f(c.duration_ms),
@@ -841,8 +853,8 @@ impl Measures {
             cache_read_tokens: f(tokens.map(|t| t.cache_read)),
             output_tokens: f(tokens.map(|t| t.output)),
             calls,
-            input_per_call: per_call(f(tokens.map(|t| t.input + t.cache_creation + t.cache_read))),
-            output_per_call: per_call(f(tokens.map(|t| t.output))),
+            input_per_call: per_call(f(own.map(|t| t.input + t.cache_creation + t.cache_read))),
+            output_per_call: per_call(f(own.map(|t| t.output))),
         }
     }
 
@@ -906,6 +918,10 @@ pub struct CaseConsumption {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub sources: BTreeMap<String, f64>,
 }
+
+/// The source of the tokens an isolated run's sub-agents wrote to the
+/// cache: what the session's totals hold beyond its own calls.
+pub const SUB_AGENTS_SOURCE: &str = "sub-agents";
 
 /// Where the tokens go: one source, the sum of its per-case median
 /// tokens written to the cache, and its share of what those writes cost.
@@ -1264,6 +1280,10 @@ fn case_consumption(cases: &[CaseScore]) -> Vec<CaseConsumption> {
                         for (source, tokens) in &call.sources {
                             *by_source.entry(source.clone()).or_default() += tokens;
                         }
+                    }
+                    if let Some(sub) = c.sub_agents {
+                        *by_source.entry(SUB_AGENTS_SOURCE.into()).or_default() +=
+                            sub.cache_creation;
                     }
                     by_source
                 })
@@ -2257,6 +2277,8 @@ pub(crate) mod tests {
             codev_version: None,
             repeat: None,
             jobs: None,
+            review_mode: None,
+            fixture_config: None,
         }
     }
 

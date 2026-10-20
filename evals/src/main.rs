@@ -56,6 +56,10 @@ struct CompareArgs {
     /// reporting it
     #[arg(long)]
     quality_only: bool,
+    /// Compare runs recorded with different models, for a change that is a
+    /// change of model; the report names both
+    #[arg(long)]
+    across_models: bool,
 }
 
 #[derive(Args)]
@@ -117,6 +121,14 @@ struct RunArgs {
     /// The Claude Code command [env: CODEV_EVAL_CLAUDE] [default: claude]
     #[arg(long)]
     claude: Option<PathBuf>,
+    /// The mode the review cases run in: `inline`, the default, or
+    /// `isolated`, each role as its own sub-agent
+    #[arg(long)]
+    review_mode: Option<String>,
+    /// A YAML file appended to every review case's `_codev/config.yaml`,
+    /// for a setting a measure needs
+    #[arg(long)]
+    fixture_config: Option<PathBuf>,
     #[command(flatten)]
     thresholds: ThresholdArgs,
 }
@@ -246,8 +258,8 @@ fn now() -> (u64, String) {
 }
 
 /// Scores both directories on the cases they share and prints the
-/// comparison; refuses two models, an unreadable directory or no case in
-/// common, printing no report.
+/// comparison; refuses two models unless `--across-models`, two review
+/// modes, an unreadable directory or no case in common, printing no report.
 fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCode {
     let ids = |dir: &Path| -> Result<BTreeSet<String>, String> {
         suite::read_run(dir)?;
@@ -280,12 +292,17 @@ fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCo
             Ok(pair) => pair,
             Err(e) => return usage(e),
         };
-    if let Some(e) = compare::models_differ(
-        &baseline.run,
-        &compare::models_used(&baseline),
-        &candidate.run,
-        &compare::models_used(&candidate),
-    ) {
+    if !args.across_models
+        && let Some(e) = compare::models_differ(
+            &baseline.run,
+            &compare::models_used(&baseline),
+            &candidate.run,
+            &compare::models_used(&candidate),
+        )
+    {
+        return usage(e);
+    }
+    if let Some(e) = compare::review_modes_differ(&baseline, &candidate) {
         return usage(e);
     }
     let mode = if args.quality_only {
@@ -293,7 +310,13 @@ fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCo
     } else {
         compare::Mode::QualityAndCost
     };
-    let result = compare::compare(&baseline, &candidate, &not_compared, mode);
+    let result = compare::compare(
+        &baseline,
+        &candidate,
+        &not_compared,
+        mode,
+        args.across_models,
+    );
     print!("{}", result.report);
     for f in &result.failures {
         eprintln!("fail: {f}");
@@ -308,6 +331,15 @@ fn compare_runs(repo: &Path, cases: &[case::Case], args: &CompareArgs) -> ExitCo
 fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     let thresholds = match thresholds(&args.thresholds) {
         Ok(t) => t,
+        Err(e) => return usage(e),
+    };
+    let review = match runner::review_settings(
+        args.review_mode.as_deref(),
+        args.fixture_config
+            .as_deref()
+            .map(|path| (path, fs::read_to_string(path))),
+    ) {
+        Ok(r) => r,
         Err(e) => return usage(e),
     };
     let repeat = args.repeat;
@@ -354,7 +386,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         codev: fs::canonicalize(&tools.codev).unwrap_or(tools.codev),
         ..tools
     };
-    let info = RunInfo {
+    let mut info = RunInfo {
         format: FORMAT,
         model: settings.model.clone(),
         date,
@@ -362,7 +394,10 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         codev_version: Some(codev_version),
         repeat: Some(repeat),
         jobs: Some(args.jobs as u32),
+        review_mode: None,
+        fixture_config: None,
     };
+    review.record(&mut info);
     if let Ok(text) = fs::read_to_string(out.join("run.json")) {
         let resumed = match observed::parse_run_info(&text) {
             Ok(r) => r,
@@ -373,6 +408,9 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
             info.model.as_deref(),
             info.claude_version.as_deref(),
         ) {
+            return usage(e);
+        }
+        if let Err(e) = runner::check_resume_review(&resumed, &review) {
             return usage(e);
         }
     }
@@ -397,6 +435,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         jobs: args.jobs,
         tools,
         settings,
+        review,
     };
     let limited = runner::run_cases(&pending, &options, &info.date);
     if !options.keep {

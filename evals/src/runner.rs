@@ -11,7 +11,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
-use crate::observed::{Consumption, FORMAT, Observed, RunInfo, Tokens};
+use crate::observed::{Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
 use crate::suite::{Recorded, RunState};
 
 /// The `change.yaml` the runner writes: every role in `disable` set to
@@ -214,8 +214,194 @@ pub const DISALLOWED_TOOLS: &str = "WebFetch WebSearch";
 /// so the runner grants it the same.
 pub const ALLOWED_TOOLS: &str = "Bash(codev:*)";
 
+/// The sub-agent tool, granted besides `codev` to a review case in the
+/// isolated mode: the skill would grant it in its `allowed-tools`, which
+/// the evaluation's agent does not invoke.
+pub const SUB_AGENT_TOOL: &str = "Agent";
+
+/// What the review cases are played with: their mode, and a configuration
+/// appended to each of them. Planning and update cases ignore both.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ReviewSettings {
+    pub mode: ReviewMode,
+    /// The text of `--fixture-config`.
+    pub fixture_config: Option<String>,
+}
+
+impl ReviewSettings {
+    /// Whether a case at `step` runs in the isolated mode.
+    pub fn isolated_at(&self, step: Step) -> bool {
+        self.mode == ReviewMode::Isolated && step.is_review()
+    }
+
+    /// Records the settings in a run's `run.json`: the mode only when it is
+    /// not the default, so that a run of the default mode reads as before.
+    pub fn record(&self, info: &mut RunInfo) {
+        info.review_mode = (self.mode == ReviewMode::Isolated).then_some(self.mode);
+        info.fixture_config = self.fixture_config.clone();
+    }
+}
+
+/// The review settings from `--review-mode` and `--fixture-config`, the
+/// latter as its path and what reading it gave; an error names the cause:
+/// an unknown mode, a file missing or not a YAML mapping, or one setting
+/// `review:` while `--review-mode` sets the mode.
+pub fn review_settings(
+    mode: Option<&str>,
+    fixture_config: Option<(&Path, std::io::Result<String>)>,
+) -> Result<ReviewSettings, String> {
+    let parsed = match mode {
+        None => ReviewMode::Inline,
+        Some(text) => ReviewMode::parse(text).ok_or_else(|| {
+            format!("--review-mode: unknown mode `{text}`; expected `inline` or `isolated`")
+        })?,
+    };
+    let fixture_config = match fixture_config {
+        None => None,
+        Some((path, read)) => {
+            let text = read.map_err(|e| format!("--fixture-config {}: {e}", path.display()))?;
+            let value: serde_norway::Value = serde_norway::from_str(&text).map_err(|e| {
+                format!("--fixture-config {}: not valid YAML ({e})", path.display())
+            })?;
+            let Some(mapping) = value.as_mapping() else {
+                return Err(format!(
+                    "--fixture-config {}: not a YAML mapping of configuration keys",
+                    path.display()
+                ));
+            };
+            // The review mode comes from --review-mode alone, so that
+            // run.json records the mode the cases ran in.
+            if mapping.contains_key("review") {
+                return Err(format!(
+                    "--fixture-config {}: sets `review:`; give the review mode with --review-mode",
+                    path.display()
+                ));
+            }
+            Some(text)
+        }
+    };
+    Ok(ReviewSettings {
+        mode: parsed,
+        fixture_config,
+    })
+}
+
+/// A review case's `_codev/config.yaml` with what the settings append:
+/// `review: { mode: isolated }` in the isolated mode, then the text of
+/// `--fixture-config`; `None` when there is nothing to append.
+pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> Option<String> {
+    if review.mode == ReviewMode::Inline && review.fixture_config.is_none() {
+        return None;
+    }
+    let mut text = existing.to_string();
+    let mut append = |part: &str| {
+        if !text.is_empty() && !text.ends_with('\n') {
+            text.push('\n');
+        }
+        text.push_str(part);
+    };
+    if review.mode == ReviewMode::Isolated {
+        append("review: { mode: isolated }\n");
+    }
+    if let Some(extra) = &review.fixture_config {
+        append(extra);
+    }
+    Some(text)
+}
+
+/// The tools granted without a prompt to a case at `step`.
+pub fn allowed_tools(step: Step, review: &ReviewSettings) -> String {
+    if review.isolated_at(step) {
+        format!("{ALLOWED_TOOLS} {SUB_AGENT_TOOL}")
+    } else {
+        ALLOWED_TOOLS.to_string()
+    }
+}
+
+/// What is missing for an isolated case's role to have run alone, from
+/// `codev review --json` and the sub-agents its session started: the
+/// step's `Mode: isolated.`, no `Fallback:` line, a sub-agent; `None`
+/// when nothing is.
+pub fn isolation_missing(
+    review: Option<&serde_json::Value>,
+    step: Step,
+    sub_agents_started: u64,
+) -> Option<String> {
+    let review: crate::observed::Review = review
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+    let section = review.steps.iter().find(|s| s.step == step.as_str());
+    let mut missing = Vec::new();
+    match section.and_then(|s| s.mode.as_deref()) {
+        Some("isolated") => {}
+        Some(other) => missing.push(format!(
+            "the review record's step {} says `Mode: {other}.`, not `Mode: isolated.`",
+            step.as_str()
+        )),
+        None => missing.push(format!(
+            "the review record's step {} has no `Mode: isolated.` line",
+            step.as_str()
+        )),
+    }
+    for role in section.into_iter().flat_map(|s| &s.roles) {
+        if let Some(reason) = &role.fallback {
+            missing.push(format!(
+                "the role {} fell back to the inline mode (`Fallback: {reason}`)",
+                role.role
+            ));
+        }
+    }
+    if sub_agents_started == 0 {
+        missing.push("the session started no sub-agent".to_string());
+    }
+    (!missing.is_empty()).then(|| {
+        format!(
+            "the case did not run in the isolated mode: {}",
+            missing.join("; ")
+        )
+    })
+}
+
+/// Sets `sub_agents` to the tokens of an isolated run's totals beyond its
+/// own calls, kind by kind; a run whose totals fall below its own calls is
+/// inconsistent, and an error.
+pub fn record_sub_agent_tokens(consumption: &mut Consumption) -> Result<(), String> {
+    let Some(totals) = consumption.tokens else {
+        return Ok(());
+    };
+    let own = consumption
+        .calls
+        .iter()
+        .fold(Tokens::default(), |t, c| Tokens {
+            input: t.input + c.input,
+            cache_creation: t.cache_creation + c.cache_creation,
+            cache_read: t.cache_read + c.cache_read,
+            output: t.output + c.output,
+        });
+    let beyond = |kind: &str, total: u64, calls: u64| {
+        total.checked_sub(calls).ok_or_else(|| {
+            format!(
+                "the session's totals hold {total} {kind} tokens, fewer than its own calls' {calls}; \
+                 its consumption is inconsistent"
+            )
+        })
+    };
+    consumption.sub_agents = Some(Tokens {
+        input: beyond("input", totals.input, own.input)?,
+        cache_creation: beyond("cache write", totals.cache_creation, own.cache_creation)?,
+        cache_read: beyond("cache read", totals.cache_read, own.cache_read)?,
+        output: beyond("output", totals.output, own.output)?,
+    });
+    Ok(())
+}
+
 /// The arguments of `claude` for one case.
-pub fn claude_args(prompt: &str, settings: &ClaudeSettings, step: Step) -> Vec<String> {
+pub fn claude_args(
+    prompt: &str,
+    settings: &ClaudeSettings,
+    step: Step,
+    review: &ReviewSettings,
+) -> Vec<String> {
     let mut args: Vec<String> = [
         "-p",
         prompt,
@@ -228,7 +414,7 @@ pub fn claude_args(prompt: &str, settings: &ClaudeSettings, step: Step) -> Vec<S
         "--settings",
         SANDBOX_SETTINGS,
         "--allowedTools",
-        ALLOWED_TOOLS,
+        &allowed_tools(step, review),
         "--disallowedTools",
         DISALLOWED_TOOLS,
         "--max-budget-usd",
@@ -375,6 +561,8 @@ pub struct ClaudeOutput {
     /// The text of every message the agent wrote; empty without the event
     /// stream.
     pub messages: Vec<String>,
+    /// The sub-agents the session started: its calls to the sub-agent tool.
+    pub sub_agents_started: u64,
 }
 
 /// What Claude Code's event stream (`--output-format stream-json`) reports:
@@ -405,6 +593,7 @@ pub fn parse_claude_stream(stdout: &str) -> ClaudeOutput {
         consumption.tool_calls = Some(stream.tool_calls);
         consumption.orientation_calls = stream.orientation_calls;
         consumption.calls = stream.calls;
+        output.sub_agents_started = stream.sub_agents_started;
     }
     output
 }
@@ -449,6 +638,7 @@ pub fn agent_messages(events: &[serde_json::Value]) -> Vec<String> {
 /// What the events say about each call to the model.
 struct StreamCalls {
     tool_calls: u64,
+    sub_agents_started: u64,
     orientation_calls: Option<u64>,
     calls: Vec<crate::observed::Call>,
 }
@@ -505,9 +695,18 @@ fn is_planning_write(tool: &str, input: &serde_json::Value) -> bool {
 /// entered the context since the previous call: the tool results returned
 /// in between, by the length of their text, and the previous call's own
 /// text. The first call's writes are Claude Code's prompt and the request.
+/// Only the session's own calls are read: an event a sub-agent produced
+/// names the tool call that started it in `parent_tool_use_id`, and its
+/// tokens are counted from the session's totals instead.
 fn read_calls(events: &[serde_json::Value]) -> StreamCalls {
     let mut reader = CallReader::default();
     for event in events {
+        if event
+            .get("parent_tool_use_id")
+            .is_some_and(|p| !p.is_null())
+        {
+            continue;
+        }
         match event.get("type").and_then(|t| t.as_str()) {
             Some("assistant") => reader.read_assistant(&event["message"]),
             Some("user") => reader.read_tool_results(&event["message"]),
@@ -516,6 +715,7 @@ fn read_calls(events: &[serde_json::Value]) -> StreamCalls {
     }
     StreamCalls {
         tool_calls: reader.tool_calls,
+        sub_agents_started: reader.sub_agents_started,
         orientation_calls: reader.orientation_calls,
         calls: reader.calls,
     }
@@ -569,6 +769,7 @@ struct CallReader {
     /// The length of the text the current call produced.
     previous_text: usize,
     tool_calls: u64,
+    sub_agents_started: u64,
     orientation_calls: Option<u64>,
 }
 
@@ -620,6 +821,9 @@ impl CallReader {
                     self.orientation_calls = Some(self.tool_calls);
                 }
                 self.tool_calls += 1;
+                if tool == SUB_AGENT_TOOL {
+                    self.sub_agents_started += 1;
+                }
                 if let Some(call) = self.calls.last_mut() {
                     call.tool_calls += 1;
                 }
@@ -682,6 +886,7 @@ pub fn parse_claude_output(stdout: &str) -> ClaudeOutput {
         consumption: Some(consumption(&value)),
         error,
         messages: Vec::new(),
+        sub_agents_started: 0,
     }
 }
 
@@ -961,13 +1166,16 @@ fn codev_dir(tools: &Tools) -> &Path {
 }
 
 /// Builds the case's project in `dir`: `base/` on `main` with codev
-/// initialized, `change/` on the branch `change`, the evaluated role alone.
+/// initialized — its configuration with what `review` appends, the skills
+/// rendered again for it —, `change/` on the branch `change`, the
+/// evaluated role alone.
 pub fn setup(
     case: &Case,
     case_dir: &Path,
     dir: &Path,
     tools: &Tools,
     date: &str,
+    review: &ReviewSettings,
 ) -> Result<(), String> {
     let io = |e: std::io::Error| format!("setting up the fixture: {e}");
     if dir.exists() {
@@ -992,6 +1200,12 @@ pub fn setup(
         dir,
         codev_dir(tools),
     )?;
+    let config_path = dir.join("_codev").join("config.yaml");
+    let config = fs::read_to_string(&config_path).map_err(io)?;
+    if let Some(text) = config_with_review_settings(&config, review) {
+        fs::write(&config_path, text).map_err(io)?;
+        run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+    }
     git(tools, dir, &["add", "-A"])?;
     git(tools, dir, &["commit", "-q", "-m", "base"])?;
     git(tools, dir, &["switch", "-q", "-c", "change"])?;
@@ -1228,6 +1442,7 @@ pub fn run_case(
     tools: &Tools,
     settings: &ClaudeSettings,
     date: &str,
+    review: &ReviewSettings,
 ) -> Observed {
     let mut observed = Observed {
         format: FORMAT,
@@ -1250,7 +1465,7 @@ pub fn run_case(
     let built = if case.step.replays_history() {
         setup_plan(case, repo, work_dir, tools)
     } else {
-        setup(case, case_dir, work_dir, tools, date)
+        setup(case, case_dir, work_dir, tools, date, review)
     };
     if let Err(e) = built {
         observed.error = Some(e);
@@ -1268,7 +1483,9 @@ pub fn run_case(
         }
     }
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
-    let args = claude_args(&prompt(case), settings, case.step);
+    let args = claude_args(&prompt(case), settings, case.step, review);
+    let isolated = review.isolated_at(case.step);
+    let mut sub_agents_started = 0;
     match run_claude(work_dir, tools, &args, settings.timeout_for(case.step), log) {
         Err(e) => observed.error = Some(e),
         Ok(stdout) => {
@@ -1280,6 +1497,14 @@ pub fn run_case(
             observed.duration_ms = output.duration_ms;
             observed.consumption = output.consumption;
             observed.error = output.error;
+            sub_agents_started = output.sub_agents_started;
+            if isolated
+                && observed.error.is_none()
+                && let Some(consumption) = observed.consumption.as_mut()
+                && let Err(e) = record_sub_agent_tokens(consumption)
+            {
+                observed.error = Some(e);
+            }
             // Only the update score reads the agent's messages; keeping them
             // for the other steps would only make `observed.json` larger.
             if case.step == Step::PlanUpdate {
@@ -1338,6 +1563,12 @@ pub fn run_case(
         if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
             let _ = fs::write(log.join("review.md"), record);
         }
+        // The skill falls back to the inline mode by design (decision
+        // 0007): an isolated case that did is not scored as one.
+        if isolated && observed.error.is_none() {
+            observed.error =
+                isolation_missing(observed.review.as_ref(), case.step, sub_agents_started);
+        }
     }
     for path in case.checked_paths() {
         let content = fs::read_to_string(work_dir.join(&path)).ok();
@@ -1375,6 +1606,7 @@ pub struct RunOptions {
     pub jobs: usize,
     pub tools: Tools,
     pub settings: ClaudeSettings,
+    pub review: ReviewSettings,
 }
 
 /// Whether a run's error says the account's usage limit is reached: every
@@ -1442,6 +1674,7 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
                         &options.tools,
                         &options.settings,
                         date,
+                        &options.review,
                     );
                     let text = serde_json::to_string_pretty(&observed).expect("serializes") + "\n";
                     if let Err(e) = fs::write(log.join("observed.json"), text) {
@@ -1493,6 +1726,34 @@ pub fn check_resume(
             "this output directory was recorded with {recorded_version}, and {installed} is installed; \
              runs added to it would be credited to the wrong version: install the same Claude Code, or use \
              another --out directory"
+        ));
+    }
+    Ok(())
+}
+
+/// Refuses to resume a run recorded in another review mode or with another
+/// appended configuration: its observations would be scored as one run. A
+/// `run.json` that records neither reads as `inline` with nothing appended.
+pub fn check_resume_review(recorded: &RunInfo, review: &ReviewSettings) -> Result<(), String> {
+    let mode = recorded.review_mode_or_default();
+    if mode != review.mode {
+        return Err(format!(
+            "this output directory was recorded in the {} review mode, and --review-mode asks for {}; \
+             use another --out directory, or the same mode",
+            mode.as_str(),
+            review.mode.as_str()
+        ));
+    }
+    if recorded.fixture_config != review.fixture_config {
+        let name = |text: &Option<String>| {
+            text.as_deref()
+                .map_or_else(|| "none".to_string(), |t| format!("`{}`", t.trim()))
+        };
+        return Err(format!(
+            "this output directory was recorded with the appended configuration {}, and \
+             --fixture-config gives {}; use another --out directory, or the same file",
+            name(&recorded.fixture_config),
+            name(&review.fixture_config)
         ));
     }
     Ok(())
@@ -1579,7 +1840,7 @@ mod tests {
             _ => None,
         };
         let settings = ClaudeSettings::from_env(&env).unwrap();
-        let args = claude_args("p", &settings, Step::CodeReview);
+        let args = claude_args("p", &settings, Step::CodeReview, &ReviewSettings::default());
         let after = |flag: &str| {
             args.iter()
                 .position(|a| a == flag)
@@ -1590,7 +1851,7 @@ mod tests {
         assert_eq!(after("-p").as_deref(), Some("p"));
 
         let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
-        let args = claude_args("p", &defaults, Step::CodeReview);
+        let args = claude_args("p", &defaults, Step::CodeReview, &ReviewSettings::default());
         assert!(!args.iter().any(|a| a == "--model"));
         let budget = args.iter().position(|a| a == "--max-budget-usd").unwrap();
         assert_eq!(args[budget + 1], "3");
@@ -1665,6 +1926,7 @@ mod tests {
             "p",
             &ClaudeSettings::from_env(&|_| None).unwrap(),
             Step::CodeReview,
+            &ReviewSettings::default(),
         );
         let after = |flag: &str| {
             args.iter()
@@ -1773,6 +2035,8 @@ mod tests {
             codev_version: None,
             repeat: None,
             jobs: None,
+            review_mode: None,
+            fixture_config: None,
         };
         assert!(check_resume(&recorded, None, None).is_ok());
         let err = check_resume(&recorded, Some("claude-sonnet-4-5"), None).unwrap_err();
@@ -2123,6 +2387,8 @@ mod tests {
             codev_version: None,
             repeat: None,
             jobs: None,
+            review_mode: None,
+            fixture_config: None,
         };
         assert!(check_resume(&recorded, None, Some("2.1.289 (Claude Code)")).is_ok());
         let err = check_resume(&recorded, None, Some("2.1.301 (Claude Code)")).unwrap_err();
@@ -2190,13 +2456,26 @@ mod tests {
             let i = args.iter().position(|a| a == "--max-budget-usd").unwrap();
             args[i + 1].clone()
         };
-        assert_eq!(budget(claude_args("p", &defaults, Step::PlanWrite)), "6");
+        assert_eq!(
+            budget(claude_args(
+                "p",
+                &defaults,
+                Step::PlanWrite,
+                &ReviewSettings::default()
+            )),
+            "6"
+        );
         assert_eq!(
             defaults.timeout_for(Step::PlanWrite),
             Duration::from_secs(1800)
         );
         assert_eq!(
-            budget(claude_args("p", &defaults, Step::PlanChallenge)),
+            budget(claude_args(
+                "p",
+                &defaults,
+                Step::PlanChallenge,
+                &ReviewSettings::default()
+            )),
             "3"
         );
         assert_eq!(
@@ -2210,7 +2489,15 @@ mod tests {
             _ => None,
         };
         let set = ClaudeSettings::from_env(&env).unwrap();
-        assert_eq!(budget(claude_args("p", &set, Step::PlanWrite)), "2");
+        assert_eq!(
+            budget(claude_args(
+                "p",
+                &set,
+                Step::PlanWrite,
+                &ReviewSettings::default()
+            )),
+            "2"
+        );
         assert_eq!(set.timeout_for(Step::PlanWrite), Duration::from_secs(900));
     }
 
@@ -2426,5 +2713,294 @@ mod tests {
         let kept = without_root(report);
         assert!(kept.get("root").is_none());
         assert_eq!(kept["items"], json!([]));
+    }
+
+    fn isolated() -> ReviewSettings {
+        ReviewSettings {
+            mode: ReviewMode::Isolated,
+            fixture_config: None,
+        }
+    }
+
+    fn recorded_run(review: &ReviewSettings) -> RunInfo {
+        let mut info = RunInfo {
+            format: FORMAT,
+            model: None,
+            date: "2026-10-20".into(),
+            claude_version: None,
+            codev_version: None,
+            repeat: Some(1),
+            jobs: Some(2),
+            review_mode: None,
+            fixture_config: None,
+        };
+        review.record(&mut info);
+        info
+    }
+
+    const INIT_CONFIG: &str = "schema: spec-driven\nlanguage: en\n";
+
+    #[test]
+    fn an_isolated_review_case_says_so_in_its_configuration() {
+        let review = review_settings(Some("isolated"), None).unwrap();
+        assert_eq!(review, isolated());
+        assert_eq!(
+            config_with_review_settings(INIT_CONFIG, &review).unwrap(),
+            "schema: spec-driven\nlanguage: en\nreview: { mode: isolated }\n"
+        );
+        // The sub-agent tool is granted to the review cases alone.
+        let tools = |step| {
+            let args = claude_args(
+                "p",
+                &ClaudeSettings::from_env(&|_| None).unwrap(),
+                step,
+                &review,
+            );
+            let at = args.iter().position(|a| a == "--allowedTools").unwrap();
+            args[at + 1].clone()
+        };
+        assert_eq!(tools(Step::PlanChallenge), "Bash(codev:*) Agent");
+        assert_eq!(tools(Step::PlanWrite), "Bash(codev:*)");
+        assert!(review.isolated_at(Step::CodeReview) && !review.isolated_at(Step::PlanUpdate));
+        // Inline, the configuration is left as `codev init` wrote it.
+        assert_eq!(
+            config_with_review_settings(INIT_CONFIG, &ReviewSettings::default()),
+            None
+        );
+        let text = serde_json::to_string(&recorded_run(&review)).unwrap();
+        assert!(text.contains(r#""reviewMode":"isolated""#), "{text}");
+        let inline = serde_json::to_string(&recorded_run(&ReviewSettings::default())).unwrap();
+        assert!(!inline.contains("reviewMode"), "{inline}");
+    }
+
+    #[test]
+    fn a_fixture_config_is_appended_to_every_case() {
+        let file = "roles: { skeptic: { done_when: [\"The rollback plan is stated\"] } }\n";
+        let review =
+            review_settings(None, Some((Path::new("extra.yaml"), Ok(file.to_string())))).unwrap();
+        assert_eq!(review.mode, ReviewMode::Inline);
+        let config = config_with_review_settings("schema: spec-driven", &review).unwrap();
+        assert!(
+            config.ends_with(&format!("spec-driven\n{file}")),
+            "{config}"
+        );
+        // With the isolated mode, the mode comes first and the file ends it.
+        let both = ReviewSettings {
+            fixture_config: review.fixture_config.clone(),
+            ..isolated()
+        };
+        let config = config_with_review_settings(INIT_CONFIG, &both).unwrap();
+        assert!(config.contains("review: { mode: isolated }\n"));
+        assert!(config.ends_with(file), "{config}");
+        assert_eq!(
+            recorded_run(&review).fixture_config.as_deref(),
+            Some(file),
+            "run.json records the text"
+        );
+    }
+
+    #[test]
+    fn options_that_cannot_be_applied_stop_the_run() {
+        let err = review_settings(Some("sometimes"), None).unwrap_err();
+        assert!(
+            err.contains("`sometimes`") && err.contains("--review-mode"),
+            "{err}"
+        );
+        let missing = std::io::Error::new(std::io::ErrorKind::NotFound, "No such file");
+        let err = review_settings(None, Some((Path::new("gone.yaml"), Err(missing)))).unwrap_err();
+        assert!(
+            err.contains("gone.yaml") && err.contains("No such file"),
+            "{err}"
+        );
+        let file = |text: &str| Some((Path::new("extra.yaml"), Ok(text.to_string())));
+        let err = review_settings(None, file("- a list\n")).unwrap_err();
+        assert!(err.contains("not a YAML mapping"), "{err}");
+        let err = review_settings(None, file("roles: [unclosed\n")).unwrap_err();
+        assert!(err.contains("not valid YAML"), "{err}");
+        let err = review_settings(None, file("review:\n  mode: isolated\n")).unwrap_err();
+        assert!(
+            err.contains("`review:`") && err.contains("--review-mode"),
+            "{err}"
+        );
+        let err = review_settings(Some("isolated"), file("review:\n  mode: inline\n")).unwrap_err();
+        assert!(
+            err.contains("`review:`") && err.contains("--review-mode"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn resuming_in_another_mode_stops() {
+        let recorded = recorded_run(&ReviewSettings::default());
+        let err = check_resume_review(&recorded, &isolated()).unwrap_err();
+        assert!(err.contains("inline") && err.contains("isolated"), "{err}");
+        assert!(check_resume_review(&recorded_run(&isolated()), &isolated()).is_ok());
+    }
+
+    #[test]
+    fn resuming_with_another_fixture_config_stops() {
+        let with = |text: &str| ReviewSettings {
+            fixture_config: Some(text.to_string()),
+            ..ReviewSettings::default()
+        };
+        let recorded = recorded_run(&with("roles: { a: never }\n"));
+        let err = check_resume_review(&recorded, &with("roles: { b: never }\n")).unwrap_err();
+        assert!(
+            err.contains("a: never") && err.contains("b: never"),
+            "{err}"
+        );
+        assert!(check_resume_review(&recorded, &ReviewSettings::default()).is_err());
+        assert!(check_resume_review(&recorded, &with("roles: { a: never }\n")).is_ok());
+    }
+
+    #[test]
+    fn an_earlier_run_json_reads_as_inline() {
+        let earlier = crate::observed::parse_run_info(
+            r#"{"format": 2, "model": null, "date": "2026-10-15",
+            "claudeVersion": "2.1.289 (Claude Code)", "codevVersion": "0.6.1",
+            "repeat": 5, "jobs": 4}"#,
+        )
+        .unwrap();
+        assert_eq!(earlier.review_mode_or_default(), ReviewMode::Inline);
+        assert_eq!(earlier.fixture_config, None);
+        assert!(check_resume_review(&earlier, &ReviewSettings::default()).is_ok());
+        assert!(check_resume_review(&earlier, &isolated()).is_err());
+    }
+
+    /// `codev review --json` for a step: its `Mode:` line and each role's
+    /// `Fallback:` line.
+    fn review_json(mode: Option<&str>, fallback: Option<&str>) -> serde_json::Value {
+        json!({"exists": true, "steps": [{"step": "plan.challenge", "recorded": true,
+            "mode": mode, "summarized": [],
+            "roles": [{"role": "skeptic", "state": "findings", "fallback": fallback,
+                       "credited": []}]}],
+            "findings": [], "issues": []})
+    }
+
+    #[test]
+    fn a_case_that_fell_back_inline_is_an_error() {
+        let started =
+            |stream: &[String]| parse_claude_stream(&stream.join("\n")).sub_agents_started;
+        let with_agent = started(&[
+            assistant(
+                "m1",
+                10,
+                1,
+                json!([tool_use(
+                    "t1",
+                    "Agent",
+                    json!({"prompt": "You are the skeptic"})
+                )]),
+            ),
+            tool_result("t1", 50),
+            assistant("m2", 10, 1, json!([{"type": "text", "text": "Done."}])),
+            RESULT.to_string(),
+        ]);
+        assert_eq!(with_agent, 1);
+        let without_agent = started(&[
+            assistant("m1", 10, 1, json!([{"type": "text", "text": "Done."}])),
+            RESULT.to_string(),
+        ]);
+        assert_eq!(without_agent, 0);
+
+        let step = Step::PlanChallenge;
+        assert_eq!(
+            isolation_missing(Some(&review_json(Some("isolated"), None)), step, with_agent),
+            None
+        );
+        let fell_back = review_json(Some("isolated"), Some("the sub-agent timed out twice."));
+        let err = isolation_missing(Some(&fell_back), step, with_agent).unwrap();
+        assert!(
+            err.contains("Fallback: the sub-agent timed out twice."),
+            "{err}"
+        );
+        assert!(err.contains("skeptic"), "{err}");
+        let err = isolation_missing(
+            Some(&review_json(Some("isolated"), None)),
+            step,
+            without_agent,
+        )
+        .unwrap();
+        assert!(err.contains("no sub-agent"), "{err}");
+        let err =
+            isolation_missing(Some(&review_json(Some("inline"), None)), step, with_agent).unwrap();
+        assert!(err.contains("`Mode: inline.`"), "{err}");
+        let err = isolation_missing(None, step, with_agent).unwrap();
+        assert!(err.contains("no `Mode: isolated.` line"), "{err}");
+    }
+
+    /// An assistant event with its input and cache writes, made by the
+    /// session or, with `parent`, by the sub-agent that tool call started.
+    fn call_event(id: &str, input: u64, writes: u64, parent: Option<&str>) -> String {
+        json!({"type": "assistant", "parent_tool_use_id": parent,
+            "message": {"id": id, "content": [{"type": "text", "text": "x"}],
+            "usage": {"input_tokens": input, "cache_creation_input_tokens": writes,
+                      "cache_read_input_tokens": 0, "output_tokens": 10}}})
+        .to_string()
+    }
+
+    fn result_with_totals(input: u64, writes: u64, output: u64) -> String {
+        json!({"type": "result", "subtype": "success", "is_error": false,
+            "duration_ms": 1000, "num_turns": 3, "total_cost_usd": 0.4,
+            "modelUsage": {"claude-opus-5-5": {"inputTokens": input,
+                "cacheCreationInputTokens": writes, "cacheReadInputTokens": 0,
+                "outputTokens": output}}})
+        .to_string()
+    }
+
+    #[test]
+    fn the_sub_agents_tokens_are_a_source() {
+        // The session's own calls hold 70,000 input tokens; a sub-agent's
+        // call, streamed under the tool call that started it, is not one.
+        let stream = [
+            call_event("m1", 30_000, 4_000, None),
+            call_event("s1", 45_000, 9_000, Some("t1")),
+            call_event("m2", 40_000, 1_000, None),
+            result_with_totals(120_000, 15_000, 50),
+        ]
+        .join("\n");
+        let mut consumption = parse_claude_stream(&stream).consumption.unwrap();
+        assert_eq!(consumption.calls.len(), 2);
+        record_sub_agent_tokens(&mut consumption).unwrap();
+        assert_eq!(
+            consumption.sub_agents,
+            Some(Tokens {
+                input: 50_000,
+                cache_creation: 10_000,
+                cache_read: 0,
+                output: 30,
+            })
+        );
+
+        // The sub-agents are a source of their own, and the per-call
+        // measures count the session's calls alone.
+        let case = a_case("security", Kind::Control, &[]);
+        let mut observed = crate::score::tests::observed("no-finding", &[], json!([]));
+        observed.consumption = Some(consumption.clone());
+        let score = crate::score::suite(
+            crate::score::tests::run(),
+            vec![crate::score::case(&case, &observed)],
+            crate::score::Thresholds::default(),
+        );
+        let source = score
+            .sources
+            .iter()
+            .find(|s| s.source == crate::score::SUB_AGENTS_SOURCE)
+            .expect("a sub-agents source");
+        assert_eq!(source.tokens, 10_000.0);
+        assert_eq!(
+            score.case_consumption[0].measures.input_per_call,
+            Some(37_500.0)
+        );
+
+        // Totals below the session's own calls are inconsistent.
+        let stream = [
+            call_event("m1", 30_000, 4_000, None),
+            result_with_totals(20_000, 4_000, 10),
+        ]
+        .join("\n");
+        let mut consumption = parse_claude_stream(&stream).consumption.unwrap();
+        let err = record_sub_agent_tokens(&mut consumption).unwrap_err();
+        assert!(err.contains("20000") && err.contains("30000"), "{err}");
     }
 }

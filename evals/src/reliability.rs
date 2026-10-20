@@ -1841,6 +1841,8 @@ mod tests {
                 codev_version: Some("codev 0.6.1".into()),
                 repeat: None,
                 jobs: None,
+                review_mode: None,
+                fixture_config: None,
             },
             thresholds: Thresholds::default(),
             cost_usd: 15.1836,

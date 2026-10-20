@@ -6,6 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
+use crate::case::Step;
 use crate::observed::RunInfo;
 use crate::score::{
     Measure, Measures, Outcome, PlanningScore, RoleScore, SourceShare, Spread, SuiteScore, number,
@@ -59,6 +60,32 @@ pub fn models_differ(
         ));
     }
     None
+}
+
+/// Whether a run holds review cases, whose mode its `run.json` records.
+fn holds_review_cases(score: &SuiteScore) -> bool {
+    score
+        .cases
+        .iter()
+        .any(|c| Step::parse(&c.step).is_some_and(Step::is_review))
+}
+
+/// Why two runs cannot be compared on the same review path, if they
+/// cannot: both hold review cases, played in different modes. A run of
+/// planning cases alone ran in no review mode.
+pub fn review_modes_differ(baseline: &SuiteScore, candidate: &SuiteScore) -> Option<String> {
+    let (b, c) = (
+        baseline.run.review_mode_or_default(),
+        candidate.run.review_mode_or_default(),
+    );
+    (b != c && holds_review_cases(baseline) && holds_review_cases(candidate)).then(|| {
+        format!(
+            "the baseline's review cases ran in the {} mode and the candidate's in the {} mode; \
+             compare runs of the same review mode",
+            b.as_str(),
+            c.as_str()
+        )
+    })
 }
 
 /// The baseline's floor: the sum, over its cases, of each case's lowest
@@ -302,6 +329,7 @@ pub fn compare(
     candidate: &SuiteScore,
     not_compared: &[String],
     mode: Mode,
+    across_models: bool,
 ) -> Comparison {
     let mut failures = errors(baseline, candidate);
     let candidate_roles = roles(candidate);
@@ -329,7 +357,7 @@ pub fn compare(
         failures: &failures,
     };
     let report = [
-        header(baseline, candidate, &verdict),
+        header(baseline, candidate, &verdict, across_models),
         quality_section(baseline, candidate),
         planning_section(baseline, candidate),
         update_section(baseline, candidate),
@@ -413,10 +441,67 @@ fn count_range(s: Option<Spread>) -> String {
     )
 }
 
-fn header(baseline: &SuiteScore, candidate: &SuiteScore, verdict: &Verdict) -> String {
+/// A run's model: the one asked for, and those its observations record as
+/// used.
+fn model_of(score: &SuiteScore) -> String {
+    let asked = score
+        .run
+        .model
+        .as_deref()
+        .unwrap_or("Claude Code's default");
+    let used = models_used(score);
+    if used.is_empty() {
+        asked.to_string()
+    } else {
+        format!(
+            "{asked} (used: {})",
+            used.into_iter().collect::<Vec<_>>().join(", ")
+        )
+    }
+}
+
+/// Both runs' appended configurations, and whether they differ.
+fn fixture_configs(baseline: &RunInfo, candidate: &RunInfo) -> String {
+    let (b, c) = (&baseline.fixture_config, &candidate.fixture_config);
+    if b.is_none() && c.is_none() {
+        return "- Appended configuration: none\n".into();
+    }
+    let block = |text: &Option<String>| {
+        text.as_deref().map_or_else(
+            || " none\n".to_string(),
+            |t| format!("\n\n  ```yaml\n{}  ```\n", indented(t)),
+        )
+    };
+    format!(
+        "- Appended configuration{}:\n  - baseline:{}  - candidate:{}",
+        if b != c { " — **they differ**" } else { "" },
+        block(b),
+        block(c)
+    )
+}
+
+/// `text`'s lines indented under a list item, each ending with a newline.
+fn indented(text: &str) -> String {
+    text.lines().map(|line| format!("  {line}\n")).collect()
+}
+
+fn header(
+    baseline: &SuiteScore,
+    candidate: &SuiteScore,
+    verdict: &Verdict,
+    across_models: bool,
+) -> String {
     let mut out = String::new();
     let version = |r: &RunInfo| r.claude_version.clone().unwrap_or_else(|| "unknown".into());
     let _ = writeln!(out, "# Comparison with the baseline\n");
+    if across_models {
+        let _ = writeln!(
+            out,
+            "Compared across models (`--across-models`): baseline {}, candidate {}.\n",
+            model_of(baseline),
+            model_of(candidate)
+        );
+    }
     let _ = writeln!(
         out,
         "- Verdict: **{}**{}",
@@ -430,15 +515,32 @@ fn header(baseline: &SuiteScore, candidate: &SuiteScore, verdict: &Verdict) -> S
             Mode::QualityAndCost => "",
         }
     );
-    let _ = writeln!(
-        out,
-        "- Model: {}",
-        baseline
-            .run
-            .model
-            .as_deref()
-            .unwrap_or("Claude Code's default")
+    if !across_models {
+        let _ = writeln!(
+            out,
+            "- Model: {}",
+            baseline
+                .run
+                .model
+                .as_deref()
+                .unwrap_or("Claude Code's default")
+        );
+    }
+    let (bm, cm) = (
+        baseline.run.review_mode_or_default(),
+        candidate.run.review_mode_or_default(),
     );
+    if bm == cm {
+        let _ = writeln!(out, "- Review mode: {}", bm.as_str());
+    } else {
+        let _ = writeln!(
+            out,
+            "- Review mode: baseline {}, candidate {}",
+            bm.as_str(),
+            cm.as_str()
+        );
+    }
+    out.push_str(&fixture_configs(&baseline.run, &candidate.run));
     let (bv, cv) = (version(&baseline.run), version(&candidate.run));
     let _ = writeln!(
         out,
@@ -802,7 +904,7 @@ mod tests {
     fn a_cheaper_run_of_the_same_quality_passes() {
         let base = runs(&[(true, 1.0, 1.0), (true, 1.1, 0.95), (true, 1.05, 1.0)]);
         let cand = runs(&[(true, 0.8, 0.8), (true, 0.85, 0.8), (true, 0.8, 0.82)]);
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.pass, "{:?}", result.failures);
         assert!(
             result
@@ -817,7 +919,7 @@ mod tests {
     fn a_cheaper_run_that_misses_more_fails() {
         let base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0), (true, 1.0, 1.0)]);
         let cand = runs(&[(false, 0.5, 0.5), (false, 0.5, 0.5), (true, 0.5, 0.5)]);
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(!result.pass);
         assert_eq!(
             result.failures,
@@ -830,7 +932,7 @@ mod tests {
         let base = runs(&[(true, 1.0, 0.9), (true, 1.2, 1.0), (true, 1.1, 1.1)]);
         // Floor 1.0 + 0.9 = 1.9; median 1.1 + 1.0 = 2.1; candidate 1.95.
         let cand = runs(&[(true, 1.0, 0.95), (true, 1.0, 0.95), (true, 1.0, 0.95)]);
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(!result.pass);
         assert!(
             result.failures[0].contains("1.9500 USD") && result.failures[0].contains("1.9000 USD"),
@@ -842,14 +944,14 @@ mod tests {
     #[test]
     fn the_same_cost_fails_unless_quality_only() {
         let base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
-        let result = compare(&base, &base, &[], Mode::QualityAndCost);
+        let result = compare(&base, &base, &[], Mode::QualityAndCost, false);
         assert!(!result.pass);
         assert!(
             result.failures[0].contains("not lower"),
             "{:?}",
             result.failures
         );
-        let lenient = compare(&base, &base, &[], Mode::QualityOnly);
+        let lenient = compare(&base, &base, &[], Mode::QualityOnly, false);
         assert!(lenient.pass, "{:?}", lenient.failures);
         assert!(lenient.report.contains("Cost (USD)"));
         assert!(lenient.report.contains("(not deciding, `--quality-only`)"));
@@ -860,7 +962,7 @@ mod tests {
         // Each case is expensive in a different repetition: every
         // repetition costs 9, yet the medians sum to 0.
         let base = runs(&[(true, 0.0, 9.0), (true, 9.0, 0.0), (true, 0.0, 0.0)]);
-        let result = compare(&base, &base, &[], Mode::QualityAndCost);
+        let result = compare(&base, &base, &[], Mode::QualityAndCost, false);
         assert!(!result.pass, "{}", result.report);
     }
 
@@ -871,7 +973,7 @@ mod tests {
         for c in &mut cand.cases {
             c.duration_ms = Some(2000);
         }
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.pass, "{:?}", result.failures);
     }
 
@@ -882,9 +984,9 @@ mod tests {
             c.measures.cost_usd = None;
         }
         let cand = runs(&[(true, 0.5, 0.5)]);
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.failures[0].contains("cannot be compared"));
-        assert!(compare(&base, &cand, &[], Mode::QualityOnly).pass);
+        assert!(compare(&base, &cand, &[], Mode::QualityOnly, false).pass);
     }
 
     #[test]
@@ -892,7 +994,7 @@ mod tests {
         let base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.cases[1].outcome = Outcome::Error("timeout after 600 s".into());
-        let result = compare(&base, &cand, &[], Mode::QualityOnly);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
         assert!(!result.pass);
         assert!(
             result.failures[0].starts_with("candidate: case `security-case` (repetition 2)"),
@@ -906,7 +1008,7 @@ mod tests {
         let base = runs(&[(true, 1.0, 1.0)]);
         let mut cand = runs(&[(true, 0.5, 0.5)]);
         cand.run.claude_version = Some("2.1.301 (Claude Code)".into());
-        let report = compare(&base, &cand, &[], Mode::QualityAndCost).report;
+        let report = compare(&base, &cand, &[], Mode::QualityAndCost, false).report;
         assert!(report.contains("2.1.301"), "{report}");
         assert!(report.contains("they differ"), "{report}");
     }
@@ -917,7 +1019,7 @@ mod tests {
         base.run.jobs = Some(4);
         let mut cand = runs(&[(true, 0.5, 0.5)]);
         cand.run.jobs = Some(2);
-        let report = compare(&base, &cand, &[], Mode::QualityAndCost).report;
+        let report = compare(&base, &cand, &[], Mode::QualityAndCost, false).report;
         assert!(
             report.contains("baseline 4, candidate 2 — **they differ**"),
             "{report}"
@@ -933,6 +1035,7 @@ mod tests {
             &cand,
             &["ops-code-no-timeout".into()],
             Mode::QualityAndCost,
+            false,
         )
         .report;
         assert!(report.contains("`ops-code-no-timeout`"), "{report}");
@@ -974,7 +1077,7 @@ mod tests {
         base.planning = Some(planning((0.7, 0.6, 0.75), (1.0, 0.0, 2.0)));
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.planning = Some(planning((0.5, 0.5, 0.5), (1.0, 1.0, 1.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(!result.pass);
         assert_eq!(
             result.failures,
@@ -993,10 +1096,10 @@ mod tests {
         base.planning = Some(planning((0.7, 0.6, 0.75), (1.0, 0.0, 2.0)));
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.planning = Some(planning((0.6, 0.6, 0.6), (2.0, 2.0, 2.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.pass, "{:?}", result.failures);
         cand.planning = Some(planning((0.6, 0.6, 0.6), (3.0, 3.0, 3.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert_eq!(
             result.failures,
             ["plan.write: 3 probable duplicate(s) exceed the baseline's maximum 2"]
@@ -1016,7 +1119,7 @@ mod tests {
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.roles[0].false_positives = 2.0;
         cand.planning = Some(planning((0.8, 0.8, 0.8), (0.0, 0.0, 0.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.pass, "{:?}", result.failures);
         let report = &result.report;
         assert!(report.contains("## Quality improved"), "{report}");
@@ -1032,7 +1135,7 @@ mod tests {
             report.contains("- plan.write: probable duplicates, from 1 at best to 0"),
             "{report}"
         );
-        let same = compare(&base, &base, &[], Mode::QualityOnly).report;
+        let same = compare(&base, &base, &[], Mode::QualityOnly, false).report;
         assert!(!same.contains("Quality improved"), "{same}");
     }
 
@@ -1054,7 +1157,7 @@ mod tests {
         base.update = Some(updating((1.0, 0.83, 1.0), (0.0, 0.0, 1.0)));
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.update = Some(updating((0.5, 0.5, 0.5), (0.0, 0.0, 0.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(!result.pass);
         assert_eq!(
             result.failures,
@@ -1073,7 +1176,7 @@ mod tests {
             result.report
         );
         cand.update = Some(updating((0.83, 0.83, 0.83), (2.0, 2.0, 2.0)));
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert_eq!(
             result.failures,
             [
@@ -1081,7 +1184,7 @@ mod tests {
             ]
         );
         cand.update = Some(updating((0.83, 0.83, 0.83), (1.0, 1.0, 1.0)));
-        assert!(compare(&base, &cand, &[], Mode::QualityAndCost).pass);
+        assert!(compare(&base, &cand, &[], Mode::QualityAndCost, false).pass);
     }
 
     #[test]
@@ -1097,7 +1200,7 @@ mod tests {
         let mut cand = runs(&[(true, 0.5, 0.5)]);
         cand.consumption.input_per_call = Some(31_000.0);
         cand.sources = vec![share("skill", 30_000.0), share("file", 10_000.0)];
-        let report = compare(&base, &cand, &[], Mode::QualityAndCost).report;
+        let report = compare(&base, &cand, &[], Mode::QualityAndCost, false).report;
         assert!(
             report.contains("| Input per call | 38000 | 31000 | -18.4 % |"),
             "{report}"
@@ -1115,7 +1218,93 @@ mod tests {
         let mut cand = runs(&[(true, 0.5, 0.5), (true, 0.5, 0.5)]);
         cand.consumption.output_tokens = Some(1_000_000.0);
         cand.consumption.output_per_call = Some(50_000.0);
-        let result = compare(&base, &cand, &[], Mode::QualityAndCost);
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, false);
         assert!(result.pass, "{:?}", result.failures);
+    }
+
+    #[test]
+    fn across_models_compares_and_names_both() {
+        let used = |score: &mut SuiteScore, models: &[&str]| {
+            for c in &mut score.cases {
+                if let Some(consumption) = c.consumption.as_mut() {
+                    consumption.models = models.iter().map(|m| m.to_string()).collect();
+                }
+            }
+        };
+        let mut base = runs(&[(true, 1.0, 1.0)]);
+        used(&mut base, &["claude-opus-5-5"]);
+        let mut cand = runs(&[(true, 0.5, 0.5)]);
+        used(&mut cand, &["claude-opus-5-5", "claude-sonnet-5-5"]);
+        // The guard still tells the runs apart; `--across-models` lifts it.
+        assert!(
+            models_differ(
+                &base.run,
+                &models_used(&base),
+                &cand.run,
+                &models_used(&cand)
+            )
+            .is_some()
+        );
+        let result = compare(&base, &cand, &[], Mode::QualityAndCost, true);
+        assert!(result.pass, "{:?}", result.failures);
+        let top: String = result.report.lines().take(3).collect::<Vec<_>>().join("\n");
+        assert!(
+            top.contains("--across-models")
+                && top.contains("baseline Claude Code's default (used: claude-opus-5-5)")
+                && top.contains(
+                    "candidate Claude Code's default (used: claude-opus-5-5, claude-sonnet-5-5)"
+                ),
+            "{top}"
+        );
+        let same = compare(&base, &base, &[], Mode::QualityOnly, false).report;
+        assert!(!same.contains("--across-models"), "{same}");
+    }
+
+    #[test]
+    fn two_review_modes_are_not_compared() {
+        let base = runs(&[(true, 1.0, 1.0)]);
+        let mut cand = runs(&[(true, 0.5, 0.5)]);
+        cand.run.review_mode = Some(crate::observed::ReviewMode::Isolated);
+        let err = review_modes_differ(&base, &cand).unwrap();
+        assert!(err.contains("inline") && err.contains("isolated"), "{err}");
+        assert_eq!(review_modes_differ(&cand, &cand), None);
+        // A run of planning cases alone ran in no review mode.
+        let mut planning_only = cand.clone();
+        for c in &mut planning_only.cases {
+            c.step = "plan.write".into();
+        }
+        assert_eq!(review_modes_differ(&base, &planning_only), None);
+    }
+
+    #[test]
+    fn different_appended_configurations_are_named() {
+        let mut base = runs(&[(true, 1.0, 1.0)]);
+        base.run.fixture_config = Some("roles: { skeptic: { done_when: [a] } }\n".into());
+        let mut cand = runs(&[(true, 0.5, 0.5)]);
+        cand.run.fixture_config = Some("roles: { skeptic: { done_when: [b] } }\n".into());
+        let report = compare(&base, &cand, &[], Mode::QualityAndCost, false).report;
+        assert!(
+            report.contains("- Appended configuration — **they differ**:")
+                && report.contains("done_when: [a]")
+                && report.contains("done_when: [b]"),
+            "{report}"
+        );
+        let same = compare(&base, &base, &[], Mode::QualityOnly, false).report;
+        assert!(
+            same.contains("- Appended configuration:") && !same.contains("they differ"),
+            "{same}"
+        );
+        let none = compare(
+            &runs(&[(true, 1.0, 1.0)]),
+            &cand,
+            &[],
+            Mode::QualityOnly,
+            false,
+        );
+        assert!(
+            none.report.contains("  - baseline: none\n"),
+            "{}",
+            none.report
+        );
     }
 }
