@@ -56,8 +56,64 @@ pub fn score_implement(
     change_dir: &str,
     observed: &Observed,
 ) -> ImplementScore {
+    let mut checks = Vec::new();
+    let mut check = |check: String, passed: bool| checks.push(ImplementCheck { check, passed });
+    let (assertions, assertions_passed) = if case.refuse {
+        score_refusal(observed, &mut check);
+        (0, 0)
+    } else {
+        score_implementation(case, change_dir, observed, &mut check)
+    };
+    ImplementScore {
+        passed: checks.iter().all(|c| c.passed),
+        refuse: case.refuse,
+        checks,
+        assertions,
+        assertions_passed,
+    }
+}
+
+/// What the runner recorded after the run, `None` when the run stopped.
+fn seen(observed: &Observed) -> Option<&crate::observed::ImplementObserved> {
+    observed
+        .implement
+        .as_ref()
+        .filter(|_| observed.error.is_none())
+}
+
+/// A refusal changes no file, points to `/codev-propose`, and reads
+/// nothing of the cases' repository.
+fn score_refusal(observed: &Observed, check: &mut impl FnMut(String, bool)) {
+    let seen = seen(observed);
+    check(
+        "no file changed".to_string(),
+        seen.is_some_and(|s| s.changed.is_empty()),
+    );
+    let messages = if seen.is_some() {
+        observed.messages.join("\n")
+    } else {
+        String::new()
+    };
+    check(
+        format!("points to `{PROPOSE_SKILL}`"),
+        messages.contains(PROPOSE_SKILL),
+    );
+    check(
+        "no read of the cases' repository".to_string(),
+        seen.is_some_and(|s| s.read_repository.is_empty()),
+    );
+}
+
+/// An implementation's checks, in order; returns how many acceptance
+/// assertions there are and how many passed.
+fn score_implementation(
+    case: &ImplementCase,
+    change_dir: &str,
+    observed: &Observed,
+    check: &mut impl FnMut(String, bool),
+) -> (u32, u32) {
     let stopped = observed.error.is_some();
-    let seen = observed.implement.as_ref().filter(|_| !stopped);
+    let seen = seen(observed);
     let file = |name: &str| -> Option<&str> {
         if stopped {
             return None;
@@ -67,105 +123,82 @@ pub fn score_implement(
             .get(&format!("{change_dir}/{name}"))
             .and_then(|t| t.as_deref())
     };
-    let mut checks = Vec::new();
-    let mut check = |check: String, passed: bool| checks.push(ImplementCheck { check, passed });
-    let reads_clean = seen.is_some_and(|s| s.read_repository.is_empty());
-    let mut assertions = 0;
-    let mut assertions_passed = 0;
-
-    if case.refuse {
-        check(
-            "no file changed".to_string(),
-            seen.is_some_and(|s| s.changed.is_empty()),
-        );
-        let messages = if stopped {
-            String::new()
+    let planned = case
+        .files
+        .get("tasks.md")
+        .map(|t| tasks(t))
+        .unwrap_or_default();
+    let done = file("tasks.md").map(tasks).unwrap_or_default();
+    let left: Vec<&str> = planned
+        .iter()
+        .filter(|(id, _)| !done.iter().any(|(d, checked)| d == id && *checked))
+        .map(|(id, _)| id.as_str())
+        .collect();
+    check(
+        if left.is_empty() {
+            "every task checked".to_string()
         } else {
-            observed.messages.join("\n")
-        };
-        check(
-            format!("points to `{PROPOSE_SKILL}`"),
-            messages.contains(PROPOSE_SKILL),
-        );
-        check("no read of the cases' repository".to_string(), reads_clean);
+            format!("every task checked ({} left)", left.join(", "))
+        },
+        file("tasks.md").is_some() && left.is_empty(),
+    );
+    for command in &CHECKS {
+        let passed =
+            seen.is_some_and(|s| s.checks.iter().any(|c| c.name == command.name && c.passed));
+        check(format!("`{}` passes", command.name), passed);
+    }
+    let printed = seen.map(|s| s.printed.clone()).unwrap_or_default();
+    let (mut assertions, mut assertions_passed) = (0, 0);
+    for (name, ok) in acceptance_results(&printed, &case.acceptance) {
+        assertions += 1;
+        if ok {
+            assertions_passed += 1;
+        }
+        check(format!("acceptance `{name}`"), ok);
+    }
+    check(
+        "the review record holds `code.review`".to_string(),
+        !stopped && reviewed(observed.review.as_ref()),
+    );
+    let change = change_dir.rsplit('/').next().unwrap_or(change_dir);
+    let validate_after = if stopped {
+        None
     } else {
-        let planned = case
-            .files
-            .get("tasks.md")
-            .map(|t| tasks(t))
-            .unwrap_or_default();
-        let done = file("tasks.md").map(tasks).unwrap_or_default();
-        let left: Vec<&str> = planned
-            .iter()
-            .filter(|(id, _)| !done.iter().any(|(d, checked)| d == id && *checked))
-            .map(|(id, _)| id.as_str())
-            .collect();
-        check(
-            if left.is_empty() {
-                "every task checked".to_string()
-            } else {
-                format!("every task checked ({} left)", left.join(", "))
-            },
-            file("tasks.md").is_some() && left.is_empty(),
-        );
-        for command in &CHECKS {
-            let passed =
-                seen.is_some_and(|s| s.checks.iter().any(|c| c.name == command.name && c.passed));
-            check(format!("`{}` passes", command.name), passed);
-        }
-        let printed = seen.map(|s| s.printed.clone()).unwrap_or_default();
-        for (name, ok) in acceptance_results(&printed, &case.acceptance) {
-            assertions += 1;
-            if ok {
-                assertions_passed += 1;
-            }
-            check(format!("acceptance `{name}`"), ok);
-        }
-        check(
-            "the review record holds `code.review`".to_string(),
-            !stopped && reviewed(observed.review.as_ref()),
-        );
-        let change = change_dir.rsplit('/').next().unwrap_or(change_dir);
-        let validate_after = if stopped {
-            None
+        observed.validate.get(change)
+    };
+    let added = added_errors(observed.validate_before.as_ref(), validate_after);
+    check(
+        if added.is_empty() {
+            "no validation error added".to_string()
         } else {
-            observed.validate.get(change)
-        };
-        let added = added_errors(observed.validate_before.as_ref(), validate_after);
-        check(
-            if added.is_empty() {
-                "no validation error added".to_string()
-            } else {
-                format!("no validation error added ({})", added.join(", "))
-            },
-            validate_after.is_some() && added.is_empty(),
-        );
-        check(
-            "nothing modified outside the step".to_string(),
-            !stopped && observed.strayed.is_empty(),
-        );
-        check(
-            "the change is still in `_codev/changes/`".to_string(),
-            file("proposal.md").is_some(),
-        );
-        check("no read of the cases' repository".to_string(), reads_clean);
-        if case.docs {
-            for language in ["en", "fr"] {
-                let prefix = format!("docs/{language}/");
-                check(
-                    format!("`{prefix}` touched"),
-                    seen.is_some_and(|s| s.changed.iter().any(|p| p.starts_with(&prefix))),
-                );
-            }
+            format!("no validation error added ({})", added.join(", "))
+        },
+        validate_after.is_some() && added.is_empty(),
+    );
+    check(
+        "nothing modified outside the step".to_string(),
+        !stopped && observed.strayed.is_empty(),
+    );
+    // Archiving moves the whole folder: a change whose proposal is still in
+    // its folder was not archived.
+    check(
+        "the change is still in `_codev/changes/`".to_string(),
+        file("proposal.md").is_some(),
+    );
+    check(
+        "no read of the cases' repository".to_string(),
+        seen.is_some_and(|s| s.read_repository.is_empty()),
+    );
+    if case.docs {
+        for language in ["en", "fr"] {
+            let prefix = format!("docs/{language}/");
+            check(
+                format!("`{prefix}` touched"),
+                seen.is_some_and(|s| s.changed.iter().any(|p| p.starts_with(&prefix))),
+            );
         }
     }
-    ImplementScore {
-        passed: checks.iter().all(|c| c.passed),
-        refuse: case.refuse,
-        checks,
-        assertions,
-        assertions_passed,
-    }
+    (assertions, assertions_passed)
 }
 
 /// One repetition of the implementation runs, pooled. The refusing runs

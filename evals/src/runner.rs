@@ -11,6 +11,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
+use crate::implement_run;
 use crate::observed::{Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
 use crate::suite::{Recorded, RunState};
 
@@ -1138,11 +1139,17 @@ fn write_tree(root: &Path, files: &BTreeMap<String, Vec<u8>>) -> std::io::Result
 
 /// A command the runner starts itself, outside the sandbox: once the agent
 /// has run, the case's directory is untrusted, so the command gets neither
-/// the API key nor any git configuration but the repository's own.
+/// the API key, nor any other variable of the operator's environment but
+/// what it needs to run, nor any git configuration but the repository's
+/// own.
 fn tool_command(tool: &Path, dir: &Path, codev_dir: &Path) -> Command {
     let mut command = Command::new(tool);
     command
         .current_dir(dir)
+        // No secret of the operator's shell either: only what the tools need
+        // to run.
+        .env_clear()
+        .envs(std::env::vars().filter(|(name, _)| implement_run::kept(name)))
         .env("CODEV_NO_UPDATE_CHECK", "1")
         .env("PATH", path_with(codev_dir))
         .env("GIT_CONFIG_NOSYSTEM", "1")
@@ -1654,9 +1661,9 @@ pub fn run_case(
 }
 
 /// An implementation run, once its fixture is built: the build prepared,
-/// Claude Code on `/codev-apply`, then the runner's own checks, the binary
-/// and the acceptance script. The caller removes the build outputs, error
-/// or not.
+/// Claude Code on `/codev-apply`, what the run left, then the runner's own
+/// checks, the binary and the acceptance script. The caller removes the
+/// build outputs, error or not.
 fn run_implementation(
     case: &Case,
     repo: &Path,
@@ -1666,25 +1673,53 @@ fn run_implementation(
     settings: &ClaudeSettings,
     mut observed: Observed,
 ) -> Observed {
-    use crate::implement_run as build;
-    if let Err(e) = build::prepare(work_dir, log) {
-        observed.error = Some(e);
-        return observed;
-    }
-    // The errors the archived change already has under the codev being
-    // measured: the run is judged only on those it adds.
-    match codev_json(tools, work_dir, &["validate", &case.change, "--json"]) {
-        Ok(value) => observed.validate_before = Some(without_root(value)),
-        Err(e) => {
-            observed.error = Some(e);
-            return observed;
+    let result = (|| -> Result<(), String> {
+        implement_run::prepare(work_dir, log)?;
+        // The errors the archived change already has under the codev being
+        // measured: the run is judged only on those it adds.
+        let before = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+        observed.validate_before = Some(without_root(before));
+        let git_before = git_settings(work_dir);
+        let reads = run_agent(case, work_dir, log, tools, settings, &mut observed)?;
+        if let Some(tampered) = git_settings_tampered(&git_before, &git_settings(work_dir)) {
+            return Err(tampered);
         }
+        let status = observe_change(case, work_dir, log, tools, &mut observed)?;
+        // `--repo .` is relative: the resolved path is the one to look for.
+        let roots: Vec<PathBuf> = [repo.to_path_buf()]
+            .into_iter()
+            .chain(fs::canonicalize(repo).ok())
+            .collect();
+        let mut implement = crate::observed::ImplementObserved {
+            changed: implement_run::changed_paths(&status),
+            read_repository: implement_run::reads_under(&reads, &roots),
+            ..Default::default()
+        };
+        if let Some(case) = case.implement.as_ref().filter(|i| !i.refuse) {
+            check_implementation(case, work_dir, log, &mut implement)?;
+        }
+        observed.implement = Some(implement);
+        Ok(())
+    })();
+    if let Err(e) = result {
+        observed.error.get_or_insert(e);
     }
-    let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
-    // An implementation run grants what the installed `codev-apply` skill
-    // grants a user who invokes it — the shell, to build and test, and the
-    // sub-agent tool of an isolated review —: the agent reads the skill
-    // file instead of invoking it.
+    observed
+}
+
+/// Claude Code on `/codev-apply`, granted what the installed skill grants a
+/// user who invokes it — the shell, to build and test, and the sub-agent
+/// tool of an isolated review —: the agent reads the skill file instead of
+/// invoking it. Returns the paths and commands its tool calls read; a run
+/// Claude Code reports in error is an error.
+fn run_agent(
+    case: &Case,
+    work_dir: &Path,
+    log: &Path,
+    tools: &Tools,
+    settings: &ClaudeSettings,
+    observed: &mut Observed,
+) -> Result<Vec<String>, String> {
     let skill = fs::read_to_string(
         work_dir
             .join(".claude")
@@ -1699,101 +1734,133 @@ fn run_implementation(
         case.step,
         &ReviewSettings::default(),
     );
-    if let Some(tools) = skill_allowed_tools(&skill) {
-        args = with_allowed_tools(args, &tools);
+    if let Some(granted) = skill_allowed_tools(&skill) {
+        args = with_allowed_tools(args, &granted);
     }
-    let mut reads = Vec::new();
-    match run_claude(
+    let stdout = run_claude(
         work_dir,
         tools,
         &args,
         settings.timeout_for(case.step),
         log,
-        &build::agent_env(work_dir),
-    ) {
-        Err(e) => observed.error = Some(e),
-        Ok(stdout) => {
-            let output = parse_claude_stream(&stdout);
-            let _ = fs::write(log.join("claude.jsonl"), without_init_event(&stdout));
-            observed.cost_usd = output.cost_usd;
-            observed.duration_ms = output.duration_ms;
-            observed.consumption = output.consumption;
-            observed.error = output.error;
-            observed.messages = output.messages;
-            reads = output.reads;
-        }
+        &implement_run::agent_env(work_dir),
+    )?;
+    let output = parse_claude_stream(&stdout);
+    let _ = fs::write(log.join("claude.jsonl"), without_init_event(&stdout));
+    observed.cost_usd = output.cost_usd;
+    observed.duration_ms = output.duration_ms;
+    observed.consumption = output.consumption;
+    observed.messages = output.messages;
+    match output.error {
+        Some(e) => Err(e),
+        None => Ok(output.reads),
     }
-    if observed.error.is_none() {
-        let after = fs::read(work_dir.join(".git").join("config")).ok();
-        observed.error = config_tampered(&config_before, after.as_deref());
-    }
-    if observed.error.is_some() {
-        return observed;
-    }
+}
+
+/// What the run left in the case's directory: the paths outside the step,
+/// the change's files, `codev validate` and `codev review`. Returns
+/// `git status`, which a failure makes an error rather than a clean tree.
+fn observe_change(
+    case: &Case,
+    work_dir: &Path,
+    log: &Path,
+    tools: &Tools,
+    observed: &mut Observed,
+) -> Result<String, String> {
     let status = git(
         tools,
         work_dir,
         &["status", "--porcelain", "-z", "--untracked-files=all"],
-    )
-    .unwrap_or_default();
+    )?;
     observed.strayed = strayed(&status, case);
     observed.files = change_files(case, work_dir);
-    for (args, key) in [
-        (vec!["validate", case.change.as_str(), "--json"], "validate"),
-        (
-            vec!["review", "--change", case.change.as_str(), "--json"],
-            "review",
-        ),
-    ] {
-        match codev_json(tools, work_dir, &args) {
-            Ok(value) if key == "validate" => {
-                observed
-                    .validate
-                    .insert(case.change.clone(), without_root(value));
-            }
-            Ok(value) => observed.review = Some(value),
-            Err(e) => {
-                observed.error = Some(e);
-                return observed;
-            }
-        }
-    }
+    let validate = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+    observed
+        .validate
+        .insert(case.change.clone(), without_root(validate));
+    observed.review = Some(codev_json(
+        tools,
+        work_dir,
+        &["review", "--change", &case.change, "--json"],
+    )?);
     if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
         let _ = fs::write(log.join("review.md"), record);
     }
-    // `--repo .` is relative: the resolved path is the one to look for.
-    let roots: Vec<PathBuf> = [repo.to_path_buf()]
-        .into_iter()
-        .chain(fs::canonicalize(repo).ok())
-        .collect();
-    let mut implement = crate::observed::ImplementObserved {
-        changed: build::changed_paths(&status),
-        read_repository: build::reads_under(&reads, &roots),
-        ..Default::default()
-    };
-    let refuse = case.implement.as_ref().is_some_and(|i| i.refuse);
-    if !refuse {
-        implement.checks = build::run_checks(work_dir, log);
-        let built = implement
-            .checks
-            .iter()
-            .any(|c| c.name == "build" && c.passed);
-        let script = case.implement.as_ref().and_then(|i| i.script.as_deref());
-        if let (true, Some(script)) = (built, script) {
-            match build::run_acceptance(script, &build::built_binary(work_dir), log) {
-                Ok((printed, end)) => {
-                    implement.printed = printed;
-                    implement.script = Some(end);
-                }
-                Err(e) => {
-                    observed.error = Some(e);
-                    return observed;
-                }
-            }
-        }
+    Ok(status)
+}
+
+/// The runner's own checks of an implementation that does not refuse, then
+/// the acceptance script, run only when the binary built.
+fn check_implementation(
+    case: &crate::case::ImplementCase,
+    work_dir: &Path,
+    log: &Path,
+    implement: &mut crate::observed::ImplementObserved,
+) -> Result<(), String> {
+    implement.checks = implement_run::run_checks(work_dir, log);
+    let built = implement
+        .checks
+        .iter()
+        .any(|c| c.name == implement_run::BUILD.name && c.passed);
+    if let Some(script) = case.script.as_deref().filter(|_| built) {
+        let (printed, end) =
+            implement_run::run_acceptance(script, &implement_run::built_binary(work_dir), log)?;
+        implement.printed = printed;
+        implement.script = Some(end);
     }
-    observed.implement = Some(implement);
-    observed
+    Ok(())
+}
+
+/// The files of `.git/` that decide what git reads and runs — its
+/// configuration, `commondir`, attributes, info — by path, leaving out what
+/// a run legitimately changes: objects, refs, logs, the index and the
+/// files git writes for a commit.
+pub fn git_settings(work_dir: &Path) -> BTreeMap<String, Vec<u8>> {
+    read_tree(&work_dir.join(".git"))
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(path, _)| !git_path_is_volatile(path))
+        .collect()
+}
+
+/// A path under `.git/` that a run changes by using git, not by setting it.
+fn git_path_is_volatile(path: &str) -> bool {
+    ["objects/", "refs/", "logs/"]
+        .iter()
+        .any(|dir| path.starts_with(dir))
+        || [
+            "index",
+            "HEAD",
+            "ORIG_HEAD",
+            "FETCH_HEAD",
+            "COMMIT_EDITMSG",
+            "packed-refs",
+        ]
+        .contains(&path)
+        || path.ends_with(".lock")
+}
+
+/// Why a run cannot be trusted when its agent changed what git reads —
+/// the runner calls git outside the sandbox afterwards —, naming the files.
+pub fn git_settings_tampered(
+    before: &BTreeMap<String, Vec<u8>>,
+    after: &BTreeMap<String, Vec<u8>>,
+) -> Option<String> {
+    let changed: Vec<&str> = before
+        .keys()
+        .chain(after.keys())
+        .filter(|path| before.get(*path) != after.get(*path))
+        .map(String::as_str)
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    (!changed.is_empty()).then(|| {
+        format!(
+            "the run modified {} under .git/, which the runner reads outside the sandbox; \
+             its observation is not trusted",
+            changed.join(", ")
+        )
+    })
 }
 
 /// The files of an update case's change folder after the run, by path from
@@ -2117,8 +2184,19 @@ mod tests {
                 )
             })
             .collect();
+        // The environment is cleared, then given only what the tools need:
+        // neither the key nor any other secret of the operator's shell.
         assert!(
-            envs.contains(&("ANTHROPIC_API_KEY".into(), None)),
+            envs.iter().all(|(k, v)| v.is_none()
+                || crate::implement_run::kept(k)
+                || k.starts_with("GIT_")
+                || k == "CODEV_NO_UPDATE_CHECK"),
+            "{envs:?}"
+        );
+        assert!(
+            !envs
+                .iter()
+                .any(|(k, v)| k == "ANTHROPIC_API_KEY" && v.is_some()),
             "{envs:?}"
         );
         assert!(envs.contains(&("GIT_CONFIG_NOSYSTEM".into(), Some("1".into()))));
@@ -3345,5 +3423,29 @@ mod tests {
         let at = args.iter().position(|a| a == "--allowedTools").unwrap();
         assert_eq!(args[at + 1], tools);
         assert!(skill_allowed_tools("no frontmatter").is_none());
+    }
+
+    #[test]
+    fn a_run_that_writes_a_commondir_is_refused() {
+        let settings = |extra: &[(&str, &str)]| -> BTreeMap<String, Vec<u8>> {
+            [("config", "[core]\n")]
+                .iter()
+                .chain(extra)
+                .map(|(p, t)| (p.to_string(), t.as_bytes().to_vec()))
+                .collect()
+        };
+        let before = settings(&[]);
+        assert!(git_settings_tampered(&before, &settings(&[])).is_none());
+        let err = git_settings_tampered(&before, &settings(&[("commondir", "../evil\n")])).unwrap();
+        assert!(err.contains("commondir"), "{err}");
+        let mut config = settings(&[]);
+        config.insert("config".into(), b"[filter \"x\"]\n".to_vec());
+        assert!(
+            git_settings_tampered(&before, &config)
+                .unwrap()
+                .contains("config")
+        );
+        assert!(git_path_is_volatile("objects/ab/cdef") && git_path_is_volatile("index"));
+        assert!(!git_path_is_volatile("commondir") && !git_path_is_volatile("info/attributes"));
     }
 }

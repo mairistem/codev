@@ -131,8 +131,18 @@ Each command runs in its own process group, as `run_claude` does, under
 1,200 seconds. A test the agent wrote that never ends then fails its
 check instead of blocking a job forever.
 
+The runner's own `git` and `codev` calls (`tool_command`) get the same
+cleared environment, at every step. Before calling `git` on an
+implementation fixture, the runner compares what git reads under `.git/`
+— everything but the objects, the refs, the logs and the index — with
+what it held before the agent ran. A run that changed it, such as a
+`commondir` pointing to a configuration with a filter driver, is an
+error: `git status` would otherwise run that filter outside the sandbox.
+
 **Alternatives considered**: reusing `tool_command` as it is. Rejected:
 it leaves every other variable of the operator's environment in place.
+Comparing `.git/config` alone, as the review steps do: a `commondir` or
+an attribute file changes what git runs without touching it.
 
 ### Decision: The runner runs the checks itself, after the run
 

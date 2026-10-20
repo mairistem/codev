@@ -495,10 +495,10 @@ pub trait History {
 /// state does not already hold the case — its answer.
 pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError> {
     if let Some(update) = &case.update {
-        return check_update_history(case, &update.git_ref, &[], history);
+        return check_replayed_change_history(case, &update.git_ref, &[], history);
     }
     if let Some(implement) = &case.implement {
-        return check_update_history(
+        return check_replayed_change_history(
             case,
             &implement.git_ref,
             &[("merged", &implement.merged)],
@@ -554,7 +554,7 @@ pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError
 /// Checks an update or implementation case against the history: its
 /// commits exist — `git_ref`, and each of `others` by its key —, and the
 /// tree at `git_ref` holds neither the change it lays nor the case itself.
-fn check_update_history(
+fn check_replayed_change_history(
     case: &Case,
     git_ref: &str,
     others: &[(&str, &str)],

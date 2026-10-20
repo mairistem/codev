@@ -30,10 +30,12 @@ pub const TAIL_LINES: usize = 40;
 /// The variables of the operator's environment a command keeps: what the
 /// toolchain needs to run, nothing that could hold a secret. `CARGO_*` is
 /// not kept — a registry token lives there —: the runner sets its own.
-fn kept(name: &str) -> bool {
+pub(crate) fn kept(name: &str) -> bool {
     matches!(
         name,
         "PATH" | "HOME" | "TMPDIR" | "TMP" | "TEMP" | "LANG" | "LC_ALL" | "LC_CTYPE"
+            // What a process needs to start on Windows.
+            | "SYSTEMROOT" | "PATHEXT" | "COMSPEC" | "USERPROFILE"
     ) || name.starts_with("RUSTUP_")
 }
 
@@ -98,6 +100,13 @@ pub const PREPARATION: [CargoCommand; 2] = [
     },
 ];
 
+/// The build of the binary the acceptance script drives.
+pub const BUILD: CargoCommand = CargoCommand {
+    name: "build",
+    args: &["build", "-p", "codev-cli"],
+    online: false,
+};
+
 /// After the agent: the project's checks, then the binary the acceptance
 /// script drives.
 pub const CHECKS: [CargoCommand; 4] = [
@@ -123,11 +132,7 @@ pub const CHECKS: [CargoCommand; 4] = [
         args: &["test", "--workspace"],
         online: false,
     },
-    CargoCommand {
-        name: "build",
-        args: &["build", "-p", "codev-cli"],
-        online: false,
-    },
+    BUILD,
 ];
 
 /// The binary [`CHECKS`]' build leaves, relative to the case's directory.
@@ -266,15 +271,17 @@ pub fn changed_paths(porcelain: &str) -> Vec<String> {
 }
 
 /// Runs `program` with `args` in `dir`, with exactly `env`, in its own
-/// process group, under `timeout`; its output, merged, goes to `log`.
+/// process group, under `timeout`; its output, merged, goes to `log`. The
+/// outcome is the check `name`.
 pub fn run_command(
+    name: &str,
     program: &Path,
     args: &[&str],
     dir: &Path,
     env: &[(String, String)],
     timeout: Duration,
     log: &Path,
-) -> Result<(bool, bool, String), String> {
+) -> Result<CommandCheck, String> {
     let out = fs::File::create(log).map_err(|e| format!("{}: {e}", log.display()))?;
     let err = out.try_clone().map_err(|e| e.to_string())?;
     let mut command = Command::new(program);
@@ -310,7 +317,12 @@ pub fn run_command(
     if timed_out {
         output.push_str(&format!("\n[timed out after {} s]", timeout.as_secs()));
     }
-    Ok((passed, timed_out, output))
+    Ok(CommandCheck {
+        name: name.to_string(),
+        passed,
+        timed_out,
+        tail: output,
+    })
 }
 
 /// The operator's environment, as the commands filter it.
@@ -326,20 +338,15 @@ fn cargo(
     log: &Path,
 ) -> Result<CommandCheck, String> {
     let env = command_env(&operator_env(), dir, !command.online);
-    let (passed, timed_out, tail) = run_command(
+    run_command(
+        command.name,
         Path::new("cargo"),
         command.args,
         dir,
         &env,
         timeout,
         &log.join(format!("{}.log", command.name)),
-    )?;
-    Ok(CommandCheck {
-        name: command.name.to_string(),
-        passed,
-        timed_out,
-        tail,
-    })
+    )
 }
 
 /// Before the agent: hides the Cargo home from git, fetches and builds.
@@ -409,7 +416,8 @@ pub fn run_acceptance(
     env.push(("CODEV_NO_UPDATE_CHECK".into(), "1".into()));
     let output = log.join("acceptance.log");
     let file_arg = file.to_string_lossy().into_owned();
-    let (passed, timed_out, tail) = run_command(
+    let end = run_command(
+        "acceptance",
         Path::new("bash"),
         &[&file_arg],
         &dir,
@@ -418,15 +426,7 @@ pub fn run_acceptance(
         &output,
     )?;
     let printed = printed_assertions(&fs::read_to_string(&output).unwrap_or_default());
-    Ok((
-        printed,
-        CommandCheck {
-            name: "acceptance".into(),
-            passed,
-            timed_out,
-            tail,
-        },
-    ))
+    Ok((printed, end))
 }
 
 /// Removes what the builds left in the case's directory: about a gigabyte
@@ -540,35 +540,63 @@ pub fn calibrate(
     work: &Path,
     log: &Path,
 ) -> Result<Calibration, String> {
-    let mut found = Calibration::default();
-    for (side, commit) in [("merged", merged), ("before", before)] {
-        let dir = work.join(side);
-        let side_log = log.join(side);
-        fs::create_dir_all(&side_log).map_err(|e| e.to_string())?;
-        extract(repo, commit, &dir)?;
-        let result = (|| {
-            prepare(&dir, &side_log)?;
-            let checks = if side == "merged" {
-                run_checks(&dir, &side_log)
-            } else {
-                vec![cargo(&CHECKS[3], &dir, COMMAND_TIMEOUT, &side_log)?]
-            };
-            if !checks.iter().any(|c| c.name == "build" && c.passed) {
-                return Err(format!("the binary does not build at {commit}"));
-            }
-            let (printed, _) = run_acceptance(script, &built_binary(&dir), &side_log)?;
-            Ok((printed, checks))
-        })();
-        remove_build_outputs(&dir);
-        let (printed, checks) = result?;
-        if side == "merged" {
-            found.merged = printed;
-            found.checks = checks;
-        } else {
-            found.before = printed;
+    let (merged_printed, checks) = build_and_accept(
+        repo,
+        merged,
+        &CHECKS,
+        script,
+        &work.join("merged"),
+        &log.join("merged"),
+    )?;
+    // Before the change, only the script's verdict matters: the binary is
+    // enough, and the old tree's checks say nothing about the script.
+    let (before_printed, _) = build_and_accept(
+        repo,
+        before,
+        &[BUILD],
+        script,
+        &work.join("before"),
+        &log.join("before"),
+    )?;
+    Ok(Calibration {
+        merged: merged_printed,
+        before: before_printed,
+        checks,
+    })
+}
+
+/// What a tree built for calibration gave: the script's lines, and the
+/// commands run on it.
+type Accepted = (Vec<(String, bool)>, Vec<CommandCheck>);
+
+/// Extracts `commit` into `dir`, prepares and runs `commands` on it, then
+/// runs `script` against the binary they built; the build outputs are
+/// removed whether it succeeds or not.
+fn build_and_accept(
+    repo: &Path,
+    commit: &str,
+    commands: &[CargoCommand],
+    script: &str,
+    dir: &Path,
+    log: &Path,
+) -> Result<Accepted, String> {
+    fs::create_dir_all(log).map_err(|e| e.to_string())?;
+    extract(repo, commit, dir)?;
+    let run = || -> Result<Accepted, String> {
+        prepare(dir, log)?;
+        let checks: Vec<CommandCheck> = commands
+            .iter()
+            .map(|command| cargo(command, dir, COMMAND_TIMEOUT, log))
+            .collect::<Result<_, _>>()?;
+        if !checks.iter().any(|c| c.name == BUILD.name && c.passed) {
+            return Err(format!("the binary does not build at {commit}"));
         }
-    }
-    Ok(found)
+        let (printed, _) = run_acceptance(script, &built_binary(dir), log)?;
+        Ok((printed, checks))
+    };
+    let result = run();
+    remove_build_outputs(dir);
+    result
 }
 
 #[cfg(test)]
@@ -633,7 +661,8 @@ mod tests {
         let log = std::env::temp_dir().join(format!("codev-evals-timeout-{}", std::process::id()));
         let _ = fs::remove_file(&log);
         let env = vec![("PATH".to_string(), "/bin:/usr/bin".to_string())];
-        let (passed, timed_out, tail) = run_command(
+        let check = run_command(
+            "sleep",
             Path::new("sleep"),
             &["30"],
             &std::env::temp_dir(),
@@ -643,8 +672,8 @@ mod tests {
         )
         .unwrap();
         let _ = fs::remove_file(&log);
-        assert!(!passed && timed_out);
-        assert!(tail.contains("timed out"), "{tail}");
+        assert!(!check.passed && check.timed_out);
+        assert!(check.tail.contains("timed out"), "{}", check.tail);
     }
 
     #[test]

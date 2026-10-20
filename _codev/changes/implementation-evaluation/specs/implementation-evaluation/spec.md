@@ -106,7 +106,8 @@ case's directory, which git ignores, and build the workspace and its
 tests, so that the agent's builds need no network; a failure there SHALL
 record the run as an error. Every command the runner starts itself on
 the case's directory — this preparation, the checks below, the build of
-the binary and the acceptance script — SHALL run with an environment
+the binary, the acceptance script, and its calls to `git` and `codev` —
+SHALL run with an environment
 cleared of everything but what the toolchain needs to run — the search
 path, the home directory, the Rust toolchain's own variables, the
 temporary directory and the locale — so that code the agent wrote never
@@ -141,7 +142,18 @@ or removed, what `codev validate <change> --json` and `codev review
 message the agent wrote, and the paths of the files the agent read or
 searched outside the case's directory. A file changed under `_codev/` outside the
 change's folder, and a `corrections.md` written in it, SHALL be recorded
-as modified outside the step.
+as modified outside the step. A run whose agent changed what git reads
+under `.git/` — its configuration, `commondir`, attributes, anything but
+the objects, the refs, the logs and the index — SHALL be recorded as an
+error naming the files, before the runner calls `git` on it: git would
+run outside the sandbox what such a file sets.
+
+#### Scenario: A run that changes what git reads
+
+- **GIVEN** an implementation run whose agent writes `.git/commondir`
+- **WHEN** the run ends
+- **THEN** it is recorded as an error naming `commondir`, and `git status`
+  is not run on its directory
 
 #### Scenario: The prompt of an implementation case
 
