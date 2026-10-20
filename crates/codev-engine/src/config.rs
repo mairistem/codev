@@ -102,10 +102,12 @@ pub struct ProjectConfig {
     /// it, an inherited source does not.
     #[serde(default)]
     pub codev_version: Option<String>,
-    /// Role settings by role id — project only: an inherited source's
-    /// `roles:` is not read. Each entry is strict, unlike the top level: a
-    /// misspelled `done-when` would silently drop criteria.
-    #[serde(default)]
+    /// Role settings by role id — project only, read by [`load`]: an
+    /// inherited source's `roles:` is skipped, never parsed, so that a key a
+    /// newer codev added there cannot drop the source's context and rules.
+    /// Each entry is strict, unlike the top level: a misspelled `done-when`
+    /// would silently drop criteria.
+    #[serde(skip)]
     pub roles: BTreeMap<String, RoleSetting>,
     /// The project's trigger groups — project only, like `roles`. Kept as
     /// written: `codev_core::triggers::read_groups` reads them field by
@@ -238,12 +240,30 @@ impl ResolvedConfig {
     }
 }
 
+/// The `roles:` of a configuration, read on its own: the project's only.
+#[derive(Deserialize)]
+struct ProjectRoles {
+    #[serde(default)]
+    roles: BTreeMap<String, RoleSetting>,
+}
+
 /// Reads the project's `config.yaml`. A missing file is not an error: a
 /// project can live without configuration.
 pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
-    let Some(mut config) = load_source(fs, path)? else {
+    let Some(raw) = read_config(fs, path)? else {
         return Ok(None);
     };
+    let mut config = parse_source(&raw, path)?;
+    let roles: ProjectRoles = serde_norway::from_str(&raw).map_err(|e| EngineError::Invalid {
+        path: path.to_path_buf(),
+        reason: with_requirement_hint(e.to_string(), &raw),
+    })?;
+    config.roles = roles.roles;
+    config.role_lines = config
+        .roles
+        .keys()
+        .map(|id| (id.clone(), key_line(&raw, Some("roles"), id)))
+        .collect();
     config.review_mode = read_review_mode(config.review.as_ref()).map_err(|reason| {
         EngineError::InvalidReviewMode {
             path: path.to_path_buf(),
@@ -253,32 +273,38 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
     Ok(Some(config))
 }
 
-/// Reads an inherited source's `config.yaml` — or the project's, before
-/// its own checks. The review mode is never read from a source, so it is
-/// not checked either: a source written for a newer codev, with a mode
-/// this one does not know, still gives its context and rules.
+/// Reads an inherited source's `config.yaml`. Neither the review mode nor
+/// the roles are read from a source, so they are not checked either: a
+/// source written for a newer codev, with a mode or a role key this one
+/// does not know, still gives its context and rules.
 fn load_source(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>> {
+    read_config(fs, path)?
+        .map(|raw| parse_source(&raw, path))
+        .transpose()
+}
+
+/// The text of a `config.yaml`; `None` when the file does not exist.
+fn read_config(fs: &dyn FileSystem, path: &Path) -> Result<Option<String>> {
     if !fs.exists(path) {
         return Ok(None);
     }
-    let raw = fs
-        .read_to_string(path)
+    fs.read_to_string(path)
+        .map(Some)
         .map_err(|e| EngineError::Unreadable {
             path: path.to_path_buf(),
             reason: e.to_string(),
-        })?;
+        })
+}
+
+/// Parses a `config.yaml` with the checks a source and the project share.
+fn parse_source(raw: &str, path: &Path) -> Result<ProjectConfig> {
     let mut config: ProjectConfig =
-        serde_norway::from_str(&raw).map_err(|e| EngineError::Invalid {
+        serde_norway::from_str(raw).map_err(|e| EngineError::Invalid {
             path: path.to_path_buf(),
-            reason: with_requirement_hint(e.to_string(), &raw),
+            reason: with_requirement_hint(e.to_string(), raw),
         })?;
-    config.unknown_keys = unknown_keys(&raw);
-    config.role_lines = config
-        .roles
-        .keys()
-        .map(|id| (id.clone(), key_line(&raw, Some("roles"), id)))
-        .collect();
-    config.triggers_line = key_line(&raw, None, "triggers");
+    config.unknown_keys = unknown_keys(raw);
+    config.triggers_line = key_line(raw, None, "triggers");
     if let Some(code) = &config.language
         && !is_valid_language_code(code)
     {
@@ -297,7 +323,7 @@ fn load_source(fs: &dyn FileSystem, path: &Path) -> Result<Option<ProjectConfig>
             reason,
         });
     }
-    Ok(Some(config))
+    Ok(config)
 }
 
 /// `review.mode` from the `review:` value as written: `None` when the key
@@ -893,6 +919,31 @@ mod tests {
         let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
         assert!(config.roles.is_empty());
         assert_eq!(config.context.len(), 1);
+    }
+
+    #[test]
+    fn a_source_s_unknown_role_key_keeps_its_rules() {
+        let fs = MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "inherits:\n  - path: /shared\n")
+            .with_file(
+                "/shared/_codev/config.yaml",
+                "context: Shared context\nrules:\n  specs: [r]\nroles:\n  skeptic:\n    cadence: weekly\n  ghost: [1, 2]\n",
+            );
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert!(config.warnings.is_empty(), "{:?}", config.warnings);
+        assert_eq!(config.context[0].text, "Shared context");
+        assert_eq!(config.context[0].origin, "path:/shared");
+        assert_eq!(config.rules_for("specs").len(), 1);
+        assert!(config.roles.is_empty());
+    }
+
+    #[test]
+    fn a_project_role_model_is_read() {
+        let config = load_str("roles:\n  privacy:\n    model: sonnet\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(config.roles["privacy"].model.as_deref(), Some("sonnet"));
+        assert_eq!(config.role_lines["privacy"], 2);
     }
 
     #[test]

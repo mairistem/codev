@@ -164,7 +164,8 @@ pub fn validate_all(
 }
 
 /// The findings of `_codev/config.yaml`: one warning per key this codev
-/// ignores, one error per invalid entry of `roles:`, each at its line, and
+/// ignores, one error per invalid entry of `roles:` and one warning per
+/// model that never applies, each at its line, and
 /// the defects of `triggers:` at its key;
 /// `None` when there is none, so a clean project's report does not change.
 pub fn validate_config(
@@ -189,6 +190,12 @@ pub fn validate_config(
             let line = config.role_lines.get(&finding.role).copied().unwrap_or(1);
             Finding::error(finding.code, line_number(line), finding.message)
         });
+    let role_warnings = crate::roles::project_warnings(fs, layout, config)
+        .into_iter()
+        .map(|finding| {
+            let line = config.role_lines.get(&finding.role).copied().unwrap_or(1);
+            Finding::warning(finding.code, line_number(line), finding.message)
+        });
     let triggers_line = line_number(config.triggers_line);
     let triggers = codev_core::triggers::read_groups(config.triggers.as_ref())
         .problems
@@ -211,6 +218,7 @@ pub fn validate_config(
         });
     let findings: Vec<LocatedFinding> = unknown_keys
         .chain(roles)
+        .chain(role_warnings)
         .chain(triggers)
         .map(|finding| LocatedFinding::from_finding(finding, relative.clone()))
         .collect();
@@ -585,6 +593,39 @@ mod tests {
         assert_eq!(finding.finding.severity, Severity::Error);
         assert_eq!(finding.finding.line, 3);
         assert!(finding.finding.message.contains("reviewer"));
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_model_as_an_error_and_an_unused_one_as_a_warning() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/p/_codev/config.yaml",
+            "language: en\nroles:\n  skeptic:\n    model: gpt\n  developer:\n    model: sonnet\n",
+        );
+        let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == ItemKind::Config)
+            .expect("a config item");
+        let found: Vec<(&str, Severity, u32)> = item
+            .findings
+            .iter()
+            .map(|f| (f.finding.code, f.finding.severity, f.finding.line))
+            .collect();
+        assert_eq!(
+            found,
+            [
+                ("invalid_role_model", Severity::Error, 3),
+                ("role_model_unused", Severity::Warning, 5)
+            ]
+        );
+        let invalid = &item.findings[0].finding.message;
+        assert!(invalid.contains("skeptic"), "{invalid}");
+        assert!(
+            invalid.contains("`opus`, `sonnet`, `haiku` or `inherit`"),
+            "{invalid}"
+        );
+        assert!(item.findings[1].finding.message.contains("developer"));
     }
 
     #[test]

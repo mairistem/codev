@@ -3,6 +3,7 @@ id: tracer
 name: { en: Tracer, fr: Contrôleur de traçabilité }
 at: plan.trace
 question: Do the artifacts agree with each other?
+model: sonnet
 done_when:
   - Every capability in the proposal has its spec file, and every spec
     file is listed in the proposal

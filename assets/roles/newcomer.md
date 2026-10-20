@@ -3,6 +3,7 @@ id: newcomer
 name: { en: Newcomer, fr: Nouvel arrivant }
 at: code.review
 question: Can a developer who has not seen the plan follow this code?
+model: sonnet
 done_when:
   - "**Without context**: each changed function makes sense without the
     plan or the conversation"

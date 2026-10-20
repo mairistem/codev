@@ -3,6 +3,7 @@ id: skeptic
 name: { en: Skeptic, fr: Contradicteur }
 at: plan.challenge
 question: Would the plan survive a reviewer who did not write it?
+model: sonnet
 done_when:
   - "**Need** — does the change solve the Why? Is there a simpler
     solution, or one without code?"
