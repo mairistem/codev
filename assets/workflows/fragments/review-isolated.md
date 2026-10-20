@@ -38,8 +38,10 @@ ii. **Summaries come from a sub-agent too.** When
 
 iii. **Run them in parallel.** Start every sub-agent of the step at
      once, with the `Agent` tool, choosing a sub-agent type without
-     file-editing tools when the platform offers one. If the tool is
-     unavailable, review every role inline and give each role the line
+     file-editing tools when the platform offers one. Pass each role's
+     sub-agent its role's `model` from `codev roles`, or no model when it
+     is `null`. If the tool is unavailable, review every role inline and
+     give each role the line
      `Fallback: the sub-agent tool is unavailable.`.
 
 iv. **Retry once, then fall back.** A sub-agent fails when the platform

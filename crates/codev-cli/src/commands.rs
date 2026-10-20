@@ -2723,6 +2723,53 @@ edition = "2024"
     }
 
     #[test]
+    fn the_roles_document_carries_the_model() {
+        let role_of = |json: &serde_json::Value, id: &str| {
+            json["roles"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|role| role["id"] == id)
+                .unwrap()
+                .clone()
+        };
+        let defaults = roles_json(&roles_project("", "schema: spec-driven\n"), None, None);
+        for id in ["skeptic", "privacy", "architect"] {
+            let role = role_of(&defaults, id);
+            assert!(role["model"].is_null(), "{id}: {role}");
+            assert_eq!(role["modelOrigin"], "default");
+        }
+
+        let h = roles_project(
+            "roles:\n  privacy: { model: sonnet }\n  skeptic: { model: inherit }\n",
+            "schema: spec-driven\n",
+        );
+        let set = roles_json(&h, None, None);
+        let privacy = role_of(&set, "privacy");
+        assert_eq!(privacy["model"], "sonnet");
+        assert_eq!(privacy["modelOrigin"], "project");
+        let skeptic = role_of(&set, "skeptic");
+        assert!(skeptic["model"].is_null(), "{skeptic}");
+        assert_eq!(skeptic["modelOrigin"], "project");
+    }
+
+    #[test]
+    fn roles_status_and_instructions_fail_on_an_unknown_model() {
+        let h = roles_project(
+            "roles:\n  skeptic: { model: gpt }\n",
+            "schema: spec-driven\n",
+        );
+        let err = roles(&h.ctx(), None, None, false, false).unwrap_err();
+        assert_eq!(err.code, "invalid_role_model");
+        assert!(err.message.contains("skeptic"), "{}", err.message);
+        assert!(err.message.contains("`inherit`"), "{}", err.message);
+        let err = status(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "invalid_role_model");
+        let err = artifact_instructions(&h.ctx(), Some("specs"), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "invalid_role_model");
+    }
+
+    #[test]
     fn roles_refuse_to_disable_the_analyst() {
         let h = roles_project("roles:\n  analyst: never\n", "schema: spec-driven\n");
         let err = roles(&h.ctx(), Some("plan.understand"), None, false, false).unwrap_err();

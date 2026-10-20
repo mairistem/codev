@@ -445,6 +445,8 @@ see the [codes](cli.md#codev-self-update).
     "when": "always",
     "whenOrigin": "default",
     "activatedBy": "always",
+    "model": null,
+    "modelOrigin": "default",
     "disableable": false,
     "knowledge": null,
     "doneWhen": [
@@ -664,6 +666,8 @@ leaves out or gets wrong are `null`.
       "when": "always",
       "whenOrigin": "project",
       "activatedBy": "project",
+      "model": "sonnet",
+      "modelOrigin": "default",
       "disableable": true,
       "knowledge": "## Signals\n\nPlanning smells — each one is a question to raise, not a verdict.\n…",
       "doneWhen": [
@@ -684,6 +688,8 @@ leaves out or gets wrong are `null`.
       "when": "on_domain",
       "whenOrigin": "default",
       "activatedBy": "domain:user-interface",
+      "model": null,
+      "modelOrigin": "default",
       "disableable": true,
       "knowledge": "## Scope\n\nLook at the user interface the change adds or modifies…",
       "doneWhen": [
@@ -725,6 +731,7 @@ leaves out or gets wrong are `null`.
 | `roles[].domains` | The domains that activate an expert, such as `["personal-data"]`; empty for the other roles |
 | `roles[].when`, `roles[].whenOrigin` | `always`, `never` or `on_domain`, set by `default`, `project` or `change` |
 | `roles[].activatedBy` | Why the role is active: `always`, `project`, `change`, or `domain:<name>` for an expert whose domain the proposal ticks; `null` when it is inactive |
+| `roles[].model`, `roles[].modelOrigin` | The model the role's sub-agent runs on in the `isolated` review mode — `opus`, `sonnet` or `haiku`, or `null` for the session's model — set by `default` (the role's own) or `project` (`model:` under [`roles`](configuration.md#roles), `inherit` giving `null`). The inline mode ignores it |
 | `roles[].disableable` | `false` for the artifact roles, the `analyst` and the `developer` |
 | `roles[].knowledge` | The role's knowledge, as markdown in the sections Scope, Signals, By stack, References and Reporting, for an active role that has some, its `By stack` part filtered as `stacks.filter` says; `null` otherwise |
 | `roles[].doneWhen` | The role's criteria, then the project's, each with its `origin`: `built-in`, `schema:<name>` or `project` |

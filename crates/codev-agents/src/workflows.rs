@@ -1257,6 +1257,23 @@ mod tests {
     }
 
     #[test]
+    fn a_reviewer_runs_on_its_role_s_model() {
+        for (id, step) in [
+            ("propose", ("### 7. Challenge the plan", "### 8.")),
+            ("apply", ("### 5. Review the change", "### 6.")),
+        ] {
+            let body = flat(&rendered(id));
+            let review = section(&body, step.0, step.1);
+            assert!(
+                review.contains(
+                    "Pass each role's sub-agent its role's `model` from `codev roles`, or no model when it is `null`."
+                ),
+                "{id} does not start a reviewer on its role's model"
+            );
+        }
+    }
+
+    #[test]
     fn the_brief_never_carries_the_conversation() {
         let record = flat(&review_record());
         for keyword in [

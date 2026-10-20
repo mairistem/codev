@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "28399e1380134e752353baec7da1910c6013d38a8ecfe2e89dbaf390608fcf19"
+  checksum: "725484da7d6ed16424013311dd0c2a1337188e1e31f687e42864880d0043619d"
 ---
 
 Create a change and write its planning artifacts, in one pass.
@@ -331,8 +331,10 @@ ii. **Summaries come from a sub-agent too.** When
 
 iii. **Run them in parallel.** Start every sub-agent of the step at
      once, with the `Agent` tool, choosing a sub-agent type without
-     file-editing tools when the platform offers one. If the tool is
-     unavailable, review every role inline and give each role the line
+     file-editing tools when the platform offers one. Pass each role's
+     sub-agent its role's `model` from `codev roles`, or no model when it
+     is `null`. If the tool is unavailable, review every role inline and
+     give each role the line
      `Fallback: the sub-agent tool is unavailable.`.
 
 iv. **Retry once, then fall back.** A sub-agent fails when the platform

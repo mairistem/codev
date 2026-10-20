@@ -322,6 +322,26 @@ separately:
 - **Answer.** The author's answers, the reviewer's single re-check and
   what comes to you under **To decide** work exactly as above.
 
+### The reviewers' models
+
+In isolated mode, each reviewer's sub-agent runs on its role's model —
+`model` in `codev roles --json`. No role sets one by default: every
+reviewer runs on the session's model until your project chooses another,
+under `roles:` — `model: opus`, `sonnet` or `haiku`, or `inherit` to go
+back to the session's model (see [Configuring roles](#configuring-roles)).
+The model applies only in the isolated mode, where a role runs as its own
+sub-agent; in the inline mode, every role reviews in the session.
+
+Why no default: on the [evaluation suite](#measuring-the-roles), in the
+isolated mode, moving the tracer, the skeptic, the newcomer and the
+security, performance and migration experts to Sonnet saved 7 % against
+Opus, with the same recall, but one false positive more than the
+reference for `migration` and the skeptic. Most of an isolated review's
+cost is the session's — reading the skill, building the brief, merging
+the findings, writing the record — so a reviewer's model moves the bill
+little. The same measure shows the isolated mode costing about 73 % more
+than the inline mode on the same cases, with the same recall.
+
 Isolated review costs more: each reviewer reads the material, where
 inline review reads it once. That is why `inline` stays the default; see
 [Configuration](reference/configuration.md#review) to switch.
@@ -338,6 +358,7 @@ roles:
     when: always             # optional, always when absent
     done_when:               # added after the role's own criteria
       - The rollback plan is stated
+    model: inherit           # opus | sonnet | haiku | inherit
 ```
 
 - **Activation.** `always`, `never` or `on_domain`. A step whose roles are
@@ -349,6 +370,12 @@ roles:
 - **Extra criteria.** `done_when` entries are added after the role's own
   criteria, never replacing them. They carry the origin `project`, like your
   [`context` and `rules`](reference/configuration.md#context).
+- **Model.** `opus`, `sonnet` or `haiku` replaces the role's default
+  model, and `inherit` keeps the session's — see
+  [The reviewers' models](#the-reviewers-models). It applies to the roles
+  of `plan.trace`, `plan.challenge` and `code.review` in the isolated
+  mode. Raise [`codev_version`](reference/configuration.md#codev_version)
+  first: an older codev refuses the key.
 - **Per change.** A change's `change.yaml` can override the activation for
   that change only:
 
@@ -368,8 +395,11 @@ roles:
 `codev validate` reports an unknown role id (`unknown_role`), an activation
 other than `always`, `never` or `on_domain`, or `on_domain` on a role
 without domains (`invalid_role_activation`), and `never` on a role that
-cannot be disabled (`role_not_disableable`); `codev status`,
-`codev instructions` and `codev roles` fail with the same code.
+cannot be disabled (`role_not_disableable`), and a model other than
+`opus`, `sonnet`, `haiku` or `inherit` (`invalid_role_model`); `codev status`,
+`codev instructions` and `codev roles` fail with the same code. A model on
+a role that serves no reviewing step never applies: `codev validate` warns
+with `role_model_unused`.
 `codev doctor` lists the active roles, the roles active on domain with
 their domains, and the disabled ones.
 

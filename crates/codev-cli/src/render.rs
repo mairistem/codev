@@ -1844,6 +1844,8 @@ apply:
             when: Activation::Always,
             when_origin: WhenOrigin::Default,
             activated_by: Some(ActivatedBy::Always),
+            model: None,
+            model_origin: roles::ModelOrigin::Default,
         }
     }
 
@@ -1948,7 +1950,6 @@ apply:
                 .into_iter()
                 .find(|r| r.id == id)
                 .map(|role| codev_core::roles::ResolvedRole {
-                    role,
                     when,
                     when_origin: if when == Activation::Never {
                         WhenOrigin::Project
@@ -1956,6 +1957,9 @@ apply:
                         WhenOrigin::Default
                     },
                     activated_by: None,
+                    model: role.model,
+                    model_origin: codev_core::roles::ModelOrigin::Default,
+                    role,
                 })
                 .unwrap()
         };

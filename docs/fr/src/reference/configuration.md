@@ -238,6 +238,7 @@ de rôle ; sa valeur est soit une activation, soit une table :
 |---|---|
 | `when` | `always`, `never` ou `on_domain` ; la valeur par défaut est `on_domain` pour les experts, `always` pour tous les autres rôles. `on_domain` n'active un rôle que pour un change dont la proposal coche l'un de ses domaines. Une étape dont tous les rôles sont inactifs est sautée, et la skill le signale |
 | `done_when` | Critères ajoutés après ceux du rôle, avec l'origine `project` ; les entrées vides sont ignorées |
+| `model` | Le modèle sur lequel tourne le sous-agent du rôle dans le [mode de revue](#review) `isolated` : `opus`, `sonnet` ou `haiku`, ou `inherit` pour le modèle de la session. Aucun rôle n'en fixe par défaut — voir [Les modèles des relecteurs](../roles.md#les-modèles-des-relecteurs). En mode `inline`, chaque rôle tourne sur le modèle de la session |
 
 ```yaml
 roles:
@@ -247,6 +248,10 @@ roles:
     when: always
     done_when:
       - Le plan de retour arrière est indiqué
+  privacy:
+    model: sonnet            # le sous-agent de l'expert vie privée tourne sur Sonnet
+  migration:
+    model: inherit           # retour au modèle de la session
 ```
 
 Les identifiants sont ceux des rôles d'étape intégrés (`analyst`,
@@ -267,7 +272,22 @@ un rôle qui ne peut pas être désactivé par `role_not_disableable` — des er
 rôle. `codev status`, `codev instructions` et `codev roles` échouent avec
 le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
 mal orthographié, fait échouer chaque commande avec `invalid` : l'ignorer
-ferait disparaître des critères sans bruit.
+ferait disparaître des critères sans bruit. Un `model` autre que `opus`,
+`sonnet`, `haiku` ou `inherit` est une erreur `invalid_role_model`,
+signalée et bloquante de la même façon. Un `model` sur un rôle qui ne sert
+aucune étape de relecture (`plan.trace`, `plan.challenge`, `code.review`)
+ne s'applique jamais : c'est un avertissement `role_model_unused`.
+
+**`model` et les versions plus anciennes de codev.** Un codev antérieur à
+la version qui a introduit `model` refuse la clé, comme toute clé inconnue
+dans un rôle : chaque commande échoue avec `invalid`. Relevez
+[`codev_version`](#codev_version) à cette version avant de l'indiquer,
+pour que chaque codev qui lit le dépôt, CI comprise, la comprenne. Une
+source partagée par [`inherits`](#inherits) ne devrait pas l'indiquer tant
+que chaque projet qui en hérite n'utilise pas cette version : à partir
+d'elle, le `roles:` d'une source est ignoré sans être lu, mais un codev
+plus ancien le lit encore et perdrait le contexte et les règles de la
+source.
 
 ## triggers
 

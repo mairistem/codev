@@ -594,6 +594,12 @@ pub struct RoleV1 {
     /// Why the role is active: `always`, `project`, `change` or
     /// `domain:<name>`; `null` when it is not. Additive in v1.
     pub activated_by: Option<String>,
+    /// The model the role's sub-agent runs on in the `isolated` review
+    /// mode: `opus`, `sonnet` or `haiku`; `null` for the session's model.
+    /// Additive in v1.
+    pub model: Option<&'static str>,
+    /// `default` or `project`. Additive in v1.
+    pub model_origin: &'static str,
     pub disableable: bool,
     /// The role's knowledge, as markdown, for an active role that has one;
     /// `null` otherwise. Additive in v1.
@@ -623,6 +629,8 @@ impl RoleV1 {
             when: resolved.when.as_str(),
             when_origin: resolved.when_origin.as_str(),
             activated_by: resolved.activated_by.as_ref().map(|by| by.label()),
+            model: resolved.model.map(|model| model.as_str()),
+            model_origin: resolved.model_origin.as_str(),
             disableable: role.disableable,
             knowledge: if resolved.is_active() {
                 role.knowledge.clone()
@@ -1967,10 +1975,12 @@ apply:
             text: "The rollback plan is stated".into(),
         });
         ResolvedRole {
-            role,
             when: Activation::Always,
             when_origin: WhenOrigin::Project,
             activated_by: Some(ActivatedBy::Project),
+            model: role.model,
+            model_origin: roles::ModelOrigin::Default,
+            role,
         }
     }
 
@@ -2258,6 +2268,8 @@ apply:
             "when",
             "whenOrigin",
             "activatedBy",
+            "model",
+            "modelOrigin",
             "disableable",
             "knowledge",
             "doneWhen",
@@ -2296,6 +2308,8 @@ apply:
             when: Activation::Always,
             when_origin: WhenOrigin::Default,
             activated_by: Some(ActivatedBy::Always),
+            model: None,
+            model_origin: roles::ModelOrigin::Default,
         });
         let json = serde_json::to_value(InstructionsV1::from(&instructions)).unwrap();
         assert_eq!(json["role"]["id"], "qa");

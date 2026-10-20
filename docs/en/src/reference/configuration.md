@@ -227,6 +227,7 @@ activation, or a mapping:
 |---|---|
 | `when` | `always`, `never` or `on_domain`; the default is `on_domain` for the experts, `always` for every other role. `on_domain` activates a role only for a change whose proposal ticks one of its domains. A step whose roles are all inactive is skipped, and the skill says so |
 | `done_when` | Criteria added after the role's own, with the origin `project`; blank entries are ignored |
+| `model` | The model the role's sub-agent runs on in the `isolated` [review mode](#review): `opus`, `sonnet` or `haiku`, or `inherit` for the session's model. No role sets one by default — see [The reviewers' models](../roles.md#the-reviewers-models). In the `inline` mode every role runs on the session's model |
 
 ```yaml
 roles:
@@ -236,6 +237,10 @@ roles:
     when: always
     done_when:
       - The rollback plan is stated
+  privacy:
+    model: sonnet            # the privacy expert's sub-agent runs on Sonnet
+  migration:
+    model: inherit           # back to the session's model
 ```
 
 The ids are the built-in step roles (`analyst`, `investigator`, `tracer`,
@@ -255,6 +260,20 @@ that cannot be disabled as `role_not_disableable` — errors of the
 `codev instructions` and `codev roles` fail with the same code. Any other
 key inside a role's mapping, such as a misspelled `done-when`, fails every
 command with `invalid`: ignoring it would drop criteria silently.
+A `model` other than `opus`, `sonnet`, `haiku` or `inherit` is an
+`invalid_role_model` error, reported and failing the same way. A `model`
+on a role that serves no reviewing step (`plan.trace`, `plan.challenge`,
+`code.review`) never applies: it is a `role_model_unused` warning.
+
+**`model` and older codev versions.** A codev older than the release that
+introduced `model` refuses the key, like any unknown key inside a role:
+every command fails with `invalid`. Raise
+[`codev_version`](#codev_version) to that release before you set it, so
+every codev that reads the repository, CI included, understands it. A
+source shared through [`inherits`](#inherits) should not set it until
+every project inheriting from it runs that release: from that release on
+a source's `roles:` is skipped, never read, but an older codev still
+parses it and would drop the source's context and rules.
 
 ## triggers
 

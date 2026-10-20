@@ -43,6 +43,18 @@ pub const PROJECT_ORIGIN: &str = "project";
 pub const UNKNOWN_ROLE: &str = "unknown_role";
 pub const INVALID_ROLE_ACTIVATION: &str = "invalid_role_activation";
 pub const ROLE_NOT_DISABLEABLE: &str = "role_not_disableable";
+pub const INVALID_ROLE_MODEL: &str = "invalid_role_model";
+/// A warning, not an error: a model on a role that never runs as its own
+/// sub-agent has no effect, and a project is never blocked for that.
+pub const ROLE_MODEL_UNUSED: &str = "role_model_unused";
+
+/// The steps whose roles run as their own sub-agent in the `isolated`
+/// review mode: the only steps where a role's model applies.
+pub const REVIEWING_STEPS: &[&str] = &["plan.trace", "plan.challenge", "code.review"];
+
+/// What a project writes under `roles:` to keep a role on the session's
+/// model.
+pub const INHERIT_MODEL: &str = "inherit";
 
 /// The sections a role's knowledge may use, in this order.
 pub const KNOWLEDGE_SECTIONS: &[&str] =
@@ -93,6 +105,9 @@ struct RoleFrontmatter {
     domains: Vec<String>,
     #[serde(default)]
     done_when: Vec<String>,
+    /// The model the role's sub-agent runs on; absent for the session's.
+    #[serde(default)]
+    model: Option<String>,
     /// Read by [`triggers::read_groups`], which names the group and the
     /// field of a defect.
     #[serde(default)]
@@ -134,6 +149,16 @@ pub fn parse_role_file(source: &str) -> Result<Role, String> {
     let data: RoleFrontmatter =
         serde_norway::from_str(frontmatter).map_err(|err| err.to_string())?;
     let body = body.trim();
+    let model = match data.model.as_deref() {
+        None => None,
+        Some(text) => Some(Model::parse(text).ok_or_else(|| {
+            format!(
+                "role `{}` has the model `{text}`; use {}",
+                data.id,
+                Model::ALLOWED
+            )
+        })?),
+    };
     let read = triggers::read_groups(data.triggers.as_ref());
     if let Some(problem) = read.problems.first() {
         return Err(problem.message.clone());
@@ -149,6 +174,7 @@ pub fn parse_role_file(source: &str) -> Result<Role, String> {
         domains: data.domains,
         knowledge: (!body.is_empty()).then(|| body.to_string()),
         triggers: read.groups,
+        model,
     })
 }
 
@@ -188,6 +214,9 @@ pub struct Role {
     /// The evidence in a change's diff that suggests a domain; empty for a
     /// role that carries none.
     pub triggers: Vec<TriggerGroup>,
+    /// The model the role's sub-agent runs on by default; `None` keeps the
+    /// session's model.
+    pub model: Option<Model>,
 }
 
 impl Role {
@@ -207,6 +236,12 @@ impl Role {
 
     pub fn serves(&self, step: &str) -> bool {
         self.steps.iter().any(|s| s == step)
+    }
+
+    /// True when the role serves a step where it runs as its own sub-agent
+    /// in the `isolated` mode, so that a model applies to it.
+    pub fn reviews(&self) -> bool {
+        REVIEWING_STEPS.iter().any(|step| self.serves(step))
     }
 
     /// `on_domain` for a role bound to domains, `always` otherwise.
@@ -260,6 +295,7 @@ pub fn catalog(schema: &Schema, schema_name: &str) -> Vec<Role> {
                 domains: Vec::new(),
                 knowledge: None,
                 triggers: Vec::new(),
+                model: None,
             });
         }
     }
@@ -312,6 +348,85 @@ impl Activation {
     }
 }
 
+/// The model a role's sub-agent runs on: the aliases Claude Code's
+/// sub-agent tool accepts. A full model id would tie the configuration to a
+/// release.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Model {
+    Opus,
+    Sonnet,
+    Haiku,
+}
+
+impl Model {
+    /// The values a role's frontmatter accepts, for the messages.
+    pub const ALLOWED: &'static str = "`opus`, `sonnet` or `haiku`";
+
+    pub fn parse(text: &str) -> Option<Self> {
+        match text {
+            "opus" => Some(Self::Opus),
+            "sonnet" => Some(Self::Sonnet),
+            "haiku" => Some(Self::Haiku),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Opus => "opus",
+            Self::Sonnet => "sonnet",
+            Self::Haiku => "haiku",
+        }
+    }
+}
+
+/// What a project's `model:` asks for. Only a project may write `inherit`,
+/// to go back to the session's model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ProjectModel {
+    /// `inherit`: the session's model.
+    Inherit,
+    /// `opus`, `sonnet` or `haiku`.
+    Use(Model),
+}
+
+impl ProjectModel {
+    /// The values a project's `model:` accepts, for the messages.
+    const ALLOWED: &'static str = "`opus`, `sonnet`, `haiku` or `inherit`";
+
+    /// `None` when the text is not one of [`Self::ALLOWED`].
+    fn parse(text: &str) -> Option<Self> {
+        if text == INHERIT_MODEL {
+            return Some(Self::Inherit);
+        }
+        Model::parse(text).map(Self::Use)
+    }
+
+    /// The role's model once this setting applies: none for `inherit`.
+    fn model(self) -> Option<Model> {
+        match self {
+            Self::Inherit => None,
+            Self::Use(model) => Some(model),
+        }
+    }
+}
+
+/// Who set a role's model. A change sets none.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ModelOrigin {
+    Default,
+    Project,
+}
+
+impl ModelOrigin {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Default => "default",
+            Self::Project => "project",
+        }
+    }
+}
+
 /// Who set a role's activation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WhenOrigin {
@@ -356,15 +471,18 @@ impl ActivatedBy {
 }
 
 /// A role entry of `roles:`, as written: `skeptic: never`, or a mapping
-/// with `when` and `done_when`.
+/// with `when`, `done_when` and `model`.
 ///
-/// The activation stays text: an unexpected value is reported by
-/// [`check_settings`] with `invalid_role_activation`, naming the accepted
-/// values, rather than as a YAML type error.
+/// The activation and the model stay text: an unexpected value is reported
+/// by [`check_settings`] with `invalid_role_activation` or
+/// `invalid_role_model`, naming the accepted values, rather than as a YAML
+/// type error.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct RoleSetting {
     pub when: Option<String>,
     pub done_when: Vec<String>,
+    /// `opus`, `sonnet`, `haiku` or `inherit` when valid.
+    pub model: Option<String>,
 }
 
 /// The mapping form of a role entry. Strict: a misspelled `done-when`
@@ -376,6 +494,8 @@ struct RoleSettingMapping {
     when: Option<Value>,
     #[serde(default)]
     done_when: Vec<String>,
+    #[serde(default)]
+    model: Option<Value>,
 }
 
 impl<'de> Deserialize<'de> for RoleSetting {
@@ -387,11 +507,13 @@ impl<'de> Deserialize<'de> for RoleSetting {
             return Ok(Self {
                 when: mapping.when.as_ref().map(scalar_text),
                 done_when: mapping.done_when,
+                model: mapping.model.as_ref().map(scalar_text),
             });
         }
         Ok(Self {
             when: Some(scalar_text(&value)),
             done_when: Vec::new(),
+            model: None,
         })
     }
 }
@@ -436,7 +558,9 @@ fn scalar_text(value: &Value) -> String {
 /// An invalid role setting.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RoleFinding {
-    /// `unknown_role`, `invalid_role_activation` or `role_not_disableable`.
+    /// `unknown_role`, `invalid_role_activation`, `role_not_disableable`
+    /// or `invalid_role_model`; `role_model_unused` from
+    /// [`unused_models`].
     pub code: &'static str,
     /// The role id, as written.
     pub role: String,
@@ -468,6 +592,17 @@ pub fn check_settings(
             ));
             continue;
         };
+        if let Some(model) = &setting.model
+            && ProjectModel::parse(model).is_none()
+        {
+            findings.push(finding(
+                INVALID_ROLE_MODEL,
+                format!(
+                    "{file}: role `{id}` has the model `{model}`; use {}",
+                    ProjectModel::ALLOWED
+                ),
+            ));
+        }
         let Some(when) = &setting.when else { continue };
         match Activation::parse(when) {
             None => findings.push(finding(
@@ -494,6 +629,35 @@ pub fn check_settings(
     findings
 }
 
+/// The warnings of settings against a catalog, in id order: a valid model
+/// on a role that serves no reviewing step, which never applies.
+pub fn unused_models(
+    catalog: &[Role],
+    settings: &BTreeMap<String, RoleSetting>,
+    file: &str,
+) -> Vec<RoleFinding> {
+    settings
+        .iter()
+        .filter(|(_, setting)| {
+            setting
+                .model
+                .as_deref()
+                .is_some_and(|model| ProjectModel::parse(model).is_some())
+        })
+        .filter_map(|(id, _)| {
+            let role = catalog.iter().find(|role| &role.id == id)?;
+            (!role.reviews()).then(|| RoleFinding {
+                code: ROLE_MODEL_UNUSED,
+                role: id.clone(),
+                message: format!(
+                    "{file}: role `{id}` never runs as its own sub-agent (it serves no reviewing step: {}), so its `model` never applies; remove it",
+                    REVIEWING_STEPS.join(", ")
+                ),
+            })
+        })
+        .collect()
+}
+
 /// A role with its settings applied.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedRole {
@@ -502,6 +666,9 @@ pub struct ResolvedRole {
     pub when_origin: WhenOrigin,
     /// Why the role is active; `None` when it is not.
     pub activated_by: Option<ActivatedBy>,
+    /// The model the role's sub-agent runs on; `None` for the session's.
+    pub model: Option<Model>,
+    pub model_origin: ModelOrigin,
 }
 
 impl ResolvedRole {
@@ -547,7 +714,13 @@ pub fn resolve(
         .map(|mut role| {
             let mut when = role.default_activation();
             let mut when_origin = WhenOrigin::Default;
+            let mut model = role.model;
+            let mut model_origin = ModelOrigin::Default;
             if let Some(project) = settings.project.get(&role.id) {
+                if let Some(chosen) = project.model.as_deref().and_then(ProjectModel::parse) {
+                    model = chosen.model();
+                    model_origin = ModelOrigin::Project;
+                }
                 role.criteria
                     .extend(criteria(&project.done_when, PROJECT_ORIGIN));
                 if let Some(activation) = project.when.as_deref().and_then(Activation::parse) {
@@ -570,6 +743,8 @@ pub fn resolve(
                 when,
                 when_origin,
                 activated_by,
+                model,
+                model_origin,
             }
         })
         .collect())
@@ -1120,6 +1295,87 @@ apply:
             serde_norway::from_str::<BTreeMap<String, RoleSetting>>("skeptic:\n  done-when: [x]\n")
                 .unwrap_err();
         assert!(err.to_string().contains("done-when"), "{err}");
+    }
+
+    #[test]
+    fn no_built_in_role_carries_a_model() {
+        // Measured on the isolated path, no role kept its quality on Sonnet
+        // for a saving worth it — see "The reviewers' models" in
+        // docs/en/src/roles.md: every role runs on the session's model
+        // unless the project says otherwise.
+        let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
+        for r in &roles {
+            assert_eq!(r.model, None, "{}", r.role.id);
+            assert_eq!(r.model_origin, ModelOrigin::Default, "{}", r.role.id);
+        }
+    }
+
+    #[test]
+    fn a_project_sets_a_role_s_model() {
+        let project = settings(
+            "privacy: { model: sonnet }\nskeptic: { model: inherit }\nops: { when: always, model: haiku }\n",
+        );
+        let roles = resolve_with(&project, &BTreeMap::new()).unwrap();
+        let privacy = role(&roles, "privacy");
+        assert_eq!(privacy.model, Some(Model::Sonnet));
+        assert_eq!(privacy.model_origin, ModelOrigin::Project);
+        assert_eq!(
+            privacy.when_origin,
+            WhenOrigin::Default,
+            "only the model is set"
+        );
+        let skeptic = role(&roles, "skeptic");
+        assert_eq!(skeptic.model, None);
+        assert_eq!(skeptic.model_origin, ModelOrigin::Project);
+        assert_eq!(role(&roles, "ops").model, Some(Model::Haiku));
+        assert_eq!(role(&roles, "tracer").model_origin, ModelOrigin::Default);
+    }
+
+    #[test]
+    fn an_unknown_model_is_invalid() {
+        for yaml in ["skeptic: { model: gpt }\n", "skeptic: { model: Sonnet }\n"] {
+            let found = check_settings(&demo_catalog(), &settings(yaml), "_codev/config.yaml");
+            assert_eq!(found.len(), 1, "{yaml}");
+            assert_eq!(found[0].code, "invalid_role_model");
+            assert_eq!(found[0].role, "skeptic");
+            assert!(
+                found[0]
+                    .message
+                    .contains("`opus`, `sonnet`, `haiku` or `inherit`"),
+                "{}",
+                found[0].message
+            );
+            assert!(found[0].message.contains("_codev/config.yaml"));
+        }
+        let err =
+            resolve_with(&settings("skeptic: { model: gpt }\n"), &BTreeMap::new()).unwrap_err();
+        assert_eq!(err.code, "invalid_role_model");
+    }
+
+    #[test]
+    fn a_model_off_the_review_steps_is_a_warning() {
+        let project = settings(
+            "developer: { model: sonnet }\nproduct: { model: opus }\nprivacy: { model: sonnet }\nanalyst: { model: gpt }\n",
+        );
+        let found = unused_models(&demo_catalog(), &project, "_codev/config.yaml");
+        let roles: Vec<(&str, &str)> = found.iter().map(|f| (f.code, f.role.as_str())).collect();
+        assert_eq!(
+            roles,
+            [
+                ("role_model_unused", "developer"),
+                ("role_model_unused", "product")
+            ],
+            "an invalid model is an error, not also a warning"
+        );
+        assert!(
+            found[0].message.contains("developer"),
+            "{}",
+            found[0].message
+        );
+        // A warning never keeps the roles from resolving.
+        let valid = settings("developer: { model: sonnet }\n");
+        assert!(check_settings(&demo_catalog(), &valid, "_codev/config.yaml").is_empty());
+        assert!(resolve_with(&valid, &BTreeMap::new()).is_ok());
     }
 
     #[test]

@@ -126,6 +126,24 @@ pub fn project_findings(
     core_roles::check_settings(&catalog, &config.roles, PROJECT_FILE)
 }
 
+/// The warnings on the project's `roles:` — a model on a role that never
+/// runs as its own sub-agent — checked against its configured schema.
+/// Empty when that schema cannot be resolved.
+pub fn project_warnings(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+) -> Vec<RoleFinding> {
+    if config.roles.is_empty() {
+        return Vec::new();
+    }
+    let Ok(schema) = schemas::resolve(fs, layout, &config.schema) else {
+        return Vec::new();
+    };
+    let catalog = core_roles::catalog(schema.graph.schema(), schema.name());
+    core_roles::unused_models(&catalog, &config.roles, PROJECT_FILE)
+}
+
 /// The invalid entries of a change's `roles:`, checked against the
 /// change's schema.
 pub fn change_findings(ctx: &ChangeContext) -> Vec<RoleFinding> {
@@ -166,7 +184,9 @@ fn change_settings(ctx: &ChangeContext) -> BTreeMap<String, RoleSetting> {
                 id.clone(),
                 RoleSetting {
                     when: Some(activation.0.clone()),
-                    done_when: Vec::new(),
+                    // A change sets no model: `change.yaml` only overrides
+                    // an activation.
+                    ..RoleSetting::default()
                 },
             )
         })
