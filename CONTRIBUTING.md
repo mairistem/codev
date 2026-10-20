@@ -151,8 +151,8 @@ or no sub-agent started — ends in error. The tokens the session's totals
 hold beyond its own calls go to the source `sub-agents`; a run whose
 totals fall below its own calls ends in error. `--fixture-config <file>`
 appends a YAML mapping to every review case's `_codev/config.yaml`, for a
-setting a measure needs; it may not set `review:` together with
-`--review-mode`. Planning and update cases ignore both options.
+setting a measure needs; it may not set `review:`, which only
+`--review-mode` gives. Planning and update cases ignore both options.
 `run.json` records them, and a run resumed with other values stops.
 `compare` refuses two runs whose review cases ran in different modes,
 and names both runs' appended configurations, saying when they differ.

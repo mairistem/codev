@@ -12,7 +12,8 @@ SHALL append the YAML of `<file>` to each review case's
 Planning and update cases ignore both options. `--review-mode` accepts
 `inline` (the default) and `isolated`; an unknown mode, a
 `--fixture-config` file that is missing or not a YAML mapping, or one
-holding `review:` together with `--review-mode`, SHALL exit with code 2
+holding `review:` — the mode comes from `--review-mode` alone, so that
+`run.json` records the mode the cases ran in —, SHALL exit with code 2
 before any case runs. `run.json` SHALL record the review mode and the
 appended configuration; a run resumed with other values SHALL exit with
 code 2, as for another model; a `run.json` without them, of the earlier
@@ -67,7 +68,7 @@ ends in error.
 #### Scenario: Options that cannot be applied
 
 - **GIVEN** `--review-mode sometimes`, or a `--fixture-config` file that
-  does not exist, or one holding `review:` with `--review-mode isolated`
+  does not exist, or one holding `review:`
 - **WHEN** the user runs `codev-evals run`
 - **THEN** it exits with code 2 before any case runs, naming the cause
 

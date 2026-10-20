@@ -269,10 +269,11 @@ pub fn review_settings(
                     path.display()
                 ));
             };
-            if mode.is_some() && mapping.contains_key("review") {
+            // The review mode comes from --review-mode alone, so that
+            // run.json records the mode the cases ran in.
+            if mapping.contains_key("review") {
                 return Err(format!(
-                    "--fixture-config {}: sets `review:` while --review-mode sets the review mode; \
-                     keep one",
+                    "--fixture-config {}: sets `review:`; give the review mode with --review-mode",
                     path.display()
                 ));
             }
@@ -2813,6 +2814,11 @@ mod tests {
         assert!(err.contains("not a YAML mapping"), "{err}");
         let err = review_settings(None, file("roles: [unclosed\n")).unwrap_err();
         assert!(err.contains("not valid YAML"), "{err}");
+        let err = review_settings(None, file("review:\n  mode: isolated\n")).unwrap_err();
+        assert!(
+            err.contains("`review:`") && err.contains("--review-mode"),
+            "{err}"
+        );
         let err = review_settings(Some("isolated"), file("review:\n  mode: inline\n")).unwrap_err();
         assert!(
             err.contains("`review:`") && err.contains("--review-mode"),
