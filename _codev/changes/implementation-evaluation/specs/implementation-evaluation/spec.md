@@ -143,9 +143,10 @@ message the agent wrote, and the paths of the files the agent read or
 searched outside the case's directory. A file changed under `_codev/` outside the
 change's folder, and a `corrections.md` written in it, SHALL be recorded
 as modified outside the step. A run whose agent changed what git reads
-under `.git/` — its configuration, `commondir`, attributes, anything but
-the objects, the refs, the logs and the index — SHALL be recorded as an
-error naming the files, before the runner calls `git` on it: git would
+under `.git/` — its configuration, `commondir`, or a file of `info/`
+such as the attributes — SHALL be recorded as an error naming the files;
+what git writes as it works, such as the objects, the refs, the index or
+`AUTO_MERGE`, is not a change of what it reads, before the runner calls `git` on it: git would
 run outside the sandbox what such a file sets.
 
 #### Scenario: A run that changes what git reads

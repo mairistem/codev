@@ -134,8 +134,10 @@ check instead of blocking a job forever.
 The runner's own `git` and `codev` calls (`tool_command`) get the same
 cleared environment, at every step. Before calling `git` on an
 implementation fixture, the runner compares what git reads under `.git/`
-— everything but the objects, the refs, the logs and the index — with
-what it held before the agent ran. A run that changed it, such as a
+— `config`, `config.worktree`, `commondir` and `info/` — with what it
+held before the agent ran. The files git writes as it works, such as
+`AUTO_MERGE` after a stash, are left out: the first baseline runs showed
+that an agent using git changes them. A run that changed it, such as a
 `commondir` pointing to a configuration with a filter driver, is an
 error: `git status` would otherwise run that filter outside the sandbox.
 

@@ -1811,33 +1811,22 @@ fn check_implementation(
     Ok(())
 }
 
-/// The files of `.git/` that decide what git reads and runs — its
-/// configuration, `commondir`, attributes, info — by path, leaving out what
-/// a run legitimately changes: objects, refs, logs, the index and the
-/// files git writes for a commit.
+/// The files of `.git/` that decide what git reads and runs, by path: its
+/// configuration, a `commondir` that points it elsewhere, and `info/` —
+/// attributes, which name filter drivers, and the exclusions that hide a
+/// path from `git status`. What git writes as it works — objects, refs,
+/// the index, `AUTO_MERGE` after a stash — is left out: a run may use git.
 pub fn git_settings(work_dir: &Path) -> BTreeMap<String, Vec<u8>> {
     read_tree(&work_dir.join(".git"))
         .unwrap_or_default()
         .into_iter()
-        .filter(|(path, _)| !git_path_is_volatile(path))
+        .filter(|(path, _)| git_path_is_setting(path))
         .collect()
 }
 
-/// A path under `.git/` that a run changes by using git, not by setting it.
-fn git_path_is_volatile(path: &str) -> bool {
-    ["objects/", "refs/", "logs/"]
-        .iter()
-        .any(|dir| path.starts_with(dir))
-        || [
-            "index",
-            "HEAD",
-            "ORIG_HEAD",
-            "FETCH_HEAD",
-            "COMMIT_EDITMSG",
-            "packed-refs",
-        ]
-        .contains(&path)
-        || path.ends_with(".lock")
+/// A path under `.git/` that sets what git reads or runs.
+fn git_path_is_setting(path: &str) -> bool {
+    matches!(path, "config" | "config.worktree" | "commondir") || path.starts_with("info/")
 }
 
 /// Why a run cannot be trusted when its agent changed what git reads —
@@ -3445,7 +3434,23 @@ mod tests {
                 .unwrap()
                 .contains("config")
         );
-        assert!(git_path_is_volatile("objects/ab/cdef") && git_path_is_volatile("index"));
-        assert!(!git_path_is_volatile("commondir") && !git_path_is_volatile("info/attributes"));
+        for written_by_git in [
+            "objects/ab/cdef",
+            "index",
+            "AUTO_MERGE",
+            "refs/stash",
+            "worktrees/x/HEAD",
+        ] {
+            assert!(!git_path_is_setting(written_by_git), "{written_by_git}");
+        }
+        for setting in [
+            "config",
+            "config.worktree",
+            "commondir",
+            "info/attributes",
+            "info/exclude",
+        ] {
+            assert!(git_path_is_setting(setting), "{setting}");
+        }
     }
 }
