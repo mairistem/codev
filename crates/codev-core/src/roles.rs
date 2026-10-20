@@ -380,12 +380,35 @@ impl Model {
     }
 }
 
-/// A project's `model:` as written: a model, or `inherit` for none.
-fn parse_project_model(text: &str) -> Option<Option<Model>> {
-    if text == INHERIT_MODEL {
-        return Some(None);
+/// What a project's `model:` asks for. Only a project may write `inherit`,
+/// to go back to the session's model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ProjectModel {
+    /// `inherit`: the session's model.
+    Inherit,
+    /// `opus`, `sonnet` or `haiku`.
+    Use(Model),
+}
+
+impl ProjectModel {
+    /// The values a project's `model:` accepts, for the messages.
+    const ALLOWED: &'static str = "`opus`, `sonnet`, `haiku` or `inherit`";
+
+    /// `None` when the text is not one of [`Self::ALLOWED`].
+    fn parse(text: &str) -> Option<Self> {
+        if text == INHERIT_MODEL {
+            return Some(Self::Inherit);
+        }
+        Model::parse(text).map(Self::Use)
     }
-    Model::parse(text).map(Some)
+
+    /// The role's model once this setting applies: none for `inherit`.
+    fn model(self) -> Option<Model> {
+        match self {
+            Self::Inherit => None,
+            Self::Use(model) => Some(model),
+        }
+    }
 }
 
 /// Who set a role's model. A change sets none.
@@ -570,12 +593,13 @@ pub fn check_settings(
             continue;
         };
         if let Some(model) = &setting.model
-            && parse_project_model(model).is_none()
+            && ProjectModel::parse(model).is_none()
         {
             findings.push(finding(
                 INVALID_ROLE_MODEL,
                 format!(
-                    "{file}: role `{id}` has the model `{model}`; use `opus`, `sonnet`, `haiku` or `inherit`"
+                    "{file}: role `{id}` has the model `{model}`; use {}",
+                    ProjectModel::ALLOWED
                 ),
             ));
         }
@@ -618,7 +642,7 @@ pub fn unused_models(
             setting
                 .model
                 .as_deref()
-                .is_some_and(|model| parse_project_model(model).is_some())
+                .is_some_and(|model| ProjectModel::parse(model).is_some())
         })
         .filter_map(|(id, _)| {
             let role = catalog.iter().find(|role| &role.id == id)?;
@@ -693,8 +717,8 @@ pub fn resolve(
             let mut model = role.model;
             let mut model_origin = ModelOrigin::Default;
             if let Some(project) = settings.project.get(&role.id) {
-                if let Some(chosen) = project.model.as_deref().and_then(parse_project_model) {
-                    model = chosen;
+                if let Some(chosen) = project.model.as_deref().and_then(ProjectModel::parse) {
+                    model = chosen.model();
                     model_origin = ModelOrigin::Project;
                 }
                 role.criteria
@@ -1274,9 +1298,10 @@ apply:
     }
 
     #[test]
-    fn the_default_models_follow_the_measure() {
+    fn no_built_in_role_carries_a_model() {
         // Measured on the isolated path, no role kept its quality on Sonnet
-        // for a saving worth it: every role runs on the session's model
+        // for a saving worth it — see "The reviewers' models" in
+        // docs/en/src/roles.md: every role runs on the session's model
         // unless the project says otherwise.
         let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
         for r in &roles {

@@ -114,3 +114,99 @@ history:
   - status: fixed
     by: migration
 ```
+
+## code.review
+
+Mode: isolated.
+
+The reviewers read each file's diff and the functions it touches directly, without summaries.
+
+### performance
+
+No finding.
+
+### migration
+
+No finding.
+
+### newcomer
+
+#### R-newcomer-1 `parse_project_model` returns a double `Option` whose two "nones" mean opposite things
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/codev-core/src/roles.rs:383-389"
+evidence: |
+  fn parse_project_model(text: &str) -> Option<Option<Model>> {
+recommendation: "Return a named type such as ProjectModel { Inherit, Use(Model) }."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "A ProjectModel enum with parse and model(); the callers read it by name."
+    ref: "crates/codev-core/src/roles.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The list of accepted models is written twice: once in a constant, once inline
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/roles.rs:574-580"
+evidence: |
+  "{file}: role `{id}` has the model `{model}`; use `opus`, `sonnet`, `haiku` or `inherit`"
+recommendation: "Build the message from constants."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "ProjectModel::ALLOWED feeds the message, next to Model::ALLOWED, with a comment that only a project may write inherit."
+    ref: "crates/codev-core/src/roles.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The test name and comment rely on a measurement only the plan describes
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/roles.rs:1276-1286"
+evidence: |
+  fn the_default_models_follow_the_measure() {
+recommendation: "Rename the test and point the comment to the docs."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "Renamed no_built_in_role_carries_a_model; the comment points to the roles chapter."
+    ref: "crates/codev-core/src/roles.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 Unexplained needle `"73"` in the documentation check
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-cli/src/docs.rs:536-546"
+evidence: |
+  "73",
+recommendation: "Use a more specific needle, with a comment."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "A comment says it checks the measured cost of the isolated mode in both editions; the needle stays bare because the French edition writes a non-breaking space before %."
+    ref: "crates/codev-cli/src/docs.rs"
+  - status: fixed
+    by: newcomer
+```

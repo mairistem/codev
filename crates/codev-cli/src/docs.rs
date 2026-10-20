@@ -539,6 +539,8 @@ mod tests {
                 &[
                     "Sonnet",
                     "Opus",
+                    // The measured cost of the isolated mode, quoted in both
+                    // editions.
                     "73",
                     "`inherit`",
                     "`invalid_role_model`",
