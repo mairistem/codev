@@ -30,9 +30,11 @@
 - [x] 5.2 The case `implement-fix-merge-and-skill-refresh` (ref `da6e022^`, merged `da6e022`), same; verified by `codev-evals calibrate implement-fix-merge-and-skill-refresh` exiting with 0
 - [x] 5.3 The case `implement-forward-compatible-config` (ref `2d5edc4^`, merged `2d5edc4`), same; verified by `codev-evals calibrate implement-forward-compatible-config` exiting with 0, or replaced as in 5.1
 - [x] 5.4 The refusing case `implement-refuse-missing-tasks`: a change without `tasks.md`; verified by the suite's test `the_suite_covers_the_implementation_of_past_changes` (at least four `code.implement` cases, exactly one refusing)
-- [ ] 5.5 The baseline: `codev-evals run --step code.implement --repeat 5 --out evals/baseline`, with the Claude Code version the evaluation workflow pins, on Opus; verified by the suite's test `every_case_has_a_baseline_observation` passing and by `codev-evals score evals/baseline` giving the `code.implement` section
+- [x] 5.5 The baseline: `codev-evals run --step code.implement --repeat 5 --out evals/baseline`, with the Claude Code version the evaluation workflow pins, on Opus; verified by the suite's test `every_case_has_a_baseline_observation` passing and by `codev-evals score evals/baseline` giving the `code.implement` section
+
+- [x] 5.6 The reliability chapter: the implementation cases counted in the run's description and a section on implementing a plan, in both languages, regenerated with `codev-evals docs`; verified by the unit test `the_page_gives_the_implementation_figures_when_the_baseline_has_implementation_runs` and the suite's `the_reliability_pages_follow_the_baseline`
 
 ## 6. Documentation and checks
 
 - [x] 6.1 `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`: a section « Writing an implementation case » (the case's files, the acceptance script's protocol, `calibrate`, the code built outside the sandbox with a cleared environment, and the reads of the repository the runs are checked for), and the step in the list of steps; verified by the suite's test `contributing_chapters_document_the_implementation_cases`, written like `contributing_chapters_document_the_update_cases`. The user documentation under `docs/` is not affected: `evals/` is not shipped
-- [ ] 6.2 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing
+- [x] 6.2 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing

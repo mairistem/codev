@@ -301,6 +301,31 @@ above the baseline's maximum.
 - **WHEN** the user runs `codev-evals compare <baseline> <candidate>`
 - **THEN** the verdict fails, naming the acceptance share
 
+### Requirement: The reliability chapter gives the implementation figures
+
+When the committed baseline holds implementation runs, the reliability
+chapter that `codev-evals docs` generates SHALL count the implementation
+cases with the others in its description of the run, and give a section
+on implementing a plan, in English and in French: what an
+implementation case replays and how a run is checked, then the median
+and range of the share of runs that pass, of checks that pass, of
+acceptance assertions that hold, of refusals that pass, and of the runs
+that modify a file outside the step. A baseline without implementation
+runs SHALL give no such section.
+
+#### Scenario: A baseline with implementation runs
+
+- **GIVEN** a baseline with four implementation cases among its cases
+- **WHEN** the user runs `codev-evals docs`
+- **THEN** both pages count `4 implementation` (`4 d'implémentation`)
+  with the other cases, and give the section with its five measures
+
+#### Scenario: A baseline without implementation runs
+
+- **GIVEN** a baseline with no implementation case
+- **WHEN** the user runs `codev-evals docs`
+- **THEN** neither page has a section on implementing a plan
+
 ### Requirement: The suite covers the implementation of past changes and a refusal
 
 The suite SHALL hold implementation cases drawn from at least three

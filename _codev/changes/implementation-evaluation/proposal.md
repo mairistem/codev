@@ -60,10 +60,12 @@ the apply skill helps or hurts.
 - `evals/src/`: the case loader (`case.rs`), the runner (`runner.rs`), a
   new scoring module, the report, the comparison and the CLI (`main.rs`).
 - `evals/cases/`: four new cases; `evals/baseline/`: their runs.
+- `docs/en/src/reliability.md` and `docs/fr/src/reliability.md`, the
+  reliability chapter generated from the baseline: the implementation
+  figures.
 - `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`: the evaluation section, which lists the steps and
   how to record a new step's baseline.
-- `evals/` is not shipped: the codev binary, the skills and the user
-  documentation do not change.
+- `evals/` is not shipped: the codev binary and the skills do not change.
 
 ## Domains
 

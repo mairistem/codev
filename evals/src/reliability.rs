@@ -177,6 +177,19 @@ pub struct UpdateFigures {
     pub strayed: Option<Spread>,
 }
 
+/// The implementation figures of `report.json`: medians and ranges over
+/// the repetitions, the refusing cases apart.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImplementFigures {
+    pub cases: u32,
+    pub pass_rate: Option<Spread>,
+    pub check_rate: Option<Spread>,
+    pub acceptance_rate: Option<Spread>,
+    pub refusal_rate: Option<Spread>,
+    pub strayed: Option<Spread>,
+}
+
 /// What the page is built from: the run, the thresholds and the roles.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Baseline {
@@ -197,6 +210,8 @@ pub struct Baseline {
     pub planning: Option<PlanningFigures>,
     /// The update step, when the baseline holds update runs.
     pub update: Option<UpdateFigures>,
+    /// The implementation step, when the baseline holds implementation runs.
+    pub implement: Option<ImplementFigures>,
     /// The sums of the cases' median consumption.
     pub consumption: Option<Measures>,
     /// Where the tokens go, ranked by cost; empty when no run recorded its
@@ -222,6 +237,8 @@ struct ReportFile {
     planning: Option<PlanningFigures>,
     #[serde(default)]
     update: Option<UpdateFigures>,
+    #[serde(default)]
+    implement: Option<ImplementFigures>,
     #[serde(default)]
     consumption: Option<Measures>,
     #[serde(default)]
@@ -280,6 +297,7 @@ impl Baseline {
             roles: report.roles,
             planning: report.planning,
             update: report.update,
+            implement: report.implement,
             consumption: report.consumption,
             sources: report.sources,
         })
@@ -520,6 +538,13 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             lang.pick("revision", "de révision")
         ));
     }
+    if let Some(i) = &b.implement {
+        planning.push_str(&format!(
+            ", {} {}",
+            i.cases,
+            lang.pick("implementation", "d'implémentation")
+        ));
+    }
     let model = b.run.model.as_deref().map_or_else(
         || {
             lang.pick("Claude Code's default", "celui de Claude Code par défaut")
@@ -727,6 +752,9 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     }
     if let Some(u) = &b.update {
         update_section(&mut out, u, lang);
+    }
+    if let Some(i) = &b.implement {
+        implement_section(&mut out, i, lang);
     }
     if let Some(m) = &b.consumption {
         consumption_section(&mut out, b, m, lang);
@@ -1034,6 +1062,88 @@ fn planning_section(out: &mut String, p: &PlanningFigures, lang: Lang) {
                 "Plans qui ne passent pas la validation",
             ),
             p.invalid,
+            false,
+        ),
+    ] {
+        let _ = writeln!(out, "| {label} | {} |", spread_text(lang, s, ratio));
+    }
+    out.push('\n');
+}
+
+/// The implementation step: its measures, median and range.
+fn implement_section(out: &mut String, i: &ImplementFigures, lang: Lang) {
+    let _ = writeln!(
+        out,
+        "## {}\n",
+        lang.pick("Implementing a plan", "L'implémentation d'un plan")
+    );
+    let _ = writeln!(
+        out,
+        "{}\n",
+        match lang {
+            Lang::En => format!(
+                "{} implementation cases lay the plan of an archived change on the repository as \
+                 it was before it, and ask `/codev-apply` to implement it, its review included. \
+                 After each run the evaluation itself formats, lints, tests and builds the code, \
+                 then runs a hidden script that drives the built `codev` as a user would, written \
+                 from the change's scenarios and proven on the real change. A run **passes** when \
+                 every task is checked, the project's checks pass, every assertion of the script \
+                 holds, the review record is valid and nothing outside the change is touched; a \
+                 plan without tasks must be refused. Each figure is the median over the \
+                 repetitions, with its range; the refusal is counted apart.",
+                i.cases
+            ),
+            Lang::Fr => format!(
+                "{} cas d'implémentation posent le plan d'un change archivé sur le dépôt tel qu'il \
+                 était avant lui, et demandent à `/codev-apply` de l'implémenter, revue comprise. \
+                 Après chaque exécution, l'évaluation formate, analyse, teste et construit \
+                 elle-même le code, puis lance un script caché qui pilote le `codev` construit \
+                 comme le ferait un utilisateur, écrit d'après les scénarios du change et éprouvé \
+                 sur le vrai change. Une exécution **réussit** quand toutes les tâches sont \
+                 cochées, que les vérifications du projet passent, que chaque assertion du script \
+                 tient, que le compte rendu de revue est valide et que rien hors du change n'est \
+                 touché{c}un plan sans tâches doit être refusé. Chaque chiffre est la médiane sur \
+                 les répétitions, avec son écart{c}le refus est compté à part.",
+                i.cases,
+                c = lang.colon()
+            ),
+        }
+    );
+    let _ = writeln!(
+        out,
+        "| {} |\n|---|---:|",
+        lang.pick("Measure | Median (range)", "Mesure | Médiane (écart)")
+    );
+    for (label, s, ratio) in [
+        (
+            lang.pick("Runs that pass", "Exécutions qui réussissent"),
+            i.pass_rate,
+            true,
+        ),
+        (
+            lang.pick("Checks that pass", "Vérifications qui réussissent"),
+            i.check_rate,
+            true,
+        ),
+        (
+            lang.pick(
+                "Acceptance assertions that hold",
+                "Assertions d'acceptation qui tiennent",
+            ),
+            i.acceptance_rate,
+            true,
+        ),
+        (
+            lang.pick("Refusals that pass", "Refus qui réussissent"),
+            i.refusal_rate,
+            true,
+        ),
+        (
+            lang.pick(
+                "Runs that modify a file outside the step",
+                "Exécutions qui modifient un fichier hors de l'étape",
+            ),
+            i.strayed,
             false,
         ),
     ] {
@@ -1853,6 +1963,7 @@ mod tests {
             roles,
             planning: None,
             update: None,
+            implement: None,
             consumption: None,
             sources: vec![],
         }
@@ -2124,6 +2235,34 @@ mod tests {
         let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
         assert!(!without.contains("## Revising a plan"));
         assert!(!without.contains("revision)"));
+    }
+
+    #[test]
+    fn the_page_gives_the_implementation_figures_when_the_baseline_has_implementation_runs() {
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        let s = |median, min, max| Some(Spread { median, min, max });
+        b.implement = Some(ImplementFigures {
+            cases: 4,
+            pass_rate: s(0.667, 0.333, 0.667),
+            check_rate: s(0.98, 0.97, 0.98),
+            acceptance_rate: s(1.0, 1.0, 1.0),
+            refusal_rate: s(1.0, 1.0, 1.0),
+            strayed: s(0.0, 0.0, 0.0),
+        });
+        let en = page(&b, Lang::En);
+        assert!(en.contains("## Implementing a plan"), "{en}");
+        assert!(en.contains("| Runs that pass | 0.67 (0.33–0.67) |"), "{en}");
+        assert!(
+            en.contains("| Acceptance assertions that hold | 1.00 |"),
+            "{en}"
+        );
+        assert!(en.contains("controls, 4 implementation)"), "{en}");
+        let fr = page(&b, Lang::Fr);
+        assert!(fr.contains("## L'implémentation d'un plan"), "{fr}");
+        assert!(fr.contains("témoins propres, 4 d'implémentation)"), "{fr}");
+        assert!(!fr.contains("{c}"), "{fr}");
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("## Implementing a plan"));
     }
 
     #[test]

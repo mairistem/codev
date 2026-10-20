@@ -4,9 +4,9 @@
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
 - codev: codev 0.6.1
-- Cases: 71
+- Cases: 75
 - Repetitions: 5
-- Cost: 56.94 USD for one run of the suite (sum of the cases' medians), 285.75 USD in all
+- Cost: 70.69 USD for one run of the suite (sum of the cases' medians), 355.30 USD in all
 - Thresholds: recall ≥ 0.50, false positives ≤ 2, evidence validity ≥ 0.80
 - Verdict: **fail**
 
@@ -48,6 +48,14 @@ Per repetition, every update run pooled: the share of runs whose every check pas
 |---|---|---|---|---|
 | 6 | 1.00 | 1.00 | 0 | 1.87 |
 
+## `code.implement`
+
+Per repetition, every implementation run pooled, the refusing cases apart: the share of runs whose every check passes, the share of checks that pass, the share of acceptance assertions that pass, the share of refusing runs that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline.
+
+| Cases | Runs passing | Checks passing | Acceptance | Refusals passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|---|---|
+| 4 | 0.67 (0.33–0.67) | 0.98 (0.97–0.98) | 1.00 | 1.00 | 0 | 13.75 |
+
 ## Consumption
 
 Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.
@@ -63,7 +71,7 @@ Per case, the median over its runs not in error; per role and for the suite, the
 | security | 1.92 | 154 | 153 | 46 | 2 | 7042 | 167082 | 1479147 | 13753 | 38 | 44545 | 365 |
 | skeptic | 1.20 | 109 | 109 | 31 | 6 | 3488 | 95501 | 1069377 | 10733 | 25 | 46659 | 418 |
 | tracer | 0.58 | 39 | 39 | 19 | 4 | 2180 | 53041 | 444499 | 3896 | 12 | 41555 | 344 |
-| **Suite** | 56.94 | 7192 | 7801 | 1072 | 75 | 82304 | 3731666 | 64075509 | 739580 | 1061 | 62761 | 687 |
+| **Suite** | 70.69 | 8582 | 9538 | 1253 | 75 | 86752 | 4420469 | 90573640 | 910934 | 1255 | 74592 | 718 |
 
 ## Where the tokens go
 
@@ -71,22 +79,41 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| skill | 890289 | 23 % |
-| file | 812373 | 21 % |
-| prompt | 537138 | 14 % |
-| edit | 376693 | 10 % |
-| search | 341727 | 9 % |
-| shell | 205281 | 5 % |
-| output | 163782 | 4 % |
+| file | 1029407 | 23 % |
+| skill | 951671 | 22 % |
+| prompt | 565348 | 13 % |
+| edit | 405541 | 9 % |
+| search | 376258 | 8 % |
+| shell | 327248 | 7 % |
+| output | 183837 | 4 % |
 | codev instructions | 158702 | 4 % |
-| codev roles | 100208 | 3 % |
+| codev roles | 105153 | 2 % |
 | codev review | 95800 | 2 % |
-| codev validate | 67917 | 2 % |
+| codev validate | 69143 | 2 % |
 | codev new | 54593 | 1 % |
+| agent | 37052 | 1 % |
 | codev list | 26508 | 1 % |
-| agent | 22404 | 1 % |
-| codev --help | 2347 | 0 % |
-| codev status | 295 | 0 % |
+| codev status | 11038 | 0 % |
+| codev --help | 3100 | 0 % |
+| codev --version | 435 | 0 % |
+
+### `code.implement`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| file | 217034 | 40 % |
+| shell | 121967 | 22 % |
+| skill | 61382 | 11 % |
+| search | 34531 | 6 % |
+| edit | 28848 | 5 % |
+| prompt | 28210 | 5 % |
+| output | 20055 | 4 % |
+| agent | 14648 | 3 % |
+| codev status | 10743 | 2 % |
+| codev roles | 4945 | 1 % |
+| codev validate | 1226 | 0 % |
+| codev --help | 753 | 0 % |
+| codev --version | 435 | 0 % |
 
 ### `code.review`
 
@@ -420,6 +447,500 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Expected `colour-only-errors` (use-of-colour, high): found by R-accessibility-1
 - Finding R-accessibility-1 [high / high] `design.md#Decision: Invalid fields turn red` Field errors are conveyed by a red border only, with no text: true positive
 - Finding R-accessibility-2 [medium / high] `proposal.md#What Changes` Removing the error list leaves submit with no error identification or focus move: duplicate
+
+### implement-decision-accept-command
+
+- Role: planner at `code.implement`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  4.29 · 587 · 552 · 85 · 0 · 1136 · 174135 · 9576730 · 48323 · 66 · 137314 · 732
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 3.93 USD, 468 s
+- Tool calls: 83, 35 before the first artifact
+- Checks: 22 of 23 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `accept-json-gives-the-decision`: passed
+- Check acceptance `accept-keeps-the-body`: passed
+- Check acceptance `accept-moves-the-status`: passed
+- Check acceptance `accept-of-an-unknown-id-is-refused`: passed
+- Check acceptance `accept-seals-the-body`: passed
+- Check acceptance `accept-then-validate-is-clean`: passed
+- Check acceptance `accept-twice-is-refused`: passed
+- Check acceptance `new-accepted-is-sealed`: passed
+- Check acceptance `new-is-proposed`: passed
+- Check acceptance `new-proposed-json-has-no-hash`: passed
+- Check acceptance `new-proposed-writes-no-seal`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added (review_role_missing in _codev/changes/decision-accept-command/review.md): **failed**
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 4.61 USD, 586 s
+- Tool calls: 97, 25 before the first artifact
+- Checks: 23 of 23 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `accept-json-gives-the-decision`: passed
+- Check acceptance `accept-keeps-the-body`: passed
+- Check acceptance `accept-moves-the-status`: passed
+- Check acceptance `accept-of-an-unknown-id-is-refused`: passed
+- Check acceptance `accept-seals-the-body`: passed
+- Check acceptance `accept-then-validate-is-clean`: passed
+- Check acceptance `accept-twice-is-refused`: passed
+- Check acceptance `new-accepted-is-sealed`: passed
+- Check acceptance `new-is-proposed`: passed
+- Check acceptance `new-proposed-json-has-no-hash`: passed
+- Check acceptance `new-proposed-writes-no-seal`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 4.29 USD, 616 s
+- Tool calls: 84, 16 before the first artifact
+- Checks: 22 of 23 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `accept-json-gives-the-decision`: passed
+- Check acceptance `accept-keeps-the-body`: passed
+- Check acceptance `accept-moves-the-status`: passed
+- Check acceptance `accept-of-an-unknown-id-is-refused`: passed
+- Check acceptance `accept-seals-the-body`: passed
+- Check acceptance `accept-then-validate-is-clean`: passed
+- Check acceptance `accept-twice-is-refused`: passed
+- Check acceptance `new-accepted-is-sealed`: passed
+- Check acceptance `new-is-proposed`: passed
+- Check acceptance `new-proposed-json-has-no-hash`: passed
+- Check acceptance `new-proposed-writes-no-seal`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added (review_role_missing in _codev/changes/decision-accept-command/review.md): **failed**
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 3.90 USD, 475 s
+- Tool calls: 68, 58 before the first artifact
+- Checks: 23 of 23 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `accept-json-gives-the-decision`: passed
+- Check acceptance `accept-keeps-the-body`: passed
+- Check acceptance `accept-moves-the-status`: passed
+- Check acceptance `accept-of-an-unknown-id-is-refused`: passed
+- Check acceptance `accept-seals-the-body`: passed
+- Check acceptance `accept-then-validate-is-clean`: passed
+- Check acceptance `accept-twice-is-refused`: passed
+- Check acceptance `new-accepted-is-sealed`: passed
+- Check acceptance `new-is-proposed`: passed
+- Check acceptance `new-proposed-json-has-no-hash`: passed
+- Check acceptance `new-proposed-writes-no-seal`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 4.45 USD, 620 s
+- Tool calls: 108, 26 before the first artifact
+- Checks: 23 of 23 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `accept-json-gives-the-decision`: passed
+- Check acceptance `accept-keeps-the-body`: passed
+- Check acceptance `accept-moves-the-status`: passed
+- Check acceptance `accept-of-an-unknown-id-is-refused`: passed
+- Check acceptance `accept-seals-the-body`: passed
+- Check acceptance `accept-then-validate-is-clean`: passed
+- Check acceptance `accept-twice-is-refused`: passed
+- Check acceptance `new-accepted-is-sealed`: passed
+- Check acceptance `new-is-proposed`: passed
+- Check acceptance `new-proposed-json-has-no-hash`: passed
+- Check acceptance `new-proposed-writes-no-seal`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+### implement-fix-merge-and-skill-refresh
+
+- Role: planner at `code.implement`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  3.87 · 79 · 522 · 6 · 0 · 1136 · 245212 · 5282519 · 56143 · 48 · 122148 · 1179
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 3.38 USD, 502 s
+- Tool calls: 46, 41 before the first artifact
+- Checks: 19 of 19 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `checksum-matches-the-content`: passed
+- Check acceptance `hand-edit-of-a-checksummed-skill-preserved`: passed
+- Check acceptance `hand-edit-on-another-version-rewritten`: passed
+- Check acceptance `last-requirement-modified-kept-whole`: passed
+- Check acceptance `second-sync-changes-nothing`: passed
+- Check acceptance `second-update-writes-nothing`: passed
+- Check acceptance `skill-carries-a-checksum`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 3.76 USD, 69 s
+- Tool calls: 56, 12 before the first artifact
+- Checks: 19 of 19 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `checksum-matches-the-content`: passed
+- Check acceptance `hand-edit-of-a-checksummed-skill-preserved`: passed
+- Check acceptance `hand-edit-on-another-version-rewritten`: passed
+- Check acceptance `last-requirement-modified-kept-whole`: passed
+- Check acceptance `second-sync-changes-nothing`: passed
+- Check acceptance `second-update-writes-nothing`: passed
+- Check acceptance `skill-carries-a-checksum`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 3.87 USD, 69 s
+- Tool calls: 49, 9 before the first artifact
+- Checks: 19 of 19 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `checksum-matches-the-content`: passed
+- Check acceptance `hand-edit-of-a-checksummed-skill-preserved`: passed
+- Check acceptance `hand-edit-on-another-version-rewritten`: passed
+- Check acceptance `last-requirement-modified-kept-whole`: passed
+- Check acceptance `second-sync-changes-nothing`: passed
+- Check acceptance `second-update-writes-nothing`: passed
+- Check acceptance `skill-carries-a-checksum`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 4.22 USD, 107 s
+- Tool calls: 78, 15 before the first artifact
+- Checks: 19 of 19 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `checksum-matches-the-content`: passed
+- Check acceptance `hand-edit-of-a-checksummed-skill-preserved`: passed
+- Check acceptance `hand-edit-on-another-version-rewritten`: passed
+- Check acceptance `last-requirement-modified-kept-whole`: passed
+- Check acceptance `second-sync-changes-nothing`: passed
+- Check acceptance `second-update-writes-nothing`: passed
+- Check acceptance `skill-carries-a-checksum`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 4.06 USD, 78 s
+- Tool calls: 55, 11 before the first artifact
+- Checks: 19 of 19 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `checksum-matches-the-content`: passed
+- Check acceptance `hand-edit-of-a-checksummed-skill-preserved`: passed
+- Check acceptance `hand-edit-on-another-version-rewritten`: passed
+- Check acceptance `last-requirement-modified-kept-whole`: passed
+- Check acceptance `second-sync-changes-nothing`: passed
+- Check acceptance `second-update-writes-nothing`: passed
+- Check acceptance `skill-carries-a-checksum`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+### implement-forward-compatible-config
+
+- Role: planner at `code.implement`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  5.38 · 713 · 651 · 87 · 0 · 1166 · 248373 · 11540333 · 66127 · 77 · 155557 · 859
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 5.93 USD, 922 s
+- Tool calls: 87, 14 before the first artifact
+- Checks: 20 of 21 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `clean-configuration-has-no-config-item`: passed
+- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-reports-the-unknown-key`: passed
+- Check acceptance `misspelled-top-level-key-warns`: passed
+- Check acceptance `non-strict-validation-warns-and-succeeds`: passed
+- Check acceptance `strict-validation-reports-a-config-item`: passed
+- Check acceptance `unknown-changelog-key-fails-quoting-the-requirement`: passed
+- Check acceptance `unknown-mcp-key-keeps-the-update`: passed
+- Check acceptance `unknown-top-level-key-warns-with-the-requirement`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added (review_invalid in _codev/changes/forward-compatible-config/review.md, review_role_missing in _codev/changes/forward-compatible-config/review.md): **failed**
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 6.43 USD, 1030 s
+- Tool calls: 94, 21 before the first artifact
+- Checks: 20 of 21 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `clean-configuration-has-no-config-item`: passed
+- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-reports-the-unknown-key`: passed
+- Check acceptance `misspelled-top-level-key-warns`: passed
+- Check acceptance `non-strict-validation-warns-and-succeeds`: passed
+- Check acceptance `strict-validation-reports-a-config-item`: passed
+- Check acceptance `unknown-changelog-key-fails-quoting-the-requirement`: passed
+- Check acceptance `unknown-mcp-key-keeps-the-update`: passed
+- Check acceptance `unknown-top-level-key-warns-with-the-requirement`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added (review_invalid in _codev/changes/forward-compatible-config/review.md): **failed**
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 5.23 USD, 635 s
+- Tool calls: 78, 17 before the first artifact
+- Checks: 21 of 21 passed, the run passes
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `clean-configuration-has-no-config-item`: passed
+- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-reports-the-unknown-key`: passed
+- Check acceptance `misspelled-top-level-key-warns`: passed
+- Check acceptance `non-strict-validation-warns-and-succeeds`: passed
+- Check acceptance `strict-validation-reports-a-config-item`: passed
+- Check acceptance `unknown-changelog-key-fails-quoting-the-requirement`: passed
+- Check acceptance `unknown-mcp-key-keeps-the-update`: passed
+- Check acceptance `unknown-top-level-key-warns-with-the-requirement`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 5.38 USD, 647 s
+- Tool calls: 86, 13 before the first artifact
+- Checks: 20 of 21 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `clean-configuration-has-no-config-item`: passed
+- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-reports-the-unknown-key`: passed
+- Check acceptance `misspelled-top-level-key-warns`: passed
+- Check acceptance `non-strict-validation-warns-and-succeeds`: passed
+- Check acceptance `strict-validation-reports-a-config-item`: passed
+- Check acceptance `unknown-changelog-key-fails-quoting-the-requirement`: passed
+- Check acceptance `unknown-mcp-key-keeps-the-update`: passed
+- Check acceptance `unknown-top-level-key-warns-with-the-requirement`: passed
+- Check the review record holds `code.review`: **failed**
+- Check no validation error added: passed
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 5.01 USD, 712 s
+- Tool calls: 74, 71 before the first artifact
+- Checks: 20 of 21 passed, the run **fails**
+- Check every task checked: passed
+- Check `format` passes: passed
+- Check `lints` passes: passed
+- Check `tests` passes: passed
+- Check `build` passes: passed
+- Check acceptance `clean-configuration-has-no-config-item`: passed
+- Check acceptance `doctor-fixes-a-codev-above-the-requirement`: passed
+- Check acceptance `doctor-reports-the-unknown-key`: passed
+- Check acceptance `misspelled-top-level-key-warns`: passed
+- Check acceptance `non-strict-validation-warns-and-succeeds`: passed
+- Check acceptance `strict-validation-reports-a-config-item`: passed
+- Check acceptance `unknown-changelog-key-fails-quoting-the-requirement`: passed
+- Check acceptance `unknown-mcp-key-keeps-the-update`: passed
+- Check acceptance `unknown-top-level-key-warns-with-the-requirement`: passed
+- Check the review record holds `code.review`: passed
+- Check no validation error added (review_invalid in _codev/changes/forward-compatible-config/review.md): **failed**
+- Check nothing modified outside the step: passed
+- Check the change is still in `_codev/changes/`: passed
+- Check no read of the cases' repository: passed
+- Check `docs/en/` touched: passed
+- Check `docs/fr/` touched: passed
+
+### implement-refuse-missing-tasks
+
+- Role: planner at `code.implement`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.20 · 11 · 11 · 3 · 0 · 1010 · 21083 · 98549 · 761 · 3 · 40213 · 253
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.20 USD, 12 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no file changed: passed
+- Check points to `/codev-propose`: passed
+- Check no read of the cases' repository: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.22 USD, 9 s
+- Tool calls: 3, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no file changed: passed
+- Check points to `/codev-propose`: passed
+- Check no read of the cases' repository: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.26 USD, 10 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no file changed: passed
+- Check points to `/codev-propose`: passed
+- Check no read of the cases' repository: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.20 USD, 8 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no file changed: passed
+- Check points to `/codev-propose`: passed
+- Check no read of the cases' repository: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 13 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no file changed: passed
+- Check points to `/codev-propose`: passed
+- Check no read of the cases' repository: passed
 
 ### migration-code-drop-and-rename
 
