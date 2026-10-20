@@ -289,7 +289,7 @@ pub fn review_settings(
 /// A review case's `_codev/config.yaml` with what the settings append:
 /// `review: { mode: isolated }` in the isolated mode, then the text of
 /// `--fixture-config`; `None` when there is nothing to append.
-pub fn configured(existing: &str, review: &ReviewSettings) -> Option<String> {
+pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> Option<String> {
     if review.mode == ReviewMode::Inline && review.fixture_config.is_none() {
         return None;
     }
@@ -362,10 +362,10 @@ pub fn isolation_missing(
     })
 }
 
-/// Traces the tokens of an isolated run's totals that its own calls do
-/// not account for to the source `sub-agents`, kind by kind; a run whose
-/// totals fall below its own calls is inconsistent, and an error.
-pub fn trace_sub_agents(consumption: &mut Consumption) -> Result<(), String> {
+/// Sets `sub_agents` to the tokens of an isolated run's totals beyond its
+/// own calls, kind by kind; a run whose totals fall below its own calls is
+/// inconsistent, and an error.
+pub fn record_sub_agent_tokens(consumption: &mut Consumption) -> Result<(), String> {
     let Some(totals) = consumption.tokens else {
         return Ok(());
     };
@@ -1202,7 +1202,7 @@ pub fn setup(
     )?;
     let config_path = dir.join("_codev").join("config.yaml");
     let config = fs::read_to_string(&config_path).map_err(io)?;
-    if let Some(text) = configured(&config, review) {
+    if let Some(text) = config_with_review_settings(&config, review) {
         fs::write(&config_path, text).map_err(io)?;
         run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
     }
@@ -1501,7 +1501,7 @@ pub fn run_case(
             if isolated
                 && observed.error.is_none()
                 && let Some(consumption) = observed.consumption.as_mut()
-                && let Err(e) = trace_sub_agents(consumption)
+                && let Err(e) = record_sub_agent_tokens(consumption)
             {
                 observed.error = Some(e);
             }
@@ -2745,7 +2745,7 @@ mod tests {
         let review = review_settings(Some("isolated"), None).unwrap();
         assert_eq!(review, isolated());
         assert_eq!(
-            configured(INIT_CONFIG, &review).unwrap(),
+            config_with_review_settings(INIT_CONFIG, &review).unwrap(),
             "schema: spec-driven\nlanguage: en\nreview: { mode: isolated }\n"
         );
         // The sub-agent tool is granted to the review cases alone.
@@ -2763,7 +2763,10 @@ mod tests {
         assert_eq!(tools(Step::PlanWrite), "Bash(codev:*)");
         assert!(review.isolated_at(Step::CodeReview) && !review.isolated_at(Step::PlanUpdate));
         // Inline, the configuration is left as `codev init` wrote it.
-        assert_eq!(configured(INIT_CONFIG, &ReviewSettings::default()), None);
+        assert_eq!(
+            config_with_review_settings(INIT_CONFIG, &ReviewSettings::default()),
+            None
+        );
         let text = serde_json::to_string(&recorded_run(&review)).unwrap();
         assert!(text.contains(r#""reviewMode":"isolated""#), "{text}");
         let inline = serde_json::to_string(&recorded_run(&ReviewSettings::default())).unwrap();
@@ -2776,7 +2779,7 @@ mod tests {
         let review =
             review_settings(None, Some((Path::new("extra.yaml"), Ok(file.to_string())))).unwrap();
         assert_eq!(review.mode, ReviewMode::Inline);
-        let config = configured("schema: spec-driven", &review).unwrap();
+        let config = config_with_review_settings("schema: spec-driven", &review).unwrap();
         assert!(
             config.ends_with(&format!("spec-driven\n{file}")),
             "{config}"
@@ -2786,7 +2789,7 @@ mod tests {
             fixture_config: review.fixture_config.clone(),
             ..isolated()
         };
-        let config = configured(INIT_CONFIG, &both).unwrap();
+        let config = config_with_review_settings(INIT_CONFIG, &both).unwrap();
         assert!(config.contains("review: { mode: isolated }\n"));
         assert!(config.ends_with(file), "{config}");
         assert_eq!(
@@ -2958,7 +2961,7 @@ mod tests {
         .join("\n");
         let mut consumption = parse_claude_stream(&stream).consumption.unwrap();
         assert_eq!(consumption.calls.len(), 2);
-        trace_sub_agents(&mut consumption).unwrap();
+        record_sub_agent_tokens(&mut consumption).unwrap();
         assert_eq!(
             consumption.sub_agents,
             Some(Tokens {
@@ -2997,7 +3000,7 @@ mod tests {
         ]
         .join("\n");
         let mut consumption = parse_claude_stream(&stream).consumption.unwrap();
-        let err = trace_sub_agents(&mut consumption).unwrap_err();
+        let err = record_sub_agent_tokens(&mut consumption).unwrap_err();
         assert!(err.contains("20000") && err.contains("30000"), "{err}");
     }
 }

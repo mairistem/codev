@@ -830,8 +830,9 @@ impl Measures {
             (Some(t), Some(n)) => Some(t / n),
             _ => None,
         };
-        // The per-call measures count the session's own calls: the
-        // sub-agents' tokens, in the totals, are not theirs.
+        // The per-call measures count the session's own calls: the totals
+        // minus `sub_agents` is the sum of those calls, which
+        // `record_sub_agent_tokens` set as totals minus that sum.
         let own = tokens.map(|t| {
             let sub = consumption.and_then(|c| c.sub_agents).unwrap_or_default();
             crate::observed::Tokens {

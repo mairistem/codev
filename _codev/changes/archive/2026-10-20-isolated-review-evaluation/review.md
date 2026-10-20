@@ -147,3 +147,125 @@ history:
   - status: fixed
     by: skeptic
 ```
+
+## code.review
+
+Mode: isolated.
+
+The reviewer read each file's diff and the functions it touches directly, without summaries.
+
+### newcomer
+
+#### R-newcomer-1 The per-call measures recover the session's own tokens by undoing the subtraction trace_sub_agents just did
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/score.rs:833-843"
+evidence: |
+  let own = tokens.map(|t| {
+recommendation: "Compute own from the session's calls, or say in the comment that it equals their sum."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "The comment says the difference is the sum of the session's calls, set by record_sub_agent_tokens."
+    ref: "evals/src/score.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 trace_sub_agents computes and stores a value, while its name and docstring suggest tracing
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:365-368"
+evidence: |
+  pub fn trace_sub_agents(consumption: &mut Consumption) -> Result<(), String> {
+recommendation: "Rename it for what it does and reword the docstring."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "Renamed record_sub_agent_tokens, docstring reworded."
+    ref: "evals/src/runner.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-6 configured() is a name that does not say what the function returns
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:289-292"
+evidence: |
+  pub fn configured(existing: &str, review: &ReviewSettings) -> Option<String> {
+recommendation: "Name it for the content it builds."
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    note: "Renamed config_with_review_settings."
+    ref: "evals/src/runner.rs"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 compare() takes a bare boolean across_models, so its call sites end in an unexplained `false`
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/compare.rs:327-333"
+evidence: |
+  across_models: bool,
+recommendation: "Use a two-variant enum or an options struct."
+history:
+  - status: open
+    by: newcomer
+  - status: deferred
+    by: developer
+    to: "the next change to codev-evals"
+    note: "Readability only; left out to keep this diff small."
+```
+
+#### R-newcomer-4 The test name covers one of the four behaviours it checks
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:2744-2771"
+evidence: |
+  fn an_isolated_review_case_says_so_in_its_configuration() {
+recommendation: "Split it into tests named for each behaviour."
+history:
+  - status: open
+    by: newcomer
+  - status: deferred
+    by: developer
+    to: "the next change to codev-evals"
+    note: "Readability only; left out to keep this diff small."
+```
+
+#### R-newcomer-5 fixture_configs builds its Markdown from fragments, so the output layout cannot be read from the code
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/compare.rs:469-480"
+evidence: |
+  let block = |text: &Option<String>| {
+recommendation: "Write each line explicitly with writeln!."
+history:
+  - status: open
+    by: newcomer
+  - status: deferred
+    by: developer
+    to: "the next change to codev-evals"
+    note: "Readability only; left out to keep this diff small."
+```
