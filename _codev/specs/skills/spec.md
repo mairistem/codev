@@ -1470,7 +1470,9 @@ At `plan.trace`, `plan.challenge` and `code.review`, the `propose` and
 --change <name> --json`. In `inline` mode they review as before. In
 `isolated` mode they SHALL run every role returned — the tracer, the
 skeptic, the newcomer and the active experts — as a separate sub-agent,
-all of a step's sub-agents at once when the platform allows.
+all of a step's sub-agents at once when the platform allows. Each
+sub-agent SHALL run on the model its role carries in `codev roles`
+(`model`), or on the session's model when it carries none.
 
 The brief of each sub-agent MUST hold only:
 
@@ -1518,6 +1520,14 @@ The skill then consolidates — the meeting:
 At `plan.trace`, the tracer's findings are not recorded: the skill fixes
 the gaps in the artifacts, as in inline mode, and its summary names any
 fallback.
+
+#### Scenario: A reviewer runs on its role's model
+
+- **GIVEN** the `codev-propose` and `codev-apply` skills as `codev update`
+  renders them
+- **WHEN** their isolated review procedure is read
+- **THEN** it says to start each role's sub-agent on the `model` its role
+  carries in `codev roles`, or on the session's model when it is `null`
 
 #### Scenario: The skills describe the isolated review
 

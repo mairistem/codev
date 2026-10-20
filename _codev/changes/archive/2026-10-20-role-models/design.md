@@ -46,20 +46,7 @@ change of its own.
 
 ### Decision: The model is a property of the role, chosen by the project, with no default
 
-A role may carry `model:`, set by the project under `roles:`, next to
-`when:` and `done_when:`; `inherit` means none. No built-in role sets one.
-The measure on the isolated path (below) decided it: the saving a Sonnet
-default brings there is 7 %, under decision 0008's cost floor, and two
-roles raise one false positive more than the reference. The mechanism
-ships so that a team can choose — a cheaper model for a role it trusts on
-it, a stronger one for another — and the suite can measure any choice.
-Four values only: Claude Code's sub-agent tool accepts these aliases, and
-a full model id would tie the configuration to a release.
-
-**Alternatives considered**: Sonnet by default for the six roles measured
-unchanged in single-session runs — the isolated measure shows a small
-saving and a quality slip. Not shipping the mechanism — a team that wants
-a model per role would have no way to say so.
+> Promoted to ADR **0011** — see `_codev/decisions/0011-the-model-is-a-property-of-the-role-chosen-by-the-project-with-no-default.md`.
 
 ### Decision: The model applies to sub-agents, in the isolated mode
 
