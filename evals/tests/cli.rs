@@ -311,3 +311,67 @@ fn an_unknown_step_exits_with_two() {
         "{stderr}"
     );
 }
+
+#[test]
+fn review_options_that_cannot_be_applied_exit_with_two() {
+    // Checked before any tool or case: no model is called.
+    let output = evals(&[
+        "run",
+        "--review-mode",
+        "sometimes",
+        "--claude",
+        "codev-evals-no-such-claude",
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("`sometimes`"));
+    let output = evals(&[
+        "run",
+        "--fixture-config",
+        "codev-evals-no-such-file.yaml",
+        "--claude",
+        "codev-evals-no-such-claude",
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("codev-evals-no-such-file.yaml"));
+}
+
+#[test]
+fn compare_across_models_lifts_the_model_guard() {
+    let cand = candidate(
+        "codev-evals-compare-across-models",
+        &["security-code-sql-injection"],
+        |_| {},
+        |run| run["model"] = serde_json::json!("claude-sonnet-4-5"),
+    );
+    let output = evals(&[
+        "compare",
+        &baseline_dir(),
+        &path(&cand),
+        "--quality-only",
+        "--across-models",
+    ]);
+    assert_ne!(output.status.code(), Some(2));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("--across-models") && stdout.contains("candidate claude-sonnet-4-5"),
+        "{stdout}"
+    );
+}
+
+#[test]
+fn compare_across_review_modes_exits_with_two() {
+    let cand = candidate(
+        "codev-evals-compare-review-mode",
+        &["security-code-sql-injection"],
+        |_| {},
+        |run| run["reviewMode"] = serde_json::json!("isolated"),
+    );
+    let output = evals(&["compare", &baseline_dir(), &path(&cand), "--across-models"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty(), "no report");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("inline") && stderr.contains("isolated"),
+        "{stderr}"
+    );
+}

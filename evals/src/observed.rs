@@ -70,6 +70,11 @@ pub struct Consumption {
     /// Every call to the model, in order; empty without the event stream.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub calls: Vec<Call>,
+    /// In the isolated review mode, the tokens of the session's totals that
+    /// its own calls do not account for: those of the sub-agents it
+    /// started. `None` in the inline mode.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sub_agents: Option<Tokens>,
 }
 
 /// One call to the model: what it cost, and where the tokens it wrote to
@@ -116,6 +121,48 @@ pub struct RunInfo {
     /// prompt cache they share; `None` when not recorded.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub jobs: Option<u32>,
+    /// The mode the review cases ran in; `None`, as in a run recorded
+    /// before the option, is `inline`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub review_mode: Option<ReviewMode>,
+    /// The text `--fixture-config` appended to every review case's
+    /// configuration; `None` when nothing was appended.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fixture_config: Option<String>,
+}
+
+impl RunInfo {
+    /// The mode the review cases ran in, `inline` when not recorded.
+    pub fn review_mode_or_default(&self) -> ReviewMode {
+        self.review_mode.unwrap_or_default()
+    }
+}
+
+/// How a review case's skill applies its roles: in the session itself, or
+/// each role as a sub-agent of its own.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ReviewMode {
+    #[default]
+    Inline,
+    Isolated,
+}
+
+impl ReviewMode {
+    pub fn parse(text: &str) -> Option<ReviewMode> {
+        match text {
+            "inline" => Some(ReviewMode::Inline),
+            "isolated" => Some(ReviewMode::Isolated),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ReviewMode::Inline => "inline",
+            ReviewMode::Isolated => "isolated",
+        }
+    }
 }
 
 /// Reads a JSON file carrying a format marker, refusing a newer one.
@@ -168,6 +215,9 @@ pub struct ReviewStep {
     pub step: String,
     #[serde(default)]
     pub roles: Vec<ReviewRole>,
+    /// Its `Mode:` line; `None` when not written.
+    #[serde(default)]
+    pub mode: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -175,6 +225,9 @@ pub struct ReviewStep {
 pub struct ReviewRole {
     pub role: String,
     pub state: String,
+    /// Its `Fallback:` line: why the role ran inline in the isolated mode.
+    #[serde(default)]
+    pub fallback: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -272,6 +325,8 @@ mod tests {
             codev_version: Some("0.6.1".into()),
             repeat: Some(5),
             jobs: None,
+            review_mode: Some(ReviewMode::Isolated),
+            fixture_config: Some("roles: {}\n".into()),
         };
         let text = serde_json::to_string(&info).unwrap();
         assert_eq!(parse_run_info(&text).unwrap(), info);
