@@ -60,6 +60,7 @@ pub fn load_cases(repo: &Path) -> Result<Vec<Case>, String> {
         let fixture = Fixture {
             base: read_tree(&root.join("base")).map_err(|e| format!("case `{id}`: {e}"))?,
             change: read_tree(&root.join("change")).map_err(|e| format!("case `{id}`: {e}"))?,
+            acceptance: fs::read(root.join("acceptance.sh")).ok(),
         };
         cases.push(case::load(&id, &yaml, &fixture, &catalog).map_err(|e| e.to_string())?);
     }
@@ -333,6 +334,8 @@ pub fn score_dir_only(
             score::plan_case(case, observed, at)
         } else if case.step == case::Step::PlanUpdate {
             score::update_case(case, observed)
+        } else if case.step == case::Step::CodeImplement {
+            score::implement_case(case, observed)
         } else {
             score::case(case, observed)
         };

@@ -223,6 +223,37 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
+    if let Some(i) = &score.implement {
+        let spread = |s: Option<Spread>, ratio: bool| match s {
+            None => "—".to_string(),
+            Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
+            Some(s) => count_range(s.median, Some(s), repeated),
+        };
+        let _ = writeln!(
+            out,
+            "\n## `code.implement`\n\nPer repetition, every implementation run pooled, the refusing cases apart: \
+             the share of runs whose every check passes, the share of checks that pass, the share of acceptance \
+             assertions that pass, the share of refusing runs that pass, the runs that modified a file outside \
+             the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` \
+             judges these against the baseline.\n"
+        );
+        let _ = writeln!(
+            out,
+            "| Cases | Runs passing | Checks passing | Acceptance | Refusals passing | Runs modifying a file outside the step | Cost (USD) |\n|---|---|---|---|---|---|---|"
+        );
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} | {} | {} | {} | {} |",
+            i.cases,
+            spread(i.pass_rate, true),
+            spread(i.check_rate, true),
+            spread(i.acceptance_rate, true),
+            spread(i.refusal_rate, true),
+            spread(i.strayed, false),
+            Measure::Cost.show(i.consumption.cost_usd, 2),
+        );
+    }
+
     let _ = writeln!(out, "\n## Consumption\n");
     let _ = writeln!(
         out,
@@ -337,20 +368,38 @@ pub fn markdown(score: &SuiteScore) -> String {
                     let _ = writeln!(out, "- The plan does not validate");
                 }
             }
-            if let Some(u) = &c.update {
+            let checks = c
+                .update
+                .as_ref()
+                .map(|u| (u.passed, u.checks_passed(), u.checks.len(), &u.checks))
+                .map(|(p, n, of, checks)| {
+                    let list: Vec<(&str, bool)> = checks
+                        .iter()
+                        .map(|c| (c.check.as_str(), c.passed))
+                        .collect();
+                    (p, n, of, list)
+                })
+                .or_else(|| {
+                    c.implement.as_ref().map(|i| {
+                        let list: Vec<(&str, bool)> = i
+                            .checks
+                            .iter()
+                            .map(|c| (c.check.as_str(), c.passed))
+                            .collect();
+                        (i.passed, i.checks_passed(), i.checks.len(), list)
+                    })
+                });
+            if let Some((passed, passing, of, list)) = checks {
                 let _ = writeln!(
                     out,
-                    "- Checks: {} of {} passed, the run {}",
-                    u.checks_passed(),
-                    u.checks.len(),
-                    if u.passed { "passes" } else { "**fails**" }
+                    "- Checks: {passing} of {of} passed, the run {}",
+                    if passed { "passes" } else { "**fails**" }
                 );
-                for check in &u.checks {
+                for (check, passed) in list {
                     let _ = writeln!(
                         out,
-                        "- Check {}: {}",
-                        check.check,
-                        if check.passed { "passed" } else { "**failed**" }
+                        "- Check {check}: {}",
+                        if passed { "passed" } else { "**failed**" }
                     );
                 }
             }
@@ -668,5 +717,69 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
         assert!(json.get("update").is_none());
         assert!(json["cases"][0].get("update").is_none());
+    }
+
+    fn implement_suite() -> SuiteScore {
+        use crate::case::{ImplementCase, Step};
+        use crate::score::implement_case;
+        use std::collections::BTreeMap;
+        let mut c = a_case("planner", Kind::Seeded, &[]);
+        c.id = "implement-x".into();
+        c.step = Step::CodeImplement;
+        c.change = "c".into();
+        c.implement = Some(ImplementCase {
+            git_ref: "abc".into(),
+            merged: "def".into(),
+            refuse: false,
+            docs: false,
+            acceptance: vec!["works".into()],
+            script: Some("echo ok works\n".into()),
+            files: BTreeMap::from([("tasks.md".to_string(), "- [ ] 1.1 A\n".to_string())]),
+        });
+        let mut o = observed("findings", &[], json!([]));
+        o.review = Some(json!({"steps": [{"step": "code.review", "recorded": true}]}));
+        o.files = BTreeMap::from([
+            (
+                "_codev/changes/c/tasks.md".to_string(),
+                Some("- [x] 1.1 A\n".to_string()),
+            ),
+            (
+                "_codev/changes/c/proposal.md".to_string(),
+                Some("# P\n".to_string()),
+            ),
+        ]);
+        o.validate
+            .insert("c".into(), json!({"items": [{"findings": []}]}));
+        o.validate_before = Some(json!({"items": [{"findings": []}]}));
+        o.implement = Some(crate::observed::ImplementObserved {
+            checks: vec![],
+            printed: vec![("works".into(), true)],
+            ..Default::default()
+        });
+        suite(run(), vec![implement_case(&c, &o)], Thresholds::default())
+    }
+
+    #[test]
+    fn the_report_of_a_suite_with_implementation_cases() {
+        let s = implement_suite();
+        let md = markdown(&s);
+        assert!(md.contains("## `code.implement`"), "{md}");
+        assert!(md.contains("- Check acceptance `works`: passed"), "{md}");
+        assert!(md.contains("- Check `tests` passes: **failed**"), "{md}");
+        assert!(md.contains("the run **fails**"), "{md}");
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["implement"]["cases"], 1);
+        assert_eq!(json["implement"]["acceptanceRate"]["median"], 1.0);
+        assert_eq!(json["implement"]["passRate"]["median"], 0.0);
+        assert_eq!(json["cases"][0]["implement"]["passed"], false);
+    }
+
+    #[test]
+    fn a_suite_without_implementation_case_has_no_such_section() {
+        let s = scores();
+        assert!(!markdown(&s).contains("code.implement"));
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert!(json.get("implement").is_none());
+        assert!(json["cases"][0].get("implement").is_none());
     }
 }

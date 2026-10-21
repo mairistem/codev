@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 use crate::case::Step;
+use crate::implement::ImplementStepScore;
 use crate::observed::RunInfo;
 use crate::score::{
     Measure, Measures, Outcome, PlanningScore, RoleScore, SourceShare, Spread, SuiteScore, number,
@@ -215,6 +216,43 @@ fn update_quality(base: &UpdateStepScore, cand: &UpdateStepScore) -> Vec<String>
     out
 }
 
+/// The quality failures of the implementation step, judged as the
+/// planning step is: a share of runs passing, of acceptance assertions
+/// passing or of refusals passing under the baseline's minimum, or more
+/// runs modifying a file outside the step than its maximum. The share of
+/// checks passing is reported and never decides.
+fn implement_quality(base: &ImplementStepScore, cand: &ImplementStepScore) -> Vec<String> {
+    let mut out = Vec::new();
+    for (label, c, b) in [
+        ("pass share", cand.pass_rate, base.pass_rate),
+        (
+            "acceptance share",
+            cand.acceptance_rate,
+            base.acceptance_rate,
+        ),
+        ("refusal share", cand.refusal_rate, base.refusal_rate),
+    ] {
+        if let (Some(c), Some(range)) = (c, b)
+            && c.median < range.min
+        {
+            out.push(format!(
+                "code.implement: {label} {:.2} is under the baseline's minimum {:.2}",
+                c.median, range.min
+            ));
+        }
+    }
+    if let (Some(c), Some(range)) = (cand.strayed, base.strayed)
+        && c.median > range.max
+    {
+        out.push(format!(
+            "code.implement: {} run(s) modifying a file outside the step exceed the baseline's maximum {}",
+            number(c.median),
+            number(range.max)
+        ));
+    }
+    out
+}
+
 /// Every quality measure on which the candidate's median does better than
 /// the baseline's best repetition.
 fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
@@ -344,6 +382,9 @@ pub fn compare(
     if let (Some(base), Some(cand)) = (&baseline.update, &candidate.update) {
         failures.extend(update_quality(base, cand));
     }
+    if let (Some(base), Some(cand)) = (&baseline.implement, &candidate.implement) {
+        failures.extend(implement_quality(base, cand));
+    }
     let improved = improvements(baseline, candidate);
     let base_floor = floor(baseline);
     let consumption_failures = consumption(baseline, candidate, base_floor);
@@ -361,6 +402,7 @@ pub fn compare(
         quality_section(baseline, candidate),
         planning_section(baseline, candidate),
         update_section(baseline, candidate),
+        implement_section(baseline, candidate),
         improved_section(&improved),
         consumption_section(baseline, candidate, &verdict),
         sources_section(baseline, candidate),
@@ -654,6 +696,54 @@ fn planning_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
             count_range(bs)
         };
         let _ = writeln!(out, "| {label} | {base} | {} |", median(cs, is_ratio));
+    }
+    out
+}
+
+fn implement_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+    let (Some(b), Some(c)) = (&baseline.implement, &candidate.implement) else {
+        return String::new();
+    };
+    let mut out = String::new();
+    let _ = writeln!(out, "\n## `code.implement`\n");
+    let _ = writeln!(
+        out,
+        "The candidate's shares of runs, acceptance assertions and refusals passing must not fall \
+         under the baseline's minimum, nor its runs modifying a file outside the step rise above its \
+         maximum; the share of checks passing is reported and never decides.\n"
+    );
+    let _ = writeln!(
+        out,
+        "| Measure | Baseline (min–max) | Candidate |\n|---|---|---|"
+    );
+    for (label, bs, cs, is_ratio) in [
+        ("Runs passing", b.pass_rate, c.pass_rate, true),
+        ("Checks passing", b.check_rate, c.check_rate, true),
+        ("Acceptance", b.acceptance_rate, c.acceptance_rate, true),
+        ("Refusals passing", b.refusal_rate, c.refusal_rate, true),
+        (
+            "Runs modifying a file outside the step",
+            b.strayed,
+            c.strayed,
+            false,
+        ),
+    ] {
+        let base = if is_ratio {
+            ratio_range(bs)
+        } else {
+            count_range(bs)
+        };
+        let cand = cs.map_or_else(
+            || "—".to_string(),
+            |s| {
+                if is_ratio {
+                    format!("{:.2}", s.median)
+                } else {
+                    number(s.median)
+                }
+            },
+        );
+        let _ = writeln!(out, "| {label} | {base} | {cand} |");
     }
     out
 }
@@ -1305,6 +1395,89 @@ mod tests {
             none.report.contains("  - baseline: none\n"),
             "{}",
             none.report
+        );
+    }
+
+    fn implementing(pass: (f64, f64, f64), acceptance: (f64, f64, f64)) -> ImplementStepScore {
+        let s = |(median, min, max): (f64, f64, f64)| Some(Spread { median, min, max });
+        ImplementStepScore {
+            cases: 4,
+            repetitions: vec![],
+            pass_rate: s(pass),
+            check_rate: s((0.9, 0.9, 0.95)),
+            acceptance_rate: s(acceptance),
+            refusal_rate: s((1.0, 1.0, 1.0)),
+            strayed: s((0.0, 0.0, 0.0)),
+            consumption: Measures::default(),
+        }
+    }
+
+    #[test]
+    fn an_implementation_regression() {
+        let mut base = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        base.implement = Some(implementing((1.0, 0.67, 1.0), (0.95, 0.9, 1.0)));
+        let mut cand = runs(&[(true, 1.0, 1.0), (true, 1.0, 1.0)]);
+        cand.implement = Some(implementing((1.0, 1.0, 1.0), (0.7, 0.7, 0.7)));
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(!result.pass);
+        assert_eq!(
+            result.failures,
+            ["code.implement: acceptance share 0.70 is under the baseline's minimum 0.90"]
+        );
+        assert!(
+            result
+                .report
+                .contains("| Acceptance | 0.95 (0.90–1.00) | 0.70 |"),
+            "{}",
+            result.report
+        );
+        cand.implement = Some(implementing((0.67, 0.67, 1.0), (0.9, 0.9, 0.9)));
+        assert!(compare(&base, &cand, &[], Mode::QualityOnly, false).pass);
+    }
+
+    #[test]
+    fn one_more_failed_implementation_in_most_repetitions_fails() {
+        use crate::implement::{ImplementCheck, ImplementScore, step_score};
+        let run = |id: &str, n: u32, passed: bool| {
+            let mut score = crate::score::tests_support::bare_score(id, "code.implement", n);
+            score.implement = Some(ImplementScore {
+                passed,
+                refuse: false,
+                checks: vec![ImplementCheck {
+                    check: "c".into(),
+                    passed,
+                }],
+                assertions: 1,
+                assertions_passed: u32::from(passed),
+            });
+            score
+        };
+        let cases = ["implement-a", "implement-b", "implement-c"];
+        let numbers = [1, 2, 3, 4, 5];
+        let all: Vec<_> = numbers
+            .iter()
+            .flat_map(|n| cases.iter().map(move |c| run(c, *n, true)))
+            .collect();
+        // The candidate fails `implement-c` in three repetitions of five.
+        let worse: Vec<_> = numbers
+            .iter()
+            .flat_map(|n| {
+                cases
+                    .iter()
+                    .map(move |c| run(c, *n, !(*c == "implement-c" && *n <= 3)))
+            })
+            .collect();
+        let mut base = runs(&[(true, 1.0, 1.0)]);
+        base.implement = step_score(&numbers, &all, &[]);
+        let mut cand = runs(&[(true, 1.0, 1.0)]);
+        cand.implement = step_score(&numbers, &worse, &[]);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(
+            result.failures.contains(
+                &"code.implement: pass share 0.67 is under the baseline's minimum 1.00".to_string()
+            ),
+            "{:?}",
+            result.failures
         );
     }
 }

@@ -3,3 +3,9 @@
 baseline/**/claude.json
 baseline/**/claude.jsonl
 baseline/**/claude.stderr
+# An implementation run's own logs: the runner's commands, and the copy and
+# the working folder of the acceptance script. Their ends are in
+# observed.json.
+baseline/**/*.log
+baseline/**/acceptance.sh
+baseline/**/acceptance-dir/

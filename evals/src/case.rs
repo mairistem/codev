@@ -27,6 +27,9 @@ pub enum Step {
     /// `/codev-update` revising one artifact of an active change: an
     /// update case.
     PlanUpdate,
+    /// `/codev-apply` implementing an archived change's plan: an
+    /// implementation case.
+    CodeImplement,
 }
 
 impl Step {
@@ -37,6 +40,7 @@ impl Step {
             "plan.trace" => Some(Step::PlanTrace),
             "plan.write" => Some(Step::PlanWrite),
             "plan.update" => Some(Step::PlanUpdate),
+            "code.implement" => Some(Step::CodeImplement),
             _ => None,
         }
     }
@@ -48,17 +52,24 @@ impl Step {
             Step::PlanTrace => "plan.trace",
             Step::PlanWrite => "plan.write",
             Step::PlanUpdate => "plan.update",
+            Step::CodeImplement => "code.implement",
         }
     }
 
     /// The review steps, those of a review case.
     pub fn is_review(self) -> bool {
-        !matches!(self, Step::PlanWrite | Step::PlanUpdate)
+        !matches!(
+            self,
+            Step::PlanWrite | Step::PlanUpdate | Step::CodeImplement
+        )
     }
 
     /// The steps whose fixture is this repository at a past commit.
     pub fn replays_history(self) -> bool {
-        matches!(self, Step::PlanWrite | Step::PlanUpdate)
+        matches!(
+            self,
+            Step::PlanWrite | Step::PlanUpdate | Step::CodeImplement
+        )
     }
 
     /// Whether the step writes a review record (the tracer fixes instead).
@@ -319,6 +330,9 @@ pub struct Case {
     pub plan: Option<PlanCase>,
     /// What an update case replays and expects; `None` for any other case.
     pub update: Option<UpdateCase>,
+    /// What an implementation case replays and expects; `None` for any
+    /// other case.
+    pub implement: Option<ImplementCase>,
 }
 
 /// A requirement named as `<capability>::<requirement name>`.
@@ -423,6 +437,48 @@ pub struct UpdateCase {
     pub files: BTreeMap<String, String>,
 }
 
+/// An implementation case: an archived change's plan laid on the
+/// repository at `git_ref`, the state before the change, and the hidden
+/// script that checks the behavior it delivers. Every path of `files` is
+/// relative to the change's folder.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImplementCase {
+    pub git_ref: String,
+    /// The commit that brought the change to `main`, which `calibrate`
+    /// proves the script on.
+    pub merged: String,
+    /// Whether the skill must refuse to implement.
+    pub refuse: bool,
+    /// Whether the run must touch the documentation of both languages.
+    pub docs: bool,
+    /// The names of the acceptance assertions.
+    pub acceptance: Vec<String>,
+    /// `acceptance.sh`; `None` for a refusing case.
+    pub script: Option<String>,
+    /// The change's files as the case lays them, by path.
+    pub files: BTreeMap<String, String>,
+}
+
+/// The tasks of a `tasks.md`, in order: each one's id (`2.3`) and whether
+/// it is checked. A line that is not a task is skipped.
+pub fn tasks(text: &str) -> Vec<(String, bool)> {
+    text.lines()
+        .filter_map(|line| {
+            let line = line.trim_start();
+            let (checked, rest) = if let Some(rest) = line.strip_prefix("- [ ] ") {
+                (false, rest)
+            } else {
+                let rest = line
+                    .strip_prefix("- [x] ")
+                    .or_else(|| line.strip_prefix("- [X] "))?;
+                (true, rest)
+            };
+            let id = rest.split_whitespace().next()?.to_string();
+            Some((id, checked))
+        })
+        .collect()
+}
+
 /// What the repository's history says at a commit, read by the shell.
 pub trait History {
     fn has_commit(&self, git_ref: &str) -> bool;
@@ -439,7 +495,15 @@ pub trait History {
 /// state does not already hold the case — its answer.
 pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError> {
     if let Some(update) = &case.update {
-        return check_update_history(case, update, history);
+        return check_replayed_change_history(case, &update.git_ref, &[], history);
+    }
+    if let Some(implement) = &case.implement {
+        return check_replayed_change_history(
+            case,
+            &implement.git_ref,
+            &[("merged", &implement.merged)],
+            history,
+        );
     }
     let Some(plan) = &case.plan else {
         return Ok(());
@@ -487,35 +551,37 @@ pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError
     Ok(())
 }
 
-/// Checks an update case against the history: its commit exists, and the
-/// tree there holds neither the change it lays nor the case itself.
-fn check_update_history(
+/// Checks an update or implementation case against the history: its
+/// commits exist — `git_ref`, and each of `others` by its key —, and the
+/// tree at `git_ref` holds neither the change it lays nor the case itself.
+fn check_replayed_change_history(
     case: &Case,
-    update: &UpdateCase,
+    git_ref: &str,
+    others: &[(&str, &str)],
     history: &dyn History,
 ) -> Result<(), CaseError> {
     let fail = |message: String| CaseError {
         case: case.id.clone(),
         message,
     };
-    if !history.has_commit(&update.git_ref) {
-        return Err(fail(format!(
-            "`ref` {} is not a commit of the repository's history; the update cases need \
-             the full history (a shallow clone lacks it: fetch with --unshallow or fetch-depth 0)",
-            update.git_ref
-        )));
+    for (key, commit) in [("ref", git_ref)].iter().chain(others) {
+        if !history.has_commit(commit) {
+            return Err(fail(format!(
+                "`{key}` {commit} is not a commit of the repository's history; these cases need \
+                 the full history (a shallow clone lacks it: fetch with --unshallow or fetch-depth 0)"
+            )));
+        }
     }
     let change_dir = case.change_dir();
-    if history.has_path(&update.git_ref, &change_dir) {
+    if history.has_path(git_ref, &change_dir) {
         return Err(fail(format!(
-            "the tree at {} already holds `{change_dir}/`, which the case's `change/` would overwrite",
-            update.git_ref
+            "the tree at {git_ref} already holds `{change_dir}/`, which the case's `change/` would overwrite"
         )));
     }
-    if history.has_path(&update.git_ref, &format!("evals/cases/{}", case.id)) {
+    if history.has_path(git_ref, &format!("evals/cases/{}", case.id)) {
         return Err(fail(format!(
-            "the tree at {} already holds `evals/cases/{}/`, which would hand the agent the answer",
-            update.git_ref, case.id
+            "the tree at {git_ref} already holds `evals/cases/{}/`, which would hand the agent the answer",
+            case.id
         )));
     }
     Ok(())
@@ -561,6 +627,8 @@ impl std::error::Error for CaseError {}
 pub struct Fixture {
     pub base: BTreeMap<String, Vec<u8>>,
     pub change: BTreeMap<String, Vec<u8>>,
+    /// `acceptance.sh` next to `case.yaml`, for an implementation case.
+    pub acceptance: Option<Vec<u8>>,
 }
 
 impl Fixture {
@@ -765,6 +833,7 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
             decisions,
         }),
         update: None,
+        implement: None,
     })
 }
 
@@ -906,6 +975,165 @@ fn load_update(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseErro
             refuse: expected.refuse,
             files,
         }),
+        implement: None,
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ImplementCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
+    #[allow(dead_code)]
+    step: String,
+    kind: String,
+    #[serde(rename = "ref")]
+    git_ref: String,
+    merged: String,
+    change: String,
+    summary: String,
+    expected: ImplementExpectedFile,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ImplementExpectedFile {
+    #[serde(default)]
+    refuse: bool,
+    #[serde(default)]
+    docs: bool,
+    #[serde(default)]
+    acceptance: Vec<String>,
+}
+
+/// Loads an implementation case: a `case.yaml`, its `change/` — the
+/// planning files of `_codev/changes/<change>/` — and, unless it refuses,
+/// its `acceptance.sh`.
+fn load_implement(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: ImplementCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for an implementation case; expected seeded",
+            file.kind
+        )));
+    }
+    for (key, value) in [
+        ("ref", &file.git_ref),
+        ("merged", &file.merged),
+        ("change", &file.change),
+    ] {
+        if value.trim().is_empty() {
+            return Err(fail(format!("`{key}` is empty")));
+        }
+    }
+    if !fixture.base.is_empty() {
+        return Err(fail(
+            "an implementation case has no `base/`: its fixture is the repository at `ref`".into(),
+        ));
+    }
+    if fixture.change.is_empty() {
+        return Err(fail(
+            "`change/` is missing: it holds the plan of the change the case implements".into(),
+        ));
+    }
+    check_fixture_files(fixture).map_err(fail)?;
+    let files: BTreeMap<String, String> = fixture
+        .change
+        .iter()
+        .map(|(path, bytes)| (path.clone(), String::from_utf8_lossy(bytes).into_owned()))
+        .collect();
+    let expected = file.expected;
+    let acceptance: Vec<String> = expected
+        .acceptance
+        .iter()
+        .map(|name| name.trim().to_string())
+        .collect();
+    if acceptance
+        .iter()
+        .any(|name| name.is_empty() || name.contains(char::is_whitespace))
+    {
+        return Err(fail(
+            "an assertion name is empty or holds a space; the script prints `ok <name>`".into(),
+        ));
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    if let Some(twice) = acceptance.iter().find(|name| !seen.insert(name.as_str())) {
+        return Err(fail(format!("the assertion `{twice}` is named twice")));
+    }
+    if files.contains_key("review.md") {
+        return Err(fail(
+            "`change/review.md` is there: the run writes the change's review record".into(),
+        ));
+    }
+    let script = match &fixture.acceptance {
+        Some(bytes) => Some(
+            String::from_utf8(bytes.clone())
+                .map_err(|_| fail("`acceptance.sh` is not UTF-8 text".into()))?,
+        ),
+        None => None,
+    };
+    if expected.refuse {
+        if script.is_some() || !acceptance.is_empty() || expected.docs {
+            return Err(fail(
+                "a refusing case has no `acceptance.sh`, no assertion and expects no documentation"
+                    .into(),
+            ));
+        }
+        if files.contains_key("tasks.md") {
+            return Err(fail(
+                "a refusing case's `change/` holds no `tasks.md`: the plan it lays is incomplete"
+                    .into(),
+            ));
+        }
+    } else {
+        let listed = files
+            .get("tasks.md")
+            .map(|text| tasks(text))
+            .unwrap_or_default();
+        if listed.is_empty() || listed.iter().any(|(_, checked)| *checked) {
+            return Err(fail(
+                "`tasks.md` must hold tasks, all unchecked: the run implements them".into(),
+            ));
+        }
+        if script.is_none() {
+            return Err(fail(
+                "`acceptance.sh` is missing: it checks the behavior the change delivers".into(),
+            ));
+        }
+        if acceptance.is_empty() {
+            return Err(fail(
+                "a case that does not refuse names at least one assertion in `acceptance`".into(),
+            ));
+        }
+    }
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step: Step::CodeImplement,
+        change: file.change.trim().to_string(),
+        stacks: Vec::new(),
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: None,
+        update: None,
+        implement: Some(ImplementCase {
+            git_ref: file.git_ref.trim().to_string(),
+            merged: file.merged.trim().to_string(),
+            refuse: expected.refuse,
+            docs: expected.docs,
+            acceptance,
+            script,
+            files,
+        }),
     })
 }
 
@@ -926,6 +1154,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
     match peek.and_then(|p| p.step).as_deref() {
         Some("plan.write") => return load_plan(id, yaml, fixture),
         Some("plan.update") => return load_update(id, yaml, fixture),
+        Some("code.implement") => return load_implement(id, yaml, fixture),
         _ => {}
     }
     let file: CaseFile =
@@ -933,7 +1162,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
 
     let step = Step::parse(&file.step).ok_or_else(|| {
         fail(format!(
-            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write or plan.update",
+            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write, plan.update or code.implement",
             file.step
         ))
     })?;
@@ -1088,6 +1317,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         planned,
         plan: None,
         update: None,
+        implement: None,
     })
 }
 
@@ -1537,6 +1767,7 @@ pub(crate) mod tests {
             planned: vec![],
             plan: None,
             update: None,
+            implement: None,
         }
     }
 
@@ -1668,6 +1899,7 @@ pub(crate) mod tests {
         let fixture = Fixture {
             base: [("a.txt".to_string(), b"x".to_vec())].into(),
             change: BTreeMap::new(),
+            acceptance: None,
         };
         let err = load("p", PLAN_YAML, &fixture, &Catalog::default()).unwrap_err();
         assert!(err.message.contains("only its case.yaml"), "{err}");
@@ -1895,6 +2127,177 @@ pub(crate) mod tests {
                 .unwrap_err()
                 .message
                 .contains("answer")
+        );
+    }
+
+    const IMPLEMENT_YAML: &str = "step: code.implement\nkind: seeded\nref: abc1234\nmerged: def5678\nchange: decision-accept-command\nsummary: Replays the change.\nexpected:\n  docs: true\n  acceptance: [accept-moves-the-status, accept-twice-fails]\n";
+
+    fn implement_fixture() -> Fixture {
+        let mut f = Fixture::default();
+        for path in ["proposal.md", "design.md", "specs/decisions/spec.md"] {
+            f.change
+                .insert(path.into(), format!("# {path}\n").into_bytes());
+        }
+        f.change.insert(
+            "tasks.md".into(),
+            b"# Tasks\n\n## 1. Code\n\n- [ ] 1.1 Do it, verified by a test\n- [ ] 1.2 Then this\n- [ ] 1.3 And that\n"
+                .to_vec(),
+        );
+        f.acceptance = Some(b"echo ok accept-moves-the-status\n".to_vec());
+        f
+    }
+
+    fn implement_case(yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+        load("implement-accept", yaml, fixture, &Catalog::default())
+    }
+
+    #[test]
+    fn an_implementation_case_loads() {
+        let case = implement_case(IMPLEMENT_YAML, &implement_fixture()).unwrap();
+        assert_eq!(case.step, Step::CodeImplement);
+        assert!(case.step.replays_history() && !case.step.is_review());
+        assert_eq!(case.change_dir(), "_codev/changes/decision-accept-command");
+        let implement = case.implement.unwrap();
+        assert_eq!(implement.git_ref, "abc1234");
+        assert_eq!(implement.merged, "def5678");
+        assert!(implement.docs && !implement.refuse);
+        assert_eq!(
+            implement.acceptance,
+            ["accept-moves-the-status", "accept-twice-fails"]
+        );
+        assert!(implement.script.unwrap().contains("ok accept"));
+        assert_eq!(implement.files.len(), 4);
+        assert!(case.plan.is_none() && case.update.is_none());
+    }
+
+    #[test]
+    fn tasks_are_read_with_their_state() {
+        let listed =
+            tasks("## 1. A\n\n- [ ] 1.1 One\n- [x] 1.2 Two\n  - [X] 1.3 Three\n- not a task\n");
+        assert_eq!(
+            listed,
+            [
+                ("1.1".to_string(), false),
+                ("1.2".to_string(), true),
+                ("1.3".to_string(), true)
+            ]
+        );
+    }
+
+    #[test]
+    fn a_plan_already_implemented_is_refused() {
+        let mut fixture = implement_fixture();
+        fixture.change.insert(
+            "tasks.md".into(),
+            b"- [x] 1.1 Done\n- [ ] 1.2 Not yet\n".to_vec(),
+        );
+        let err = implement_case(IMPLEMENT_YAML, &fixture).unwrap_err();
+        assert_eq!(err.case, "implement-accept");
+        assert!(err.message.contains("tasks.md"), "{err}");
+        fixture
+            .change
+            .insert("tasks.md".into(), b"# Tasks\n".to_vec());
+        let err = implement_case(IMPLEMENT_YAML, &fixture).unwrap_err();
+        assert!(err.message.contains("tasks.md"), "{err}");
+    }
+
+    #[test]
+    fn a_refusing_case_with_an_acceptance_script_is_refused() {
+        let yaml = IMPLEMENT_YAML.replace(
+            "  docs: true\n  acceptance: [accept-moves-the-status, accept-twice-fails]\n",
+            "  refuse: true\n",
+        );
+        let mut fixture = implement_fixture();
+        fixture.change.remove("tasks.md");
+        let err = implement_case(&yaml, &fixture).unwrap_err();
+        assert!(err.message.contains("refusing"), "{err}");
+        fixture.acceptance = None;
+        let case = implement_case(&yaml, &fixture).unwrap();
+        assert!(case.implement.unwrap().refuse);
+        fixture
+            .change
+            .insert("tasks.md".into(), b"- [ ] 1.1 A\n".to_vec());
+        let err = implement_case(&yaml, &fixture).unwrap_err();
+        assert!(err.message.contains("tasks.md"), "{err}");
+    }
+
+    #[test]
+    fn an_implementation_case_without_its_change_is_refused() {
+        let fixture = Fixture {
+            acceptance: Some(b"echo\n".to_vec()),
+            ..Fixture::default()
+        };
+        let err = implement_case(IMPLEMENT_YAML, &fixture).unwrap_err();
+        assert!(err.message.contains("`change/` is missing"), "{err}");
+    }
+
+    #[test]
+    fn an_implementation_case_with_a_review_record_is_refused() {
+        let mut fixture = implement_fixture();
+        fixture
+            .change
+            .insert("review.md".into(), b"# Review record\n".to_vec());
+        let err = implement_case(IMPLEMENT_YAML, &fixture).unwrap_err();
+        assert!(err.message.contains("review.md"), "{err}");
+    }
+
+    #[test]
+    fn an_implementation_case_without_its_script_is_refused() {
+        let mut fixture = implement_fixture();
+        fixture.acceptance = None;
+        let err = implement_case(IMPLEMENT_YAML, &fixture).unwrap_err();
+        assert!(err.message.contains("acceptance.sh"), "{err}");
+    }
+
+    #[test]
+    fn an_assertion_named_twice_is_refused() {
+        let yaml = IMPLEMENT_YAML.replace("accept-twice-fails]", "accept-moves-the-status]");
+        let err = implement_case(&yaml, &implement_fixture()).unwrap_err();
+        assert!(err.message.contains("named twice"), "{err}");
+    }
+
+    #[test]
+    fn an_implementation_case_with_an_unknown_key_is_refused() {
+        let yaml = IMPLEMENT_YAML.replace("summary:", "request: r\nsummary:");
+        let err = implement_case(&yaml, &implement_fixture()).unwrap_err();
+        assert!(err.message.contains("request"), "{err}");
+    }
+
+    fn implement_history() -> FakeHistory {
+        FakeHistory {
+            commits: vec!["abc1234", "def5678"],
+            specs: BTreeMap::new(),
+            decisions: vec![],
+            paths: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn an_implementation_case_whose_merged_commit_is_unknown_fails() {
+        let case = implement_case(IMPLEMENT_YAML, &implement_fixture()).unwrap();
+        assert!(check_history(&case, &implement_history()).is_ok());
+        let mut history = implement_history();
+        history.commits = vec!["abc1234"];
+        let err = check_history(&case, &history).unwrap_err();
+        assert!(err.message.contains("`merged` def5678"), "{err}");
+    }
+
+    #[test]
+    fn an_implementation_case_whose_ref_holds_the_change_fails() {
+        let case = implement_case(IMPLEMENT_YAML, &implement_fixture()).unwrap();
+        let mut history = implement_history();
+        history.paths = vec!["_codev/changes/decision-accept-command".into()];
+        let err = check_history(&case, &history).unwrap_err();
+        assert!(
+            err.message
+                .contains("_codev/changes/decision-accept-command/"),
+            "{err}"
+        );
+        history.paths = vec!["evals/cases/implement-accept".into()];
+        let err = check_history(&case, &history).unwrap_err();
+        assert!(
+            err.message.contains("evals/cases/implement-accept/"),
+            "{err}"
         );
     }
 }

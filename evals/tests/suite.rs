@@ -40,6 +40,28 @@ fn the_suite_covers_every_reviewing_role() {
 }
 
 #[test]
+fn the_suite_covers_the_implementation_of_past_changes() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    let implementing: Vec<_> = cases
+        .iter()
+        .filter_map(|c| c.implement.as_ref().map(|i| (c.id.as_str(), i)))
+        .collect();
+    assert!(implementing.len() >= 4, "{implementing:?}");
+    let refusing: Vec<&str> = implementing
+        .iter()
+        .filter(|(_, i)| i.refuse)
+        .map(|(id, _)| *id)
+        .collect();
+    assert_eq!(refusing, ["implement-refuse-missing-tasks"]);
+    for (id, implement) in &implementing {
+        assert!(
+            implement.refuse || !implement.acceptance.is_empty(),
+            "{id} has no acceptance assertion"
+        );
+    }
+}
+
+#[test]
 fn categories_of_one_case_share_no_term() {
     let cases = suite::load_cases(&repo()).unwrap();
     let mut overlaps = Vec::new();
@@ -200,6 +222,33 @@ fn contributing_chapters_document_the_update_cases() {
         "codev validate <change> --json",
         // A new step's cases recorded alone into the baseline.
         "run --step plan.update --out evals/baseline --repeat 5",
+    ] {
+        gaps.extend(missing_mention(&files, needle));
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
+#[test]
+fn contributing_chapters_document_the_implementation_cases() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = Vec::new();
+    for needle in [
+        "step: code.implement",
+        "--step code.implement",
+        "`merged`",
+        "`acceptance`",
+        "acceptance.sh",
+        "`ok <",
+        "codev-evals -- calibrate",
+        "`mdbook`",
+        // The commands the runner starts itself have a timeout.
+        "200 second",
     ] {
         gaps.extend(missing_mention(&files, needle));
     }

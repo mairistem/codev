@@ -1,0 +1,10 @@
+# A plan without its tasks: `/codev-apply` must refuse to implement it and
+# point to `/codev-propose`, changing no file.
+step: code.implement
+kind: seeded
+ref: 99e32fb60065e774123605ece7a9e7f4d783e48f
+merged: 9dc1f4529982fcc3cf948bbf07613847908134a6
+change: decision-accept-command
+summary: "The plan of 2026-09-30-decision-accept-command without its tasks.md: planning is not complete, so the skill refuses and points to /codev-propose."
+expected:
+  refuse: true

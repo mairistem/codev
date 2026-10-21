@@ -41,9 +41,34 @@ pub struct Observed {
     /// the run: the errors the archived change already had.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub validate_before: Option<serde_json::Value>,
-    /// The text of every message the agent wrote, for an update case.
+    /// The text of every message the agent wrote, for an update or an
+    /// implementation case.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub messages: Vec<String>,
+    /// What the runner observed of an implementation run besides the
+    /// change's files; `None` for any other run.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub implement: Option<ImplementObserved>,
+}
+
+/// An implementation run, as the runner checked it after the agent.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImplementObserved {
+    /// The project's checks and the build of the binary, in order.
+    pub checks: Vec<crate::implement_run::CommandCheck>,
+    /// The acceptance script's end; `None` when it did not run.
+    #[serde(default)]
+    pub script: Option<crate::implement_run::CommandCheck>,
+    /// What the acceptance script printed, in order.
+    #[serde(default)]
+    pub printed: Vec<(String, bool)>,
+    /// Every path the run changed, created or removed.
+    #[serde(default)]
+    pub changed: Vec<String>,
+    /// The reads and searches of the repository the cases come from.
+    #[serde(default)]
+    pub read_repository: Vec<String>,
 }
 
 /// What Claude Code reports a run consumed, besides its cost and duration.

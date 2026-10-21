@@ -11,6 +11,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use crate::case::{Case, Step};
+use crate::implement_run;
 use crate::observed::{Consumption, FORMAT, Observed, ReviewMode, RunInfo, Tokens};
 use crate::suite::{Recorded, RunState};
 
@@ -111,6 +112,15 @@ pub fn prompt(case: &Case) -> String {
                  says, without applying it. Modify no file outside `_codev/changes/{change}/`."
             )
         }
+        Step::CodeImplement => format!(
+            "Run the `codev-apply` skill (read .claude/skills/codev-apply/SKILL.md and follow it) on the \
+             change `{change}`.\n\
+             \n\
+             This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+             make the most reasonable assumption. Carry the skill through to its end, its review (code.review) \
+             included. Do not archive the change and do not sync it. Cargo works offline: the dependencies are \
+             already fetched and built."
+        ),
         Step::PlanTrace => format!(
             "This is a codev role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -142,6 +152,11 @@ pub const DEFAULT_TIMEOUT_SECS: u64 = 600;
 /// several minutes at the median, measured by the study of 44 runs.
 pub const PLAN_BUDGET_USD: f64 = 6.0;
 pub const PLAN_TIMEOUT_SECS: u64 = 1800;
+/// An implementation run writes about a thousand lines of code and builds
+/// and tests them several times, then reviews them: many times a planning
+/// run, with room left for the slowest model.
+pub const IMPLEMENT_BUDGET_USD: f64 = 30.0;
+pub const IMPLEMENT_TIMEOUT_SECS: u64 = 5400;
 
 impl ClaudeSettings {
     /// `CODEV_EVAL_MODEL`, `CODEV_EVAL_BUDGET_USD`,
@@ -182,6 +197,7 @@ impl ClaudeSettings {
     pub fn budget_for(&self, step: Step) -> f64 {
         self.budget_usd.unwrap_or(match step {
             Step::PlanWrite | Step::PlanUpdate => PLAN_BUDGET_USD,
+            Step::CodeImplement => IMPLEMENT_BUDGET_USD,
             _ => DEFAULT_BUDGET_USD,
         })
     }
@@ -190,6 +206,7 @@ impl ClaudeSettings {
     pub fn timeout_for(&self, step: Step) -> Duration {
         self.timeout.unwrap_or(Duration::from_secs(match step {
             Step::PlanWrite | Step::PlanUpdate => PLAN_TIMEOUT_SECS,
+            Step::CodeImplement => IMPLEMENT_TIMEOUT_SECS,
             _ => DEFAULT_TIMEOUT_SECS,
         }))
     }
@@ -307,6 +324,26 @@ pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> O
         append(extra);
     }
     Some(text)
+}
+
+/// The `allowed-tools` of a skill's frontmatter, as the skill grants them
+/// when a user invokes it; `None` without the key.
+pub fn skill_allowed_tools(skill: &str) -> Option<String> {
+    let text = skill.replace("\r\n", "\n");
+    let front = text.strip_prefix("---\n")?;
+    let front = &front[..front.find("\n---")?];
+    front.lines().find_map(|line| {
+        let value = line.strip_prefix("allowed-tools:")?.trim();
+        Some(value.trim_matches('"').to_string())
+    })
+}
+
+/// `args` with the tools of `--allowedTools` replaced by `tools`.
+pub fn with_allowed_tools(mut args: Vec<String>, tools: &str) -> Vec<String> {
+    if let Some(at) = args.iter().position(|a| a == "--allowedTools") {
+        args[at + 1] = tools.to_string();
+    }
+    args
 }
 
 /// The tools granted without a prompt to a case at `step`.
@@ -439,13 +476,14 @@ pub fn claude_args(
 
 /// The steps `--step` accepts: `review` for the three review steps, or a
 /// step's own name.
-pub const STEP_SELECTORS: [&str; 6] = [
+pub const STEP_SELECTORS: [&str; 7] = [
     "review",
     "plan.challenge",
     "code.review",
     "plan.trace",
     "plan.write",
     "plan.update",
+    "code.implement",
 ];
 
 /// The cases of the steps named, all of them when none is; an unknown name
@@ -519,6 +557,12 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
         let allowed = match case.step {
             Step::PlanTrace | Step::PlanUpdate => path.starts_with(&change_dir),
             Step::PlanWrite => path.starts_with(CHANGES_DIR) && !path.ends_with("/corrections.md"),
+            // The code is the run's to change; `_codev/` only in its change,
+            // which an author's correction never reaches in an evaluation.
+            Step::CodeImplement => {
+                !path.starts_with("_codev/")
+                    || (path.starts_with(&change_dir) && !path.ends_with("/corrections.md"))
+            }
             _ => path == review,
         };
         if !allowed {
@@ -570,6 +614,9 @@ pub struct ClaudeOutput {
     pub messages: Vec<String>,
     /// The sub-agents the session started: its calls to the sub-agent tool.
     pub sub_agents_started: u64,
+    /// The paths the tool calls read or searched, and the shell commands
+    /// they ran, the sub-agents' included.
+    pub reads: Vec<String>,
 }
 
 /// What Claude Code's event stream (`--output-format stream-json`) reports:
@@ -595,6 +642,7 @@ pub fn parse_claude_stream(stdout: &str) -> ClaudeOutput {
     };
     let mut output = parse_claude_output(&result.to_string());
     output.messages = agent_messages(&events);
+    output.reads = crate::implement_run::tool_reads(&events);
     if let Some(consumption) = output.consumption.as_mut() {
         let stream = read_calls(&events);
         consumption.tool_calls = Some(stream.tool_calls);
@@ -894,6 +942,7 @@ pub fn parse_claude_output(stdout: &str) -> ClaudeOutput {
         error,
         messages: Vec::new(),
         sub_agents_started: 0,
+        reads: Vec::new(),
     }
 }
 
@@ -1090,11 +1139,17 @@ fn write_tree(root: &Path, files: &BTreeMap<String, Vec<u8>>) -> std::io::Result
 
 /// A command the runner starts itself, outside the sandbox: once the agent
 /// has run, the case's directory is untrusted, so the command gets neither
-/// the API key nor any git configuration but the repository's own.
+/// the API key, nor any other variable of the operator's environment but
+/// what it needs to run, nor any git configuration but the repository's
+/// own.
 fn tool_command(tool: &Path, dir: &Path, codev_dir: &Path) -> Command {
     let mut command = Command::new(tool);
     command
         .current_dir(dir)
+        // No secret of the operator's shell either: only what the tools need
+        // to run.
+        .env_clear()
+        .envs(std::env::vars().filter(|(name, _)| implement_run::kept(name)))
         .env("CODEV_NO_UPDATE_CHECK", "1")
         .env("PATH", path_with(codev_dir))
         .env("GIT_CONFIG_NOSYSTEM", "1")
@@ -1266,7 +1321,8 @@ pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result
         .as_ref()
         .map(|p| p.git_ref.as_str())
         .or_else(|| case.update.as_ref().map(|u| u.git_ref.as_str()))
-        .ok_or_else(|| "not a planning or update case".to_string())?;
+        .or_else(|| case.implement.as_ref().map(|i| i.git_ref.as_str()))
+        .ok_or_else(|| "not a planning, update or implementation case".to_string())?;
     if dir.exists() {
         fs::remove_dir_all(dir).map_err(io)?;
     }
@@ -1293,9 +1349,13 @@ pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result
             String::from_utf8_lossy(&untar.stderr).trim()
         ));
     }
-    if let Some(update) = &case.update {
-        let change: BTreeMap<String, Vec<u8>> = update
-            .files
+    let laid = case
+        .update
+        .as_ref()
+        .map(|u| &u.files)
+        .or(case.implement.as_ref().map(|i| &i.files));
+    if let Some(files) = laid {
+        let change: BTreeMap<String, Vec<u8>> = files
             .iter()
             .map(|(path, text)| (path.clone(), text.clone().into_bytes()))
             .collect();
@@ -1331,6 +1391,7 @@ fn run_claude(
     args: &[String],
     timeout: Duration,
     log: &Path,
+    extra_env: &[(String, String)],
 ) -> Result<String, String> {
     let stdout_path = log.join("claude.jsonl");
     let stderr_path = log.join("claude.stderr");
@@ -1342,6 +1403,7 @@ fn run_claude(
         .current_dir(dir)
         .env("CODEV_NO_UPDATE_CHECK", "1")
         .env("PATH", path_with(codev_dir(tools)))
+        .envs(extra_env.iter().map(|(k, v)| (k, v)))
         .stdin(Stdio::null())
         .stdout(stdout)
         .stderr(stderr);
@@ -1379,7 +1441,7 @@ fn run_claude(
     }
 }
 
-fn terminate(child: &mut std::process::Child) {
+pub(crate) fn terminate(child: &mut std::process::Child) {
     #[cfg(unix)]
     {
         let group = format!("-{}", child.id());
@@ -1464,6 +1526,7 @@ pub fn run_case(
         validate: BTreeMap::new(),
         validate_before: None,
         messages: Vec::new(),
+        implement: None,
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
@@ -1476,6 +1539,12 @@ pub fn run_case(
     };
     if let Err(e) = built {
         observed.error = Some(e);
+        return observed;
+    }
+    let implementing = case.step == Step::CodeImplement;
+    if implementing {
+        let observed = run_implementation(case, repo, work_dir, log, tools, settings, observed);
+        crate::implement_run::remove_build_outputs(work_dir);
         return observed;
     }
     if case.step == Step::PlanUpdate {
@@ -1493,7 +1562,14 @@ pub fn run_case(
     let args = claude_args(&prompt(case), settings, case.step, review);
     let isolated = review.isolated_at(case.step);
     let mut sub_agents_started = 0;
-    match run_claude(work_dir, tools, &args, settings.timeout_for(case.step), log) {
+    match run_claude(
+        work_dir,
+        tools,
+        &args,
+        settings.timeout_for(case.step),
+        log,
+        &[],
+    ) {
         Err(e) => observed.error = Some(e),
         Ok(stdout) => {
             let output = parse_claude_stream(&stdout);
@@ -1584,6 +1660,198 @@ pub fn run_case(
     observed
 }
 
+/// An implementation run, once its fixture is built: the build prepared,
+/// Claude Code on `/codev-apply`, what the run left, then the runner's own
+/// checks, the binary and the acceptance script. The caller removes the
+/// build outputs, error or not.
+fn run_implementation(
+    case: &Case,
+    repo: &Path,
+    work_dir: &Path,
+    log: &Path,
+    tools: &Tools,
+    settings: &ClaudeSettings,
+    mut observed: Observed,
+) -> Observed {
+    let result = (|| -> Result<(), String> {
+        implement_run::prepare(work_dir, log)?;
+        // The errors the archived change already has under the codev being
+        // measured: the run is judged only on those it adds.
+        let before = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+        observed.validate_before = Some(without_root(before));
+        let git_before = git_settings(work_dir);
+        let reads = run_agent(case, work_dir, log, tools, settings, &mut observed)?;
+        if let Some(tampered) = git_settings_tampered(&git_before, &git_settings(work_dir)) {
+            return Err(tampered);
+        }
+        let status = observe_change(case, work_dir, log, tools, &mut observed)?;
+        // `--repo .` is relative: the resolved path is the one to look for.
+        let roots: Vec<PathBuf> = [repo.to_path_buf()]
+            .into_iter()
+            .chain(fs::canonicalize(repo).ok())
+            .collect();
+        let mut implement = crate::observed::ImplementObserved {
+            changed: implement_run::changed_paths(&status),
+            read_repository: implement_run::reads_under(&reads, &roots),
+            ..Default::default()
+        };
+        if let Some(case) = case.implement.as_ref().filter(|i| !i.refuse) {
+            check_implementation(case, work_dir, log, &mut implement)?;
+        }
+        observed.implement = Some(implement);
+        Ok(())
+    })();
+    if let Err(e) = result {
+        observed.error.get_or_insert(e);
+    }
+    observed
+}
+
+/// Claude Code on `/codev-apply`, granted what the installed skill grants a
+/// user who invokes it — the shell, to build and test, and the sub-agent
+/// tool of an isolated review —: the agent reads the skill file instead of
+/// invoking it. Returns the paths and commands its tool calls read; a run
+/// Claude Code reports in error is an error.
+fn run_agent(
+    case: &Case,
+    work_dir: &Path,
+    log: &Path,
+    tools: &Tools,
+    settings: &ClaudeSettings,
+    observed: &mut Observed,
+) -> Result<Vec<String>, String> {
+    let skill = fs::read_to_string(
+        work_dir
+            .join(".claude")
+            .join("skills")
+            .join("codev-apply")
+            .join("SKILL.md"),
+    )
+    .unwrap_or_default();
+    let mut args = claude_args(
+        &prompt(case),
+        settings,
+        case.step,
+        &ReviewSettings::default(),
+    );
+    if let Some(granted) = skill_allowed_tools(&skill) {
+        args = with_allowed_tools(args, &granted);
+    }
+    let stdout = run_claude(
+        work_dir,
+        tools,
+        &args,
+        settings.timeout_for(case.step),
+        log,
+        &implement_run::agent_env(work_dir),
+    )?;
+    let output = parse_claude_stream(&stdout);
+    let _ = fs::write(log.join("claude.jsonl"), without_init_event(&stdout));
+    observed.cost_usd = output.cost_usd;
+    observed.duration_ms = output.duration_ms;
+    observed.consumption = output.consumption;
+    observed.messages = output.messages;
+    match output.error {
+        Some(e) => Err(e),
+        None => Ok(output.reads),
+    }
+}
+
+/// What the run left in the case's directory: the paths outside the step,
+/// the change's files, `codev validate` and `codev review`. Returns
+/// `git status`, which a failure makes an error rather than a clean tree.
+fn observe_change(
+    case: &Case,
+    work_dir: &Path,
+    log: &Path,
+    tools: &Tools,
+    observed: &mut Observed,
+) -> Result<String, String> {
+    let status = git(
+        tools,
+        work_dir,
+        &["status", "--porcelain", "-z", "--untracked-files=all"],
+    )?;
+    observed.strayed = strayed(&status, case);
+    observed.files = change_files(case, work_dir);
+    let validate = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+    observed
+        .validate
+        .insert(case.change.clone(), without_root(validate));
+    observed.review = Some(codev_json(
+        tools,
+        work_dir,
+        &["review", "--change", &case.change, "--json"],
+    )?);
+    if let Ok(record) = fs::read(work_dir.join(case.change_dir()).join("review.md")) {
+        let _ = fs::write(log.join("review.md"), record);
+    }
+    Ok(status)
+}
+
+/// The runner's own checks of an implementation that does not refuse, then
+/// the acceptance script, run only when the binary built.
+fn check_implementation(
+    case: &crate::case::ImplementCase,
+    work_dir: &Path,
+    log: &Path,
+    implement: &mut crate::observed::ImplementObserved,
+) -> Result<(), String> {
+    implement.checks = implement_run::run_checks(work_dir, log);
+    let built = implement
+        .checks
+        .iter()
+        .any(|c| c.name == implement_run::BUILD.name && c.passed);
+    if let Some(script) = case.script.as_deref().filter(|_| built) {
+        let (printed, end) =
+            implement_run::run_acceptance(script, &implement_run::built_binary(work_dir), log)?;
+        implement.printed = printed;
+        implement.script = Some(end);
+    }
+    Ok(())
+}
+
+/// The files of `.git/` that decide what git reads and runs, by path: its
+/// configuration, a `commondir` that points it elsewhere, and `info/` —
+/// attributes, which name filter drivers, and the exclusions that hide a
+/// path from `git status`. What git writes as it works — objects, refs,
+/// the index, `AUTO_MERGE` after a stash — is left out: a run may use git.
+pub fn git_settings(work_dir: &Path) -> BTreeMap<String, Vec<u8>> {
+    read_tree(&work_dir.join(".git"))
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(path, _)| git_path_is_setting(path))
+        .collect()
+}
+
+/// A path under `.git/` that sets what git reads or runs.
+fn git_path_is_setting(path: &str) -> bool {
+    matches!(path, "config" | "config.worktree" | "commondir") || path.starts_with("info/")
+}
+
+/// Why a run cannot be trusted when its agent changed what git reads —
+/// the runner calls git outside the sandbox afterwards —, naming the files.
+pub fn git_settings_tampered(
+    before: &BTreeMap<String, Vec<u8>>,
+    after: &BTreeMap<String, Vec<u8>>,
+) -> Option<String> {
+    let changed: Vec<&str> = before
+        .keys()
+        .chain(after.keys())
+        .filter(|path| before.get(*path) != after.get(*path))
+        .map(String::as_str)
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    (!changed.is_empty()).then(|| {
+        format!(
+            "the run modified {} under .git/, which the runner reads outside the sandbox; \
+             its observation is not trusted",
+            changed.join(", ")
+        )
+    })
+}
+
 /// The files of an update case's change folder after the run, by path from
 /// the project root; a file the case laid and the run removed is `None`.
 fn change_files(case: &Case, work_dir: &Path) -> BTreeMap<String, Option<String>> {
@@ -1598,7 +1866,12 @@ fn change_files(case: &Case, work_dir: &Path) -> BTreeMap<String, Option<String>
             )
         })
         .collect();
-    for path in case.update.iter().flat_map(|u| u.files.keys()) {
+    let laid = case
+        .update
+        .iter()
+        .flat_map(|u| u.files.keys())
+        .chain(case.implement.iter().flat_map(|i| i.files.keys()));
+    for path in laid {
         files.entry(format!("{change_dir}/{path}")).or_insert(None);
     }
     files
@@ -1900,8 +2173,19 @@ mod tests {
                 )
             })
             .collect();
+        // The environment is cleared, then given only what the tools need:
+        // neither the key nor any other secret of the operator's shell.
         assert!(
-            envs.contains(&("ANTHROPIC_API_KEY".into(), None)),
+            envs.iter().all(|(k, v)| v.is_none()
+                || crate::implement_run::kept(k)
+                || k.starts_with("GIT_")
+                || k == "CODEV_NO_UPDATE_CHECK"),
+            "{envs:?}"
+        );
+        assert!(
+            !envs
+                .iter()
+                .any(|(k, v)| k == "ANTHROPIC_API_KEY" && v.is_some()),
             "{envs:?}"
         );
         assert!(envs.contains(&("GIT_CONFIG_NOSYSTEM".into(), Some("1".into()))));
@@ -3018,5 +3302,155 @@ mod tests {
         let b = default_work_dir(temp, 1_792_148_804, 202);
         assert_ne!(a, b);
         assert_eq!(a, Path::new("/tmp/codev-evals-1792148804-101"));
+    }
+
+    fn implement_case(change: &str) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = "implement-x".into();
+        case.step = Step::CodeImplement;
+        case.change = change.into();
+        case.implement = Some(crate::case::ImplementCase {
+            git_ref: "abc123".into(),
+            merged: "def456".into(),
+            refuse: false,
+            docs: true,
+            acceptance: vec!["works".into()],
+            script: Some("echo ok works\n".into()),
+            files: BTreeMap::from([("tasks.md".to_string(), "- [ ] 1.1 A\n".to_string())]),
+        });
+        case
+    }
+
+    #[test]
+    fn the_prompt_of_an_implementation_case() {
+        let text = prompt(&implement_case("decision-accept-command"));
+        for needle in [
+            "`codev-apply`",
+            "`decision-accept-command`",
+            "ask no question",
+            "code.review",
+            "Do not archive the change and do not sync it",
+        ] {
+            assert!(text.contains(needle), "missing {needle}: {text}");
+        }
+    }
+
+    #[test]
+    fn the_budget_of_an_implementation_case() {
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        assert_eq!(defaults.budget_for(Step::CodeImplement), 30.0);
+        assert_eq!(
+            defaults.timeout_for(Step::CodeImplement),
+            Duration::from_secs(5400)
+        );
+        let args = claude_args(
+            "p",
+            &defaults,
+            Step::CodeImplement,
+            &ReviewSettings::default(),
+        );
+        let at = args.iter().position(|a| a == "--max-budget-usd").unwrap();
+        assert_eq!(args[at + 1], "30");
+    }
+
+    #[test]
+    fn only_the_implementation_cases_run() {
+        let cases = vec![
+            a_case("security", Kind::Seeded, &[]),
+            planning_case("r"),
+            implement_case("c"),
+        ];
+        let selected = select_steps(&cases, &["code.implement".to_string()]).unwrap();
+        assert_eq!(selected.len(), 1);
+        assert_eq!(selected[0].step, Step::CodeImplement);
+        let review = select_steps(&cases, &["review".to_string()]).unwrap();
+        assert!(review.iter().all(|c| c.step != Step::CodeImplement));
+    }
+
+    #[test]
+    fn a_run_that_syncs_its_change() {
+        let case = implement_case("decision-accept-command");
+        let status = " M _codev/specs/decisions/spec.md\0 M crates/codev-cli/src/main.rs\0";
+        assert_eq!(strayed(status, &case), ["_codev/specs/decisions/spec.md"]);
+        let archived = " D _codev/changes/decision-accept-command/tasks.md\0?? _codev/changes/archive/2026-10-20-decision-accept-command/tasks.md\0";
+        assert_eq!(
+            strayed(archived, &case),
+            ["_codev/changes/archive/2026-10-20-decision-accept-command/tasks.md"]
+        );
+    }
+
+    #[test]
+    fn an_implementation_run_may_change_the_code() {
+        let case = implement_case("decision-accept-command");
+        let status = " M crates/codev-cli/src/main.rs\0?? docs/fr/src/cli.md\0 M _codev/changes/decision-accept-command/tasks.md\0?? _codev/changes/decision-accept-command/review.md\0";
+        assert!(strayed(status, &case).is_empty());
+        let corrected = "?? _codev/changes/decision-accept-command/corrections.md\0";
+        assert_eq!(
+            strayed(corrected, &case),
+            ["_codev/changes/decision-accept-command/corrections.md"]
+        );
+    }
+
+    #[test]
+    fn an_implementation_run_grants_what_the_apply_skill_grants() {
+        let skill = "---\nname: codev-apply\nallowed-tools: \"Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash, Agent\"\nlicense: MIT\n---\n\nallowed-tools: not this\n";
+        let tools = skill_allowed_tools(skill).unwrap();
+        assert_eq!(
+            tools,
+            "Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash, Agent"
+        );
+        let settings = ClaudeSettings::from_env(&|_| None).unwrap();
+        let args = with_allowed_tools(
+            claude_args(
+                "p",
+                &settings,
+                Step::CodeImplement,
+                &ReviewSettings::default(),
+            ),
+            &tools,
+        );
+        let at = args.iter().position(|a| a == "--allowedTools").unwrap();
+        assert_eq!(args[at + 1], tools);
+        assert!(skill_allowed_tools("no frontmatter").is_none());
+    }
+
+    #[test]
+    fn a_run_that_writes_a_commondir_is_refused() {
+        let settings = |extra: &[(&str, &str)]| -> BTreeMap<String, Vec<u8>> {
+            [("config", "[core]\n")]
+                .iter()
+                .chain(extra)
+                .map(|(p, t)| (p.to_string(), t.as_bytes().to_vec()))
+                .collect()
+        };
+        let before = settings(&[]);
+        assert!(git_settings_tampered(&before, &settings(&[])).is_none());
+        let err = git_settings_tampered(&before, &settings(&[("commondir", "../evil\n")])).unwrap();
+        assert!(err.contains("commondir"), "{err}");
+        let mut config = settings(&[]);
+        config.insert("config".into(), b"[filter \"x\"]\n".to_vec());
+        assert!(
+            git_settings_tampered(&before, &config)
+                .unwrap()
+                .contains("config")
+        );
+        for written_by_git in [
+            "objects/ab/cdef",
+            "index",
+            "AUTO_MERGE",
+            "refs/stash",
+            "worktrees/x/HEAD",
+        ] {
+            assert!(!git_path_is_setting(written_by_git), "{written_by_git}");
+        }
+        for setting in [
+            "config",
+            "config.worktree",
+            "commondir",
+            "info/attributes",
+            "info/exclude",
+        ] {
+            assert!(git_path_is_setting(setting), "{setting}");
+        }
     }
 }

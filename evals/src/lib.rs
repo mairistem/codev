@@ -9,6 +9,8 @@
 pub mod case;
 pub mod checks;
 pub mod compare;
+pub mod implement;
+pub mod implement_run;
 pub mod lint;
 pub mod observed;
 pub mod plan;
