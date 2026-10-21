@@ -123,7 +123,7 @@ jobs:
           cargo run --locked -p codev-evals -- run --out evals-output --step "$EVAL_STEP" --repeat "$EVAL_REPEAT" --jobs 4 "${args[@]}"
       - name: Keep the output
         if: always() && steps.key.outputs.present == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: role-evaluations
           path: evals-output
