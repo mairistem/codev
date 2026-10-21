@@ -710,24 +710,29 @@ mod tests {
 
     #[test]
     fn a_read_of_the_cases_repository_is_recorded() {
+        // A root absolute on every platform: `/src/codev` has no drive on
+        // Windows.
+        let root = if cfg!(windows) {
+            r"C:\src\codev"
+        } else {
+            "/src/codev"
+        };
+        let sep = std::path::MAIN_SEPARATOR;
+        let script = format!("{root}{sep}evals{sep}cases{sep}x{sep}acceptance.sh");
+        let show = format!("git -C {root} show def456");
+        let other = format!("{root}-other");
         let events = vec![
             serde_json::json!({"type": "assistant", "message": {"content": [
-                {"type": "tool_use", "name": "Read", "input": {"file_path": "/src/codev/evals/cases/x/acceptance.sh"}},
+                {"type": "tool_use", "name": "Read", "input": {"file_path": script}},
                 {"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/w/case/src/lib.rs"}},
-                {"type": "tool_use", "name": "Bash", "input": {"command": "git -C /src/codev show def456"}},
-                {"type": "tool_use", "name": "Grep", "input": {"pattern": "x", "path": "/src/codev-other"}},
-                {"type": "text", "text": "/src/codev"}
+                {"type": "tool_use", "name": "Bash", "input": {"command": show}},
+                {"type": "tool_use", "name": "Grep", "input": {"pattern": "x", "path": other}},
+                {"type": "text", "text": root}
             ]}}),
         ];
         let reads = tool_reads(&events);
         assert_eq!(reads.len(), 4);
-        assert_eq!(
-            reads_under(&reads, &[PathBuf::from("/src/codev")]),
-            [
-                "/src/codev/evals/cases/x/acceptance.sh",
-                "git -C /src/codev show def456"
-            ]
-        );
+        assert_eq!(reads_under(&reads, &[PathBuf::from(root)]), [script, show]);
     }
 
     #[test]
