@@ -114,6 +114,13 @@ cargo run -p codev-evals -- score target/evals/mine    # score again, no model
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
 
+To measure a build other than `target/debug/codev`, or to keep one fixed
+while you keep working, copy it into a folder of its own and pass it with
+`--codev <folder>/codev`: the file keeps the name `codev`. The runner
+puts that folder first in the search path, and the agent calls `codev`
+by name; under another name, the agent would run whatever other `codev`
+is installed. `codev-evals run` refuses such a binary.
+
 The agent runs in Claude Code's sandbox, as a user working with it would:
 the shell commands Claude Code knows, and `codev`, run without a prompt,
 but they can write only in the case's directory and the system's

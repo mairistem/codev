@@ -256,6 +256,20 @@ fn contributing_chapters_document_the_implementation_cases() {
 }
 
 #[test]
+fn contributing_chapters_say_the_frozen_binary_keeps_its_name() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = missing_mention(&files, "--codev <");
+    gaps.extend(missing_mention(&files, "/codev`"));
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
+#[test]
 fn contributing_chapters_document_the_isolated_mode() {
     let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
     let texts: Vec<String> = names.iter().map(|n| read(n)).collect();

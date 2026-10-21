@@ -128,6 +128,14 @@ cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
 
+Pour mesurer un autre binaire que `target/debug/codev`, ou en figer un
+pendant que vous continuez à travailler, copiez-le dans un dossier à lui
+et passez-le avec `--codev <dossier>/codev` : le fichier garde le nom
+`codev`. Le runner place ce dossier en tête du chemin de recherche, et
+l'agent appelle `codev` par son nom ; sous un autre nom, l'agent
+lancerait n'importe quel autre `codev` installé. `codev-evals run`
+refuse un tel binaire.
+
 L'agent tourne dans le bac à sable (sandbox) de Claude Code, comme le
 ferait un utilisateur qui s'en sert : les commandes shell que Claude Code
 connaît, et `codev`, s'exécutent sans demande, mais elles ne peuvent
