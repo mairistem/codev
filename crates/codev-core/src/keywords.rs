@@ -47,6 +47,19 @@ impl Lang {
     pub fn all() -> impl Iterator<Item = Lang> {
         (0..LANGUAGE_FILES.len()).map(Lang)
     }
+
+    /// The language a project writes its keywords in, from its
+    /// `language:`: the catalog language of the setting's primary subtag
+    /// (`fr-CA` → `fr`), compared without regard to case; English when the
+    /// catalog does not ship it, or without a setting.
+    pub fn for_setting(language: Option<&str>) -> Lang {
+        let Some(primary) = language.and_then(|tag| tag.split(['-', '_']).next()) else {
+            return Lang::EN;
+        };
+        Lang::all()
+            .find(|lang| lang.code().eq_ignore_ascii_case(primary.trim()))
+            .unwrap_or(Lang::EN)
+    }
 }
 
 impl Default for Lang {
@@ -266,6 +279,24 @@ pub fn texts(key: Key, lang: Lang) -> &'static [String] {
 /// The form codev writes for `key` in `lang`.
 pub fn text(key: Key, lang: Lang) -> &'static str {
     &texts(key, lang)[0]
+}
+
+/// What codev writes for every key in `lang`, in [`Key::ALL`] order: the
+/// written form, or every text for the keys a writer picks among
+/// (`normative`, `none`).
+pub fn written(lang: Lang) -> Vec<(Key, Vec<&'static str>)> {
+    Key::ALL
+        .into_iter()
+        .map(|key| {
+            let all = texts(key, lang);
+            let shown: Vec<&'static str> = if matches!(key, Key::Normative | Key::None) {
+                all.iter().map(String::as_str).collect()
+            } else {
+                vec![all[0].as_str()]
+            };
+            (key, shown)
+        })
+        .collect()
 }
 
 /// Lower case, French accents folded to their base letter, runs of
@@ -709,5 +740,43 @@ mod tests {
             section_line("## décisions", Key::DesignDecisions),
             Some(fr())
         );
+    }
+
+    #[test]
+    fn keyword_language_of_a_shipped_language() {
+        assert_eq!(Lang::for_setting(Some("fr")), fr());
+        assert_eq!(Lang::for_setting(Some("en")), Lang::EN);
+    }
+
+    #[test]
+    fn keyword_language_of_a_regional_variant() {
+        assert_eq!(Lang::for_setting(Some("fr-CA")), fr());
+    }
+
+    #[test]
+    fn keyword_language_ignores_case() {
+        assert_eq!(Lang::for_setting(Some("FR")), fr());
+        assert_eq!(Lang::for_setting(Some("Fr-ca")), fr());
+    }
+
+    #[test]
+    fn keyword_language_of_an_unshipped_language_is_english() {
+        assert_eq!(Lang::for_setting(Some("pt-BR")), Lang::EN);
+    }
+
+    #[test]
+    fn keyword_language_without_a_setting_is_english() {
+        assert_eq!(Lang::for_setting(None), Lang::EN);
+        assert_eq!(Lang::for_setting(Some("")), Lang::EN);
+    }
+
+    #[test]
+    fn every_key_is_written_and_the_choices_keep_all_their_texts() {
+        let written = written(fr());
+        assert_eq!(written.len(), Key::ALL.len());
+        let of = |key: Key| written.iter().find(|(k, _)| *k == key).unwrap().1.clone();
+        assert_eq!(of(Key::Requirement), ["### Exigence :"]);
+        assert_eq!(of(Key::Normative), ["DOIT", "DOIVENT"]);
+        assert_eq!(of(Key::None), ["Aucun", "Aucune"]);
     }
 }

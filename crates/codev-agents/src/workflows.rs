@@ -1514,4 +1514,28 @@ mod tests {
             assert!(step.contains(needle), "missing {needle}: {step}");
         }
     }
+
+    #[test]
+    fn propose_and_update_skills_write_keywords_in_the_keyword_language() {
+        let propose = flat(find("propose").unwrap().body);
+        let update = flat(find("update").unwrap().body);
+        for (id, body) in [("propose", &propose), ("update", &update)] {
+            assert!(!body.contains("stay in English"), "{id}: {body}");
+            assert!(body.contains("`keywordLanguage`"), "{id}");
+            assert!(body.contains("`keywords`"), "{id}");
+            assert!(
+                body.contains("Never translate a keyword yourself")
+                    || body.contains("never translate a keyword yourself"),
+                "{id}"
+            );
+        }
+        assert!(
+            propose.contains("insert a citation line, written in `language`"),
+            "{propose}"
+        );
+        assert!(
+            update.contains("keep the language the artifact you revise already writes them in"),
+            "{update}"
+        );
+    }
 }

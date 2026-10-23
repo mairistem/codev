@@ -123,7 +123,9 @@ Rules checked by validation:
 
 ## proposal.md
 
-The `spec-driven` template:
+The `spec-driven` schema ships its templates in English and in French, and
+serves the one of the project's keyword language
+([Artifact language](../guides/artifact-language.md)). The English template:
 
 ```markdown
 # Proposal: <change title>

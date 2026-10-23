@@ -52,7 +52,8 @@ impl<T> GeneratedValue<T> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GeneratedConfig {
     pub schema: String,
-    /// Language of the prose skills write in artifacts (ISO 639 code).
+    /// Language skills write artifacts in (ISO 639 code): their prose, and
+    /// their structural keywords when codev ships the language.
     pub language: GeneratedValue<String>,
     /// Selected workflows, in the order they should appear in the YAML.
     pub workflows: Vec<String>,
@@ -230,9 +231,9 @@ pub fn render(config: &GeneratedConfig) -> String {
     out.push_str(&format!("schema: {}\n", config.schema));
 
     // language
-    out.push_str("\n# Language of the prose skills write in artifacts (proposal, design,\n");
-    out.push_str("# tasks, specs). Structural keywords such as `## Why` or\n");
-    out.push_str("# `### Requirement:` always stay in English.\n");
+    out.push_str("\n# Language skills write the artifacts in (proposal, design, tasks,\n");
+    out.push_str("# specs). Structural keywords such as `## Why` or `### Requirement:`\n");
+    out.push_str("# follow it when codev ships the language, and stay in English otherwise.\n");
     if let Some(source) = &config.language.provenance {
         out.push_str(&format!("# {source}\n"));
     }
@@ -453,9 +454,9 @@ mod tests {
 
 schema: spec-driven
 
-# Language of the prose skills write in artifacts (proposal, design,
-# tasks, specs). Structural keywords such as `## Why` or
-# `### Requirement:` always stay in English.
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when codev ships the language, and stay in English otherwise.
 # detected from LANG=fr_FR.UTF-8
 language: fr
 
@@ -506,9 +507,9 @@ context: |
 
 schema: spec-driven
 
-# Language of the prose skills write in artifacts (proposal, design,
-# tasks, specs). Structural keywords such as `## Why` or
-# `### Requirement:` always stay in English.
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when codev ships the language, and stay in English otherwise.
 # default
 language: en
 
@@ -546,9 +547,9 @@ workflows:
 
 schema: spec-driven
 
-# Language of the prose skills write in artifacts (proposal, design,
-# tasks, specs). Structural keywords such as `## Why` or
-# `### Requirement:` always stay in English.
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when codev ships the language, and stay in English otherwise.
 # default
 language: en
 
@@ -584,5 +585,18 @@ inherits:
             ],
         };
         assert_eq!(render(&g), GOLDEN_INHERITS);
+    }
+
+    #[test]
+    fn generated_language_comment_says_keywords_follow_the_language() {
+        let text = render(&from_detected(
+            &workspace_rust_detected(),
+            &UserChoices::defaults_full(),
+        ));
+        assert!(
+            text.contains("follow it when codev ships the language"),
+            "{text}"
+        );
+        assert!(!text.contains("always stay in English"), "{text}");
     }
 }

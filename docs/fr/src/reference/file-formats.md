@@ -128,7 +128,10 @@ Règles vérifiées par la validation :
 
 ## proposal.md
 
-Le template du schéma `spec-driven` :
+Le schéma `spec-driven` fournit ses templates en anglais et en français, et
+sert celui de la langue des mots-clés du projet
+([Langue des artefacts](../guides/artifact-language.md)). Le template
+anglais :
 
 ```markdown
 # Proposal: <change title>

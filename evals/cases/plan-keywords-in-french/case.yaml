@@ -1,0 +1,13 @@
+step: plan.write
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+config:
+  language: fr
+request: "Quand un membre de l'équipe a une version de l'outil plus vieille que le projet, une clé de configuration qu'il ne connaît pas bloque toutes ses commandes. Il faudrait plutôt l'ignorer en l'avertissant de mettre l'outil à jour, et que le diagnostic donne la commande exacte, avec la version, pour revenir en arrière quand l'outil est plus récent que ce que le projet demande."
+summary: "Replays the change 2026-10-12-forward-compatible-config in a project written in French: the structural keywords are expected in French."
+expected:
+  keyword_language: fr
+  modified:
+    - "doctor::`codev doctor` runs a fixed list of read-only checks"
+  collateral: []
+  decisions: []

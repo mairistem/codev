@@ -74,7 +74,7 @@ apply:
 | `artifacts[].id` | yes | Artifact id, in kebab-case, unique |
 | `artifacts[].generates` | yes | Output path relative to the change folder; may be a glob such as `specs/**/*.md` |
 | `artifacts[].description` | no | Short description, shown to the agent |
-| `artifacts[].template` | no | Template file name, looked up in the schema's `templates/` folder |
+| `artifacts[].template` | no | Template file name, looked up in the schema's `templates/<language>/` folder for the project's keyword language, then in `templates/` |
 | `artifacts[].instruction` | no | Guidance for the agent writing this artifact |
 | `artifacts[].requires` | no | Ids of the artifacts that must exist first |
 | `artifacts[].role` | no | The role that owns the artifact — see [Declaring artifact roles](#declaring-artifact-roles) |

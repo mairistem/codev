@@ -1,0 +1,19 @@
+step: plan.write
+kind: seeded
+ref: 25b6266cf4fb45eb94f06134e5ce3144dad77c3e
+config:
+  language: pt-BR
+request: "Ao especificar os comandos básicos encontramos vários bugs: um arquivo markdown solto na pasta de specs derruba a validação, um schema cujo nome difere da sua pasta fica inutilizável, dá para criar uma mudança chamada « archive », e os caminhos no JSON mantêm as barras invertidas no Windows. Pode corrigir tudo isso?"
+summary: "Replays the change 2026-10-12-fix-core-command-edge-cases in a project written in Brazilian Portuguese, a language codev ships no keywords for: the structural keywords are expected in English."
+expected:
+  keyword_language: en
+  modified:
+    - "changes::A change name is kebab-case and unique"
+    - "changes::`codev list` lists the active changes and, with `--specs`, the capabilities"
+    - "schemas::`codev schemas` lists the usable schemas"
+    - "schemas::A schema is resolved from the project before the built-in one"
+  collateral:
+    - "changes::The commands taking `--change` pick the change predictably"
+    - "instructions::`codev instructions` fails with stable codes"
+    - "schemas::The schema of a change is chosen once, at creation"
+  decisions: []

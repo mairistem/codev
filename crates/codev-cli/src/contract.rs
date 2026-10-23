@@ -533,9 +533,16 @@ pub struct InstructionsV1 {
     pub instruction: Option<String>,
     pub template: Option<String>,
     /// Language of the prose to write (ISO 639 code, from `language:` in
-    /// the config, `en` by default). Structural keywords of the template
-    /// stay in English whatever the language.
+    /// the config, `en` by default).
     pub language: String,
+    /// The language the structural keywords are written in: the catalog
+    /// language of `language:`'s primary subtag, `en` when the catalog
+    /// does not ship it. The template is served in it. Additive in v1.
+    pub keyword_language: String,
+    /// The text to write for each catalog key in `keywordLanguage`; a list
+    /// for `normative` and `none`, whose texts a writer picks among.
+    /// Additive in v1.
+    pub keywords: std::collections::BTreeMap<String, serde_json::Value>,
     /// From most general to most specific. Constraints for the agent, never
     /// content to copy into the produced file.
     pub context: Vec<BlockV1>,
@@ -890,6 +897,25 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
     }
 }
 
+/// What `keywords` holds for `lang`: each key's written text, or the list
+/// of its texts for the keys a writer picks among.
+pub fn keywords_v1(
+    lang: codev_core::keywords::Lang,
+) -> std::collections::BTreeMap<String, serde_json::Value> {
+    use codev_core::keywords::Key;
+    codev_core::keywords::written(lang)
+        .into_iter()
+        .map(|(key, texts)| {
+            let value = if matches!(key, Key::Normative | Key::None) {
+                serde_json::json!(texts)
+            } else {
+                serde_json::json!(texts[0])
+            };
+            (key.name().to_string(), value)
+        })
+        .collect()
+}
+
 impl From<&Instructions> for InstructionsV1 {
     fn from(instructions: &Instructions) -> Self {
         Self {
@@ -901,6 +927,8 @@ impl From<&Instructions> for InstructionsV1 {
             instruction: instructions.instruction.clone(),
             template: instructions.template.clone(),
             language: instructions.language.clone(),
+            keyword_language: instructions.keyword_language.code().to_string(),
+            keywords: keywords_v1(instructions.keyword_language),
             context: instructions.context.iter().map(BlockV1::from).collect(),
             rules: instructions.rules.iter().map(BlockV1::from).collect(),
             dependencies: instructions
@@ -1927,6 +1955,7 @@ apply:
             instruction: None,
             template: None,
             language: "en".into(),
+            keyword_language: codev_core::keywords::Lang::EN,
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: vec![Dependency {
@@ -2330,6 +2359,7 @@ apply:
             instruction: None,
             template: None,
             language: "en".into(),
+            keyword_language: codev_core::keywords::Lang::EN,
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::new(),

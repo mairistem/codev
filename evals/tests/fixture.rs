@@ -75,6 +75,8 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
             modified: Vec::new(),
             collateral: Vec::new(),
             decisions: Vec::new(),
+            config: None,
+            keyword_language: None,
         }),
         update: None,
         implement: None,

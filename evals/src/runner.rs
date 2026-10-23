@@ -326,13 +326,35 @@ pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> O
     Some(text)
 }
 
-/// `existing` with `extra` appended, on a line of its own.
+/// `existing` with `extra` appended, on a line of its own; a top-level key
+/// `extra` sets replaces the same key of `existing`, its indented lines
+/// included, so that the result never holds a key twice.
 pub fn with_appended_config(existing: &str, extra: &str) -> String {
-    let mut text = existing.to_string();
-    if !text.is_empty() && !text.ends_with('\n') {
-        text.push('\n');
+    let top_key = |line: &str| -> Option<String> {
+        let first = line.chars().next()?;
+        if first.is_whitespace() || first == '#' || first == '-' {
+            return None;
+        }
+        line.split_once(':').map(|(key, _)| key.trim().to_string())
+    };
+    let replaced: Vec<String> = extra.lines().filter_map(top_key).collect();
+    let mut text = String::new();
+    let mut skipping = false;
+    for line in existing.lines() {
+        match top_key(line) {
+            Some(key) => skipping = replaced.contains(&key),
+            None if line.starts_with(char::is_whitespace) || line.is_empty() => {}
+            None => skipping = false,
+        }
+        if !skipping {
+            text.push_str(line);
+            text.push('\n');
+        }
     }
     text.push_str(extra);
+    if !text.ends_with('\n') {
+        text.push('\n');
+    }
     text
 }
 
@@ -345,6 +367,16 @@ pub fn fixture_config_for(step: Step, review: &ReviewSettings) -> Option<&str> {
         Step::CodeImplement => review.fixture_config.as_deref(),
         _ => None,
     }
+}
+
+/// What is appended to the configuration of a fixture replayed from the
+/// history: a planning case's own `config`, or `--fixture-config` for an
+/// implementation case.
+pub fn extra_config_for<'a>(case: &'a Case, review: &'a ReviewSettings) -> Option<&'a str> {
+    case.plan
+        .as_ref()
+        .and_then(|plan| plan.config.as_deref())
+        .or_else(|| fixture_config_for(case.step, review))
 }
 
 /// The `allowed-tools` of a skill's frontmatter, as the skill grants them
@@ -1593,13 +1625,7 @@ pub fn run_case(
         return observed;
     }
     let built = if case.step.replays_history() {
-        setup_plan(
-            case,
-            repo,
-            work_dir,
-            tools,
-            fixture_config_for(case.step, review),
-        )
+        setup_plan(case, repo, work_dir, tools, extra_config_for(case, review))
     } else {
         setup(case, case_dir, work_dir, tools, date, review)
     };
@@ -2786,6 +2812,8 @@ mod tests {
             modified: Vec::new(),
             collateral: Vec::new(),
             decisions: Vec::new(),
+            config: None,
+            keyword_language: None,
         });
         case
     }
@@ -3564,8 +3592,34 @@ mod tests {
     }
 
     #[test]
+    fn appended_config_replaces_a_key_the_fixture_already_sets() {
+        let existing =
+            "schema: spec-driven\n# The prose language.\nlanguage: en\nworkflows:\n  - propose\n";
+        let merged = with_appended_config(existing, "language: fr\n");
+        assert_eq!(merged.matches("language:").count(), 1, "{merged}");
+        assert!(merged.ends_with("language: fr\n"), "{merged}");
+        assert!(merged.contains("workflows:\n  - propose\n"), "{merged}");
+        let nested = "roles:\n  skeptic: never\nlanguage: en\n";
+        let merged = with_appended_config(nested, "roles:\n  developer: { model: sonnet }\n");
+        assert!(!merged.contains("skeptic"), "{merged}");
+        assert!(merged.contains("language: en"), "{merged}");
+    }
+
+    #[test]
     fn an_implementation_case_keeps_its_own_review_mode() {
         // `--review-mode isolated` sets only the review cases.
         assert!(!developer_on_sonnet().isolated_at(Step::CodeImplement));
+    }
+
+    #[test]
+    fn a_planning_case_appends_its_own_config() {
+        let mut case = planning_case("r");
+        case.plan.as_mut().unwrap().config = Some("language: fr\n".into());
+        assert_eq!(
+            extra_config_for(&case, &ReviewSettings::default()),
+            Some("language: fr\n")
+        );
+        let plain = planning_case("r");
+        assert_eq!(extra_config_for(&plain, &ReviewSettings::default()), None);
     }
 }

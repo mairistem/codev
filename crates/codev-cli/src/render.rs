@@ -401,11 +401,19 @@ pub fn instructions(instructions: &Instructions) -> String {
         "Write to: {}",
         instructions.resolved_output_path.display()
     );
-    let _ = writeln!(
-        out,
-        "Language: {} — prose only; template keywords stay in English",
-        instructions.language
-    );
+    let keywords = instructions.keyword_language.code();
+    if keywords == instructions.language {
+        let _ = writeln!(
+            out,
+            "Language: {keywords} — prose and structural keywords in {keywords}"
+        );
+    } else {
+        let _ = writeln!(
+            out,
+            "Language: {} — prose in {}, structural keywords in {keywords}",
+            instructions.language, instructions.language
+        );
+    }
 
     if instructions.skipped {
         let _ = writeln!(out);
@@ -1455,6 +1463,7 @@ apply:
             instruction: None,
             template: None,
             language: "en".into(),
+            keyword_language: codev_core::keywords::Lang::EN,
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::<Dependency>::new(),
@@ -1491,6 +1500,7 @@ apply:
             instruction: None,
             template: None,
             language: "en".into(),
+            keyword_language: codev_core::keywords::Lang::EN,
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::<Dependency>::new(),
@@ -1771,6 +1781,7 @@ apply:
             instruction: Some("Write the proposal.".into()),
             template: Some("# Proposal".into()),
             language: "en".into(),
+            keyword_language: codev_core::keywords::Lang::EN,
             context: Vec::new(),
             rules: Vec::new(),
             dependencies: Vec::new(),

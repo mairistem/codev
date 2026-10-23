@@ -73,8 +73,9 @@ pub struct UnknownKey {
 pub struct ProjectConfig {
     #[serde(default)]
     pub schema: Option<String>,
-    /// Language of the prose skills write in artifacts, as an ISO 639 code
-    /// (`en`, `fr`, `pt-BR`…). Absent means English.
+    /// Language skills write artifacts in — their prose, and their
+    /// structural keywords when codev ships the language — as an ISO 639
+    /// code (`en`, `fr`, `pt-BR`…). Absent means English.
     #[serde(default)]
     pub language: Option<String>,
     /// The workflows to install. `None` lets `codev-agents` pick its default

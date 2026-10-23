@@ -1,12 +1,13 @@
 # Artifact language
 
-codev itself speaks English: its commands, messages, skills and templates are
-in English. The planning artifacts your team reads and approves — proposals,
-specs, designs, tasks — can be written in any language.
+codev itself speaks English: its commands, messages and skills are in English.
+The planning artifacts your team reads and approves — proposals, specs,
+designs, tasks — can be written in any language, and entirely in French:
+prose and structure alike.
 
 ## Setting the language
 
-The `language:` key of `_codev/config.yaml` sets the language of the prose in
+The `language:` key of `_codev/config.yaml` sets the language of the
 artifacts, as an ISO 639 code:
 
 ```yaml
@@ -53,14 +54,24 @@ The skills write every sentence in the configured language, whatever language
 you chat with Claude in: the files are the team's record, and the language is
 the team's choice.
 
-The skills write the **structure** of the files in English: template headings
-(`# Proposal:`, `## Why`, `## What Changes`, `## Context`, `# Tasks`…), spec
-and delta structure (`## Purpose`, `### Requirement:`, `#### Scenario:`…), and
-the scenario and normative keywords (`**WHEN**`, `**THEN**`, `SHALL`, `MUST`).
+The skills write the **structure** of the files — template headings, spec and
+delta structure, the scenario lines and the normative keywords — in the
+project's **keyword language**: the language of `language:` when codev ships
+its keywords, matched on its first part (`fr`, `fr-CA` → French), and
+English otherwise (`pt-BR` → English keywords, Portuguese prose). codev ships
+English and French. `codev instructions` serves the template in that
+language, and gives the text of every keyword in it (`keywordLanguage`,
+`keywords`), so the skills never translate a keyword themselves.
 
-codev **reads** that structure in English or in French, whatever
-`language:` says, so a team can also write its specs entirely in French. Each
-keyword has its text in every language of codev's keyword catalog:
+With `language: fr`, a new proposal starts with `# Proposition :`,
+`## Pourquoi`, `## Changements`, and a delta spec uses `## Exigences
+AJOUTÉES`, `### Exigence :`, `#### Scénario :`, `**QUAND**` / `**ALORS**` and
+`DOIT`. To keep English keywords with French prose, keep `language: en`:
+there is no separate setting for the keyword language.
+
+codev **reads** the structure in English or in French, whatever
+`language:` says. Each keyword has its text in every language of codev's
+keyword catalog:
 
 | English | French |
 |---|---|
@@ -90,9 +101,9 @@ L'application DOIT s'afficher avec le thème du système tant que l'utilisateur 
 
 #### Scénario : Aucun thème choisi
 
-- **GIVEN** un utilisateur qui n'a jamais modifié le thème
-- **WHEN** son système est en mode sombre
-- **THEN** l'application s'affiche avec le thème sombre
+- **ÉTANT DONNÉ** un utilisateur qui n'a jamais modifié le thème
+- **QUAND** son système est en mode sombre
+- **ALORS** l'application s'affiche avec le thème sombre
 ```
 
 How codev reads and writes them:
@@ -108,9 +119,24 @@ How codev reads and writes them:
   creates it.
 - The changelog shows release note categories in English, whatever language
   wrote them.
-- Domain names (`security`, `migration`…) and the review record's markers
-  stay in English. codev does not read the `**GIVEN**` / `**WHEN**` /
-  `**THEN**` lines, which the skills write in English.
+- Domain names (`security`, `migration`…), the review record and
+  `corrections.md` stay in English. codev does not read the scenario lines
+  (`**WHEN**` / `**THEN**`, `**QUAND**` / `**ALORS**`).
+
+## Upgrading a project already in French
+
+A project with `language: fr` got English headings under French prose until
+this release; its next artifacts are written in French. Two kinds of mixing
+follow, both valid, since codev reads both languages in one document:
+
+- A change planned before the upgrade stays as it is: `/codev-update` keeps
+  the keyword language of the artifact it revises, and only a new artifact
+  takes the project's.
+- A main spec keeps its own language. A merge writes its headings in that
+  spec's language, but copies a requirement's body as written, so a French
+  `DOIT` or `**QUAND**` can land under an English `### Requirement:`. To
+  avoid it, keep `language: en`, or rewrite a main spec's keywords in French
+  once — codev never rewrites a spec on its own.
 
 > **Warning**
 > A codev release older than this catalog rejects French keywords. Before
@@ -123,8 +149,13 @@ How codev reads and writes them:
 
 ## Which skills use it
 
-`codev instructions --json` exposes the language in its `language` field.
-`/codev-propose` and `/codev-update` write artifact prose in that language, and
-`/codev-configure` writes the `context:` and `rules:` it proposes in it too.
+`codev instructions --json` exposes the language in its `language` field, the
+keyword language in `keywordLanguage`, and the text of each keyword in
+`keywords`; its human output says both on its `Language:` line.
+`/codev-propose` and `/codev-update` write artifacts in that language, prose
+and keywords, and `/codev-configure` writes the `context:` and `rules:` it
+proposes in it too. A project schema may hold its templates per language,
+under `templates/<language>/`; without, `templates/<file>` serves every
+language ([Custom schemas](custom-schemas.md)).
 The ADR template used by `codev decision` commands has English section
 headings; write the body in your team's language.

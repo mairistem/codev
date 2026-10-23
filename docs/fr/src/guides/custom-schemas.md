@@ -76,7 +76,7 @@ apply:
 | `artifacts[].id` | oui | Identifiant de l'artefact, en kebab-case, unique |
 | `artifacts[].generates` | oui | Chemin de sortie relatif au dossier du change ; peut être un motif glob comme `specs/**/*.md` |
 | `artifacts[].description` | non | Courte description, présentée à l'agent |
-| `artifacts[].template` | non | Nom du fichier de template, recherché dans le dossier `templates/` du schéma |
+| `artifacts[].template` | non | Nom du fichier de template, recherché dans le dossier `templates/<langue>/` du schéma pour la langue des mots-clés du projet, puis dans `templates/` |
 | `artifacts[].instruction` | non | Consignes pour l'agent qui rédige cet artefact |
 | `artifacts[].requires` | non | Identifiants des artefacts qui doivent exister au préalable |
 | `artifacts[].role` | non | Le rôle qui a la charge de l'artefact — voir [Déclarer les rôles des artefacts](#déclarer-les-rôles-des-artefacts) |

@@ -167,6 +167,14 @@ fn planning_quality(base: &PlanningScore, cand: &PlanningScore) -> Vec<String> {
             c.median, range.min
         ));
     }
+    if let (Some(c), Some(range)) = (cand.keyword_rate, base.keyword_rate)
+        && c.median < range.min
+    {
+        out.push(format!(
+            "plan.write: keyword share {:.2} is under the baseline's minimum {:.2}",
+            c.median, range.min
+        ));
+    }
     for (what, c, b) in [
         ("probable duplicate(s)", cand.duplicates, base.duplicates),
         (
@@ -689,6 +697,12 @@ fn planning_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
             false,
         ),
         ("Plans that do not validate", b.invalid, c.invalid, false),
+        (
+            "Keywords in their language",
+            b.keyword_rate,
+            c.keyword_rate,
+            true,
+        ),
     ] {
         let base = if is_ratio {
             ratio_range(bs)
@@ -1157,6 +1171,7 @@ mod tests {
             duplicates: s(duplicates),
             decisions_ignored: s((1.0, 1.0, 2.0)),
             invalid: s((0.0, 0.0, 1.0)),
+            keyword_rate: None,
             consumption: Measures::default(),
         }
     }
@@ -1478,6 +1493,24 @@ mod tests {
             ),
             "{:?}",
             result.failures
+        );
+    }
+
+    #[test]
+    fn keywords_that_slip_back_to_english_fail_the_comparison() {
+        let s = |(median, min, max): (f64, f64, f64)| Some(Spread { median, min, max });
+        let mut base = runs(&[(true, 1.0, 1.0)]);
+        let mut base_plan = planning((0.7, 0.6, 0.75), (1.0, 0.0, 2.0));
+        base_plan.keyword_rate = s((1.0, 1.0, 1.0));
+        base.planning = Some(base_plan);
+        let mut cand = runs(&[(true, 1.0, 1.0)]);
+        let mut cand_plan = planning((0.7, 0.7, 0.7), (1.0, 1.0, 1.0));
+        cand_plan.keyword_rate = s((0.5, 0.5, 0.5));
+        cand.planning = Some(cand_plan);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert_eq!(
+            result.failures,
+            ["plan.write: keyword share 0.50 is under the baseline's minimum 1.00"]
         );
     }
 }

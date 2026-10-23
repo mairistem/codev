@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "c79cbb9bf97804a8f1e651cf14a3f9537a05c047ebbf8826faa1e7658a94542c"
+  checksum: "5c3dc7e4db75aa09a157c76b00cb7cdfa0f48e8a11cf8e8cae3d94503ac54119"
 ---
 
 Revise an already written planning artifact of an active codev change —
@@ -105,8 +105,12 @@ checkboxes. The change is about **content**, not structure.
 
 Write in the language set by the `language:` key of `_codev/config.yaml`
 (`en` when absent), whatever language the conversation is in. Structural
-keywords — headings such as `## Why` or `### Requirement:`, `**WHEN**` /
-`**THEN**`, `SHALL` / `MUST` — stay in English.
+keywords — headings, delta sections, requirement and scenario headings,
+the scenario lines, the normative words — keep the language the artifact
+you revise already writes them in, so that a change stays in one
+language; a file you create writes them in `keywordLanguage`, exactly as
+`codev instructions <artifact> --change "<name>" --json` gives them in
+`template` and `keywords`. Never translate a keyword yourself.
 
 ### 4. Detect and report the ripple
 

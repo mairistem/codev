@@ -383,6 +383,11 @@ pub struct PlanCase {
     /// The requirements the real change also modified in passing.
     pub collateral: Vec<RequirementId>,
     pub decisions: Vec<ExpectedDecision>,
+    /// YAML appended to the fixture's `_codev/config.yaml` before the
+    /// skills are installed, such as `language: fr`.
+    pub config: Option<String>,
+    /// The language whose structural keywords the plan must be written in.
+    pub keyword_language: Option<String>,
 }
 
 /// The planning artifact an update case revises.
@@ -730,11 +735,15 @@ struct PlanCaseFile {
     request: String,
     summary: String,
     expected: PlanExpectedFile,
+    #[serde(default)]
+    config: Option<serde_norway::Value>,
 }
 
 #[derive(Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 struct PlanExpectedFile {
+    #[serde(default)]
+    keyword_language: Option<String>,
     #[serde(default)]
     modified: Vec<String>,
     #[serde(default)]
@@ -813,6 +822,34 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
             "a planning case must expect at least one requirement or one decision".into(),
         ));
     }
+    let config = match &file.config {
+        None => None,
+        Some(serde_norway::Value::Mapping(map)) => {
+            if map.contains_key("review") {
+                return Err(fail(
+                    "`config` may not set `review:`: the review mode comes from --review-mode"
+                        .into(),
+                ));
+            }
+            Some(serde_norway::to_string(map).map_err(|e| fail(format!("`config`: {e}")))?)
+        }
+        Some(_) => {
+            return Err(fail(
+                "`config` must be a YAML mapping of configuration keys".into(),
+            ));
+        }
+    };
+    let keyword_language = match file.expected.keyword_language.as_deref().map(str::trim) {
+        None => None,
+        Some(code) => {
+            if !codev_core::keywords::Lang::all().any(|lang| lang.code() == code) {
+                return Err(fail(format!(
+                    "`keyword_language` `{code}` is not a language of the keyword catalog"
+                )));
+            }
+            Some(code.to_string())
+        }
+    };
     Ok(Case {
         id: id.to_string(),
         role: PLANNER.to_string(),
@@ -831,6 +868,8 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
             modified,
             collateral,
             decisions,
+            config,
+            keyword_language,
         }),
         update: None,
         implement: None,
@@ -2299,5 +2338,36 @@ pub(crate) mod tests {
             err.message.contains("evals/cases/implement-accept/"),
             "{err}"
         );
+    }
+
+    #[test]
+    fn a_case_planned_in_french_loads() {
+        let yaml = PLAN_YAML.replace(
+            "expected:\n",
+            "config:\n  language: fr\nexpected:\n  keyword_language: fr\n",
+        );
+        let case = planning_case(&yaml).unwrap();
+        let plan = case.plan.unwrap();
+        assert_eq!(plan.keyword_language.as_deref(), Some("fr"));
+        assert!(plan.config.unwrap().contains("language: fr"));
+    }
+
+    #[test]
+    fn a_case_config_setting_review_is_refused() {
+        let yaml = PLAN_YAML.replace(
+            "expected:\n",
+            "config:\n  review: { mode: isolated }\nexpected:\n",
+        );
+        let err = planning_case(&yaml).unwrap_err();
+        assert!(err.message.contains("review"), "{err}");
+        let scalar = PLAN_YAML.replace("expected:\n", "config: fr\nexpected:\n");
+        assert!(
+            planning_case(&scalar)
+                .unwrap_err()
+                .message
+                .contains("mapping")
+        );
+        let unknown = PLAN_YAML.replace("expected:\n", "expected:\n  keyword_language: es\n");
+        assert!(planning_case(&unknown).unwrap_err().message.contains("es"));
     }
 }

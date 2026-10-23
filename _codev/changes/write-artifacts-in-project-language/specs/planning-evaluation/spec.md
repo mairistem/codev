@@ -13,7 +13,8 @@ with `id` and `expect` (`follow` or `supersede`); and, optionally,
 be written in (`en` or a language of the keyword catalog). A case MAY
 also hold `config`, a YAML mapping of configuration keys — such as
 `language: fr` — appended to the fixture's `_codev/config.yaml` before the
-skills are installed; it may not set `review:`. `modified` holds the
+skills are installed, each top-level key it sets replacing the same key of
+the fixture's; it may not set `review:`. `modified` holds the
 requirements the request is about; `collateral` the ones the real change
 also modified in passing. A case SHALL expect at least one requirement
 or one decision.
@@ -65,7 +66,8 @@ as for the other cases.
   `keyword_language: fr`
 - **WHEN** the suite loads its cases and the runner builds its fixture
 - **THEN** the case loads, and the fixture's `_codev/config.yaml` ends
-  with `language: fr` before the skills are installed
+  with `language: fr`, its own `language: en` gone, before the skills are
+  installed
 
 ### Requirement: The suite covers planning with past changes and with decisions
 

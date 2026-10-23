@@ -46,6 +46,11 @@ pub struct PlanScore {
     pub decisions_ignored: Vec<String>,
     /// `codev validate` reports no error on any change the run created.
     pub valid: bool,
+    /// For a case with `keyword_language`: the structural keyword lines
+    /// written in another language, as `<file>: <line>`; `None` when the
+    /// case expects no language.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keywords_off: Option<Vec<String>>,
 }
 
 impl PlanScore {
@@ -53,6 +58,12 @@ impl PlanScore {
     /// case expects none.
     pub fn primary_recall(&self) -> Option<f64> {
         recall(self.primary_found.len(), self.primary_missed.len())
+    }
+
+    /// Whether the plan's keywords are in the case's language; `None`
+    /// when the case expects none.
+    pub fn keywords_in_language(&self) -> Option<bool> {
+        self.keywords_off.as_ref().map(Vec::is_empty)
     }
 
     /// The share of the collateral requirements modified, apart.
@@ -151,6 +162,29 @@ pub fn score_plan(
     let valid = outcome == PlanOutcome::Planned
         && !validate.is_empty()
         && validate.values().all(|report| errors(report) == 0);
+    let keywords_off = case.keyword_language.as_deref().map(|code| {
+        let mut off = Vec::new();
+        for (rest, text) in &plan {
+            let checked = rest.ends_with("/proposal.md")
+                || rest.ends_with("/design.md")
+                || rest.ends_with("/spec.md");
+            if !checked {
+                continue;
+            }
+            for line in text.lines() {
+                if let Some(lang) = keyword_language_of(line)
+                    && lang.code() != code
+                {
+                    off.push(format!("{rest}: {line}"));
+                }
+            }
+        }
+        // A run that wrote nothing has no keyword in its language.
+        if plan.is_empty() {
+            off.push("no artifact written".to_string());
+        }
+        off
+    });
     PlanScore {
         outcome,
         primary_found,
@@ -160,7 +194,23 @@ pub fn score_plan(
         duplicates,
         decisions_ignored,
         valid,
+        keywords_off,
     }
+}
+
+/// The language of the structural keyword a heading line holds, as the
+/// keyword catalog recognizes it; `None` for any other line.
+pub fn keyword_language_of(line: &str) -> Option<codev_core::keywords::Lang> {
+    use codev_core::keywords::{Key, delta_title, named_heading, section_line};
+    if !line.starts_with('#') {
+        return None;
+    }
+    if let Some((_, lang)) = line.strip_prefix("## ").and_then(|t| delta_title(t.trim())) {
+        return Some(lang);
+    }
+    Key::ALL.into_iter().find_map(|key| {
+        section_line(line, key).or_else(|| named_heading(line, key).map(|(lang, _)| lang))
+    })
 }
 
 fn read_delta(capability: &str, text: &str, touched: &mut Touched) {
@@ -267,6 +317,8 @@ mod tests {
                     expect: *expect,
                 })
                 .collect(),
+            config: None,
+            keyword_language: None,
         }
     }
 
@@ -423,5 +475,28 @@ mod tests {
         assert_eq!(score.primary_missed, [format!("decisions::{CREATING}")]);
         assert_eq!(score.primary_recall(), Some(0.0));
         assert!(!score.valid);
+    }
+
+    #[test]
+    fn a_french_plan_with_an_english_heading() {
+        let mut french = case(&[], &[("0007", DecisionExpect::Follow)]);
+        french.keyword_language = Some("fr".into());
+        let files = plan(&[
+            (
+                "proposal.md",
+                "# Proposition : X\n\n## Changements\n\n- x\n\nVoir 0007.\n",
+            ),
+            (
+                "specs/decisions/spec.md",
+                "## Exigences MODIFIÉES\n\n### Requirement: Login\n\nLe système DOIT x.\n",
+            ),
+        ]);
+        let score = score_plan(&french, &files, &valid(), &at_ref());
+        assert_eq!(score.keywords_in_language(), Some(false));
+        let off = score.keywords_off.unwrap();
+        assert_eq!(off.len(), 1, "{off:?}");
+        assert!(off[0].ends_with("### Requirement: Login"), "{off:?}");
+        let english = score_plan(&case(&[], &[]), &files, &valid(), &at_ref());
+        assert_eq!(english.keywords_in_language(), None, "no language expected");
     }
 }

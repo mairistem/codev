@@ -61,8 +61,11 @@ pub struct Instructions {
     pub instruction: Option<String>,
     pub template: Option<String>,
     /// Language of the prose to write (from `language:` in the config).
-    /// Structural keywords of the template stay in English whatever it is.
     pub language: String,
+    /// The language the structural keywords are written in: the catalog
+    /// language of `language:`, English when the catalog does not ship it.
+    /// The template is served in it.
+    pub keyword_language: codev_core::keywords::Lang,
     /// Constraints for the agent, never content to copy into the file.
     pub context: Vec<Block>,
     pub rules: Vec<Block>,
@@ -197,6 +200,7 @@ pub fn for_artifact(
         related_for(fs, layout, config, &ctx.schema.graph, artifact, &change_dir);
     warnings.extend(unreadable_warnings);
 
+    let keyword_language = codev_core::keywords::Lang::for_setting(Some(&config.language));
     Ok(Instructions {
         change: ctx.change.clone(),
         schema_name: ctx.schema.name().to_string(),
@@ -204,8 +208,9 @@ pub fn for_artifact(
         description: artifact.description.clone(),
         resolved_output_path: change_dir.join(&artifact.generates),
         instruction: artifact.instruction.clone(),
-        template: ctx.schema.template(fs, artifact)?,
+        template: ctx.schema.template(fs, artifact, keyword_language)?,
         language: config.language.clone(),
+        keyword_language,
         context: config.context.clone(),
         rules: config.rules_for(&artifact.id).to_vec(),
         dependencies,
@@ -1021,5 +1026,54 @@ from the command line.\n\n## What Changes\n\n- `codev decision new` creates a dr
             "{:?}",
             instr.warnings
         );
+    }
+
+    #[test]
+    fn french_proposal_template_holds_french_keywords() {
+        let change = (
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        );
+        let french = project(&[change, ("/p/_codev/config.yaml", "language: fr\n")]);
+        let got = instructions(&french, Some("proposal")).unwrap();
+        assert_eq!(got.keyword_language.code(), "fr");
+        let template = got.template.unwrap();
+        assert!(template.contains("## Changements"), "{template}");
+        assert!(template.contains("## Domaines"), "{template}");
+    }
+
+    #[test]
+    fn french_spec_template_holds_french_keywords() {
+        let change = (
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        );
+        let french = project(&[
+            change,
+            (
+                "/p/_codev/changes/add-auth/proposal.md",
+                "# Proposition : X\n",
+            ),
+            ("/p/_codev/config.yaml", "language: fr-CA\n"),
+        ]);
+        let template = instructions(&french, Some("specs"))
+            .unwrap()
+            .template
+            .unwrap();
+        assert!(template.contains("### Exigence :"), "{template}");
+        assert!(template.contains("DOIT"), "{template}");
+    }
+
+    #[test]
+    fn a_language_without_catalog_gets_the_english_template() {
+        let change = (
+            "/p/_codev/changes/add-auth/change.yaml",
+            "schema: spec-driven",
+        );
+        let brazil = project(&[change, ("/p/_codev/config.yaml", "language: pt-BR\n")]);
+        let got = instructions(&brazil, Some("proposal")).unwrap();
+        assert_eq!(got.language, "pt-BR");
+        assert_eq!(got.keyword_language.code(), "en");
+        assert!(got.template.unwrap().contains("## What Changes"));
     }
 }
