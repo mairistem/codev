@@ -85,7 +85,7 @@ fn the_planning_fixture_holds_the_ref_and_the_skills_of_the_codev_under_test() {
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("plan-x-1");
-    runner::setup_plan(&case, &repo, &dir, &tools).unwrap();
+    runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
 
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
     assert_eq!(read("_codev/specs/a/spec.md"), "first state\n");
@@ -161,7 +161,7 @@ fn the_update_fixture_lays_the_change_on_the_ref() {
         git: PathBuf::from("git"),
     };
     let dir = root.join("work").join("update-x-1");
-    runner::setup_plan(&case, &repo, &dir, &tools).unwrap();
+    runner::setup_plan(&case, &repo, &dir, &tools, None).unwrap();
 
     let read = |p: &str| fs::read_to_string(dir.join(p)).unwrap();
     assert_eq!(read("_codev/specs/a/spec.md"), "at the ref\n");

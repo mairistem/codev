@@ -1461,4 +1461,57 @@ mod tests {
         let body = flat(find("configure").unwrap().body);
         assert!(body.contains("`inherits`, `codev_version`"), "{body}");
     }
+
+    /// Step 3 of the apply skill, flattened.
+    fn implement_step() -> String {
+        let apply = find("apply").unwrap().body;
+        flat(section(apply, "### 3. Work through", "### 4. Stop"))
+    }
+
+    #[test]
+    fn the_apply_skill_hands_the_tasks_to_the_developer_model() {
+        let step = implement_step();
+        for needle in [
+            "When the `developer` has a model",
+            "`codev roles --at code.implement --change \"<name>\" --json`",
+            "one sub-agent started with the `Agent` tool on that model",
+            "whose steps 2 to 4 it follows and no other",
+            "any instruction you run under yourself, such as a run without a user",
+            "re-read `tasks.md` from disk",
+            "the review and the summary stay yours",
+            "**Without a model on the `developer`**, implement the tasks yourself",
+        ] {
+            assert!(step.contains(needle), "missing {needle}: {step}");
+        }
+    }
+
+    #[test]
+    fn the_apply_skill_resumes_a_stop_on_the_developer_model() {
+        let step = implement_step();
+        assert!(step.contains("relay the stop as step 4 says"), "{step}");
+        assert!(
+            step.contains(
+                "start a new sub-agent on the same model for the remaining tasks, with that answer"
+            ),
+            "{step}"
+        );
+        assert!(
+            step.contains("Never implement a task yourself while the developer has a model"),
+            "{step}"
+        );
+    }
+
+    #[test]
+    fn the_apply_skill_falls_back_after_two_failures() {
+        let step = implement_step();
+        for needle in [
+            "a reported stop is not a failure",
+            "Retry a failed sub-agent once",
+            "inspect the working tree for work left on the first unchecked task",
+            "after a second failure, implement the remaining tasks yourself",
+            "say in the summary that the developer's model could not be used",
+        ] {
+            assert!(step.contains(needle), "missing {needle}: {step}");
+        }
+    }
 }

@@ -420,6 +420,7 @@ fn render_ctx(config: &config::ResolvedConfig) -> codev_agents::claude::RenderCt
     codev_agents::claude::RenderCtx {
         jira_mcp_tool: config.mcp.jira_tool.clone(),
         review_mode: config.review_mode.unwrap_or_default(),
+        developer_model: codev_core::roles::developer_has_model(&config.roles),
     }
 }
 
@@ -2751,6 +2752,30 @@ edition = "2024"
         let skeptic = role_of(&set, "skeptic");
         assert!(skeptic["model"].is_null(), "{skeptic}");
         assert_eq!(skeptic["modelOrigin"], "project");
+    }
+
+    #[test]
+    fn validate_does_not_warn_on_a_developer_model() {
+        let h = roles_project(
+            "roles:\n  developer: { model: sonnet }\n",
+            "schema: spec-driven\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let codes: Vec<&str> = report
+            .items
+            .iter()
+            .flat_map(|item| item.findings.iter().map(|f| f.finding.code))
+            .collect();
+        assert!(!codes.contains(&"role_model_unused"), "{codes:?}");
+        let implement = roles_json(&h, Some("code.implement"), None);
+        let developer = implement["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|role| role["id"] == "developer")
+            .expect("the developer serves code.implement");
+        assert_eq!(developer["model"], "sonnet");
+        assert_eq!(developer["modelOrigin"], "project");
     }
 
     #[test]

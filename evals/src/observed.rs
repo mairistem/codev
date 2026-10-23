@@ -150,8 +150,9 @@ pub struct RunInfo {
     /// before the option, is `inline`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub review_mode: Option<ReviewMode>,
-    /// The text `--fixture-config` appended to every review case's
-    /// configuration; `None` when nothing was appended.
+    /// The text `--fixture-config` appended to every review and
+    /// implementation case's configuration; `None` when nothing was
+    /// appended.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fixture_config: Option<String>,
 }

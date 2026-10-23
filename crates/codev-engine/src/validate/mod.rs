@@ -599,7 +599,7 @@ mod tests {
     fn validate_reports_an_unknown_model_as_an_error_and_an_unused_one_as_a_warning() {
         let fs = MemoryFileSystem::new().with_file(
             "/p/_codev/config.yaml",
-            "language: en\nroles:\n  skeptic:\n    model: gpt\n  developer:\n    model: sonnet\n",
+            "language: en\nroles:\n  skeptic:\n    model: gpt\n  product:\n    model: sonnet\n",
         );
         let report = validate_all(&fs, &env(), &Layout::new("/p"), &config(&fs)).unwrap();
         let item = report
@@ -625,7 +625,7 @@ mod tests {
             invalid.contains("`opus`, `sonnet`, `haiku` or `inherit`"),
             "{invalid}"
         );
-        assert!(item.findings[1].finding.message.contains("developer"));
+        assert!(item.findings[1].finding.message.contains("product"));
     }
 
     #[test]

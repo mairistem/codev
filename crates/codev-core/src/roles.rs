@@ -52,6 +52,10 @@ pub const ROLE_MODEL_UNUSED: &str = "role_model_unused";
 /// review mode: the only steps where a role's model applies.
 pub const REVIEWING_STEPS: &[&str] = &["plan.trace", "plan.challenge", "code.review"];
 
+/// The one role whose model applies outside a review: the `apply` skill
+/// hands the tasks to a sub-agent on it at `code.implement`.
+pub const DEVELOPER: &str = "developer";
+
 /// What a project writes under `roles:` to keep a role on the session's
 /// model.
 pub const INHERIT_MODEL: &str = "inherit";
@@ -629,8 +633,21 @@ pub fn check_settings(
     findings
 }
 
+/// Whether the project's settings give the developer a model — `opus`,
+/// `sonnet` or `haiku`, not `inherit` — so that the `apply` skill hands
+/// the tasks to a sub-agent on it.
+pub fn developer_has_model(settings: &BTreeMap<String, RoleSetting>) -> bool {
+    settings
+        .get(DEVELOPER)
+        .and_then(|setting| setting.model.as_deref())
+        .and_then(ProjectModel::parse)
+        .and_then(ProjectModel::model)
+        .is_some()
+}
+
 /// The warnings of settings against a catalog, in id order: a valid model
-/// on a role that serves no reviewing step, which never applies.
+/// on a role that serves no reviewing step and is not the developer, which
+/// never applies.
 pub fn unused_models(
     catalog: &[Role],
     settings: &BTreeMap<String, RoleSetting>,
@@ -646,11 +663,11 @@ pub fn unused_models(
         })
         .filter_map(|(id, _)| {
             let role = catalog.iter().find(|role| &role.id == id)?;
-            (!role.reviews()).then(|| RoleFinding {
+            (!role.reviews() && role.id != DEVELOPER).then(|| RoleFinding {
                 code: ROLE_MODEL_UNUSED,
                 role: id.clone(),
                 message: format!(
-                    "{file}: role `{id}` never runs as its own sub-agent (it serves no reviewing step: {}), so its `model` never applies; remove it",
+                    "{file}: role `{id}` never runs as its own sub-agent (it serves no reviewing step: {}, and only the `{DEVELOPER}` implements in one), so its `model` never applies; remove it",
                     REVIEWING_STEPS.join(", ")
                 ),
             })
@@ -1361,17 +1378,10 @@ apply:
         let roles: Vec<(&str, &str)> = found.iter().map(|f| (f.code, f.role.as_str())).collect();
         assert_eq!(
             roles,
-            [
-                ("role_model_unused", "developer"),
-                ("role_model_unused", "product")
-            ],
-            "an invalid model is an error, not also a warning"
+            [("role_model_unused", "product")],
+            "an invalid model is an error, not also a warning; the developer's model is used"
         );
-        assert!(
-            found[0].message.contains("developer"),
-            "{}",
-            found[0].message
-        );
+        assert!(found[0].message.contains("product"), "{}", found[0].message);
         // A warning never keeps the roles from resolving.
         let valid = settings("developer: { model: sonnet }\n");
         assert!(check_settings(&demo_catalog(), &valid, "_codev/config.yaml").is_empty());
@@ -1855,5 +1865,43 @@ apply:
         let roles = resolve_with(&BTreeMap::new(), &BTreeMap::new()).unwrap();
         assert!(disabled_ids(&roles, "code.review").is_empty());
         assert!(!active_ids(&roles, "code.review").contains(&"security".to_string()));
+    }
+
+    #[test]
+    fn a_model_on_the_developer_is_used() {
+        let project = settings("developer: { model: sonnet }\n");
+        assert!(unused_models(&demo_catalog(), &project, "_codev/config.yaml").is_empty());
+    }
+
+    #[test]
+    fn a_model_on_another_role_at_code_implement_is_unused() {
+        // A project role declared at the developer's step: no sub-agent
+        // ever runs it, so its model never applies.
+        let mut catalog = demo_catalog();
+        let mut pair = catalog
+            .iter()
+            .find(|role| role.id == DEVELOPER)
+            .unwrap()
+            .clone();
+        pair.id = "pair-programmer".into();
+        catalog.push(pair);
+        let project = settings("pair-programmer: { model: sonnet }\n");
+        let found = unused_models(&catalog, &project, "_codev/config.yaml");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].role, "pair-programmer");
+    }
+
+    #[test]
+    fn only_a_real_model_on_the_developer_delegates() {
+        assert!(developer_has_model(&settings(
+            "developer: { model: sonnet }\n"
+        )));
+        assert!(!developer_has_model(&settings(
+            "developer: { model: inherit }\n"
+        )));
+        assert!(!developer_has_model(&settings(
+            "skeptic: { model: sonnet }\n"
+        )));
+        assert!(!developer_has_model(&BTreeMap::new()));
     }
 }

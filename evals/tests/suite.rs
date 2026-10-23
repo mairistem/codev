@@ -98,6 +98,28 @@ fn implementation_cases_check_the_repository_with_the_codev_the_change_builds() 
 }
 
 #[test]
+fn no_implementation_case_holds_roles_at_its_ref() {
+    // `--fixture-config` appends its mapping to the fixture's
+    // configuration: a `roles:` already there would be a duplicate key.
+    let cases = suite::load_cases(&repo()).unwrap();
+    let mut found = Vec::new();
+    for case in cases.iter().filter(|c| c.implement.is_some()) {
+        let git_ref = &case.implement.as_ref().unwrap().git_ref;
+        let out = std::process::Command::new("git")
+            .arg("-C")
+            .arg(repo())
+            .args(["show", &format!("{git_ref}:_codev/config.yaml")])
+            .output()
+            .unwrap();
+        let config = String::from_utf8_lossy(&out.stdout);
+        if config.lines().any(|line| line.starts_with("roles:")) {
+            found.push(case.id.clone());
+        }
+    }
+    assert_eq!(found, Vec::<String>::new());
+}
+
+#[test]
 fn categories_of_one_case_share_no_term() {
     let cases = suite::load_cases(&repo()).unwrap();
     let mut overlaps = Vec::new();
