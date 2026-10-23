@@ -346,6 +346,27 @@ Isolated review costs more: each reviewer reads the material, where
 inline review reads it once. That is why `inline` stays the default; see
 [Configuration](reference/configuration.md#review) to switch.
 
+### The developer's model
+
+The `developer` implements the tasks at `code.implement`. When your
+project gives it a model — `roles: { developer: { model: sonnet } }` —
+`/codev-apply` hands the tasks to one sub-agent on that model, in either
+review mode. The session keeps the review and the summary on its own
+model. If the sub-agent stops on an ambiguity or a blocker, the session
+asks you, then starts a new sub-agent on the same model with your answer.
+If the sub-agent cannot run, the skill retries once, then implements in
+the session and says so. Without a model, `/codev-apply` implements in
+the session, as before.
+
+We recommend `developer: sonnet` ([decision 0012](reference/configuration.md#roles)).
+On the [implementation evaluation](#measuring-the-roles), with an Opus
+session and the developer on Sonnet, every quality measure stayed at
+1.00: tasks checked, format, lints, tests, and the hidden acceptance
+scripts. The cost fell by about 30 %, while the run took longer in wall
+time, since the sub-agent's work adds to the session's. With the whole
+session on Sonnet, the saving reaches 56 %, but the review and the
+summary then run on Sonnet too. Planning stays on the strongest model.
+
 ## Configuring roles
 
 Every role is active by default. In `_codev/config.yaml`, `roles:` maps a
@@ -374,7 +395,8 @@ roles:
   model, and `inherit` keeps the session's — see
   [The reviewers' models](#the-reviewers-models). It applies to the roles
   of `plan.trace`, `plan.challenge` and `code.review` in the isolated
-  mode. Raise [`codev_version`](reference/configuration.md#codev_version)
+  mode, and to the `developer` in either mode — see
+  [The developer's model](#the-developers-model). Raise [`codev_version`](reference/configuration.md#codev_version)
   first: an older codev refuses the key.
 - **Per change.** A change's `change.yaml` can override the activation for
   that change only:
@@ -398,8 +420,8 @@ without domains (`invalid_role_activation`), and `never` on a role that
 cannot be disabled (`role_not_disableable`), and a model other than
 `opus`, `sonnet`, `haiku` or `inherit` (`invalid_role_model`); `codev status`,
 `codev instructions` and `codev roles` fail with the same code. A model on
-a role that serves no reviewing step never applies: `codev validate` warns
-with `role_model_unused`.
+a role that serves no reviewing step and is not the `developer` never
+applies: `codev validate` warns with `role_model_unused`.
 `codev doctor` lists the active roles, the roles active on domain with
 their domains, and the disabled ones.
 

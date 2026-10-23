@@ -276,7 +276,10 @@ ferait disparaître des critères sans bruit. Un `model` autre que `opus`,
 `sonnet`, `haiku` ou `inherit` est une erreur `invalid_role_model`,
 signalée et bloquante de la même façon. Un `model` sur un rôle qui ne sert
 aucune étape de relecture (`plan.trace`, `plan.challenge`, `code.review`)
-ne s'applique jamais : c'est un avertissement `role_model_unused`.
+et qui n'est pas le `developer` ne s'applique jamais : c'est un
+avertissement `role_model_unused`. Le modèle du `developer` implémente les
+tâches de `/codev-apply` dans un sous-agent, quel que soit le mode de
+revue (décision 0012).
 
 **`model` et les versions plus anciennes de codev.** Un codev antérieur à
 la version qui a introduit `model` refuse la clé, comme toute clé inconnue

@@ -369,6 +369,29 @@ revue en ligne ne lit qu'une fois. C'est pourquoi `inline` reste le mode
 par défaut ; voyez la [configuration](reference/configuration.md#review)
 pour en changer.
 
+### Le modèle du développeur
+
+Le `developer` implémente les tâches à `code.implement`. Quand votre
+projet lui donne un modèle — `roles: { developer: { model: sonnet } }` —,
+`/codev-apply` confie les tâches à un sous-agent sur ce modèle, quel que
+soit le mode de revue. La session garde la revue et la synthèse sur son
+propre modèle. Si le sous-agent s'arrête sur une ambiguïté ou un
+blocage, la session vous pose la question, puis lance un nouveau
+sous-agent sur le même modèle avec votre réponse. Si le sous-agent ne
+peut pas tourner, la skill réessaie une fois, puis implémente dans la
+session et le signale. Sans modèle, `/codev-apply` implémente dans la
+session, comme avant.
+
+Nous recommandons `developer: sonnet` ([décision 0012](reference/configuration.md#roles)).
+Sur l'[évaluation de l'implémentation](#mesurer-les-rôles), avec une
+session Opus et le développeur sur Sonnet, chaque mesure de qualité est
+restée à 1,00 : tâches cochées, format, lint, tests et scripts
+d'acceptation cachés. Le coût a baissé d'environ 30 %, mais le run a
+duré plus longtemps, car le travail du sous-agent s'ajoute à celui de la
+session. Avec toute la session sur Sonnet, l'économie atteint 56 %,
+mais la revue et la synthèse tournent alors aussi sur Sonnet. La
+planification reste sur le modèle le plus fort.
+
 ## Configurer les rôles
 
 Tous les rôles sont actifs par défaut. Dans `_codev/config.yaml`, `roles:`
@@ -398,7 +421,8 @@ roles:
   rôle, et `inherit` garde celui de la session — voir
   [Les modèles des relecteurs](#les-modèles-des-relecteurs). Il s'applique
   aux rôles de `plan.trace`, `plan.challenge` et `code.review` en mode
-  isolé. Relevez d'abord
+  isolé, et au `developer` dans les deux modes — voir
+  [Le modèle du développeur](#le-modèle-du-développeur). Relevez d'abord
   [`codev_version`](reference/configuration.md#codev_version) : un codev
   plus ancien refuse la clé.
 - **Par change.** Le `change.yaml` d'un change peut changer l'activation
@@ -423,8 +447,8 @@ sur un rôle sans domaine (`invalid_role_activation`), et `never` sur un
 rôle qui ne peut pas être désactivé (`role_not_disableable`), et un modèle
 autre que `opus`, `sonnet`, `haiku` ou `inherit` (`invalid_role_model`) ;
 `codev status`, `codev instructions` et `codev roles` échouent avec le même
-code. Un modèle sur un rôle qui ne sert aucune étape de relecture ne
-s'applique jamais : `codev validate` le signale par l'avertissement
+code. Un modèle sur un rôle qui ne sert aucune étape de relecture et
+n'est pas le `developer` ne s'applique jamais : `codev validate` le signale par l'avertissement
 `role_model_unused`. `codev doctor` liste les rôles actifs, les rôles actifs selon le
 domaine avec leurs domaines, et les rôles désactivés.
 
