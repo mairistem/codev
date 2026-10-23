@@ -6,7 +6,7 @@ kind: seeded
 ref: 71ad7625c22b55998b7a0542a1d1f4f30269c9dc
 merged: da6e0223bd27d58e005d34d5732fed71f3ba78d9
 change: fix-merge-and-skill-refresh
-summary: "Replays the change 2026-10-15-fix-merge-and-skill-refresh (fix: a merge that keeps a modified last requirement whole, and an update that refreshes its own skills, #43). Task 2.2 is reworded: in the fixture, `codev` on the path is the codev under test, so the task refreshes the skills with the codev the change builds (`cargo run`)."
+summary: "Replays the change 2026-10-15-fix-merge-and-skill-refresh (fix: a merge that keeps a modified last requirement whole, and an update that refreshes its own skills, #43). Task 2.2 is reworded: in the fixture, `codev` on the path is the codev under test, so the task refreshes the skills with the codev the change builds (`cargo run`), and task 4.1 validates with it too."
 expected:
   docs: true
   acceptance:

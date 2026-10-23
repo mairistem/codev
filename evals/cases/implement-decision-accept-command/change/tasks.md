@@ -19,4 +19,4 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `codev validate --strict`
+- [ ] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `cargo run -q -p codev-cli -- validate --strict`

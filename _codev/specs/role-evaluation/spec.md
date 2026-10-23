@@ -249,7 +249,12 @@ timeout (`CODEV_EVAL_TIMEOUT_SECS`, default 600 for a review case); a
 planning case's defaults are given by the `planning-evaluation`
 capability. Before any case runs, the
 runner SHALL check that `claude`, `git` and the `codev` binary can be
-executed, and exit with code 2 naming the missing one otherwise. A case
+executed, and exit with code 2 naming the missing one otherwise; and that
+the `codev` binary's file is named `codev` (`codev.exe` on Windows),
+exiting with code 2 naming the file otherwise: the agent calls codev by
+name, through the search path whose first folder is the binary's, so a
+binary under another name would leave the agent running whatever other
+`codev` the search path holds. A case
 that fails or times out is recorded as an error; the others still run —
 except when Claude Code reports that the account's usage limit is reached:
 the runner then records that run as an error, starts no other run, lets
@@ -381,6 +386,13 @@ stopped.
 - **GIVEN** a run whose agent writes no file under `_codev/changes/`
 - **WHEN** its observation is recorded
 - **THEN** its orientation is absent, not zero
+
+#### Scenario: A codev binary under another name
+
+- **GIVEN** `--codev /tmp/frozen/codev-candidate`
+- **WHEN** the user runs `codev-evals run`
+- **THEN** it exits with code 2 before any case runs, naming
+  `codev-candidate` and saying the file must be named `codev`
 
 ### Requirement: A finding matches an expected finding by role, location and category
 

@@ -62,6 +62,42 @@ fn the_suite_covers_the_implementation_of_past_changes() {
 }
 
 #[test]
+fn implementation_cases_check_the_repository_with_the_codev_the_change_builds() {
+    // `codev` on the agent's path is the codev under test, which judges an
+    // older change by today's rules: a task checks the repository with the
+    // codev the change builds, and the case's summary says so.
+    let cases = suite::load_cases(&repo()).unwrap();
+    let mut gaps = Vec::new();
+    for case in &cases {
+        let Some(implement) = case.implement.as_ref().filter(|i| !i.refuse) else {
+            continue;
+        };
+        let tasks = &implement.files["tasks.md"].replace('\n', " ");
+        // The forms a task checks the repository with; `codev validate` or
+        // `codev doctor` named as content of the change are not checks.
+        for bare in [
+            "`codev validate --strict`",
+            "`codev doctor --strict`",
+            "`codev doctor` on this repository",
+        ] {
+            if tasks.contains(bare) {
+                gaps.push(format!(
+                    "{}: a task checks the repository with {bare}",
+                    case.id
+                ));
+            }
+        }
+        if tasks.contains("cargo run -q -p codev-cli --") && !case.summary.contains("cargo run") {
+            gaps.push(format!(
+                "{}: the summary does not say a task was reworded",
+                case.id
+            ));
+        }
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}
+
+#[test]
 fn categories_of_one_case_share_no_term() {
     let cases = suite::load_cases(&repo()).unwrap();
     let mut overlaps = Vec::new();

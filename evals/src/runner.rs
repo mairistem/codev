@@ -1076,7 +1076,13 @@ pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
 /// whatever other `codev` that path holds; `None` when the name is right.
 pub fn codev_name_problem(codev: &Path) -> Option<String> {
     let expected = if cfg!(windows) { "codev.exe" } else { "codev" };
-    let name = codev.file_name()?.to_string_lossy();
+    let Some(name) = codev.file_name() else {
+        return Some(format!(
+            "--codev {}: not the path of a file named `{expected}`",
+            codev.display()
+        ));
+    };
+    let name = name.to_string_lossy();
     (name != expected).then(|| {
         format!(
             "--codev {}: the file must be named `{expected}`, in a folder of its own — the agent \
@@ -3483,5 +3489,9 @@ mod tests {
         );
         let right = if cfg!(windows) { "codev.exe" } else { "codev" };
         assert!(codev_name_problem(&named(right)).is_none());
+        assert!(
+            codev_name_problem(Path::new("..")).is_some(),
+            "a path naming no file"
+        );
     }
 }
