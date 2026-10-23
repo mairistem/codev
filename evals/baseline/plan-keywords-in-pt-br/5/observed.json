@@ -1,0 +1,454 @@
+{
+  "format": 2,
+  "case": "plan-keywords-in-pt-br",
+  "error": null,
+  "costUsd": 1.9667891999999996,
+  "durationMs": 287801,
+  "consumption": {
+    "durationApiMs": 286357,
+    "turns": 46,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1191,
+      "cacheCreation": 100209,
+      "cacheRead": 2980811,
+      "output": 28390
+    },
+    "toolCalls": 45,
+    "orientationCalls": 26,
+    "calls": [
+      {
+        "cacheCreation": 7901,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7901
+        }
+      },
+      {
+        "cacheCreation": 15172,
+        "cacheRead": 30040,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 15172
+        }
+      },
+      {
+        "cacheCreation": 2429,
+        "cacheRead": 45212,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 2429
+        }
+      },
+      {
+        "cacheCreation": 963,
+        "cacheRead": 47641,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 963
+        }
+      },
+      {
+        "cacheCreation": 2040,
+        "cacheRead": 48604,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2040
+        }
+      },
+      {
+        "cacheCreation": 3997,
+        "cacheRead": 50644,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3997
+        }
+      },
+      {
+        "cacheCreation": 1325,
+        "cacheRead": 54641,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 45,
+          "search": 1280
+        }
+      },
+      {
+        "cacheCreation": 1116,
+        "cacheRead": 55966,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1116
+        }
+      },
+      {
+        "cacheCreation": 2618,
+        "cacheRead": 57082,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2618
+        }
+      },
+      {
+        "cacheCreation": 886,
+        "cacheRead": 59700,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 886
+        }
+      },
+      {
+        "cacheCreation": 1673,
+        "cacheRead": 60586,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1673
+        }
+      },
+      {
+        "cacheCreation": 2153,
+        "cacheRead": 62259,
+        "input": 2,
+        "output": 45,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 2153
+        }
+      },
+      {
+        "cacheCreation": 3603,
+        "cacheRead": 64412,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 3567,
+          "output": 36
+        }
+      },
+      {
+        "cacheCreation": 388,
+        "cacheRead": 68015,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 388
+        }
+      },
+      {
+        "cacheCreation": 1860,
+        "cacheRead": 68403,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1860
+        }
+      },
+      {
+        "cacheCreation": 1858,
+        "cacheRead": 70263,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1858
+        }
+      },
+      {
+        "cacheCreation": 1243,
+        "cacheRead": 72121,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1243
+        }
+      },
+      {
+        "cacheCreation": 1837,
+        "cacheRead": 73364,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1837
+        }
+      },
+      {
+        "cacheCreation": 1384,
+        "cacheRead": 75201,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 58,
+          "search": 1326
+        }
+      },
+      {
+        "cacheCreation": 4220,
+        "cacheRead": 76585,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4220
+        }
+      },
+      {
+        "cacheCreation": 1568,
+        "cacheRead": 80805,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1568
+        }
+      },
+      {
+        "cacheCreation": 992,
+        "cacheRead": 82373,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 992
+        }
+      },
+      {
+        "cacheCreation": 1743,
+        "cacheRead": 83365,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1743
+        }
+      },
+      {
+        "cacheCreation": 940,
+        "cacheRead": 85108,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "file": 940
+        }
+      },
+      {
+        "cacheCreation": 1026,
+        "cacheRead": 86048,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 629,
+          "search": 397
+        }
+      },
+      {
+        "cacheCreation": 1088,
+        "cacheRead": 87074,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1088
+        }
+      },
+      {
+        "cacheCreation": 965,
+        "cacheRead": 88162,
+        "input": 2,
+        "output": 10,
+        "toolCalls": 1,
+        "sources": {
+          "search": 965
+        }
+      },
+      {
+        "cacheCreation": 2298,
+        "cacheRead": 89127,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1942,
+          "output": 356
+        }
+      },
+      {
+        "cacheCreation": 1309,
+        "cacheRead": 91425,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1309
+        }
+      },
+      {
+        "cacheCreation": 856,
+        "cacheRead": 92734,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "file": 838,
+          "output": 18
+        }
+      },
+      {
+        "cacheCreation": 5578,
+        "cacheRead": 93590,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 5335,
+          "edit": 244
+        }
+      },
+      {
+        "cacheCreation": 2402,
+        "cacheRead": 99168,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1694,
+          "output": 708
+        }
+      },
+      {
+        "cacheCreation": 1648,
+        "cacheRead": 101570,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1648
+        }
+      },
+      {
+        "cacheCreation": 1325,
+        "cacheRead": 103218,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1325
+        }
+      },
+      {
+        "cacheCreation": 1892,
+        "cacheRead": 104543,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1892
+        }
+      },
+      {
+        "cacheCreation": 2172,
+        "cacheRead": 106435,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 4,
+        "sources": {
+          "file": 2172
+        }
+      },
+      {
+        "cacheCreation": 7906,
+        "cacheRead": 108607,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 7406,
+          "edit": 499
+        }
+      },
+      {
+        "cacheCreation": 1555,
+        "cacheRead": 116513,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 1320,
+          "edit": 176,
+          "output": 59
+        }
+      },
+      {
+        "cacheCreation": 4280,
+        "cacheRead": 118068,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 2212,
+          "edit": 2068
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/fix-basic-command-bugs/change.yaml": "schema: spec-driven\ncreated: 2026-10-23\n",
+    "_codev/changes/fix-basic-command-bugs/design.md": "# Design: Corrigir quatro defeitos dos comandos básicos\n\n## Context\n\nEstado observado no código, defeito por defeito:\n\n- **Deltas.** A localização dos deltas está repetida em quatro lugares, com\n  a mesma regra \"todo `.md` sob `changes/<name>/specs/`\":\n  `locate_deltas` em `codev-engine/src/validate/mod.rs`,\n  `list_delta_files` em `validate/metadata_rules.rs` (regra de zero delta),\n  `locate_delta_files` em `sync.rs` e `removes_requirements` em\n  `changelog.rs`. Um `specs/notes.md` é então lido por `parse_delta` e\n  produz erros de estrutura; em `sync`, `capability_from_delta_path` não\n  encontra capability e o comando falha com `delta path outside\n  changes/<name>/specs/`. As specs principais já seguem a regra certa:\n  `specs::list` só conta `<capability>/spec.md`.\n- **Schema.** `schemas::list` e `schemas::resolve` identificam um schema de\n  projeto pelo nome da pasta, mas `new_change` (`codev-cli/src/commands.rs`)\n  grava em `change.yaml` `resolved.name()`, isto é a chave `name:` do\n  `schema.yaml`; e `instructions.rs` devolve o mesmo valor como\n  `schemaName`. Com `name: lite-v2` numa pasta `lite`, a mudança é criada e\n  depois todo comando falha com `schema_not_found`.\n- **Nome `archive`.** `ChangeId::parse` (`codev-core/src/id.rs`) aceita\n  `archive`; `change::list` o esconde e `codev archive` move as mudanças\n  para dentro dele.\n- **Caminhos JSON.** `contract.rs` já tem `to_slash`, usado em parte dos\n  documentos; cerca de trinta outros campos são preenchidos com\n  `display().to_string()` em `contract.rs` e `main.rs` (`changeRoot`,\n  `planningHome`, `resolvedOutputPath`, dependências, `root` dos comandos\n  `decision`, `self-update`, `doctor`, `changelog`). `commands.rs` tem uma\n  segunda cópia da mesma normalização.\n\n## Goals / Non-Goals\n\n**Goals**: uma única definição de \"o que é um delta\", usada por todos os\ncomandos; o nome da pasta como identidade única de um schema de projeto;\n`archive` recusado onde um nome de mudança é lido; uma garantia\nestrutural, e não caso a caso, de que nenhum caminho JSON sai com `\\`.\n\n**Non-Goals**: mudar o cálculo de estado de `codev status` (o glob\n`specs/**/*.md` do schema continua decidindo se o artefato `specs` existe;\né uma regra genérica do schema, não da noção de delta); reservar outros\nnomes além de `archive`; mudar a saída humana; recusar um schema cuja chave\n`name:` difere da pasta.\n\n## Decisions\n\n### Decision: Uma função única localiza os deltas no engine\n\nCriar em `codev-engine` uma função `deltas::locate(fs, change_dir)` que\ndevolve, de uma só passada de `walk_files`, os deltas\n(`<capability>/spec.md`, com a capability já calculada) e os arquivos\n`.md` que não são deltas. `validate`, `metadata_rules`, `sync` e\n`changelog` passam a usá-la; `capability_from_delta_path` e as três cópias\nde busca desaparecem. A regra \"é um delta\" em si é uma função pura sobre\num caminho relativo, colocada em `codev-core` ao lado do parser, conforme a\ndecisão [0001](../../decisions/0001-functional-core-imperative-shell.md); o\nengine só fornece a listagem pelo port `FileSystem`\n([0002](../../decisions/0002-crate-graph-as-dependency-rule.md)).\n\n`validate_change` emite um finding `not_a_delta` de severidade `Warning`,\nlocalizado no arquivo, para cada não-delta; o código entra no módulo\n`codes` do engine, ao lado de `zero_delta_without_marker`. `sync` e\n`archive` ignoram os não-deltas: o pré-voo de validação só bloqueia em\nerros, então o aviso não os impede.\n\n**Alternatives considered**: corrigir só `locate_deltas` da validação —\nrejeitado, `sync` e a regra de zero delta continuariam divergindo; ignorar\nos não-deltas em silêncio, como as specs principais — rejeitado, numa\nmudança o autor pode acreditar que `specs/auth/notes.md` será mesclado, e\no aviso diz que não.\n\n### Decision: O nome da pasta é o nome do schema de projeto\n\n`ResolvedSchema` passa a guardar o nome pelo qual foi resolvido (o nome da\npasta, ou `spec-driven` para o embutido), e `ResolvedSchema::name()` o\ndevolve. `new_change` grava esse nome em `change.yaml`, e `instructions`\no devolve como `schemaName`. A chave `name:` continua validada (kebab-case)\nmas não serve mais de identidade.\n\n**Alternatives considered**: recusar com `schema_invalid` um schema cujo\n`name:` difere da pasta — rejeitado, quebraria schemas que funcionam hoje\npara quem nunca chama `codev new change` com eles, e `codev schemas` já\napresenta a pasta como o nome; gravar `name:` e resolver também por ele —\nrejeitado, dois nomes para um schema tornam a resolução ambígua.\n\n### Decision: `archive` é recusado no `ChangeId` do core\n\n`ChangeId::parse` recusa `archive` com a razão \"it is the reserved name of\nthe archive folder\". Como todo `--change` passa por `ChangeId::parse`, a\nrecusa vale para `new change` e para todos os comandos, com o mesmo erro\n`invalid_change_id`. `change::list` pode então trocar seu filtro literal\npor essa recusa, sem mudança de comportamento. O nome vem de uma constante\ncompartilhada com `Layout`, que já constrói `changes/archive/`.\n\n**Alternatives considered**: checar só em `new_change` — rejeitado,\n`codev status --change archive` continuaria lendo a pasta do arquivo como\numa mudança.\n\n### Decision: Um tipo de caminho JSON torna a normalização obrigatória\n\nIntroduzir em `codev-cli::contract` um tipo `JsonPath` (newtype sobre\n`String`, serializado como string) construído somente a partir de um\n`&Path` via `to_slash`, e trocar por ele o tipo de todo campo de caminho dos\ndocumentos `*V1` (`String`, `Option<String>`, `Vec<String>`). A forma do\nJSON não muda — continua uma string —, o que respeita o contrato v1; mas um\n`display().to_string()` deixa de compilar num campo de caminho, inclusive\nnos que forem adicionados depois. A cópia de normalização em `commands.rs`\npassa a usar a mesma função.\n\n**Alternatives considered**: substituir cada `display().to_string()` por\n`to_slash` — rejeitado como única medida, foi exatamente o que deixou\nescapar estes campos; normalizar no serializador global, reescrevendo `\\`\nem toda string — rejeitado, alteraria textos que não são caminhos\n(mensagens, trechos de markdown).\n\n## Risks / Trade-offs\n\n- [Um projeto tem um delta legítimo com outro nome que `spec.md`] →\n  nenhuma mudança arquivada deste repositório usa isso, o template e as\n  instruções do schema sempre pediram `specs/<path>/spec.md`, e o aviso\n  `not_a_delta` aponta o arquivo em vez de deixá-lo ser ignorado em\n  silêncio.\n- [Uma mudança ativa já se chama `archive`] → impossível na prática: a\n  pasta `_codev/changes/archive/` é a do arquivo e `codev list` nunca a\n  listou.\n- [Um skill instalado compara `schemaName` com a chave `name:`] → só\n  difere nos schemas que hoje já falham; para esses, o novo valor é o que\n  `codev schemas` sempre mostrou.\n- [Consumidores do JSON no Windows dependiam de `\\`] → a referência JSON\n  (docs/en e docs/fr) já promete `/`; a correção alinha o comportamento ao\n  documentado.\n- [Testes de Windows rodando no macOS/Linux] → `to_slash` é testado com um\n  caminho contendo `\\`, e os testes de documento usam o `FileSystem` em\n  memória com raízes contendo `\\`, sem depender do separador nativo.\n\n## Migration Plan\n\nNenhuma migração de dados. A documentação é atualizada nas duas edições:\n`guides/custom-schemas.md` (a pasta dá o nome; `name:` não precisa mais ser\nigual), `reference/file-formats.md` e `workflow.md` (um delta é\n`specs/<capability>/spec.md`; `archive` é reservado), `reference/cli.md`\n(o aviso `not_a_delta`).\n",
+    "_codev/changes/fix-basic-command-bugs/proposal.md": "# Proposal: Corrigir quatro defeitos dos comandos básicos\n\n## Why\n\nAo especificar os comandos básicos, encontramos quatro defeitos que\nquebram fluxos comuns: um arquivo markdown solto na pasta `specs/` de uma\nmudança faz `codev validate` falhar, um schema de projeto cujo `name:`\ndifere do nome da sua pasta aparece em `codev schemas` mas não pode ser\nusado, `codev new change archive` cria uma mudança que colide com a pasta\ndo arquivo, e vários documentos JSON devolvem caminhos com `\\` no Windows,\nembora a referência JSON prometa separadores `/`. Corrigi-los agora evita\nque as specs recém-escritas consolidem esses comportamentos.\n\n## What Changes\n\n- **Arquivos de delta.** Só um arquivo `spec.md` dentro de uma pasta de\n  capability (`specs/<capability>/spec.md`) é um delta. Qualquer outro\n  arquivo `.md` sob `specs/` de uma mudança (por exemplo `specs/notes.md`\n  ou `specs/auth/README.md`) deixa de ser lido como delta por\n  `codev validate`, `codev sync`, `codev archive` e `codev changelog`; a\n  validação o reporta com um aviso `not_a_delta`, e ele não conta para a\n  regra de zero delta.\n- **Identidade de um schema de projeto.** O nome de um schema de projeto é\n  o nome da sua pasta: é ele que `codev new change` grava em\n  `change.yaml` e que os comandos devolvem como `schemaName`, mesmo quando\n  a chave `name:` do `schema.yaml` diz outra coisa.\n- **Nome reservado.** `archive` passa a ser um nome de mudança recusado\n  com `invalid_change_id`, com uma mensagem dizendo que o nome é reservado.\n- **Caminhos no JSON.** Todo caminho em um documento JSON de codev usa `/`\n  como separador, em qualquer sistema — inclusive `changeRoot`,\n  `planningHome`, `resolvedOutputPath`, os `path` das dependências, os\n  `root` e os caminhos de `codev self-update`, `codev doctor`,\n  `codev changelog` e dos comandos `codev decision`.\n\n## Capabilities\n\n### New Capabilities\n\n- json-output\n\n### Modified Capabilities\n\n- changes\n- schemas\n- spec-merge\n- validation\n\n### Removed Capabilities\n\n## Impact\n\n- `codev-core`: `ChangeId` (nome reservado).\n- `codev-engine`: localização dos deltas, hoje repetida em `validate`,\n  `validate/metadata_rules`, `sync` e `changelog`; resolução do nome do\n  schema (`schemas::resolve`).\n- `codev-cli`: `new_change` (nome do schema gravado) e a montagem dos\n  documentos JSON em `contract.rs` e `main.rs`.\n- Contrato JSON v1: nenhum campo é adicionado ou removido; só os valores de\n  caminho mudam no Windows, de acordo com o que a referência já promete.\n- Documentação (docs/en e docs/fr): `guides/custom-schemas.md` (nome do\n  schema), `reference/file-formats.md` e `workflow.md` (onde fica um delta,\n  nome `archive` reservado), `reference/cli.md` (aviso `not_a_delta`).\n\nSuposições, feitas sem poder perguntar:\n\n1. \"A pasta de specs\" é a pasta `specs/` de uma mudança: as specs\n   principais já ignoram um `notes.md` solto.\n2. Um delta é apenas `spec.md`, como nas specs principais; outro `.md` gera\n   um aviso em vez de ser ignorado em silêncio, para que o autor saiba que\n   ele não será mesclado.\n3. Para o schema, o nome da pasta vence — é ele que `codev schemas` lista e\n   que a resolução usa —, em vez de recusar o schema.\n4. Só `archive` é reservado: é a única pasta que codev cria em\n   `_codev/changes/`.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration — `.md` de delta não chamados `spec.md` deixam de ser mesclados (nenhuma mudança arquivada os usa); os caminhos JSON mudam no Windows para os consumidores\n\n## Release note\n\n- Fixed: Um arquivo markdown que não seja `specs/<capability>/spec.md` na pasta `specs/` de uma mudança não faz mais a validação falhar: ele é ignorado com um aviso `not_a_delta`.\n- Fixed: Um schema de projeto cujo `name:` difere do nome da sua pasta agora pode ser usado; o nome da pasta é o nome do schema.\n- Fixed: `codev new change archive` é recusado, pois `archive` é o nome reservado da pasta das mudanças arquivadas.\n- Fixed: Todos os caminhos dos documentos JSON usam `/` como separador, inclusive no Windows.\n",
+    "_codev/changes/fix-basic-command-bugs/specs/changes/spec.md": "## MODIFIED Requirements\n\n### Requirement: A change name is kebab-case and unique\n\nA change name MUST consist of lowercase ASCII letters, digits and hyphens,\nMUST NOT start or end with a hyphen, and MUST NOT contain two consecutive\nhyphens; it MAY start with a digit. `codev new change` SHALL refuse any\nother name with the error code `invalid_change_id` and a message naming the\nfirst rule broken (empty, leading or trailing hyphen, consecutive hyphens,\nspace, underscore, uppercase letter, or the offending character). It SHALL\nrefuse a name whose folder already exists with the error code\n`change_exists`. A refused command writes nothing and exits with code 1.\n\nUm nome de mudança MUST NOT ser `archive`: é o nome reservado da pasta\n`_codev/changes/archive/`, que guarda as mudanças arquivadas.\n`codev new change archive` SHALL falhar com `invalid_change_id` e uma\nmensagem dizendo que o nome é reservado, sem escrever nada. Todo comando que\nrecebe `--change archive` SHALL recusá-lo com o mesmo código, em vez de ler\na pasta do arquivo como se fosse uma mudança. Um nome que apenas contém\n`archive` (`archive-old-specs`) continua válido.\n\n#### Scenario: Names accepted\n\n- **WHEN** the user creates the changes `add-auth`, `100-add-feature` and\n  `v2-migration`\n- **THEN** each one is created\n\n#### Scenario: An invalid name is refused with the rule it breaks\n\n- **WHEN** the user runs `codev new change \"Add Auth\"`\n- **THEN** the command fails with `invalid_change_id` and a message saying\n  the name contains a space\n- **AND** `_codev/changes/` is unchanged\n\n#### Scenario: An existing name is refused\n\n- **GIVEN** an active change `add-auth`\n- **WHEN** the user runs `codev new change add-auth`\n- **THEN** the command fails with `change_exists`\n- **AND** the existing `change.yaml` is unchanged\n\n#### Scenario: O nome reservado `archive` é recusado\n\n- **GIVEN** um projeto inicializado, com ou sem mudanças arquivadas\n- **WHEN** o usuário executa `codev new change archive`\n- **THEN** o comando falha com `invalid_change_id` e uma mensagem dizendo\n  que o nome `archive` é reservado\n- **AND** `_codev/changes/archive/` não é alterada\n- **AND** o código de saída é 1\n\n#### Scenario: Um nome que apenas contém `archive` é aceito\n\n- **WHEN** o usuário executa `codev new change archive-old-specs`\n- **THEN** a mudança `archive-old-specs` é criada\n\n#### Scenario: `--change archive` é recusado\n\n- **GIVEN** uma pasta `_codev/changes/archive/` com mudanças arquivadas\n- **WHEN** o usuário executa `codev status --change archive`\n- **THEN** o comando falha com `invalid_change_id` e uma mensagem dizendo\n  que o nome `archive` é reservado\n",
+    "_codev/changes/fix-basic-command-bugs/specs/json-output/spec.md": "## Purpose\n\nGarantir que os documentos JSON de codev, consumidos por skills que não\nconhecem o sistema operacional do usuário, tenham a mesma forma em todo\nsistema.\n\n## ADDED Requirements\n\n### Requirement: Todo caminho de um documento JSON usa `/`\n\nTodo valor de caminho que um comando escreve num documento JSON (com\n`--json` ou `--format json`) SHALL usar `/` como separador, em qualquer\nsistema, absoluto ou relativo: `changeRoot`, `planningHome`,\n`resolvedOutputPath`, os `path` das dependências e dos findings, os `root`,\nos `created`, os caminhos de `codev self-update`, `codev doctor`,\n`codev changelog` e dos comandos `codev decision`, e qualquer campo de\ncaminho adicionado depois. Um caminho absoluto de Unix MUST NOT ganhar um\nseparador duplicado (`//`). A saída humana MAY manter o separador nativo\ndo sistema.\n\n#### Scenario: Caminhos de uma mudança criada no Windows\n\n- **GIVEN** codev executado no Windows, num projeto em `C:\\work\\app`\n- **WHEN** o usuário executa `codev new change add-auth --json`\n- **THEN** `changeRoot` é `C:/work/app/_codev/changes/add-auth`\n- **AND** cada entrada de `created` usa apenas `/`\n\n#### Scenario: Caminhos de status e de instruções no Windows\n\n- **GIVEN** codev executado no Windows, com uma mudança `add-auth`\n- **WHEN** o usuário executa `codev status --change add-auth --json` e\n  `codev instructions design --change add-auth --json`\n- **THEN** `planningHome`, `changeRoot`, `resolvedOutputPath` e o `path` de\n  cada dependência não contêm nenhum `\\`\n\n#### Scenario: Um caminho absoluto de Unix fica intacto\n\n- **GIVEN** codev executado no Linux ou no macOS, num projeto em\n  `/home/you/app`\n- **WHEN** o usuário executa `codev new change add-auth --json`\n- **THEN** `changeRoot` é `/home/you/app/_codev/changes/add-auth`, sem\n  `//` no início\n",
+    "_codev/changes/fix-basic-command-bugs/specs/schemas/spec.md": "## MODIFIED Requirements\n\n### Requirement: A schema is resolved from the project before the built-in one\n\nWherever a schema is needed by name, codev SHALL use\n`_codev/schemas/<name>/schema.yaml` when it exists, and the built-in schema\nonly when the name is `spec-driven` and the project does not define it. A\nproject schema's templates SHALL be read from its `templates/` folder. A\nname found nowhere SHALL fail with `schema_not_found`, whose message points\nto `codev schemas`.\n\nO nome de um schema de projeto SHALL ser o nome da sua pasta, mesmo quando\na chave `name:` do seu `schema.yaml` diz outra coisa: é esse nome que\n`codev new change` grava no `schema` de `change.yaml`, que os comandos\ndevolvem como `schemaName` (em `codev new change`, `codev status` e\n`codev instructions`), e pelo qual todo comando posterior encontra o schema\nda mudança.\n\n#### Scenario: The project's `spec-driven` wins\n\n- **GIVEN** a project schema `spec-driven` with a single artifact\n  `proposal`\n- **WHEN** the user runs `codev status --change add-auth` on a change using\n  `spec-driven`\n- **THEN** only the `proposal` artifact is listed\n\n#### Scenario: Unknown schema\n\n- **WHEN** the user runs `codev new change add-auth --schema imaginary`\n- **THEN** the command fails with `schema_not_found` and a message naming\n  `codev schemas`\n\n#### Scenario: Um schema cujo `name:` difere da pasta continua utilizável\n\n- **GIVEN** um schema de projeto válido na pasta `_codev/schemas/lite/`\n  cujo `schema.yaml` declara `name: lite-v2`\n- **WHEN** o usuário executa `codev new change quick --schema lite --json`\n- **THEN** `change.yaml` contém `schema: lite`\n- **AND** `schemaName` é `lite`\n- **AND** `codev status --change quick` lista os artefatos de `lite`, sem\n  `schema_not_found`\n\n#### Scenario: O nome declarado no `schema.yaml` não é um nome de schema\n\n- **GIVEN** o mesmo schema de projeto na pasta `lite` que declara\n  `name: lite-v2`, e nenhuma pasta `_codev/schemas/lite-v2/`\n- **WHEN** o usuário executa `codev new change quick --schema lite-v2`\n- **THEN** o comando falha com `schema_not_found`\n- **AND** `_codev/changes/quick/` não existe\n",
+    "_codev/changes/fix-basic-command-bugs/specs/spec-merge/spec.md": "## ADDED Requirements\n\n### Requirement: Sync e archive mesclam apenas os deltas `spec.md`\n\n`codev sync` e `codev archive` SHALL mesclar apenas os deltas de uma\nmudança — os arquivos `specs/<capability>/spec.md`, caminhos aninhados\nincluídos. Um outro arquivo `.md` sob `specs/` (solto na raiz ou com outro\nnome dentro de uma capability) MUST NOT ser mesclado, nem criar ou alterar\numa spec principal, nem fazer o comando falhar: ele é apenas reportado pela\nvalidação como aviso `not_a_delta`, que não bloqueia o pré-voo. O archive\nSHALL movê-lo com o resto da pasta da mudança.\n\n#### Scenario: Um markdown solto não é mesclado\n\n- **GIVEN** uma mudança `add-auth` com um delta válido em\n  `specs/auth/spec.md` e um arquivo `specs/notes.md`\n- **WHEN** o usuário executa `codev sync add-auth`\n- **THEN** o comando tem sucesso e `_codev/specs/auth/spec.md` recebe o\n  delta\n- **AND** nenhum arquivo `_codev/specs/notes.md` nem outra spec principal é\n  criado a partir de `notes.md`\n\n#### Scenario: O archive conserva o markdown solto\n\n- **GIVEN** a mesma mudança, arquivada em `2026-10-23`\n- **WHEN** o usuário executa `codev archive add-auth`\n- **THEN** `_codev/changes/archive/2026-10-23-add-auth/specs/notes.md`\n  existe, inalterado\n\n#### Scenario: Um outro arquivo numa capability não é mesclado\n\n- **GIVEN** uma mudança com `specs/auth/spec.md` e `specs/auth/README.md`\n  contendo um `## ADDED Requirements`\n- **WHEN** o usuário executa `codev sync <change>`\n- **THEN** apenas os requisitos de `specs/auth/spec.md` chegam a\n  `_codev/specs/auth/spec.md`\n",
+    "_codev/changes/fix-basic-command-bugs/specs/validation/spec.md": "## ADDED Requirements\n\n### Requirement: Só `specs/<capability>/spec.md` é um delta\n\nNa pasta `specs/` de uma mudança, o validador SHALL tratar como delta\napenas um arquivo chamado `spec.md` dentro de uma pasta de capability\n(`specs/<capability>/spec.md`, caminhos aninhados incluídos), como as specs\nprincipais. Qualquer outro arquivo `.md` sob `specs/` — solto na raiz\n(`specs/notes.md`) ou com outro nome dentro de uma capability\n(`specs/auth/README.md`) — MUST NOT ser lido como delta: ele não produz\nnenhum erro de parser nem de regra, e o validador SHALL reportá-lo com um\núnico aviso de código `not_a_delta`, localizado nesse arquivo, dizendo que\nele não será mesclado e que um delta fica em `specs/<capability>/spec.md`.\nUm arquivo sem a extensão `.md` continua ignorado sem aviso.\n\n#### Scenario: Um markdown solto não derruba a validação\n\n- **GIVEN** uma mudança `add-auth` com um delta válido em\n  `specs/auth/spec.md` e um arquivo `specs/notes.md` de texto livre\n- **WHEN** o usuário executa `codev validate add-auth --json`\n- **THEN** o código de saída é `0`\n- **AND** os findings contêm exatamente um aviso `not_a_delta` cujo `path`\n  termina em `specs/notes.md`, e nenhum erro\n\n#### Scenario: Um outro arquivo dentro de uma capability é um aviso\n\n- **GIVEN** uma mudança com `specs/auth/spec.md` válido e\n  `specs/auth/README.md`\n- **WHEN** o usuário executa `codev validate add-auth`\n- **THEN** `specs/auth/README.md` produz um aviso `not_a_delta` e nenhum\n  erro\n\n#### Scenario: Em modo estrito, o aviso falha a validação\n\n- **GIVEN** a mesma mudança com `specs/notes.md`\n- **WHEN** o usuário executa `codev validate add-auth --strict`\n- **THEN** o código de saída é `1`\n\n## MODIFIED Requirements\n\n### Requirement: Explicit zero-delta rule\n\nA change must either produce at least one spec delta, or explicitly declare\nthat it will produce none; the validator MUST reject cases that contradict\nthis rule. Só um delta (`specs/<capability>/spec.md`) conta para esta\nregra: um arquivo `.md` que não é delta MUST NOT satisfazer a regra nem\nprovocar `skip_specs_conflict`.\n\n#### Scenario: Change with no delta and no skip_specs\n\n- **GIVEN** a change whose `specs/` directory is empty and whose\n  `change.yaml` does not set `skip_specs: true`\n- **WHEN** the validator inspects the change\n- **THEN** a finding with code `zero_delta_without_marker` asks either to\n  add a delta or to declare `skip_specs: true`\n\n#### Scenario: skip_specs declared but specs exist\n\n- **GIVEN** a change whose `change.yaml` declares `skip_specs: true` and\n  whose `specs/` directory contains at least one delta\n  `specs/<capability>/spec.md`\n- **WHEN** the validator inspects the change\n- **THEN** a finding with code `skip_specs_conflict` asks to remove\n  `skip_specs: true` or to delete the files in the `specs/` directory\n\n#### Scenario: Um markdown solto não conta como delta\n\n- **GIVEN** uma mudança sem `skip_specs` cuja pasta `specs/` contém apenas\n  `specs/notes.md`\n- **WHEN** o validador inspeciona a mudança\n- **THEN** ele reporta `zero_delta_without_marker` e o aviso `not_a_delta`\n\n#### Scenario: Um markdown solto não conflita com `skip_specs`\n\n- **GIVEN** uma mudança que declara `skip_specs: true` e cuja pasta\n  `specs/` contém apenas `specs/notes.md`\n- **WHEN** o validador inspeciona a mudança\n- **THEN** ele não reporta `skip_specs_conflict`\n- **AND** reporta o aviso `not_a_delta`\n"
+  },
+  "validate": {
+    "fix-basic-command-bugs": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "fix-basic-command-bugs",
+          "path": "_codev/changes/fix-basic-command-bugs"
+        }
+      ],
+      "status": []
+    }
+  }
+}

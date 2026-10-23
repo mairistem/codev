@@ -1,0 +1,299 @@
+{
+  "format": 2,
+  "case": "plan-keywords-in-pt-br",
+  "error": null,
+  "costUsd": 2.5491156,
+  "durationMs": 428387,
+  "consumption": {
+    "durationApiMs": 427049,
+    "turns": 33,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1215,
+      "cacheCreation": 155050,
+      "cacheRead": 2898688,
+      "output": 46072
+    },
+    "toolCalls": 32,
+    "orientationCalls": 13,
+    "calls": [
+      {
+        "cacheCreation": 7901,
+        "cacheRead": 22139,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7901
+        }
+      },
+      {
+        "cacheCreation": 6015,
+        "cacheRead": 30040,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 6015
+        }
+      },
+      {
+        "cacheCreation": 12307,
+        "cacheRead": 36055,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 12307
+        }
+      },
+      {
+        "cacheCreation": 1442,
+        "cacheRead": 48362,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 1442
+        }
+      },
+      {
+        "cacheCreation": 997,
+        "cacheRead": 49804,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 997
+        }
+      },
+      {
+        "cacheCreation": 1071,
+        "cacheRead": 50801,
+        "input": 2,
+        "output": 42,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1071
+        }
+      },
+      {
+        "cacheCreation": 6540,
+        "cacheRead": 51872,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "agent": 5780,
+          "file": 724,
+          "output": 35
+        }
+      },
+      {
+        "cacheCreation": 1738,
+        "cacheRead": 58412,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1738
+        }
+      },
+      {
+        "cacheCreation": 4273,
+        "cacheRead": 60150,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev new": 4273
+        }
+      },
+      {
+        "cacheCreation": 5038,
+        "cacheRead": 64423,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5038
+        }
+      },
+      {
+        "cacheCreation": 2509,
+        "cacheRead": 69461,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2509
+        }
+      },
+      {
+        "cacheCreation": 1898,
+        "cacheRead": 71970,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1898
+        }
+      },
+      {
+        "cacheCreation": 1614,
+        "cacheRead": 73868,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 51,
+          "search": 1563
+        }
+      },
+      {
+        "cacheCreation": 2753,
+        "cacheRead": 75482,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 2753
+        }
+      },
+      {
+        "cacheCreation": 403,
+        "cacheRead": 78235,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 325,
+          "output": 78
+        }
+      },
+      {
+        "cacheCreation": 4157,
+        "cacheRead": 78638,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev instructions": 4157
+        }
+      },
+      {
+        "cacheCreation": 1220,
+        "cacheRead": 82795,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 4,
+        "sources": {
+          "file": 1220
+        }
+      },
+      {
+        "cacheCreation": 7367,
+        "cacheRead": 84015,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 4,
+        "sources": {
+          "edit": 7367
+        }
+      },
+      {
+        "cacheCreation": 8845,
+        "cacheRead": 91382,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 8166,
+          "output": 679
+        }
+      },
+      {
+        "cacheCreation": 1726,
+        "cacheRead": 100227,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "codev validate": 1710,
+          "output": 16
+        }
+      },
+      {
+        "cacheCreation": 1891,
+        "cacheRead": 101953,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 1654,
+          "edit": 237
+        }
+      },
+      {
+        "cacheCreation": 3299,
+        "cacheRead": 103844,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "search": 3299
+        }
+      },
+      {
+        "cacheCreation": 4463,
+        "cacheRead": 107143,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 4463
+        }
+      },
+      {
+        "cacheCreation": 1012,
+        "cacheRead": 111606,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev validate": 512,
+          "edit": 500
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {
+    "_codev/changes/fix-core-command-bugs/change.yaml": "schema: spec-driven\ncreated: 2026-10-23\n",
+    "_codev/changes/fix-core-command-bugs/design.md": "# Design: Corrigir os bugs encontrados ao especificar os comandos básicos\n\n## Context\n\nOs quatro bugs estão em três crates e têm causas independentes (a motivação\nestá na proposta):\n\n- **Specs.** `codev-engine/src/specs.rs` (`list`) deduz uma capability de\n  todo arquivo cujo caminho relativo *termina* com a string `spec.md`\n  (`strip_suffix(SPEC_FILE)`). `old-spec.md` vira a capability `old-`;\n  `validate_all` (`validate/mod.rs`) tenta então ler\n  `_codev/specs/old-/spec.md` e aborta com `EngineError::Unreadable`. A\n  mesma função alimenta `validate --specs`, `list --specs` e a busca de um\n  item. Um `README.md` solto, por sua vez, já é ignorado (teste\n  `ignores_what_is_not_a_spec`).\n- **Schemas.** `codev-engine/src/schemas.rs` resolve pelo nome da pasta,\n  mas `ResolvedSchema::name()` devolve `graph.schema().name`, o `name:` do\n  YAML. `codev new change` (`codev-cli/src/commands.rs`) grava esse nome em\n  `change.yaml`; `change::load` depois procura `_codev/schemas/<name do\n  YAML>/` e falha com `schema_not_found` — ou cai silenciosamente no schema\n  embutido se o YAML diz `name: spec-driven`. `codev status` (`codev-core/\n  src/status.rs`) e `codev instructions` (`codev-engine/src/\n  instructions.rs`) também expõem o nome do YAML em `schemaName`.\n- **Nome `archive`.** `ChangeId::parse` (`codev-core/src/id.rs`) só\n  verifica a sintaxe. `Layout::change_dir(\"archive\")` é a própria pasta de\n  arquivo (`layout.rs`, `ARCHIVE_DIR`). Hoje só `change::list` filtra\n  `archive`.\n- **Caminhos JSON.** `contract.rs` tem um `to_slash` privado, usado por uma\n  parte dos relatórios (validate, sync, archive, sources); o resto dos\n  campos de caminho do contrato v1 (`StatusV1`, `InstructionsV1`,\n  `NewChangeV1`, listas, decisões, doctor, changelog, setup, self-update)\n  é preenchido com `path.display().to_string()`, em `contract.rs` e em\n  `main.rs`. Existe ainda um `portable()` duplicado em `commands.rs`.\n\n## Goals / Non-Goals\n\n**Goals**\n\n- Uma única regra para \"o que é uma spec principal\", partilhada por todos\n  os comandos que percorrem `_codev/specs/`.\n- Um único nome para um schema de projeto: o da pasta.\n- `archive` recusado em toda entrada que recebe um nome de mudança.\n- Impossibilidade, por construção, de um campo de caminho do contrato JSON\n  escapar da normalização.\n\n**Non-Goals**\n\n- Ignorar arquivos soltos *dentro de uma mudança* (`changes/<x>/specs/\n  README.md` é tratado como delta): é outro comportamento, especificado\n  pela capability `validation`, e fica fora desta mudança.\n- Avisar sobre a divergência entre `name:` e a pasta de um schema.\n- Normalizar caminhos em mensagens de erro ou na saída humana.\n- Migrar automaticamente `change.yaml` existentes.\n\n## Decisions\n\n### Decision: Uma capability é uma pasta que contém um arquivo chamado exatamente `spec.md`\n\n`specs::list` passa a comparar o **nome do arquivo** (último segmento do\ncaminho relativo, já separado por `/` por `walk_files`) com `spec.md`, e a\npasta pai como capability; um `spec.md` na raiz continua sem capability.\nComo `validate_all`, `validate --specs`, a busca de item e `list --specs`\njá usam `specs::list`, a correção num único ponto cobre todos. A função é\npura sobre a lista de caminhos devolvida pela porta `FileSystem`, conforme\na decisão [0001](../../decisions/0001-functional-core-imperative-shell.md)\ne as portas da decisão\n[0002](../../decisions/0002-crate-graph-as-dependency-rule.md).\n\n**Alternatives considered**:\n\n- Tornar `validate_all` tolerante a uma spec ilegível (achado em vez de\n  erro): mascara o sintoma, mas `list --specs` continuaria listando a\n  capability fantasma `old-`. Rejeitado.\n- Exigir que `_codev/specs/` não contenha arquivos soltos e relatá-los como\n  achado: contraria a spec atual, que já ignora `README.md`. Rejeitado.\n\n### Decision: O nome de um schema de projeto é o nome da sua pasta\n\n`schemas::resolve` passa a guardar em `ResolvedSchema` o nome pelo qual foi\nresolvido (o argumento `name`, isto é, a pasta, ou `spec-driven` para o\nembutido), e `ResolvedSchema::name()` o devolve. `codev new change` grava,\nportanto, o nome da pasta em `change.yaml`, e `change::load` o reencontra.\nPara `schemaName`, `status` e `instructions` recebem o nome resolvido em vez\nde ler `graph.schema().name`: `codev-core/src/status.rs` ganha o nome como\nentrada (o core continua sem I/O, decisão 0001). O campo `name:` do YAML\ncontinua validado em `codev-core/src/schema.rs` (kebab-case, não vazio),\nsem outro papel.\n\n**Alternatives considered**:\n\n- Recusar um schema divergente (`schema_invalid` no uso,\n  `schema_unusable` em `codev schemas`): coerente, mas deixa o schema\n  inutilizável — exatamente o que o pedido descreve como bug — e\n  contradiz a spec, que já nomeia os schemas pela pasta.\n- Resolver pelo `name:` do YAML, varrendo as pastas: dois schemas podem\n  declarar o mesmo nome, e `codev schemas` lista por pasta. Rejeitado.\n- Remover o campo `name:` do formato: todo `schema.yaml` existente passaria\n  a ser recusado com `schema_unreadable` (chave desconhecida). Fora de\n  escopo.\n\n### Decision: `archive` é recusado em `ChangeId::parse`, com um erro próprio\n\n`codev-core/src/id.rs` ganha uma lista de nomes reservados (só `archive`,\nlido da mesma constante que `Layout` usa para `ARCHIVE_DIR`, para que os\ndois nunca divirjam) e uma variante de erro `Reserved`, código estável\n`reserved_change_id`, verificada depois das regras de sintaxe. Como\n`ChangeId::parse` é a porta de entrada de `codev new change`\n(`commands.rs`), de `resolve_change` (`--change` de status, instructions,\nsync, archive) e do código que lê um nome em `commands.rs`, todas recusam\n`archive` sem verificação adicional, antes de qualquer acesso ao disco.\n`change::list` já ignora as pastas cujo nome não é válido; o filtro\nexplícito de `archive` torna-se redundante e é mantido apenas se a leitura\nficar mais clara.\n\n**Alternatives considered**:\n\n- Verificar só em `new_change` (`commands.rs`): deixaria\n  `--change archive` tratar a pasta de arquivo como mudança.\n- Reutilizar `invalid_change_id`: o nome é sintaticamente válido; uma\n  mensagem sobre \"a regra violada\" seria enganosa. Um código próprio\n  também permite às skills reagir.\n\n### Decision: Um tipo de caminho portátil no contrato JSON\n\n`codev-cli::contract::v1` ganha um tipo `PortablePath` construído a partir\nde um `&Path` e serializado como string com `/` (a lógica atual de\n`to_slash`, que já evita o `//` inicial no Unix). Todo campo de caminho do\ncontrato passa de `String` a `PortablePath` (ou `Vec<PortablePath>`,\n`Option<PortablePath>`), e `main.rs` deixa de chamar `.display()` para\neles. O formato JSON não muda (continua uma string), só o separador no\nWindows. O contrato continua independente do modelo de domínio, conforme o\ncontexto do projeto. `portable()` em `commands.rs` passa a usar a mesma\nfunção.\n\n**Alternatives considered**:\n\n- Chamar `to_slash` em cada ponto que falta: é a situação que produziu o\n  bug (parte dos campos esquecida); nada impede um campo novo de repetir o\n  erro. Rejeitado.\n- Normalizar dentro do engine (caminhos já com `/` no domínio): mistura uma\n  preocupação de apresentação com o modelo, e o engine usa esses caminhos\n  para escrever no disco.\n- Pós-processar o JSON serializado substituindo `\\`: alteraria também\n  mensagens e padrões que contêm `\\` legitimamente.\n\n## Risks / Trade-offs\n\n- [Um consumidor no Windows compara um caminho do JSON com um caminho\n  nativo com `\\`] → Os caminhos continuam absolutos e o Windows aceita `/`;\n  a release note anuncia a mudança; as skills do codev só repassam os\n  caminhos às ferramentas de arquivo, que aceitam os dois separadores.\n- [Um caminho verbatim do Windows (`\\\\?\\C:\\…`) viraria `//?/C:/…`] → A\n  raiz do projeto não é canonicalizada (somente `current_exe` em\n  `ports.rs` o é, e não aparece nos campos tratados aqui); um teste de\n  `PortablePath` cobre o prefixo de unidade `C:\\`.\n- [Um projeto tem uma mudança existente cujo `change.yaml` registra o\n  `name:` do YAML em vez da pasta] → Essa mudança já falha hoje com\n  `schema_not_found`; corrigir `schema:` à mão para o nome da pasta basta.\n  Ver Migration Plan.\n- [Uma mudança chamada `archive` já existe em algum projeto] → Ela só pode\n  existir onde a pasta de arquivo faltava, e era invisível para\n  `codev list`. Após a correção, `--change archive` é recusado; renomear a\n  pasta resolve. O caso é citado na documentação do código de erro.\n- [Mudar o tipo dos campos do contrato toca muitos construtores] → O\n  compilador aponta cada um; os testes de forma do contrato\n  (`*_shape_stable`, `*_in_camel_case`) garantem que os nomes de campos não\n  mudam.\n\n## Migration Plan\n\nNenhuma migração automática. Uma mudança ativa cujo `change.yaml` contém o\n`name:` do YAML de um schema de projeto (já quebrada hoje) é corrigida\neditando `schema:` para o nome da pasta. A documentação (`docs/en`,\n`docs/fr`) descreve: o código `reserved_change_id`, a regra \"o nome de um\nschema é o da sua pasta\" e a forma dos caminhos JSON. Reversão: reverter o\ncommit; nenhum dado gravado depende do novo comportamento, exceto\n`change.yaml` criados com o nome da pasta, que continuam válidos.\n",
+    "_codev/changes/fix-core-command-bugs/proposal.md": "# Proposal: Corrigir os bugs encontrados ao especificar os comandos básicos\n\n## Why\n\nA mudança `2026-10-12-specify-core-commands` descreveu os comandos básicos tal\ncomo são e deixou de fora quatro comportamentos com cara de bug, para serem\ntratados numa mudança própria: esta. Cada um deles bloqueia um uso legítimo\n(validar o projeto, usar um schema próprio, arquivar, consumir o JSON no\nWindows), e as skills já instaladas dependem desses comandos.\n\n## What Changes\n\n- **Arquivo solto em `_codev/specs/`.** Só um arquivo chamado exatamente\n  `spec.md` define uma capability. Hoje, um arquivo cujo nome *termina* em\n  `spec.md` (`_codev/specs/old-spec.md`, `_codev/specs/user-auth/auth-spec.md`)\n  vira uma capability fantasma (`old-`) e `codev validate` aborta com\n  `unreadable`. Esses arquivos passam a ser ignorados, como já é o caso de\n  `README.md` ou `notes.md`, por `codev validate`, `codev list --specs` e por\n  todo comando que percorre as specs.\n- **Schema cujo `name:` difere da pasta.** O nome de um schema de projeto\n  passa a ser o nome da sua pasta, em todo lugar: `codev new change` grava\n  em `change.yaml` o nome da pasta (hoje grava o `name:` do YAML, que\n  depois não é encontrado), e `schemaName` em `codev status` e\n  `codev instructions` passa a ser esse mesmo nome. O campo `name:` continua\n  obrigatório e validado (kebab-case), mas não decide mais a identidade do\n  schema.\n- **Mudança chamada `archive`.** `codev new change archive` passa a ser\n  recusado com um novo código `reserved_change_id`, antes de qualquer\n  escrita, quer a pasta `_codev/changes/archive/` exista ou não. Hoje o\n  comando ou falha com um enganoso `change_exists`, ou cria uma mudança\n  invisível para `codev list` que, arquivada, seria movida para dentro de\n  si mesma.\n- **Barras invertidas no JSON.** Todo caminho de arquivo ou pasta presente\n  num documento `--json` passa a usar `/` como separador em todas as\n  plataformas (`planningHome`, `changeRoot`, `resolvedOutputPath`, `root`,\n  `path`, `created`…). Hoje só parte dos campos é normalizada; os outros\n  mantêm `\\` no Windows.\n\nSuposições (execução sem usuário, nenhuma pergunta feita):\n\n- O \"arquivo markdown solto\" é um arquivo cujo nome termina em `spec.md`:\n  um `README.md` solto já é ignorado hoje (teste\n  `ignores_what_is_not_a_spec`), o que contradiz parcialmente o relato.\n  A correção cobre o caso que de fato derruba a validação.\n- Para o schema, escolhemos tornar o schema utilizável (a pasta decide a\n  identidade) em vez de recusá-lo: a spec atual já diz que os schemas são\n  \"named after the folder\". Nenhum aviso novo é emitido sobre a\n  divergência, para não ampliar o escopo.\n- `archive` é o único nome reservado: é o único nome que o layout usa\n  dentro de `_codev/changes/`.\n- Os caminhos com `/` continuam absolutos e válidos no Windows, que aceita\n  os dois separadores; a mudança não é tratada como **BREAKING**.\n\n## Capabilities\n\n### New Capabilities\n\n- `json-output` — regra transversal sobre os caminhos nos documentos JSON.\n\n### Modified Capabilities\n\n- `changes` — nome reservado `archive`; definição de uma capability em\n  `codev list --specs`.\n- `schemas` — a identidade de um schema de projeto é o nome da sua pasta.\n- `validation` — um arquivo que não é uma spec principal não interrompe a\n  validação.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `codev-core`: validação do nome de mudança (`id.rs`), novo erro\n  `reserved_change_id`.\n- `codev-engine`: enumeração das specs (`specs.rs`), resolução dos schemas\n  (`schemas.rs`) e criação de mudança.\n- `codev-cli`: contrato JSON v1 (`contract.rs`, `main.rs`), um único ponto\n  de conversão de caminhos para texto.\n- Documentação em `docs/en` e `docs/fr`: códigos de erro de\n  `codev new change`, nome de um schema de projeto, forma dos caminhos no\n  JSON.\n- Skills instaladas: nenhuma mudança de formato além do separador.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration — o contrato JSON consumido pelas skills muda de forma no Windows e `change.yaml` passa a registrar outro nome para alguns schemas (sem diff de código ainda: marcado por julgamento)\n\n## Release note\n\n- Fixed: `codev validate` não falha mais quando `_codev/specs/` contém um arquivo cujo nome termina em `spec.md` sem ser um `spec.md` de capability.\n- Fixed: um schema de projeto cujo campo `name:` difere do nome da sua pasta agora pode ser usado; ele é sempre identificado pelo nome da pasta.\n- Fixed: `codev new change archive` é recusado com `reserved_change_id`, pois `archive` é a pasta das mudanças arquivadas.\n- Fixed: no Windows, os caminhos dos documentos `--json` usam `/` como separador, como nas outras plataformas.\n",
+    "_codev/changes/fix-core-command-bugs/specs/changes/spec.md": "## MODIFIED Requirements\n\n### Requirement: A change name is kebab-case and unique\n\nUm nome de mudança MUST ser composto de letras ASCII minúsculas, dígitos e\nhífens, MUST NOT começar nem terminar com hífen e MUST NOT conter dois\nhífens seguidos; ele pode começar com um dígito. `codev new change` SHALL\nrecusar qualquer outro nome com o código de erro `invalid_change_id` e uma\nmensagem que nomeia a primeira regra violada (vazio, hífen no início ou no\nfim, hífens seguidos, espaço, sublinhado, letra maiúscula ou o caractere\ninválido).\n\nUm nome de mudança MUST NOT ser `archive`, a pasta que guarda as mudanças\narquivadas. `codev new change archive` SHALL ser recusado com o código de\nerro `reserved_change_id` e uma mensagem dizendo que `archive` é reservado\nàs mudanças arquivadas, exista ou não a pasta `_codev/changes/archive/`. A\nverificação do nome reservado vem depois da verificação de sintaxe e antes\nda verificação de existência.\n\nO comando SHALL recusar um nome cuja pasta já existe com o código de erro\n`change_exists`. Um comando recusado não escreve nada e sai com código 1.\n\n#### Scenario: Nomes aceitos\n\n- **WHEN** o usuário cria as mudanças `add-auth`, `100-add-feature` e\n  `v2-migration`\n- **THEN** cada uma é criada\n\n#### Scenario: Um nome inválido é recusado com a regra que viola\n\n- **WHEN** o usuário executa `codev new change \"Add Auth\"`\n- **THEN** o comando falha com `invalid_change_id` e uma mensagem dizendo\n  que o nome contém um espaço\n- **AND** `_codev/changes/` fica inalterado\n\n#### Scenario: Um nome existente é recusado\n\n- **GIVEN** uma mudança ativa `add-auth`\n- **WHEN** o usuário executa `codev new change add-auth`\n- **THEN** o comando falha com `change_exists`\n- **AND** o `change.yaml` existente fica inalterado\n\n#### Scenario: `archive` é recusado como reservado num projeto inicializado\n\n- **GIVEN** um projeto inicializado, cuja pasta `_codev/changes/archive/`\n  existe\n- **WHEN** o usuário executa `codev new change archive --json`\n- **THEN** o código de saída é 1\n- **AND** `status[0].code` é `reserved_change_id`, e não `change_exists`\n- **AND** `_codev/changes/archive/` fica inalterado\n\n#### Scenario: `archive` é recusado mesmo sem pasta de arquivo\n\n- **GIVEN** um projeto cuja pasta `_codev/changes/archive/` não existe\n- **WHEN** o usuário executa `codev new change archive`\n- **THEN** o comando falha com `reserved_change_id`\n- **AND** `_codev/changes/archive/` continua não existindo\n\n#### Scenario: Um nome que apenas contém `archive` é aceito\n\n- **WHEN** o usuário executa `codev new change archive-old-specs`\n- **THEN** a mudança `archive-old-specs` é criada\n\n### Requirement: `codev list` lists the active changes and, with `--specs`, the capabilities\n\n`codev list` SHALL listar as mudanças ativas — as pastas de\n`_codev/changes/` diferentes de `archive` cujo nome é um nome de mudança\nválido — em ordem alfabética. Uma pasta cujo nome não é um nome de mudança\nválido é ignorada sem erro. Quando não há nenhuma, a saída humana SHALL\ndizê-lo e nomear `codev new change <name>`. Com `--json`, o documento SHALL\nser `{ \"changes\": [...], \"root\": <raiz do projeto>, \"status\": [] }`.\n\n`codev list --specs` SHALL listar as capabilities que têm uma spec\nprincipal: o caminho, relativo a `_codev/specs/`, de cada pasta que contém\num arquivo chamado exatamente `spec.md`, pastas aninhadas incluídas, em\nordem alfabética. Um `spec.md` colocado diretamente em `_codev/specs/` não\nnomeia nenhuma capability. Qualquer outro arquivo — qualquer que seja sua\nextensão, e mesmo quando seu nome termina em `spec.md`, como\n`old-spec.md` — não nomeia nenhuma capability e é ignorado sem erro.\nQuando não há nenhuma, a saída humana SHALL dizer que as specs aparecem\nquando uma mudança é sincronizada ou arquivada. Com `--json`, o documento\nSHALL ser `{ \"specs\": [...], \"root\": <raiz do projeto>, \"status\": [] }`.\n\n#### Scenario: Mudanças ativas, arquivo excluído\n\n- **GIVEN** as mudanças `fix-bug` e `add-auth`, uma mudança arquivada e\n  uma pasta `Notes_2026` em `_codev/changes/`\n- **WHEN** o usuário executa `codev list --json`\n- **THEN** `changes` é `[\"add-auth\", \"fix-bug\"]`\n\n#### Scenario: Nenhuma mudança ativa\n\n- **GIVEN** um projeto sem mudança ativa\n- **WHEN** o usuário executa `codev list`\n- **THEN** a saída nomeia `codev new change`\n- **AND** o código de saída é 0\n\n#### Scenario: Capabilities, aninhadas incluídas\n\n- **GIVEN** as specs principais `_codev/specs/user-auth/spec.md` e\n  `_codev/specs/identity/sso/spec.md`, e um arquivo\n  `_codev/specs/user-auth/README.md`\n- **WHEN** o usuário executa `codev list --specs --json`\n- **THEN** `specs` é `[\"identity/sso\", \"user-auth\"]`\n\n#### Scenario: Um arquivo solto cujo nome termina em `spec.md` não é uma capability\n\n- **GIVEN** uma spec principal `_codev/specs/user-auth/spec.md` e os\n  arquivos `_codev/specs/old-spec.md` e\n  `_codev/specs/user-auth/auth-spec.md`\n- **WHEN** o usuário executa `codev list --specs --json`\n- **THEN** o código de saída é 0\n- **AND** `specs` é `[\"user-auth\"]`\n\n#### Scenario: Nenhuma capability ainda\n\n- **GIVEN** um projeto sem spec principal\n- **WHEN** o usuário executa `codev list --specs`\n- **THEN** a saída diz que as specs aparecem quando uma mudança é\n  sincronizada ou arquivada\n\n### Requirement: The commands taking `--change` pick the change predictably\n\n`codev status`, `codev instructions`, `codev sync` e `codev archive` SHALL\nagir sobre a mudança nomeada por `--change` quando ela é informada. Um nome\nque não é um nome de mudança válido falha com `invalid_change_id`; o nome\nreservado `archive` falha com `reserved_change_id`, mesmo que sua pasta\nexista; um nome válido sem pasta falha com `unknown_change`, cuja mensagem\naponta para `codev list`. Sem `--change`:\n\n- com exatamente uma mudança ativa, essa mudança é usada;\n- com nenhuma, o comando falha com `no_active_change` e a correção\n  `create one with `codev new change <name>``;\n- com várias, o comando falha com `ambiguous_change`, uma mensagem que\n  lista todas as mudanças ativas e uma correção que sugere `--change` com\n  a primeira — ele nunca escolhe uma.\n\nUma falha sai com código 1; com `--json`, o documento mantém os campos do\ncomando, com `null` ou vazios, e traz o código em `status`.\n\n#### Scenario: A única mudança ativa é deduzida\n\n- **GIVEN** uma mudança ativa `add-auth`\n- **WHEN** o usuário executa `codev status`\n- **THEN** o status de `add-auth` é exibido\n\n#### Scenario: Nenhuma mudança ativa\n\n- **GIVEN** um projeto sem mudança ativa\n- **WHEN** o usuário executa `codev status`\n- **THEN** o comando falha com `no_active_change` e a ajuda nomeia\n  `codev new change`\n\n#### Scenario: Várias mudanças ativas\n\n- **GIVEN** as mudanças ativas `add-auth` e `fix-bug`\n- **WHEN** o usuário executa `codev status --json`\n- **THEN** o código de saída é 1\n- **AND** `status[0].code` é `ambiguous_change`, sua mensagem nomeia\n  `add-auth` e `fix-bug`, e `changeName` é `null`\n\n#### Scenario: Uma mudança nomeada que não existe\n\n- **WHEN** o usuário executa `codev status --change ghost`\n- **THEN** o comando falha com `unknown_change` e uma mensagem que nomeia\n  `codev list`\n\n#### Scenario: Uma mudança nomeada com um nome inválido\n\n- **WHEN** o usuário executa `codev instructions --change Bad`\n- **THEN** o comando falha com `invalid_change_id`\n\n#### Scenario: A pasta de arquivo nunca é tomada por uma mudança\n\n- **GIVEN** um projeto inicializado, cuja pasta `_codev/changes/archive/`\n  existe\n- **WHEN** o usuário executa `codev archive --change archive`\n- **THEN** o comando falha com `reserved_change_id`\n- **AND** `_codev/changes/archive/` fica inalterado\n",
+    "_codev/changes/fix-core-command-bugs/specs/json-output/spec.md": "## Purpose\n\nGarantir que os documentos JSON dos comandos `codev` tenham a mesma forma em\ntodas as plataformas, para que as skills e os scripts que os consomem não\nprecisem tratar o sistema operacional.\n\n## ADDED Requirements\n\n### Requirement: Os caminhos dos documentos JSON usam barras normais em todas as plataformas\n\nTodo caminho de arquivo ou de pasta que um comando `codev` escreve num\ndocumento `--json` — como `root`, `planningHome`, `changeRoot`,\n`resolvedOutputPath`, `path`, `movedTo` e os caminhos listados em\n`created`, `updated`, `untouched` ou `preserved` — SHALL usar `/` como\núnico separador, em todas as plataformas, Windows incluído. Um caminho\nSHALL manter seu sentido: um caminho absoluto continua absoluto (com a\nletra da unidade no Windows), um caminho relativo continua relativo, e\nnenhum separador é duplicado ou perdido. Os valores que não são caminhos —\nmensagens, identificadores — não são afetados.\n\n#### Scenario: Um caminho do Windows é escrito com barras normais\n\n- **GIVEN** um projeto em `C:\\work\\shop` no Windows com uma mudança ativa\n  `add-auth`\n- **WHEN** o usuário executa `codev status --change add-auth --json`\n- **THEN** `planningHome` é `C:/work/shop`\n- **AND** `changeRoot` é `C:/work/shop/_codev/changes/add-auth`\n\n#### Scenario: Todos os caminhos do documento de instruções são portáveis\n\n- **GIVEN** um projeto em `C:\\work\\shop` no Windows com uma mudança ativa\n  `add-auth`\n- **WHEN** o usuário executa\n  `codev instructions proposal --change add-auth --json`\n- **THEN** `resolvedOutputPath` é\n  `C:/work/shop/_codev/changes/add-auth/proposal.md`\n- **AND** nenhum caminho do documento contém `\\`\n\n#### Scenario: Os caminhos não mudam no Unix\n\n- **GIVEN** um projeto em `/home/dev/shop` com uma mudança ativa `add-auth`\n- **WHEN** o usuário executa `codev status --change add-auth --json`\n- **THEN** `changeRoot` é `/home/dev/shop/_codev/changes/add-auth`, sem\n  `/` duplicado\n",
+    "_codev/changes/fix-core-command-bugs/specs/schemas/spec.md": "## MODIFIED Requirements\n\n### Requirement: A schema is resolved from the project before the built-in one\n\nSempre que um schema é necessário por nome, o codev SHALL usar\n`_codev/schemas/<name>/schema.yaml` quando ele existe, e o schema embutido\nsomente quando o nome é `spec-driven` e o projeto não o define. Os\ntemplates de um schema de projeto SHALL ser lidos da sua pasta\n`templates/`. Um nome encontrado em lugar nenhum SHALL falhar com\n`schema_not_found`, cuja mensagem aponta para `codev schemas`.\n\nO nome de um schema de projeto SHALL ser o nome da sua pasta, em todo lugar\nonde o codev o exibe ou o registra: o campo `name` do seu `schema.yaml` é\nvalidado, mas nunca substitui o nome da pasta. Um schema cujo campo `name`\ndifere da sua pasta SHALL, portanto, ser utilizável pelo nome da pasta\nexatamente como se os dois fossem iguais.\n\n#### Scenario: O `spec-driven` do projeto vence\n\n- **GIVEN** um schema de projeto `spec-driven` com um único artefato\n  `proposal`\n- **WHEN** o usuário executa `codev status --change add-auth` numa mudança\n  que usa `spec-driven`\n- **THEN** somente o artefato `proposal` é listado\n\n#### Scenario: Schema desconhecido\n\n- **WHEN** o usuário executa `codev new change add-auth --schema imaginary`\n- **THEN** o comando falha com `schema_not_found` e uma mensagem que nomeia\n  `codev schemas`\n\n#### Scenario: Um schema cujo `name` difere da pasta continua utilizável\n\n- **GIVEN** um schema de projeto válido em `_codev/schemas/my-flow/` cujo\n  `schema.yaml` contém `name: other-flow`\n- **WHEN** o usuário executa `codev new change quick --schema my-flow`,\n  depois `codev status --change quick --json` e\n  `codev instructions --change quick --json`\n- **THEN** cada comando sai com código 0\n- **AND** `schemaName` é `my-flow` em cada documento\n- **AND** `codev schemas --json` lista `my-flow` e nenhum `other-flow`\n\n#### Scenario: Um `name` divergente nunca cai no schema embutido\n\n- **GIVEN** um schema de projeto válido em `_codev/schemas/lite/` com os\n  artefatos `brief` e depois `plan`, cujo `schema.yaml` contém\n  `name: spec-driven`\n- **WHEN** o usuário executa `codev new change quick --schema lite`, depois\n  `codev status --change quick --json`\n- **THEN** os artefatos listados são `brief` e `plan`\n- **AND** `schemaName` é `lite`\n\n### Requirement: The schema of a change is chosen once, at creation\n\n`codev new change` SHALL escolher o schema a partir de `--schema` quando\ninformado, senão a partir da chave `schema:` de `_codev/config.yaml`, senão\n`spec-driven`. O schema escolhido MUST estar resolvido e válido antes que\nqualquer coisa seja escrita: caso contrário, o comando falha com o erro do\nschema e não cria nenhuma pasta. O schema é registrado no `change.yaml` da\nmudança pelo nome com que foi escolhido — para um schema de projeto, o nome\nda sua pasta — e todo comando posterior usa o schema registrado: mudar\n`schema:` na configuração não afeta as mudanças existentes. Uma pasta de\nmudança sem `change.yaml` usa o `schema:` da configuração, ou\n`spec-driven`.\n\n#### Scenario: O padrão configurado\n\n- **GIVEN** uma configuração com `schema: lite` e um schema de projeto\n  válido `lite`\n- **WHEN** o usuário executa `codev new change quick`\n- **THEN** seu `change.yaml` contém `schema: lite`\n\n#### Scenario: `--schema` vence a configuração\n\n- **GIVEN** uma configuração com `schema: lite`\n- **WHEN** o usuário executa `codev new change full --schema spec-driven`\n- **THEN** seu `change.yaml` contém `schema: spec-driven`\n\n#### Scenario: O nome da pasta é registrado, não o campo `name`\n\n- **GIVEN** uma configuração com `schema: my-flow` e um schema de projeto\n  válido em `_codev/schemas/my-flow/` cujo `schema.yaml` contém\n  `name: other-flow`\n- **WHEN** o usuário executa `codev new change quick --json`\n- **THEN** seu `change.yaml` contém `schema: my-flow`\n- **AND** o `schemaName` do documento é `my-flow`\n\n#### Scenario: Um schema desconhecido não cria nada\n\n- **WHEN** o usuário executa `codev new change add-auth --schema imaginary`\n- **THEN** o comando falha com `schema_not_found`\n- **AND** `_codev/changes/add-auth/` não existe\n\n#### Scenario: Mudar o padrão não afeta as mudanças existentes\n\n- **GIVEN** uma mudança criada com `spec-driven`\n- **WHEN** o `schema:` da configuração é alterado para `lite`\n- **THEN** `codev status` dessa mudança continua listando os quatro\n  artefatos de `spec-driven`\n\n#### Scenario: Uma pasta de mudança feita à mão\n\n- **GIVEN** uma pasta de mudança contendo apenas `proposal.md`, sem\n  `change.yaml`, num projeto sem `schema:`\n- **WHEN** o usuário executa `codev status --change hand-made --json`\n- **THEN** `schemaName` é `spec-driven`\n",
+    "_codev/changes/fix-core-command-bugs/specs/validation/spec.md": "## ADDED Requirements\n\n### Requirement: Somente as specs principais são validadas em `_codev/specs/`\n\n`codev validate` com `--all`, `--specs` ou sem escopo SHALL validar\nexatamente as specs principais que `codev list --specs` lista: uma por\npasta de `_codev/specs/` que contém um arquivo chamado exatamente\n`spec.md`. Qualquer outro arquivo em `_codev/specs/` — um `README.md`, um\n`notes.md` ou um arquivo cujo nome apenas termina em `spec.md`, como\n`old-spec.md` — SHALL ser ignorado: ele não produz nenhum achado, nenhum\nerro de execução em `status`, e não altera o código de saída.\n\n#### Scenario: Um arquivo solto não interrompe a validação\n\n- **GIVEN** uma spec principal válida `_codev/specs/user-auth/spec.md` e um\n  arquivo `_codev/specs/old-spec.md`\n- **WHEN** o usuário executa `codev validate --all --json`\n- **THEN** o código de saída é 0\n- **AND** o `status` raiz está vazio\n- **AND** o único item de spec validado é `user-auth`\n\n#### Scenario: Um arquivo aninhado que termina em `spec.md` é ignorado\n\n- **GIVEN** uma spec principal válida `_codev/specs/user-auth/spec.md` e um\n  arquivo `_codev/specs/user-auth/auth-spec.md`\n- **WHEN** o usuário executa `codev validate --specs`\n- **THEN** o código de saída é 0\n- **AND** nenhum item chamado `user-auth/auth-` é relatado\n\n#### Scenario: Uma spec principal com defeito continua sendo relatada\n\n- **GIVEN** um arquivo `_codev/specs/old-spec.md` e uma spec principal\n  `_codev/specs/x/spec.md` sem `## Purpose`\n- **WHEN** o usuário executa `codev validate --specs`\n- **THEN** os achados de `x` são relatados como antes\n- **AND** nada é relatado para `old-spec.md`\n"
+  },
+  "validate": {
+    "fix-core-command-bugs": {
+      "hasWarnings": false,
+      "items": [
+        {
+          "findings": [],
+          "kind": "change",
+          "name": "fix-core-command-bugs",
+          "path": "_codev/changes/fix-core-command-bugs"
+        }
+      ],
+      "status": []
+    }
+  }
+}

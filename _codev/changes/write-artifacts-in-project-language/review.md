@@ -130,3 +130,178 @@ history:
 ### migration
 
 No finding.
+
+## code.review
+
+Mode: isolated.
+Summarized: crates/codev-agents/src/workflows.rs, crates/codev-cli/src/{commands,contract,docs,main,render}.rs, crates/codev-core/src/config/mod.rs, crates/codev-core/src/keywords.rs, crates/codev-engine/src/{config,instructions}.rs, docs/en/src/reference/{cli,file-formats,json-output}.md, docs/fr/src/reference/{cli,configuration,file-formats,json-output}.md, docs/fr/src/skills.md, evals/src/{case,compare,plan,report,runner,score}.rs, evals/tests/suite.rs — too large to read whole; each diff is under two hundred lines, so the reviewers got it verbatim from `git diff`, not a summary.
+
+### migration
+
+#### R-migration-1 A project schema with a single English template gets French keywords
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/codev-engine/src/schemas.rs:175-180"
+evidence: |
+  let per_language = templates.join(lang.code()).join(file);
+  let path = if fs.exists(&per_language) {
+      per_language
+  } else {
+      templates.join(file)
+  };
+recommendation: >
+  A project with `language: fr` and a schema written before this change,
+  with English templates at `templates/<file>`, got `keywordLanguage: fr`
+  and French `keywords` beside an English template: the skill, told to
+  write keywords as `template` and `keywords` give them, mixes the two.
+  Set `keywordLanguage` from the template actually served, and document it.
+history:
+  - status: open
+    by: migration
+  - status: fixed
+    by: developer
+    ref: 'fdab6da — keywordLanguage is the language of the served template''s first keyword heading (codev_core::keywords::text_language), else the setting''s; test a_single_english_template_keeps_english_keywords; spec, json-output, artifact-language guide and propose skill updated'
+  - status: fixed
+    by: migration
+```
+
+### newcomer
+
+#### R-newcomer-1 `with_appended_config` ends a replaced block on an unindented list item
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/runner.rs:333-348"
+evidence: |
+  None => skipping = false,
+recommendation: >
+  The last arm ends the skip on any comment or unindented `- item`, so a
+  fixture's `workflows:\n- propose` replaced by the case keeps `- propose`
+  without its key, and the YAML breaks. Let a key's block run to the next
+  top-level key, and say so in the doc comment.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da — only a top-level key changes the state; test appended_config_replaces_a_key_the_fixture_already_sets covers an unindented list'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 `keywords_v1` repeats the rule `written` already applied
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-cli/src/contract.rs:902-917"
+evidence: |
+  let value = if matches!(key, Key::Normative | Key::None) {
+recommendation: Give `Key` an `is_choice()` that both `written` and `keywords_v1` call.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da — Key::is_choice'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The doc comment of `keyword_of` promises a third value the function does not return
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/schemas.rs:314-316"
+evidence: |
+  /// written in, and the text the catalog has for it there.
+recommendation: Drop the last clause; bind `line.trim_start_matches("- ")` once; say why `tasks.md` is skipped.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The keyword check is an inline nested loop inside `score_plan`
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/plan.rs:165-187"
+evidence: |
+  let keywords_off = case.keyword_language.as_deref().map(|code| {
+recommendation: Move it into a function, name the checked artifacts in a constant saying tasks hold no keyword, rename `rest` to `path`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da — keyword_lines_off, KEYWORD_ARTIFACTS'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 The test named for the `review:` refusal also checks two unrelated refusals
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/case.rs:2356-2372"
+evidence: |
+  fn a_case_config_setting_review_is_refused() {
+recommendation: Split it into three tests named for each behavior.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da — a_case_config_that_is_not_a_mapping_is_refused, a_keyword_language_outside_the_catalog_is_refused'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-6 `Lang::for_setting` takes an `Option` that every caller fills with `Some`
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-core/src/keywords.rs:55-58"
+evidence: |
+  pub fn for_setting(language: Option<&str>) -> Lang {
+recommendation: Take `&str` and drop the `let … else`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da'
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-7 In `render::instructions`, `keywords` names a language code
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-cli/src/render.rs:404-415"
+evidence: |
+  let keywords = instructions.keyword_language.code();
+recommendation: Rename it `keyword_code` and bind `prose` so both messages use named placeholders.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: 'fdab6da'
+  - status: fixed
+    by: newcomer
+```
