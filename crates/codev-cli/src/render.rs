@@ -401,17 +401,17 @@ pub fn instructions(instructions: &Instructions) -> String {
         "Write to: {}",
         instructions.resolved_output_path.display()
     );
-    let keywords = instructions.keyword_language.code();
-    if keywords == instructions.language {
+    let keyword_code = instructions.keyword_language.code();
+    let prose = &instructions.language;
+    if keyword_code == prose {
         let _ = writeln!(
             out,
-            "Language: {keywords} — prose and structural keywords in {keywords}"
+            "Language: {prose} — prose and structural keywords in {prose}"
         );
     } else {
         let _ = writeln!(
             out,
-            "Language: {} — prose in {}, structural keywords in {keywords}",
-            instructions.language, instructions.language
+            "Language: {prose} — prose in {prose}, structural keywords in {keyword_code}"
         );
     }
 

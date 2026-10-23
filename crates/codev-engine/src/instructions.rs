@@ -200,7 +200,14 @@ pub fn for_artifact(
         related_for(fs, layout, config, &ctx.schema.graph, artifact, &change_dir);
     warnings.extend(unreadable_warnings);
 
-    let keyword_language = codev_core::keywords::Lang::for_setting(Some(&config.language));
+    // The keywords follow the template served: a project schema's single
+    // template, written before codev shipped the language, keeps its own.
+    let setting = codev_core::keywords::Lang::for_setting(&config.language);
+    let template = ctx.schema.template(fs, artifact, setting)?;
+    let keyword_language = template
+        .as_deref()
+        .and_then(codev_core::keywords::text_language)
+        .unwrap_or(setting);
     Ok(Instructions {
         change: ctx.change.clone(),
         schema_name: ctx.schema.name().to_string(),
@@ -208,7 +215,7 @@ pub fn for_artifact(
         description: artifact.description.clone(),
         resolved_output_path: change_dir.join(&artifact.generates),
         instruction: artifact.instruction.clone(),
-        template: ctx.schema.template(fs, artifact, keyword_language)?,
+        template,
         language: config.language.clone(),
         keyword_language,
         context: config.context.clone(),
@@ -1062,6 +1069,24 @@ from the command line.\n\n## What Changes\n\n- `codev decision new` creates a dr
             .unwrap();
         assert!(template.contains("### Exigence :"), "{template}");
         assert!(template.contains("DOIT"), "{template}");
+    }
+
+    #[test]
+    fn a_single_english_template_keeps_english_keywords() {
+        let schema = "name: lite\nartifacts:\n  - id: brief\n    generates: brief.md\n    template: brief.md\napply:\n  requires: [brief]\n  tracks: brief.md\n";
+        let files = |template: &'static str| {
+            project(&[
+                ("/p/_codev/schemas/lite/schema.yaml", schema),
+                ("/p/_codev/schemas/lite/templates/brief.md", template),
+                ("/p/_codev/changes/add-auth/change.yaml", "schema: lite"),
+                ("/p/_codev/config.yaml", "language: fr\n"),
+            ])
+        };
+        let english = instructions(&files("# Brief\n\n## What Changes\n"), Some("brief")).unwrap();
+        assert_eq!(english.language, "fr");
+        assert_eq!(english.keyword_language.code(), "en");
+        let plain = instructions(&files("Free text.\n"), Some("brief")).unwrap();
+        assert_eq!(plain.keyword_language.code(), "fr");
     }
 
     #[test]

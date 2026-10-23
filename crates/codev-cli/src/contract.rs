@@ -535,9 +535,10 @@ pub struct InstructionsV1 {
     /// Language of the prose to write (ISO 639 code, from `language:` in
     /// the config, `en` by default).
     pub language: String,
-    /// The language the structural keywords are written in: the catalog
-    /// language of `language:`'s primary subtag, `en` when the catalog
-    /// does not ship it. The template is served in it. Additive in v1.
+    /// The language the structural keywords are written in: that of the
+    /// template served, else the catalog language of `language:`'s
+    /// primary subtag, `en` when the catalog does not ship it. Additive in
+    /// v1.
     pub keyword_language: String,
     /// The text to write for each catalog key in `keywordLanguage`; a list
     /// for `normative` and `none`, whose texts a writer picks among.
@@ -902,11 +903,10 @@ impl From<&crate::commands::RolesOutcome> for RolesV1 {
 pub fn keywords_v1(
     lang: codev_core::keywords::Lang,
 ) -> std::collections::BTreeMap<String, serde_json::Value> {
-    use codev_core::keywords::Key;
     codev_core::keywords::written(lang)
         .into_iter()
         .map(|(key, texts)| {
-            let value = if matches!(key, Key::Normative | Key::None) {
+            let value = if key.is_choice() {
                 serde_json::json!(texts)
             } else {
                 serde_json::json!(texts[0])

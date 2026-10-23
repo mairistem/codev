@@ -2360,6 +2360,10 @@ pub(crate) mod tests {
         );
         let err = planning_case(&yaml).unwrap_err();
         assert!(err.message.contains("review"), "{err}");
+    }
+
+    #[test]
+    fn a_case_config_that_is_not_a_mapping_is_refused() {
         let scalar = PLAN_YAML.replace("expected:\n", "config: fr\nexpected:\n");
         assert!(
             planning_case(&scalar)
@@ -2367,6 +2371,10 @@ pub(crate) mod tests {
                 .message
                 .contains("mapping")
         );
+    }
+
+    #[test]
+    fn a_keyword_language_outside_the_catalog_is_refused() {
         let unknown = PLAN_YAML.replace("expected:\n", "expected:\n  keyword_language: es\n");
         assert!(planning_case(&unknown).unwrap_err().message.contains("es"));
     }

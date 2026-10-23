@@ -60,6 +60,9 @@ change is served unchanged.
   `templates/brief.md`
 - **WHEN** the user runs `codev instructions brief --change quick --json`
 - **THEN** `template` is the content of `templates/brief.md`
+- **AND** when that template's headings are English keywords, such as
+  `## What Changes`, `keywordLanguage` is `en` and `keywords` are the
+  English texts
 
 ## MODIFIED Requirements
 
@@ -80,8 +83,11 @@ document SHALL carry:
   none;
 - `language` — the `language:` of the project configuration, `en` when
   absent: the language of the prose;
-- `keywordLanguage` — the language the structural keywords are written in,
-  as the `keyword-languages` capability resolves it from `language`;
+- `keywordLanguage` — the language the structural keywords are written in:
+  the language of the first structural keyword heading `template` holds,
+  so that the keywords agree with the template served; without a template
+  or a keyword heading in it, the language the `keyword-languages`
+  capability resolves from `language`;
 - `keywords` — an object giving, for every key of the keyword catalog, the
   text codev writes for it in `keywordLanguage` (the first text of the
   key), and for `normative` and `none` the list of all its texts;

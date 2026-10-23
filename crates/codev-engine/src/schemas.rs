@@ -311,8 +311,8 @@ mod tests {
         Lang::all().find(|l| l.code() == "fr").unwrap()
     }
 
-    /// The structural keyword a template line holds, the language it is
-    /// written in, and the text the catalog has for it there.
+    /// The structural keyword a template line holds, and the language it is
+    /// written in.
     fn keyword_of(line: &str) -> Option<(Key, Lang)> {
         use codev_core::keywords::{label, named_heading, section_line};
         Key::ALL.into_iter().find_map(|key| {
@@ -329,17 +329,19 @@ mod tests {
             let lang = Lang::all().find(|l| l.code() == *code).unwrap();
             let mut found = 0;
             for line in contents.lines() {
-                let Some((key, written)) = keyword_of(line.trim_start_matches("- ")) else {
+                let item = line.trim_start_matches("- ");
+                let Some((key, written)) = keyword_of(item) else {
                     continue;
                 };
                 found += 1;
                 assert_eq!(written, lang, "{code}/{file}: `{line}` is not in `{code}`");
                 let text = keywords::text(key, lang);
                 assert!(
-                    line.trim_start_matches("- ").trim_start().starts_with(text),
+                    item.trim_start().starts_with(text),
                     "{code}/{file}: `{line}` does not write `{text}` as the catalog does"
                 );
             }
+            // The tasks template holds no structural keyword.
             if *file != "tasks.md" {
                 assert!(found > 0, "{code}/{file} holds no keyword");
             }

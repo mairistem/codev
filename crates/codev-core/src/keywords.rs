@@ -51,11 +51,9 @@ impl Lang {
     /// The language a project writes its keywords in, from its
     /// `language:`: the catalog language of the setting's primary subtag
     /// (`fr-CA` → `fr`), compared without regard to case; English when the
-    /// catalog does not ship it, or without a setting.
-    pub fn for_setting(language: Option<&str>) -> Lang {
-        let Some(primary) = language.and_then(|tag| tag.split(['-', '_']).next()) else {
-            return Lang::EN;
-        };
+    /// catalog does not ship it.
+    pub fn for_setting(language: &str) -> Lang {
+        let primary = language.split(['-', '_']).next().unwrap_or_default();
         Lang::all()
             .find(|lang| lang.code().eq_ignore_ascii_case(primary.trim()))
             .unwrap_or(Lang::EN)
@@ -128,6 +126,12 @@ impl Key {
         Key::DesignDecisions,
         Key::DesignDecision,
     ];
+
+    /// Whether a writer picks among the key's texts (`normative`, `none`)
+    /// rather than writing its first one.
+    pub fn is_choice(self) -> bool {
+        matches!(self, Key::Normative | Key::None)
+    }
 
     /// The key as written in the language files.
     pub fn name(self) -> &'static str {
@@ -289,7 +293,7 @@ pub fn written(lang: Lang) -> Vec<(Key, Vec<&'static str>)> {
         .into_iter()
         .map(|key| {
             let all = texts(key, lang);
-            let shown: Vec<&'static str> = if matches!(key, Key::Normative | Key::None) {
+            let shown: Vec<&'static str> = if key.is_choice() {
                 all.iter().map(String::as_str).collect()
             } else {
                 vec![all[0].as_str()]
@@ -297,6 +301,27 @@ pub fn written(lang: Lang) -> Vec<(Key, Vec<&'static str>)> {
             (key, shown)
         })
         .collect()
+}
+
+/// The language of the structural keyword a heading line holds — a
+/// section, a delta section or a named heading — or `None` when it holds
+/// none.
+pub fn heading_language(line: &str) -> Option<Lang> {
+    if !line.starts_with('#') {
+        return None;
+    }
+    if let Some((_, lang)) = line.strip_prefix("## ").and_then(|t| delta_title(t.trim())) {
+        return Some(lang);
+    }
+    Key::ALL.into_iter().find_map(|key| {
+        section_line(line, key).or_else(|| named_heading(line, key).map(|(lang, _)| lang))
+    })
+}
+
+/// The language of the first structural keyword heading `text` holds, or
+/// `None` when it holds none.
+pub fn text_language(text: &str) -> Option<Lang> {
+    text.lines().find_map(heading_language)
 }
 
 /// Lower case, French accents folded to their base letter, runs of
@@ -744,30 +769,29 @@ mod tests {
 
     #[test]
     fn keyword_language_of_a_shipped_language() {
-        assert_eq!(Lang::for_setting(Some("fr")), fr());
-        assert_eq!(Lang::for_setting(Some("en")), Lang::EN);
+        assert_eq!(Lang::for_setting("fr"), fr());
+        assert_eq!(Lang::for_setting("en"), Lang::EN);
     }
 
     #[test]
     fn keyword_language_of_a_regional_variant() {
-        assert_eq!(Lang::for_setting(Some("fr-CA")), fr());
+        assert_eq!(Lang::for_setting("fr-CA"), fr());
     }
 
     #[test]
     fn keyword_language_ignores_case() {
-        assert_eq!(Lang::for_setting(Some("FR")), fr());
-        assert_eq!(Lang::for_setting(Some("Fr-ca")), fr());
+        assert_eq!(Lang::for_setting("FR"), fr());
+        assert_eq!(Lang::for_setting("Fr-ca"), fr());
     }
 
     #[test]
     fn keyword_language_of_an_unshipped_language_is_english() {
-        assert_eq!(Lang::for_setting(Some("pt-BR")), Lang::EN);
+        assert_eq!(Lang::for_setting("pt-BR"), Lang::EN);
     }
 
     #[test]
     fn keyword_language_without_a_setting_is_english() {
-        assert_eq!(Lang::for_setting(None), Lang::EN);
-        assert_eq!(Lang::for_setting(Some("")), Lang::EN);
+        assert_eq!(Lang::for_setting(""), Lang::EN);
     }
 
     #[test]

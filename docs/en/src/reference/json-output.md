@@ -465,7 +465,7 @@ see the [codes](cli.md#codev-self-update).
 | `resolvedOutputPath` | Where to write; may be a glob such as `…/specs/**/*.md` |
 | `instruction`, `template` | From the schema; `null` when the schema defines none |
 | `language` | The artifact language, `en` by default |
-| `keywordLanguage` | The language the structural keywords are written in: `language` when codev ships its keywords, `en` otherwise; the template is served in it |
+| `keywordLanguage` | The language the structural keywords are written in: that of the keywords of the template served, else `language` when codev ships its keywords, `en` otherwise |
 | `keywords` | The text to write for each keyword of the catalog in `keywordLanguage`, by key (`requirement`, `delta.added`…); a list for `normative` and `none` |
 | `related` | The existing requirements the change likely touches, ranked against the proposal's `Why` and `What Changes`, at most 10, each with `capability`, `requirement` and `excerpt` — for the artifacts that require the proposal directly (`specs`, `design`), once it is written; an empty array otherwise |
 | `context`, `rules` | Blocks ordered from the most general source to the project, each with its `origin` (`project`, `path:<path>` or `git:<url>`) |

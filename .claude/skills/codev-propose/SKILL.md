@@ -6,7 +6,7 @@ license: MIT
 metadata:
   generator: codev
   version: "0.6.1"
-  checksum: "c393e83d08740ccf625787348152c492e1b05ff260e526dbe958f0aced267b84"
+  checksum: "46e2b8b097912b27e8ab4fe7f3e37cf5abe7a86d67a1d2e0b4064f0da4ea680e"
 ---
 
 Create a change and write its planning artifacts, in one pass.
@@ -150,7 +150,7 @@ The response contains:
 | `instruction` | The schema's guidance for this artifact type. Final authority |
 | `template` | The structure of the file to produce |
 | `language` | The language to write the prose in (ISO 639 code, e.g. `fr`) |
-| `keywordLanguage` | The language the structural keywords are written in — `language` when codev ships its keywords, `en` otherwise |
+| `keywordLanguage` | The language the structural keywords are written in — that of `template`'s keywords, else `language` when codev ships its keywords, `en` otherwise |
 | `keywords` | The text of each structural keyword in `keywordLanguage`, for one `template` does not show |
 | `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
 | `context` | Project context — a **constraint on you**, never content to copy |

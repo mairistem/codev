@@ -163,6 +163,8 @@ dans `keywords` ; sa sortie lisible donne les deux sur sa ligne `Language:`.
 prose et mots-clés, et `/codev-configure` y rédige également le `context:` et les
 `rules:` qu'il propose. Un schéma de projet peut contenir ses templates par langue, sous
 `templates/<langue>/` ; sans eux, `templates/<fichier>` sert toutes les
-langues ([Schémas personnalisés](custom-schemas.md)). Le template d'ADR utilisé par les commandes
+langues, et les mots-clés suivent la langue dans laquelle ce template est
+écrit — un schéma écrit en anglais garde des mots-clés anglais
+([Schémas personnalisés](custom-schemas.md)). Le template d'ADR utilisé par les commandes
 `codev decision` a des titres de sections en anglais ; rédigez-en le contenu
 dans la langue de votre équipe.

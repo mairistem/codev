@@ -162,29 +162,10 @@ pub fn score_plan(
     let valid = outcome == PlanOutcome::Planned
         && !validate.is_empty()
         && validate.values().all(|report| errors(report) == 0);
-    let keywords_off = case.keyword_language.as_deref().map(|code| {
-        let mut off = Vec::new();
-        for (rest, text) in &plan {
-            let checked = rest.ends_with("/proposal.md")
-                || rest.ends_with("/design.md")
-                || rest.ends_with("/spec.md");
-            if !checked {
-                continue;
-            }
-            for line in text.lines() {
-                if let Some(lang) = keyword_language_of(line)
-                    && lang.code() != code
-                {
-                    off.push(format!("{rest}: {line}"));
-                }
-            }
-        }
-        // A run that wrote nothing has no keyword in its language.
-        if plan.is_empty() {
-            off.push("no artifact written".to_string());
-        }
-        off
-    });
+    let keywords_off = case
+        .keyword_language
+        .as_deref()
+        .map(|code| keyword_lines_off(&plan, code));
     PlanScore {
         outcome,
         primary_found,
@@ -199,18 +180,32 @@ pub fn score_plan(
 }
 
 /// The language of the structural keyword a heading line holds, as the
+/// The artifacts that hold structural keywords; the tasks hold none.
+const KEYWORD_ARTIFACTS: [&str; 3] = ["/proposal.md", "/design.md", "/spec.md"];
+
+/// Each keyword heading of the plan's artifacts written in another
+/// language than `code`, as `<path>: <line>`.
+fn keyword_lines_off(plan: &[(&str, &str)], code: &str) -> Vec<String> {
+    let mut off = Vec::new();
+    let checked = plan
+        .iter()
+        .filter(|(path, _)| KEYWORD_ARTIFACTS.iter().any(|end| path.ends_with(end)));
+    for (path, text) in checked {
+        let lines = text
+            .lines()
+            .filter(|line| keyword_language_of(line).is_some_and(|lang| lang.code() != code));
+        off.extend(lines.map(|line| format!("{path}: {line}")));
+    }
+    // A run that wrote nothing has no keyword in its language.
+    if plan.is_empty() {
+        off.push("no artifact written".to_string());
+    }
+    off
+}
+
 /// keyword catalog recognizes it; `None` for any other line.
 pub fn keyword_language_of(line: &str) -> Option<codev_core::keywords::Lang> {
-    use codev_core::keywords::{Key, delta_title, named_heading, section_line};
-    if !line.starts_with('#') {
-        return None;
-    }
-    if let Some((_, lang)) = line.strip_prefix("## ").and_then(|t| delta_title(t.trim())) {
-        return Some(lang);
-    }
-    Key::ALL.into_iter().find_map(|key| {
-        section_line(line, key).or_else(|| named_heading(line, key).map(|(lang, _)| lang))
-    })
+    codev_core::keywords::heading_language(line)
 }
 
 fn read_delta(capability: &str, text: &str, touched: &mut Touched) {

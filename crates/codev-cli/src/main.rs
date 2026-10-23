@@ -1491,7 +1491,7 @@ fn archive_shape() -> serde_json::Value {
 }
 
 fn instructions_shape(language: &str) -> serde_json::Value {
-    let keyword_language = codev_core::keywords::Lang::for_setting(Some(language));
+    let keyword_language = codev_core::keywords::Lang::for_setting(language);
     json!({
         "changeName": null,
         "schemaName": null,

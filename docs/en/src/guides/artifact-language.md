@@ -156,6 +156,8 @@ keyword language in `keywordLanguage`, and the text of each keyword in
 and keywords, and `/codev-configure` writes the `context:` and `rules:` it
 proposes in it too. A project schema may hold its templates per language,
 under `templates/<language>/`; without, `templates/<file>` serves every
-language ([Custom schemas](custom-schemas.md)).
+language, and the keywords follow the language that template is written
+in — a schema written in English keeps English keywords
+([Custom schemas](custom-schemas.md)).
 The ADR template used by `codev decision` commands has English section
 headings; write the body in your team's language.

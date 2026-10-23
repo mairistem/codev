@@ -123,7 +123,7 @@ The response contains:
 | `instruction` | The schema's guidance for this artifact type. Final authority |
 | `template` | The structure of the file to produce |
 | `language` | The language to write the prose in (ISO 639 code, e.g. `fr`) |
-| `keywordLanguage` | The language the structural keywords are written in — `language` when codev ships its keywords, `en` otherwise |
+| `keywordLanguage` | The language the structural keywords are written in — that of `template`'s keywords, else `language` when codev ships its keywords, `en` otherwise |
 | `keywords` | The text of each structural keyword in `keywordLanguage`, for one `template` does not show |
 | `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
 | `context` | Project context — a **constraint on you**, never content to copy |

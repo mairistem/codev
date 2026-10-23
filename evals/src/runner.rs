@@ -327,8 +327,10 @@ pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> O
 }
 
 /// `existing` with `extra` appended, on a line of its own; a top-level key
-/// `extra` sets replaces the same key of `existing`, its indented lines
-/// included, so that the result never holds a key twice.
+/// `extra` sets replaces the same key of `existing`, so that the result
+/// never holds a key twice. A key's block runs from its line to the next
+/// top-level key: indented lines, list items, comments and blank lines
+/// in between all belong to it.
 pub fn with_appended_config(existing: &str, extra: &str) -> String {
     let top_key = |line: &str| -> Option<String> {
         let first = line.chars().next()?;
@@ -341,10 +343,8 @@ pub fn with_appended_config(existing: &str, extra: &str) -> String {
     let mut text = String::new();
     let mut skipping = false;
     for line in existing.lines() {
-        match top_key(line) {
-            Some(key) => skipping = replaced.contains(&key),
-            None if line.starts_with(char::is_whitespace) || line.is_empty() => {}
-            None => skipping = false,
+        if let Some(key) = top_key(line) {
+            skipping = replaced.contains(&key);
         }
         if !skipping {
             text.push_str(line);
@@ -3603,6 +3603,9 @@ mod tests {
         let merged = with_appended_config(nested, "roles:\n  developer: { model: sonnet }\n");
         assert!(!merged.contains("skeptic"), "{merged}");
         assert!(merged.contains("language: en"), "{merged}");
+        let flush = "workflows:\n- propose\nlanguage: en\n";
+        let merged = with_appended_config(flush, "workflows:\n  - apply\n");
+        assert!(!merged.contains("- propose"), "{merged}");
     }
 
     #[test]
