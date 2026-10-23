@@ -420,7 +420,7 @@ fn render_ctx(config: &config::ResolvedConfig) -> codev_agents::claude::RenderCt
     codev_agents::claude::RenderCtx {
         jira_mcp_tool: config.mcp.jira_tool.clone(),
         review_mode: config.review_mode.unwrap_or_default(),
-        developer_model: codev_core::roles::developer_has_model(&config.roles),
+        developer_has_model: codev_core::roles::developer_has_model(&config.roles),
     }
 }
 

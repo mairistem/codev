@@ -104,3 +104,115 @@ history:
   - status: fixed
     by: skeptic
 ```
+
+## code.review
+
+Mode: isolated.
+Summarized: crates/codev-agents/src/claude.rs — over the material's size limit.
+Summarized: crates/codev-agents/src/workflows.rs — over the material's size limit.
+Summarized: crates/codev-cli/src/commands.rs — over the material's size limit.
+Summarized: crates/codev-core/src/roles.rs — over the material's size limit.
+Summarized: crates/codev-engine/src/validate/mod.rs — over the material's size limit.
+Summarized: docs/en/src/roles.md — over the material's size limit.
+Summarized: docs/fr/src/roles.md — over the material's size limit.
+Summarized: evals/src/runner.rs — over the material's size limit.
+Summarized: evals/tests/suite.rs — over the material's size limit.
+Summarized: CONTRIBUTING.fr.md — over the material's size limit.
+
+### newcomer
+
+#### R-newcomer-1 `fixture_config_for` says review cases take the config, but the code returns it only for implementation cases
+
+```yaml
+severity: medium
+confidence: high
+location: "evals/src/runner.rs:339-345"
+evidence: |
+  /// The configuration `--fixture-config` appends to a case at `step`: the
+  /// review and implementation cases take it, the planning and update cases
+recommendation: Make the comment say what the function returns (Some only for an implementation case; review cases get it through `config_with_review_settings`), and write a plain `match`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "evals/src/runner.rs fixture_config_for: the comment says what it returns, a plain match"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 `SkillState::OtherReviewMode` now also means "rendered for another developer model"
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/codev-agents/src/claude.rs:366"
+evidence: |
+                              && has_agent != wants_agent_tool(ctx, w.id)
+recommendation: Rename the state, or keep the name and say at this branch and in the variant's doc that the developer's model also decides the sub-agent tool of `apply`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-agents/src/claude.rs: a comment at the branch; crates/codev-core/src/doctor.rs: the variant doc names the developer model too"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 `developer_model` is a bool named like a model
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-agents/src/claude.rs:62"
+evidence: |
+      pub developer_model: bool,
+recommendation: Rename the field `developer_has_model`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-agents/src/claude.rs: the field is named developer_has_model"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The test name covers only `propose`, but the test checks four skills
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-agents/src/claude.rs:833"
+evidence: |
+      fn a_developer_model_leaves_propose_without_the_sub_agent_tool() {
+recommendation: Name the test for what it checks.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "renamed a_developer_model_adds_the_sub_agent_tool_to_no_skill_but_apply"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 One test checks three unrelated behaviours under one name
+
+```yaml
+severity: low
+confidence: high
+location: "evals/src/runner.rs:3538"
+evidence: |
+      fn the_fixture_config_reaches_an_implementation_case() {
+recommendation: Split it into three tests named after their behaviour.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "split into the_fixture_config_reaches_an_implementation_case, appended_config_starts_on_its_own_line, an_implementation_case_keeps_its_own_review_mode"
+  - status: fixed
+    by: newcomer
+```

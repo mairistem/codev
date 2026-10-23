@@ -7,7 +7,7 @@
 
 ## 2. The sub-agent tool
 
-- [x] 2.1 In `crates/codev-agents/src/claude.rs`, the render context records whether the `developer` has a model, and `{{AGENT_TOOL}}` becomes `Agent` in `apply` when the review mode is `isolated` or the developer has a model, in `propose` only in the `isolated` mode; the CLI fills the context from the resolved roles; verified by the unit tests `a_developer_model_adds_the_sub_agent_tool_to_apply` and `a_developer_model_leaves_propose_without_the_sub_agent_tool`, and by the existing isolated- and inline-mode tests still passing (skills: "A developer model adds the sub-agent tool to apply", "Isolated mode adds the sub-agent tool", "Inline mode leaves the tools as they were")
+- [x] 2.1 In `crates/codev-agents/src/claude.rs`, the render context records whether the `developer` has a model, and `{{AGENT_TOOL}}` becomes `Agent` in `apply` when the review mode is `isolated` or the developer has a model, in `propose` only in the `isolated` mode; the CLI fills the context from the resolved roles; verified by the unit tests `a_developer_model_adds_the_sub_agent_tool_to_apply` and `a_developer_model_adds_the_sub_agent_tool_to_no_skill_but_apply`, and by the existing isolated- and inline-mode tests still passing (skills: "A developer model adds the sub-agent tool to apply", "Isolated mode adds the sub-agent tool", "Inline mode leaves the tools as they were")
 
 ## 3. The apply skill
 

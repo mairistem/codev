@@ -336,13 +336,15 @@ pub fn with_appended_config(existing: &str, extra: &str) -> String {
     text
 }
 
-/// The configuration `--fixture-config` appends to a case at `step`: the
-/// review and implementation cases take it, the planning and update cases
-/// do not.
+/// The configuration `--fixture-config` appends to a fixture replayed from
+/// the repository's history: an implementation case's only. Review cases
+/// get it through [`config_with_review_settings`]; planning and update
+/// cases never do.
 pub fn fixture_config_for(step: Step, review: &ReviewSettings) -> Option<&str> {
-    matches!(step, Step::CodeImplement)
-        .then_some(review.fixture_config.as_deref())
-        .flatten()
+    match step {
+        Step::CodeImplement => review.fixture_config.as_deref(),
+        _ => None,
+    }
 }
 
 /// The `allowed-tools` of a skill's frontmatter, as the skill grants them
@@ -3534,12 +3536,16 @@ mod tests {
         );
     }
 
-    #[test]
-    fn the_fixture_config_reaches_an_implementation_case() {
-        let review = ReviewSettings {
+    fn developer_on_sonnet() -> ReviewSettings {
+        ReviewSettings {
             mode: ReviewMode::Isolated,
             fixture_config: Some("roles: { developer: { model: sonnet } }\n".into()),
-        };
+        }
+    }
+
+    #[test]
+    fn the_fixture_config_reaches_an_implementation_case() {
+        let review = developer_on_sonnet();
         assert_eq!(
             fixture_config_for(Step::CodeImplement, &review),
             Some("roles: { developer: { model: sonnet } }\n")
@@ -3547,12 +3553,19 @@ mod tests {
         for step in [Step::PlanWrite, Step::PlanUpdate] {
             assert_eq!(fixture_config_for(step, &review), None, "{step:?}");
         }
+    }
+
+    #[test]
+    fn appended_config_starts_on_its_own_line() {
         assert_eq!(
             with_appended_config("schema: spec-driven", "roles: {}\n"),
             "schema: spec-driven\nroles: {}\n"
         );
-        // The review mode stays the case's own: only review cases are set
-        // to isolated.
-        assert!(!review.isolated_at(Step::CodeImplement));
+    }
+
+    #[test]
+    fn an_implementation_case_keeps_its_own_review_mode() {
+        // `--review-mode isolated` sets only the review cases.
+        assert!(!developer_on_sonnet().isolated_at(Step::CodeImplement));
     }
 }
