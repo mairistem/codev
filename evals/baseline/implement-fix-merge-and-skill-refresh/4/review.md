@@ -1,133 +1,131 @@
 # Review record: fix-merge-and-skill-refresh
+
 <!-- codev-review: 1 -->
 
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — beyond the material limit (38701 bytes).
-Summarized: docs/en/src/reference/cli.md — beyond the material limit (43864 bytes).
-Summarized: docs/fr/src/reference/cli.md — beyond the material limit (47153 bytes).
+Summarized: crates/codev-agents/src/claude.rs — the material exceeds the size limit.
+Summarized: docs/en/src/reference/cli.md — the material exceeds the size limit.
+Summarized: docs/fr/src/reference/cli.md — the material exceeds the size limit.
 
 ### migration
 
-#### R-migration-1 The main legacy path, a same-version skill without a checksum that matches the rendering, has no test
+#### R-migration-1 A change synced with an earlier codev and archived after the upgrade keeps the cut text
 
 ```yaml
 severity: low
-confidence: high
-location: "crates/codev-agents/src/claude.rs:220-223"
+confidence: low
+location: "docs/en/src/faq.md:178-182"
 evidence: |
-              None => {
-                  let other = Self::render(workflow, version, &self.ctx.other_review_mode());
-                  unstamped != split_checksum(desired).1 && unstamped != split_checksum(&other).1
-              }
+  To find out whether you are affected, look at the diff of the archive of each
+  change that both modified a spec's last requirement and added requirements to
+  that spec (`git log -p -- _codev/specs/`). `codev validate` does not detect
+  it — the cut text is still valid Markdown — and syncing the change again does
+  not repair it: its requirements are already in the spec.
 recommendation: >-
-  Every skill installed before this change has no checksum line; when its content
-  still matches the rendering, this branch rewrites it and it gains a checksum —
-  the path existing installs take into the checksum scheme without `--force` — but
-  no test checks it. Add a test that plans over `without_checksum` of the current
-  rendering and asserts one write carrying `metadata.checksum` and no preserved
-  skill, so that a later change to how the checksum line is inserted cannot make
-  every existing install report all its skills as edited by hand.
+  A change synced with codev 0.6.1 or earlier, not yet archived, whose delta
+  modifies a spec's last requirement and adds requirements, already cut the
+  spec. Archiving it after the upgrade replaces the modified requirement
+  whole, but skips the ADDED one whose name already exists
+  (merge/mod.rs, "an ADDED whose name already exists in the main spec is
+  treated as a silent no-op"): the tail of the cut text stays under the added
+  requirement's heading, unnoticed. In both FAQ entries, also cover changes
+  synced but not yet archived, and say to check, after archiving, that the
+  added requirement holds no text of the one before it. The third
+  release-note item could say the same (the proposal is a planning
+  artifact: `/codev-update`).
 history:
   - status: open
     by: migration
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — test a_legacy_skill_matching_the_rendering_is_rewritten_with_its_checksum"
+    ref: "docs/en/src/faq.md, docs/fr/src/faq.md: the entry covers a change synced before the upgrade and archived after it"
   - status: fixed
     by: migration
 ```
 
 ### newcomer
 
-#### R-newcomer-1 "stamped"/"unstamped" means two things, and `.1` hides what is compared
+#### R-newcomer-1 `edited_by_hand` answers only after its caller's own checks, and its `None` branch negates inside `all`
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:216-222"
+location: "crates/codev-agents/src/claude.rs:259-265"
 evidence: |
-          let (checksum, unstamped) = split_checksum(current);
-          match checksum {
-              Some(checksum) => sha256_hex(unstamped.as_bytes()) != checksum,
-              None => {
-                  let other = Self::render(workflow, version, &self.ctx.other_review_mode());
-                  unstamped != split_checksum(desired).1 && unstamped != split_checksum(&other).1
+      fn edited_by_hand(&self, workflow: &Workflow, version: &str, current: &str) -> bool {
+          let content = without_checksum(current);
+          match stamped_checksum(current) {
+              Some(checksum) => sha256_hex(content.as_bytes()) != checksum,
+              None => [self.ctx.clone(), self.ctx.other_review_mode()]
+                  .iter()
+                  .all(|ctx| content != without_checksum(&Self::render(workflow, version, ctx))),
 recommendation: >-
-  In this file "stamped" already means "carries the version stamp"
-  (`stamped_version`); the change reuses it for the checksum (`unstamped` in
-  `render`, the `stamped` flag in `with_checksum`, `unstamped` here, one line below
-  a check on the version stamp), and `split_checksum(desired).1` sends the reader
-  to the tuple order. Rename to names about the checksum and add a
-  `strip_checksum` helper so the legacy branch reads as a comparison of contents
-  without their checksum line.
+  The method shares its name with the local `edited_by_hand` at the call
+  site, which holds the whole decision, while the method is right only after
+  the caller checked the version and the difference from the rendering. Give
+  it a name that states that precondition (`same_version_skill_was_edited`),
+  and write the `None` branch as `!…any(|ctx| content == …)` with a comment:
+  a skill without a checksum is codev's when it matches its rendering in
+  either review mode.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `content`/`inserted` names, `strip_checksum` helper"
+    ref: "crates/codev-agents/src/claude.rs: renamed same_version_skill_was_edited, its None branch written with any and a comment"
   - status: fixed
     by: newcomer
 ```
 
-#### R-newcomer-2 `split_checksum` hides its one skip in a `continue` inside a let-chain
+#### R-newcomer-2 `checksum_line` skips the opening `---` line without saying so
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:409-421"
+location: "crates/codev-agents/src/claude.rs:400-404"
 evidence: |
-      if let Some(first) = lines.next() {
-          rest.push_str(first);
-          let mut in_frontmatter = first.trim_end() == "---";
-          for line in lines {
-              if in_frontmatter && line.trim_end() == "---" {
-                  in_frontmatter = false;
-              } else if in_frontmatter
-                  && checksum.is_none()
-                  && let Some(value) = line.trim().strip_prefix(CHECKSUM_KEY)
-              {
-                  checksum = Some(value.trim().trim_matches('"').to_string());
-                  continue;
-              }
-              rest.push_str(line);
+      let mut lines = contents.split_inclusive('\n');
+      let mut start = lines.next().map_or(0, str::len);
+      for line in lines {
+          if line.trim_end() == "---" {
+              break;
 recommendation: >-
-  The one line the function exists to drop is handled by a `continue` at the end
-  of an `else if` let-chain three levels deep, and the first line is handled apart.
-  Flatten it: treat every line in one loop and make "skip the checksum line" the
-  visible first step of the loop body.
+  `lines.next().map_or(0, str::len)` both consumes the opening delimiter, so
+  that the `---` test in the loop finds the closing one, and sets the offset
+  past it. Name the step (`let opening = lines.next()?;`) and say why in a
+  comment.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `split_checksum` as one flat loop, the checksum line skipped first"
+    ref: "crates/codev-agents/src/claude.rs: checksum_line names the opening line and says why it is skipped"
   - status: fixed
     by: newcomer
 ```
 
-#### R-newcomer-3 The regression test puts its spec and delta on one unreadable line each
+#### R-newcomer-3 `CHECKSUM_KEY` holds the key and its colon
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-core/src/merge/mod.rs:550-554"
+location: "crates/codev-agents/src/claude.rs:390-392"
 evidence: |
-          let spec_source = "## Purpose\n\nx.\n\n## Requirements\n\n### Requirement: Login\nThe system SHALL x.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n";
+  /// The frontmatter key, under `metadata`, of a skill's checksum: the
+  /// SHA-256 of the whole skill without that line.
+  const CHECKSUM_KEY: &str = "checksum:";
 recommendation: >-
-  The shape that matters — MODIFIED before ADDED, `Login` closing the
-  `Requirements` section — is buried in strings of 150 to 250 characters, and
-  nothing says why the expected `login` has blank lines after its headings. Write
-  each document one Markdown line per source line (`concat!`), and say in a
-  comment that `login` is the normalized rendering the merge produces.
+  The YAML key is `checksum`; the constant carries the colon too, so a reader
+  writing `"{CHECKSUM_KEY}: …"` would produce `checksum::`. Rename it
+  `CHECKSUM_PREFIX`, or keep the key alone and put the colon at its uses.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-core/src/merge/mod.rs — the test documents written with `concat!`, a comment on `login`"
+    ref: "crates/codev-agents/src/claude.rs: CHECKSUM_KEY renamed CHECKSUM_PREFIX, its comment says it holds the colon"
   - status: fixed
     by: newcomer
 ```

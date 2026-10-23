@@ -6,34 +6,42 @@
 
 Mode: inline.
 
-### developer
+### newcomer
 
-Fallback: `codev roles` and `codev review` are unavailable in the installed codev 0.6.1; the developer (newcomer) role was applied inline.
-
-#### R-developer-1 A failed seal write leaves an accepted, unsealed decision that `accept` cannot finish
+#### R-newcomer-1 `AcceptPlan.title` is never read
 
 ```yaml
-severity: medium
+severity: low
 confidence: high
-location: "crates/codev-engine/src/decisions_actions.rs:612"
+location: "crates/codev-engine/src/decisions_actions.rs:249"
 evidence: |
-  plan.write(entry.path.clone(), accepted, WriteMode::Overwrite);
-recommendation: >-
-  `apply::execute` runs the writes in order with no rollback, so the plan's
-  order decides the half-applied state. With the ADR first, a failed
-  `seal.yaml` write (write-locked file, full disk) leaves `status: accepted`
-  without a seal, and re-running `decision accept` is refused with
-  `decision_not_proposed`. Write the seal first: a failed ADR write then
-  leaves a seal on a still `proposed` decision, which a re-run of
-  `decision accept` completes through the matching-seal branch. A real
-  transaction in `apply::execute` is shared with `decision new` and outside
-  this change.
+    pub title: String,
+recommendation: Remove the field; the CLI builds its summary from the index read back after the write, so a reader looking for where the title is used finds nothing.
 history:
   - status: open
-    by: developer
+    by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-engine/src/decisions_actions.rs — seal written before the ADR; test plan_accept_writes_the_seal_before_the_adr_so_a_retry_completes (fails with the old order)"
+    ref: crates/codev-engine/src/decisions_actions.rs — `title` removed from `AcceptPlan`
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 `DecisionNotProposed` branches its message on a magic string
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-engine/src/decisions_actions.rs:137"
+evidence: |
+            Self::DecisionNotProposed { id, status } if status == "accepted" => format!(
+recommendation: Carry the `DecisionStatus` itself in the variant and match `DecisionStatus::Accepted`, so the special case reads as a status, not as a string comparison a reader must trust.
+history:
+  - status: open
+    by: newcomer
   - status: fixed
     by: developer
+    ref: crates/codev-engine/src/decisions_actions.rs — `DecisionNotProposed.status` is a `DecisionStatus`, matched on `DecisionStatus::Accepted`
+  - status: fixed
+    by: newcomer
 ```

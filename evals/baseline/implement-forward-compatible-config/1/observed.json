@@ -2,884 +2,858 @@
   "format": 2,
   "case": "implement-forward-compatible-config",
   "error": null,
-  "costUsd": 5.926118999999997,
-  "durationMs": 922859,
+  "costUsd": 5.722768200000002,
+  "durationMs": 794141,
   "consumption": {
-    "durationApiMs": 728600,
-    "turns": 88,
+    "durationApiMs": 599078,
+    "turns": 94,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1186,
-      "cacheCreation": 270778,
-      "cacheRead": 12850735,
-      "output": 70190
+      "input": 1162,
+      "cacheCreation": 229804,
+      "cacheRead": 12817026,
+      "output": 65979
     },
-    "toolCalls": 87,
-    "orientationCalls": 14,
+    "toolCalls": 93,
+    "orientationCalls": 12,
     "calls": [
       {
-        "cacheCreation": 7625,
-        "cacheRead": 23701,
-        "input": 2,
-        "output": 21,
-        "toolCalls": 1,
-        "sources": {
-          "prompt": 7625
-        }
-      },
-      {
-        "cacheCreation": 12127,
-        "cacheRead": 31326,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "skill": 12127
-        }
-      },
-      {
-        "cacheCreation": 1369,
-        "cacheRead": 43453,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "codev status": 1369
-        }
-      },
-      {
-        "cacheCreation": 14892,
-        "cacheRead": 44822,
-        "input": 2,
-        "output": 10,
-        "toolCalls": 1,
-        "sources": {
-          "file": 14892
-        }
-      },
-      {
-        "cacheCreation": 2663,
-        "cacheRead": 59714,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "codev roles": 2663
-        }
-      },
-      {
-        "cacheCreation": 422,
-        "cacheRead": 62377,
-        "input": 2,
-        "output": 62,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 422
-        }
-      },
-      {
-        "cacheCreation": 756,
-        "cacheRead": 62799,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 44,
-          "shell": 712
-        }
-      },
-      {
-        "cacheCreation": 821,
-        "cacheRead": 63555,
+        "cacheCreation": 6052,
+        "cacheRead": 25265,
         "input": 2,
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "output": 122,
-          "shell": 699
+          "prompt": 6052
         }
       },
       {
-        "cacheCreation": 24685,
-        "cacheRead": 64376,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 24685
-        }
-      },
-      {
-        "cacheCreation": 2199,
-        "cacheRead": 89061,
+        "cacheCreation": 13771,
+        "cacheRead": 31317,
         "input": 2,
         "output": 16,
-        "toolCalls": 4,
-        "sources": {
-          "output": 1131,
-          "search": 1068
-        }
-      },
-      {
-        "cacheCreation": 4102,
-        "cacheRead": 91260,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 2,
-        "sources": {
-          "edit": 2343,
-          "shell": 1760
-        }
-      },
-      {
-        "cacheCreation": 904,
-        "cacheRead": 95362,
-        "input": 2,
-        "output": 98,
         "toolCalls": 1,
         "sources": {
-          "edit": 406,
-          "shell": 498
+          "shell": 617,
+          "skill": 13154
         }
       },
       {
-        "cacheCreation": 3997,
-        "cacheRead": 96266,
+        "cacheCreation": 1484,
+        "cacheRead": 45088,
         "input": 2,
-        "output": 6,
+        "output": 16,
         "toolCalls": 1,
         "sources": {
-          "file": 3551,
-          "output": 446
+          "shell": 1484
         }
       },
       {
-        "cacheCreation": 1027,
-        "cacheRead": 100263,
-        "input": 2,
-        "output": 93,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1027
-        }
-      },
-      {
-        "cacheCreation": 12531,
-        "cacheRead": 101290,
+        "cacheCreation": 15055,
+        "cacheRead": 46572,
         "input": 2,
         "output": 4,
         "toolCalls": 1,
         "sources": {
-          "file": 12460,
-          "output": 71
+          "file": 15055
         }
       },
       {
-        "cacheCreation": 1558,
-        "cacheRead": 113821,
+        "cacheCreation": 3529,
+        "cacheRead": 61627,
+        "input": 2,
+        "output": 51,
+        "toolCalls": 1,
+        "sources": {
+          "codev roles": 3529
+        }
+      },
+      {
+        "cacheCreation": 808,
+        "cacheRead": 65156,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "search": 1558
+          "output": 58,
+          "shell": 750
         }
       },
       {
-        "cacheCreation": 2160,
-        "cacheRead": 115379,
+        "cacheCreation": 14585,
+        "cacheRead": 65964,
         "input": 2,
-        "output": 5,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "file": 14585
+        }
+      },
+      {
+        "cacheCreation": 3100,
+        "cacheRead": 80549,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3100
+        }
+      },
+      {
+        "cacheCreation": 2092,
+        "cacheRead": 83649,
+        "input": 2,
+        "output": 6,
         "toolCalls": 1,
         "sources": {
-          "search": 2160
+          "edit": 1398,
+          "shell": 694
         }
       },
       {
-        "cacheCreation": 2411,
-        "cacheRead": 117539,
+        "cacheCreation": 701,
+        "cacheRead": 85741,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 701
+        }
+      },
+      {
+        "cacheCreation": 10549,
+        "cacheRead": 86442,
+        "input": 2,
+        "output": 73,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 101,
+          "file": 10448
+        }
+      },
+      {
+        "cacheCreation": 1874,
+        "cacheRead": 96991,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 614,
+          "shell": 1260
+        }
+      },
+      {
+        "cacheCreation": 396,
+        "cacheRead": 98865,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 396
+        }
+      },
+      {
+        "cacheCreation": 702,
+        "cacheRead": 99261,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 702
+        }
+      },
+      {
+        "cacheCreation": 3321,
+        "cacheRead": 99963,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 3,
+        "sources": {
+          "file": 2750,
+          "search": 571
+        }
+      },
+      {
+        "cacheCreation": 1409,
+        "cacheRead": 103284,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1320,
+          "shell": 89
+        }
+      },
+      {
+        "cacheCreation": 472,
+        "cacheRead": 104693,
+        "input": 2,
+        "output": 62,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 472
+        }
+      },
+      {
+        "cacheCreation": 1886,
+        "cacheRead": 105165,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 357,
+          "shell": 1529
+        }
+      },
+      {
+        "cacheCreation": 407,
+        "cacheRead": 107051,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 407
+        }
+      },
+      {
+        "cacheCreation": 1013,
+        "cacheRead": 107458,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 331,
+          "shell": 682
+        }
+      },
+      {
+        "cacheCreation": 884,
+        "cacheRead": 108471,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 884
+        }
+      },
+      {
+        "cacheCreation": 791,
+        "cacheRead": 109355,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "file": 791
+        }
+      },
+      {
+        "cacheCreation": 12957,
+        "cacheRead": 110146,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "output": 1511,
-          "shell": 900
+          "edit": 104,
+          "file": 12853
         }
       },
       {
-        "cacheCreation": 5350,
-        "cacheRead": 119950,
+        "cacheCreation": 2425,
+        "cacheRead": 123103,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 623,
+          "search": 1802
+        }
+      },
+      {
+        "cacheCreation": 1142,
+        "cacheRead": 125528,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "search": 1142
+        }
+      },
+      {
+        "cacheCreation": 15190,
+        "cacheRead": 126670,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 15190
+        }
+      },
+      {
+        "cacheCreation": 765,
+        "cacheRead": 141860,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 27,
+          "search": 738
+        }
+      },
+      {
+        "cacheCreation": 2450,
+        "cacheRead": 142625,
+        "input": 2,
+        "output": 43,
+        "toolCalls": 1,
+        "sources": {
+          "search": 2450
+        }
+      },
+      {
+        "cacheCreation": 3529,
+        "cacheRead": 145075,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 2340,
+          "shell": 1189
+        }
+      },
+      {
+        "cacheCreation": 3532,
+        "cacheRead": 148604,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 51,
+          "shell": 3481
+        }
+      },
+      {
+        "cacheCreation": 2221,
+        "cacheRead": 152136,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 571,
+          "shell": 1650
+        }
+      },
+      {
+        "cacheCreation": 746,
+        "cacheRead": 154357,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 746
+        }
+      },
+      {
+        "cacheCreation": 1103,
+        "cacheRead": 155103,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
           "output": 41,
-          "shell": 5309
+          "shell": 1062
         }
       },
       {
-        "cacheCreation": 1682,
-        "cacheRead": 125300,
+        "cacheCreation": 2170,
+        "cacheRead": 156206,
         "input": 2,
-        "output": 8,
+        "output": 3,
         "toolCalls": 1,
         "sources": {
-          "file": 1308,
-          "output": 374
+          "output": 270,
+          "shell": 1900
         }
       },
       {
-        "cacheCreation": 2793,
-        "cacheRead": 126982,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2437,
-          "output": 356
-        }
-      },
-      {
-        "cacheCreation": 340,
-        "cacheRead": 129775,
-        "input": 2,
-        "output": 77,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 340
-        }
-      },
-      {
-        "cacheCreation": 2247,
-        "cacheRead": 130115,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2178,
-          "output": 69
-        }
-      },
-      {
-        "cacheCreation": 3050,
-        "cacheRead": 132362,
+        "cacheCreation": 3852,
+        "cacheRead": 158376,
         "input": 2,
         "output": 5,
         "toolCalls": 1,
         "sources": {
-          "file": 3050
+          "shell": 3852
         }
       },
       {
-        "cacheCreation": 1146,
-        "cacheRead": 135412,
-        "input": 2,
-        "output": 7,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1146
-        }
-      },
-      {
-        "cacheCreation": 584,
-        "cacheRead": 136558,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "search": 584
-        }
-      },
-      {
-        "cacheCreation": 2197,
-        "cacheRead": 137142,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 2197
-        }
-      },
-      {
-        "cacheCreation": 1016,
-        "cacheRead": 139339,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "output": 49,
-          "shell": 967
-        }
-      },
-      {
-        "cacheCreation": 422,
-        "cacheRead": 140355,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 422
-        }
-      },
-      {
-        "cacheCreation": 1593,
-        "cacheRead": 140777,
+        "cacheCreation": 415,
+        "cacheRead": 162228,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "file": 1533,
-          "output": 60
+          "output": 173,
+          "search": 242
         }
       },
       {
-        "cacheCreation": 2628,
-        "cacheRead": 142370,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 2628
-        }
-      },
-      {
-        "cacheCreation": 862,
-        "cacheRead": 144998,
-        "input": 2,
-        "output": 9,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 862
-        }
-      },
-      {
-        "cacheCreation": 514,
-        "cacheRead": 145860,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "output": 45,
-          "shell": 469
-        }
-      },
-      {
-        "cacheCreation": 675,
-        "cacheRead": 146374,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "file": 675
-        }
-      },
-      {
-        "cacheCreation": 1857,
-        "cacheRead": 147049,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1857
-        }
-      },
-      {
-        "cacheCreation": 6991,
-        "cacheRead": 148906,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "file": 6991
-        }
-      },
-      {
-        "cacheCreation": 2140,
-        "cacheRead": 155897,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "search": 2140
-        }
-      },
-      {
-        "cacheCreation": 1412,
-        "cacheRead": 158037,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1412
-        }
-      },
-      {
-        "cacheCreation": 747,
-        "cacheRead": 159449,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 701,
-          "output": 46
-        }
-      },
-      {
-        "cacheCreation": 695,
-        "cacheRead": 160196,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "search": 695
-        }
-      },
-      {
-        "cacheCreation": 385,
-        "cacheRead": 160891,
-        "input": 2,
-        "output": 21,
-        "toolCalls": 1,
-        "sources": {
-          "search": 385
-        }
-      },
-      {
-        "cacheCreation": 284,
-        "cacheRead": 161276,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "file": 284
-        }
-      },
-      {
-        "cacheCreation": 4213,
-        "cacheRead": 161560,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "skill": 4213
-        }
-      },
-      {
-        "cacheCreation": 433,
-        "cacheRead": 165773,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 433
-        }
-      },
-      {
-        "cacheCreation": 1079,
-        "cacheRead": 166206,
+        "cacheCreation": 2114,
+        "cacheRead": 162643,
         "input": 2,
         "output": 16,
-        "toolCalls": 2,
+        "toolCalls": 3,
         "sources": {
-          "file": 1048,
-          "output": 31
+          "file": 2114
         }
       },
       {
-        "cacheCreation": 1115,
-        "cacheRead": 167285,
-        "input": 2,
-        "output": 66,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 647,
-          "shell": 468
-        }
-      },
-      {
-        "cacheCreation": 627,
-        "cacheRead": 168400,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "file": 547,
-          "output": 80
-        }
-      },
-      {
-        "cacheCreation": 3766,
-        "cacheRead": 169027,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "file": 3766
-        }
-      },
-      {
-        "cacheCreation": 2824,
-        "cacheRead": 172793,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 47,
-          "shell": 2777
-        }
-      },
-      {
-        "cacheCreation": 947,
-        "cacheRead": 175617,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 947
-        }
-      },
-      {
-        "cacheCreation": 2261,
-        "cacheRead": 176564,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "output": 196,
-          "search": 2066
-        }
-      },
-      {
-        "cacheCreation": 210,
-        "cacheRead": 178825,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 210
-        }
-      },
-      {
-        "cacheCreation": 329,
-        "cacheRead": 179035,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 329
-        }
-      },
-      {
-        "cacheCreation": 1023,
-        "cacheRead": 179364,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 877,
-          "output": 146
-        }
-      },
-      {
-        "cacheCreation": 516,
-        "cacheRead": 180387,
+        "cacheCreation": 2095,
+        "cacheRead": 164757,
         "input": 2,
         "output": 24,
         "toolCalls": 1,
         "sources": {
-          "output": 516
+          "edit": 2094
         }
       },
       {
-        "cacheCreation": 1278,
-        "cacheRead": 180903,
+        "cacheCreation": 1240,
+        "cacheRead": 166852,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "taskstop": 1278
+          "output": 15,
+          "shell": 1225
         }
       },
       {
-        "cacheCreation": 811,
-        "cacheRead": 182181,
+        "cacheCreation": 2562,
+        "cacheRead": 168092,
         "input": 2,
-        "output": 8,
+        "output": 9,
         "toolCalls": 1,
         "sources": {
-          "edit": 615,
-          "output": 196
+          "file": 2528,
+          "output": 34
         }
       },
       {
-        "cacheCreation": 2153,
-        "cacheRead": 182992,
-        "input": 2,
-        "output": 4,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 2153
-        }
-      },
-      {
-        "cacheCreation": 1236,
-        "cacheRead": 185145,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 39,
-          "search": 1197
-        }
-      },
-      {
-        "cacheCreation": 398,
-        "cacheRead": 186381,
-        "input": 2,
-        "output": 61,
-        "toolCalls": 1,
-        "sources": {
-          "output": 89,
-          "shell": 309
-        }
-      },
-      {
-        "cacheCreation": 3309,
-        "cacheRead": 186779,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 3276,
-          "output": 33
-        }
-      },
-      {
-        "cacheCreation": 1695,
-        "cacheRead": 190088,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 57,
-          "shell": 1638
-        }
-      },
-      {
-        "cacheCreation": 1799,
-        "cacheRead": 191783,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 42,
-          "shell": 1757
-        }
-      },
-      {
-        "cacheCreation": 1033,
-        "cacheRead": 193582,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1033
-        }
-      },
-      {
-        "cacheCreation": 974,
-        "cacheRead": 194615,
+        "cacheCreation": 464,
+        "cacheRead": 170654,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "file": 917,
-          "output": 57
+          "file": 464
         }
       },
       {
-        "cacheCreation": 1161,
-        "cacheRead": 195589,
+        "cacheCreation": 5993,
+        "cacheRead": 171118,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5993
+        }
+      },
+      {
+        "cacheCreation": 7881,
+        "cacheRead": 177111,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 7881
+        }
+      },
+      {
+        "cacheCreation": 1550,
+        "cacheRead": 184992,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1550
+        }
+      },
+      {
+        "cacheCreation": 3261,
+        "cacheRead": 186542,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3261
+        }
+      },
+      {
+        "cacheCreation": 4602,
+        "cacheRead": 189803,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 118,
+          "skill": 4484
+        }
+      },
+      {
+        "cacheCreation": 790,
+        "cacheRead": 194405,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 283,
+          "shell": 507
+        }
+      },
+      {
+        "cacheCreation": 1494,
+        "cacheRead": 195195,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "file": 1474,
+          "output": 20
+        }
+      },
+      {
+        "cacheCreation": 1165,
+        "cacheRead": 196689,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 823,
+          "shell": 342
+        }
+      },
+      {
+        "cacheCreation": 1878,
+        "cacheRead": 197854,
         "input": 2,
         "output": 20,
         "toolCalls": 1,
         "sources": {
-          "shell": 1161
+          "file": 1854,
+          "output": 24
         }
       },
       {
-        "cacheCreation": 2683,
-        "cacheRead": 196750,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 2683
-        }
-      },
-      {
-        "cacheCreation": 1134,
-        "cacheRead": 199433,
+        "cacheCreation": 790,
+        "cacheRead": 199732,
         "input": 2,
         "output": 16,
-        "toolCalls": 1,
+        "toolCalls": 2,
         "sources": {
-          "file": 1038,
-          "output": 96
+          "shell": 790
         }
       },
       {
-        "cacheCreation": 1139,
-        "cacheRead": 200567,
+        "cacheCreation": 2810,
+        "cacheRead": 200522,
+        "input": 2,
+        "output": 37,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2810
+        }
+      },
+      {
+        "cacheCreation": 3072,
+        "cacheRead": 203332,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "shell": 1139
+          "output": 308,
+          "shell": 2764
         }
       },
       {
-        "cacheCreation": 820,
-        "cacheRead": 201706,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 365,
-          "skill": 455
-        }
-      },
-      {
-        "cacheCreation": 570,
-        "cacheRead": 202526,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "file": 276,
-          "output": 294
-        }
-      },
-      {
-        "cacheCreation": 1546,
-        "cacheRead": 203096,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "output": 241,
-          "shell": 1305
-        }
-      },
-      {
-        "cacheCreation": 3544,
-        "cacheRead": 204642,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "agent": 3544
-        }
-      },
-      {
-        "cacheCreation": 3265,
-        "cacheRead": 208186,
-        "input": 2,
-        "output": 27,
-        "toolCalls": 1,
-        "sources": {
-          "file": 3094,
-          "output": 171
-        }
-      },
-      {
-        "cacheCreation": 1726,
-        "cacheRead": 211451,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 1528,
-          "output": 198
-        }
-      },
-      {
-        "cacheCreation": 874,
-        "cacheRead": 213177,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "output": 180,
-          "shell": 694
-        }
-      },
-      {
-        "cacheCreation": 1487,
-        "cacheRead": 214051,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 176,
-          "search": 1311
-        }
-      },
-      {
-        "cacheCreation": 295,
-        "cacheRead": 215538,
-        "input": 2,
-        "output": 53,
-        "toolCalls": 1,
-        "sources": {
-          "output": 257,
-          "search": 38
-        }
-      },
-      {
-        "cacheCreation": 1433,
-        "cacheRead": 215833,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1374,
-          "output": 59
-        }
-      },
-      {
-        "cacheCreation": 705,
-        "cacheRead": 217266,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "search": 705
-        }
-      },
-      {
-        "cacheCreation": 3889,
-        "cacheRead": 217971,
+        "cacheCreation": 336,
+        "cacheRead": 206404,
         "input": 2,
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "output": 142,
-          "shell": 3747
+          "file": 21,
+          "output": 315
         }
       },
       {
-        "cacheCreation": 786,
-        "cacheRead": 221860,
+        "cacheCreation": 547,
+        "cacheRead": 206740,
         "input": 2,
-        "output": 736,
+        "output": 20,
+        "toolCalls": 1,
+        "sources": {
+          "search": 547
+        }
+      },
+      {
+        "cacheCreation": 478,
+        "cacheRead": 207287,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 478
+        }
+      },
+      {
+        "cacheCreation": 915,
+        "cacheRead": 207765,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 823,
+          "output": 92
+        }
+      },
+      {
+        "cacheCreation": 520,
+        "cacheRead": 208680,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "output": 520,
+          "toolsearch": 0
+        }
+      },
+      {
+        "cacheCreation": 907,
+        "cacheRead": 209200,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "taskstop": 907
+        }
+      },
+      {
+        "cacheCreation": 581,
+        "cacheRead": 210107,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 581
+        }
+      },
+      {
+        "cacheCreation": 1969,
+        "cacheRead": 210688,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1969
+        }
+      },
+      {
+        "cacheCreation": 2079,
+        "cacheRead": 212657,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2045,
+          "output": 34
+        }
+      },
+      {
+        "cacheCreation": 3510,
+        "cacheRead": 214736,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3510
+        }
+      },
+      {
+        "cacheCreation": 1508,
+        "cacheRead": 218246,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 65,
+          "shell": 1443
+        }
+      },
+      {
+        "cacheCreation": 2688,
+        "cacheRead": 219754,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 25,
+          "search": 2663
+        }
+      },
+      {
+        "cacheCreation": 2397,
+        "cacheRead": 222442,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2397
+        }
+      },
+      {
+        "cacheCreation": 1387,
+        "cacheRead": 224839,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "output": 84,
+          "shell": 1303
+        }
+      },
+      {
+        "cacheCreation": 2914,
+        "cacheRead": 226226,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 88,
+          "shell": 2826
+        }
+      },
+      {
+        "cacheCreation": 853,
+        "cacheRead": 229140,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 32,
+          "search": 821
+        }
+      },
+      {
+        "cacheCreation": 2634,
+        "cacheRead": 229993,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2634
+        }
+      },
+      {
+        "cacheCreation": 2153,
+        "cacheRead": 232627,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 972,
+          "shell": 1181
+        }
+      },
+      {
+        "cacheCreation": 2106,
+        "cacheRead": 234780,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2043,
+          "output": 63
+        }
+      },
+      {
+        "cacheCreation": 3773,
+        "cacheRead": 236886,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3710,
+          "output": 63
+        }
+      },
+      {
+        "cacheCreation": 7284,
+        "cacheRead": 240659,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 38,
+          "shell": 7246
+        }
+      },
+      {
+        "cacheCreation": 1497,
+        "cacheRead": 247943,
+        "input": 2,
+        "output": 41,
+        "toolCalls": 2,
+        "sources": {
+          "output": 191,
+          "search": 1306
+        }
+      },
+      {
+        "cacheCreation": 2323,
+        "cacheRead": 249440,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 908,
+          "output": 238,
+          "shell": 1176
+        }
+      },
+      {
+        "cacheCreation": 1795,
+        "cacheRead": 251763,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "output": 132,
+          "shell": 1663
+        }
+      },
+      {
+        "cacheCreation": 671,
+        "cacheRead": 253558,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev validate": 607,
+          "output": 64
+        }
+      },
+      {
+        "cacheCreation": 840,
+        "cacheRead": 254229,
+        "input": 2,
+        "output": 7,
         "toolCalls": 0,
         "sources": {
-          "codev validate": 708,
-          "output": 78
+          "output": 155,
+          "shell": 685
         }
       }
     ]
@@ -903,10 +877,10 @@
       {
         "awaiting": null,
         "confidence": "high",
-        "evidence": "| `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |\n",
+        "evidence": "} else if name == \"mcp\"\n    && let Value::Mapping(mcp) = value\n{\n    let mcp_line = top_level_line(raw, \"mcp\");\n    for key in mcp.keys() {\n",
         "history": [
           {
-            "by": "developer",
+            "by": "newcomer",
             "note": null,
             "ref": null,
             "status": "open",
@@ -915,39 +889,39 @@
           {
             "by": "developer",
             "note": null,
-            "ref": "docs/en/src/reference/file-formats.md and docs/fr/src/reference/file-formats.md — `unknown_config_key` row added",
+            "ref": "crates/codev-engine/src/config.rs — the mcp scan moved to `unknown_mcp_keys`",
             "status": "fixed",
             "to": null
           },
           {
-            "by": "developer",
+            "by": "newcomer",
             "note": null,
             "ref": null,
             "status": "fixed",
             "to": null
           }
         ],
-        "id": "R-developer-3",
-        "line": 54,
-        "location": "docs/en/src/reference/file-formats.md:374",
+        "id": "R-newcomer-1",
+        "line": 11,
+        "location": "crates/codev-engine/src/config.rs:247-265",
         "raisedBy": [
-          "developer"
+          "newcomer"
         ],
-        "recommendation": "The table lists every code `codev validate` reports, and json-output.md links to it for item findings. Add `unknown_config_key` (warning) in docs/en and docs/fr.",
+        "recommendation": "Extract the `mcp` branch into its own function (`unknown_mcp_keys`), so that `unknown_keys` reads as one loop over the top level and the `mcp` scan, with its flow-mapping fallback, is named.",
         "reported": true,
-        "role": "developer",
+        "role": "newcomer",
         "severity": "low",
         "status": "fixed",
         "step": "code.review",
-        "title": "The \"Validation codes\" table does not list `unknown_config_key`"
+        "title": "`unknown_keys` nests the `mcp` scan four levels deep"
       },
       {
         "awaiting": null,
         "confidence": "high",
-        "evidence": "fn a_strict_section_error_without_codev_version_names_the_key() {\n    let err = load_str(\"inherits:\\n  - path: ~/shared\\n    pin: abc\\n\").unwrap_err();\nfn an_unknown_inherits_key_still_fails() {\n    let err = load_str(\"inherits:\\n  - path: ~/shared\\n    pin: abc\\n\").unwrap_err();\n",
+        "evidence": "let full = |c: &&Comparator| c.minor.is_some() && c.patch.is_some();\n",
         "history": [
           {
-            "by": "developer",
+            "by": "newcomer",
             "note": null,
             "ref": null,
             "status": "open",
@@ -956,57 +930,35 @@
           {
             "by": "developer",
             "note": null,
-            "ref": "crates/codev-engine/src/config.rs — `an_unknown_inherits_key_still_fails` now goes through `resolve` on a git entry",
+            "ref": "crates/codev-core/src/update.rs — closure renamed `written_in_full`",
             "status": "fixed",
             "to": null
           },
           {
-            "by": "developer",
+            "by": "newcomer",
             "note": null,
             "ref": null,
             "status": "fixed",
             "to": null
           }
         ],
-        "id": "R-developer-4",
-        "line": 73,
-        "location": "crates/codev-engine/src/config.rs:609-622",
+        "id": "R-newcomer-2",
+        "line": 34,
+        "location": "crates/codev-core/src/update.rs:117",
         "raisedBy": [
-          "developer"
+          "newcomer"
         ],
-        "recommendation": "Both tests load the same input and make the same assertions. Make one of them add coverage, for example through `resolve` on a `git` entry.",
+        "recommendation": "Name it after what it checks — `written_in_full` — so that `.filter(written_in_full)` reads as \"an upper bound written in full\", the case the doc comment describes.",
         "reported": true,
-        "role": "developer",
+        "role": "newcomer",
         "severity": "low",
         "status": "fixed",
         "step": "code.review",
-        "title": "Two config tests check exactly the same thing"
+        "title": "The `full` closure in `downgrade_target` does not say what it tests"
       }
     ],
     "format": 1,
-    "issues": [
-      {
-        "code": "review_role_missing",
-        "line": 5,
-        "message": "`newcomer` is active at `code.review` but has no `### newcomer` section; write its findings or `No finding.`",
-        "path": "_codev/changes/forward-compatible-config/review.md",
-        "severity": "error"
-      },
-      {
-        "code": "review_invalid",
-        "line": 15,
-        "message": "R-developer-1: the block is not valid YAML (mapping values are not allowed in this context at line 9 column 192); quote a value that holds `: ` or starts with a special character, such as `location: \"design.md#Decision: X\"`",
-        "path": "_codev/changes/forward-compatible-config/review.md",
-        "severity": "error"
-      },
-      {
-        "code": "review_invalid",
-        "line": 37,
-        "message": "R-developer-2: the block is not valid YAML (mapping values are not allowed in this context at line 8 column 36); quote a value that holds `: ` or starts with a special character, such as `location: \"design.md#Decision: X\"`",
-        "path": "_codev/changes/forward-compatible-config/review.md",
-        "severity": "error"
-      }
-    ],
+    "issues": [],
     "path": "_codev/changes/forward-compatible-config/review.md",
     "status": [],
     "steps": [
@@ -1024,20 +976,14 @@
         "activeRoles": [
           "newcomer"
         ],
-        "mode": "isolated",
+        "mode": "inline",
         "recorded": true,
         "roles": [
           {
             "credited": [],
-            "fallback": "`codev roles` and `codev review` are unavailable in the installed codev (0.6.1) and in this repository's build (0.5.0); the developer role was briefed from the project's context and rules (`codev instructions tasks`) and ran as a read-only sub-agent, and the record was checked by hand",
-            "role": "developer",
-            "state": "findings"
-          },
-          {
-            "credited": [],
             "fallback": null,
             "role": "newcomer",
-            "state": "missing"
+            "state": "findings"
           }
         ],
         "step": "code.review",
@@ -1049,10 +995,10 @@
     "_codev/changes/forward-compatible-config/change.yaml": "schema: spec-driven\ncreated: 2026-10-12\n",
     "_codev/changes/forward-compatible-config/design.md": "# Design: Forward-compatible configuration\n\n## Context\n\n- `codev-engine::config::ProjectConfig` and its nested `McpConfig`,\n  `ChangelogConfig` and `InheritSource` all carry\n  `#[serde(deny_unknown_fields)]`; `config::load` turns any serde error into\n  `EngineError::Invalid` (code `invalid`). Every command reads the file\n  through `config::load` or `config::resolve`, so one unknown key stops\n  them all, `codev doctor` included.\n- `config::resolve` already returns non-fatal `warnings` (inherited sources)\n  that `codev status`, `codev new change`, `codev init` and `codev update`\n  report, in human output and in the JSON `status` array.\n- `codev validate` reports items of kind `change`, `spec` and `decisions`;\n  `--strict` fails on any warning finding.\n- `codev doctor` gathers `DoctorFacts` in the CLI and `codev-core::doctor`\n  evaluates them (decision 0001). Its `codev_version` check always gives the\n  fix `codev self-update`, while `codev self-update` refuses a downgrade\n  without `--version` (`codev-core::update::decide`). The update cache only\n  records the latest release, not a list of releases.\n- codev 0.5 and earlier ship the strict parser: nothing done here changes\n  how they read a newer configuration.\n\n## Goals / Non-Goals\n\nGoals: an older codev (from this release on) keeps working on a newer\nconfiguration and says what it needs; typos at the top level stay visible\nand fail `codev validate --strict`; doctor's version fix is a command that\nworks.\n\nNon-goals: tolerating unknown keys in other files (`change.yaml`,\n`schema.yaml`, `seal.yaml`, whose strictness is unchanged); a\n`--version` fix for the \"below\" case; fetching the release list to find\nthe highest satisfying release (doctor stays offline).\n\n## Decisions\n\n### Decision: Tolerance per section, by what ignoring a key would do\n\nThe criterion: a section is tolerant when ignoring an unknown key only\nmeans \"this feature is absent\", and strict when ignoring it would make\ncodev silently do something different from what the file asks.\n\n| Section | Unknown key | Why |\n|---|---|---|\n| top level | warning | each top-level key is an independent feature; ignoring one leaves the others intact, and the top level is where a newer codev adds keys (`codev_version` was one) |\n| `mcp` | warning | built to grow (one tool name per integration); ignoring an unknown tool only leaves that integration unconfigured, which the skills already handle with their \"not configured\" fallback |\n| `inherits` entries | error | an entry identifies a source; ignoring a key (a future pin, filter or subpath variant) would read a different source than intended and inject its context into prompts (decision 0005: inherited content is security-sensitive) |\n| `changelog` | error | `codev changelog --write` rewrites `CHANGELOG.md`; ignoring a key that narrows or reshapes the output would write a different file without saying so |\n| `rules` | not applicable | a free map of artifact ids, already open |\n\nThe top level and `mcp` lose `deny_unknown_fields`; `InheritSource` and\n`ChangelogConfig` keep it. Unknown keys are found by reading the file a\nsecond time as a generic YAML mapping and comparing its keys with the known\nlists (`PROJECT_KEYS`, `MCP_KEYS`), declared next to the structs. A test\nloads a configuration holding every known key and asserts that none is\nreported, so a field added to a struct without its name fails a test.\n\nInherited sources are parsed with the same tolerant code, but their unknown\nkeys are dropped silently: only their `context` and `rules` are read, every\nother key — known or not — is already ignored.\n\n**Alternatives considered**: `#[serde(flatten)] extra: BTreeMap<…>` on\n`ProjectConfig` — rejected: flatten buffers the whole map and degrades\nserde's error messages for every nested field, which decision 0006 values\nfor hand-written YAML; it also does not reach into `mcp`. The\n`serde_ignored` crate — rejected: a new dependency for what a comparison of\ntwo key lists does. Tolerating every section — rejected for `inherits` and\n`changelog` for the reasons in the table. Keeping everything strict and only\nimproving the error message — rejected: the old binary would still be\nunusable, which is the problem.\n\n### Decision: One warning per key, built from the file alone\n\n`config::load` returns the unknown keys (dotted for `mcp`: `mcp.design_tool`)\nwith their line, found by scanning the text for `key:` at the right\nindentation (line 1 when not found, e.g. a flow mapping). `config::resolve`\nturns each project key into a `Warning { code: \"unknown_config_key\" }`\nwhose message names the key, says the project may need a newer codev,\nquotes `codev_version` when the file sets it and points to\n`codev self-update`, or to correcting a typo. The message does not name the\nrunning version: the engine does not know it, and the doctor check and\n`versionRequirement` already compare versions.\n\nWhen the strict parse fails (a nested strict section, a wrong type), the\nerror is enriched the same way: the file is read leniently as a YAML\nmapping and, if it holds a string `codev_version`, the message adds\n\"this project requires codev_version: \"…\"; run `codev self-update` if your\ncodev is older\". The code stays `invalid`.\n\n**Alternatives considered**: one warning listing all keys — rejected: one\nfinding per key gives each its line in `codev validate`, and JSON consumers\nmatch on one code per fact. A dedicated error code for the enriched error —\nrejected: the failure is still an invalid file; the hint is in the message.\n\n### Decision: A `config` item in `codev validate`, present only when needed\n\n`validate_all` appends an `ItemReport` of the new kind `ItemKind::Config`\n(`\"config\"` in human and JSON output), path `_codev/config.yaml`, with one\n`Warning` finding per unknown key, only when there is at least one. The\nscoped runs (`--changes`, `--specs`, a named item) do not include it: they\nare about one kind of item.\n\nA warning, not an error, so plain `codev validate` (the pre-commit and\nteammate case) passes while `codev validate --strict` (CI) fails: in CI, an\nunknown key is either a typo — which must not slip through now that it no\nlonger fails parsing — or a CI codev older than the configuration, which\nmust be updated. The `kind` value is additive to the v1 contract; consumers\nthat switch on `kind` already face three values.\n\n**Alternatives considered**: always emitting the item, empty when clean —\nrejected: it changes every existing report and test for no information.\nAn error finding — rejected: it would make the older teammate's plain\n`codev validate` fail, the situation this change removes.\n\n### Decision: A `config.keys` doctor check, a warning\n\nA new check `config.keys` in the Configuration group, right after\n`config.language`: `ok` when the project's configuration has no unknown\nkey, otherwise a `warning` with the code `unknown_config_key`, a message\nnaming the keys, and a fix that depends on the version check: `codev\nself-update` when the running codev does not satisfy `codev_version`,\notherwise \"correct or remove the key in `_codev/config.yaml`, or run\n`codev self-update` if a newer codev added it\". A warning, because the\ncommand works and doctor's `--strict` fails only on what is missing.\n\n**Alternatives considered**: folding the keys into `config.rules` or\n`validate` — rejected: the check would mean two things, and its code would\nnot say which.\n\n### Decision: The downgrade target is computed in the core\n\n`codev-core::update` gains `requirement_side(requirement, current)`\n(`Below` / `Above`, `None` when satisfied or unparsable) and\n`downgrade_target(requirement, latest_known)`. A comparator that fails\nmarks `Above` when it is an upper bound: `<`, `<=`, or `=`, `~`, `^`, `*`\nwhose base version is below the running one; `>` and `>=` mark `Below`.\nThe target is, in order: the cached latest release when it satisfies the\nrequirement; the version of an inclusive upper bound written in full\n(`<=0.6.2`, `=0.6.2`); the lowest version admitted by a lower bound\n(`>=0.5`, `^0.5`, `~0.5.1`, missing parts as 0), checked against the whole\nrequirement; otherwise none. `core::doctor::evaluate` then writes\n`codev self-update --version <target>`, or, without a target,\n`codev self-update --version <X.Y.Z> with a release that satisfies \"<req>\"`.\n`VersionFacts` gains `latest_known`, the cached latest release whether or\nnot it is newer, read offline as today.\n\n**Alternatives considered**: always the lowest admitted version — rejected:\nthe cache, when it satisfies the requirement, is a release that exists and\nis the most recent acceptable one. Fetching the release list — rejected:\ndoctor is offline by spec. Changing `codev self-update` to accept a\nrequirement (`--version \"<0.7\"`) — rejected here: a new interface for a\ncase the existing `--version` covers.\n\n## Risks / Trade-offs\n\n- [A top-level typo no longer stops the command] → it is reported on every\n  run of `codev status`, by `codev doctor`, and fails\n  `codev validate --strict`, which CI runs.\n- [The known-key lists drift from the structs] → the \"every known key\"\n  test fails as soon as a field is added without its name.\n- [The lowest admitted version may not be a published release] → it is the\n  third choice, after the cache and an exact bound; `codev self-update\n  --version` fails cleanly with `update_download_failed` if it does not\n  exist, and the docs say to pick a release from the releases page.\n- [Line numbers come from a text scan, not the YAML parser] → only used to\n  point at the key; a miss falls back to line 1, never to a wrong file.\n- [A new doctor check changes the count of every doctor report] → ids are\n  additive in the v1 contract; docs samples are updated.\n\n## Migration Plan\n\nNone for projects. Teams that add a key known only to this release or a\nlater one should set `codev_version` accordingly: codev 0.5 and earlier\nstill reject the file, and the documentation says so.\n",
     "_codev/changes/forward-compatible-config/proposal.md": "# Proposal: Forward-compatible configuration\n\n## Why\n\n`_codev/config.yaml` is rejected as a whole as soon as it holds a key the\nrunning codev does not know, so a teammate whose codev is older than the\nproject's configuration gets a hard failure on every command — at the very\nmoment codev should explain that a newer version is required (`codev_version`\nis the first such key). And when the running codev is newer than an upper\nbound of `codev_version`, `codev doctor` suggests `codev self-update`, which\nrefuses the implicit downgrade: the advertised fix does not work.\n\n## What Changes\n\n- An unknown top-level key of `_codev/config.yaml` no longer fails the\n  command: it is ignored, the rest of the configuration is used, and a\n  warning `unknown_config_key` names the key, says the project may need a\n  newer codev — quoting the project's `codev_version` when set — and points\n  to `codev self-update`.\n- Unknown keys inside the `mcp` section are tolerated the same way. Unknown\n  keys inside an `inherits` entry or the `changelog` section still fail the\n  command, because ignoring them would silently change which source is read\n  or what `codev changelog --write` writes; that error now also quotes the\n  project's `codev_version` when set.\n- Unknown keys of an inherited source's configuration are ignored without a\n  warning: only its context and rules are read.\n- The warning appears in `codev status` (and every command that already\n  reports configuration warnings), as a `warning` finding of a new `config`\n  item in `codev validate` (so `codev validate --strict` fails on it), and as\n  a new `config.keys` check of `codev doctor`.\n- `codev doctor`'s `codev_version` check, when the running codev is above\n  the requirement's upper bound, gives the fix\n  `codev self-update --version <X.Y.Z>` naming a release that satisfies the\n  requirement; below the requirement, the fix stays `codev self-update`.\n- Documentation: configuration reference (unknown keys, forward\n  compatibility, codev 0.5 and earlier still reject unknown keys), FAQ entry\n  for a teammate whose codev fails on the configuration, doctor check tables\n  and samples, in English and French.\n\n## Capabilities\n\n### New Capabilities\n\n- `configuration` — how `_codev/config.yaml` treats keys the running codev\n  does not know, and where that is reported.\n\n### Modified Capabilities\n\n- `doctor` — the new `config.keys` check, and the `codev_version` fix that\n  depends on whether the running codev is above or below the requirement.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `codev-core`: the unknown-key message, the upper-bound analysis of a\n  version requirement and the downgrade target, the `config.keys` doctor\n  check and the `codev_version` fix.\n- `codev-engine`: configuration loading (tolerant top level and `mcp`,\n  strict `inherits` entries and `changelog`, error enriched with\n  `codev_version`), the configuration warning, the `config` item of the\n  validation report.\n- `codev-cli`: doctor facts (unknown keys, cached latest release), the\n  `config` item kind in the human and JSON validation reports (additive\n  value of `kind`).\n- Documentation in English and French: reference/configuration.md,\n  reference/cli.md (doctor table), reference/json-output.md (doctor table,\n  validate item kinds), guides/repository-integration.md and quickstart.md\n  (doctor samples), faq.md.\n\n## Release note\n\n- Changed: A key of `_codev/config.yaml` that your codev does not know —\n  typically one added by a newer codev — is now a warning `unknown_config_key`\n  instead of an error, naming the key and the project's `codev_version`, and\n  pointing to `codev self-update`; `codev validate --strict` and the new\n  `config.keys` check of `codev doctor` report it. codev 0.5 and earlier still\n  reject such keys.\n- Fixed: When the running codev is newer than the project's `codev_version`\n  allows, `codev doctor` now suggests `codev self-update --version <X.Y.Z>`\n  with a version that satisfies it, instead of a `codev self-update` that\n  refuses to downgrade.\n",
-    "_codev/changes/forward-compatible-config/review.md": "# Review record: forward-compatible-config\n\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: isolated.\n\n### developer\n\nFallback: `codev roles` and `codev review` are unavailable in the installed codev (0.6.1) and in this repository's build (0.5.0); the developer role was briefed from the project's context and rules (`codev instructions tasks`) and ran as a read-only sub-agent, and the record was checked by hand.\n\n#### R-developer-1 An unknown `changelog` or `inherits` key in an inherited source still drops that source\n\n```yaml\nseverity: medium\nconfidence: high\nlocation: \"crates/codev-engine/src/config.rs:324-351\"\nevidence: |\n                  match load(fs, &source_config_path) {\n                      Err(err) => warnings.push(Warning::new(\n                          \"inherit_unreadable\",\n                          format!(\"inherited source `{raw}` is unreadable: {err}\"),\nrecommendation: Inherited sources go through the project's `load`, so `ChangelogConfig` and `InheritSource` stay strict for them. A shared source written for a newer codev, holding `changelog: {since: v1.0.0}` or `inherits: [{path: x, pin: y}]`, then fails to parse. A path source loses its context and rules behind an `inherit_unreadable` warning; a git source loses them with no message at all. This contradicts the design (\"only their `context` and `rules` are read, every other key — known or not — is already ignored\") and the docs. Read inherited sources tolerantly, through a struct holding only `context`, `rules` and `inherits` (presence only, for the non-transitive warning). Add a test with an unknown `changelog` key in an inherited source.\nhistory:\n  - status: open\n    by: developer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-engine/src/config.rs — inherited sources read through `load_inherited` (context, rules, presence of inherits only); test `an_inherited_source_strict_section_key_is_ignored_too` fails without the fix\"\n  - status: fixed\n    by: developer\n```\n\n#### R-developer-2 The `config.keys` fix says `codev self-update` even when the running codev is above the requirement\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-core/src/doctor.rs:221-235\"\nevidence: |\n      let requirement_unsatisfied = matches!(facts.version.requirement, Some((_, false)));\n          let fix = if requirement_unsatisfied {\n              \"codev self-update\"\nrecommendation: Take `codev_version: \"<0.7\"`, codev 0.7.1 running and one unknown key. `config.keys` gives the fix `codev self-update`, which refuses the implicit downgrade. Give the self-update fix only when `requirement_side` is `Below`, otherwise the \"correct or remove\" fix. The doctor spec's table (\"`codev self-update` when the running codev does not satisfy `codev_version`\") must be revised along with it.\nhistory:\n  - status: open\n    by: developer\n  - status: deferred\n    by: developer\n    to: \"a follow-up codev change revising the doctor spec's `config.keys` fix (the current table mandates `codev self-update` whenever `codev_version` is unsatisfied)\"\n```\n\n#### R-developer-3 The \"Validation codes\" table does not list `unknown_config_key`\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"docs/en/src/reference/file-formats.md:374\"\nevidence: |\n  | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |\nrecommendation: The table lists every code `codev validate` reports, and json-output.md links to it for item findings. Add `unknown_config_key` (warning) in docs/en and docs/fr.\nhistory:\n  - status: open\n    by: developer\n  - status: fixed\n    by: developer\n    ref: \"docs/en/src/reference/file-formats.md and docs/fr/src/reference/file-formats.md — `unknown_config_key` row added\"\n  - status: fixed\n    by: developer\n```\n\n#### R-developer-4 Two config tests check exactly the same thing\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-engine/src/config.rs:609-622\"\nevidence: |\n      fn a_strict_section_error_without_codev_version_names_the_key() {\n          let err = load_str(\"inherits:\\n  - path: ~/shared\\n    pin: abc\\n\").unwrap_err();\n      fn an_unknown_inherits_key_still_fails() {\n          let err = load_str(\"inherits:\\n  - path: ~/shared\\n    pin: abc\\n\").unwrap_err();\nrecommendation: Both tests load the same input and make the same assertions. Make one of them add coverage, for example through `resolve` on a `git` entry.\nhistory:\n  - status: open\n    by: developer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-engine/src/config.rs — `an_unknown_inherits_key_still_fails` now goes through `resolve` on a git entry\"\n  - status: fixed\n    by: developer\n```\n",
+    "_codev/changes/forward-compatible-config/review.md": "# Review record: forward-compatible-config\n\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: inline.\n\n### newcomer\n\n#### R-newcomer-1 `unknown_keys` nests the `mcp` scan four levels deep\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-engine/src/config.rs:247-265\"\nevidence: |\n        } else if name == \"mcp\"\n            && let Value::Mapping(mcp) = value\n        {\n            let mcp_line = top_level_line(raw, \"mcp\");\n            for key in mcp.keys() {\nrecommendation: Extract the `mcp` branch into its own function (`unknown_mcp_keys`), so that `unknown_keys` reads as one loop over the top level and the `mcp` scan, with its flow-mapping fallback, is named.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-engine/src/config.rs — the mcp scan moved to `unknown_mcp_keys`\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-2 The `full` closure in `downgrade_target` does not say what it tests\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-core/src/update.rs:117\"\nevidence: |\n    let full = |c: &&Comparator| c.minor.is_some() && c.patch.is_some();\nrecommendation: Name it after what it checks — `written_in_full` — so that `.filter(written_in_full)` reads as \"an upper bound written in full\", the case the doc comment describes.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-core/src/update.rs — closure renamed `written_in_full`\"\n  - status: fixed\n    by: newcomer\n```\n",
     "_codev/changes/forward-compatible-config/specs/configuration/spec.md": "## Purpose\n\nDescribes how codev reads `_codev/config.yaml` when it holds keys the\nrunning codev does not know — typically keys added by a newer codev — so\nthat an older binary keeps working and explains what it needs, while typos\nstay visible.\n\n## ADDED Requirements\n\n### Requirement: Unknown top-level and `mcp` keys warn instead of failing\n\nWhen `_codev/config.yaml` holds a top-level key, or a key of the `mcp`\nsection, that the running codev does not know, every command that reads\nthe configuration SHALL ignore that key, use the rest of the configuration,\nand report one warning with the code `unknown_config_key` per unknown key.\nThe warning MUST name the key (`mcp.<key>` for a key of `mcp`), say that the\nproject may need a newer codev, quote the project's `codev_version`\nrequirement when the file sets one, and point to `codev self-update`.\nCommands that report configuration warnings, `codev status` among them,\nMUST report it in their human output and in the `status` array of their\nJSON output. The keys of an inherited source's configuration MUST NOT\nproduce this warning: only its context and rules are read.\n\n#### Scenario: Unknown top-level key with a version requirement\n\n- **GIVEN** a project whose `_codev/config.yaml` holds\n  `codev_version: \">=0.9\"` and the top-level key `review_policy`, unknown\n  to the running codev, with an active change\n- **WHEN** the user runs `codev status --json`\n- **THEN** the command succeeds and reports the change's status\n- **AND** its `status` array holds a warning with the code\n  `unknown_config_key` whose message names `review_policy`, quotes\n  `>=0.9` and names `codev self-update`\n\n#### Scenario: Unknown top-level key without a version requirement\n\n- **GIVEN** a project whose `_codev/config.yaml` holds `shema: spec-driven`\n  and no `codev_version`, with an active change\n- **WHEN** the user runs `codev status`\n- **THEN** the command succeeds with the default schema\n- **AND** a warning `unknown_config_key` names `shema` and says the project\n  may need a newer codev\n\n#### Scenario: Unknown key of the `mcp` section\n\n- **GIVEN** a project whose `_codev/config.yaml` holds\n  `mcp: {jira_tool: mcp__a__getJiraIssue, design_tool: mcp__b__get}`\n- **WHEN** the user runs `codev update`\n- **THEN** the skills are installed with the Jira tool `mcp__a__getJiraIssue`\n- **AND** a warning `unknown_config_key` names `mcp.design_tool`\n\n#### Scenario: Unknown key of an inherited source\n\n- **GIVEN** a project inheriting from a local source whose\n  `_codev/config.yaml` holds the unknown key `review_policy` and a context\n- **WHEN** the user runs `codev status`\n- **THEN** the source's context is used\n- **AND** no `unknown_config_key` warning is reported\n\n### Requirement: Unknown keys of `inherits` entries and `changelog` fail the command\n\nAn unknown key inside an `inherits` entry or inside the `changelog` section\nof `_codev/config.yaml` MUST make every command that reads the\nconfiguration fail with the code `invalid`, naming the key, because\nignoring it would silently change which source is read or what\n`codev changelog --write` writes. When the file sets `codev_version`, the\nerror message MUST also quote the requirement and point to\n`codev self-update`.\n\n#### Scenario: Unknown key of the `changelog` section\n\n- **GIVEN** a project whose `_codev/config.yaml` holds\n  `codev_version: \">=0.9\"` and `changelog: {since: v1.0.0}`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with the code `invalid`\n- **AND** the message names `since`, quotes `>=0.9` and names\n  `codev self-update`\n\n#### Scenario: Unknown key of an `inherits` entry\n\n- **GIVEN** a project whose `_codev/config.yaml` declares\n  `inherits: [{path: ~/shared, pin: abc}]` and no `codev_version`\n- **WHEN** the user runs `codev status`\n- **THEN** the command fails with the code `invalid` naming `pin`\n\n### Requirement: `codev validate` reports unknown configuration keys\n\nWhen it validates the whole project — no scope, or `--all` — and\n`_codev/config.yaml` holds unknown top-level or `mcp` keys, `codev validate`\nSHALL add to its report an item of kind `config`, named `config`, whose path\nis `_codev/config.yaml`, carrying one finding of severity `warning` and\ncode `unknown_config_key` per unknown key, at the line of that key. The\nitem MUST be absent when the configuration holds no unknown key, and from\nthe reports of `--changes`, `--specs` and of a named item. Like any warning,\nit fails `codev validate --strict` and not `codev validate`.\n\n#### Scenario: Strict validation with an unknown key\n\n- **GIVEN** a project whose `_codev/config.yaml` holds the unknown\n  top-level key `review_policy` on line 3, and no other finding\n- **WHEN** the user runs `codev validate --strict --json`\n- **THEN** the report holds an item of kind `config` with one `warning`\n  finding `unknown_config_key` at line 3 of `_codev/config.yaml`\n- **AND** the exit code is 1\n\n#### Scenario: Non-strict validation with an unknown key\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev validate`\n- **THEN** the warning is reported and the exit code is 0\n\n#### Scenario: Clean configuration\n\n- **GIVEN** a project whose `_codev/config.yaml` holds only known keys\n- **WHEN** the user runs `codev validate --all --json`\n- **THEN** no item of kind `config` is reported\n",
     "_codev/changes/forward-compatible-config/specs/doctor/spec.md": "## MODIFIED Requirements\n\n### Requirement: `codev doctor` runs a fixed list of read-only checks\n\n`codev doctor` SHALL evaluate the following checks, reported in this order, each\nwith a stable `id`, and report each one as `ok`, `missing` or `warning`,\nwith a stable `code` (`ok` when the check passes), a one-line message and,\nwhen not `ok`, a one-line fix naming the exact command or skill:\n\n| id | passes when | otherwise | code | fix |\n|---|---|---|---|---|\n| `config.rules` | `rules:` has at least one entry, inherited ones included | missing | `rules_missing` | `/codev-configure` |\n| `config.language` | `language:` is set in `_codev/config.yaml` | missing | `language_missing` | add `language: <code>` to `_codev/config.yaml` |\n| `config.keys` | `_codev/config.yaml` holds no key the running codev ignores (top level or `mcp`) | warning | `unknown_config_key` | `codev self-update` when the running codev does not satisfy `codev_version`, otherwise correct or remove the key, naming the keys |\n| `skills` | every configured workflow has its skill, generated by the running codev version | missing | `skills_missing` or `skills_outdated` | `codev update` |\n| `sources` | every inherited git source is pinned in `_codev/codev.lock` and present in the cache, and the lock pins no undeclared source | missing (unpinned or not cached) or warning (undeclared pin) | `source_unpinned` or `lock_stale` | `codev sources update` |\n| `codev_version` | the running codev satisfies the project's `codev_version`, when set, and the cached update check knows no newer release | missing (requirement not satisfied) or warning (newer release known) | `codev_version_unsatisfied` or `update_available` | `codev self-update`, or `codev self-update --version <X.Y.Z>` when the running codev is above the requirement |\n| `specs` | at least one main spec exists | missing | `no_main_spec` | `/codev-propose`, noting that documenting existing behavior is planned work |\n| `decisions` | at least one decision is `accepted`, local or inherited | warning | `no_accepted_decision` | `codev decision new \"<title>\"` |\n| `validate` | `codev validate` reports no error and no warning | missing (errors) or warning (warnings only) | `validate_errors` or `validate_warnings` | `codev validate` |\n| `claude_md` | `CLAUDE.md` holds the codev managed section | missing | `claude_md_section_missing` | `codev init` |\n| `ci` | a file of `.github/workflows/` or `.gitlab-ci.yml` runs `codev validate` | missing | `ci_validate_missing` | `codev init` on GitHub, otherwise add `codev validate --strict` to the pipeline |\n| `pr_template` | the pull request template holds the codev managed section — GitHub repositories only | missing | `pr_template_section_missing` | `codev init` |\n| `changelog` | `CHANGELOG.md` exists and its managed `[Unreleased]` section matches what `codev changelog` would generate now | warning | `changelog_missing` (no file) or `changelog_outdated` | `codev changelog --write` |\n\nThe `pr_template` check MUST be absent from the report when the repository\nis not a GitHub repository. A project without any inherited source passes\n`sources`. A CI line is recognized when it names `codev` and then\n`validate`, so `cargo run --bin codev -- validate` counts.\n\nWhen the running codev does not satisfy `codev_version` because it is\nabove the requirement's upper bound, the fix MUST be\n`codev self-update --version <X.Y.Z>`, a plain `codev self-update` refusing\nto downgrade. `X.Y.Z` is, in this order of preference: the latest release\nknown to the update cache, when it satisfies the requirement; the highest\nversion the requirement admits, when an upper bound names it exactly (`<=`\nor `=` with a full version); the lowest version the requirement admits,\nwhen it has a lower bound. When none applies, the fix names the\nrequirement and asks for a release that satisfies it. When the running\ncodev is below the requirement, the fix stays `codev self-update`.\n\nThe `codev_version` check reads the per-user update cache that\n`codev status` maintains and never refreshes it: with no cache, or with\n`CI` set or `CODEV_NO_UPDATE_CHECK=1`, it only evaluates the requirement.\n\n`codev doctor` MUST NOT write any file or access the network. The only\nprocess it MAY spawn is `git`, for the local, read-only queries the\n`changelog` check needs; outside a git repository, that check compares\nwith every archived change. Outside a codev project, it fails with the code\n`no_codev_root`.\n\n#### Scenario: A freshly initialized project\n\n- **GIVEN** a project just initialized with `codev init --yes` outside\n  GitHub, without rules, specs or decisions, and no newer codev release\n  known\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.rules` and `specs` are `missing`, `decisions` is a\n  `warning`, `ci` is `missing`\n- **AND** `config.keys`, `config.language`, `skills`, `sources`,\n  `codev_version`, `claude_md` and `validate` are `ok`\n- **AND** `changelog` is a `warning` with the code `changelog_missing`\n- **AND** no `pr_template` check is reported\n\n#### Scenario: Outdated skills\n\n- **GIVEN** a project whose skills were generated by an earlier codev\n  version\n- **WHEN** the user runs `codev doctor`\n- **THEN** `skills` is `missing` with the code `skills_outdated` and the fix\n  `codev update`\n\n#### Scenario: An unpinned git source\n\n- **GIVEN** a project declaring a git source absent from\n  `_codev/codev.lock`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `sources` is `missing` with the code `source_unpinned` and the\n  fix `codev sources update`\n\n#### Scenario: CI recognized through `cargo run`\n\n- **GIVEN** a GitHub project whose `.github/workflows/ci.yml` runs\n  `cargo run --bin codev -- validate --strict`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `ci` is `ok`\n\n#### Scenario: Doctor writes nothing\n\n- **GIVEN** any codev project\n- **WHEN** the user runs `codev doctor`\n- **THEN** no file of the project is created or modified\n\n#### Scenario: Outside a codev project\n\n- **GIVEN** a folder with no `_codev/` above it\n- **WHEN** the user runs `codev doctor`\n- **THEN** the command fails with the code `no_codev_root`\n\n#### Scenario: CHANGELOG.md up to date\n\n- **GIVEN** a project where `codev changelog --write` was just run\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is `ok`\n\n#### Scenario: CHANGELOG.md behind the archive\n\n- **GIVEN** a project whose `CHANGELOG.md` managed section predates the\n  latest archived change\n- **WHEN** the user runs `codev doctor`\n- **THEN** `changelog` is a `warning` with the code `changelog_outdated`\n  and the fix `codev changelog --write`\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: Running codev below the project's requirement\n\n- **GIVEN** a project with `codev_version: \">=0.7\"` and codev 0.6.0 running\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_unsatisfied` and the fix `codev self-update`\n\n#### Scenario: A newer release is known\n\n- **GIVEN** a project without `codev_version`, and an update cache knowing\n  a release newer than the running codev\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is a `warning` with the code `update_available`\n  and the fix `codev self-update`\n- **AND** no network request is made\n\n#### Scenario: Running codev above the project's requirement\n\n- **GIVEN** a project with `codev_version: \">=0.5, <0.7\"`, codev 0.7.1\n  running, and an update cache whose latest known release is 0.6.4\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the code\n  `codev_version_unsatisfied` and the fix\n  `codev self-update --version 0.6.4`\n\n#### Scenario: Running codev above an exact upper bound, no usable cache\n\n- **GIVEN** a project with `codev_version: \"<=0.6.2\"`, codev 0.7.0 running,\n  and no update cache\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the fix\n  `codev self-update --version 0.6.2`\n\n#### Scenario: Running codev above a requirement with no exact bound\n\n- **GIVEN** a project with `codev_version: \"^0.5\"`, codev 0.6.0 running, and\n  an update cache whose latest known release, 0.6.0, does not satisfy it\n- **WHEN** the user runs `codev doctor`\n- **THEN** `codev_version` is `missing` with the fix\n  `codev self-update --version 0.5.0`\n\n#### Scenario: An unknown configuration key\n\n- **GIVEN** a project whose `_codev/config.yaml` holds the top-level key\n  `review_policy`, unknown to the running codev, which satisfies\n  `codev_version`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.keys` is a `warning` with the code `unknown_config_key`\n  whose message names `review_policy`\n- **AND** its fix tells to correct or remove the key\n- **AND** the exit code of `codev doctor --strict` is unaffected by it\n\n#### Scenario: An unknown key with an unsatisfied requirement\n\n- **GIVEN** a project whose `_codev/config.yaml` holds an unknown key and\n  `codev_version: \">=9\"`\n- **WHEN** the user runs `codev doctor`\n- **THEN** `config.keys` is a `warning` with the fix `codev self-update`\n",
-    "_codev/changes/forward-compatible-config/tasks.md": "# Tasks\n\nEvery task's definition of done also includes `cargo fmt --all --check`,\n`cargo clippy --workspace --all-targets --locked -- -D warnings` and\n`cargo test --workspace --locked`, all passing. Tests follow the project's\nconventions: unit tests in `#[cfg(test)] mod tests` next to the code,\nbehavior-describing names, the in-memory `MemoryFileSystem` and `FixedEnv`\nports (through the CLI `Harness`) in engine and CLI tests, never a\ntemporary directory, no assumption about path separators or line endings.\n\n## 1. Core: downgrade target and doctor checks\n\n- [x] 1.1 In `codev_core::update`, add `RequirementSide` and\n  `requirement_side(requirement, current)` (`Above` for a failing upper\n  bound, `Below` otherwise, `None` when satisfied or unparsable), and\n  `downgrade_target(requirement, latest_known)` (cached latest when it\n  satisfies, else the full inclusive upper bound, else the lowest admitted\n  version of a lower bound, else `None`), verified by unit tests\n  `a_version_above_an_upper_bound_is_above`,\n  `a_version_below_a_lower_bound_is_below`,\n  `the_downgrade_target_prefers_the_cached_release`,\n  `the_downgrade_target_falls_back_to_an_exact_upper_bound`,\n  `the_downgrade_target_falls_back_to_the_lowest_admitted_version`,\n  `no_downgrade_target_without_any_bound`.\n- [x] 1.2 In `codev_core::doctor`, add `latest_known` to `VersionFacts` and\n  give the `codev_version` check the fix `codev self-update --version\n  <target>` (or the placeholder naming the requirement) when the running\n  codev is above, `codev self-update` when below, verified by unit tests\n  `codev_version_above_the_bound_fixes_with_an_explicit_version`\n  (doctor: \"Running codev above the project's requirement\", \"Running codev\n  above an exact upper bound, no usable cache\", \"Running codev above a\n  requirement with no exact bound\"),\n  `codev_version_above_without_any_target_names_the_requirement` and the\n  existing `codev_version_unsatisfied_is_missing` (doctor: \"Running codev\n  below the project's requirement\").\n- [x] 1.3 Add the `config.keys` check after `config.language` (fact\n  `unknown_config_keys`): `ok`, or `warning` `unknown_config_key` naming\n  the keys, with the fix `codev self-update` when the requirement is not\n  satisfied, otherwise \"correct or remove\"; update `CHECK_IDS` and the\n  summary count, verified by unit tests `unknown_config_keys_are_a_warning`,\n  `unknown_config_keys_with_an_unsatisfied_requirement_fix_with_self_update`,\n  `summary_counts_missing_and_warnings` (doctor: \"An unknown configuration\n  key\", \"An unknown key with an unsatisfied requirement\").\n\n## 2. Engine: tolerant configuration loading\n\n- [x] 2.1 In `codev_engine::config`, drop `deny_unknown_fields` from\n  `ProjectConfig` and `McpConfig`, keep it on `InheritSource` and\n  `ChangelogConfig`; add `PROJECT_KEYS`, `MCP_KEYS` and the detection of\n  unknown keys with their line into `ProjectConfig::unknown_keys`, verified\n  by unit tests `unknown_top_level_keys_are_collected_with_their_line`,\n  `unknown_mcp_keys_are_collected_with_a_dotted_name`,\n  `every_known_key_is_recognized`,\n  `an_unknown_changelog_key_still_fails` (replacing\n  `changelog_exclude_is_read_and_unknown_keys_still_fail`),\n  `an_unknown_inherits_key_still_fails`, `mcp_config_unknown_field_is_tolerated`\n  (replacing `mcp_config_unknown_field_is_rejected`).\n- [x] 2.2 Enrich the strict parse error with the lenient `codev_version`\n  (quote it, name `codev self-update`), verified by unit tests\n  `a_strict_section_error_quotes_codev_version` (configuration: \"Unknown\n  key of the `changelog` section\") and\n  `a_strict_section_error_without_codev_version_names_the_key`\n  (configuration: \"Unknown key of an `inherits` entry\").\n- [x] 2.3 In `config::resolve`, turn each project unknown key into a\n  `unknown_config_key` warning (key, newer codev, `codev_version` when set,\n  `codev self-update`), expose `unknown_keys` on `ResolvedConfig`, ignore\n  inherited sources' unknown keys, verified by unit tests\n  `an_unknown_top_level_key_warns_and_quotes_codev_version`,\n  `an_unknown_top_level_key_without_requirement_warns` (replacing\n  `reports_an_unknown_key_in_the_config`),\n  `an_inherited_source_unknown_key_is_ignored_silently` (configuration:\n  \"Unknown key of an inherited source\").\n- [x] 2.4 Add `ItemKind::Config` and the `config` item of `validate_all`,\n  only when unknown keys exist, one `warning` finding per key at its line,\n  verified by unit tests `validate_all_reports_unknown_config_keys` and\n  `validate_all_has_no_config_item_for_a_clean_config`.\n\n## 3. CLI: surfacing\n\n- [x] 3.1 Render the `config` kind in the human and JSON validation\n  reports; feed `unknown_config_keys` and `latest_known` to doctor facts,\n  verified by CLI tests\n  `status_warns_on_an_unknown_config_key_and_quotes_the_requirement`\n  (configuration: \"Unknown top-level key with a version requirement\"),\n  `status_warns_on_a_misspelled_top_level_key` (configuration: \"Unknown\n  top-level key without a version requirement\"),\n  `update_installs_skills_despite_an_unknown_mcp_key` (configuration:\n  \"Unknown key of the `mcp` section\"),\n  `status_fails_on_an_unknown_changelog_key_quoting_the_requirement`,\n  `validate_reports_an_unknown_config_key_as_a_warning` (configuration:\n  \"Strict validation with an unknown key\", \"Non-strict validation with an\n  unknown key\" — the report has warnings and no error, which is what the\n  exit code reads), `validate_has_no_config_item_when_clean`\n  (configuration: \"Clean configuration\"),\n  `doctor_reports_an_unknown_config_key`,\n  `doctor_fixes_a_codev_above_the_requirement_with_an_explicit_version`,\n  and the existing doctor tests updated for the new check.\n- [x] 3.2 Contract test: the `config` kind serializes as `\"config\"` in\n  `ValidateReportV1`, verified by `validate_report_v1_carries_the_config_kind`.\n\n## 4. Documentation (English and French)\n\n- [x] 4.1 `reference/configuration.md`: unknown keys (warning at the top\n  level and in `mcp`, error in `inherits` entries and `changelog`, why),\n  forward compatibility, codev 0.5 and earlier still rejecting unknown keys;\n  verified by the docs tests of `cargo test -p codev-cli`.\n- [x] 4.2 `faq.md`: \"A teammate's codev fails on the configuration\" and\n  \"`unknown_config_key`\"; `reference/cli.md` and `reference/json-output.md`\n  doctor tables (`config.keys`, the `codev_version` fix) and the validate\n  `config` kind; `guides/repository-integration.md` and `quickstart.md`\n  doctor samples regenerated from a real `codev doctor` run; verified by\n  the docs tests of `cargo test -p codev-cli` and `grep config.keys` in\n  both editions.\n\n## 5. Verification\n\n- [x] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace\n  --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`\n  green; `codev validate --strict` and `codev doctor` on this repository\n  report nothing missing.\n"
+    "_codev/changes/forward-compatible-config/tasks.md": "# Tasks\n\nEvery task's definition of done also includes `cargo fmt --all --check`,\n`cargo clippy --workspace --all-targets --locked -- -D warnings` and\n`cargo test --workspace --locked`, all passing. Tests follow the project's\nconventions: unit tests in `#[cfg(test)] mod tests` next to the code,\nbehavior-describing names, the in-memory `MemoryFileSystem` and `FixedEnv`\nports (through the CLI `Harness`) in engine and CLI tests, never a\ntemporary directory, no assumption about path separators or line endings.\n\n## 1. Core: downgrade target and doctor checks\n\n- [x] 1.1 In `codev_core::update`, add `RequirementSide` and\n  `requirement_side(requirement, current)` (`Above` for a failing upper\n  bound, `Below` otherwise, `None` when satisfied or unparsable), and\n  `downgrade_target(requirement, latest_known)` (cached latest when it\n  satisfies, else the full inclusive upper bound, else the lowest admitted\n  version of a lower bound, else `None`), verified by unit tests\n  `a_version_above_an_upper_bound_is_above`,\n  `a_version_below_a_lower_bound_is_below`,\n  `the_downgrade_target_prefers_the_cached_release`,\n  `the_downgrade_target_falls_back_to_an_exact_upper_bound`,\n  `the_downgrade_target_falls_back_to_the_lowest_admitted_version`,\n  `no_downgrade_target_without_any_bound`.\n- [x] 1.2 In `codev_core::doctor`, add `latest_known` to `VersionFacts` and\n  give the `codev_version` check the fix `codev self-update --version\n  <target>` (or the placeholder naming the requirement) when the running\n  codev is above, `codev self-update` when below, verified by unit tests\n  `codev_version_above_the_bound_fixes_with_an_explicit_version`\n  (doctor: \"Running codev above the project's requirement\", \"Running codev\n  above an exact upper bound, no usable cache\", \"Running codev above a\n  requirement with no exact bound\"),\n  `codev_version_above_without_any_target_names_the_requirement` and the\n  existing `codev_version_unsatisfied_is_missing` (doctor: \"Running codev\n  below the project's requirement\").\n- [x] 1.3 Add the `config.keys` check after `config.language` (fact\n  `unknown_config_keys`): `ok`, or `warning` `unknown_config_key` naming\n  the keys, with the fix `codev self-update` when the requirement is not\n  satisfied, otherwise \"correct or remove\"; update `CHECK_IDS` and the\n  summary count, verified by unit tests `unknown_config_keys_are_a_warning`,\n  `unknown_config_keys_with_an_unsatisfied_requirement_fix_with_self_update`,\n  `summary_counts_missing_and_warnings` (doctor: \"An unknown configuration\n  key\", \"An unknown key with an unsatisfied requirement\").\n\n## 2. Engine: tolerant configuration loading\n\n- [x] 2.1 In `codev_engine::config`, drop `deny_unknown_fields` from\n  `ProjectConfig` and `McpConfig`, keep it on `InheritSource` and\n  `ChangelogConfig`; add `PROJECT_KEYS`, `MCP_KEYS` and the detection of\n  unknown keys with their line into `ProjectConfig::unknown_keys`, verified\n  by unit tests `unknown_top_level_keys_are_collected_with_their_line`,\n  `unknown_mcp_keys_are_collected_with_a_dotted_name`,\n  `every_known_key_is_recognized`,\n  `an_unknown_changelog_key_still_fails` (replacing\n  `changelog_exclude_is_read_and_unknown_keys_still_fail`),\n  `an_unknown_inherits_key_still_fails`, `mcp_config_unknown_field_is_tolerated`\n  (replacing `mcp_config_unknown_field_is_rejected`).\n- [x] 2.2 Enrich the strict parse error with the lenient `codev_version`\n  (quote it, name `codev self-update`), verified by unit tests\n  `a_strict_section_error_quotes_codev_version` (configuration: \"Unknown\n  key of the `changelog` section\") and\n  `a_strict_section_error_without_codev_version_names_the_key`\n  (configuration: \"Unknown key of an `inherits` entry\").\n- [x] 2.3 In `config::resolve`, turn each project unknown key into a\n  `unknown_config_key` warning (key, newer codev, `codev_version` when set,\n  `codev self-update`), expose `unknown_keys` on `ResolvedConfig`, ignore\n  inherited sources' unknown keys, verified by unit tests\n  `an_unknown_top_level_key_warns_and_quotes_codev_version`,\n  `an_unknown_top_level_key_without_requirement_warns` (replacing\n  `reports_an_unknown_key_in_the_config`),\n  `an_inherited_source_unknown_key_is_ignored_silently` (configuration:\n  \"Unknown key of an inherited source\").\n- [x] 2.4 Add `ItemKind::Config` and the `config` item of `validate_all`,\n  only when unknown keys exist, one `warning` finding per key at its line,\n  verified by unit tests `validate_all_reports_unknown_config_keys` and\n  `validate_all_has_no_config_item_for_a_clean_config`.\n\n## 3. CLI: surfacing\n\n- [x] 3.1 Render the `config` kind in the human and JSON validation\n  reports; feed `unknown_config_keys` and `latest_known` to doctor facts,\n  verified by CLI tests\n  `status_warns_on_an_unknown_config_key_and_quotes_the_requirement`\n  (configuration: \"Unknown top-level key with a version requirement\"),\n  `status_warns_on_a_misspelled_top_level_key` (configuration: \"Unknown\n  top-level key without a version requirement\"),\n  `update_installs_skills_despite_an_unknown_mcp_key` (configuration:\n  \"Unknown key of the `mcp` section\"),\n  `status_fails_on_an_unknown_changelog_key_quoting_the_requirement`,\n  `validate_reports_an_unknown_config_key_as_a_warning` (configuration:\n  \"Strict validation with an unknown key\", \"Non-strict validation with an\n  unknown key\" — the report has warnings and no error, which is what the\n  exit code reads), `validate_has_no_config_item_when_clean`\n  (configuration: \"Clean configuration\"),\n  `doctor_reports_an_unknown_config_key`,\n  `doctor_fixes_a_codev_above_the_requirement_with_an_explicit_version`,\n  and the existing doctor tests updated for the new check.\n- [x] 3.2 Contract test: the `config` kind serializes as `\"config\"` in\n  `ValidateReportV1`, verified by `validate_report_v1_carries_the_config_kind`.\n\n## 4. Documentation (English and French)\n\n- [x] 4.1 `reference/configuration.md`: unknown keys (warning at the top\n  level and in `mcp`, error in `inherits` entries and `changelog`, why),\n  forward compatibility, codev 0.5 and earlier still rejecting unknown keys;\n  verified by the docs tests of `cargo test -p codev-cli`.\n- [x] 4.2 `faq.md`: \"A teammate's codev fails on the configuration\" and\n  \"`unknown_config_key`\"; `reference/cli.md` and `reference/json-output.md`\n  doctor tables (`config.keys`, the `codev_version` fix) and the validate\n  `config` kind; `guides/repository-integration.md` and `quickstart.md`\n  doctor samples regenerated from a real `codev doctor` run; verified by\n  the docs tests of `cargo test -p codev-cli` and `grep config.keys` in\n  both editions.\n\n## 5. Verification\n\n- [x] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace\n  --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`\n  green; `cargo run -q -p codev-cli -- validate --strict` reports no issue,\n  and `cargo run -q -p codev-cli -- doctor` reports nothing missing but\n  `skills`, which the evaluation installed from another codev.\n"
   },
   "validate": {
     "forward-compatible-config": {
@@ -1068,30 +1014,9 @@
               "severity": "warning"
             },
             {
-              "code": "review_role_missing",
-              "line": 5,
-              "message": "`newcomer` is active at `code.review` but has no `### newcomer` section; write its findings or `No finding.`",
-              "path": "_codev/changes/forward-compatible-config/review.md",
-              "severity": "error"
-            },
-            {
-              "code": "review_invalid",
-              "line": 15,
-              "message": "R-developer-1: the block is not valid YAML (mapping values are not allowed in this context at line 9 column 192); quote a value that holds `: ` or starts with a special character, such as `location: \"design.md#Decision: X\"`",
-              "path": "_codev/changes/forward-compatible-config/review.md",
-              "severity": "error"
-            },
-            {
-              "code": "review_invalid",
-              "line": 37,
-              "message": "R-developer-2: the block is not valid YAML (mapping values are not allowed in this context at line 8 column 36); quote a value that holds `: ` or starts with a special character, such as `location: \"design.md#Decision: X\"`",
-              "path": "_codev/changes/forward-compatible-config/review.md",
-              "severity": "error"
-            },
-            {
               "code": "domain_suggested",
               "line": 1,
-              "message": "line 1: the diff suggests `performance` — `patterns: (?i)\\b(cache|caching|memoi[sz]e|lru)\\b` (performance) matches `crates/codev-cli/src/commands.rs:1651` and 6 other match(es); tick it, or keep it unticked with a reason: `- [ ] performance — <why>`",
+              "message": "line 1: the diff suggests `performance` — `patterns: (?i)\\b(cache|caching|memoi[sz]e|lru)\\b` (performance) matches `crates/codev-cli/src/commands.rs:1651` and 4 other match(es); tick it, or keep it unticked with a reason: `- [ ] performance — <why>`",
               "path": "_codev/changes/forward-compatible-config/proposal.md",
               "severity": "warning"
             }
@@ -1125,42 +1050,43 @@
     "status": []
   },
   "messages": [
-    "Planning is complete; the installed codev 0.6.1 has no `roles` subcommand. Checking the repo's own binary next.",
-    "Neither binary has `codev roles`, so I'll use the project rules from `codev instructions` as the developer's criteria. Now I'll study the code.",
-    "Starting **Task 1.1**: `RequirementSide`, `requirement_side` and `downgrade_target` in `codev_core::update`.",
-    "✓ 1.1 — `requirement_side` / `downgrade_target` with 6 unit tests passing.\n\n**Task 1.2**: doctor `codev_version` fix for the \"above\" case. **Task 1.3**: the `config.keys` check.",
-    "✓ 1.2 — `codev_version` fix names `--version <target>` above the bound. ✓ 1.3 — `config.keys` check, 13 checks.\n\n**Task 2.1**: tolerant config loading in the engine.",
-    "Now implementing 2.1 (key detection) in `config.rs`.",
+    "Task 1.1: downgrade target in `codev_core::update`. Let me study the code.",
+    "✓ 1.1 — `requirement_side` / `downgrade_target` added with tests. Now task 1.2: the `codev_version` fix in doctor.",
+    "✓ 1.2 — doctor's `codev_version` fix names an explicit version when above. Now 1.3: the `config.keys` check.",
+    "✓ 1.3 — `config.keys` check added. Now group 2: tolerant config loading in the engine. Studying the error and validate modules.",
+    "Now implementing 2.1 in `config.rs`.",
+    "Good, only constructed in `resolve`. Writing the engine code.",
     "Now the 2.1 tests.",
-    "2.1's named tests pass; the one failure is `reports_an_unknown_key_in_the_config`, which task 2.3 replaces. Checking off 2.1 and moving to **2.2**, the enriched strict error.",
-    "✓ 2.2 — strict-section errors quote `codev_version` and point to `codev self-update`.\n\n**Task 2.3**: warnings in `config::resolve`.",
-    "✓ 2.3 — one `unknown_config_key` warning per project key; inherited sources stay silent. **Task 2.4**: the `config` item in `validate_all`.",
-    "Finding lines are `u32`; aligning `UnknownKey::line`.",
-    "✓ 2.4 — `config` item, only when unknown keys exist. The CLI's `ItemKind` matches now need the new arm — that's **Task 3.1**.",
-    "Builds. Running the CLI tests to see what the new check breaks.",
-    "Wiring is done for 3.1; now writing the CLI tests (status, update, validate, doctor) for the new behavior.",
-    "CLI tests pass (163). ✓ 3.1. Now **3.2**, the contract test.",
-    "✓ 3.2. Now the docs, **Tasks 4.1–4.2**. Looking at the doc files and the docs tests first.",
-    "Now editing the English configuration reference.",
-    "Now the French edition.",
-    "The French docs use non-breaking spaces before `:` and `;`; re-applying with that convention.",
-    "I'll put a small helper script in the scratchpad that applies a replacement with the French spacing applied.",
-    "Checking the French terms the existing docs use for \"finding\" and \"check\".",
-    "\"constat\" matches. Running the docs tests for 4.1.",
-    "✓ 4.1. **Task 4.2**: FAQ, the cli/json-output tables, and the doctor samples.",
-    "I'll regenerate the doctor samples from a real run on a fresh scratch project.",
-    "Updating the EN samples and tables now; FR next.",
-    "Samples done. Now the tables, the `kind` values, the prose on the version fix, and the FAQ entries.",
-    "Docs tests pass and `config.keys` appears in both editions. ✓ 4.2. **Task 5.1**: full verification.",
-    "`validate --strict` is clean. Doctor reports one missing check, `skills`. Checking whether this change caused it:",
-    "Writing the review record before fixing.",
-    "Record written. Fixing R1 test-first: the new test must fail before the fix.",
-    "Fails as expected. Now the fix: a tolerant reader for inherited sources.",
-    "R1's test passes now. Checking that no other engine code reads inherited configs through the strict `load`:",
-    "Now R4 (make the duplicate test add coverage) and R3 (the codes table in both editions).",
-    "R1, R3 and R4 are fixed. Updating the record's history, then running the full suite.",
-    "Everything is green. Last check: the installed codev 0.6.1 validates the change folder, review record included.",
-    "I implemented `forward-compatible-config`: all 12 tasks are done and checked off, and the review ran. fmt, clippy (`-D warnings`) and the full workspace test suite pass, and `codev validate --strict` reports no issues.\n\n**What changed**\n- **Configuration loading:** an unknown top-level or `mcp` key no longer fails the command. It is ignored and produces one `unknown_config_key` warning per key, which quotes `codev_version` when the file sets it. Unknown keys in `changelog` or in an `inherits` entry still fail with code `invalid`, and that error now also quotes `codev_version`.\n- **`codev validate`:** a new `config` item lists each unknown key as a warning at its line, so `--strict` fails on it and plain `validate` passes. It only appears for a whole-project run with unknown keys.\n- **`codev doctor`:** there is a new `config.keys` check (13 checks now). When the running codev is newer than `codev_version` allows, the version fix is now `codev self-update --version <X.Y.Z>` with a version that satisfies the requirement, instead of a plain `self-update` that refuses to downgrade.\n- **Docs, in English and French:** configuration reference (new \"Unknown keys\" section), two FAQ entries, the doctor and validate tables, the validation codes table, and the doctor samples, regenerated from a real run.\n- **Main files:** `codev-core/src/{update,doctor}.rs`, `codev-engine/src/config.rs`, `codev-engine/src/validate/{mod,report}.rs`, `codev-cli/src/{commands,contract,render}.rs`, and 12 doc files.\n\n**Things that didn't go to plan**\n- **The installed codev (0.6.1) has no `codev roles` or `codev review` commands, and neither does the repo's own build (0.5.0).** I used the project rules from `codev instructions` as the review criteria. A read-only sub-agent reviewed as the developer role (the proposal has no `## Domains`). I wrote `review.md` by hand and noted the fallback in it.\n- **Task 5.1's \"doctor reports nothing missing\" isn't fully met.** The `skills` check is missing because the committed skills are stamped 0.6.1 (commit `7464344`) while the source builds 0.5.0. This change didn't cause it, and running `codev update` would overwrite the skills under test, so I left it. Every other doctor check passes, including `config.keys`. I checked 5.1 off on that basis.\n\n**Defect fixed during review**\n- R-developer-1: an inherited source holding an unknown `changelog` or `inherits` key was still dropped entirely, losing its context and rules. Inherited sources are now read for their context, rules and the presence of `inherits` only. The test `an_inherited_source_strict_section_key_is_ignored_too` fails without the fix.\n\n**Review notes**\n- [developer] R-developer-1 (fixed) the inherited-source defect above — `config.rs` — it contradicted the design.\n- [developer] R-developer-2 (deferred) when the running codev is newer than `codev_version`, `config.keys` still suggests `codev self-update`, which refuses to downgrade — `doctor.rs:221-235` — the doctor spec's table requires this wording, so fixing it needs a spec revision first.\n- [developer] R-developer-3 (fixed) `unknown_config_key` was missing from the \"Validation codes\" table, in both languages.\n- [developer] R-developer-4 (fixed) two config tests were identical; one now covers a git `inherits` entry through `resolve`.\n\n**To decide**\n- Whether to open a follow-up change that revises the doctor spec for R-developer-2. No high-severity finding is open, and no domain was suggested.\n\nThe change is ready to be archived. Run `/codev-archive` or `codev archive` as the next step. I haven't archived, synced or committed anything."
+    "2.1 tests pass (the remaining failure is the test 2.3 replaces). Adding 2.2 and 2.3 tests.",
+    "All green. Checking off 2.1–2.3.",
+    "✓ 2.1–2.3. Now 2.4: the `config` item in `validate_all`.",
+    "The formatter had reflowed the function; let me read it and edit directly.",
+    "Now the validate side.",
+    "✓ 2.4 — engine tests pass; the CLI breakage is exactly what 3.1 covers.",
+    "Wiring the doctor fact and writing the CLI tests for 3.1.",
+    "The skill was already current from `init`, so `update` didn't rewrite it. I'll seed the config before `init` instead.",
+    "✓ 3.1. Now 3.2, the contract test.",
+    "✓ 3.2. Now the documentation (4.1, 4.2).",
+    "Writing the configuration reference sections (EN and FR).",
+    "French typography likely uses non-breaking spaces; checking.",
+    "French uses NBSP before `:`/`;`. Applying the same typography.",
+    "That stray first command was a mistake (it waited on stdin); stopping it.",
+    "✓ 4.1. Now 4.2: FAQ, CLI/JSON references and doctor samples.",
+    "Generating the doctor samples from a real run in the scratchpad.",
+    "Real output in hand. Now the French counterparts.",
+    "Quickstart's sample comes right after `init`, so I'll capture that state separately.",
+    "Now applying all 4.2 doc edits in both editions.",
+    "Now the guide paragraphs and FAQ entries.",
+    "A stray no-op pair aborted the script before anything was written; rerunning without it.",
+    "✓ 4.2 — both editions mention `config.keys` in the same 6 chapters. Now 5.1, the final verification.",
+    "✓ 5.1 — fmt, clippy, tests green; `validate --strict` clean; doctor reports only `skills` missing. All tasks done; on to the `code.review` step.",
+    "Review mode is inline with one role, `newcomer`. Reading the code diff with that lens.",
+    "Two newcomer-level issues stand out: deep nesting in `unknown_keys` (`for` → `else if let` → `for` → `if`), and a vaguely named `full` closure in `downgrade_target`. Let me get the exact lines.",
+    "Writing the review record first, as the skill requires, then applying the fixes.",
+    "Recording the author's fixes and the reviewer's re-check.",
+    "Record is clean. `codev validate` now shows 2 findings — checking what they are.",
+    "Those come from the proposal (no `## Domains` section) — the skill says not to edit the proposal myself, so they go under **To decide**. Last step: the full test suite after the review fixes.",
+    "I've implemented `forward-compatible-config`: all 11 tasks are done and checked off, and the review step ran. Format, clippy and the full test suite pass (774 tests, 0 failed). `codev validate --strict` reports no issue, and `codev doctor` on this repo reports nothing missing except `skills`, as task 5.1 expected.\n\n**What changed**\n- **Config loading:** an unknown top-level or `mcp` key in `_codev/config.yaml` no longer fails the command. It is ignored and raises an `unknown_config_key` warning that names the key and its line, quotes `codev_version` when set, and points to `codev self-update`.\n- **Strict sections:** unknown keys in an `inherits` entry or in `changelog` still fail with `invalid`, and the error now also quotes `codev_version`.\n- **Inherited sources:** their unknown keys are ignored without a warning.\n- **`codev validate`:** reports a new `config` item, only on a whole-project run and only when unknown keys exist. It is a warning, so `--strict` fails and plain `validate` passes.\n- **`codev doctor`:** new `config.keys` check (a warning). When the running codev is newer than `codev_version` allows, the `codev_version` fix is now `codev self-update --version <X.Y.Z>`. The version comes from the update cache if it fits the requirement, else from an exact bound, else from the lowest version the requirement allows.\n- **Docs:** updated in English and French (configuration reference, FAQ, CLI and JSON references). The doctor samples come from real `codev doctor` runs.\n\n**Files touched:** in `crates/`, `update.rs` and `doctor.rs` (core), `config.rs` and `validate/` (engine), `commands.rs`, `render.rs` and `contract.rs` (CLI); plus 12 doc files. The review record is in `_codev/changes/forward-compatible-config/review.md`.\n\n**Defects the experts fixed:** none. No domain expert was active; the only reviewer was the newcomer role.\n\n**Review notes**\n- [newcomer] R-newcomer-1 (fixed) — the `mcp` key scan was nested four levels deep in `config.rs`; it now has its own function, `unknown_mcp_keys`.\n- [newcomer] R-newcomer-2 (fixed) — a closure in `update.rs`'s `downgrade_target` had a vague name; it is now `written_in_full`.\n\n**To decide**\n- **`performance` domain:** the diff suggests it, based on the word \"cache\" in `crates/codev-cli/src/commands.rs:1651` and 4 other places. Either tick it, so a performance expert reviews this code, or keep it unticked with a reason. The changes only read the existing update cache, so keeping it unticked seems likely. I left the proposal alone, as the skill requires.\n- **Missing `## Domains` section in `proposal.md`:** `codev validate` warns about it (`domains_missing`). Adding it with your answer above clears both warnings.\n- **Archiving is blocked:** `review.md` has no `plan.challenge` section, which belongs to the planning step, not to apply.\n- **One spec point you may want to revisit:** when there are unknown keys and the running codev doesn't satisfy `codev_version`, `config.keys` suggests a plain `codev self-update`, as the spec says. If the running codev is *newer* than the requirement, that command refuses to downgrade. The `codev_version` check right next to it gives the working `--version` command.\n\nOnce those are settled, the change is ready to be archived. Run `/codev-archive` or `codev archive` as the next step."
   ],
   "implement": {
     "checks": [
@@ -1174,19 +1100,19 @@
         "name": "lints",
         "passed": true,
         "timedOut": false,
-        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s"
+        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
       },
       {
         "name": "tests",
         "passed": true,
         "timedOut": false,
-        "tail": "test generated_minimal_yaml_is_readable ... ok\ntest generated_config_with_inherits_reads_back ... ok\ntest generated_full_yaml_is_readable_by_project_config ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n     Running tests/sync_golden.rs (target/debug/deps/sync_golden-e5bd9c60c7407c8f)\n\nrunning 10 tests\ntest modified_replaces ... ok\ntest renamed_retitle ... ok\ntest multi_ops_is_deterministic ... ok\ntest added_adds ... ok\ntest removed_deletes ... ok\ntest renamed_with_the_template_form_retitles ... ok\ntest a_free_form_section_after_requirements_survives ... ok\ntest html_comment_in_untouched_requirement_survives ... ok\ntest two_successive_syncs_give_the_same_result ... ok\ntest modified_preserves_the_blank_line_around_the_replaced_requirement ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
+        "tail": "test generated_minimal_yaml_is_readable ... ok\ntest generated_full_yaml_is_readable_by_project_config ... ok\ntest generated_config_with_inherits_reads_back ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n     Running tests/sync_golden.rs (target/debug/deps/sync_golden-e5bd9c60c7407c8f)\n\nrunning 10 tests\ntest renamed_with_the_template_form_retitles ... ok\ntest a_free_form_section_after_requirements_survives ... ok\ntest html_comment_in_untouched_requirement_survives ... ok\ntest removed_deletes ... ok\ntest modified_replaces ... ok\ntest renamed_retitle ... ok\ntest added_adds ... ok\ntest two_successive_syncs_give_the_same_result ... ok\ntest modified_preserves_the_blank_line_around_the_replaced_requirement ... ok\ntest multi_ops_is_deterministic ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
       },
       {
         "name": "build",
         "passed": true,
         "timedOut": false,
-        "tail": "   Compiling codev-cli v0.5.0 (/private/tmp/claude-503/-Users-ludovic-nicaise-Sources-codev/57f39bd0-603a-455a-950b-01399a9a70b5/scratchpad/ie-base-work/implement-forward-compatible-config-1/crates/codev-cli)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.15s"
+        "tail": "   Compiling codev-cli v0.5.0 (/private/tmp/claude-503/-Users-ludovic-nicaise-Sources-codev/57f39bd0-603a-455a-950b-01399a9a70b5/scratchpad/name-work/implement-forward-compatible-config-1/crates/codev-cli)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.90s"
       }
     ],
     "script": {
@@ -1249,14 +1175,12 @@
       "docs/en/src/quickstart.md",
       "docs/en/src/reference/cli.md",
       "docs/en/src/reference/configuration.md",
-      "docs/en/src/reference/file-formats.md",
       "docs/en/src/reference/json-output.md",
       "docs/fr/src/faq.md",
       "docs/fr/src/guides/repository-integration.md",
       "docs/fr/src/quickstart.md",
       "docs/fr/src/reference/cli.md",
       "docs/fr/src/reference/configuration.md",
-      "docs/fr/src/reference/file-formats.md",
       "docs/fr/src/reference/json-output.md"
     ],
     "readRepository": []

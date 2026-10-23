@@ -7,7 +7,7 @@ kind: seeded
 ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
 merged: 2d5edc4b2541b0a4af1ccbb5d3cf1c9b7bae66f9
 change: forward-compatible-config
-summary: "Replays the change 2026-10-12-forward-compatible-config (feat(config): forward-compatible configuration and doctor downgrade fix, #20). Tasks 4.1 and 4.2 are reworded: the sandbox has no `mdbook`, so \"both books building\" becomes the docs tests of `cargo test -p codev-cli`."
+summary: "Replays the change 2026-10-12-forward-compatible-config (feat(config): forward-compatible configuration and doctor downgrade fix, #20). Tasks 4.1 and 4.2 are reworded: the sandbox has no `mdbook`, so \"both books building\" becomes the docs tests of `cargo test -p codev-cli`. Task 5.1 validates and runs doctor with the codev the change builds (`cargo run`), and expects `skills` to be reported, since the evaluation installs the skills of another codev."
 expected:
   docs: true
   acceptance:

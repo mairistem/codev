@@ -116,5 +116,6 @@ temporary directory, no assumption about path separators or line endings.
 
 - [ ] 5.1 `cargo fmt --all --check`, `cargo clippy --workspace
   --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`
-  green; `codev validate --strict` and `codev doctor` on this repository
-  report nothing missing.
+  green; `cargo run -q -p codev-cli -- validate --strict` reports no issue,
+  and `cargo run -q -p codev-cli -- doctor` reports nothing missing but
+  `skills`, which the evaluation installed from another codev.

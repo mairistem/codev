@@ -18,8 +18,11 @@ commit that brought the change to `main`), `change` (a change name),
 `summary`, and `expected`; and a folder `change/` holding the planning
 files of `_codev/changes/<change>/`, as archived at `merged`. They MAY
 differ from the archive only where a task's verification needs a tool
-the run's sandbox does not hold, such as `mdbook`: that verification is
-reworded into one the sandbox can run, and `summary` says so.
+the run's sandbox does not hold, such as `mdbook`, or the codev the change
+builds — `codev` on the search path is the codev under test, whose
+validation and doctor judge an older change by today's rules —: that
+verification is reworded into one the sandbox can run, such as `cargo run
+-p codev-cli -- validate --strict`, and `summary` says so.
 `expected` SHALL hold `refuse`
 (whether the skill must refuse to implement), `docs` (whether the run
 must touch the documentation of both languages) and `acceptance` (the
@@ -58,6 +61,15 @@ assertions have the same name; or when an unknown key is found.
 - **GIVEN** a case with `refuse: true` and an `acceptance.sh`
 - **WHEN** the suite loads its cases
 - **THEN** it fails, naming the case
+
+#### Scenario: A task that validates with the change's own codev
+
+- **GIVEN** an archived change whose last task runs `codev validate
+  --strict`, which today's codev fails on its proposal written before the
+  `## Domains` section existed
+- **WHEN** the suite's tests run
+- **THEN** they fail unless that verification is `cargo run -q -p
+  codev-cli -- validate --strict` and the case's `summary` says so
 
 ### Requirement: An acceptance script drives the built binary and is calibrated on the real change
 

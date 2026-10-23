@@ -5,9 +5,9 @@
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — the material exceeds the review size limit (272154 bytes for 163840).
-Summarized: docs/en/src/reference/cli.md — the material exceeds the review size limit (272154 bytes for 163840).
-Summarized: docs/fr/src/reference/cli.md — the material exceeds the review size limit (272154 bytes for 163840).
+Summarized: crates/codev-agents/src/claude.rs — beyond the material's size limit.
+Summarized: docs/en/src/reference/cli.md — beyond the material's size limit.
+Summarized: docs/fr/src/reference/cli.md — beyond the material's size limit.
 
 ### migration
 
@@ -15,64 +15,87 @@ No finding.
 
 ### newcomer
 
-#### R-newcomer-1 `is_hand_edit` hides its legacy branch behind a dense docstring and a negated `all`
+#### R-newcomer-1 `stamp_checksum` hides where the line goes behind offset arithmetic and a garbled doc sentence
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:202-217"
+location: "crates/codev-agents/src/claude.rs:421-433"
 evidence: |
-              None => [self.ctx.clone(), self.ctx.other_review_mode()]
-                  .iter()
-                  .all(|ctx| {
-                      unchecksummed != split_checksum(&Self::render(workflow, version, ctx)).0
-                  }),
-recommendation: Write the docstring as the two cases (with a checksum, a hand edit when the content no longer matches it; without one, a skill rendered before checksums, a hand edit unless it equals the rendering of either review mode), express the legacy arm positively as `!…any(… == …)`, and move the method into the `impl ClaudeCode` block holding `render` instead of a one-method block of its own.
+  /// the version stamp, replacing any earlier one. `codev update` tells a
+  /// skill it rendered from a hand edit by it, whatever build rendered it.
+  fn stamp_checksum(skill: &str) -> String {
+      let unsigned = without_checksum(skill);
+      let line = format!("  {CHECKSUM_KEY} \"{}\"\n", content_checksum(&unsigned));
+      let Some(version_at) = unsigned.find("\n  version:") else {
+          return unsigned;
+      };
+      let insert_at = unsigned[version_at + 1..]
+          .find('\n')
+          .map_or(unsigned.len(), |end| version_at + 1 + end + 1);
+recommendation: Rewrite the doc sentence as the reason ("the checksum lets `codev update` tell a skill codev rendered from one edited by hand, whatever build rendered it"); replace the `version_at + 1 + end + 1` arithmetic by building the output line by line, as `without_checksum` does, pushing the checksum line right after the `version:` line; say when a skill without a version stamp comes back without a checksum (never for `render`'s output).
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — is_hand_edit moved next to render, docstring as two cases, legacy arm as `!renderings.contains(&unchecksummed)`"
+    ref: "crates/codev-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```
 
-#### R-newcomer-2 `split_checksum` leaves its loop guard unexplained and rebuilds the string inline
+#### R-newcomer-2 `edited_within_version`: the doc comment is hard to follow, and `checksum` vs `content_checksum` look alike at the call site
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:380-400"
+location: "crates/codev-agents/src/claude.rs:201-216"
 evidence: |
-          if index > 0 && bare == "---" {
-recommendation: Say why line 0 is skipped (it is the opening delimiter; the scan stops at the closing one), and name the rebuilt string, for example `without_checksum_line`, so the returned tuple reads as content without the line and the checksum it states.
+  /// another version is never asked: it is rewritten, so that no hand edit
+  /// survives an upgrade.
+  ///
+  /// Its checksum decides: a match means codev rendered it — an earlier
+  /// build of this version, as every build from source is — so it is
+  /// rewritten. Without a checksum, the skill predates checksums and keeps
+  /// the rule of that time: codev's own only if it is this version's
+  /// rendering, for this review mode or the other one (the mode changed),
+  /// compared without the checksum line the old rendering lacks.
+  fn edited_within_version(&self, workflow: &Workflow, version: &str, current: &str) -> bool {
+      match checksum(current) {
+          Some(recorded) => recorded != content_checksum(current),
+          None => [&self.ctx, &self.ctx.other_review_mode()]
+              .into_iter()
+              .all(|ctx| current != without_checksum(&Self::render(workflow, version, ctx))),
+recommendation: State the cause directly (builds from source between releases keep the version number while their skill text changes) and say the function is only called for a skill stamped with the running version; rename `checksum` / `content_checksum` to `recorded_checksum` / `computed_checksum`; replace the negated `.all(... != ...)` by a named `matches_a_rendering` built with `.any(... == ...)`.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — split_checksum comments the opening delimiter and names `without_checksum_line` and `checksum`"
+    ref: "crates/codev-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```
 
-#### R-newcomer-3 Test helper `checksummed` has an unclear docstring, and three tests repeat the same legacy-rendering expression
+#### R-newcomer-3 `without_checksum`: a negated compound condition with `i > 0` repeated
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:588-590"
+location: "crates/codev-agents/src/claude.rs:404-410"
 evidence: |
-      /// rendered it, as a build whose skill text differed would have.
-      fn checksummed(contents: &str) -> String {
-recommendation: Say what the helper does (inserts after the version stamp the checksum line codev would write for `contents`, as a skill rendered by another build of the same version), and factor the repeated `split_checksum(&ClaudeCode::render(propose(), VERSION, &RenderCtx::default())).0` of lines 613, 651 and 665 into a helper such as `rendering_without_checksum()`.
+      for (i, line) in contents.split_inclusive('\n').enumerate() {
+          if i > 0 && line.trim_end_matches(['\n', '\r']) == "---" {
+              in_frontmatter = false;
+          }
+          if !(in_frontmatter && i > 0 && is_checksum_line(line)) {
+recommendation: Push the opening `---` line before the loop so the index is no longer needed, then name the drop condition (`is_frontmatter_checksum`).
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `checksummed` docstring rewritten, `rendering_without_checksum()` helper used by the three tests"
+    ref: "crates/codev-agents/src/claude.rs"
   - status: fixed
     by: newcomer
 ```

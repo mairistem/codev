@@ -1052,6 +1052,9 @@ pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
     let claude = version(&tools.claude, "claude")?;
     version(&tools.git, "git")?;
     let codev = version(&tools.codev, "codev")?;
+    if let Some(problem) = codev_name_problem(&tools.codev) {
+        return Err(problem);
+    }
     let runs = |program: &str, arg: &str| {
         Command::new(program)
             .arg(arg)
@@ -1065,6 +1068,28 @@ pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
         return Err(missing);
     }
     Ok((claude, codev))
+}
+
+/// Why the codev binary under test would not be the one the agent runs:
+/// the agent calls `codev` by name, through the search path whose first
+/// folder is the binary's, so a file under another name leaves it running
+/// whatever other `codev` that path holds; `None` when the name is right.
+pub fn codev_name_problem(codev: &Path) -> Option<String> {
+    let expected = if cfg!(windows) { "codev.exe" } else { "codev" };
+    let Some(name) = codev.file_name() else {
+        return Some(format!(
+            "--codev {}: not the path of a file named `{expected}`",
+            codev.display()
+        ));
+    };
+    let name = name.to_string_lossy();
+    (name != expected).then(|| {
+        format!(
+            "--codev {}: the file must be named `{expected}`, in a folder of its own — the agent \
+             calls codev by name, and `{name}` would leave it running another installed codev",
+            codev.display()
+        )
+    })
 }
 
 /// What Claude Code's sandbox needs and this machine lacks, by operating
@@ -3452,5 +3477,21 @@ mod tests {
         ] {
             assert!(git_path_is_setting(setting), "{setting}");
         }
+    }
+
+    #[test]
+    fn a_codev_binary_under_another_name_is_refused() {
+        let named = |name: &str| Path::new("frozen").join(name);
+        let err = codev_name_problem(&named("codev-candidate")).unwrap();
+        assert!(
+            err.contains("codev-candidate") && err.contains("must be named"),
+            "{err}"
+        );
+        let right = if cfg!(windows) { "codev.exe" } else { "codev" };
+        assert!(codev_name_problem(&named(right)).is_none());
+        assert!(
+            codev_name_problem(Path::new("..")).is_some(),
+            "a path naming no file"
+        );
     }
 }

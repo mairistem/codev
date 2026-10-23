@@ -2,684 +2,633 @@
   "format": 2,
   "case": "implement-decision-accept-command",
   "error": null,
-  "costUsd": 3.8963474,
-  "durationMs": 475029,
+  "costUsd": 3.7309358,
+  "durationMs": 456678,
   "consumption": {
-    "durationApiMs": 439009,
-    "turns": 69,
+    "durationApiMs": 421870,
+    "turns": 82,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1132,
-      "cacheCreation": 159000,
-      "cacheRead": 8306432,
-      "output": 48093
+      "input": 1120,
+      "cacheCreation": 167753,
+      "cacheRead": 7618619,
+      "output": 43201
     },
-    "toolCalls": 68,
-    "orientationCalls": 58,
+    "toolCalls": 81,
+    "orientationCalls": 19,
     "calls": [
       {
-        "cacheCreation": 5618,
-        "cacheRead": 25267,
+        "cacheCreation": 5605,
+        "cacheRead": 25264,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "prompt": 5618
+          "prompt": 5605
         }
       },
       {
-        "cacheCreation": 13059,
-        "cacheRead": 30885,
+        "cacheCreation": 13053,
+        "cacheRead": 30869,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "skill": 13059
+          "skill": 13053
         }
       },
       {
-        "cacheCreation": 849,
-        "cacheRead": 43944,
+        "cacheCreation": 1024,
+        "cacheRead": 43922,
         "input": 2,
-        "output": 8,
+        "output": 40,
         "toolCalls": 1,
         "sources": {
-          "shell": 849
+          "shell": 1024
         }
       },
       {
-        "cacheCreation": 7177,
-        "cacheRead": 44793,
+        "cacheCreation": 7182,
+        "cacheRead": 44946,
         "input": 2,
-        "output": 8,
+        "output": 5,
         "toolCalls": 1,
         "sources": {
-          "file": 7177
+          "file": 7157,
+          "output": 25
         }
       },
       {
-        "cacheCreation": 2194,
-        "cacheRead": 51970,
+        "cacheCreation": 3212,
+        "cacheRead": 52128,
         "input": 2,
-        "output": 8,
+        "output": 54,
         "toolCalls": 1,
         "sources": {
-          "codev roles": 2194
+          "codev roles": 3212
         }
       },
       {
-        "cacheCreation": 1252,
-        "cacheRead": 54164,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "codev --version": 1252
-        }
-      },
-      {
-        "cacheCreation": 744,
-        "cacheRead": 55416,
+        "cacheCreation": 495,
+        "cacheRead": 55340,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev review": 495,
-          "output": 249
+          "output": 84,
+          "search": 411
         }
       },
       {
-        "cacheCreation": 27145,
-        "cacheRead": 56160,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 27145
-        }
-      },
-      {
-        "cacheCreation": 1637,
-        "cacheRead": 83305,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "search": 1637
-        }
-      },
-      {
-        "cacheCreation": 1918,
-        "cacheRead": 84942,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1918
-        }
-      },
-      {
-        "cacheCreation": 2349,
-        "cacheRead": 86860,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 2349
-        }
-      },
-      {
-        "cacheCreation": 4992,
-        "cacheRead": 89209,
-        "input": 2,
-        "output": 69,
-        "toolCalls": 3,
-        "sources": {
-          "file": 4992
-        }
-      },
-      {
-        "cacheCreation": 11012,
-        "cacheRead": 94201,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 10952,
-          "output": 59
-        }
-      },
-      {
-        "cacheCreation": 629,
-        "cacheRead": 105213,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "search": 629
-        }
-      },
-      {
-        "cacheCreation": 2238,
-        "cacheRead": 105842,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2238
-        }
-      },
-      {
-        "cacheCreation": 1319,
-        "cacheRead": 108080,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1319
-        }
-      },
-      {
-        "cacheCreation": 2497,
-        "cacheRead": 109399,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 782,
-          "shell": 1715
-        }
-      },
-      {
-        "cacheCreation": 3313,
-        "cacheRead": 111896,
-        "input": 2,
-        "output": 7,
-        "toolCalls": 1,
-        "sources": {
-          "output": 189,
-          "shell": 3124
-        }
-      },
-      {
-        "cacheCreation": 1287,
-        "cacheRead": 115209,
-        "input": 2,
-        "output": 127,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1287
-        }
-      },
-      {
-        "cacheCreation": 2739,
-        "cacheRead": 116496,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 107,
-          "search": 2632
-        }
-      },
-      {
-        "cacheCreation": 1017,
-        "cacheRead": 119235,
-        "input": 2,
-        "output": 27,
-        "toolCalls": 1,
-        "sources": {
-          "search": 1017
-        }
-      },
-      {
-        "cacheCreation": 2972,
-        "cacheRead": 120252,
+        "cacheCreation": 27142,
+        "cacheRead": 55835,
         "input": 2,
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "output": 352,
-          "shell": 2620
+          "file": 27142
         }
       },
       {
-        "cacheCreation": 535,
-        "cacheRead": 123224,
+        "cacheCreation": 3987,
+        "cacheRead": 82977,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3987
+        }
+      },
+      {
+        "cacheCreation": 1485,
+        "cacheRead": 86964,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1485
+        }
+      },
+      {
+        "cacheCreation": 2147,
+        "cacheRead": 88449,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 2147
+        }
+      },
+      {
+        "cacheCreation": 7210,
+        "cacheRead": 90596,
+        "input": 2,
+        "output": 49,
+        "toolCalls": 1,
+        "sources": {
+          "file": 5482,
+          "search": 1728
+        }
+      },
+      {
+        "cacheCreation": 5507,
+        "cacheRead": 97806,
+        "input": 2,
+        "output": 52,
+        "toolCalls": 3,
+        "sources": {
+          "file": 5461,
+          "output": 46
+        }
+      },
+      {
+        "cacheCreation": 1718,
+        "cacheRead": 103313,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1605,
+          "output": 113
+        }
+      },
+      {
+        "cacheCreation": 2180,
+        "cacheRead": 105031,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2180
+        }
+      },
+      {
+        "cacheCreation": 3340,
+        "cacheRead": 107211,
+        "input": 2,
+        "output": 20,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 1568,
+          "shell": 1772
+        }
+      },
+      {
+        "cacheCreation": 803,
+        "cacheRead": 110551,
+        "input": 2,
+        "output": 115,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 804
+        }
+      },
+      {
+        "cacheCreation": 1075,
+        "cacheRead": 111354,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 135,
+          "shell": 940
+        }
+      },
+      {
+        "cacheCreation": 4905,
+        "cacheRead": 112429,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4905
+        }
+      },
+      {
+        "cacheCreation": 761,
+        "cacheRead": 117334,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "search": 761
+        }
+      },
+      {
+        "cacheCreation": 4059,
+        "cacheRead": 118095,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "file": 4059
+        }
+      },
+      {
+        "cacheCreation": 3364,
+        "cacheRead": 122154,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 3364
+        }
+      },
+      {
+        "cacheCreation": 1294,
+        "cacheRead": 125518,
+        "input": 2,
+        "output": 58,
+        "toolCalls": 1,
+        "sources": {
+          "search": 1294
+        }
+      },
+      {
+        "cacheCreation": 1517,
+        "cacheRead": 126812,
+        "input": 2,
+        "output": 34,
+        "toolCalls": 3,
+        "sources": {
+          "file": 1465,
+          "output": 52
+        }
+      },
+      {
+        "cacheCreation": 3884,
+        "cacheRead": 128329,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 3675,
+          "output": 210
+        }
+      },
+      {
+        "cacheCreation": 1881,
+        "cacheRead": 132213,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 3,
+        "sources": {
+          "edit": 202,
+          "output": 23,
+          "search": 1656
+        }
+      },
+      {
+        "cacheCreation": 2063,
+        "cacheRead": 134094,
+        "input": 2,
+        "output": 25,
+        "toolCalls": 6,
+        "sources": {
+          "edit": 2064
+        }
+      },
+      {
+        "cacheCreation": 3011,
+        "cacheRead": 136157,
         "input": 2,
         "output": 20,
         "toolCalls": 1,
         "sources": {
-          "shell": 535
+          "edit": 2655,
+          "output": 33,
+          "shell": 322
         }
       },
       {
-        "cacheCreation": 2858,
-        "cacheRead": 123759,
+        "cacheCreation": 763,
+        "cacheRead": 139168,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 763
+        }
+      },
+      {
+        "cacheCreation": 3265,
+        "cacheRead": 139931,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 4,
+        "sources": {
+          "edit": 163,
+          "shell": 3102
+        }
+      },
+      {
+        "cacheCreation": 1461,
+        "cacheRead": 143196,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 1272,
+          "output": 72,
+          "search": 116
+        }
+      },
+      {
+        "cacheCreation": 505,
+        "cacheRead": 144657,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 505
+        }
+      },
+      {
+        "cacheCreation": 1126,
+        "cacheRead": 145162,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 231,
+          "shell": 895
+        }
+      },
+      {
+        "cacheCreation": 2495,
+        "cacheRead": 146288,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2495
+        }
+      },
+      {
+        "cacheCreation": 1581,
+        "cacheRead": 148783,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1581
+        }
+      },
+      {
+        "cacheCreation": 2179,
+        "cacheRead": 150364,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2179
+        }
+      },
+      {
+        "cacheCreation": 731,
+        "cacheRead": 152543,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "output": 78,
+          "search": 653
+        }
+      },
+      {
+        "cacheCreation": 1635,
+        "cacheRead": 153274,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1635
+        }
+      },
+      {
+        "cacheCreation": 1766,
+        "cacheRead": 154909,
         "input": 2,
         "output": 4,
         "toolCalls": 1,
         "sources": {
-          "shell": 2858
-        }
-      },
-      {
-        "cacheCreation": 903,
-        "cacheRead": 126617,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "search": 903
-        }
-      },
-      {
-        "cacheCreation": 1530,
-        "cacheRead": 127520,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1530
-        }
-      },
-      {
-        "cacheCreation": 769,
-        "cacheRead": 129050,
-        "input": 2,
-        "output": 47,
-        "toolCalls": 1,
-        "sources": {
-          "search": 769
-        }
-      },
-      {
-        "cacheCreation": 3809,
-        "cacheRead": 129819,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "output": 769,
-          "shell": 3040
-        }
-      },
-      {
-        "cacheCreation": 979,
-        "cacheRead": 133628,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 979
-        }
-      },
-      {
-        "cacheCreation": 419,
-        "cacheRead": 134607,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 419
+          "output": 95,
+          "shell": 1671
         }
       },
       {
         "cacheCreation": 1171,
-        "cacheRead": 135026,
+        "cacheRead": 156675,
         "input": 2,
-        "output": 6,
+        "output": 35,
         "toolCalls": 1,
         "sources": {
-          "shell": 1171
+          "search": 1171
         }
       },
       {
-        "cacheCreation": 547,
-        "cacheRead": 136197,
+        "cacheCreation": 1220,
+        "cacheRead": 157846,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1191,
+          "output": 29
+        }
+      },
+      {
+        "cacheCreation": 1508,
+        "cacheRead": 159066,
         "input": 2,
         "output": 20,
         "toolCalls": 1,
         "sources": {
-          "file": 547
+          "file": 1508
         }
       },
       {
-        "cacheCreation": 460,
-        "cacheRead": 136744,
+        "cacheCreation": 3289,
+        "cacheRead": 160574,
         "input": 2,
-        "output": 82,
+        "output": 4,
         "toolCalls": 1,
         "sources": {
-          "shell": 460
+          "shell": 3289
         }
       },
       {
-        "cacheCreation": 2182,
-        "cacheRead": 137204,
+        "cacheCreation": 312,
+        "cacheRead": 163863,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "file": 2097,
-          "output": 85
+          "search": 312
         }
       },
       {
-        "cacheCreation": 1656,
-        "cacheRead": 139386,
-        "input": 2,
-        "output": 2,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1656
-        }
-      },
-      {
-        "cacheCreation": 2350,
-        "cacheRead": 141042,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2350
-        }
-      },
-      {
-        "cacheCreation": 2558,
-        "cacheRead": 143392,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "output": 43,
-          "shell": 2515
-        }
-      },
-      {
-        "cacheCreation": 2302,
-        "cacheRead": 145950,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2302
-        }
-      },
-      {
-        "cacheCreation": 5401,
-        "cacheRead": 148252,
-        "input": 2,
-        "output": 2,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 5401
-        }
-      },
-      {
-        "cacheCreation": 849,
-        "cacheRead": 153653,
+        "cacheCreation": 591,
+        "cacheRead": 164175,
         "input": 2,
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "shell": 849
+          "search": 591
         }
       },
       {
-        "cacheCreation": 325,
-        "cacheRead": 154502,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 325
-        }
-      },
-      {
-        "cacheCreation": 680,
-        "cacheRead": 154827,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 680
-        }
-      },
-      {
-        "cacheCreation": 4930,
-        "cacheRead": 155507,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "output": 726,
-          "shell": 4204
-        }
-      },
-      {
-        "cacheCreation": 629,
-        "cacheRead": 160437,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "search": 629
-        }
-      },
-      {
-        "cacheCreation": 1112,
-        "cacheRead": 161066,
+        "cacheCreation": 640,
+        "cacheRead": 164766,
         "input": 2,
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "search": 1112
+          "shell": 640
         }
       },
       {
-        "cacheCreation": 580,
-        "cacheRead": 162178,
+        "cacheCreation": 3940,
+        "cacheRead": 165406,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "output": 455,
+          "shell": 3485
+        }
+      },
+      {
+        "cacheCreation": 750,
+        "cacheRead": 169346,
         "input": 2,
         "output": 50,
-        "toolCalls": 1,
+        "toolCalls": 2,
         "sources": {
-          "file": 580
+          "shell": 750
         }
       },
       {
-        "cacheCreation": 1273,
-        "cacheRead": 162758,
+        "cacheCreation": 1299,
+        "cacheRead": 170096,
         "input": 2,
-        "output": 44,
+        "output": 16,
         "toolCalls": 1,
         "sources": {
-          "output": 61,
-          "shell": 1212
+          "edit": 152,
+          "file": 1110,
+          "output": 38
         }
       },
       {
-        "cacheCreation": 635,
-        "cacheRead": 164031,
+        "cacheCreation": 1546,
+        "cacheRead": 171395,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1546
+        }
+      },
+      {
+        "cacheCreation": 1858,
+        "cacheRead": 172941,
         "input": 2,
         "output": 20,
         "toolCalls": 1,
         "sources": {
-          "output": 62,
-          "search": 573
+          "edit": 159,
+          "shell": 1699
         }
       },
       {
-        "cacheCreation": 1053,
-        "cacheRead": 164666,
+        "cacheCreation": 2579,
+        "cacheRead": 174799,
         "input": 2,
-        "output": 16,
-        "toolCalls": 1,
+        "output": 56,
+        "toolCalls": 2,
         "sources": {
-          "file": 1053
+          "shell": 2579
         }
       },
       {
-        "cacheCreation": 1091,
-        "cacheRead": 165719,
-        "input": 2,
-        "output": 61,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 1091
-        }
-      },
-      {
-        "cacheCreation": 1523,
-        "cacheRead": 166810,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "file": 1466,
-          "output": 57
-        }
-      },
-      {
-        "cacheCreation": 995,
-        "cacheRead": 168333,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 995
-        }
-      },
-      {
-        "cacheCreation": 1305,
-        "cacheRead": 169328,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 1305
-        }
-      },
-      {
-        "cacheCreation": 421,
-        "cacheRead": 170633,
-        "input": 2,
-        "output": 7,
-        "toolCalls": 1,
-        "sources": {
-          "codev validate": 421
-        }
-      },
-      {
-        "cacheCreation": 610,
-        "cacheRead": 171054,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "codev validate": 610
-        }
-      },
-      {
-        "cacheCreation": 2182,
-        "cacheRead": 171664,
+        "cacheCreation": 3058,
+        "cacheRead": 177378,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "output": 485,
-          "search": 1697
+          "codev review": 2905,
+          "edit": 109,
+          "output": 44
         }
       },
       {
-        "cacheCreation": 1488,
-        "cacheRead": 173846,
+        "cacheCreation": 6069,
+        "cacheRead": 180436,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 52,
+          "shell": 6017
+        }
+      },
+      {
+        "cacheCreation": 1369,
+        "cacheRead": 186505,
         "input": 2,
         "output": 32,
         "toolCalls": 1,
         "sources": {
-          "output": 434,
-          "search": 1054
+          "file": 1369
         }
       },
       {
-        "cacheCreation": 597,
-        "cacheRead": 175334,
+        "cacheCreation": 1009,
+        "cacheRead": 187874,
         "input": 2,
-        "output": 16,
+        "output": 38,
         "toolCalls": 1,
         "sources": {
-          "edit": 506,
-          "output": 91
+          "edit": 891,
+          "output": 118
         }
       },
       {
-        "cacheCreation": 1387,
-        "cacheRead": 175931,
+        "cacheCreation": 1461,
+        "cacheRead": 188883,
         "input": 2,
-        "output": 6,
-        "toolCalls": 2,
+        "output": 47,
+        "toolCalls": 1,
         "sources": {
-          "file": 1387
+          "file": 1398,
+          "output": 63
         }
       },
       {
-        "cacheCreation": 1507,
-        "cacheRead": 177318,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 2,
-        "sources": {
-          "edit": 265,
-          "file": 1242
-        }
-      },
-      {
-        "cacheCreation": 1192,
-        "cacheRead": 178825,
+        "cacheCreation": 1941,
+        "cacheRead": 190344,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "edit": 439,
-          "shell": 753
+          "output": 155,
+          "shell": 1786
         }
       },
       {
-        "cacheCreation": 987,
-        "cacheRead": 180017,
+        "cacheCreation": 732,
+        "cacheRead": 192285,
         "input": 2,
-        "output": 8,
-        "toolCalls": 2,
-        "sources": {
-          "output": 301,
-          "shell": 686
-        }
-      },
-      {
-        "cacheCreation": 1832,
-        "cacheRead": 181004,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 212,
-          "file": 1572,
-          "output": 48
-        }
-      },
-      {
-        "cacheCreation": 1431,
-        "cacheRead": 182836,
-        "input": 2,
-        "output": 731,
+        "output": 724,
         "toolCalls": 0,
         "sources": {
-          "file": 1431
+          "shell": 732
         }
       }
     ]
@@ -703,7 +652,7 @@
       {
         "awaiting": null,
         "confidence": "high",
-        "evidence": "if outcome.body_sha256.is_some() {\n",
+        "evidence": "Self::DecisionNotProposed {\n    qualified_id,\n    status,\n} if status == \"accepted\" => format!(\n",
         "history": [
           {
             "by": "newcomer",
@@ -715,7 +664,7 @@
           {
             "by": "developer",
             "note": null,
-            "ref": "crates/codev-cli/src/render.rs — the hint is limited to `proposed`; test decision_new_points_only_a_proposed_decision_to_accept",
+            "ref": "crates/codev-engine/src/decisions_actions.rs — `DecisionNotProposed.status` is a `DecisionStatus`, matched on `DecisionStatus::Accepted`",
             "status": "fixed",
             "to": null
           },
@@ -728,18 +677,100 @@
           }
         ],
         "id": "R-newcomer-1",
-        "line": 10,
-        "location": "crates/codev-cli/src/render.rs:454-473",
+        "line": 11,
+        "location": "crates/codev-engine/src/decisions_actions.rs:137-140",
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Show the `codev decision accept` hint only for a `proposed` decision; `codev decision new X --status rejected` otherwise prints a next step that fails with `decision_not_proposed`.",
+        "recommendation": "Keep the status as a `DecisionStatus` in `DecisionNotProposed` and match on `DecisionStatus::Accepted`, so the reader sees an enum case rather than a string literal, and render it with `as_str()` in the generic message.",
         "reported": true,
         "role": "newcomer",
         "severity": "low",
         "status": "fixed",
         "step": "code.review",
-        "title": "`decision new` points a rejected or deprecated decision to `accept`"
+        "title": "The refusal message branches on a status string"
+      },
+      {
+        "awaiting": null,
+        "confidence": "high",
+        "evidence": "Some(existing_entry) if existing_entry.body_sha256 == body_sha256 => {}\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          },
+          {
+            "by": "developer",
+            "note": null,
+            "ref": "crates/codev-engine/src/decisions_actions.rs — comment in the matching-seal arm",
+            "status": "fixed",
+            "to": null
+          },
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "fixed",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-2",
+        "line": 33,
+        "location": "crates/codev-engine/src/decisions_actions.rs:598",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Add a one-line comment in the arm saying the existing entry already seals this body, so there is nothing to write.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "fixed",
+        "step": "code.review",
+        "title": "An empty match arm keeps a matching seal without saying why"
+      },
+      {
+        "awaiting": null,
+        "confidence": "high",
+        "evidence": "const PROPOSED_PATH: &str = \"/p/_codev/decisions/0001-a-first-choice.md\";\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          },
+          {
+            "by": "developer",
+            "note": null,
+            "ref": "crates/codev-cli/src/commands.rs — constant renamed `ADR_0001_PATH`",
+            "status": "fixed",
+            "to": null
+          },
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "fixed",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-3",
+        "line": 52,
+        "location": "crates/codev-cli/src/commands.rs:1737",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Rename it `ADR_0001_PATH`; `decision_accept_refuses_an_accepted_decision` reads an accepted decision through it, which a reader would misread as a proposed one.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "fixed",
+        "step": "code.review",
+        "title": "`PROPOSED_PATH` also names an accepted decision in the tests"
       }
     ],
     "format": 1,
@@ -780,9 +811,9 @@
     "_codev/changes/decision-accept-command/change.yaml": "schema: spec-driven\ncreated: 2026-09-30\n",
     "_codev/changes/decision-accept-command/design.md": "# Design: `decision new` creates a proposed decision, `decision accept` seals it\n\n## Context\n\nEvery command that creates a decision computes a pure plan in\n`codev-engine::decisions_actions` (`plan_new`, `plan_supersede`,\n`plan_seal`, `plan_deviate`, `plan_promote`), and the CLI executes it with\n`apply::execute`. `plan_new` already skips the seal for statuses other than\n`accepted` and `superseded`, and `rewrite_frontmatter_status` already\nrewrites a status while keeping the body byte for byte — `supersede` relies\non it so the predecessor's seal stays valid. The seal hashes the body only,\nnever the frontmatter.\n\n## Goals / Non-Goals\n\n**Goals:**\n\n- A decision is sealed when its text is final, through one explicit command.\n- Accepting writes the status and the seal in the same plan.\n\n**Non-Goals:**\n\n- Changing `supersede`, `deviate` or `promote`: they keep creating sealed\n  `accepted` decisions.\n- A general status-transition command (`deprecate`, `reject`): only the\n  `proposed` → `accepted` transition carries a seal.\n\n## Decisions\n\n### Decision: `plan_accept` is a pure plan, like the other decision actions\n\nFollowing `_codev/decisions/0001-functional-core-imperative-shell.md`,\n`plan_accept` takes the index, the current seal file and a reader for the\nADR's source, and returns a plan with two writes: the ADR rewritten by\n`rewrite_frontmatter_status` (`Overwrite`) and `seal.yaml` (`Overwrite`).\nEvery refusal — unknown id, inherited decision, status other than\n`proposed`, unreadable seal file — happens while computing the plan, so\nnothing is written. The body hash is computed on the rewritten content;\nsince only the frontmatter changes, it equals the hash of the body the user\nwrote, which is what makes the seal meaningful. The shell reads files; the\nfunction decides.\n\n**Alternatives considered**: reusing `plan_seal` after a separate status\nrewrite (two plans, so a failure between them leaves an accepted, unsealed\ndecision); letting `decision seal` also flip the status (mixes two\nintentions in one command, and `seal` works on already accepted decisions).\n\n### Decision: Inherited decisions are refused with their own code\n\nInherited sources are read-only (`_codev/decisions/0005-read-only-inherited-sources.md`).\nEach decision command refusing an inherited target has its own code\n(`cannot_supersede_inherited`, `cannot_seal_inherited`), so an agent can\ntell which command it called wrongly; `decision accept` follows the pattern\nwith `cannot_accept_inherited`. A status other than `proposed` gets\n`decision_not_proposed`, whose message depends on the status: an\n`accepted` decision has nothing to accept and is replaced through\n`supersede`.\n\n**Alternatives considered**: reusing `cannot_seal_inherited` (its message\ntalks about sealing, which is only half of what `accept` does); making\n`accept` a no-op on an accepted decision (it would hide a decision whose\nbody no longer matches its seal).\n\n### Decision: `proposed` becomes the default of `decision new`\n\nThe clap default changes from `accepted` to `proposed`. `--status accepted`\nkeeps the old behavior for scripts and for decisions whose text is already\nfinal. The JSON contract needs no new field: `decision new` already omitted\n`bodySha256` for a `proposed` decision. `decision accept --json` returns a\nnew `DecisionAcceptedV1` shaped like `DecisionCreatedV1` (`decision`,\n`path`, `bodySha256`), which keeps v1 additive.\n\n## Risks / Trade-offs\n\n- [A script relying on `decision new` sealing by default] → The CHANGELOG\n  names the change and the `--status accepted` flag; `validate` reports a\n  forgotten acceptance through the decision's `proposed` status, not\n  through an error.\n- [A proposed decision never accepted is not in effect] → This is the\n  intended semantics of `proposed`; the human output of `decision new`\n  names the `accept` command as the next step.\n- [`deviate` and `promote` still seal a body that is meant to be edited] →\n  Out of scope here; they are the same problem and can adopt `proposed` +\n  `accept` in a later change.\n",
     "_codev/changes/decision-accept-command/proposal.md": "# Proposal: `decision new` creates a proposed decision, `decision accept` seals it\n\n## Why\n\n`codev decision new <title>` creates an `accepted` decision and seals the\nplaceholder template body at once. The first real edit of the decision then\nmakes `codev validate` fail with `decision_seal_mismatch`, and the only way\nout is `codev decision seal --force` — which teaches users to force the seal\nroutinely and defeats the immutability it is meant to guarantee. A decision\nshould be sealed when its text is final, not when its file is created.\n\n## What Changes\n\n- `codev decision new` defaults to `--status proposed`: the decision is\n  created unsealed and can be written freely. `--status accepted` stays\n  available and still writes the decision and its seal in the same plan.\n- New command `codev decision accept <id> [--json]`: turns a local\n  `proposed` decision into an `accepted` one and seals its body, in a single\n  plan of effects — the status and the seal are written together or not at\n  all. The body is left byte for byte identical.\n- `decision accept` refuses an inherited decision (`cannot_accept_inherited`)\n  and a decision whose status is not `proposed` (`decision_not_proposed`,\n  which points to `supersede` for an already accepted one). An unknown\n  identifier keeps the existing `unknown_decision_id` code.\n- JSON contract v1, additive only: `decision accept --json` returns\n  `decision`, `path` and `bodySha256`, like `decision new`.\n- No **BREAKING** change: existing ADRs and seals are untouched, and scripts\n  that relied on the default can pass `--status accepted`.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `decisions` — default status of `decision new`, the new `decision accept`\n  command, and the seal requirements that assumed `new` seals by default.\n\n### Removed Capabilities\n\nNone.\n\n## Impact\n\n- `codev-engine` (`decisions_actions`: a new pure plan and two refusal\n  codes) and `codev-cli` (command, clap help, human rendering, JSON\n  contract).\n- JSON contract v1: new `DecisionAcceptedV1` document; `decision new` now\n  omits `bodySha256` by default, as it already did for `proposed`.\n- Documentation in English and French: CLI reference, JSON output,\n  decision lifecycle in the concepts chapter, FAQ; CHANGELOG.\n- Skills: none create decisions with `decision new`; `decision promote`\n  keeps sealing the promoted ADR.\n",
-    "_codev/changes/decision-accept-command/review.md": "# Review record: decision-accept-command\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: inline.\n\n### newcomer\n\n#### R-newcomer-1 `decision new` points a rejected or deprecated decision to `accept`\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-cli/src/render.rs:454-473\"\nevidence: |\n  if outcome.body_sha256.is_some() {\nrecommendation: Show the `codev decision accept` hint only for a `proposed` decision; `codev decision new X --status rejected` otherwise prints a next step that fails with `decision_not_proposed`.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-cli/src/render.rs — the hint is limited to `proposed`; test decision_new_points_only_a_proposed_decision_to_accept\"\n  - status: fixed\n    by: newcomer\n```\n",
+    "_codev/changes/decision-accept-command/review.md": "# Review record: decision-accept-command\n\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: inline.\n\n### newcomer\n\n#### R-newcomer-1 The refusal message branches on a status string\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-engine/src/decisions_actions.rs:137-140\"\nevidence: |\n            Self::DecisionNotProposed {\n                qualified_id,\n                status,\n            } if status == \"accepted\" => format!(\nrecommendation: Keep the status as a `DecisionStatus` in `DecisionNotProposed` and match on `DecisionStatus::Accepted`, so the reader sees an enum case rather than a string literal, and render it with `as_str()` in the generic message.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-engine/src/decisions_actions.rs — `DecisionNotProposed.status` is a `DecisionStatus`, matched on `DecisionStatus::Accepted`\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-2 An empty match arm keeps a matching seal without saying why\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-engine/src/decisions_actions.rs:598\"\nevidence: |\n        Some(existing_entry) if existing_entry.body_sha256 == body_sha256 => {}\nrecommendation: Add a one-line comment in the arm saying the existing entry already seals this body, so there is nothing to write.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-engine/src/decisions_actions.rs — comment in the matching-seal arm\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-3 `PROPOSED_PATH` also names an accepted decision in the tests\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-cli/src/commands.rs:1737\"\nevidence: |\n    const PROPOSED_PATH: &str = \"/p/_codev/decisions/0001-a-first-choice.md\";\nrecommendation: Rename it `ADR_0001_PATH`; `decision_accept_refuses_an_accepted_decision` reads an accepted decision through it, which a reader would misread as a proposed one.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-cli/src/commands.rs — constant renamed `ADR_0001_PATH`\"\n  - status: fixed\n    by: newcomer\n```\n",
     "_codev/changes/decision-accept-command/specs/decisions/spec.md": "## MODIFIED Requirements\n\n### Requirement: Creating a decision through the CLI\n\n`codev decision new <title>` SHALL create a new ADR in the project, with\nan automatically generated numeric `id` (the largest numeric `id` found\nin the project + 1, on four digits), a file named `NNNN-<slug>.md` where\n`<slug>` is derived from the title in kebab-case, and a valid frontmatter\nincluding the status and the current date. Without `--status`, the\nstatus MUST be `proposed`: the ADR is created unsealed, so that its body\ncan be written before it is accepted with `codev decision accept`.\n\n#### Scenario: Creation in a project without ADRs\n\n- **GIVEN** a project whose `_codev/decisions/` directory is empty\n- **WHEN** the user runs `codev decision new \"A first choice\"`\n- **THEN** the file `_codev/decisions/0001-a-first-choice.md` is created\n- **AND** its frontmatter carries `id: \"0001\"`, `title: \"A first choice\"`,\n  `status: proposed`, and a date in `YYYY-MM-DD` format\n- **AND** `_codev/decisions/seal.yaml` carries no entry for `0001`\n\n#### Scenario: Sequential numbering\n\n- **GIVEN** a project whose `_codev/decisions/` directory already contains\n  six ADRs numbered `0001` to `0006`\n- **WHEN** the user runs `codev decision new \"A seventh choice\"`\n- **THEN** the file `_codev/decisions/0007-a-seventh-choice.md` is created\n- **AND** its `id` is `\"0007\"`\n\n#### Scenario: Customizable status\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"Settled choice\"\n  --status accepted`\n- **THEN** the created ADR carries `status: accepted`\n- **AND** its body is sealed in `_codev/decisions/seal.yaml`\n\n#### Scenario: Empty title rejected\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"\"`\n- **THEN** no file is written\n- **AND** an error message names the stable code `empty_title` and\n  asks for a non-empty title\n\n### Requirement: Stable JSON contract for all commands\n\nWhen `--json` is requested, each command MUST write exactly one JSON\ndocument to stdout whose shape is frozen per version, with a root\n`status` array for execution errors — the same rules as the rest of the\ncodev contract.\n\n#### Scenario: Shape of a `decision new --json`\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"X\" --json`\n- **THEN** stdout carries a JSON document containing `decision: { id:\n  \"0001\", qualifiedId: \"project/0001\", path: \"…\", title: \"X\", status:\n  \"proposed\" }`, the `path` of the created file, and a `status: []`\n- **AND** it carries no `bodySha256`, since a proposed decision is not\n  sealed\n\n#### Scenario: Shape of a `decision show` failure on an unknown id\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision show 9999 --json`\n- **THEN** stdout carries a single JSON document containing\n  `decision: null` and `status: [{ code: \"unknown_decision_id\", … }]`\n\n### Requirement: Body seal recorded by the CLI\n\nThe CLI SHALL maintain a `_codev/decisions/seal.yaml` file — versioned\nwith the project — that records the sealed local decisions, with, for\neach entry, the `id` of the decision, the SHA-256 hash of the ADR's\n**body** (everything that follows the `---` separator closing the\nfrontmatter), and the date on which the seal was applied. Only local\ndecisions are sealed — inherited decisions belong to the source project,\nnot to the consumer.\n\nThe file contains only the schema version and the list of seals —\na seal is an `id`, a `bodySha256` prefixed with `sha256:`, and a\n`sealedAt` in `YYYY-MM-DD` format.\n\n#### Scenario: Seal written when a decision is created\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` does not exist\n- **WHEN** the user runs `codev decision new \"A first choice\" --status\n  accepted`\n- **THEN** the file `_codev/decisions/seal.yaml` is created\n- **AND** it contains an entry whose `id` is `\"0001\"` and whose\n  `bodySha256` matches the hexadecimal SHA-256 of the body of the file\n  `0001-a-first-choice.md` (prefixed with `sha256:`)\n\n#### Scenario: Seal file format\n\n- **GIVEN** the `_codev/decisions/seal.yaml` file created by the CLI\n- **WHEN** a human opens it\n- **THEN** it contains a `version: 1` key at the top\n- **AND** a `seals` key carrying a list in which each entry has\n  exactly the fields `id`, `bodySha256`, `sealedAt`\n- **AND** no other unknown field\n\n### Requirement: `decision new` writes the ADR and the seal in the same plan\n\nWhen `codev decision new <title>` creates a decision with the status\n`accepted` or `superseded`, the operation MUST produce an effect plan\nthat writes both the ADR **and** the corresponding entry in\n`_codev/decisions/seal.yaml`. If either one fails, neither is written\n— the command never leaves an ADR without a seal nor a seal without an\nADR. A decision created with another status, `proposed` included, is\nwritten without a seal entry.\n\n#### Scenario: A failed seal write cancels the creation\n\n- **GIVEN** a project in which `_codev/decisions/seal.yaml` is\n  write-locked by the system\n- **WHEN** the user runs `codev decision new \"Title\" --status accepted`\n- **THEN** no ADR file is written to `_codev/decisions/`\n- **AND** the `seal.yaml` file remains unchanged\n\n#### Scenario: A proposed decision is created without a seal\n\n- **GIVEN** a project\n- **WHEN** the user runs `codev decision new \"Title\"`\n- **THEN** the ADR is written with `status: proposed`\n- **AND** `_codev/decisions/seal.yaml` is neither created nor modified\n\n## ADDED Requirements\n\n### Requirement: `decision accept` accepts and seals a proposed decision\n\n`codev decision accept <id>` SHALL turn a local decision whose status is\n`proposed` into an `accepted` decision and seal its body. The operation\nMUST produce a single effect plan that rewrites the frontmatter `status`\nto `accepted` **and** writes the decision's entry in\n`_codev/decisions/seal.yaml`; if the plan cannot be computed, neither is\nwritten. The body of the ADR — everything after the frontmatter — MUST\nstay byte for byte identical, so the recorded hash is the hash of the\ntext the user wrote. The command MUST refuse, without writing anything:\n\n- an unknown identifier, with the stable code `unknown_decision_id`;\n- an inherited decision, with the stable code `cannot_accept_inherited`,\n  since inherited decisions are read-only;\n- a decision whose status is not `proposed`, with the stable code\n  `decision_not_proposed`; for an `accepted` decision the message says\n  there is nothing to do and points to `codev decision supersede` to\n  replace it.\n\nWith `--json`, the command MUST write a document carrying the accepted\n`decision`, the `path` of its file and its `bodySha256`.\n\n#### Scenario: A proposed decision is accepted and sealed\n\n- **GIVEN** a project containing a local ADR `0007` with `status:\n  proposed` whose body has been written, and no seal entry for `0007`\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** the ADR now carries `status: accepted`\n- **AND** its body is identical to what it was before the command\n- **AND** `seal.yaml` carries an entry for `0007` whose `bodySha256`\n  matches that body\n- **AND** `codev validate` reports neither `decision_seal_mismatch` nor\n  `decision_unsealed` for `0007`\n\n#### Scenario: JSON output of an acceptance\n\n- **GIVEN** the same project\n- **WHEN** the user runs `codev decision accept 0007 --json`\n- **THEN** stdout carries a JSON document with `decision.id: \"0007\"`,\n  `decision.status: \"accepted\"`, the `path` of the file, a `bodySha256`\n  prefixed with `sha256:`, and `status: []`\n\n#### Scenario: Refusal to accept an inherited decision\n\n- **GIVEN** a project inheriting from a source containing\n  `path:~/shared/0100` with `status: proposed`\n- **WHEN** the user runs `codev decision accept path:~/shared/0100`\n- **THEN** no write takes place\n- **AND** the error names the stable code `cannot_accept_inherited`\n\n#### Scenario: Refusal to accept a decision that is already accepted\n\n- **GIVEN** a project containing a local ADR `0003` with `status:\n  accepted`\n- **WHEN** the user runs `codev decision accept 0003`\n- **THEN** neither the ADR nor `seal.yaml` is modified\n- **AND** the error names the stable code `decision_not_proposed` and\n  points to `codev decision supersede`\n\n#### Scenario: Refusal to accept a decision with another status\n\n- **GIVEN** a project containing a local ADR `0004` with `status:\n  rejected`\n- **WHEN** the user runs `codev decision accept 0004`\n- **THEN** no write takes place\n- **AND** the error names the stable code `decision_not_proposed`\n\n#### Scenario: Status and seal are written together or not at all\n\n- **GIVEN** a project containing a local `proposed` ADR `0007`\n- **AND** a `_codev/decisions/seal.yaml` that cannot be read as a seal\n  file\n- **WHEN** the user runs `codev decision accept 0007`\n- **THEN** the command fails\n- **AND** the ADR still carries `status: proposed`\n- **AND** `seal.yaml` is unchanged\n",
-    "_codev/changes/decision-accept-command/tasks.md": "# Tasks\n\n## 1. Engine\n\n- [x] 1.1 `plan_accept` rewrites the status and seals the body in one plan, verified by `plan_accept_rewrites_the_status_and_seals_in_one_plan` and `plan_accept_keeps_the_body_byte_for_byte`\n- [x] 1.2 Refusals `cannot_accept_inherited`, `decision_not_proposed` and `unknown_decision_id`, verified by `plan_accept_refuses_an_inherited_decision`, `plan_accept_refuses_an_accepted_decision_and_points_to_supersede`, `plan_accept_refuses_a_rejected_decision`, `plan_accept_refuses_an_unknown_id` and `plan_accept_refuses_a_leftover_seal_for_another_body`\n\n## 2. CLI\n\n- [x] 2.1 `decision new` defaults to `proposed`, verified by `decision_new_status_defaults_to_proposed`, `decision_new_proposed_neither_seals_nor_exposes_a_hash` and `decision_new_accepted_seals_the_entry_and_exposes_the_hash`\n- [x] 2.2 `codev decision accept <id> [--json]` with human and JSON output, verified by `decision_accept_seals_a_proposed_decision`, `decision_accept_then_validate_is_clean`, `decision_accept_refuses_an_accepted_decision`, `decision_accept_refuses_an_inherited_decision`, `decision_accept_writes_nothing_when_the_seal_file_is_invalid` and `accepted_report_exposes_the_expected_fields_in_camel_case`\n- [x] 2.3 Help of `decision new --status` and `codev decision --help` list the default and `accept`, verified by reading `cargo run -q -p codev-cli -- decision --help`\n\n## 3. Skills and documentation\n\n- [x] 3.1 Check the skills in `assets/workflows/` for `decision new`, verified by a grep that finds none relying on the default\n- [x] 3.2 CLI reference, JSON output, concepts and FAQ in `docs/en` and `docs/fr` with outputs from real runs, verified by `both_languages_have_the_same_chapters` and the docs anchor tests\n- [x] 3.3 CHANGELOG entries under `[Unreleased]`, verified by reading `CHANGELOG.md`\n\n## 4. Verification\n\n- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `codev validate --strict`\n"
+    "_codev/changes/decision-accept-command/tasks.md": "# Tasks\n\n## 1. Engine\n\n- [x] 1.1 `plan_accept` rewrites the status and seals the body in one plan, verified by `plan_accept_rewrites_the_status_and_seals_in_one_plan` and `plan_accept_keeps_the_body_byte_for_byte`\n- [x] 1.2 Refusals `cannot_accept_inherited`, `decision_not_proposed` and `unknown_decision_id`, verified by `plan_accept_refuses_an_inherited_decision`, `plan_accept_refuses_an_accepted_decision_and_points_to_supersede`, `plan_accept_refuses_a_rejected_decision`, `plan_accept_refuses_an_unknown_id` and `plan_accept_refuses_a_leftover_seal_for_another_body`\n\n## 2. CLI\n\n- [x] 2.1 `decision new` defaults to `proposed`, verified by `decision_new_status_defaults_to_proposed`, `decision_new_proposed_neither_seals_nor_exposes_a_hash` and `decision_new_accepted_seals_the_entry_and_exposes_the_hash`\n- [x] 2.2 `codev decision accept <id> [--json]` with human and JSON output, verified by `decision_accept_seals_a_proposed_decision`, `decision_accept_then_validate_is_clean`, `decision_accept_refuses_an_accepted_decision`, `decision_accept_refuses_an_inherited_decision`, `decision_accept_writes_nothing_when_the_seal_file_is_invalid` and `accepted_report_exposes_the_expected_fields_in_camel_case`\n- [x] 2.3 Help of `decision new --status` and `codev decision --help` list the default and `accept`, verified by reading `cargo run -q -p codev-cli -- decision --help`\n\n## 3. Skills and documentation\n\n- [x] 3.1 Check the skills in `assets/workflows/` for `decision new`, verified by a grep that finds none relying on the default\n- [x] 3.2 CLI reference, JSON output, concepts and FAQ in `docs/en` and `docs/fr` with outputs from real runs, verified by `both_languages_have_the_same_chapters` and the docs anchor tests\n- [x] 3.3 CHANGELOG entries under `[Unreleased]`, verified by reading `CHANGELOG.md`\n\n## 4. Verification\n\n- [x] 4.1 Whole workspace, verified by `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` and `cargo run -q -p codev-cli -- validate --strict`\n"
   },
   "validate": {
     "decision-accept-command": {
@@ -841,22 +872,27 @@
     "status": []
   },
   "messages": [
-    "Planning is complete. The installed `codev` 0.6.1 doesn't have a `roles` subcommand, so I'm noting that and moving on. Next I'm reading the engine code for decision actions.",
-    "I've read the engine and the CLI dispatch. Now I'm reading the CLI command code and the JSON contract before writing `plan_accept`.",
-    "Now writing `plan_accept` in the engine (task 1.1–1.2).",
-    "Now the engine tests.",
-    "Now applying the CLI edits.",
-    "The `decision accept` command builds. Now I'm writing its CLI, contract and clap tests.",
-    "CLI tasks 2.1–2.3 are done. Running 3.1, the skills check: none of the skills in `assets/workflows/` call `decision new`. Next I'm working through the docs.",
-    "Now I'll get real outputs from a scratch project to put in the docs.",
-    "The French docs use non-breaking spaces before `;` and `:`. I'm re-running the French edits with that typography; the English CLI reference is already updated.",
-    "Matching the docs' convention: a `bash` block for the command, then a `text` block for the output.",
-    "Docs are updated in both languages. Running the docs tests next (task 3.2).",
-    "CHANGELOG done (3.3). Now 4.1: running the full workspace checks (fmt, clippy, tests, validate).",
-    "Writing the review record first, as the skill requires.",
-    "That check was wrong: stashing all of render.rs also removed `decision_accepted`, so nothing compiled. I'll revert only the fix and re-run the test:",
-    "The test fails without the fix and passes with it. Updating the record:",
-    "I implemented `decision-accept-command`: all 9 tasks are done and checked off in `tasks.md`. The full test suite passes, and so do `cargo fmt --check`, `cargo clippy -D warnings` and `codev validate --strict` (with the workspace's own build). Nothing was archived or synced.\n\n**Before reading the rest:** the installed `codev` 0.6.1 has no `roles` or `review` subcommand. So no roles were served for the implement and review steps. I assumed the review should still run: I did it myself, from the viewpoint of a developer new to the project, and recorded it in `review.md` in the skill's format. No expert review ran, because the proposal has no `## Domains` section.\n\n**What changed:**\n- **`decision new`** now creates a `proposed` decision by default, which is not sealed. `--status accepted` still creates and seals it in one go.\n- **`decision accept <id> [--json]`** (new) sets the status to `accepted` and seals the body in one plan of effects, so both are written or neither is. The body stays byte for byte identical.\n- **Refusals:**\n  - an inherited decision: `cannot_accept_inherited`;\n  - any status other than `proposed`: `decision_not_proposed`, which points an already accepted one to `supersede`;\n  - an unknown id: the existing `unknown_decision_id`.\n- **One case the plan didn't specify:** a seal entry already recorded for that id. If its hash matches the body, `accept` keeps it; if not, it refuses with `seal_conflict` rather than silently replacing a seal.\n- **JSON:** `decision accept --json` returns `decision`, `path` and `bodySha256`, through a new `DecisionAcceptedV1` type. The change is additive only.\n- **Docs and changelog:** the CLI reference, JSON output, concepts and FAQ pages are updated in English and French, using output from real runs. Two entries were added to `CHANGELOG.md` under `[Unreleased]`. No skill relied on the old default.\n\n**Files touched:** `crates/codev-engine/src/decisions_actions.rs`, the `main.rs`, `commands.rs`, `contract.rs` and `render.rs` files in `crates/codev-cli/src/`, `docs/en` and `docs/fr`, and `CHANGELOG.md`.\n\n**Fixed during the review:**\n- [newcomer] R-newcomer-1 (fixed): `decision new --status rejected` (or `deprecated`) printed \"run `codev decision accept`\", which `accept` then refuses. The hint now appears only for `proposed` decisions. A new test, `decision_new_points_only_a_proposed_decision_to_accept`, fails without the fix and passes with it.\n\n**Review notes:** no other review concern found.\n\n**To decide:** nothing to decide. One side note: the installed `codev` 0.6.1 warns `release_note_missing` because the proposal has no `## Release note` section. It gave the same warning before this change. Adding that section would be a planning edit (`/codev-update`), which is outside what this step may change.\n\nThe change is ready to be archived. Run `/codev-archive` or `codev archive` as the next step."
+    "No update info in the JSON, so nothing to say about updates.",
+    "Task 1.1: `plan_accept` in the engine. Let me study `decisions_actions`.",
+    "I've read the plan and the existing decision code; now studying the CLI side before writing `plan_accept`.",
+    "Now writing `plan_accept` (task 1.1) and its refusals (task 1.2).",
+    "✓ 1.1 / 1.2 — `plan_accept` + `cannot_accept_inherited` / `decision_not_proposed`; 8 engine tests pass.\n\nTask 2.1–2.2: CLI. Let me find existing CLI tests and the contract/render code.",
+    "Engine done; now wiring `decision accept` into the CLI (command, outcome, contract, rendering, tests).",
+    "Now the CLI edits. First `commands.rs`:",
+    "Contract, render and main:",
+    "Now `main.rs`:",
+    "Works end to end. Checking off 2.1–2.3.",
+    "Code tasks done; now updating the English and French docs (CLI reference, JSON output, concepts, FAQ).",
+    "Now concepts, FAQ, JSON output (English):",
+    "Now the French docs — reading the matching sections.",
+    "Fixing a typography mismatch: the French docs use non-breaking spaces before `;` and `:`. Retrying with that convention.",
+    "Docs tests pass. Checking off 3.2, then the CHANGELOG (3.3).",
+    "All green (fmt, clippy, all tests, `validate --strict`). Checking off 4.1 and moving to the review.",
+    "Review mode is inline with one role (newcomer), and no domain suggestions. Reading the code diff as a newcomer would.",
+    "Writing the review record before fixing.",
+    "Now applying the three fixes (no behavior change).",
+    "Fixes pass. Recording the author's answers and the reviewer's re-check.",
+    "All 10 tasks of `decision-accept-command` are done and checked off. `codev decision new` now creates a `proposed`, unsealed decision by default, and the new `codev decision accept <id>` accepts and seals it in one step. Formatting, clippy with warnings as errors, the full workspace test suite and `codev validate --strict` all pass, including after the review fixes.\n\n**What changed**\n- **Engine** (`decisions_actions.rs`): new `plan_accept` writes the status change and the seal entry in one plan. The body stays byte for byte identical. It refuses with `cannot_accept_inherited`, `decision_not_proposed` (for an accepted decision the message points to `supersede`) and `unknown_decision_id`.\n- **One case the plan didn't spell out:** a leftover seal entry for the same id.\n  - If it holds a different hash, `accept` refuses with the existing `seal_conflict` code.\n  - If it already matches the body, `accept` keeps it and only rewrites the status.\n- **CLI** (`main.rs`, `commands.rs`, `contract.rs`, `render.rs`):\n  - `--status` now defaults to `proposed`.\n  - The new `Accept` subcommand returns a `DecisionAcceptedV1` JSON document with `decision`, `path` and `bodySha256`.\n  - The human output of `decision new` names `decision accept` as the next step.\n  - I ran every path against a real scratch project.\n- **Skills:** none of them call `decision new`, so none needed changing.\n- **Docs and CHANGELOG:** the CLI reference, JSON output, concepts and FAQ pages are updated in English and French. The examples are copied from real runs. The CHANGELOG has entries under `[Unreleased]` in Changed and Added.\n\n**Review (`code.review`, inline, one active role: newcomer)**\nNo domain experts applied. The newcomer found three low-severity readability issues, recorded them in `review.md`, and all three are fixed without changing behaviour:\n- The refusal message chose its wording by comparing the status to the string `\"accepted\"`; it now uses the status enum.\n- An empty match arm kept a matching seal without saying why; it now has a comment.\n- A test constant was named `PROPOSED_PATH` even where it points at an accepted decision; it is now `ADR_0001_PATH`.\n\nNo review concern is left open.\n\n**To decide:** nothing from this step. One thing to know: `codev review` says archiving is blocked because `review.md` has no `## plan.challenge` section. That review belongs to the planning stage, not to this apply step, so it has to be added before `codev archive` will go through.\n\nThe change is ready to be archived: run `/codev-archive` or `codev archive` next. As instructed, I didn't archive, sync or commit anything."
   ],
   "implement": {
     "checks": [
@@ -870,19 +906,19 @@
         "name": "lints",
         "passed": true,
         "timedOut": false,
-        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s"
+        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
       },
       {
         "name": "tests",
         "passed": true,
         "timedOut": false,
-        "tail": "running 2 tests\ntest generated_minimal_yaml_is_readable ... ok\ntest generated_full_yaml_is_readable_by_project_config ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n     Running tests/sync_golden.rs (target/debug/deps/sync_golden-327016f71062ec7a)\n\nrunning 10 tests\ntest removed_deletes ... ok\ntest renamed_retitle ... ok\ntest html_comment_in_untouched_requirement_survives ... ok\ntest added_adds ... ok\ntest a_free_form_section_after_requirements_survives ... ok\ntest renamed_with_the_template_form_retitles ... ok\ntest modified_preserves_the_blank_line_around_the_replaced_requirement ... ok\ntest modified_replaces ... ok\ntest multi_ops_is_deterministic ... ok\ntest two_successive_syncs_give_the_same_result ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
+        "tail": "running 2 tests\ntest generated_minimal_yaml_is_readable ... ok\ntest generated_full_yaml_is_readable_by_project_config ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n     Running tests/sync_golden.rs (target/debug/deps/sync_golden-327016f71062ec7a)\n\nrunning 10 tests\ntest removed_deletes ... ok\ntest renamed_retitle ... ok\ntest modified_replaces ... ok\ntest a_free_form_section_after_requirements_survives ... ok\ntest renamed_with_the_template_form_retitles ... ok\ntest html_comment_in_untouched_requirement_survives ... ok\ntest added_adds ... ok\ntest two_successive_syncs_give_the_same_result ... ok\ntest modified_preserves_the_blank_line_around_the_replaced_requirement ... ok\ntest multi_ops_is_deterministic ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
       },
       {
         "name": "build",
         "passed": true,
         "timedOut": false,
-        "tail": "   Compiling codev-cli v0.3.2 (/private/tmp/claude-503/-Users-ludovic-nicaise-Sources-codev/57f39bd0-603a-455a-950b-01399a9a70b5/scratchpad/ie-base-work/implement-decision-accept-command-4/crates/codev-cli)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.64s"
+        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s"
       }
     ],
     "script": {

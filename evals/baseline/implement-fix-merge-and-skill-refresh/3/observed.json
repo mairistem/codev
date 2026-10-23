@@ -2,502 +2,582 @@
   "format": 2,
   "case": "implement-fix-merge-and-skill-refresh",
   "error": null,
-  "costUsd": 3.8710148,
-  "durationMs": 69300,
+  "costUsd": 3.986752,
+  "durationMs": 90784,
   "consumption": {
-    "durationApiMs": 522252,
-    "turns": 6,
+    "durationApiMs": 551888,
+    "turns": 10,
     "permissionDenials": 0,
     "models": [
       "claude-haiku-4-5-20251001",
       "claude-opus-5-5"
     ],
     "tokens": {
-      "input": 1136,
-      "cacheCreation": 249927,
-      "cacheRead": 5282519,
-      "output": 56143
+      "input": 1154,
+      "cacheCreation": 240205,
+      "cacheRead": 6264280,
+      "output": 55022
     },
-    "toolCalls": 49,
+    "toolCalls": 60,
     "orientationCalls": 9,
     "calls": [
       {
-        "cacheCreation": 7783,
+        "cacheCreation": 7775,
         "cacheRead": 23701,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "prompt": 7783
+          "prompt": 7775
         }
       },
       {
-        "cacheCreation": 13068,
-        "cacheRead": 31484,
+        "cacheCreation": 13066,
+        "cacheRead": 31476,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "skill": 13068
+          "skill": 13066
         }
       },
       {
-        "cacheCreation": 4972,
-        "cacheRead": 44552,
+        "cacheCreation": 4521,
+        "cacheRead": 44542,
         "input": 2,
         "output": 16,
         "toolCalls": 1,
         "sources": {
-          "codev status": 4972
+          "codev status": 4521
         }
       },
       {
-        "cacheCreation": 6279,
-        "cacheRead": 49524,
+        "cacheCreation": 7057,
+        "cacheRead": 49063,
         "input": 2,
-        "output": 8,
+        "output": 41,
         "toolCalls": 1,
         "sources": {
-          "file": 6279
+          "file": 7057
         }
       },
       {
-        "cacheCreation": 1230,
-        "cacheRead": 55803,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "output": 53,
-          "shell": 1177
-        }
-      },
-      {
-        "cacheCreation": 1971,
-        "cacheRead": 57033,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 62,
-          "shell": 1909
-        }
-      },
-      {
-        "cacheCreation": 14369,
-        "cacheRead": 59004,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 14369
-        }
-      },
-      {
-        "cacheCreation": 2608,
-        "cacheRead": 73373,
-        "input": 2,
-        "output": 42,
-        "toolCalls": 1,
-        "sources": {
-          "output": 285,
-          "shell": 2323
-        }
-      },
-      {
-        "cacheCreation": 944,
-        "cacheRead": 75981,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 2,
-        "sources": {
-          "output": 66,
-          "shell": 878
-        }
-      },
-      {
-        "cacheCreation": 905,
-        "cacheRead": 76925,
-        "input": 2,
-        "output": 79,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 546,
-          "output": 292,
-          "shell": 67
-        }
-      },
-      {
-        "cacheCreation": 2732,
-        "cacheRead": 77830,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "output": 64,
-          "shell": 2668
-        }
-      },
-      {
-        "cacheCreation": 9559,
-        "cacheRead": 80562,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 2,
-        "sources": {
-          "file": 9559
-        }
-      },
-      {
-        "cacheCreation": 3188,
-        "cacheRead": 90121,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "file": 3188
-        }
-      },
-      {
-        "cacheCreation": 2420,
-        "cacheRead": 93309,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "search": 2420
-        }
-      },
-      {
-        "cacheCreation": 5605,
-        "cacheRead": 95729,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 1,
-        "sources": {
-          "output": 871,
-          "skill": 4734
-        }
-      },
-      {
-        "cacheCreation": 813,
-        "cacheRead": 101334,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "shell": 813
-        }
-      },
-      {
-        "cacheCreation": 1155,
-        "cacheRead": 102147,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "output": 73,
-          "shell": 1082
-        }
-      },
-      {
-        "cacheCreation": 423,
-        "cacheRead": 103302,
-        "input": 2,
-        "output": 97,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 423
-        }
-      },
-      {
-        "cacheCreation": 1944,
-        "cacheRead": 103725,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 130,
-          "shell": 1814
-        }
-      },
-      {
-        "cacheCreation": 1622,
-        "cacheRead": 105669,
-        "input": 2,
-        "output": 3,
-        "toolCalls": 1,
-        "sources": {
-          "output": 126,
-          "skill": 1496
-        }
-      },
-      {
-        "cacheCreation": 926,
-        "cacheRead": 107291,
-        "input": 2,
-        "output": 103,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 447,
-          "output": 479
-        }
-      },
-      {
-        "cacheCreation": 5825,
-        "cacheRead": 108217,
-        "input": 2,
-        "output": 47,
-        "toolCalls": 1,
-        "sources": {
-          "output": 94,
-          "shell": 5731
-        }
-      },
-      {
-        "cacheCreation": 1582,
-        "cacheRead": 114042,
-        "input": 2,
-        "output": 16,
-        "toolCalls": 1,
-        "sources": {
-          "output": 60,
-          "search": 1522
-        }
-      },
-      {
-        "cacheCreation": 2064,
-        "cacheRead": 115624,
-        "input": 2,
-        "output": 9,
-        "toolCalls": 1,
-        "sources": {
-          "file": 2064
-        }
-      },
-      {
-        "cacheCreation": 4460,
-        "cacheRead": 117688,
-        "input": 2,
-        "output": 6,
-        "toolCalls": 1,
-        "sources": {
-          "skill": 4460
-        }
-      },
-      {
-        "cacheCreation": 715,
-        "cacheRead": 122148,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "file": 557,
-          "output": 158
-        }
-      },
-      {
-        "cacheCreation": 633,
-        "cacheRead": 122863,
-        "input": 2,
-        "output": 20,
-        "toolCalls": 1,
-        "sources": {
-          "search": 633
-        }
-      },
-      {
-        "cacheCreation": 3303,
-        "cacheRead": 123496,
+        "cacheCreation": 2455,
+        "cacheRead": 56120,
         "input": 2,
         "output": 7,
         "toolCalls": 1,
         "sources": {
-          "skill": 3303
+          "file": 2432,
+          "output": 23
         }
       },
       {
-        "cacheCreation": 1647,
-        "cacheRead": 126799,
+        "cacheCreation": 12403,
+        "cacheRead": 58575,
         "input": 2,
         "output": 8,
         "toolCalls": 1,
         "sources": {
-          "output": 42,
-          "shell": 1605
+          "file": 12403
         }
       },
       {
-        "cacheCreation": 434,
-        "cacheRead": 128446,
+        "cacheCreation": 1083,
+        "cacheRead": 70978,
         "input": 2,
-        "output": 47,
+        "output": 23,
         "toolCalls": 2,
         "sources": {
-          "shell": 434
+          "shell": 1083
         }
       },
       {
-        "cacheCreation": 2545,
-        "cacheRead": 128880,
+        "cacheCreation": 1651,
+        "cacheRead": 72061,
+        "input": 2,
+        "output": 32,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 607,
+          "output": 49,
+          "shell": 994
+        }
+      },
+      {
+        "cacheCreation": 451,
+        "cacheRead": 73712,
         "input": 2,
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "edit": 168,
           "output": 60,
-          "shell": 2317
+          "shell": 391
         }
       },
       {
-        "cacheCreation": 4422,
-        "cacheRead": 131425,
+        "cacheCreation": 3101,
+        "cacheRead": 74163,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 133,
+          "shell": 2968
+        }
+      },
+      {
+        "cacheCreation": 5801,
+        "cacheRead": 77264,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "search": 5801
+        }
+      },
+      {
+        "cacheCreation": 4566,
+        "cacheRead": 83065,
         "input": 2,
         "output": 3,
         "toolCalls": 1,
         "sources": {
-          "edit": 106,
-          "shell": 4316
+          "skill": 4566
         }
       },
       {
-        "cacheCreation": 2748,
-        "cacheRead": 135847,
+        "cacheCreation": 1196,
+        "cacheRead": 87631,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 1196
+        }
+      },
+      {
+        "cacheCreation": 560,
+        "cacheRead": 88827,
+        "input": 2,
+        "output": 84,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 560
+        }
+      },
+      {
+        "cacheCreation": 365,
+        "cacheRead": 89387,
         "input": 2,
         "output": 4,
-        "toolCalls": 3,
+        "toolCalls": 1,
         "sources": {
-          "output": 152,
+          "output": 252,
+          "search": 113
+        }
+      },
+      {
+        "cacheCreation": 2993,
+        "cacheRead": 89752,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 2993
+        }
+      },
+      {
+        "cacheCreation": 892,
+        "cacheRead": 92745,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 892
+        }
+      },
+      {
+        "cacheCreation": 2273,
+        "cacheRead": 93637,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 2273
+        }
+      },
+      {
+        "cacheCreation": 902,
+        "cacheRead": 95910,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 902
+        }
+      },
+      {
+        "cacheCreation": 899,
+        "cacheRead": 96812,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 282,
+          "shell": 617
+        }
+      },
+      {
+        "cacheCreation": 942,
+        "cacheRead": 97711,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "output": 130,
+          "shell": 812
+        }
+      },
+      {
+        "cacheCreation": 3511,
+        "cacheRead": 98653,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 3511
+        }
+      },
+      {
+        "cacheCreation": 3453,
+        "cacheRead": 102164,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 149,
+          "search": 3304
+        }
+      },
+      {
+        "cacheCreation": 681,
+        "cacheRead": 105617,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 681
+        }
+      },
+      {
+        "cacheCreation": 2202,
+        "cacheRead": 106298,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 2202
+        }
+      },
+      {
+        "cacheCreation": 2343,
+        "cacheRead": 108500,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 2343
+        }
+      },
+      {
+        "cacheCreation": 1514,
+        "cacheRead": 110843,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 87,
+          "shell": 1427
+        }
+      },
+      {
+        "cacheCreation": 909,
+        "cacheRead": 112357,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 909
+        }
+      },
+      {
+        "cacheCreation": 3019,
+        "cacheRead": 113266,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3019
+        }
+      },
+      {
+        "cacheCreation": 373,
+        "cacheRead": 116285,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "file": 373
+        }
+      },
+      {
+        "cacheCreation": 922,
+        "cacheRead": 116658,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 922
+        }
+      },
+      {
+        "cacheCreation": 1003,
+        "cacheRead": 117580,
+        "input": 2,
+        "output": 63,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1003
+        }
+      },
+      {
+        "cacheCreation": 2915,
+        "cacheRead": 118583,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "output": 451,
+          "skill": 2464
+        }
+      },
+      {
+        "cacheCreation": 2596,
+        "cacheRead": 121498,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
           "shell": 2596
         }
       },
       {
-        "cacheCreation": 3160,
-        "cacheRead": 138595,
-        "input": 2,
-        "output": 7,
-        "toolCalls": 1,
-        "sources": {
-          "agent": 3108,
-          "output": 53
-        }
-      },
-      {
-        "cacheCreation": 5743,
-        "cacheRead": 141755,
-        "input": 2,
-        "output": 51,
-        "toolCalls": 1,
-        "sources": {
-          "edit": 4323,
-          "output": 1420
-        }
-      },
-      {
-        "cacheCreation": 6415,
-        "cacheRead": 147498,
-        "input": 2,
-        "output": 4,
-        "toolCalls": 1,
-        "sources": {
-          "file": 4324,
-          "output": 2091
-        }
-      },
-      {
-        "cacheCreation": 693,
-        "cacheRead": 153913,
+        "cacheCreation": 1662,
+        "cacheRead": 124094,
         "input": 2,
         "output": 16,
         "toolCalls": 2,
         "sources": {
-          "file": 118,
-          "output": 575
+          "edit": 194,
+          "shell": 1468
         }
       },
       {
-        "cacheCreation": 3830,
-        "cacheRead": 154606,
+        "cacheCreation": 4412,
+        "cacheRead": 125756,
         "input": 2,
-        "output": 33,
-        "toolCalls": 0,
-        "sources": {
-          "agent": 3830
-        }
-      },
-      {
-        "cacheCreation": 1228,
-        "cacheRead": 158436,
-        "input": 2,
-        "output": 5,
-        "toolCalls": 0,
-        "sources": {
-          "output": 1228
-        }
-      },
-      {
-        "cacheCreation": 1962,
-        "cacheRead": 159664,
-        "input": 2,
-        "output": 8,
+        "output": 3,
         "toolCalls": 1,
         "sources": {
-          "output": 1962
+          "codev review": 4308,
+          "edit": 104
         }
       },
       {
-        "cacheCreation": 1776,
-        "cacheRead": 161626,
+        "cacheCreation": 1513,
+        "cacheRead": 130168,
         "input": 2,
         "output": 38,
-        "toolCalls": 1,
+        "toolCalls": 3,
         "sources": {
-          "file": 1721,
-          "output": 55
+          "shell": 1513
         }
       },
       {
-        "cacheCreation": 1234,
-        "cacheRead": 163402,
+        "cacheCreation": 2414,
+        "cacheRead": 131681,
         "input": 2,
-        "output": 3,
+        "output": 7,
         "toolCalls": 1,
         "sources": {
-          "edit": 1055,
-          "output": 179
+          "agent": 2379,
+          "output": 35
         }
       },
       {
-        "cacheCreation": 2433,
-        "cacheRead": 164636,
+        "cacheCreation": 704,
+        "cacheRead": 134095,
+        "input": 2,
+        "output": 24,
+        "toolCalls": 1,
+        "sources": {
+          "output": 37,
+          "shell": 667
+        }
+      },
+      {
+        "cacheCreation": 3143,
+        "cacheRead": 134799,
         "input": 2,
         "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 250,
-          "shell": 2183
-        }
-      },
-      {
-        "cacheCreation": 2143,
-        "cacheRead": 167069,
-        "input": 2,
-        "output": 8,
-        "toolCalls": 1,
-        "sources": {
-          "output": 148,
-          "shell": 1995
-        }
-      },
-      {
-        "cacheCreation": 1426,
-        "cacheRead": 169212,
-        "input": 2,
-        "output": 3,
         "toolCalls": 0,
         "sources": {
-          "output": 195,
-          "shell": 1231
+          "output": 3143
+        }
+      },
+      {
+        "cacheCreation": 1377,
+        "cacheRead": 137942,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 1377
+        }
+      },
+      {
+        "cacheCreation": 1478,
+        "cacheRead": 139319,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "output": 1478
+        }
+      },
+      {
+        "cacheCreation": 4922,
+        "cacheRead": 140797,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 1,
+        "sources": {
+          "output": 4922
+        }
+      },
+      {
+        "cacheCreation": 550,
+        "cacheRead": 145719,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 550
+        }
+      },
+      {
+        "cacheCreation": 2857,
+        "cacheRead": 146269,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 2857
+        }
+      },
+      {
+        "cacheCreation": 3557,
+        "cacheRead": 149126,
+        "input": 2,
+        "output": 35,
+        "toolCalls": 0,
+        "sources": {
+          "agent": 3558
+        }
+      },
+      {
+        "cacheCreation": 2722,
+        "cacheRead": 152683,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "output": 2722
+        }
+      },
+      {
+        "cacheCreation": 1355,
+        "cacheRead": 155405,
+        "input": 2,
+        "output": 7,
+        "toolCalls": 1,
+        "sources": {
+          "output": 1355
+        }
+      },
+      {
+        "cacheCreation": 1304,
+        "cacheRead": 156760,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1304
+        }
+      },
+      {
+        "cacheCreation": 3843,
+        "cacheRead": 158064,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "output": 304,
+          "shell": 3539
+        }
+      },
+      {
+        "cacheCreation": 680,
+        "cacheRead": 161907,
+        "input": 2,
+        "output": 15,
+        "toolCalls": 3,
+        "sources": {
+          "file": 680
+        }
+      },
+      {
+        "cacheCreation": 1581,
+        "cacheRead": 162587,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 676,
+          "shell": 906
+        }
+      },
+      {
+        "cacheCreation": 2747,
+        "cacheRead": 164168,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev review": 2086,
+          "edit": 474,
+          "output": 187
+        }
+      },
+      {
+        "cacheCreation": 509,
+        "cacheRead": 166915,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 509
         }
       }
     ]
@@ -521,7 +601,7 @@
       {
         "awaiting": null,
         "confidence": "high",
-        "evidence": "None => {\n    let legacy = without_checksum(&current);\n    [&self.ctx, &self.ctx.other_review_mode()]\n        .iter()\n        .all(|ctx| {\n            legacy\n                != Self::render_without_checksum(workflow, version, ctx)\n        })\n",
+        "evidence": "let edited_by_hand = !force\n    && fs.exists(&path)\n    && fs.read_to_string(&path).is_ok_and(|current| {\n",
         "history": [
           {
             "by": "newcomer",
@@ -533,7 +613,7 @@
           {
             "by": "developer",
             "note": null,
-            "ref": "crates/codev-agents/src/claude.rs — the decision moved to `ClaudeCode::is_edited_by_hand`, with early returns, without the no-op `without_checksum` call, with `!any(==)`",
+            "ref": "crates/codev-agents/src/claude.rs — `ClaudeCode::is_hand_edit`, early returns, called from `plan_skills`",
             "status": "fixed",
             "to": null
           },
@@ -547,22 +627,22 @@
         ],
         "id": "R-newcomer-1",
         "line": 18,
-        "location": "crates/codev-agents/src/claude.rs:248-265",
+        "location": "crates/codev-agents/src/claude.rs:232-243",
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Move the decision into a named method with early returns (identical to the rendering, another stamp, checksum present, legacy comparison), so each rule of the comment sits next to its line; drop the `without_checksum(&current)` call in the `None` arm, a no-op since `None` means the skill has no checksum line; and say \"matches neither review mode's rendering\" positively with `!any(==)` rather than `all(!=)`.",
+        "recommendation": "Move the closure body into a named method (`is_hand_edit`) with early returns in the order the comment states the rule, so the call site reads as one condition.",
         "reported": true,
         "role": "newcomer",
         "severity": "low",
         "status": "fixed",
         "step": "code.review",
-        "title": "The hand-edit decision is a nested closure that strips a checksum the skill does not have"
+        "title": "The hand-edit check is a three-level boolean expression with a `match` inside a closure"
       },
       {
         "awaiting": null,
         "confidence": "high",
-        "evidence": "let checksum = sha256_hex(unchecked.as_bytes());\nunchecked.replacen(\n    \"  version: \\\"0.1.0\\\"\\n\",\n    &format!(\"  version: \\\"0.1.0\\\"\\n  checksum: \\\"{checksum}\\\"\\n\"),\n    1,\n)\n",
+        "evidence": "[self.ctx.clone(), self.ctx.other_review_mode()]\n    .iter()\n    .map(|ctx| Self::render(workflow, version, ctx))\n    .all(|rendered| {\n        split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)\n    })\n",
         "history": [
           {
             "by": "newcomer",
@@ -574,7 +654,7 @@
           {
             "by": "developer",
             "note": null,
-            "ref": "crates/codev-agents/src/claude.rs — `with_checksum(unchecked, version)` shared by `render` and the test helper, called with `VERSION`",
+            "ref": "crates/codev-agents/src/claude.rs — `edited_before_checksums` computes `rendered_by_codev` with `any` over `render_unstamped`, then returns its negation",
             "status": "fixed",
             "to": null
           },
@@ -587,18 +667,100 @@
           }
         ],
         "id": "R-newcomer-2",
-        "line": 44,
-        "location": "crates/codev-agents/src/claude.rs:636-641",
+        "line": 39,
+        "location": "crates/codev-agents/src/claude.rs:264-269",
         "raisedBy": [
           "newcomer"
         ],
-        "recommendation": "Extract the insertion of the checksum line from `render` into one function, `with_checksum(unchecked, version)`, and call it from the test helper with `VERSION`, removing the copy and the literal \"0.1.0\" a reader may take for an earlier version.",
+        "recommendation": "State the rule positively — codev rendered it if it equals either unstamped rendering — and negate once; render the skill without its checksum through a helper that cannot fail, so the `Option` disappears.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "medium",
+        "status": "fixed",
+        "step": "code.review",
+        "title": "`edited_before_checksums` uses a double negative (`all` + `is_none_or` + `!=`)"
+      },
+      {
+        "awaiting": null,
+        "confidence": "high",
+        "evidence": "let mut start = contents.find('\\n')? + 1;\nfor line in contents[start..].split_inclusive('\\n') {\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          },
+          {
+            "by": "developer",
+            "note": null,
+            "ref": "crates/codev-agents/src/claude.rs — `split_checksum` iterates from `after_opening` and tracks `line_offset`, cutting `before` and `after`",
+            "status": "fixed",
+            "to": null
+          },
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "fixed",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-3",
+        "line": 63,
+        "location": "crates/codev-agents/src/claude.rs:387-396",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Rename it `line_offset`, keep the loop's start in its own binding, and say in a comment that the offset tracks `line`, so the cut reads as \"everything except this line\".",
         "reported": true,
         "role": "newcomer",
         "severity": "low",
         "status": "fixed",
         "step": "code.review",
-        "title": "The test helper repeats the checksum insertion with a hard-coded version"
+        "title": "In `split_checksum`, `start` is the offset of the current line, not a fixed start"
+      },
+      {
+        "awaiting": null,
+        "confidence": "high",
+        "evidence": "let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());\nlet unstamped = without_checksum(&earlier).replace(\"Planning boundary\", \"Plan boundary\");\nlet checksum = sha256_hex(unstamped.as_bytes());\nlet (head, tail) = unstamped.split_at(unstamped.find(\"---\\n\\n\").unwrap());\nlet earlier = format!(\"{head}{CHECKSUM_PREFIX}\\\"{checksum}\\\"\\n{tail}\");\n",
+        "history": [
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "open",
+            "to": null
+          },
+          {
+            "by": "developer",
+            "note": null,
+            "ref": "crates/codev-agents/src/claude.rs — `stamp_checksum` and `render_unstamped`, used by `render` and by the test, which binds `current` then `earlier_build`",
+            "status": "fixed",
+            "to": null
+          },
+          {
+            "by": "newcomer",
+            "note": null,
+            "ref": null,
+            "status": "fixed",
+            "to": null
+          }
+        ],
+        "id": "R-newcomer-4",
+        "line": 83,
+        "location": "crates/codev-agents/src/claude.rs:616-620",
+        "raisedBy": [
+          "newcomer"
+        ],
+        "recommendation": "Extract a `stamp_checksum` used by both `render` and the test, and name the simulated skill `earlier_build`.",
+        "reported": true,
+        "role": "newcomer",
+        "severity": "low",
+        "status": "fixed",
+        "step": "code.review",
+        "title": "The test copies `render`'s checksum stamping by hand and reuses the name `earlier`"
       }
     ],
     "format": 1,
@@ -640,9 +802,9 @@
         ],
         "step": "code.review",
         "summarized": [
-          "crates/codev-agents/src/claude.rs — the material exceeded the review budget (273604 of 163840 bytes)",
-          "docs/en/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes)",
-          "docs/fr/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes)"
+          "crates/codev-agents/src/claude.rs — beyond the material size limit",
+          "docs/en/src/reference/cli.md — beyond the material size limit",
+          "docs/fr/src/reference/cli.md — beyond the material size limit"
         ]
       }
     ]
@@ -651,10 +813,10 @@
     "_codev/changes/fix-merge-and-skill-refresh/change.yaml": "schema: spec-driven\ncreated: 2026-10-15\n",
     "_codev/changes/fix-merge-and-skill-refresh/design.md": "# Design: A merge that keeps a modified last requirement whole, and an update that refreshes its own skills\n\n## Context\n\nThe merge is pure: `merge_into_existing` builds a list of byte-range\nedits over the main spec, and `apply_edits` applies them sorted by\ndescending end, so that earlier offsets stay valid. Its comment assumes\nthat two edits never end at the same point. They do when a delta modifies\nthe section's last requirement — whose span runs to the end of the\nsection — and adds requirements, inserted at that same end: the stable\nsort keeps the delta's order, the replacement goes first and lengthens the\ntext, and the insertion then lands at the old offset, inside the new text.\nThat is what cut `role-evaluation`'s last scenario at the archive of\n`measure-consumption`.\n\n`codev update` decides a skill was edited by hand when its content differs\nfrom the rendering while carrying the running version's stamp. Between two\nbuilds of one version — every build from source, codev's own repository —\nthe skill text changes and the stamp does not, so codev takes its own\nearlier rendering for a hand edit.\n\n## Goals / Non-Goals\n\n**Goals**: compose a modification and an addition at the end of a section;\ntell codev's renderings from hand edits whatever the version.\n\n**Non-goals**: detecting a corrupted spec after the fact in `codev\nvalidate` (the merge no longer produces one); repairing the\n`role-evaluation` spec, which the change `evaluate-planning` restores\nthrough its own delta.\n\n## Decisions\n\n### Decision: Ties between edits ending at one point put the insertion first\n\n`apply_edits` sorts by descending end, then, for the same end, by\ndescending start: a zero-width insertion at `end` (start = end) is applied\nbefore a replacement `start..end`, so the replacement no longer moves it.\nApplied first, the insertion sits after `end`; the replacement of\n`start..end` then rewrites only what lies before it. The comment that\ncalled the case impossible is corrected.\n\n**Alternatives considered**: inserting the added requirements after the\nmerge, on the merged text — a second pass that recomputes offsets the\nplan already knows; forbidding a delta that modifies the last requirement\nand adds one — a valid delta, refused.\n\n### Decision: A skill carries the checksum of its own rendering\n\nThe rendering writes `checksum: \"<sha256>\"` under `metadata`, computed\nover the whole skill without that line, with `codev_core::update::sha256_hex`\n(the hashing codev already uses). The checksum decides only among skills stamped\nwith the running version: a skill stamped with another version is\nrewritten, as before, so a hand edit never survives an upgrade and\n`codev doctor` never meets a preserved skill it calls outdated. Among the\nrunning version's skills, one whose content without the checksum line\nhashes to the checksum is codev's and is rewritten; one that does not has\nbeen edited and is preserved. A skill without the line was rendered\nbefore checksums: it keeps today's rule — preserved unless it differs from\nthe rendering only by the review mode, compared with the checksum line\nleft out — so that no hand edit made before this change is overwritten\nwithin its version.\n\n**Alternatives considered**: a manifest of rendered hashes under\n`_codev/` — a second file to keep in step and to commit; bumping the\nversion on every change of a skill — every build from source would still\nmeet the case.\n\n## Risks / Trade-offs\n\n- [A user edits a skill and also rewrites its checksum line] → They meant\n  to make it codev's; `codev update` then rewrites it, as for any\n  rendering.\n- [The checksum line changes every skill once] → The first `codev update`\n  after this release rewrites skills stamped with an earlier version, as\n  it already does for any release. A project on a build from source with\n  unchecksummed skills of the same version runs `codev update --force`\n  once, as codev's own repository does in task 2.2.\n",
     "_codev/changes/fix-merge-and-skill-refresh/proposal.md": "# Proposal: A merge that keeps a modified last requirement whole, and an update that refreshes its own skills\n\n## Why\n\nTwo defects found while dogfooding codev. Archiving the change\n`measure-consumption` wrote its new requirement into the middle of a line\nof the last requirement it modified, cutting a scenario of\n`_codev/specs/role-evaluation/spec.md` in two — and `codev validate` let\nit pass. And `codev update` left `codev-propose` and `codev-apply` stale,\ncalling them \"edited by hand\", whenever the skills' text changed without\na version change, as on every build from source: the fix needed `--force`,\nwhich would also have erased real hand edits.\n\n## What Changes\n\n- A sync or an archive whose delta both modifies the main spec's last\n  requirement and adds requirements writes the modified requirement whole,\n  then the added ones after it.\n- A rendered skill carries a checksum of its own content in its\n  frontmatter (`metadata.checksum`). Among skills stamped with the\n  running version, `codev update` rewrites one whose content still\n  matches its checksum and preserves as edited by hand only one whose\n  content no longer matches it; a skill stamped with another version is\n  rewritten as today, and a skill rendered before checksums keeps today's\n  rule.\n\n## Capabilities\n\n### New Capabilities\n\n### Modified Capabilities\n\n- spec-merge\n- skills\n\n### Removed Capabilities\n\n## Impact\n\n- `crates/codev-core/src/merge/edits.rs` (the order of edits ending at\n  the same point) and its tests in `merge/mod.rs`.\n- `crates/codev-agents/src/claude.rs` (rendering with the checksum, the\n  hand-edit decision); codev's own skills refreshed with `codev update`.\n- Documentation: the FAQ (en and fr) on a spec cut by an earlier codev;\n  the skill frontmatter in\n  `docs/{en,fr}/src/reference/file-formats.md`, what `codev update`\n  preserves in `docs/{en,fr}/src/reference/cli.md`, and the section on\n  editing a generated skill in `docs/{en,fr}/src/skills.md`.\n\n## Domains\n\n- [ ] security\n- [ ] personal-data\n- [ ] user-interface\n- [ ] performance\n- [ ] operations\n- [x] migration\n\n## Release note\n\n- Fixed: Archiving a change that modifies a spec's last requirement and adds requirements no longer cuts that requirement in two: the added ones are written after it.\n- Fixed: `codev update` refreshes the skills it rendered itself even when their version stamp has not changed, and preserves only the skills edited by hand; each skill now carries a checksum of its content. Skills generated by an earlier codev are rewritten on upgrade as before; on a build from source, skills of the same version without a checksum are still preserved, and one `codev update --force` brings them under the checksum — check `git diff` first, since it also overwrites real hand edits.\n- Fixed: Earlier codev versions could cut a spec's last requirement in two when one change both modified it and added requirements; `codev validate` does not detect it, and syncing again does not repair it. If you archived such a change, look at the spec it modified (the diff of the archive) and repair it by hand or with a new `MODIFIED` delta.\n",
-    "_codev/changes/fix-merge-and-skill-refresh/review.md": "# Review record: fix-merge-and-skill-refresh\n\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: isolated.\nSummarized: crates/codev-agents/src/claude.rs — the material exceeded the review budget (273604 of 163840 bytes).\nSummarized: docs/en/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes).\nSummarized: docs/fr/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes).\n\n### migration\n\nNo finding.\n\n### newcomer\n\n#### R-newcomer-1 The hand-edit decision is a nested closure that strips a checksum the skill does not have\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:248-265\"\nevidence: |\n                            None => {\n                                let legacy = without_checksum(&current);\n                                [&self.ctx, &self.ctx.other_review_mode()]\n                                    .iter()\n                                    .all(|ctx| {\n                                        legacy\n                                            != Self::render_without_checksum(workflow, version, ctx)\n                                    })\nrecommendation: Move the decision into a named method with early returns (identical to the rendering, another stamp, checksum present, legacy comparison), so each rule of the comment sits next to its line; drop the `without_checksum(&current)` call in the `None` arm, a no-op since `None` means the skill has no checksum line; and say \"matches neither review mode's rendering\" positively with `!any(==)` rather than `all(!=)`.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — the decision moved to `ClaudeCode::is_edited_by_hand`, with early returns, without the no-op `without_checksum` call, with `!any(==)`\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-2 The test helper repeats the checksum insertion with a hard-coded version\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:636-641\"\nevidence: |\n          let checksum = sha256_hex(unchecked.as_bytes());\n          unchecked.replacen(\n              \"  version: \\\"0.1.0\\\"\\n\",\n              &format!(\"  version: \\\"0.1.0\\\"\\n  checksum: \\\"{checksum}\\\"\\n\"),\n              1,\n          )\nrecommendation: Extract the insertion of the checksum line from `render` into one function, `with_checksum(unchecked, version)`, and call it from the test helper with `VERSION`, removing the copy and the literal \"0.1.0\" a reader may take for an earlier version.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — `with_checksum(unchecked, version)` shared by `render` and the test helper, called with `VERSION`\"\n  - status: fixed\n    by: newcomer\n```\n",
+    "_codev/changes/fix-merge-and-skill-refresh/review.md": "# Review record: fix-merge-and-skill-refresh\n\n<!-- codev-review: 1 -->\n\n## code.review\n\nMode: isolated.\nSummarized: crates/codev-agents/src/claude.rs — beyond the material size limit.\nSummarized: docs/en/src/reference/cli.md — beyond the material size limit.\nSummarized: docs/fr/src/reference/cli.md — beyond the material size limit.\n\n### migration\n\nNo finding.\n\n### newcomer\n\n#### R-newcomer-1 The hand-edit check is a three-level boolean expression with a `match` inside a closure\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:232-243\"\nevidence: |\n  let edited_by_hand = !force\n      && fs.exists(&path)\n      && fs.read_to_string(&path).is_ok_and(|current| {\nrecommendation: Move the closure body into a named method (`is_hand_edit`) with early returns in the order the comment states the rule, so the call site reads as one condition.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — `ClaudeCode::is_hand_edit`, early returns, called from `plan_skills`\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-2 `edited_before_checksums` uses a double negative (`all` + `is_none_or` + `!=`)\n\n```yaml\nseverity: medium\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:264-269\"\nevidence: |\n  [self.ctx.clone(), self.ctx.other_review_mode()]\n      .iter()\n      .map(|ctx| Self::render(workflow, version, ctx))\n      .all(|rendered| {\n          split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)\n      })\nrecommendation: State the rule positively — codev rendered it if it equals either unstamped rendering — and negate once; render the skill without its checksum through a helper that cannot fail, so the `Option` disappears.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — `edited_before_checksums` computes `rendered_by_codev` with `any` over `render_unstamped`, then returns its negation\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-3 In `split_checksum`, `start` is the offset of the current line, not a fixed start\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:387-396\"\nevidence: |\n  let mut start = contents.find('\\n')? + 1;\n  for line in contents[start..].split_inclusive('\\n') {\nrecommendation: Rename it `line_offset`, keep the loop's start in its own binding, and say in a comment that the offset tracks `line`, so the cut reads as \"everything except this line\".\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — `split_checksum` iterates from `after_opening` and tracks `line_offset`, cutting `before` and `after`\"\n  - status: fixed\n    by: newcomer\n```\n\n#### R-newcomer-4 The test copies `render`'s checksum stamping by hand and reuses the name `earlier`\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:616-620\"\nevidence: |\n  let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());\n  let unstamped = without_checksum(&earlier).replace(\"Planning boundary\", \"Plan boundary\");\n  let checksum = sha256_hex(unstamped.as_bytes());\n  let (head, tail) = unstamped.split_at(unstamped.find(\"---\\n\\n\").unwrap());\n  let earlier = format!(\"{head}{CHECKSUM_PREFIX}\\\"{checksum}\\\"\\n{tail}\");\nrecommendation: Extract a `stamp_checksum` used by both `render` and the test, and name the simulated skill `earlier_build`.\nhistory:\n  - status: open\n    by: newcomer\n  - status: fixed\n    by: developer\n    ref: \"crates/codev-agents/src/claude.rs — `stamp_checksum` and `render_unstamped`, used by `render` and by the test, which binds `current` then `earlier_build`\"\n  - status: fixed\n    by: newcomer\n```\n",
     "_codev/changes/fix-merge-and-skill-refresh/specs/skills/spec.md": "## MODIFIED Requirements\n\n### Requirement: Frontmatter contract of a codev skill\n\nEvery skill shipped by codev MUST carry a valid YAML frontmatter whose\n`name` matches the name of the `.claude/skills/<name>/` directory, whose\n`allowed-tools` field includes at least `Bash(codev:*)`, and whose\n`metadata.version` matches the version of the binary that generated it,\nand whose `metadata.checksum` is the SHA-256, in hexadecimal, of the\nskill's whole content with that `checksum` line left out. A skill whose\ncontent no longer matches its checksum has been edited by hand.\n\n#### Scenario: Frontmatter parsed by a third-party YAML reader\n\n- **GIVEN** a skill shipped by the current version of the binary\n- **WHEN** its frontmatter is extracted and passed to a standard YAML parser\n- **THEN** the parser returns `name`, `allowed-tools`, `metadata.version`\n  and `metadata.checksum` without error\n- **AND** `metadata.version` equals the version the binary reports\n\n#### Scenario: Hand edit detected on update\n\n- **GIVEN** a skill whose body a user has edited by hand, without\n  changing its version\n- **WHEN** the user runs `codev update` again without `--force`\n- **THEN** the skill is not overwritten\n- **AND** the update report flags it as preserved\n\n#### Scenario: The checksum matches the content\n\n- **GIVEN** a skill as the binary renders it\n- **WHEN** the SHA-256 of its content without the `checksum` line is\n  computed\n- **THEN** it equals `metadata.checksum`\n\n### Requirement: `codev update` regenerates the skills of the configured workflows\n\n`codev update` SHALL write one skill per workflow listed by `workflows:` in\n`_codev/config.yaml`, or per workflow of the default catalog when the key is\nabsent, at `.claude/skills/codev-<workflow>/SKILL.md`, rendered by the\nrunning codev:\n\n- a missing skill is created;\n- a skill identical to the rendering is left untouched;\n- a skill stamped with another codev version is rewritten;\n- among the skills stamped with the running version, one whose content\n  matches its own checksum is codev's rendering and is rewritten; one\n  whose content no longer matches its checksum is edited by hand and is\n  preserved; one without a checksum, rendered before checksums, is\n  preserved as edited by hand unless it differs from codev's rendering\n  only by the review mode, as the review-mode requirement says, the\n  checksum line left out of the comparison;\n- with `--force`, every skill is rewritten.\n\nAn unknown workflow name SHALL be ignored with a warning `unknown_workflow`\nlisting the workflows this codev provides; the other skills are written.\nThe skill of a workflow no longer listed SHALL be left in place: `codev\nupdate` deletes no skill. `codev update` SHALL also recreate the missing\nfolders of `_codev/` and a missing `_codev/config.yaml`, without\noverwriting any existing file. Its handling of codev's managed sections is\nspecified by the `init` capability. Outside a codev project it fails with\n`no_codev_root` and writes nothing.\n\nThe human output SHALL start with `codev updated in <project root>`, list\nthe installed skills, then say how many files were created and updated, or\n`Nothing to do, everything is already in place.`, and finally list the\npreserved skills with a hint to rerun with `--force`. With `--json`, the\ndocument SHALL carry `root`, `created`, `updated`, `untouched`,\n`preserved`, `skills` (the names of the configured skills), `integration`\nand `status` (warnings). The command exits with code 0.\n\n#### Scenario: Missing and outdated skills are written\n\n- **GIVEN** an initialized project whose `codev-explore` skill was deleted\n  and whose `codev-sync` skill is stamped with an earlier codev version\n- **WHEN** the user runs `codev update --json`\n- **THEN** `created` lists the `codev-explore` skill and `updated` the\n  `codev-sync` skill\n- **AND** both carry the running codev's version stamp\n\n#### Scenario: A second run changes nothing\n\n- **GIVEN** a project where `codev update` just ran\n- **WHEN** the user runs `codev update`\n- **THEN** `created` and `updated` are empty\n- **AND** the human output says `Nothing to do, everything is already in\n  place.`\n\n#### Scenario: `--force` rewrites a hand-edited skill\n\n- **GIVEN** a project whose `codev-apply` skill was edited by hand without\n  changing its version stamp\n- **WHEN** the user runs `codev update --force --json`\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is empty\n- **AND** the skill is back to what codev renders\n\n#### Scenario: An unknown workflow is ignored with a warning\n\n- **GIVEN** a configuration with `workflows: [propose, bogus]`\n- **WHEN** the user runs `codev update --json`\n- **THEN** `skills` is `[\"codev-propose\"]`\n- **AND** `status` holds a warning `unknown_workflow` naming `bogus`\n\n#### Scenario: A workflow removed from the configuration keeps its skill\n\n- **GIVEN** a project where every default skill is installed, then\n  `workflows: [propose]` in the configuration\n- **WHEN** the user runs `codev update`\n- **THEN** `.claude/skills/codev-apply/SKILL.md` still exists, unchanged\n\n#### Scenario: A deleted `_codev/` folder is recreated\n\n- **GIVEN** an initialized project whose `_codev/specs/` folder was deleted\n- **WHEN** the user runs `codev update --json`\n- **THEN** `created` lists `_codev/specs/.gitkeep`\n- **AND** `_codev/config.yaml` is listed in `untouched`, unchanged\n\n#### Scenario: Outside a project\n\n- **GIVEN** a folder with no `_codev/` in it or its parents\n- **WHEN** the user runs `codev update --json`\n- **THEN** the exit code is 1 and `status[0].code` is `no_codev_root`\n- **AND** `root` is `null` and `skills` is empty\n\n#### Scenario: A skill rendered by an earlier build of the same version\n\n- **GIVEN** a project whose `codev-apply` skill was rendered by a build\n  of the same version whose skill text differed, untouched since, with a\n  `checksum` line matching its content\n- **WHEN** the user runs `codev update --json`\n- **THEN** `updated` lists the `codev-apply` skill and `preserved` is\n  empty\n\n#### Scenario: A hand edit of a checksummed skill\n\n- **GIVEN** a project whose `codev-apply` skill a user edited by hand\n  after codev rendered it with its checksum\n- **WHEN** the user runs `codev update --json`\n- **THEN** `preserved` lists the `codev-apply` skill, left as edited\n\n#### Scenario: A hand edit survives no upgrade\n\n- **GIVEN** a project whose `codev-apply` skill a user edited by hand,\n  stamped with an earlier codev version\n- **WHEN** the user runs `codev update --json` with a newer codev\n- **THEN** `updated` lists the `codev-apply` skill, as before checksums\n\n#### Scenario: A skill rendered before checksums\n\n- **GIVEN** a project whose `codev-apply` skill has no `checksum` line,\n  is stamped with the running version and differs from its rendering\n- **WHEN** the user runs `codev update --json`\n- **THEN** `preserved` lists it, as before checksums existed\n",
     "_codev/changes/fix-merge-and-skill-refresh/specs/spec-merge/spec.md": "## MODIFIED Requirements\n\n### Requirement: Semantic merge per operation\n\nA sync SHALL apply each operation of a delta according to its own\nsemantics: `ADDED` inserts at the end of the `## Requirements` section,\n`MODIFIED` replaces the block of the requirement with the same name down to\nthe character, `REMOVED` deletes the entire block, `RENAMED` retitles only\nthe `### Requirement:` header without touching the body. The operations\nSHALL compose: a requirement `ADDED` after a requirement that the same\ndelta modifies or renames lands after that requirement's whole new text,\nnever inside it, even when that requirement ends the section.\n\n#### Scenario: ADDED appears at the end of Requirements\n\n- **GIVEN** a main spec `user-auth` containing `## Requirements` with\n  a requirement `Login`\n- **AND** an `ADDED` delta carrying a requirement `Two-Factor Authentication`\n  with its scenario\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the main spec now contains `Login` first, then\n  `Two-Factor Authentication`\n- **AND** the `Login` block — its header, its description, its scenarios —\n  is identical down to the character to what it was\n\n#### Scenario: MODIFIED replaces the requirement block without touching the others\n\n- **GIVEN** a main spec containing two requirements `Login` and\n  `Session Expiration`, in that order\n- **AND** a `MODIFIED` delta carrying `Session Expiration` with a new\n  scenario\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the `Session Expiration` block has been replaced by the delta's\n  version\n- **AND** the `Login` block and the whitespace separating the two\n  requirements remain identical down to the character\n\n#### Scenario: REMOVED deletes the entire requirement block\n\n- **GIVEN** a main spec containing `Login` and `Remember Me`\n- **AND** a `REMOVED` delta carrying `Remember Me`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the main spec no longer contains any trace of `Remember Me`\n- **AND** the `Login` block remains identical down to the character\n\n#### Scenario: RENAMED retitles the header and nothing else\n\n- **GIVEN** a main spec containing `Session Expiration` with its\n  scenarios\n- **AND** a `RENAMED` delta mapping `Session Expiration` to `Session Timeout`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the requirement header has become `### Requirement: Session Timeout`\n- **AND** the description and scenarios of that requirement are identical\n  down to the character\n\n#### Scenario: The last requirement modified and another added\n\n- **GIVEN** a main spec whose `## Requirements` ends with `Login`\n- **AND** a delta that modifies `Login`, making it longer, and adds\n  `Export`\n- **WHEN** the user runs `codev sync <change>`\n- **THEN** the main spec holds the delta's `Login` whole, then `Export`\n- **AND** no line of `Login` is cut, and a second sync changes nothing\n",
-    "_codev/changes/fix-merge-and-skill-refresh/tasks.md": "# Tasks\n\n## 1. The merge\n\n- [x] 1.1 In `crates/codev-core/src/merge/edits.rs`, sort edits by descending end then descending start, and correct the comment; verified by the unit test `an_insertion_at_the_end_of_a_replacement_goes_after_it` in `edits.rs`, and in `merge/mod.rs` by `modifying_the_last_requirement_and_adding_one_keeps_both_whole` (a longer `Login` modified and `Export` added: `Login` whole then `Export`, and a second merge changes nothing — scenario \"The last requirement modified and another added\"), the existing merge tests still passing\n\n## 2. The skills' checksum\n\n- [x] 2.1 In `crates/codev-agents/src/claude.rs`, render `metadata.checksum` (SHA-256 of the skill without that line) and decide a hand edit from it among skills stamped with the running version (another stamp: rewritten; matching its checksum: rewritten; not matching: preserved unless `--force`; no checksum: preserved unless it differs only by the review mode, compared without the checksum line); verified by unit tests `a_hand_edit_of_a_skill_from_another_version_is_rewritten` (scenario \"A hand edit survives no upgrade\"), `a_legacy_skill_of_the_other_review_mode_is_rewritten`, `a_rendered_skill_matches_its_checksum` (scenario \"The checksum matches the content\"), `a_skill_from_an_earlier_build_of_the_version_is_rewritten`, `a_hand_edit_of_a_checksummed_skill_is_preserved` and `a_same_version_skill_without_checksum_that_differs_is_preserved` (the three scenarios of the update requirement), the existing frontmatter test extended to `metadata.checksum` (scenario \"Frontmatter parsed by a third-party YAML reader\"), and the existing hand-edit and `--force` tests still passing\n- [x] 2.2 Refresh codev's own skills with the codev this change builds, `cargo run -q -p codev-cli -- update` (once with `--force`, since they carry no checksum yet), and check that a second run writes nothing; verified by its output and by `cargo run -q -p codev-cli -- doctor --strict`\n\n## 3. Documentation\n\n- [x] 3.1 In `docs/en/src/reference/file-formats.md` and `docs/fr/src/reference/file-formats.md`, show `metadata.checksum` in the skill frontmatter and say how `codev update` uses it; in both `reference/cli.md`, say which skills `codev update` rewrites and preserves — another version: rewritten; the running version: rewritten when it matches its checksum, preserved when it does not, and, without a checksum, preserved unless it differs only by the review mode, one `codev update --force` bringing such skills under the checksum; rewrite the section \"Editing a generated skill\" of `docs/en/src/skills.md` and \"Modifier une skill générée\" of `docs/fr/src/skills.md` to the checksum rule; add to both `faq.md` an entry on a spec cut by an earlier codev — how to spot it (the diff of the archive of a change that modified a spec's last requirement and added requirements), that `codev validate` and a new sync do not repair it, and how to repair it; verified by `cargo test -p codev-cli` (the docs checks) and a read of the eight pages\n\n## 4. Checks\n\n- [x] 4.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `codev validate --strict`; verified by all four passing\n"
+    "_codev/changes/fix-merge-and-skill-refresh/tasks.md": "# Tasks\n\n## 1. The merge\n\n- [x] 1.1 In `crates/codev-core/src/merge/edits.rs`, sort edits by descending end then descending start, and correct the comment; verified by the unit test `an_insertion_at_the_end_of_a_replacement_goes_after_it` in `edits.rs`, and in `merge/mod.rs` by `modifying_the_last_requirement_and_adding_one_keeps_both_whole` (a longer `Login` modified and `Export` added: `Login` whole then `Export`, and a second merge changes nothing — scenario \"The last requirement modified and another added\"), the existing merge tests still passing\n\n## 2. The skills' checksum\n\n- [x] 2.1 In `crates/codev-agents/src/claude.rs`, render `metadata.checksum` (SHA-256 of the skill without that line) and decide a hand edit from it among skills stamped with the running version (another stamp: rewritten; matching its checksum: rewritten; not matching: preserved unless `--force`; no checksum: preserved unless it differs only by the review mode, compared without the checksum line); verified by unit tests `a_hand_edit_of_a_skill_from_another_version_is_rewritten` (scenario \"A hand edit survives no upgrade\"), `a_legacy_skill_of_the_other_review_mode_is_rewritten`, `a_rendered_skill_matches_its_checksum` (scenario \"The checksum matches the content\"), `a_skill_from_an_earlier_build_of_the_version_is_rewritten`, `a_hand_edit_of_a_checksummed_skill_is_preserved` and `a_same_version_skill_without_checksum_that_differs_is_preserved` (the three scenarios of the update requirement), the existing frontmatter test extended to `metadata.checksum` (scenario \"Frontmatter parsed by a third-party YAML reader\"), and the existing hand-edit and `--force` tests still passing\n- [x] 2.2 Refresh codev's own skills with the codev this change builds, `cargo run -q -p codev-cli -- update` (once with `--force`, since they carry no checksum yet), and check that a second run writes nothing; verified by its output and by `cargo run -q -p codev-cli -- doctor --strict`\n\n## 3. Documentation\n\n- [x] 3.1 In `docs/en/src/reference/file-formats.md` and `docs/fr/src/reference/file-formats.md`, show `metadata.checksum` in the skill frontmatter and say how `codev update` uses it; in both `reference/cli.md`, say which skills `codev update` rewrites and preserves — another version: rewritten; the running version: rewritten when it matches its checksum, preserved when it does not, and, without a checksum, preserved unless it differs only by the review mode, one `codev update --force` bringing such skills under the checksum; rewrite the section \"Editing a generated skill\" of `docs/en/src/skills.md` and \"Modifier une skill générée\" of `docs/fr/src/skills.md` to the checksum rule; add to both `faq.md` an entry on a spec cut by an earlier codev — how to spot it (the diff of the archive of a change that modified a spec's last requirement and added requirements), that `codev validate` and a new sync do not repair it, and how to repair it; verified by `cargo test -p codev-cli` (the docs checks) and a read of the eight pages\n\n## 4. Checks\n\n- [x] 4.1 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `cargo run -q -p codev-cli -- validate --strict`; verified by all four passing\n"
   },
   "validate": {
     "fix-merge-and-skill-refresh": {
@@ -683,34 +845,28 @@
     "status": []
   },
   "messages": [
-    "The installed `codev` lacks `roles`; this repo is codev itself, so let me try the workspace build.",
-    "I'll use the workspace build (`./target/debug/codev`) for codev commands. Task 1.1: edit ordering in the merge.",
-    "Implementing the sort change and the unit test.",
-    "Let me confirm the new test fails without the fix, then restore it.",
-    "Both tests fail without the fix and pass with it. (My stray `cp` landed a copy in an existing `/tmp/x/` directory; removing that copy.)",
-    "✓ 1.1 — edits sorted by (end, start) descending; two new tests, all 39 merge tests pass.\n\nTask 2.1: skill checksum in `claude.rs`.",
-    "Now implementing the checksum rendering and the decision.",
-    "All 81 agent tests pass. Running the whole workspace now, since the CLI tests also touch skills.",
-    "Code tasks are done; now updating the eight documentation pages (EN and FR).",
-    "The French CLI page likely uses non-breaking spaces. Checking, then continuing from that point.",
-    "Running the docs checks and re-reading the diff of the eight pages.",
-    "French additions use non-breaking spaces throughout (13, no plain ones); docs checks pass.",
-    "Starting the three summarizer sub-agents (path and diff only).",
-    "While the summaries run, I'm writing the shared part of the role briefs (format, scales, rules) to the scratchpad.",
-    "The diff for `docs/en/src/reference/cli.md` has one hunk, in the paragraph that explains how `codev update` regenerates skills. Three old lines become nine new lines, at lines 181–189 of the current file. I checked the line numbers against the current file.\n\n**Hunk: current lines 178–192**\n\n```\n \n Regenerates the skills listed by `workflows:` in the configuration (all eight\n when the key is absent), for example after upgrading codev or changing the\n-`mcp:` configuration. A skill whose content differs from what this version\n-generates, but which carries this version's stamp, was edited by hand: it is\n-left in place and reported, unless you pass `--force`. Skills removed from\n+`mcp:` configuration. A skill stamped with another codev version is\n+rewritten. A skill stamped with the running version is rewritten when it\n+still matches its `metadata.checksum` — codev rendered it, perhaps with an\n+earlier build of the same version — and, when it no longer does, was edited\n+by hand: it is left in place and reported, unless you pass `--force`. A skill\n+of the running version without a checksum, rendered before checksums, is\n+left in place too, unless it differs from the rendering only by the review\n+mode; one `codev update --force` brings such skills under the checksum\n+(check `git diff` first: it also overwrites real hand edits). Skills removed from\n `workflows:` are not deleted. An unknown workflow name is ignored with a\n warning `unknown_workflow`. Missing `_codev/` folders and a missing\n `_codev/config.yaml` are recreated; existing files are never overwritten.\n```\n\n**What changed in meaning:** before, a skill with this version's stamp whose content differed from what codev generates was always treated as edited by hand. Now there are four cases:\n- **Stamped with another codev version:** rewritten.\n- **Stamped with the running version and still matching its `metadata.checksum`:** rewritten. This covers a skill rendered by an earlier build of the same version.\n- **Stamped with the running version but no longer matching the checksum:** treated as edited by hand, so it is left in place and reported unless `--force` is passed.\n- **Stamped with the running version but with no checksum (rendered before checksums existed):** left in place, unless it differs from the rendering only by the review mode.\n\nThe new text also says that one `codev update --force` brings these skills under the checksum, and warns to check `git diff` first because it also overwrites real hand edits.",
-    "The diff for `docs/fr/src/reference/cli.md` has one hunk. It sits in the `codev update` paragraph, under \"Options:\". It occupies lines 187–203 of the current file; the changed lines are 190–200.\n\n**Hunk 1, current lines 187–203 (4 lines removed, 11 added):**\n```\n \n Régénère les skills listées par `workflows:` dans la configuration (les huit\n en l'absence de la clé), par exemple après une mise à jour de codev ou une\n-modification de la configuration `mcp:`. Une skill dont le contenu diffère de\n-ce que génère cette version, mais qui porte la marque de cette version, a été\n-modifiée à la main : elle est laissée en place et signalée, sauf si vous\n-passez `--force`. Les skills retirées de `workflows:` ne sont pas\n+modification de la configuration `mcp:`. Une skill marquée d'une autre\n+version de codev est réécrite. Une skill marquée de la version en cours est\n+réécrite si elle correspond encore à son `metadata.checksum` — codev l'a\n+rendue, peut-être avec une compilation antérieure de la même version — et,\n+sinon, a été modifiée à la main : elle est laissée en place et signalée,\n+sauf si vous passez `--force`. Une skill de la version en cours sans somme de\n+contrôle, rendue avant les sommes de contrôle, est également laissée en\n+place, sauf si elle ne diffère du rendu que par le mode de revue ; un\n+`codev update --force` place une fois ces skills sous la somme de contrôle\n+(vérifiez d'abord `git diff` : il écrase aussi les vraies modifications à la\n+main). Les skills retirées de `workflows:` ne sont pas\n supprimées. Un nom de workflow inconnu est ignoré avec un avertissement\n `unknown_workflow`. Les dossiers manquants de `_codev/` et un\n `_codev/config.yaml` manquant sont recréés ; aucun fichier existant n'est\n```\n\nWhat it changes: the old text treated any skill marked with the current version whose content differs from the generated output as edited by hand. The new text says when a skill gets rewritten or kept:\n- **Marked with another codev version:** the skill is rewritten.\n- **Marked with the current version, still matching its `metadata.checksum`:** the skill is rewritten. This covers a skill rendered by an earlier build of the same version.\n- **Marked with the current version, not matching its checksum:** the skill counts as edited by hand. It is kept and reported unless `--force` is passed.\n- **Marked with the current version, with no checksum (rendered before checksums existed):** the skill is also kept. The exception is when it differs from the rendered output only in review mode.\n\nThe new text also says that running `codev update --force` once brings these older skills under the checksum. It warns readers to check `git diff` first, because `--force` also overwrites real manual edits.",
-    "The changed lines fit in about 200 lines, so here they are verbatim. Each hunk is prefixed with the line range it occupies in the current `crates/codev-agents/src/claude.rs`. Ranges come from the diff's hunk headers.\n\n**Lines 3-9** (new import at line 6)\n```diff\n use codev_core::doctor::SkillState;\n use codev_core::managed::SpliceMode;\n use codev_core::review::ReviewMode;\n+use codev_core::update::sha256_hex;\n use codev_core::{Plan, WriteMode};\n use codev_engine::FileSystem;\n use codev_engine::integration::{self, IntegrationPlan, Step};\n```\n\n**Lines 161-182** (`impl ClaudeCode`: `render` now adds a checksum line; the old body moves to `render_without_checksum`)\n```diff\n     /// `ctx` carries the project-specific substitutions (Jira MCP name, …).\n     /// A `RenderCtx::default()` renders \"without MCP\" — the placeholder is\n     /// removed cleanly and replaced by an informative fallback in the body.\n+    ///\n+    /// The frontmatter ends its `metadata` with `checksum`, the SHA-256 of\n+    /// the skill without that line: a skill that still matches it is\n+    /// codev's rendering, whatever build of the version wrote it.\n     pub fn render(workflow: &Workflow, version: &str, ctx: &RenderCtx) -> String {\n+        let unchecked = Self::render_without_checksum(workflow, version, ctx);\n+        let checksum = sha256_hex(unchecked.as_bytes());\n+        let version_line = format!(\"  version: \\\"{version}\\\"\\n\");\n+        unchecked.replacen(\n+            &version_line,\n+            &format!(\"{version_line}  checksum: \\\"{checksum}\\\"\\n\"),\n+            1,\n+        )\n+    }\n+\n+    fn render_without_checksum(workflow: &Workflow, version: &str, ctx: &RenderCtx) -> String {\n         let tools = substitute_agent_tool(\n             &substitute_jira_mcp(workflow.allowed_tools, ctx.jira_mcp_tool.as_deref()),\n             ctx.review_mode,\n```\n\n**Lines 238-267** (`impl AgentTarget for ClaudeCode`, in `plan_skills`: the hand-edit detection now uses the checksum, with a fallback for skills that have none)\n```diff\n             let path = Self::skill_file(project_root, workflow.id);\n             let desired = Self::render(workflow, version, &self.ctx);\n \n-            // Same stamped version, different content: someone edited the\n-            // file by hand. Overwriting it would lose their work without\n-            // warning; report it and move on. A skill rendered by this\n-            // version for the other review mode is codev's own: the mode\n-            // changed, regenerate it.\n+            // A skill stamped with another version is rewritten: a hand edit\n+            // survives no upgrade. Among this version's skills, the checksum\n+            // tells codev's renderings — from any build, the review mode\n+            // included — from hand edits, which are preserved: overwriting\n+            // them would lose the user's work without warning. A skill\n+            // rendered before checksums keeps the earlier rule: codev's own\n+            // only when it is a rendering of this build, for either mode.\n             let edited_by_hand = !force\n                 && fs.exists(&path)\n                 && fs.read_to_string(&path).is_ok_and(|current| {\n                     current != desired\n                         && stamped_version(&current).as_deref() == Some(version)\n-                        && current != Self::render(workflow, version, &self.ctx.other_review_mode())\n+                        && match checksum_matches(&current) {\n+                            Some(matches) => !matches,\n+                            None => {\n+                                let legacy = without_checksum(&current);\n+                                [&self.ctx, &self.ctx.other_review_mode()]\n+                                    .iter()\n+                                    .all(|ctx| {\n+                                        legacy\n+                                            != Self::render_without_checksum(workflow, version, ctx)\n+                                    })\n+                            }\n+                        }\n                 });\n             if edited_by_hand {\n                 preserved.push(path);\n```\n\n**Lines 396-441** (new free functions after `stamped_version`)\n```diff\n         .map(|value| value.trim().trim_matches('\"').to_string())\n }\n \n+/// The `checksum` line of a `SKILL.md` frontmatter, as a byte range\n+/// including its line break, and its value.\n+fn checksum_line(contents: &str) -> Option<(std::ops::Range<usize>, &str)> {\n+    if !contents.starts_with(\"---\") {\n+        return None;\n+    }\n+    let mut start = 0;\n+    for (i, line) in contents.split_inclusive('\\n').enumerate() {\n+        let end = start + line.len();\n+        let text = line.trim_end_matches(['\\n', '\\r']);\n+        if i > 0 && text == \"---\" {\n+            return None;\n+        }\n+        if let Some(value) = text.trim().strip_prefix(\"checksum:\") {\n+            return Some((start..end, value.trim().trim_matches('\"')));\n+        }\n+        start = end;\n+    }\n+    None\n+}\n+\n+/// The skill with its `checksum` line left out: what the checksum covers.\n+fn without_checksum(contents: &str) -> String {\n+    match checksum_line(contents) {\n+        Some((range, _)) => {\n+            let mut out = contents.to_string();\n+            out.replace_range(range, \"\");\n+            out\n+        }\n+        None => contents.to_string(),\n+    }\n+}\n+\n+/// Whether a skill still matches its checksum: `None` when it carries none,\n+/// rendered before checksums.\n+fn checksum_matches(contents: &str) -> Option<bool> {\n+    let (_, checksum) = checksum_line(contents)?;\n+    Some(sha256_hex(without_checksum(contents).as_bytes()) == checksum)\n+}\n+\n #[cfg(test)]\n mod tests {\n     use super::*;\n```\n\n**Lines 498-510** (tests: new assertion in the existing frontmatter test)\n```diff\n                 \"the skill name must match its folder\"\n             );\n             assert_eq!(parsed[\"metadata\"][\"version\"].as_str(), Some(VERSION));\n+            assert!(\n+                parsed[\"metadata\"][\"checksum\"]\n+                    .as_str()\n+                    .is_some_and(|c| c.len() == 64),\n+                \"`{}` carries a SHA-256 checksum\",\n+                workflow.id\n+            );\n             assert!(parsed[\"description\"].as_str().is_some_and(|d| d.len() > 60));\n         }\n     }\n```\n\n**Lines 621-731** (tests: new helpers and six new tests)\n```diff\n         );\n     }\n \n+    const PROPOSE_SKILL: &str = \"/p/.claude/skills/codev-propose/SKILL.md\";\n+\n+    fn plan_with(contents: String) -> SkillsPlan {\n+        let fs = MemoryFileSystem::new().with_file(PROPOSE_SKILL, contents);\n+        ClaudeCode::new().plan_skills(&fs, Path::new(\"/p\"), &[propose()], VERSION, false)\n+    }\n+\n+    /// A rendering whose body differs from this build's, as an earlier build\n+    /// of the same version would have written it, with its own checksum.\n+    fn earlier_build_rendering() -> String {\n+        let unchecked =\n+            ClaudeCode::render_without_checksum(propose(), VERSION, &RenderCtx::default())\n+                .replace(\"Planning boundary\", \"Planning limit\");\n+        let checksum = sha256_hex(unchecked.as_bytes());\n+        unchecked.replacen(\n+            \"  version: \\\"0.1.0\\\"\\n\",\n+            &format!(\"  version: \\\"0.1.0\\\"\\n  checksum: \\\"{checksum}\\\"\\n\"),\n+            1,\n+        )\n+    }\n+\n+    #[test]\n+    fn a_rendered_skill_matches_its_checksum() {\n+        for workflow in workflows::CATALOG {\n+            for ctx in [RenderCtx::default(), isolated()] {\n+                let rendered = ClaudeCode::render(workflow, VERSION, &ctx);\n+                let (_, checksum) = checksum_line(&rendered).expect(\"a checksum line\");\n+                let without = rendered.replacen(&format!(\"  checksum: \\\"{checksum}\\\"\\n\"), \"\", 1);\n+                assert_eq!(sha256_hex(without.as_bytes()), checksum, \"{}\", workflow.id);\n+                assert_eq!(checksum_matches(&rendered), Some(true));\n+            }\n+        }\n+    }\n+\n+    #[test]\n+    fn a_skill_from_an_earlier_build_of_the_version_is_rewritten() {\n+        let earlier = earlier_build_rendering();\n+        assert_eq!(checksum_matches(&earlier), Some(true));\n+        let planned = plan_with(earlier);\n+        assert_eq!(\n+            planned.plan.writes.len(),\n+            1,\n+            \"codev's own rendering: rewrite\"\n+        );\n+        assert!(planned.preserved.is_empty());\n+    }\n+\n+    #[test]\n+    fn a_hand_edit_of_a_checksummed_skill_is_preserved() {\n+        let edited = earlier_build_rendering().replace(\"Planning limit\", \"My own limit\");\n+        assert_eq!(checksum_matches(&edited), Some(false));\n+        let planned = plan_with(edited);\n+        assert!(planned.plan.writes.is_empty());\n+        assert_eq!(planned.preserved, [PathBuf::from(PROPOSE_SKILL)]);\n+    }\n+\n+    #[test]\n+    fn a_hand_edit_of_a_skill_from_another_version_is_rewritten() {\n+        let edited = format!(\n+            \"{}\\n\\nMy own instruction.\\n\",\n+            ClaudeCode::render(propose(), \"0.0.1\", &RenderCtx::default())\n+        );\n+        let planned = plan_with(edited);\n+        assert_eq!(\n+            planned.plan.writes.len(),\n+            1,\n+            \"a hand edit survives no upgrade\"\n+        );\n+        assert!(planned.preserved.is_empty());\n+    }\n+\n+    #[test]\n+    fn a_same_version_skill_without_checksum_that_differs_is_preserved() {\n+        let legacy = without_checksum(&earlier_build_rendering());\n+        assert_eq!(checksum_matches(&legacy), None);\n+        let planned = plan_with(legacy);\n+        assert!(planned.plan.writes.is_empty());\n+        assert_eq!(planned.preserved, [PathBuf::from(PROPOSE_SKILL)]);\n+    }\n+\n+    #[test]\n+    fn a_legacy_skill_of_the_other_review_mode_is_rewritten() {\n+        // Rendered before checksums, for the inline mode; the project is now\n+        // isolated: still codev's own, rewritten with its checksum.\n+        let legacy = without_checksum(&ClaudeCode::render(\n+            propose(),\n+            VERSION,\n+            &RenderCtx::default(),\n+        ));\n+        let fs = MemoryFileSystem::new().with_file(PROPOSE_SKILL, legacy);\n+        let planned = ClaudeCode::with_ctx(isolated()).plan_skills(\n+            &fs,\n+            Path::new(\"/p\"),\n+            &[propose()],\n+            VERSION,\n+            false,\n+        );\n+        assert_eq!(planned.plan.writes.len(), 1);\n+        assert!(planned.preserved.is_empty());\n+        assert_eq!(\n+            checksum_matches(&planned.plan.writes[0].contents),\n+            Some(true)\n+        );\n+    }\n+\n     #[test]\n     fn detects_claude_code_from_its_traces() {\n         let root = Path::new(\"/p\");\n```",
-    "Two summaries are in; waiting for the `claude.rs` one before starting the role reviewers.",
-    "All three summaries are in; the `claude.rs` one is its diff verbatim, so the brief points to that saved diff. Starting both role reviewers in parallel.",
-    "Both reviewers (migration, newcomer) are running; I'll hold the meeting once they report.",
-    "### migration\n\nNo finding.\n\nI checked the existing things this change touches and none of them breaks:\n\n- **Skills already installed with no checksum, same version stamp.** The new code still applies the old rule to them (`claude.rs:255-262`). Such a skill is rewritten only when it differs from codev's own output by the review mode alone, compared without the checksum line. Otherwise it is kept, as before. The fix is a one-time `codev update --force`, preceded by a look at `git diff`. That step is documented in both editions of `cli.md`, `file-formats.md` and `skills.md`, and in the proposal's release note.\n- **Skills stamped with another version.** These were already rewritten before this change, because the old check also needed `stamped_version == version`. The release note says so, and so do the `skills.md` pages, along with a warning that hand edits do not survive an upgrade.\n- **Readers of the `SKILL.md` frontmatter.** `metadata.checksum` is a new key inside the open `metadata` map. The `deny_unknown_fields` structs in the repository never parse `SKILL.md`. `stamped_version` and `skill_states` (doctor) ignore the new line. The extended frontmatter test checks that a third-party YAML reader still parses it.\n- **Specs already damaged by the old merge order.** This change does not break them; they were damaged by earlier releases. The release note and both `faq.md` editions explain how to spot such a spec (`git log -p`), that `codev validate` does not catch it and a new sync does not repair it, and how to repair it.\n- **Specs merged from now on.** The new sort only changes the order of edits that end at the same point. The old order was the one that produced the damage, so a merge that worked before gives the same result. The new test shows that a second merge changes nothing.\n\nThere is no database, migration script, CLI flag or `contract::v1` field involved.",
-    "Migration reports no finding. Waiting for the newcomer reviewer.",
-    "### newcomer\n\n#### R-newcomer-1 The hand-edit decision is a nested closure, and it strips a checksum the skill does not have\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:248-265\"\nevidence: |\n  let edited_by_hand = !force\n      && fs.exists(&path)\n      && fs.read_to_string(&path).is_ok_and(|current| {\n          current != desired\n              && stamped_version(&current).as_deref() == Some(version)\n              && match checksum_matches(&current) {\n                  Some(matches) => !matches,\n                  None => {\n                      let legacy = without_checksum(&current);\n                      [&self.ctx, &self.ctx.other_review_mode()]\n                          .iter()\n                          .all(|ctx| {\n                              legacy\n                                  != Self::render_without_checksum(workflow, version, ctx)\n                          })\n                  }\n              }\n      });\nrecommendation: >\n  Move the decision out of the loop into a named function, for example\n  `fn is_hand_edit(&self, current: &str, desired: &str, workflow, version) -> bool`,\n  and use early returns: \"if current == desired return false; if the stamped\n  version differs return false; if let Some(matches) = checksum_matches(current)\n  return !matches; otherwise compare to the two legacy renderings\". Then each rule\n  in the seven-line comment sits next to the line that applies it.\n\n  Remove the `without_checksum(&current)` call in the `None` arm.\n  `checksum_matches` returns `None` only when `checksum_line` finds no line, so\n  this call always returns `current` unchanged. A reader assumes it removes\n  something and goes looking for a legacy file that carries a checksum line,\n  but no such file exists.\n\n  Turn the `.all(|ctx| legacy != …)` double negation into a positive\n  `!contexts.iter().any(|ctx| current == render_without_checksum(..))`, read as\n  \"matches neither review mode's rendering\".\n\n  Right now, a reader who joins the project has to follow a `match` nested inside\n  a closure, inside an `&&` chain, inside a loop, to find out when a skill\n  is kept.\nhistory:\n  - status: open\n    by: newcomer\n```\n\n#### R-newcomer-2 The test helper rebuilds the checksum insertion with a hard-coded version\n\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:633-643\"\nevidence: |\n  let checksum = sha256_hex(unchecked.as_bytes());\n  unchecked.replacen(\n      \"  version: \\\"0.1.0\\\"\\n\",\n      &format!(\"  version: \\\"0.1.0\\\"\\n  checksum: \\\"{checksum}\\\"\\n\"),\n      1,\n  )\nrecommendation: >\n  This helper repeats the body of `ClaudeCode::render` (lines 170-176), but with\n  the literal \"0.1.0\" where `render` uses the `VERSION` constant (line 446). A\n  reader cannot tell whether \"0.1.0\" is meant to differ from VERSION (an \"earlier\n  version\") or to be the same, and the helper's name says \"earlier build\", not\n  \"earlier version\".\n\n  Pull the insertion into one shared function, for example\n  `fn with_checksum(unchecked: &str, version: &str) -> String`. Then `render`\n  becomes `with_checksum(&render_without_checksum(..), version)`, and the test\n  calls `with_checksum(&modified, VERSION)`. This removes the copy and the magic\n  string. The test `a_rendered_skill_matches_its_checksum` could also use\n  `without_checksum` instead of its own `replacen`.\nhistory:\n  - status: open\n    by: newcomer\n```",
-    "Meeting: migration has no finding; newcomer raised two low findings. Checking their cited lines before recording.",
-    "Both findings hold. Writing the record before fixing.",
-    "Now fixing both as the author (no behavior change).",
-    "Clippy and tests pass. Recording the author's fixes and the reviewer's re-check.",
-    "I implemented all 4 tasks of `fix-merge-and-skill-refresh`. The final checks pass: fmt, clippy with `-D warnings`, every workspace test and `codev validate --strict`. Nothing was committed, archived or synced.\n\n**What changed**\n- **Merge fix:** in `crates/codev-core/src/merge/edits.rs`, edits are now applied by descending end, then descending start. When a change modifies a spec's last requirement and also adds requirements, the added ones now go after the whole modified requirement. Two new tests cover this; I confirmed both fail without the fix.\n- **Skill checksum:** in `crates/codev-agents/src/claude.rs`, each skill now carries `metadata.checksum`. `codev update` decides what to rewrite and what to keep in `ClaudeCode::is_edited_by_hand`: a skill from another version is rewritten, one still matching its checksum is rewritten, and one that no longer matches is kept as a hand edit. A skill with no checksum follows the old rule. Six new tests cover these cases.\n- **Documentation:** the eight pages (file-formats, cli, skills and faq, in English and French) describe the checksum rule. The FAQ has a new entry on spotting and repairing a spec that an earlier codev cut in two.\n\n**Something to check:** refreshing codev's own skills (task 2.2) rewrote `codev-apply`, `codev-propose` and `codev-update`. The committed versions came from a newer codev than this source tree builds, so the refresh removed text they had, such as the \"The author's corrections\" section. The task asked for exactly this refresh, but if the committed skills were meant to stay, `git checkout .claude/skills` restores them. The plain `update` was enough here, since the skills already had checksums; `--force` and a second run wrote nothing, and `doctor --strict` exits 0. It also gives one warning, which this change did not cause: `CHANGELOG.md`'s `[Unreleased]` section differs from what `codev changelog` generates.\n\nThe installed `codev` 0.6.1 has no `roles` command, so I ran codev commands with the build from this repo (`./target/debug/codev`).\n\n**Review notes** (recorded in `review.md`; the review ran with a separate sub-agent for each reviewer)\n- The migration reviewer found nothing: existing skills, frontmatter readers and specs all keep working.\n- [newcomer] R-newcomer-1 (fixed): the hand-edit decision was a nested closure with a call that did nothing. It is now a named method, `is_edited_by_hand`, with early returns.\n- [newcomer] R-newcomer-2 (fixed): a test helper copied the checksum logic with a hard-coded `\"0.1.0\"`. A shared `with_checksum` function now serves both the code and the test.\n\nThese were simplifications only; skill output did not change.\n\n**To decide**\n- The archive is blocked because `review.md` has no `## plan.challenge` section, although the skeptic and migration reviewers were active at that step. That planning review is outside this skill's scope and needs to be run or recorded before archiving.\n\nOnce that is settled, the change can be archived with `/codev-archive` or `codev archive`."
+    "Task 1.1: sort edits by descending end then start.",
+    "Now the merge test.",
+    "Let me confirm the new test fails without the fix.",
+    "Task 1.1 is done and checked off. I'm now on task 2.1, adding the skill checksum. I've confirmed the format: the SHA-256 of the skill with the checksum line removed.",
+    "Task 2.1 is done. I'm now refreshing the project's own skills, which is task 2.2. They already carried checksums, so `--force` wasn't needed. Next I'm checking that a second run writes nothing.",
+    "Tasks 2.1 and 2.2 are done. I'm writing the English documentation for task 3.1 now, and the French pages come next.",
+    "I'm writing the French documentation pages for task 3.1, using the non-breaking spaces before `:` and `;` that the French pages already use.",
+    "Now launching the three summary sub-agents (step ii).",
+    "Waiting for the summaries before briefing the reviewers.",
+    "Ran `git diff main -- docs/en/src/reference/cli.md`. The diff has one hunk, short enough to give in full. New-file line numbers are added on the left; removed lines have none.\n\n```\n@@ -178,9 +178,15 @@ Options:\n178  \n179  Regenerates the skills listed by `workflows:` in the configuration (all eight\n180  when the key is absent), for example after upgrading codev or changing the\n    -`mcp:` configuration. A skill whose content differs from what this version\n    -generates, but which carries this version's stamp, was edited by hand: it is\n    -left in place and reported, unless you pass `--force`. Skills removed from\n181 +`mcp:` configuration. A skill stamped with another codev version is\n182 +rewritten. A skill stamped with the running version is rewritten when its\n183 +content still matches its `metadata.checksum` — codev rendered it, perhaps\n184 +with an earlier build of the same version — and left in place and reported\n185 +when it no longer does: it was edited by hand. A skill of the running\n186 +version without a checksum, generated before checksums existed, is left in\n187 +place unless it differs from the rendering only by the review mode; one\n188 +`codev update --force` brings such skills under the checksum. `--force`\n189 +rewrites every skill. Skills removed from\n190  `workflows:` are not deleted. An unknown workflow name is ignored with a\n191  warning `unknown_workflow`. Missing `_codev/` folders and a missing\n192  `_codev/config.yaml` are recreated; existing files are never overwritten.\n```\n\nFile: /private/tmp/claude-503/-Users-ludovic-nicaise-Sources-codev/57f39bd0-603a-455a-950b-01399a9a70b5/scratchpad/name-work3/implement-fix-merge-and-skill-refresh-3/docs/en/src/reference/cli.md",
+    "All four tasks are done and checked off. The code review has started: I'm waiting on three sub-agents that summarize the large diffs (`claude.rs` and both `cli.md` pages). After that, the migration and newcomer reviewers will each run as an isolated sub-agent.",
+    "The English `cli.md` summary is back. Two summaries are still running.",
+    "The diff is small (one hunk, 25 lines in total), so here it is verbatim. The new file's line numbers are in the left column.\n\n```\n@@ -187,10 +187,16 @@ Options:\n187  \n188  Régénère les skills listées par `workflows:` dans la configuration (les huit\n189  en l'absence de la clé), par exemple après une mise à jour de codev ou une\n   -modification de la configuration `mcp:`. Une skill dont le contenu diffère de\n   -ce que génère cette version, mais qui porte la marque de cette version, a été\n   -modifiée à la main : elle est laissée en place et signalée, sauf si vous\n   -passez `--force`. Les skills retirées de `workflows:` ne sont pas\n190 +modification de la configuration `mcp:`. Une skill marquée d'une autre\n191 +version de codev est réécrite. Une skill marquée de la version courante est\n192 +réécrite quand son contenu correspond encore à son `metadata.checksum` —\n193 +codev l'a rendue, peut-être avec un build antérieur de la même version — et\n194 +laissée en place et signalée quand il n'y correspond plus : elle a été\n195 +modifiée à la main. Une skill de la version courante sans somme de contrôle,\n196 +générée avant leur existence, est laissée en place, sauf si elle ne diffère\n197 +du rendu que par le mode de revue ; un `codev update --force` place ces\n198 +skills sous la somme de contrôle. `--force` réécrit toutes les skills. Les\n199 +skills retirées de `workflows:` ne sont pas\n200  supprimées. Un nom de workflow inconnu est ignoré avec un avertissement\n201  `unknown_workflow`. Les dossiers manquants de `_codev/` et un\n202  `_codev/config.yaml` manquant sont recréés ; aucun fichier existant n'est\n```\n\nFile: /private/tmp/claude-503/-Users-ludovic-nicaise-Sources-codev/57f39bd0-603a-455a-950b-01399a9a70b5/scratchpad/name-work3/implement-fix-merge-and-skill-refresh-3/docs/fr/src/reference/cli.md\n\nSeparately, several claude.ai connectors need authorizing before they can be used: Asana, Box, Canva, Figma, Granola, HubSpot, Intercom, Linear, Microsoft 365, Notion, Omega Tech, Sentry and monday.com. Authorize them in the claude.ai connector settings. This task didn't need any of them.",
+    "The French `cli.md` summary is back too. The `claude.rs` summary is still running.",
+    "The diff is about 230 lines including context, so here it is verbatim. Each hunk header shows where it starts in the new file (`+N,M` means starting at line N, M lines long).\n\n```diff\ndiff --git a/crates/codev-agents/src/claude.rs b/crates/codev-agents/src/claude.rs\nindex 3ae29d8..5803076 100644\n--- a/crates/codev-agents/src/claude.rs\n+++ b/crates/codev-agents/src/claude.rs\n@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};\n use codev_core::doctor::SkillState;\n use codev_core::managed::SpliceMode;\n use codev_core::review::ReviewMode;\n+use codev_core::update::sha256_hex;\n use codev_core::{Plan, WriteMode};\n use codev_engine::FileSystem;\n use codev_engine::integration::{self, IntegrationPlan, Step};\n@@ -174,7 +175,7 @@ impl ClaudeCode {\n                 crate::workflows::REVIEW_RECORD_PLACEHOLDER,\n                 &crate::workflows::review_record(),\n             );\n-        format!(\n+        let head = format!(\n             \"---\\n\\\n              name: {name}\\n\\\n              description: {description}\\n\\\n@@ -182,15 +183,16 @@ impl ClaudeCode {\n              license: MIT\\n\\\n              metadata:\\n\\\n              \\x20 generator: codev\\n\\\n-             \\x20 version: \\\"{version}\\\"\\n\\\n-             ---\\n\\\n-             \\n\\\n-             {body}\",\n+             \\x20 version: \\\"{version}\\\"\\n\",\n             name = Self::skill_name(workflow.id),\n             description = yaml_scalar(workflow.description),\n             tools = yaml_scalar(&tools),\n-            body = body.trim_end(),\n-        )\n+        );\n+        let tail = format!(\"---\\n\\n{}\", body.trim_end());\n+        // The checksum covers the whole skill but its own line: a skill that\n+        // still matches it is codev's rendering, whatever build wrote it.\n+        let checksum = sha256_hex(format!(\"{head}{tail}\").as_bytes());\n+        format!(\"{head}{CHECKSUM_PREFIX}\\\"{checksum}\\\"\\n{tail}\")\n     }\n }\n \n@@ -222,17 +224,22 @@ impl AgentTarget for ClaudeCode {\n             let path = Self::skill_file(project_root, workflow.id);\n             let desired = Self::render(workflow, version, &self.ctx);\n \n-            // Same stamped version, different content: someone edited the\n-            // file by hand. Overwriting it would lose their work without\n-            // warning; report it and move on. A skill rendered by this\n-            // version for the other review mode is codev's own: the mode\n-            // changed, regenerate it.\n+            // A skill stamped with another version is rewritten: a hand edit\n+            // survives no upgrade. Within the running version, the checksum\n+            // tells codev's renderings — from any build — from a hand edit,\n+            // which overwriting would lose without warning: report it and\n+            // move on.\n             let edited_by_hand = !force\n                 && fs.exists(&path)\n                 && fs.read_to_string(&path).is_ok_and(|current| {\n                     current != desired\n                         && stamped_version(&current).as_deref() == Some(version)\n-                        && current != Self::render(workflow, version, &self.ctx.other_review_mode())\n+                        && match split_checksum(&current) {\n+                            Some((unstamped, checksum)) => {\n+                                sha256_hex(unstamped.as_bytes()) != checksum\n+                            }\n+                            None => self.edited_before_checksums(&current, workflow, version),\n+                        }\n                 });\n             if edited_by_hand {\n                 preserved.push(path);\n@@ -247,6 +254,22 @@ impl AgentTarget for ClaudeCode {\n     }\n }\n \n+impl ClaudeCode {\n+    /// Whether a skill rendered before checksums, stamped with the running\n+    /// version, was edited by hand: it is codev's own only when it equals a\n+    /// rendering of this version — for either review mode, since a skill of\n+    /// the other mode is regenerated when the mode changes — compared\n+    /// without the checksum line it predates.\n+    fn edited_before_checksums(&self, current: &str, workflow: &Workflow, version: &str) -> bool {\n+        [self.ctx.clone(), self.ctx.other_review_mode()]\n+            .iter()\n+            .map(|ctx| Self::render(workflow, version, ctx))\n+            .all(|rendered| {\n+                split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)\n+            })\n+    }\n+}\n+\n /// The `CLAUDE.md` file Claude Code reads at the project root.\n pub const CLAUDE_MD: &str = \"CLAUDE.md\";\n \n@@ -350,6 +373,31 @@ fn yaml_scalar(raw: &str) -> String {\n     format!(\"\\\"{escaped}\\\"\")\n }\n \n+/// The start of the frontmatter line carrying the skill's checksum, under\n+/// `metadata`.\n+const CHECKSUM_PREFIX: &str = \"  checksum: \";\n+\n+/// Splits a `SKILL.md` into its content without the frontmatter's\n+/// `checksum` line, and the checksum that line carries — `None` for a\n+/// skill rendered before checksums.\n+fn split_checksum(contents: &str) -> Option<(String, String)> {\n+    if !contents.starts_with(\"---\") {\n+        return None;\n+    }\n+    let mut start = contents.find('\\n')? + 1;\n+    for line in contents[start..].split_inclusive('\\n') {\n+        if line.trim_end() == \"---\" {\n+            break;\n+        }\n+        if let Some(value) = line.strip_prefix(CHECKSUM_PREFIX) {\n+            let unstamped = format!(\"{}{}\", &contents[..start], &contents[start + line.len()..]);\n+            return Some((unstamped, value.trim().trim_matches('\"').to_string()));\n+        }\n+        start += line.len();\n+    }\n+    None\n+}\n+\n /// Extracts the version stamped in a `SKILL.md` frontmatter.\n ///\n /// This stamp is what distinguishes \"file from an earlier version, to\n@@ -429,6 +477,13 @@ mod tests {\n                 \"the skill name must match its folder\"\n             );\n             assert_eq!(parsed[\"metadata\"][\"version\"].as_str(), Some(VERSION));\n+            assert!(\n+                parsed[\"metadata\"][\"checksum\"]\n+                    .as_str()\n+                    .is_some_and(|c| c.len() == 64 && c.chars().all(|ch| ch.is_ascii_hexdigit())),\n+                \"`{}` carries a hexadecimal SHA-256\",\n+                workflow.id\n+            );\n             assert!(parsed[\"description\"].as_str().is_some_and(|d| d.len() > 60));\n         }\n     }\n@@ -526,6 +581,108 @@ mod tests {\n         assert!(planned.preserved.is_empty());\n     }\n \n+    const SKILL: &str = \"/p/.claude/skills/codev-propose/SKILL.md\";\n+\n+    /// The skill as a build of `version` without checksums rendered it.\n+    fn without_checksum(rendered: &str) -> String {\n+        split_checksum(rendered).unwrap().0\n+    }\n+\n+    /// Plans the propose skill over `current`, without `--force`.\n+    fn plan_over(current: String, ctx: RenderCtx) -> SkillsPlan {\n+        let fs = MemoryFileSystem::new().with_file(SKILL, current);\n+        ClaudeCode::with_ctx(ctx).plan_skills(&fs, Path::new(\"/p\"), &[propose()], VERSION, false)\n+    }\n+\n+    #[test]\n+    fn a_rendered_skill_matches_its_checksum() {\n+        for workflow in workflows::CATALOG {\n+            let rendered = ClaudeCode::render(workflow, VERSION, &isolated());\n+            let (unstamped, checksum) = split_checksum(&rendered).unwrap();\n+            assert_eq!(\n+                sha256_hex(unstamped.as_bytes()),\n+                checksum,\n+                \"{}\",\n+                workflow.id\n+            );\n+            assert!(!unstamped.contains(\"checksum\"), \"{}\", workflow.id);\n+        }\n+    }\n+\n+    #[test]\n+    fn a_skill_from_an_earlier_build_of_the_version_is_rewritten() {\n+        // An earlier build of the same version rendered another text, with\n+        // the checksum of that text.\n+        let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());\n+        let unstamped = without_checksum(&earlier).replace(\"Planning boundary\", \"Plan boundary\");\n+        let checksum = sha256_hex(unstamped.as_bytes());\n+        let (head, tail) = unstamped.split_at(unstamped.find(\"---\\n\\n\").unwrap());\n+        let earlier = format!(\"{head}{CHECKSUM_PREFIX}\\\"{checksum}\\\"\\n{tail}\");\n+\n+        let planned = plan_over(earlier, RenderCtx::default());\n+        assert_eq!(\n+            planned.plan.writes.len(),\n+            1,\n+            \"codev's own rendering: rewrite\"\n+        );\n+        assert!(planned.preserved.is_empty());\n+    }\n+\n+    #[test]\n+    fn a_hand_edit_of_a_checksummed_skill_is_preserved() {\n+        let edited = ClaudeCode::render(propose(), VERSION, &RenderCtx::default())\n+            .replace(\"Planning boundary\", \"My planning boundary\");\n+        let planned = plan_over(edited, RenderCtx::default());\n+        assert!(planned.plan.writes.is_empty());\n+        assert_eq!(planned.preserved, [PathBuf::from(SKILL)]);\n+    }\n+\n+    #[test]\n+    fn a_hand_edit_of_a_skill_from_another_version_is_rewritten() {\n+        let edited = format!(\n+            \"{}\\n\\nMy instruction.\\n\",\n+            ClaudeCode::render(propose(), \"0.0.1\", &RenderCtx::default())\n+        );\n+        let planned = plan_over(edited, RenderCtx::default());\n+        assert_eq!(\n+            planned.plan.writes.len(),\n+            1,\n+            \"a hand edit survives no upgrade\"\n+        );\n+        assert!(planned.preserved.is_empty());\n+    }\n+\n+    #[test]\n+    fn a_same_version_skill_without_checksum_that_differs_is_preserved() {\n+        let legacy = format!(\n+            \"{}\\n\\nMy instruction.\\n\",\n+            without_checksum(&ClaudeCode::render(\n+                propose(),\n+                VERSION,\n+                &RenderCtx::default()\n+            ))\n+        );\n+        let planned = plan_over(legacy, RenderCtx::default());\n+        assert!(planned.plan.writes.is_empty());\n+        assert_eq!(planned.preserved, [PathBuf::from(SKILL)]);\n+    }\n+\n+    #[test]\n+    fn a_legacy_skill_of_the_other_review_mode_is_rewritten() {\n+        let legacy = without_checksum(&ClaudeCode::render(\n+            propose(),\n+            VERSION,\n+            &RenderCtx::default(),\n+        ));\n+        let planned = plan_over(legacy, isolated());\n+        assert_eq!(\n+            planned.plan.writes.len(),\n+            1,\n+            \"only the mode differs: rewrite\"\n+        );\n+        assert!(planned.preserved.is_empty());\n+    }\n+\n     #[test]\n     fn reads_the_version_stamp() {\n         assert_eq!(\n```",
+    "The migration and newcomer reviewers are running in isolation. I'll hold the review meeting once both report.",
+    "### newcomer\n\n#### R-newcomer-1 The hand-edit check is a three-level boolean expression with a `match` inside a closure\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:232-243\"\nevidence: |\n  let edited_by_hand = !force\n      && fs.exists(&path)\n      && fs.read_to_string(&path).is_ok_and(|current| {\n          current != desired\n              && stamped_version(&current).as_deref() == Some(version)\n              && match split_checksum(&current) {\n                  Some((unstamped, checksum)) => {\n                      sha256_hex(unstamped.as_bytes()) != checksum\n                  }\n                  None => self.edited_before_checksums(&current, workflow, version),\n              }\n      });\nrecommendation: >\n  The whole decision sits in one expression: an `&&` chain, then an `is_ok_and` closure, then a second `&&` chain, then a `match`. A reader has to keep five conditions in mind at once to see that \"the checksum doesn't match\" means \"preserve the file\". The comment above it explains the rule well, but the code doesn't follow the comment's steps. Move the closure body into a named method, e.g. `fn is_hand_edit(&self, current: &str, desired: &str, workflow, version) -> bool`. Give it early returns in the order the comment uses: `if current == desired { return false }`, `if stamped_version(current) != Some(version) { return false }`, then `match split_checksum(current)`. The call site becomes `!force && fs.read_to_string(&path).is_ok_and(|c| self.is_hand_edit(&c, &desired, workflow, version))`.\nhistory:\n  - status: open\n    by: newcomer\n```\n\n#### R-newcomer-2 `edited_before_checksums` uses a double negative (`all` + `is_none_or` + `!=`)\n```yaml\nseverity: medium\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:263-269\"\nevidence: |\n  [self.ctx.clone(), self.ctx.other_review_mode()]\n      .iter()\n      .map(|ctx| Self::render(workflow, version, ctx))\n      .all(|rendered| {\n          split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)\n      })\nrecommendation: >\n  The rule is \"codev wrote this file if it equals either rendering with the checksum line removed\". The code says it as \"every rendering either has no checksum or differs\". A reader has to invert this twice. The `None` branch is also confusing: `render` always writes a checksum, so a reader wonders when a fresh rendering could lack one, and whether a missing checksum is meant to count as \"edited\". Write the rule in its positive form and let the reader see the negation once, e.g. `let ours = renderings.any(|r| split_checksum(&r).is_some_and(|(unstamped, _)| unstamped == current)); !ours`. Or, better, use a helper `fn strip_checksum(rendered) -> String` that cannot fail on codev's own output, so the `Option` disappears from this function.\nhistory:\n  - status: open\n    by: newcomer\n```\n\n#### R-newcomer-3 In `split_checksum`, `start` is the offset of the current line, not a fixed start\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:387-396\"\nevidence: |\n  let mut start = contents.find('\\n')? + 1;\n  for line in contents[start..].split_inclusive('\\n') {\n  ...\n          let unstamped = format!(\"{}{}\", &contents[..start], &contents[start + line.len()..]);\n  ...\n      start += line.len();\nrecommendation: >\n  `start` first marks the end of the opening `---` line. It then moves forward on each iteration to become the offset of `line`. Meanwhile `contents[start..]` in the `for` header was evaluated once with the initial value. A reader sees `start` used both in the loop header and in the body, and has to check that the iterator doesn't depend on the mutated variable. Rename it `line_offset` and add a short comment that the offset tracks `line`. Then the cut `contents[..line_offset] + contents[line_offset + line.len()..]` reads plainly as \"everything except this line\".\nhistory:\n  - status: open\n    by: newcomer\n```\n\n#### R-newcomer-4 The test copies `render`'s checksum stamping by hand and reuses the name `earlier`\n```yaml\nseverity: low\nconfidence: high\nlocation: \"crates/codev-agents/src/claude.rs:616-620\"\nevidence: |\n  let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());\n  let unstamped = without_checksum(&earlier).replace(\"Planning boundary\", \"Plan boundary\");\n  let checksum = sha256_hex(unstamped.as_bytes());\n  let (head, tail) = unstamped.split_at(unstamped.find(\"---\\n\\n\").unwrap());\n  let earlier = format!(\"{head}{CHECKSUM_PREFIX}\\\"{checksum}\\\"\\n{tail}\");\nrecommendation: >\n  The test's setup copies, inline, how `render` builds the stamped skill: split at `---\\n\\n`, then insert `CHECKSUM_PREFIX` and the quoted hash. A reader has to recognise this as the same format as `render` and trust that the two stay in sync. The two `earlier` bindings also mean different things: first the current rendering, then the simulated earlier build. Extract a `fn stamp_checksum(unstamped: &str) -> String` that both `render` and the test call. The test then reads as \"an earlier build's text, stamped with its own checksum\": `let earlier_build = stamp_checksum(&without_checksum(&current).replace(...))`.\nhistory:\n  - status: open\n    by: newcomer\n```",
+    "The newcomer reviewer is done. The migration reviewer is still running.",
+    "### migration\n\nNo finding.\n\nI checked how existing data, configuration and consumers move to this change, and nothing that exists today breaks:\n\n- **Skills from a released codev:** an installed `SKILL.md` stamped with an older version is still rewritten on upgrade, as before (`stamped_version(&current).as_deref() == Some(version)` is still checked first in `crates/codev-agents/src/claude.rs`). The new `checksum` line does not change how the version is read, because `stamped_version` only matches lines starting with `version:`.\n- **Skills of the same version without a checksum** (only possible on builds from source): they follow the old rule, through `edited_before_checksums`. A skill equal to this version's rendering for either review mode, compared without the checksum line, is rewritten and gains a checksum. Any other such skill is kept, as it was before. The release note, `docs/{en,fr}/src/reference/cli.md`, `file-formats.md`, `skills.md` and the FAQ all say that one `codev update --force` brings them under the checksum, and that you should check `git diff` first. Tests cover this: `a_same_version_skill_without_checksum_that_differs_is_preserved` and `a_legacy_skill_of_the_other_review_mode_is_rewritten`.\n- **Other readers of the skill frontmatter:** `codev doctor` (`skill_states`) only reads `version` and `allowed-tools`. The extra key sits under `metadata`, where Claude Code accepts any key. No `deny_unknown_fields` applies to skill frontmatter. The JSON output contract (`codev-cli::contract::v1`) is not touched.\n- **Specs already cut by an earlier codev:** the merge fix cannot repair them, and sync does not either. The third release note item says so, and the new FAQ section \"A spec's last requirement is cut in two\" (en and fr) says how to find and repair one by hand or with a new `MODIFIED` delta.\n- **Nothing breaking:** no flag, key, file format field or JSON field is renamed or removed, so no **BREAKING** item is needed. The release note follows the project's process: CONTRIBUTING.md has `codev changelog --write` move it into `CHANGELOG.md` once the change is archived.",
+    "Holding the meeting: correcting the citations, writing the record, then the developer applies the four readability fixes (no behavior change).",
+    "The refactor leaves the rendered output byte-identical: `update` reports nothing to do. Now I'm writing the review record.",
+    "The change `fix-merge-and-skill-refresh` is implemented: all 6 tasks are checked off and the code review is done. The full test suite passes (1,354 tests, 0 failures), as do `fmt --check`, `clippy -D warnings` and `validate --strict`.\n\n**Main files touched:** `crates/codev-core/src/merge/edits.rs`, `crates/codev-core/src/merge/mod.rs`, `crates/codev-agents/src/claude.rs`, three skills under `.claude/skills/`, and eight documentation pages (`faq`, `reference/cli`, `reference/file-formats` and `skills`, in both English and French).\n\n- **Merge fix (1.1):** when one change modifies a spec's last requirement and also adds requirements, the added ones now land after the modified requirement instead of in the middle of it. Without the fix, the new merge test fails, so it does catch the original bug.\n- **Skill checksum (2.1):** each generated skill now carries `metadata.checksum`. Among skills of the running version, `codev update` rewrites one that still matches its checksum and keeps one that doesn't (a hand edit). A skill from another version is rewritten as before. A skill written before checksums existed keeps the old rule. Six new tests cover this; the existing frontmatter test now also checks the checksum.\n- **Refreshing codev's own skills (2.2):** `--force` wasn't needed. The installed skills already carried checksums in the same format, so a plain `codev update` rewrote 3 of them (apply, propose, update), and a second run wrote nothing. `doctor --strict` passes, apart from an existing warning that `CHANGELOG.md` differs from what `codev changelog` generates. Note that this replaces the skill text this evaluation installed with what this source generates.\n- **Documentation (3.1):** all eight pages are updated, including a new FAQ entry on a spec cut in two by an earlier codev. The French pages keep the non-breaking spaces before `:` and `;` that they already use.\n\n**Defects fixed during review:** none. The migration reviewer had no finding; the newcomer reviewer's four findings were all readability, fixed without changing behavior (generated skills stay byte-identical).\n\n**Review notes** (all recorded in `review.md`, all fixed and re-checked):\n- [newcomer] R-newcomer-2 (fixed, medium): `edited_before_checksums` in `claude.rs` was hard to read because of a double negative. It now states the rule positively, through a new `render_unstamped` helper.\n- [newcomer] R-newcomer-1 (fixed, low): the hand-edit decision in `plan_skills` was nested three levels deep. It moved into a named `is_hand_edit` method that returns early.\n- [newcomer] R-newcomer-3 (fixed, low): in `split_checksum`, the offset variable's name was misleading; it is now `line_offset`.\n- [newcomer] R-newcomer-4 (fixed, low): a test re-implemented the checksum stamping by hand. Both the code and the test now use a shared `stamp_checksum` helper.\n\n**To decide:**\n- There are no unticked suggested domains and no open findings.\n- The review record has no `plan.challenge` section, although the skeptic and migration roles were active at that planning step. `codev archive` reports it as blocking (`review_step_missing`). That review belongs to planning, not to this skill, so I didn't write it. Run the plan challenge (for example through `/codev-update`) or record it by hand before archiving.\n\nOnce that `plan.challenge` record exists, the change is ready to be archived: run `/codev-archive` or `codev archive` as the next step. As instructed, I didn't archive or sync it."
   ],
   "implement": {
     "checks": [
@@ -724,19 +880,19 @@
         "name": "lints",
         "passed": true,
         "timedOut": false,
-        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s"
       },
       {
         "name": "tests",
         "passed": true,
         "timedOut": false,
-        "tail": "test no_workflow_input_is_interpolated_in_a_script ... ok\ntest the_workflow_passes_repeat_through_the_environment ... ok\ntest the_workflow_runs_only_on_dispatch ... ok\ntest contributing_and_roles_chapters_name_the_baseline ... ok\ntest the_reliability_pages_follow_the_baseline ... ok\ntest no_raw_log_is_tracked_in_the_baseline ... ok\ntest no_baseline_repetition_is_in_error ... ok\ntest every_baseline_case_has_five_repetitions ... ok\ntest every_case_of_the_suite_loads ... ok\ntest categories_of_one_case_share_no_term ... ok\ntest the_suite_covers_every_reviewing_role ... ok\ntest every_case_has_a_baseline_observation ... ok\ntest the_baseline_agrees_with_the_scoring ... ok\n\ntest result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_evals\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
+        "tail": "test the_workflow_installs_the_sandbox ... ok\ntest the_workflow_passes_repeat_through_the_environment ... ok\ntest the_workflow_runs_only_on_dispatch ... ok\ntest contributing_and_roles_chapters_name_the_baseline ... ok\ntest the_reliability_pages_follow_the_baseline ... ok\ntest no_raw_log_is_tracked_in_the_baseline ... ok\ntest every_baseline_case_has_five_repetitions ... ok\ntest no_baseline_repetition_is_in_error ... ok\ntest categories_of_one_case_share_no_term ... ok\ntest the_suite_covers_every_reviewing_role ... ok\ntest every_case_of_the_suite_loads ... ok\ntest every_case_has_a_baseline_observation ... ok\ntest the_baseline_agrees_with_the_scoring ... ok\n\ntest result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s\n\n   Doc-tests codev_agents\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_engine\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n   Doc-tests codev_evals\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
       },
       {
         "name": "build",
         "passed": true,
         "timedOut": false,
-        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.05s"
+        "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s"
       }
     ],
     "script": {

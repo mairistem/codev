@@ -5,9 +5,9 @@
 ## code.review
 
 Mode: isolated.
-Summarized: crates/codev-agents/src/claude.rs — the material exceeded the review budget (273604 of 163840 bytes).
-Summarized: docs/en/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes).
-Summarized: docs/fr/src/reference/cli.md — the material exceeded the review budget (273604 of 163840 bytes).
+Summarized: crates/codev-agents/src/claude.rs — beyond the material size limit.
+Summarized: docs/en/src/reference/cli.md — beyond the material size limit.
+Summarized: docs/fr/src/reference/cli.md — beyond the material size limit.
 
 ### migration
 
@@ -15,52 +15,90 @@ No finding.
 
 ### newcomer
 
-#### R-newcomer-1 The hand-edit decision is a nested closure that strips a checksum the skill does not have
+#### R-newcomer-1 The hand-edit check is a three-level boolean expression with a `match` inside a closure
 
 ```yaml
 severity: low
 confidence: high
-location: "crates/codev-agents/src/claude.rs:248-265"
+location: "crates/codev-agents/src/claude.rs:232-243"
 evidence: |
-                            None => {
-                                let legacy = without_checksum(&current);
-                                [&self.ctx, &self.ctx.other_review_mode()]
-                                    .iter()
-                                    .all(|ctx| {
-                                        legacy
-                                            != Self::render_without_checksum(workflow, version, ctx)
-                                    })
-recommendation: Move the decision into a named method with early returns (identical to the rendering, another stamp, checksum present, legacy comparison), so each rule of the comment sits next to its line; drop the `without_checksum(&current)` call in the `None` arm, a no-op since `None` means the skill has no checksum line; and say "matches neither review mode's rendering" positively with `!any(==)` rather than `all(!=)`.
+  let edited_by_hand = !force
+      && fs.exists(&path)
+      && fs.read_to_string(&path).is_ok_and(|current| {
+recommendation: Move the closure body into a named method (`is_hand_edit`) with early returns in the order the comment states the rule, so the call site reads as one condition.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — the decision moved to `ClaudeCode::is_edited_by_hand`, with early returns, without the no-op `without_checksum` call, with `!any(==)`"
+    ref: "crates/codev-agents/src/claude.rs — `ClaudeCode::is_hand_edit`, early returns, called from `plan_skills`"
   - status: fixed
     by: newcomer
 ```
 
-#### R-newcomer-2 The test helper repeats the checksum insertion with a hard-coded version
+#### R-newcomer-2 `edited_before_checksums` uses a double negative (`all` + `is_none_or` + `!=`)
 
 ```yaml
-severity: low
+severity: medium
 confidence: high
-location: "crates/codev-agents/src/claude.rs:636-641"
+location: "crates/codev-agents/src/claude.rs:264-269"
 evidence: |
-          let checksum = sha256_hex(unchecked.as_bytes());
-          unchecked.replacen(
-              "  version: \"0.1.0\"\n",
-              &format!("  version: \"0.1.0\"\n  checksum: \"{checksum}\"\n"),
-              1,
-          )
-recommendation: Extract the insertion of the checksum line from `render` into one function, `with_checksum(unchecked, version)`, and call it from the test helper with `VERSION`, removing the copy and the literal "0.1.0" a reader may take for an earlier version.
+  [self.ctx.clone(), self.ctx.other_review_mode()]
+      .iter()
+      .map(|ctx| Self::render(workflow, version, ctx))
+      .all(|rendered| {
+          split_checksum(&rendered).is_none_or(|(unstamped, _)| unstamped != current)
+      })
+recommendation: State the rule positively — codev rendered it if it equals either unstamped rendering — and negate once; render the skill without its checksum through a helper that cannot fail, so the `Option` disappears.
 history:
   - status: open
     by: newcomer
   - status: fixed
     by: developer
-    ref: "crates/codev-agents/src/claude.rs — `with_checksum(unchecked, version)` shared by `render` and the test helper, called with `VERSION`"
+    ref: "crates/codev-agents/src/claude.rs — `edited_before_checksums` computes `rendered_by_codev` with `any` over `render_unstamped`, then returns its negation"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 In `split_checksum`, `start` is the offset of the current line, not a fixed start
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-agents/src/claude.rs:387-396"
+evidence: |
+  let mut start = contents.find('\n')? + 1;
+  for line in contents[start..].split_inclusive('\n') {
+recommendation: Rename it `line_offset`, keep the loop's start in its own binding, and say in a comment that the offset tracks `line`, so the cut reads as "everything except this line".
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-agents/src/claude.rs — `split_checksum` iterates from `after_opening` and tracks `line_offset`, cutting `before` and `after`"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 The test copies `render`'s checksum stamping by hand and reuses the name `earlier`
+
+```yaml
+severity: low
+confidence: high
+location: "crates/codev-agents/src/claude.rs:616-620"
+evidence: |
+  let earlier = ClaudeCode::render(propose(), VERSION, &RenderCtx::default());
+  let unstamped = without_checksum(&earlier).replace("Planning boundary", "Plan boundary");
+  let checksum = sha256_hex(unstamped.as_bytes());
+  let (head, tail) = unstamped.split_at(unstamped.find("---\n\n").unwrap());
+  let earlier = format!("{head}{CHECKSUM_PREFIX}\"{checksum}\"\n{tail}");
+recommendation: Extract a `stamp_checksum` used by both `render` and the test, and name the simulated skill `earlier_build`.
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "crates/codev-agents/src/claude.rs — `stamp_checksum` and `render_unstamped`, used by `render` and by the test, which binds `current` then `earlier_build`"
   - status: fixed
     by: newcomer
 ```

@@ -6,7 +6,7 @@ kind: seeded
 ref: 99e32fb60065e774123605ece7a9e7f4d783e48f
 merged: 9dc1f4529982fcc3cf948bbf07613847908134a6
 change: decision-accept-command
-summary: "Replays the change 2026-09-30-decision-accept-command (feat(decisions): `codev decision accept`; `decision new` creates a proposed decision). Task 2.3 is reworded: in the fixture, `codev` on the path is the codev under test, so the help is read from the codev the change builds (`cargo run`)."
+summary: "Replays the change 2026-09-30-decision-accept-command (feat(decisions): `codev decision accept`; `decision new` creates a proposed decision). Task 2.3 is reworded: in the fixture, `codev` on the path is the codev under test, so the help is read from the codev the change builds (`cargo run`); task 4.1 validates with it too, since today's codev asks this older proposal for sections it predates."
 expected:
   docs: true
   acceptance:
