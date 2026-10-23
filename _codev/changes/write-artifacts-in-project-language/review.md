@@ -69,12 +69,10 @@ history:
   - status: disputed
     by: skeptic
     note: The finding holds — the Why is French output, and no automated check shows an agent writing it; only a person can choose between the three ways out.
-  - status: open
-    by: human:Ludovic
-    note: Fix it within this change - a French and a pt-BR planning case, measured in 7.1.
   - status: fixed
     by: lead
     ref: "tasks.md 7.0 and 7.0.1; specs/planning-evaluation; proposal.md#What Changes"
+    note: The author (human:Ludovic) chose to fix it within this change - a French and a pt-BR planning case, measured in 7.1.
   - status: fixed
     by: skeptic
 ```
