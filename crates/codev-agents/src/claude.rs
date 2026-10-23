@@ -57,6 +57,9 @@ pub struct RenderCtx {
     /// The project's review mode, `_codev/config.yaml.review.mode`:
     /// `isolated` adds the sub-agent tool to the reviewing skills.
     pub review_mode: ReviewMode,
+    /// Whether the project gives the `developer` a model: the `apply`
+    /// skill then hands the tasks to a sub-agent, whatever the review mode.
+    pub developer_has_model: bool,
 }
 
 impl RenderCtx {
@@ -85,12 +88,26 @@ pub const AGENT_TOOL: &str = "Agent";
 /// Substitutes `{{AGENT_TOOL}}` for the review mode, as
 /// [`substitute_jira_mcp`] does for the Jira tool.
 pub fn substitute_agent_tool(source: &str, mode: ReviewMode) -> String {
-    match mode {
-        ReviewMode::Isolated => source.replace(AGENT_TOOL_PLACEHOLDER, AGENT_TOOL),
-        ReviewMode::Inline => source
+    with_agent_tool(source, mode == ReviewMode::Isolated)
+}
+
+/// `{{AGENT_TOOL}}` replaced by [`AGENT_TOOL`] when `wanted`, removed with
+/// its comma otherwise.
+fn with_agent_tool(source: &str, wanted: bool) -> String {
+    if wanted {
+        source.replace(AGENT_TOOL_PLACEHOLDER, AGENT_TOOL)
+    } else {
+        source
             .replace(&format!(", {AGENT_TOOL_PLACEHOLDER}"), "")
-            .replace(AGENT_TOOL_PLACEHOLDER, ""),
+            .replace(AGENT_TOOL_PLACEHOLDER, "")
     }
+}
+
+/// Whether the skill of `workflow_id` gets the sub-agent tool: both
+/// reviewing skills in the isolated mode, and `apply` too when the
+/// developer has a model.
+pub fn wants_agent_tool(ctx: &RenderCtx, workflow_id: &str) -> bool {
+    ctx.review_mode == ReviewMode::Isolated || (ctx.developer_has_model && workflow_id == "apply")
 }
 
 /// The tools of a `SKILL.md`'s `allowed-tools`, as written.
@@ -162,9 +179,9 @@ impl ClaudeCode {
     /// A `RenderCtx::default()` renders "without MCP" — the placeholder is
     /// removed cleanly and replaced by an informative fallback in the body.
     pub fn render(workflow: &Workflow, version: &str, ctx: &RenderCtx) -> String {
-        let tools = substitute_agent_tool(
+        let tools = with_agent_tool(
             &substitute_jira_mcp(workflow.allowed_tools, ctx.jira_mcp_tool.as_deref()),
-            ctx.review_mode,
+            wants_agent_tool(ctx, workflow.id),
         );
         let body = crate::workflows::with_review_scale(&crate::workflows::expand_fragments(
             &substitute_jira_mcp(workflow.body, ctx.jira_mcp_tool.as_deref()),
@@ -336,7 +353,6 @@ impl ClaudeCode {
         version: &str,
         ctx: &RenderCtx,
     ) -> Vec<(String, SkillState)> {
-        let wants_agent = ctx.review_mode == ReviewMode::Isolated;
         workflows
             .iter()
             .map(|w| {
@@ -346,8 +362,10 @@ impl ClaudeCode {
                         Some(v) if v == version => {
                             let has_agent =
                                 allowed_tools(&contents).iter().any(|t| t == AGENT_TOOL);
+                            // The review mode decides the sub-agent tool, and
+                            // for `apply` the developer's model too.
                             if w.allowed_tools.contains(AGENT_TOOL_PLACEHOLDER)
-                                && has_agent != wants_agent
+                                && has_agent != wants_agent_tool(ctx, w.id)
                             {
                                 SkillState::OtherReviewMode
                             } else {
@@ -793,6 +811,38 @@ mod tests {
         assert!(line.ends_with('"'));
     }
 
+    fn workflow(id: &str) -> &'static Workflow {
+        workflows::find(id).unwrap()
+    }
+
+    fn developer_on_a_model() -> RenderCtx {
+        RenderCtx {
+            developer_has_model: true,
+            ..RenderCtx::default()
+        }
+    }
+
+    #[test]
+    fn a_developer_has_model_adds_the_sub_agent_tool_to_apply() {
+        let rendered = ClaudeCode::render(workflow("apply"), VERSION, &developer_on_a_model());
+        assert_eq!(
+            tools_of(&rendered).last().map(String::as_str),
+            Some(AGENT_TOOL)
+        );
+    }
+
+    #[test]
+    fn a_developer_has_model_leaves_propose_without_the_sub_agent_tool() {
+        for id in ["propose", "update", "explore", "archive"] {
+            let rendered = ClaudeCode::render(workflow(id), VERSION, &developer_on_a_model());
+            assert!(
+                !tools_of(&rendered).iter().any(|t| t == AGENT_TOOL),
+                "{id}: {:?}",
+                tools_of(&rendered)
+            );
+        }
+    }
+
     fn isolated() -> RenderCtx {
         RenderCtx {
             review_mode: ReviewMode::Isolated,
@@ -824,6 +874,7 @@ mod tests {
         let ctx = RenderCtx {
             jira_mcp_tool: Some("mcp__x__getJiraIssue".into()),
             review_mode: ReviewMode::Isolated,
+            developer_has_model: false,
         };
         let tools = tools_of(&ClaudeCode::render(propose(), VERSION, &ctx));
         assert_eq!(

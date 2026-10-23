@@ -69,9 +69,10 @@ pub enum SkillState {
     Current,
     /// Present, stamped with another version (or none).
     Outdated(Option<String>),
-    /// Present and current, but rendered for the other review mode: it
-    /// lists the sub-agent tool in inline mode, or lacks it in isolated
-    /// mode.
+    /// Present and current, but rendered for another setting of the
+    /// sub-agent tool: it lists the tool when neither the isolated review
+    /// mode nor, for `apply`, a model on the developer asks for it, or
+    /// lacks it when one does.
     OtherReviewMode,
     Missing,
 }

@@ -263,7 +263,9 @@ command with `invalid`: ignoring it would drop criteria silently.
 A `model` other than `opus`, `sonnet`, `haiku` or `inherit` is an
 `invalid_role_model` error, reported and failing the same way. A `model`
 on a role that serves no reviewing step (`plan.trace`, `plan.challenge`,
-`code.review`) never applies: it is a `role_model_unused` warning.
+`code.review`) and is not the `developer` never applies: it is a
+`role_model_unused` warning. The `developer`'s model implements the tasks
+of `/codev-apply` in a sub-agent, in either review mode (decision 0012).
 
 **`model` and older codev versions.** A codev older than the release that
 introduced `model` refuses the key, like any unknown key inside a role:

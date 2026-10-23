@@ -28,7 +28,7 @@ must not write files is not given the tools to do so.
 | `codev-explore` | `Bash(codev:*), Read, Glob, Grep` |
 | `codev-onboard` | `Bash(codev:*), Read, Glob` |
 | `codev-configure` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
-| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` in isolated review mode |
+| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` in isolated review mode or when the `developer` has a model |
 | `codev-update` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
 | `codev-sync` | `Bash(codev:*), Read` |
 | `codev-archive` | `Bash(codev:*), Read` |
@@ -39,9 +39,12 @@ commands. `codev-sync` and `codev-archive` cannot write files at all: every
 change they make goes through the CLI.
 
 `Agent` is Claude Code's sub-agent tool. `codev-propose` and `codev-apply`
-request it only when `_codev/config.yaml` sets `review: { mode: isolated }`
+request it when `_codev/config.yaml` sets `review: { mode: isolated }`
 ([Inline or isolated review](roles.md#inline-or-isolated-review)): each
-reviewing role then runs as a sub-agent. No other skill ever requests it.
+reviewing role then runs as a sub-agent. `codev-apply` also requests it
+when the `developer` has a model: it then hands the tasks to a sub-agent
+on that model ([The developer's model](roles.md#the-developers-model)).
+No other skill ever requests it.
 After changing the mode, run `codev update`; `codev doctor` reports
 `skills_review_mode` until you do. Both skills describe the isolated
 review in either mode, because a change's `change.yaml` may override the

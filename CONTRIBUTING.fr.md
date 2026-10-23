@@ -183,9 +183,12 @@ au-delà de ses propres appels vont à la source `sub-agents` ; une
 exécution dont les totaux sont inférieurs à ses propres appels s'arrête
 en erreur. `--fixture-config <fichier>` ajoute un mapping YAML au
 `_codev/config.yaml` de chaque cas de revue, pour un réglage dont une
-mesure a besoin ; il ne peut pas définir `review:`, que seule
-`--review-mode` donne. Les cas de planification et de révision ignorent ces
-deux options. `run.json` les enregistre, et une exécution reprise avec
+mesure a besoin, et à celui de chaque cas d'implémentation — avec
+`roles: { developer: { model: sonnet } }`, par exemple, pour mesurer
+l'implémentation sur le modèle du développeur ; il ne peut pas définir
+`review:`, que seule `--review-mode` donne. Les cas de planification et
+de révision ignorent ces deux options ; les cas d'implémentation ignorent
+`--review-mode` et gardent le mode de leur propre arbre. `run.json` les enregistre, et une exécution reprise avec
 d'autres valeurs s'arrête. `compare` refuse deux exécutions dont les cas
 de revue ont tourné dans des modes différents, et nomme les
 configurations ajoutées des deux exécutions, en signalant quand elles

@@ -113,8 +113,10 @@ cannot be loaded or a tree cannot be built.
 
 For an implementation case, `codev-evals run` SHALL build the case's
 directory from the tree at `ref`, write `change/` into
-`_codev/changes/<change>/`, install the skills of the codev under test
-as for a planning case, and commit. It SHALL then, before the agent
+`_codev/changes/<change>/`, append the YAML of `--fixture-config`, when
+given, to its `_codev/config.yaml`, install the skills of the codev under
+test as for a planning case, and commit. `--review-mode` does not apply:
+the case keeps the review mode its configuration holds. It SHALL then, before the agent
 starts, fetch the project's dependencies into a Cargo home inside the
 case's directory, which git ignores, and build the workspace and its
 tests, so that the agent's builds need no network; a failure there SHALL
@@ -217,6 +219,14 @@ run outside the sandbox what such a file sets.
 - **GIVEN** an implementation run that writes `_codev/specs/decisions/spec.md`
 - **WHEN** its observation is recorded
 - **THEN** it lists that file as modified outside the step
+
+#### Scenario: An implementation run with the developer on Sonnet
+
+- **GIVEN** `--fixture-config` with `roles: { developer: { model: sonnet } }`
+- **WHEN** the runner builds an implementation case's fixture
+- **THEN** its `_codev/config.yaml` ends with that configuration before
+  the skills are installed, so the `codev-apply` skill grants the
+  sub-agent tool
 
 ### Requirement: An implementation run is scored by deterministic checks
 

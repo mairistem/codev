@@ -138,8 +138,8 @@ struct RunArgs {
     /// `isolated`, each role as its own sub-agent
     #[arg(long)]
     review_mode: Option<String>,
-    /// A YAML file appended to every review case's `_codev/config.yaml`,
-    /// for a setting a measure needs
+    /// A YAML file appended to every review and implementation case's
+    /// `_codev/config.yaml`, for a setting a measure needs
     #[arg(long)]
     fixture_config: Option<PathBuf>,
     #[command(flatten)]

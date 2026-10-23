@@ -1,7 +1,7 @@
 ---
 id: "0011"
 title: "The model is a property of the role, chosen by the project, with no default"
-status: accepted
+status: superseded
 date: 2026-10-20
 ---
 

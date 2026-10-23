@@ -77,6 +77,33 @@ Ask for the roles of this step once, before the first task: the
 developer's criteria apply to every task. The project's `rules` and
 `context` come from `codev instructions tasks --change "<name>" --json`.
 
+**When the `developer` has a model** — `model` is not `null` in
+`codev roles --at code.implement --change "<name>" --json` — do not
+implement the tasks yourself: hand them to one sub-agent started with
+the `Agent` tool on that model. Its brief holds the change's name; the
+path of this skill, whose steps 2 to 4 it follows and no other; the
+developer's criteria; the project's `rules` and `context` for the tasks;
+and any instruction you run under yourself, such as a run without a
+user. It answers with the tasks it checked and, if it stopped, the task
+with the interpretations or the blocker. Then:
+
+- re-read `tasks.md` from disk rather than trusting the answer;
+- if it stopped, relay the stop as step 4 says; once the user answers —
+  or, in a run without a user, once you have made the most reasonable
+  assumption — start a new sub-agent on the same model for the remaining
+  tasks, with that answer. Never implement a task yourself while the
+  developer has a model, but in the fallback below;
+- a sub-agent **fails** when the platform cannot start it or stops it,
+  or when its answer reports neither checked tasks nor a stop — a
+  reported stop is not a failure. Retry a failed sub-agent once, telling
+  it to first inspect the working tree for work left on the first
+  unchecked task; after a second failure, implement the remaining tasks
+  yourself as below, and say in the summary that the developer's model
+  could not be used;
+- once every task is checked, go on to step 5: the review and the
+  summary stay yours.
+
+**Without a model on the `developer`**, implement the tasks yourself.
 For each `- [ ]` encountered, in the order it appears:
 
 **a. Announce.** "Task X.Y: <description summarized in a fragment>."

@@ -30,7 +30,7 @@ reçoit pas les outils pour le faire.
 | `codev-explore` | `Bash(codev:*), Read, Glob, Grep` |
 | `codev-onboard` | `Bash(codev:*), Read, Glob` |
 | `codev-configure` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
-| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de revue isolé |
+| `codev-apply` | `Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash`, plus `Agent` en mode de revue isolé ou quand le `developer` a un modèle |
 | `codev-update` | `Bash(codev:*), Read, Write, Edit, Glob, Grep` |
 | `codev-sync` | `Bash(codev:*), Read` |
 | `codev-archive` | `Bash(codev:*), Read` |
@@ -42,11 +42,13 @@ doit lancer vos tests et vos commandes de build. `codev-sync` et
 passent par la CLI.
 
 `Agent` est l'outil de sous-agent de Claude Code. `codev-propose` et
-`codev-apply` ne le demandent que lorsque `_codev/config.yaml` définit
+`codev-apply` le demandent lorsque `_codev/config.yaml` définit
 `review: { mode: isolated }`
 ([Revue en ligne ou isolée](roles.md#revue-en-ligne-ou-isolée)) : chaque
-rôle relecteur travaille alors comme sous-agent. Aucune autre skill ne le
-demande jamais. Après avoir changé de mode, lancez `codev update` ;
+rôle relecteur travaille alors comme sous-agent. `codev-apply` le demande
+aussi quand le `developer` a un modèle : il lui confie alors les tâches
+dans un sous-agent ([Le modèle du développeur](roles.md#le-modèle-du-développeur)).
+Aucune autre skill ne le demande jamais. Après avoir changé de mode, lancez `codev update` ;
 `codev doctor` signale `skills_review_mode` tant que vous ne l'avez pas
 fait. Les deux skills décrivent la revue isolée dans les deux modes, car
 le `change.yaml` d'un change peut remplacer le mode du projet : sans

@@ -326,6 +326,27 @@ pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> O
     Some(text)
 }
 
+/// `existing` with `extra` appended, on a line of its own.
+pub fn with_appended_config(existing: &str, extra: &str) -> String {
+    let mut text = existing.to_string();
+    if !text.is_empty() && !text.ends_with('\n') {
+        text.push('\n');
+    }
+    text.push_str(extra);
+    text
+}
+
+/// The configuration `--fixture-config` appends to a fixture replayed from
+/// the repository's history: an implementation case's only. Review cases
+/// get it through [`config_with_review_settings`]; planning and update
+/// cases never do.
+pub fn fixture_config_for(step: Step, review: &ReviewSettings) -> Option<&str> {
+    match step {
+        Step::CodeImplement => review.fixture_config.as_deref(),
+        _ => None,
+    }
+}
+
 /// The `allowed-tools` of a skill's frontmatter, as the skill grants them
 /// when a user invokes it; `None` without the key.
 pub fn skill_allowed_tools(skill: &str) -> Option<String> {
@@ -1339,7 +1360,16 @@ pub fn setup(
 /// `_codev/changes/<change>/`, the change as it stood while active — one
 /// commit, then the skills the codev under test renders (`codev update
 /// --force`, over skills edited since), committed.
-pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
+/// `extra_config`, the text of `--fixture-config` for an implementation
+/// case, is appended to the fixture's configuration before the skills are
+/// rendered, so that they follow it as a project's would.
+pub fn setup_plan(
+    case: &Case,
+    repo: &Path,
+    dir: &Path,
+    tools: &Tools,
+    extra_config: Option<&str>,
+) -> Result<(), String> {
     let io = |e: std::io::Error| format!("setting up the fixture: {e}");
     let git_ref = case
         .plan
@@ -1385,6 +1415,11 @@ pub fn setup_plan(case: &Case, repo: &Path, dir: &Path, tools: &Tools) -> Result
             .map(|(path, text)| (path.clone(), text.clone().into_bytes()))
             .collect();
         write_tree(&dir.join(case.change_dir()), &change).map_err(io)?;
+    }
+    if let Some(extra) = extra_config {
+        let path = dir.join("_codev").join("config.yaml");
+        let existing = fs::read_to_string(&path).unwrap_or_default();
+        fs::write(&path, with_appended_config(&existing, extra)).map_err(io)?;
     }
     git(tools, dir, &["init", "-q", "-b", "main"])?;
     git(tools, dir, &["add", "-A"])?;
@@ -1558,7 +1593,13 @@ pub fn run_case(
         return observed;
     }
     let built = if case.step.replays_history() {
-        setup_plan(case, repo, work_dir, tools)
+        setup_plan(
+            case,
+            repo,
+            work_dir,
+            tools,
+            fixture_config_for(case.step, review),
+        )
     } else {
         setup(case, case_dir, work_dir, tools, date, review)
     };
@@ -3493,5 +3534,38 @@ mod tests {
             codev_name_problem(Path::new("..")).is_some(),
             "a path naming no file"
         );
+    }
+
+    fn developer_on_sonnet() -> ReviewSettings {
+        ReviewSettings {
+            mode: ReviewMode::Isolated,
+            fixture_config: Some("roles: { developer: { model: sonnet } }\n".into()),
+        }
+    }
+
+    #[test]
+    fn the_fixture_config_reaches_an_implementation_case() {
+        let review = developer_on_sonnet();
+        assert_eq!(
+            fixture_config_for(Step::CodeImplement, &review),
+            Some("roles: { developer: { model: sonnet } }\n")
+        );
+        for step in [Step::PlanWrite, Step::PlanUpdate] {
+            assert_eq!(fixture_config_for(step, &review), None, "{step:?}");
+        }
+    }
+
+    #[test]
+    fn appended_config_starts_on_its_own_line() {
+        assert_eq!(
+            with_appended_config("schema: spec-driven", "roles: {}\n"),
+            "schema: spec-driven\nroles: {}\n"
+        );
+    }
+
+    #[test]
+    fn an_implementation_case_keeps_its_own_review_mode() {
+        // `--review-mode isolated` sets only the review cases.
+        assert!(!developer_on_sonnet().isolated_at(Step::CodeImplement));
     }
 }
