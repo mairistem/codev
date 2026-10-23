@@ -510,14 +510,19 @@ the role's default. Any other value SHALL be reported with the code
 `codev instructions` and `codev roles` fail with exit code 1 and that
 code, as for the other invalid role settings. A change's `change.yaml`
 sets no model. A model set on a role that serves no reviewing step
-(`plan.trace`, `plan.challenge`, `code.review`) never applies: it SHALL
-be reported with the warning `role_model_unused`, naming the role.
+(`plan.trace`, `plan.challenge`, `code.review`) and is not the
+`developer` never applies: it SHALL be reported with the warning
+`role_model_unused`, naming the role. Only the `developer`'s model is
+used at `code.implement`: a project role declared at that step that
+carries a model is warned too.
 
 With `--json`, `codev roles` SHALL give each role `model` (`opus`,
 `sonnet`, `haiku` or `null`) and `modelOrigin` (`default` or
-`project`). The model applies only where a role runs as its own
-sub-agent, in the `isolated` review mode; in the `inline` mode every role
-runs in the session's model.
+`project`). A reviewing role's model applies only where it runs as its
+own sub-agent, in the `isolated` review mode; in the `inline` mode every
+reviewing role runs in the session's model. The `developer`'s model, at
+`code.implement`, applies in either mode: the `apply` skill then hands
+the tasks to a sub-agent on that model.
 
 #### Scenario: The default models
 
@@ -545,7 +550,23 @@ runs in the session's model.
 
 #### Scenario: A model on a role that is never a sub-agent
 
-- **GIVEN** a configuration with `roles: { developer: { model: sonnet } }`
+- **GIVEN** a configuration with `roles: { product: { model: sonnet } }`
 - **WHEN** the user runs `codev validate --json`
 - **THEN** the `config` item holds a warning `role_model_unused` naming
-  `developer`
+  `product`
+
+#### Scenario: A model on another role at code.implement
+
+- **GIVEN** a project role `pair-programmer` declared at `code.implement`
+  with `model: sonnet`
+- **WHEN** the user runs `codev validate --json`
+- **THEN** the `config` item holds a warning `role_model_unused` naming
+  `pair-programmer`
+
+#### Scenario: A model on the developer is used
+
+- **GIVEN** a configuration with `roles: { developer: { model: sonnet } }`
+- **WHEN** the user runs `codev validate --json` and `codev roles --at
+  code.implement --json`
+- **THEN** no `role_model_unused` warning is reported, and the
+  `developer` has `model: "sonnet"`

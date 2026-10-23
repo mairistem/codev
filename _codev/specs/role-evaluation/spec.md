@@ -1219,8 +1219,10 @@ skills of the codev under test are rendered, so that the skill runs the
 evaluated role as its own sub-agent, as a project in that mode does; the
 sub-agent tool is then granted like `codev`. `--fixture-config <file>`
 SHALL append the YAML of `<file>` to each review case's
-`_codev/config.yaml` at the same moment, for a setting a measure needs.
-Planning and update cases ignore both options. `--review-mode` accepts
+`_codev/config.yaml` at the same moment, for a setting a measure needs,
+and to each implementation case's, as the `implementation-evaluation`
+capability says. Planning and update cases ignore both options;
+implementation cases ignore `--review-mode`. `--review-mode` accepts
 `inline` (the default) and `isolated`; an unknown mode, a
 `--fixture-config` file that is missing or not a YAML mapping, or one
 holding `review:` — the mode comes from `--review-mode` alone, so that

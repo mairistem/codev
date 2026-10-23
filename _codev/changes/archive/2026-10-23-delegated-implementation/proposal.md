@@ -61,7 +61,7 @@ is reported as unused (`role_model_unused`).
 
 ## Domains
 
-None
+- [ ] operations — the retry is the skill dispatching its sub-agent again, not a timeout, a retry or a rollback of a running service
 
 ## Release note
 

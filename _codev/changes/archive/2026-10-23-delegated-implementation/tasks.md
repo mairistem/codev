@@ -27,4 +27,4 @@
 ## 6. Documentation and checks
 
 - [x] 6.1 `docs/en/src/roles.md` and `docs/fr/src/roles.md`: the developer's model implements the tasks in a sub-agent, the session keeps the review, the measure and the recommendation; `role_model_unused` no longer names the developer; the configuration reference in both languages likewise; `docs/en/src/skills.md` and `docs/fr/src/skills.md`: `codev-apply` requests `Agent` in the isolated review mode or when the developer has a model, and hands the tasks to the developer's model; `CONTRIBUTING.md` and `CONTRIBUTING.fr.md`: `--fixture-config` reaches implementation cases; verified by `cargo test -p codev-cli` (the docs checks) and the suite's contributing tests
-- [ ] 6.2 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing
+- [x] 6.2 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked` and `codev validate --strict`; verified by all four passing
