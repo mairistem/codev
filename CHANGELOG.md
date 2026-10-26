@@ -30,11 +30,17 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The built-in roles are measured by an evaluation suite in the repository: seeded defects and clean controls score what each role finds, misses and invents, and whether its evidence is real. The baseline is published in `evals/baseline/report.md`, and the Roles chapter explains it.
 - Specs and deltas can be written with French structural keywords — `### Exigence :`, `#### Scénario :`, `## Exigences AJOUTÉES`, `DOIT` and the others — next to the English ones, which keep working.
 - The keywords come from a per-language catalog, so a new language can be added with one file.
+- `codev search <query>` finds the requirements and decisions that match a query, ranked by relevance, and `codev show <capability>::<requirement>` prints a single requirement.
+- When you correct the agent on how your project does things during `/codev-propose`, `/codev-apply` or `/codev-update`, it notes the correction in the change's `corrections.md`, which `codev validate` checks and `codev review` lists, so that the instruction is not lost when the change is archived.
+- `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_codev/config.yaml` sets the model a role's review runs on in the isolated review mode; no role sets one by default. A project that sets it should first raise `codev_version` to this release, since an older codev refuses the key — and a source shared through `inherits:` should not set it until every project inheriting from it runs this release.
+- a model set on the `developer` role (`roles: { developer: { model: sonnet } }`) now runs the implementation of `/codev-apply` in a sub-agent on that model, while the session keeps the review; without a model nothing changes.
+- `codev instructions --json` gives `keywordLanguage` and `keywords`, the language and the texts of the structural keywords to write; a project schema may hold one template set per language under `templates/<language>/`.
 
 ### Changed
 
 - **BREAKING** The `analyst` role can no longer be disabled: remove `analyst: never` from `roles:` in `_codev/config.yaml` or a change's `change.yaml`.
 - **BREAKING** `codev archive` refuses (`review_blocked`) a change whose review record is missing for a step where roles were active, or that still has a high-severity finding open or disputed. For a change started with an earlier codev, run the review again or turn its review roles off in its `change.yaml`; a team that does not use the skills turns `skeptic` and `newcomer` off in `_codev/config.yaml`.
+- **BREAKING** A project whose `language:` is French now gets its planning artifacts written entirely in French, structural keywords included (`## Changements`, `### Exigence :`, `DOIT`). Every teammate and the CI need a codev that reads French keywords: raise `codev_version` to this release. Existing artifacts and specs keep their keywords. To keep English keywords, set `language: en`, which also writes the prose in English.
 - `/codev-propose` caps its Points to challenge at five across the skeptic and the experts, and `/codev-apply` ends with up to five Review notes (formerly Readability notes), each tagged with its role; a high-severity security or privacy finding is never dropped.
 - `codev doctor` names the roles activated by domain.
 - The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `codev instructions`, and `/codev-propose` and `/codev-apply` take their review criteria from `codev roles`.
@@ -47,6 +53,7 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - The reviewing roles report fewer false positives. A finding presented to you with high confidence now quotes the line and states the scenario that fails; hypotheses and preferences stay in the review record with low confidence. Each defect is reported once, and each expert says what lies outside its domain.
 - The skeptic no longer reviews security, privacy, migration, operations, performance or accessibility itself: it challenges the plan's logic and evidence and checks that the proposal's Domains bring the experts who do. Run `codev update` to refresh your skills.
 - The review steps of `/codev-propose` and `/codev-apply` take fewer turns and ask for fewer permissions: `codev roles --at` now lists the roles disabled at the step, and the skills read codev's output as printed instead of filtering it through other programs. Measured on the evaluation suite with no change in what the roles find: permission denials down 46 %, context re-read down 16 %, turns down 6 %, time down 12 %, cost down 7 %.
+- once the proposal is written, `codev instructions` names the existing requirements the change likely touches, and `/codev-propose` reads and modifies them rather than adding new ones beside them.
 
 ### Fixed
 
