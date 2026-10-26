@@ -4,9 +4,9 @@
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
 - codev: codev 0.6.1
-- Cases: 75
+- Cases: 77
 - Repetitions: 5
-- Cost: 69.96 USD for one run of the suite (sum of the cases' medians), 351.92 USD in all
+- Cost: 73.89 USD for one run of the suite (sum of the cases' medians), 371.80 USD in all
 - Thresholds: recall ≥ 0.50, false positives ≤ 2, evidence validity ≥ 0.80
 - Verdict: **fail**
 
@@ -38,7 +38,9 @@ Per repetition, every planning run pooled; then the median over the repetitions,
 
 | Cases | Primary recall | Collateral recall | Probable duplicates | Decisions ignored | Plans that do not validate | Cost (USD) |
 |---|---|---|---|---|---|---|
-| 25 | 0.69 (0.58–0.78) | 0.39 (0.28–0.44) | 14 (6–15) | 0 (0–1) | 1 (0–2) | 42.18 |
+| 27 | 0.70 (0.58–0.80) | 0.33 (0.29–0.43) | 14 (6–15) | 0 (0–1) | 1 (0–2) | 46.11 |
+
+Plans whose structural keywords are in the language their case expects: 1.00.
 
 ## `plan.update`
 
@@ -71,7 +73,7 @@ Per case, the median over its runs not in error; per role and for the suite, the
 | security | 1.92 | 154 | 153 | 46 | 2 | 7042 | 167082 | 1479147 | 13753 | 38 | 44545 | 365 |
 | skeptic | 1.20 | 109 | 109 | 31 | 6 | 3488 | 95501 | 1069377 | 10733 | 25 | 46659 | 418 |
 | tracer | 0.58 | 39 | 39 | 19 | 4 | 2180 | 53041 | 444499 | 3896 | 12 | 41555 | 344 |
-| **Suite** | 69.96 | 8510 | 9371 | 1245 | 75 | 86728 | 4378938 | 87880657 | 905342 | 1243 | 73683 | 710 |
+| **Suite** | 73.89 | 9131 | 9990 | 1308 | 80 | 89121 | 4617492 | 92624758 | 967504 | 1297 | 74435 | 729 |
 
 ## Where the tokens go
 
@@ -79,19 +81,19 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| file | 1016140 | 23 % |
-| skill | 952420 | 22 % |
-| prompt | 563756 | 13 % |
-| edit | 405903 | 9 % |
-| search | 375606 | 8 % |
-| shell | 336567 | 8 % |
-| output | 180513 | 4 % |
-| codev instructions | 158702 | 4 % |
-| codev roles | 106755 | 2 % |
+| file | 1055212 | 23 % |
+| skill | 982282 | 22 % |
+| prompt | 579438 | 13 % |
+| edit | 426418 | 9 % |
+| search | 402076 | 9 % |
+| shell | 345077 | 8 % |
+| output | 181811 | 4 % |
+| codev instructions | 172598 | 4 % |
+| codev roles | 111141 | 2 % |
 | codev review | 100105 | 2 % |
-| codev validate | 68494 | 2 % |
-| codev new | 54593 | 1 % |
-| agent | 31991 | 1 % |
+| codev validate | 81415 | 2 % |
+| codev new | 62257 | 1 % |
+| agent | 36667 | 1 % |
 | codev list | 26508 | 1 % |
 | codev status | 13111 | 0 % |
 | codev --help | 2347 | 0 % |
@@ -170,18 +172,18 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| file | 737977 | 28 % |
-| skill | 336684 | 13 % |
-| search | 336283 | 13 % |
-| edit | 320658 | 12 % |
-| prompt | 195302 | 7 % |
-| shell | 182474 | 7 % |
-| output | 161369 | 6 % |
-| codev instructions | 158702 | 6 % |
-| codev validate | 64896 | 2 % |
-| codev roles | 56097 | 2 % |
-| codev new | 54593 | 2 % |
-| agent | 22404 | 1 % |
+| file | 777049 | 28 % |
+| skill | 366546 | 13 % |
+| search | 362753 | 13 % |
+| edit | 341173 | 12 % |
+| prompt | 210984 | 8 % |
+| shell | 190984 | 7 % |
+| codev instructions | 172598 | 6 % |
+| output | 162667 | 6 % |
+| codev validate | 77817 | 3 % |
+| codev new | 62257 | 2 % |
+| codev roles | 60483 | 2 % |
+| agent | 27080 | 1 % |
 | codev --help | 2347 | 0 % |
 | codev list | 507 | 0 % |
 | codev status | 295 | 0 % |
@@ -2654,6 +2656,118 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Requirement `skills::The `propose` and `apply` skills take their roles from `codev roles``: **missed**
 - Collateral `doctor::`codev doctor` runs a fixed list of read-only checks`: missed
 - Added `skills::In isolated mode, each reviewing role reviews alone, then the skill holds the meeting`: **probable duplicate**
+
+### plan-keywords-in-french
+
+- Role: planner at `plan.write`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  1.50 · 245 · 244 · 30 · 1 · 1188 · 83504 · 1763290 · 23809 · 25 · 73919 · 947
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 1.90 USD, 323 s
+- Tool calls: 47, 15 before the first artifact
+- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 1.57 USD, 245 s
+- Tool calls: 28, 13 before the first artifact
+- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 1.50 USD, 230 s
+- Tool calls: 32, 13 before the first artifact
+- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 1.45 USD, 244 s
+- Tool calls: 27, 13 before the first artifact
+- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 1.33 USD, 202 s
+- Tool calls: 29, 13 before the first artifact
+- Requirement `doctor::`codev doctor` runs a fixed list of read-only checks`: modified
+
+### plan-keywords-in-pt-br
+
+- Role: planner at `plan.write`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  2.43 · 376 · 375 · 33 · 4 · 1205 · 155050 · 2980811 · 38353 · 29 · 107140 · 1370
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 2.55 USD, 428 s
+- Tool calls: 32, 13 before the first artifact
+- Requirement `changes::A change name is kebab-case and unique`: modified
+- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
+- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Collateral `changes::The commands taking `--change` pick the change predictably`: modified
+- Collateral `schemas::The schema of a change is chosen once, at creation`: modified
+- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 2.43 USD, 376 s
+- Tool calls: 32, 19 before the first artifact
+- Requirement `changes::A change name is kebab-case and unique`: modified
+- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
+- Collateral `changes::The commands taking `--change` pick the change predictably`: missed
+- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `schemas::The schema of a change is chosen once, at creation`: missed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 2.85 USD, 515 s
+- Tool calls: 32, 15 before the first artifact
+- Requirement `changes::A change name is kebab-case and unique`: modified
+- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: modified
+- Requirement `schemas::`codev schemas` lists the usable schemas`: modified
+- Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
+- Collateral `changes::The commands taking `--change` pick the change predictably`: missed
+- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `schemas::The schema of a change is chosen once, at creation`: missed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 2.35 USD, 331 s
+- Tool calls: 51, 34 before the first artifact
+- Requirement `changes::A change name is kebab-case and unique`: modified
+- Requirement `schemas::`codev schemas` lists the usable schemas`: modified
+- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: **missed**
+- Requirement `schemas::A schema is resolved from the project before the built-in one`: **missed**
+- Collateral `schemas::The schema of a change is chosen once, at creation`: modified
+- Collateral `changes::The commands taking `--change` pick the change predictably`: missed
+- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 1.97 USD, 287 s
+- Tool calls: 45, 26 before the first artifact
+- Requirement `changes::A change name is kebab-case and unique`: modified
+- Requirement `schemas::A schema is resolved from the project before the built-in one`: modified
+- Requirement `changes::`codev list` lists the active changes and, with `--specs`, the capabilities`: **missed**
+- Requirement `schemas::`codev schemas` lists the usable schemas`: **missed**
+- Collateral `changes::The commands taking `--change` pick the change predictably`: missed
+- Collateral `instructions::`codev instructions` fails with stable codes`: missed
+- Collateral `schemas::The schema of a change is chosen once, at creation`: missed
 
 ### plan-read-french-keywords
 

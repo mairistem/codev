@@ -73,9 +73,9 @@ Restart Claude Code (or start a new session) so it discovers the new skills.
 
    schema: spec-driven
 
-   # Language of the prose skills write in artifacts (proposal, design,
-   # tasks, specs). Structural keywords such as `## Why` or
-   # `### Requirement:` always stay in English.
+   # Language skills write the artifacts in (proposal, design, tasks,
+   # specs). Structural keywords such as `## Why` or `### Requirement:`
+   # follow it when codev ships the language, and stay in English otherwise.
    # set with `codev init --language`
    language: en
 
@@ -205,7 +205,7 @@ codev instructions proposal --change add-dark-mode
 ```text
 Artifact: proposal (change `add-dark-mode`, schema spec-driven)
 Write to: /home/you/acme-app/_codev/changes/add-dark-mode/proposal.md
-Language: en — prose only; template keywords stay in English
+Language: en — prose and structural keywords in en
 
 Instruction:
 

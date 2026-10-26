@@ -125,7 +125,8 @@ enum Command {
         /// Preselect the answer to the workflows question
         #[arg(long, value_enum)]
         preset: Option<PresetArg>,
-        /// Language of the prose skills write in artifacts, as an ISO 639
+        /// Language skills write artifacts in — their prose, and their
+        /// structural keywords when codev ships the language — as an ISO 639
         /// code (`en`, `fr`, `pt-BR`…). Default: detected from the locale,
         /// otherwise `en`
         #[arg(long, value_name = "CODE", value_parser = parse_language)]
@@ -1490,6 +1491,7 @@ fn archive_shape() -> serde_json::Value {
 }
 
 fn instructions_shape(language: &str) -> serde_json::Value {
+    let keyword_language = codev_core::keywords::Lang::for_setting(language);
     json!({
         "changeName": null,
         "schemaName": null,
@@ -1499,6 +1501,8 @@ fn instructions_shape(language: &str) -> serde_json::Value {
         "instruction": null,
         "template": null,
         "language": language,
+        "keywordLanguage": keyword_language.code(),
+        "keywords": crate::contract::keywords_v1(keyword_language),
         "context": [],
         "rules": [],
         "dependencies": [],
@@ -1732,6 +1736,18 @@ mod doctor_tests {
         // it, with the language it was given.
         assert_eq!(json["language"], "fr");
         assert_eq!(json["status"][0]["code"], "unknown_artifact");
+    }
+
+    #[test]
+    fn instructions_failure_keeps_the_keyword_language() {
+        let json = crate::contract::failure(
+            super::instructions_shape("fr-CA"),
+            "unknown_artifact",
+            "unknown artifact `sketch` in schema `spec-driven`",
+        );
+        assert_eq!(json["language"], "fr-CA");
+        assert_eq!(json["keywordLanguage"], "fr");
+        assert_eq!(json["keywords"]["scenario"], "#### Scénario :");
     }
 
     #[test]

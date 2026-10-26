@@ -1,14 +1,15 @@
 # Langue des artefacts
 
-codev lui-même s'exprime en anglais : ses commandes, ses messages, ses skills et
-ses templates sont en anglais. Les artefacts de planification que votre équipe
-lit et approuve — proposals, specs, designs, tâches — peuvent en revanche être
-rédigés dans n'importe quelle langue.
+codev lui-même s'exprime en anglais : ses commandes, ses messages et ses skills
+sont en anglais. Les artefacts de planification que votre équipe lit et
+approuve — proposals, specs, designs, tâches — peuvent en revanche être
+rédigés dans n'importe quelle langue, et entièrement en français : la prose
+comme la structure.
 
 ## Définir la langue
 
-La clé `language:` de `_codev/config.yaml` définit la langue de la prose des
-artefacts, sous la forme d'un code ISO 639 :
+La clé `language:` de `_codev/config.yaml` définit la langue des artefacts,
+sous la forme d'un code ISO 639 :
 
 ```yaml
 language: fr
@@ -55,15 +56,24 @@ Les skills rédigent chaque phrase dans la langue configurée, quelle que soit l
 langue dans laquelle vous échangez avec Claude : les fichiers constituent la
 mémoire de l'équipe, et la langue est le choix de l'équipe.
 
-Les skills écrivent la **structure** des fichiers en anglais : titres des
-templates (`# Proposal:`, `## Why`, `## What Changes`, `## Context`,
-`# Tasks`…), structure des specs et des deltas (`## Purpose`,
-`### Requirement:`, `#### Scenario:`…), mots-clés des scénarios et mots-clés
-normatifs (`**WHEN**`, `**THEN**`, `SHALL`, `MUST`).
+Les skills écrivent la **structure** des fichiers — titres des templates,
+structure des specs et des deltas, lignes des scénarios et mots-clés
+normatifs — dans la **langue des mots-clés** du projet : la langue de
+`language:` quand codev en fournit les mots-clés, reconnue sur sa première
+partie (`fr`, `fr-CA` → français), et l'anglais sinon (`pt-BR` → mots-clés
+anglais, prose portugaise). codev fournit l'anglais et le français.
+`codev instructions` sert le template dans cette langue et donne le texte de
+chaque mot-clé (`keywordLanguage`, `keywords`) : les skills ne traduisent
+jamais un mot-clé elles-mêmes.
 
-codev **lit** cette structure en anglais comme en français, quelle que soit la
-valeur de `language:` : une équipe peut donc aussi rédiger ses specs
-entièrement en français. Chaque mot-clé a son texte dans chaque langue du
+Avec `language: fr`, une nouvelle proposition commence par `# Proposition :`,
+`## Pourquoi`, `## Changements`, et un delta de spec utilise `## Exigences
+AJOUTÉES`, `### Exigence :`, `#### Scénario :`, `**QUAND**` / `**ALORS**` et
+`DOIT`. Pour garder des mots-clés anglais avec une prose française, gardez
+`language: en` : il n'y a pas de réglage séparé pour la langue des mots-clés.
+
+codev **lit** la structure en anglais comme en français, quelle que soit la
+valeur de `language:`. Chaque mot-clé a son texte dans chaque langue du
 catalogue de mots-clés de codev :
 
 | Anglais | Français |
@@ -94,9 +104,9 @@ L'application DOIT s'afficher avec le thème du système tant que l'utilisateur 
 
 #### Scénario : Aucun thème choisi
 
-- **GIVEN** un utilisateur qui n'a jamais modifié le thème
-- **WHEN** son système est en mode sombre
-- **THEN** l'application s'affiche avec le thème sombre
+- **ÉTANT DONNÉ** un utilisateur qui n'a jamais modifié le thème
+- **QUAND** son système est en mode sombre
+- **ALORS** l'application s'affiche avec le thème sombre
 ```
 
 Comment codev les lit et les écrit :
@@ -114,9 +124,26 @@ Comment codev les lit et les écrit :
   du delta qui la crée.
 - Le changelog affiche les catégories de la note de version en anglais,
   quelle que soit la langue dans laquelle elles ont été écrites.
-- Les noms de domaines (`security`, `migration`…) et les marqueurs du
-  registre de revue restent en anglais. codev ne lit pas les lignes
-  `**GIVEN**` / `**WHEN**` / `**THEN**`, que les skills écrivent en anglais.
+- Les noms de domaines (`security`, `migration`…), le registre de revue et
+  `corrections.md` restent en anglais. codev ne lit pas les lignes des
+  scénarios (`**WHEN**` / `**THEN**`, `**QUAND**` / `**ALORS**`).
+
+## Mettre à jour un projet déjà en français
+
+Un projet en `language: fr` recevait jusqu'ici des titres anglais sous une
+prose française ; ses prochains artefacts sont écrits en français. Deux
+mélanges en découlent, tous deux valides, puisque codev lit les deux langues
+dans un même document :
+
+- Un change planifié avant la mise à jour reste tel quel : `/codev-update`
+  garde la langue des mots-clés de l'artefact qu'il révise, et seul un
+  nouvel artefact prend celle du projet.
+- Une spec principale garde sa propre langue. Une fusion écrit ses titres
+  dans la langue de cette spec, mais copie le corps d'une exigence tel qu'il
+  est écrit : un `DOIT` ou un `**QUAND**` français peut ainsi se retrouver
+  sous un `### Requirement:` anglais. Pour l'éviter, gardez `language: en`,
+  ou réécrivez une fois en français les mots-clés d'une spec principale —
+  codev ne réécrit jamais une spec de lui-même.
 
 > **Attention**
 > Une version de codev antérieure à ce catalogue refuse les mots-clés
@@ -129,9 +156,15 @@ Comment codev les lit et les écrit :
 
 ## Quelles skills l'utilisent
 
-`codev instructions --json` expose la langue dans son champ `language`.
-`/codev-propose` et `/codev-update` rédigent la prose des artefacts dans cette
-langue, et `/codev-configure` y rédige également le `context:` et les
-`rules:` qu'il propose. Le template d'ADR utilisé par les commandes
+`codev instructions --json` expose la langue dans son champ `language`, la
+langue des mots-clés dans `keywordLanguage`, et le texte de chaque mot-clé
+dans `keywords` ; sa sortie lisible donne les deux sur sa ligne `Language:`.
+`/codev-propose` et `/codev-update` rédigent les artefacts dans cette langue,
+prose et mots-clés, et `/codev-configure` y rédige également le `context:` et les
+`rules:` qu'il propose. Un schéma de projet peut contenir ses templates par langue, sous
+`templates/<langue>/` ; sans eux, `templates/<fichier>` sert toutes les
+langues, et les mots-clés suivent la langue dans laquelle ce template est
+écrit — un schéma écrit en anglais garde des mots-clés anglais
+([Schémas personnalisés](custom-schemas.md)). Le template d'ADR utilisé par les commandes
 `codev decision` a des titres de sections en anglais ; rédigez-en le contenu
 dans la langue de votre équipe.

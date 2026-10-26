@@ -631,6 +631,54 @@ mod tests {
     }
 
     #[test]
+    fn both_languages_document_the_keyword_language() {
+        for lang in [Lang::En, Lang::Fr] {
+            let chapter = |path: &str| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .map(|(_, source)| *source)
+                    .unwrap_or_else(|| panic!("{lang:?}: no chapter {path}"))
+            };
+            let json = chapter("reference/json-output.md");
+            for field in ["| `keywordLanguage` |", "| `keywords` |"] {
+                assert!(json.contains(field), "{lang:?}: {field}");
+            }
+            let guide = chapter("guides/artifact-language.md");
+            assert!(guide.contains("`keywordLanguage`"), "{lang:?}");
+            assert!(guide.contains("`### Exigence :`"), "{lang:?}");
+            assert!(
+                guide.contains("pt-BR"),
+                "{lang:?}: a language without catalog"
+            );
+            for path in [
+                "guides/artifact-language.md",
+                "reference/configuration.md",
+                "quickstart.md",
+                "skills.md",
+            ] {
+                let text = chapter(path);
+                for stale in [
+                    "always stay in English",
+                    "template keywords stay in English",
+                    "prose only",
+                    "structure** of the files in English",
+                    "mots-clés structurels en anglais",
+                ] {
+                    assert!(
+                        !text.contains(stale),
+                        "{lang:?}: {path} still says `{stale}`"
+                    );
+                }
+            }
+            assert!(
+                chapter("quickstart.md").contains("prose and structural keywords in"),
+                "{lang:?}"
+            );
+        }
+    }
+
+    #[test]
     fn both_languages_document_the_corrections() {
         for (lang, skills_heading) in [
             (Lang::En, "## The author's corrections"),

@@ -22,8 +22,9 @@ outils de release.
 
 Chaque élément s'écrit `- <Category>: <texte>`, avec l'une des six catégories
 de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) : `Added`,
-`Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`. Les catégories
-restent en anglais ; le texte suit la
+`Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` — ou leurs noms
+français (`Ajouté`, `Modifié`…) dans une proposition écrite avec les
+mots-clés français ; le changelog les affiche en anglais. Le texte suit la
 [langue des artefacts](artifact-language.md). Écrivez pour les personnes qui
 utilisent le produit, pas pour celles qui le construisent. Un élément
 incompatible commence par `**BREAKING**`. Un change que personne ne

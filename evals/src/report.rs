@@ -193,6 +193,13 @@ pub fn markdown(score: &SuiteScore) -> String {
             spread(p.invalid, false),
             Measure::Cost.show(p.consumption.cost_usd, 2),
         );
+        if p.keyword_rate.is_some() {
+            let _ = writeln!(
+                out,
+                "\nPlans whose structural keywords are in the language their case expects: {}.",
+                spread(p.keyword_rate, true)
+            );
+        }
     }
 
     if let Some(u) = &score.update {
@@ -366,6 +373,9 @@ pub fn markdown(score: &SuiteScore) -> String {
                 }
                 if p.outcome == crate::plan::PlanOutcome::Planned && !p.valid {
                     let _ = writeln!(out, "- The plan does not validate");
+                }
+                for line in p.keywords_off.iter().flatten() {
+                    let _ = writeln!(out, "- Keyword not in its language: `{line}`");
                 }
             }
             let checks = c
@@ -585,6 +595,8 @@ mod tests {
             modified: vec![RequirementId::parse("d::One").unwrap()],
             collateral: vec![],
             decisions: vec![],
+            config: None,
+            keyword_language: None,
         });
         let mut o = observed("findings", &[], serde_json::json!([]));
         o.review = None;
@@ -781,5 +793,49 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
         assert!(json.get("implement").is_none());
         assert!(json["cases"][0].get("implement").is_none());
+    }
+
+    #[test]
+    fn the_keyword_share_is_reported() {
+        use crate::case::{Kind, PlanCase, RequirementId, Step};
+        use crate::plan::AtRef;
+        use crate::score::tests::{a_case, observed, run};
+        use crate::score::{Thresholds, plan_case, suite};
+        let mut plan = a_case("planner", Kind::Seeded, &[]);
+        plan.id = "plan-fr".into();
+        plan.step = Step::PlanWrite;
+        plan.plan = Some(PlanCase {
+            git_ref: "abc".into(),
+            request: "r".into(),
+            modified: vec![RequirementId::parse("d::One").unwrap()],
+            collateral: vec![],
+            decisions: vec![],
+            config: Some("language: fr\n".into()),
+            keyword_language: Some("fr".into()),
+        });
+        let mut o = observed("findings", &[], serde_json::json!([]));
+        o.review = None;
+        o.files.insert(
+            "_codev/changes/c/proposal.md".into(),
+            Some("# Proposition : X\n\n## What Changes\n\n- x\n".into()),
+        );
+        let s = suite(
+            run(),
+            vec![plan_case(&plan, &o, &AtRef::default())],
+            Thresholds::default(),
+        );
+        let md = markdown(&s);
+        assert!(
+            md.contains(
+                "Plans whose structural keywords are in the language their case expects: 0.00"
+            ),
+            "{md}"
+        );
+        assert!(
+            md.contains("- Keyword not in its language: `c/proposal.md: ## What Changes`"),
+            "{md}"
+        );
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["planning"]["keywordRate"]["median"], 0.0);
     }
 }

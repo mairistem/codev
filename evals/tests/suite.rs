@@ -563,6 +563,27 @@ fn the_planning_suite_covers_past_changes_and_decisions() {
 }
 
 #[test]
+fn the_planning_suite_covers_the_keyword_language() {
+    let cases = suite::load_cases(&repo()).unwrap();
+    let planned_in = |setting: &str, keywords: &str| {
+        cases.iter().filter_map(|c| c.plan.as_ref()).any(|p| {
+            p.config
+                .as_deref()
+                .is_some_and(|c| c.contains(&format!("language: {setting}")))
+                && p.keyword_language.as_deref() == Some(keywords)
+        })
+    };
+    assert!(
+        planned_in("fr", "fr"),
+        "no case plans in French with French keywords"
+    );
+    assert!(
+        planned_in("pt-BR", "en"),
+        "no case plans in a language without catalog, with English keywords"
+    );
+}
+
+#[test]
 fn the_suite_covers_the_update_behaviors() {
     use codev_evals::case::{Artifact, Step};
     let cases = suite::load_cases(&repo()).unwrap();

@@ -1036,6 +1036,16 @@ pub struct PlanRepetition {
     pub duplicates: u32,
     pub decisions_ignored: u32,
     pub invalid: u32,
+    /// The runs of cases with `keyword_language`, and those whose keywords
+    /// are in it.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub keyword_runs: u32,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub keywords_in_language: u32,
+}
+
+fn is_zero(n: &u32) -> bool {
+    *n == 0
 }
 
 /// The step `plan.write`: its measures per repetition, then their median
@@ -1050,6 +1060,10 @@ pub struct PlanningScore {
     pub duplicates: Option<Spread>,
     pub decisions_ignored: Option<Spread>,
     pub invalid: Option<Spread>,
+    /// The share of the plans with `keyword_language` whose keywords are
+    /// in it; `None` when no case expects a language.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keyword_rate: Option<Spread>,
     /// The sums of every planning case's median consumption.
     pub consumption: Measures,
 }
@@ -1263,6 +1277,10 @@ fn planning_score(
                 duplicates: count(|p| p.duplicates.len()),
                 decisions_ignored: count(|p| p.decisions_ignored.len()),
                 invalid: count(|p| usize::from(!p.valid)),
+                keyword_runs: count(|p| usize::from(p.keywords_in_language().is_some())),
+                keywords_in_language: count(|p| {
+                    usize::from(p.keywords_in_language() == Some(true))
+                }),
             })
         })
         .collect();
@@ -1278,6 +1296,7 @@ fn planning_score(
         duplicates: spread(&values(|r| Some(f64::from(r.duplicates)))),
         decisions_ignored: spread(&values(|r| Some(f64::from(r.decisions_ignored)))),
         invalid: spread(&values(|r| Some(f64::from(r.invalid)))),
+        keyword_rate: spread(&values(|r| ratio(r.keywords_in_language, r.keyword_runs))),
         consumption: Measures::sum_of(
             case_consumption
                 .iter()
@@ -1603,6 +1622,8 @@ pub(crate) mod tests {
                 .collect(),
             collateral: vec![],
             decisions: vec![],
+            config: None,
+            keyword_language: None,
         });
         c
     }

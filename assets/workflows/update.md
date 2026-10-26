@@ -78,8 +78,12 @@ checkboxes. The change is about **content**, not structure.
 
 Write in the language set by the `language:` key of `_codev/config.yaml`
 (`en` when absent), whatever language the conversation is in. Structural
-keywords — headings such as `## Why` or `### Requirement:`, `**WHEN**` /
-`**THEN**`, `SHALL` / `MUST` — stay in English.
+keywords — headings, delta sections, requirement and scenario headings,
+the scenario lines, the normative words — keep the language the artifact
+you revise already writes them in, so that a change stays in one
+language; a file you create writes them in `keywordLanguage`, exactly as
+`codev instructions <artifact> --change "<name>" --json` gives them in
+`template` and `keywords`. Never translate a keyword yourself.
 
 ### 4. Detect and report the ripple
 

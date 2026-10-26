@@ -98,8 +98,9 @@ personal data or secret.
 Turns a request into a complete plan: proposal, spec deltas, design and
 tasks. It reads the relevant code before writing, grounds the scope in what
 it finds, and reports contradictions with existing specs instead of settling
-them alone. It writes the prose in the project's
-[artifact language](guides/artifact-language.md).
+them alone. It writes the prose and the structural keywords in the
+project's [artifact language](guides/artifact-language.md), exactly as the
+instructions give them.
 
 Once the proposal is written, the instructions it reads list the existing
 requirements the change likely touches. The skill reads them and modifies

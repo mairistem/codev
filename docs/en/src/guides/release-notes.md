@@ -21,8 +21,10 @@ and publishing stay with you and your release tooling.
 
 Each item is `- <Category>: <text>`, with one of the six categories of
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`, `Changed`,
-`Deprecated`, `Removed`, `Fixed`, `Security`. The categories stay in
-English; the text follows the [artifact language](artifact-language.md).
+`Deprecated`, `Removed`, `Fixed`, `Security` — or their French names
+(`Ajouté`, `Modifié`…) in a proposal written with French keywords; the
+changelog shows them in English. The text follows the
+[artifact language](artifact-language.md).
 Write for the people who use
 the product, not for the people who build it. A breaking item starts with
 `**BREAKING**`. A change nobody will notice — a refactoring, a test, a CI

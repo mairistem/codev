@@ -101,8 +101,9 @@ entrée ne nomme personne et ne cite ni donnée personnelle ni secret.
 Transforme une demande en plan complet : proposal, deltas de specs, design et
 tâches. La skill lit le code concerné avant d'écrire, fonde le périmètre sur
 ce qu'elle y trouve, et signale les contradictions avec les specs existantes
-au lieu de les trancher seule. Elle rédige la prose dans la
-[langue des artefacts](guides/artifact-language.md) du projet.
+au lieu de les trancher seule. Elle rédige la prose et les mots-clés
+structurels dans la [langue des artefacts](guides/artifact-language.md) du
+projet, exactement comme les instructions les donnent.
 
 Une fois la proposition écrite, les instructions qu'elle lit listent les
 exigences existantes que le change touche probablement. La skill les lit et

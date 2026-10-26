@@ -98,7 +98,7 @@ Options:
           - custom:  Pick the workflows one by one
 
       --language <CODE>
-          Language of the prose skills write in artifacts, as an ISO 639 code (`en`, `fr`, `pt-BR`…). Default: detected from the locale, otherwise `en`
+          Language skills write artifacts in — their prose, and their structural keywords when codev ships the language — as an ISO 639 code (`en`, `fr`, `pt-BR`…). Default: detected from the locale, otherwise `en`
 
       --inherit <SOURCE>
           Inherit conventions from a source, written under `inherits:` (repeatable). A git URL (`git@…`, `https://…`, `ssh://…`, `file://…`, or ending in `.git`), optionally suffixed with `@<ref>` (default `main`), or a local folder. Git sources are pinned in `_codev/codev.lock` right away

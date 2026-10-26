@@ -403,6 +403,8 @@ see the [codes](cli.md#codev-self-update).
   "instruction": "Write the document that explains HOW to implement the change.\n…",
   "template": "# Design: <change title>\n…",
   "language": "en",
+  "keywordLanguage": "en",
+  "keywords": { "requirement": "### Requirement:", "normative": ["SHALL", "MUST"], "…": "…" },
   "context": [
     { "origin": "path:~/src/acme-standards", "text": "All services log in JSON." },
     { "origin": "project", "text": "TypeScript monorepo." }
@@ -463,6 +465,8 @@ see the [codes](cli.md#codev-self-update).
 | `resolvedOutputPath` | Where to write; may be a glob such as `…/specs/**/*.md` |
 | `instruction`, `template` | From the schema; `null` when the schema defines none |
 | `language` | The artifact language, `en` by default |
+| `keywordLanguage` | The language the structural keywords are written in: that of the keywords of the template served, else `language` when codev ships its keywords, `en` otherwise |
+| `keywords` | The text to write for each keyword of the catalog in `keywordLanguage`, by key (`requirement`, `delta.added`…); a list for `normative` and `none` |
 | `related` | The existing requirements the change likely touches, ranked against the proposal's `Why` and `What Changes`, at most 10, each with `capability`, `requirement` and `excerpt` — for the artifacts that require the proposal directly (`specs`, `design`), once it is written; an empty array otherwise |
 | `context`, `rules` | Blocks ordered from the most general source to the project, each with its `origin` (`project`, `path:<path>` or `git:<url>`) |
 | `dependencies` | The artifacts this one requires, with their path and whether they are done |
@@ -471,9 +475,9 @@ see the [codes](cli.md#codev-self-update).
 | `skipped` | `true` when `skip_specs` disables this artifact: it must not be written |
 | `role` | The role that owns the artifact, in the shape of [`codev roles`](#roles); `null` when the schema declares none |
 
-A failure keeps this shape, with `language` still set — the configured
-language, or `en` when the configuration cannot be read — and the other
-fields `null` or empty.
+A failure keeps this shape, with `language`, `keywordLanguage` and
+`keywords` still set — from the configured language, or `en` when the
+configuration cannot be read — and the other fields `null` or empty.
 
 ### validate
 

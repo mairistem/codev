@@ -123,6 +123,8 @@ The response contains:
 | `instruction` | The schema's guidance for this artifact type. Final authority |
 | `template` | The structure of the file to produce |
 | `language` | The language to write the prose in (ISO 639 code, e.g. `fr`) |
+| `keywordLanguage` | The language the structural keywords are written in — that of `template`'s keywords, else `language` when codev ships its keywords, `en` otherwise |
+| `keywords` | The text of each structural keyword in `keywordLanguage`, for one `template` does not show |
 | `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
 | `context` | Project context — a **constraint on you**, never content to copy |
 | `rules` | Rules specific to this artifact — also a constraint, never content |
@@ -158,14 +160,16 @@ exists at the expected location.
 
 Write every sentence in `language`, whatever language the conversation is
 in: the file is read and approved by the team, and `language` is the team's
-choice. Structural keywords stay exactly as `template` gives them, in
-English — headings such as `## Why` or `### Requirement:`, delta sections
-such as `## ADDED Requirements`, and `**WHEN**` / `**THEN**` / `SHALL` /
-`MUST`. codev parses them; a translated keyword is a broken artifact.
+choice. Write the structural keywords — the template's headings, delta
+sections, requirement and scenario headings, the scenario lines, the
+normative words — exactly as `template` and `keywords` give them, in
+`keywordLanguage`; never translate a keyword yourself. `instruction`
+names them in English: write the `keywords` text of the key it means.
+codev parses them; a keyword of your own is a broken artifact.
 
 **Special case: the change's first artifact when a ticket was detected
-in step 0.** Right after `# Proposal: <title>`, before `## Why`, insert a
-citation line:
+in step 0.** Right after the template's title line, before its first
+section, insert a citation line, written in `language`:
 
 ```
 # Proposal: <title>
@@ -291,7 +295,8 @@ Summarize:
   not only those listed in `applyRequires`.
 - Always re-read the dependencies from disk before creating an artifact.
 - `context` and `rules` are never copied into the files produced.
-- Prose follows `language`; structural keywords always stay in English.
+- Prose follows `language`; structural keywords follow `keywordLanguage`,
+  exactly as `template` and `keywords` give them.
 - If a change with this name already exists, ask the user whether they want
   to continue it or create another one.
 - Check that each written file exists before moving on to the next.

@@ -2755,6 +2755,41 @@ edition = "2024"
     }
 
     #[test]
+    fn instructions_json_carry_the_keyword_language_and_keywords() {
+        let h = roles_project("language: fr\n", "schema: spec-driven\n");
+        let instructions =
+            artifact_instructions(&h.ctx(), Some("proposal"), Some("add-auth")).unwrap();
+        let json =
+            serde_json::to_value(crate::contract::InstructionsV1::from(&instructions)).unwrap();
+        assert_eq!(json["language"], "fr");
+        assert_eq!(json["keywordLanguage"], "fr");
+        assert_eq!(json["keywords"]["requirement"], "### Exigence :");
+        assert_eq!(
+            json["keywords"]["normative"],
+            serde_json::json!(["DOIT", "DOIVENT"])
+        );
+        assert!(
+            json["template"]
+                .as_str()
+                .unwrap()
+                .contains("## Changements")
+        );
+    }
+
+    #[test]
+    fn instructions_json_default_to_english_keywords() {
+        let h = roles_project("language: pt-BR\n", "schema: spec-driven\n");
+        let instructions =
+            artifact_instructions(&h.ctx(), Some("proposal"), Some("add-auth")).unwrap();
+        let json =
+            serde_json::to_value(crate::contract::InstructionsV1::from(&instructions)).unwrap();
+        assert_eq!(json["language"], "pt-BR");
+        assert_eq!(json["keywordLanguage"], "en");
+        assert_eq!(json["keywords"]["requirement"], "### Requirement:");
+        assert_eq!(json["keywords"]["none"], serde_json::json!(["None"]));
+    }
+
+    #[test]
     fn validate_does_not_warn_on_a_developer_model() {
         let h = roles_project(
             "roles:\n  developer: { model: sonnet }\n",
@@ -5966,6 +6001,33 @@ The rationale for the choice.
                 .unwrap_or_else(|| panic!("`{section}` missing or out of order in:\n{rendered}"));
             last += at;
         }
+    }
+
+    #[test]
+    fn human_instructions_name_the_keyword_language() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# Proposal\n");
+        let instr = artifact_instructions(&h.ctx(), Some("specs"), Some("add-auth")).unwrap();
+        let rendered = crate::render::instructions(&instr);
+        assert_eq!(
+            rendered.lines().nth(2),
+            Some("Language: en — prose and structural keywords in en"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
+    fn human_instructions_of_an_unshipped_language_name_english_keywords() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/config.yaml", "language: pt-BR\n");
+        let instr = artifact_instructions(&h.ctx(), Some("proposal"), Some("add-auth")).unwrap();
+        let rendered = crate::render::instructions(&instr);
+        assert!(
+            rendered.contains("Language: pt-BR — prose in pt-BR, structural keywords in en"),
+            "{rendered}"
+        );
     }
 
     #[test]
