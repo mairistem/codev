@@ -72,7 +72,11 @@ an optional `done_when:` list and an optional `model:` (see the model
 requirement). The `done_when:` entries SHALL be added
 after the role's own criteria, never replacing them, each with the origin
 `project`; blank entries are ignored. Any other key inside a role's mapping
-MUST make the configuration invalid, like an unknown key of `changelog`.
+SHALL be ignored with an `unknown_config_key` warning naming it
+`roles.<id>.<key>`, as a key of `mcp` is, and `codev validate` and
+`codev doctor` report it the same way; the rest of the role's mapping
+still applies. A misspelled key is therefore a warning, which
+`codev validate --strict` turns into a failure.
 The `roles:` key of an inherited source's configuration MUST be ignored,
 whatever it holds: a key this codev does not know there, written for a
 newer codev, never keeps the source's context and rules from being read.
@@ -109,9 +113,21 @@ this change only.
 
 #### Scenario: An unknown key inside a role
 
-- **GIVEN** a configuration where `skeptic` holds the key `done-when`
-- **WHEN** the user runs `codev status`
-- **THEN** the command fails with the code `invalid`, naming the key
+- **GIVEN** a configuration where `skeptic` holds the key `cadence:
+  weekly` and `model: sonnet`
+- **WHEN** the user runs `codev roles --json`
+- **THEN** the command succeeds and `skeptic` has `model: "sonnet"`
+- **AND** `status` holds an `unknown_config_key` warning naming
+  `roles.skeptic.cadence` and `codev self-update`
+
+#### Scenario: A misspelled key inside a role fails strict validation
+
+- **GIVEN** a configuration where `skeptic` holds the key `done-when` on
+  line 4, and no other finding
+- **WHEN** the user runs `codev validate --strict --json`
+- **THEN** the `config` item holds a `warning` finding
+  `unknown_config_key` naming `roles.skeptic.done-when` at line 4
+- **AND** the exit code is 1
 
 #### Scenario: A source's role setting from a newer codev
 
