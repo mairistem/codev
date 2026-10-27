@@ -788,6 +788,14 @@ Sans `ITEM` ni option, valide tout : chaque change actif, chaque spec
 principale et les sceaux des décisions. `ITEM` est le nom d'un change actif ou
 le chemin d'une capacité (`ui/theme`).
 
+Lorsque le codev en cours ne satisfait pas le
+[`codev_version`](configuration.md#codev_version) du projet,
+`codev validate`, `codev sync` et `codev archive` refusent de s'exécuter :
+elles ne vérifient et n'écrivent rien, et échouent avec
+`codev_version_unsatisfied`, en nommant l'exigence, la version en cours et
+la correction que donne `codev doctor`. Relevez un épinglage de CI
+(`CODEV_VERSION=`) en même temps que `codev_version`.
+
 Code de sortie :
 
 | Résultat | Sans `--strict` | Avec `--strict` |

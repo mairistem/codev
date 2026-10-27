@@ -441,6 +441,15 @@ produit par le binaire compilé depuis le tag, suivi des notes générées par
 GitHub. Les installateurs prennent en compte la nouvelle version
 immédiatement.
 
+**Les codev plus anciens.** Un même dépôt est lu par plusieurs versions de
+codev à la fois : un change qui ajoute une clé, une valeur ou un format à un
+fichier que codev lit suit donc la
+[décision 0013](_codev/decisions/0013-a-file-written-for-a-newer-codev-warns-unless-ignoring-it-would-weaken-a-check.md).
+Son design indique ce qu'en fait un codev plus ancien — il l'ignore avec un
+avertissement, la refuse, ou la lit de travers — et, lorsque l'ignorer
+affaiblirait une vérification, sa note de version donne le `codev_version`
+minimal qu'un projet doit exiger avant de l'utiliser.
+
 ## Sécurité
 
 N'ouvrez pas d'issue publique pour signaler une vulnérabilité. Suivez plutôt

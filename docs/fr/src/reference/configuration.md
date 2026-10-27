@@ -3,7 +3,8 @@
 Un projet codev se configure dans `_codev/config.yaml`. Toutes les clés sont
 facultatives : un projet peut même fonctionner sans ce fichier. Une clé que
 codev ne connaît pas est signalée, par un avertissement au premier niveau,
-dans `mcp` et dans `review`, par une erreur ailleurs : une faute de frappe ne passe donc
+dans `mcp`, dans `review` et dans la table d'un rôle, par une erreur dans une
+entrée de `inherits` et dans `changelog` : une faute de frappe ne passe donc
 jamais inaperçue. Voir [Clés inconnues](#clés-inconnues).
 
 `codev init` génère le fichier avec les valeurs qu'il a détectées, chacune
@@ -226,6 +227,25 @@ l'exigence elle-même (`<=0.6.2` donne `0.6.2`, `^0.5` donne `0.5.0`). Une
 valeur qui n'est pas une exigence fait échouer toutes les commandes avec
 `invalid_codev_version`.
 
+`codev validate`, `codev sync` et `codev archive` — les commandes dont la
+réussite est un verdict sur le projet — **refusent de s'exécuter** lorsque le
+codev en cours ne satisfait pas `codev_version` : elles ne vérifient et
+n'écrivent rien, et échouent avec `codev_version_unsatisfied`, dont le
+message nomme l'exigence, la version en cours et la même correction que
+`codev doctor`. Sans cela, un codev plus ancien pourrait ignorer une clé qui
+resserre une vérification et accepter ce que le codev d'un collègue refuse
+(voir [Clés inconnues](#clés-inconnues)). Toutes les autres commandes
+continuent de fonctionner, pour que `codev status`, `codev doctor` et les
+skills puissent encore vous dire quoi installer. Deux conséquences à
+anticiper :
+
+- un job de CI épinglé avec `CODEV_VERSION=` (comme l'écrit `codev init`)
+  se met à échouer dès que `codev_version` dépasse cette version : relevez
+  l'épinglage dans le même commit ;
+- une exigence avec une borne supérieure (`^0.6`) refuse aussi un codev plus
+  récent : élargissez `codev_version` avant de passer au-delà, ou installez
+  la version que nomme `codev doctor`.
+
 codev 0.5 et les versions antérieures ne connaissent pas cette clé et
 rejettent le fichier : ajoutez-la une fois que tout le monde utilise une
 version qui la connaît.
@@ -273,8 +293,10 @@ un rôle lié à aucun domaine — par `invalid_role_activation`, et `never` sur
 un rôle qui ne peut pas être désactivé par `role_not_disableable` — des erreurs de l'élément `config`, à la ligne du
 rôle. `codev status`, `codev instructions` et `codev roles` échouent avec
 le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
-mal orthographié, fait échouer chaque commande avec `invalid` : l'ignorer
-ferait disparaître des critères sans bruit. Un `model` autre que `opus`,
+mal orthographié, est ignorée avec un avertissement `unknown_config_key`
+nommé `roles.<id>.<clé>`, à la ligne de la clé : le reste de la table du
+rôle s'applique, et `codev validate --strict` échoue dessus, si bien qu'une
+faute de frappe reste détectée. Un `model` autre que `opus`,
 `sonnet`, `haiku` ou `inherit` est une erreur `invalid_role_model`,
 signalée et bloquante de la même façon. Un `model` sur un rôle qui ne sert
 aucune étape de relecture (`plan.trace`, `plan.challenge`, `code.review`)
@@ -284,8 +306,9 @@ tâches de `/codev-apply` dans un sous-agent, quel que soit le mode de
 revue (décision 0012).
 
 **`model` et les versions plus anciennes de codev.** Un codev antérieur à
-la version qui a introduit `model` refuse la clé, comme toute clé inconnue
-dans un rôle : chaque commande échoue avec `invalid`. Relevez
+la version qui a introduit `model` ne connaît pas la clé : codev 0.6.1 et
+les versions antérieures la refusent, comme toute clé inconnue dans un
+rôle, et chaque commande échoue avec `invalid`. Relevez
 [`codev_version`](#codev_version) à cette version avant de l'indiquer,
 pour que chaque codev qui lit le dépôt, CI comprise, la comprenne. Une
 source partagée par [`inherits`](#inherits) ne devrait pas l'indiquer tant
@@ -394,7 +417,7 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 | `review` | avertissement `unknown_config_key` (`review.<clé>`), clé ignorée | un réglage de revue inconnu laisse la revue telle qu'elle était |
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
 | `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
-| une entrée de `roles` | erreur `invalid` | l'ignorer ferait disparaître des critères ou une activation |
+| une entrée de `roles` | avertissement `unknown_config_key` (`roles.<id>.<clé>`), clé ignorée | le reste de la table du rôle s'applique ; une clé dont l'oubli ferait disparaître une relecture s'accompagne d'un `codev_version` relevé |
 | un groupe de `triggers` | avertissement `invalid_trigger` de `codev validate`, clé ignorée | le reste du groupe suggère toujours son domaine |
 
 L'avertissement nomme la clé, indique que le projet demande peut-être une
@@ -412,9 +435,27 @@ définit et renvoie à `codev self-update` ; l'erreur fait de même quand
 Les clés de la configuration d'une source héritée ne sont pas signalées :
 seuls son `context` et ses `rules` sont lus.
 
+Les autres fichiers que vous écrivez à la main suivent la même règle, chacun
+avec son propre code, pour que vous sachiez quel fichier ouvrir :
+
+| Fichier | Clé inconnue | Signalée par |
+|---|---|---|
+| le `change.yaml` d'un change, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent le change (`status`, `instructions`, `roles`, `review`), et `codev validate` sur l'élément du change |
+| un `schema.yaml` de projet, à tout niveau, `role:` d'un artefact compris | avertissement `schema_unknown_key`, clé ignorée | les commandes qui utilisent le schéma, et `codev validate` sur l'élément `config`, localisé dans le fichier du schéma |
+| le frontmatter d'un ADR | avertissement `decision_unknown_field`, champ ignoré et conservé par `codev decision accept` | `codev validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
+
+Une *valeur* que codev ne connaît pas — un `review.mode`, une activation de
+rôle, un `status` d'ADR — reste une erreur : on ne peut pas l'ignorer sans
+deviner ce que vous vouliez dire. Les fichiers que codev écrit lui-même
+portent leur format : un `_codev/decisions/seal.yaml` d'une `version` plus
+récente est refusé avec `seal_version_unsupported`, qui renvoie à
+`codev self-update`. Cette politique est la décision 0013 du dépôt de codev.
+
 Cette tolérance commence avec la version de codev qui l'a introduite :
 **codev 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
-niveau. Lorsque vous ajoutez une clé que seules les versions récentes
+niveau, et **codev 0.6.1 et les versions antérieures rejettent une clé
+inconnue dans un rôle, dans `change.yaml`, dans un schéma de projet et dans
+le frontmatter d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
 connaissent, relevez aussi `codev_version` : les membres de l'équipe restés
 sur un codev plus ancien apprendront par `codev doctor` et les skills quelle
 version installer.

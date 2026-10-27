@@ -40,11 +40,17 @@ pub const DELTA_SECTION_EMPTY: &str = "delta_section_empty";
 pub const DECISION_MISSING_FRONTMATTER: &str = "decision_missing_frontmatter";
 
 /// The frontmatter lacks a required field (`id`, `title`, `status`,
-/// `date`), or carries an unknown key.
+/// `date`), or is not valid YAML.
 pub const DECISION_MISSING_FIELD: &str = "decision_missing_field";
 
 /// The `status` carries a value that is not one of the five recognized ones.
 pub const DECISION_UNKNOWN_STATUS: &str = "decision_unknown_status";
+
+/// A local ADR's frontmatter carries a field this codev does not know: a
+/// warning, the decision is read from the fields it knows (decision 0013).
+/// Emitted by `codev validate`, which knows the file and whether the
+/// decision is local.
+pub const DECISION_UNKNOWN_FIELD: &str = "decision_unknown_field";
 
 // The codes below are emitted by the engine-side index, not by the
 // parser. They are registered here to keep a single point of uniqueness
@@ -88,6 +94,7 @@ pub const ALL: &[&str] = &[
     DECISION_MISSING_FRONTMATTER,
     DECISION_MISSING_FIELD,
     DECISION_UNKNOWN_STATUS,
+    DECISION_UNKNOWN_FIELD,
     DECISION_SUPERSEDES_UNKNOWN,
     DECISION_ID_COLLISION,
     DECISION_SUPERSESSION_CYCLE,

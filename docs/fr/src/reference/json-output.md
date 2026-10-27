@@ -60,13 +60,15 @@ Codes d'erreur courants :
 | `invalid_change_id` | Un nom de change qui n'est pas en kebab-case, ou le nom réservé `archive` ; le message nomme la règle enfreinte |
 | `change_exists` | `new change` avec un nom déjà pris |
 | `schema_not_found` | Nom de schéma inconnu |
-| `schema_invalid`, `schema_unreadable` | Un fichier de schéma que codev refuse : un défaut de structure, ou un YAML invalide ou une clé inconnue |
+| `schema_invalid`, `schema_unreadable` | Un fichier de schéma que codev refuse : un défaut de structure, ou un YAML invalide ou un champ obligatoire manquant. Une clé inconnue n'est pas refusée : c'est un avertissement `schema_unknown_key` |
 | `unknown_artifact` | `instructions` avec un artefact que le schéma du change n'a pas |
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
 | `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un codev plus récent ; le message nomme chaque raison |
 | `invalid_review_mode` | `review.mode`, dans `_codev/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
+| `codev_version_unsatisfied` | `validate`, `sync` ou `archive` a refusé de s'exécuter : le codev en cours ne satisfait pas le `codev_version` du projet ; le message nomme l'exigence, la version en cours et la correction |
+| `seal_version_unsupported` | `_codev/decisions/seal.yaml` a une `version` que ce codev ne lit pas : il a été écrit par un codev plus récent ; le message renvoie à `codev self-update` |
 | `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
 | `unreadable` | Un fichier n'a pas pu être lu |
 | `write_failed` | Un fichier n'a pas pu être écrit |
@@ -515,8 +517,14 @@ lorsque la configuration ne peut pas être lue — et les autres champs à
 ```
 
 `kind` vaut `change`, `spec`, `decisions` ou `config` — ce dernier seulement
-lorsque `_codev/config.yaml` contient des clés que ce codev ne connaît pas
-(voir [Clés inconnues](configuration.md#clés-inconnues)). Les constats sont rapportés dans
+lorsque `_codev/config.yaml` ou un schéma de projet a un constat, comme une
+clé que ce codev ne connaît pas (voir
+[Clés inconnues](configuration.md#clés-inconnues)). Une clé d'un schéma de
+projet est un constat `schema_unknown_key` de l'élément `config`, dont le
+`path` est le fichier du schéma ; une clé du `change.yaml` d'un change est un
+constat `change_unknown_key` de l'élément du change ; un champ du frontmatter
+d'un ADR est un constat `decision_unknown_field` de l'élément `decisions`.
+Tous trois sont des avertissements. Les constats sont rapportés dans
 `items`, et non dans `status` : `status` ne signale qu'un échec de la commande
 elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
 

@@ -68,6 +68,10 @@ vous demande **Update now** ou **Later** avant toute autre chose :
 - **Later** lance `codev self-update --snooze` — 7 jours de silence pour
   cette version — puis reprend l'action. Pour un `codev_version` non
   satisfait, rien n'est mis en sourdine : c'est l'équipe qui l'a demandé.
+  `/codev-sync` et `/codev-archive` s'arrêtent alors au refus de
+  `codev sync` ou de `codev archive`, qui ne s'exécutent pas hors de
+  `codev_version` (`codev_version_unsatisfied`) ; le message donne la
+  correction — `codev self-update`, ou la version à installer.
 
 La question est posée une fois par action, jamais au milieu : `/codev-apply`
 la pose avant la première tâche. `/codev-explore`, `/codev-onboard` et

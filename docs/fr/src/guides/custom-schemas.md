@@ -84,9 +84,15 @@ apply:
 | `apply.tracks` | oui | Fichier dont les cases à cocher suivent l'avancement de l'implémentation |
 | `apply.instruction` | non | Consignes pour la phase d'implémentation |
 
-Les clés inconnues sont rejetées : une faute de frappe ne peut donc pas
-produire en silence un workflow qui se comporte autrement que ce que vous avez
-écrit. codev rejette également un schéma dont les dépendances font référence à
+Une clé inconnue — au premier niveau, dans un artefact, dans `apply` ou dans
+le `role:` d'un artefact — n'est pas rejetée : elle est ignorée avec un
+avertissement `schema_unknown_key` qui nomme la clé et sa ligne, dans chaque
+commande qui utilise le schéma, et `codev validate --strict` échoue dessus.
+Le schéma a peut-être été écrit pour une version plus récente de codev
+(lancez `codev self-update`), ou la clé est une faute de frappe qui
+produirait sinon un workflow se comportant autrement que ce que vous avez
+écrit : corrigez-la. codev 0.6.1 et les versions antérieures rejettent le
+schéma à la place. codev rejette un schéma dont les dépendances font référence à
 un artefact inexistant ou forment un cycle, en nommant les artefacts
 concernés. `codev schemas` liste malgré tout les autres schémas, et signale
 celui qui est refusé par un avertissement `schema_unusable` qui en donne la

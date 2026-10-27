@@ -30,7 +30,10 @@ pub enum SealError {
 
     /// The `seal.yaml` file has a `version` this binary does not know.
     /// Stable code for the agent: `seal_version_unsupported`.
-    #[error("unsupported seal.yaml version `{actual}` (expected: {expected})")]
+    #[error(
+        "seal.yaml has version {actual}, which this codev does not read (it reads version \
+         {expected}): it was written by a newer codev — run `codev self-update`"
+    )]
     UnsupportedVersion { actual: u32, expected: u32 },
 
     /// The YAML of `seal.yaml` cannot be parsed. The raw `serde_norway`
@@ -148,15 +151,22 @@ pub fn parse_seal_file(source: &str) -> Result<SealFile, SealError> {
     if source.trim().is_empty() {
         return Ok(SealFile::empty());
     }
-    let parsed: SealFile =
-        serde_norway::from_str(source).map_err(|e| SealError::Invalid(e.to_string()))?;
-    if parsed.version != SEAL_FILE_VERSION {
+    // The version first: a newer format may hold fields this codev does
+    // not know, and the way out is a newer codev, not a corrupt file.
+    let version = serde_norway::from_str::<serde_norway::Value>(source)
+        .ok()
+        .and_then(|value| value.get("version").and_then(serde_norway::Value::as_u64));
+    if let Some(version) = version
+        && version != u64::from(SEAL_FILE_VERSION)
+    {
         return Err(SealError::UnsupportedVersion {
-            actual: parsed.version,
+            actual: u32::try_from(version).unwrap_or(u32::MAX),
             expected: SEAL_FILE_VERSION,
         });
     }
-    Ok(parsed)
+    // Within a known version, an unknown field is a corruption:
+    // `deny_unknown_fields` reports it as `seal_invalid`.
+    serde_norway::from_str(source).map_err(|e| SealError::Invalid(e.to_string()))
 }
 
 /// Renders a `SealFile` as canonical YAML, with entries sorted by
