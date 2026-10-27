@@ -24,8 +24,8 @@ A `mode` other than `inline` or `isolated`, in either file, SHALL make
 every command that reads that file fail with the stable code
 `invalid_review_mode`, naming the file, the value and the allowed values.
 A `review:` that is not a mapping, or a `mode` that is not text, fails
-the same way. An unknown key under `review:` in `change.yaml` fails as
-any unknown key of that file does.
+the same way. An unknown key under `review:` in `change.yaml` is ignored
+with a `change_unknown_key` warning, as any unknown key of that file is.
 
 #### Scenario: The default mode is inline
 

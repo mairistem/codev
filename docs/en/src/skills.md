@@ -64,7 +64,10 @@ before doing anything else:
 - **Update now** runs `codev self-update --yes`, then resumes the action;
 - **Later** runs `codev self-update --snooze` — 7 days of silence for that
   version — then resumes. For an unsatisfied `codev_version`, nothing is
-  snoozed: the team asked for it.
+  snoozed: the team asked for it. `/codev-sync` and `/codev-archive` then
+  stop at the refusal of `codev sync` or `codev archive`, which do not run
+  outside `codev_version` (`codev_version_unsatisfied`); the message gives
+  the fix — `codev self-update`, or the version to install.
 
 The question is asked once per action, never in the middle of one:
 `/codev-apply` asks it before the first task. `/codev-explore`,

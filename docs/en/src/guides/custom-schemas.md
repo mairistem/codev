@@ -82,8 +82,14 @@ apply:
 | `apply.tracks` | yes | The file whose checkboxes track implementation progress |
 | `apply.instruction` | no | Guidance for the implementation phase |
 
-Unknown keys are rejected, so a typo cannot silently produce a workflow that
-behaves differently from what you wrote. codev also rejects a schema whose
+An unknown key — at the top level, in an artifact, in `apply` or in an
+artifact's `role:` — is not rejected: it is ignored with a
+`schema_unknown_key` warning that names the key and its line, in every command
+that uses the schema, and `codev validate --strict` fails on it. The schema
+may have been written for a newer codev (run `codev self-update`), or the key
+is a typo that would otherwise produce a workflow that behaves differently
+from what you wrote: correct it. codev 0.6.1 and earlier reject the schema
+instead. codev rejects a schema whose
 dependencies reference a missing artifact or form a cycle, and names the
 artifacts involved. `codev schemas` still lists the other schemas, and
 reports the refused one as a warning `schema_unusable` with the reason.

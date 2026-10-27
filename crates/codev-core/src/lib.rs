@@ -38,6 +38,7 @@ pub mod status;
 pub mod triggers;
 pub mod update;
 pub mod validate;
+pub mod yaml_lines;
 
 pub use error::{CoreError, Result};
 pub use graph::ArtifactGraph;

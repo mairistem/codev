@@ -8,13 +8,37 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{EngineError, Result};
 use crate::ports::FileSystem;
+use codev_core::yaml_lines::{Step, UnknownKey, unknown_keys_of};
+
+/// The top-level keys of `change.yaml` this codev knows. Any other key is
+/// ignored with a `change_unknown_key` warning (decision 0013): the change
+/// may have been written by a newer codev. Keep it in sync with
+/// [`ChangeMetadata`] by hand: `every_known_key_is_recognized` only fails
+/// when a key is removed from this list or the count changes, not when a
+/// field is added to the struct alone.
+pub const CHANGE_KEYS: &[&str] = &[
+    "schema",
+    "created",
+    "goal",
+    "skip_specs",
+    "retire_capabilities",
+    "roles",
+    "review",
+];
+
+/// The code of the warning and of the validate finding for a key of
+/// `change.yaml` this codev ignores.
+pub const CHANGE_UNKNOWN_KEY: &str = "change_unknown_key";
 
 /// A change's `change.yaml`.
 ///
 /// It lives in the change directory and is versioned with it: it is a
-/// decision made by the change's author, not machine state.
+/// decision made by the change's author, not machine state. No
+/// `deny_unknown_fields`: [`load`] returns the keys this codev does not
+/// know beside the metadata. The markers that guard a check fail closed
+/// without it — an older codev that ignores `retire_capabilities` refuses
+/// to delete a spec — so ignoring a newer key never weakens one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct ChangeMetadata {
     pub schema: String,
 
@@ -112,9 +136,15 @@ impl ChangeMetadata {
     }
 }
 
-/// Reads the `change.yaml`. Its absence is not an error: a hand-made change
-/// may have none, and the schema then comes from the project config.
-pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ChangeMetadata>> {
+/// Reads the `change.yaml`, with the keys this codev does not know — at
+/// the top level, and `review.<key>` under `review:` — in file order. Its
+/// absence is not an error: a hand-made change may have none, and the
+/// schema then comes from the project config.
+///
+/// The values stay strict: an invalid `review.mode` or role activation
+/// fails, since a value cannot be ignored without guessing what the change
+/// meant.
+pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<(ChangeMetadata, Vec<UnknownKey>)>> {
     if !fs.exists(path) {
         return Ok(None);
     }
@@ -129,36 +159,32 @@ pub fn load(fs: &dyn FileSystem, path: &Path) -> Result<Option<ChangeMetadata>> 
             path: path.to_path_buf(),
             reason: e.to_string(),
         })?;
-    if let Some(review) = metadata.review.as_ref().and_then(|r| r.as_mapping()) {
-        // Strict like the rest of the file: a misspelled `mode` would
-        // silently review the change the other way.
-        if let Some(key) = review
-            .keys()
-            // A key that is not text cannot be a known one: show it as
-            // YAML rather than as a placeholder.
-            .map(|k| {
-                k.as_str().map(str::to_string).unwrap_or_else(|| {
-                    serde_norway::to_string(k)
-                        .unwrap_or_default()
-                        .trim()
-                        .to_string()
-                })
-            })
-            .find(|k| !crate::config::REVIEW_KEYS.contains(&k.as_str()))
-        {
-            return Err(EngineError::Invalid {
-                path: path.to_path_buf(),
-                reason: format!("review: unknown field `{key}`, expected `mode`"),
-            });
-        }
-    }
     crate::config::read_review_mode(metadata.review.as_ref()).map_err(|reason| {
         EngineError::InvalidReviewMode {
             path: path.to_path_buf(),
             reason,
         }
     })?;
-    Ok(Some(metadata))
+    Ok(Some((metadata, unknown_keys(&raw))))
+}
+
+/// The keys of `raw` this codev does not know, top level and `review`.
+fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
+    let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(raw) else {
+        return Vec::new();
+    };
+    let mut unknown = unknown_keys_of(raw, &map, CHANGE_KEYS, &[], "");
+    if let Some(review) = map.get("review").and_then(|r| r.as_mapping()) {
+        unknown.extend(unknown_keys_of(
+            raw,
+            review,
+            crate::config::REVIEW_KEYS,
+            &[Step::Key("review")],
+            "review.",
+        ));
+    }
+    unknown.sort_by_key(|u| u.line);
+    unknown
 }
 
 #[cfg(test)]
@@ -233,7 +259,7 @@ apply:
         let original = ChangeMetadata::new("spec-driven", "2026-09-08")
             .with_goal(Some("Add authentication".into()));
         let fs = MemoryFileSystem::new().with_file("/c/change.yaml", original.to_yaml());
-        let reread = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        let reread = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap().0;
         assert_eq!(reread.schema, "spec-driven");
         assert_eq!(reread.goal.as_deref(), Some("Add authentication"));
         assert!(!reread.skip_specs);
@@ -245,7 +271,7 @@ apply:
             "/c/change.yaml",
             "schema: spec-driven\nroles:\n  newcomer: always\n",
         );
-        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap().0;
         assert_eq!(metadata.roles["newcomer"], RoleActivation("always".into()));
         assert!(!metadata.to_yaml().is_empty());
         let fresh = ChangeMetadata::new("spec-driven", "2026-09-08").to_yaml();
@@ -258,7 +284,7 @@ apply:
             "/c/change.yaml",
             "schema: spec-driven\nreview:\n  mode: isolated\n",
         );
-        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        let metadata = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap().0;
         assert_eq!(metadata.review_mode(), Some(ReviewMode::Isolated));
         assert!(metadata.to_yaml().contains("mode: isolated"));
         let fresh = ChangeMetadata::new("spec-driven", "2026-09-08");
@@ -278,26 +304,58 @@ apply:
         assert!(message.contains("change.yaml"), "{message}");
         assert!(message.contains("`alone`"), "{message}");
         assert!(message.contains("inline or isolated"), "{message}");
-
-        let fs = MemoryFileSystem::new().with_file(
-            "/c/change.yaml",
-            "schema: spec-driven\nreview:\n  mdoe: isolated\n",
-        );
-        let err = load(&fs, Path::new("/c/change.yaml")).unwrap_err();
-        assert_eq!(
-            err.code(),
-            "invalid",
-            "an unknown key is refused like any in this file"
-        );
-        assert!(err.to_string().contains("mdoe"), "{err}");
     }
 
     #[test]
-    fn rejects_an_unknown_key() {
-        let fs = MemoryFileSystem::new()
-            .with_file("/c/change.yaml", "schema: spec-driven\nskipspecs: true\n");
-        let err = load(&fs, Path::new("/c/change.yaml")).unwrap_err();
-        assert_eq!(err.code(), "invalid");
-        assert!(err.to_string().contains("skipspecs"), "{err}");
+    fn unknown_change_key_is_ignored_and_reported() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nticket: JVS-12\nskip_spec: true\n",
+        );
+        let (metadata, unknown) = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        assert_eq!(metadata.schema, "spec-driven");
+        assert!(!metadata.skip_specs, "a misspelled marker is not read");
+        assert_eq!(
+            unknown,
+            [
+                UnknownKey {
+                    key: "ticket".into(),
+                    line: 2
+                },
+                UnknownKey {
+                    key: "skip_spec".into(),
+                    line: 3
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn unknown_review_key_in_change_yaml_keeps_the_mode() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\nreview:\n  mode: isolated\n  budget: 3\n",
+        );
+        let (metadata, unknown) = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        assert_eq!(metadata.review_mode(), Some(ReviewMode::Isolated));
+        assert_eq!(
+            unknown,
+            [UnknownKey {
+                key: "review.budget".into(),
+                line: 4
+            }]
+        );
+    }
+
+    #[test]
+    fn every_known_key_is_recognized() {
+        let fs = MemoryFileSystem::new().with_file(
+            "/c/change.yaml",
+            "schema: spec-driven\ncreated: 2026-10-26\ngoal: g\nskip_specs: true\n\
+             retire_capabilities: true\nroles:\n  newcomer: always\nreview:\n  mode: inline\n",
+        );
+        let (_, unknown) = load(&fs, Path::new("/c/change.yaml")).unwrap().unwrap();
+        assert!(unknown.is_empty(), "{unknown:?}");
+        assert_eq!(CHANGE_KEYS.len(), 7, "a new key belongs in this test too");
     }
 }

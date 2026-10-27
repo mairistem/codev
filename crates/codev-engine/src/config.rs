@@ -53,15 +53,9 @@ pub const MCP_KEYS: &[&str] = &["jira_tool"];
 /// check) for a key this codev ignores.
 pub const UNKNOWN_CONFIG_KEY: &str = "unknown_config_key";
 
-/// A key of `_codev/config.yaml` this codev does not know.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnknownKey {
-    /// As written, `mcp.<key>` inside `mcp`.
-    pub key: String,
-    /// 1-based line of the key, 1 when it cannot be located (a flow
-    /// mapping, for instance).
-    pub line: usize,
-}
+/// A key of `_codev/config.yaml` this codev does not know — `mcp.<key>`
+/// inside `mcp`, `roles.<id>.<key>` inside a role's mapping.
+pub use codev_core::yaml_lines::UnknownKey;
 
 /// The `_codev/config.yaml` as written on disk.
 ///
@@ -106,8 +100,8 @@ pub struct ProjectConfig {
     /// Role settings by role id — project only, read by [`load`]: an
     /// inherited source's `roles:` is skipped, never parsed, so that a key a
     /// newer codev added there cannot drop the source's context and rules.
-    /// Each entry is strict, unlike the top level: a misspelled `done-when`
-    /// would silently drop criteria.
+    /// An unknown key inside an entry is ignored and reported in
+    /// `unknown_keys` as `roles.<id>.<key>`, like any other (decision 0013).
     #[serde(skip)]
     pub roles: BTreeMap<String, RoleSetting>,
     /// The project's trigger groups — project only, like `roles`. Kept as
@@ -124,8 +118,8 @@ pub struct ProjectConfig {
     /// not read.
     #[serde(skip)]
     pub review_mode: Option<ReviewMode>,
-    /// Top-level, `mcp` and `review` keys this codev ignored, in file
-    /// order.
+    /// Top-level, `mcp`, `review` and role-mapping keys this codev
+    /// ignored, in file order.
     #[serde(skip)]
     pub unknown_keys: Vec<UnknownKey>,
     /// The 1-based line of each key of `roles:`, for the findings of
@@ -357,8 +351,8 @@ pub fn read_review_mode(
     }
 }
 
-/// The top-level and `mcp` keys of `raw` that this codev does not know, in
-/// file order. Read from a generic YAML mapping: the typed parse has
+/// The top-level, `mcp`, `review` and role-mapping keys of `raw` that this
+/// codev does not know, in file order. Read from a generic YAML mapping: the typed parse has
 /// already ignored them.
 fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
     let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(raw) else {
@@ -372,6 +366,10 @@ fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
                 key: key.to_string(),
                 line: key_line(raw, None, key),
             });
+        } else if key == "roles"
+            && let Some(roles) = value.as_mapping()
+        {
+            unknown.extend(unknown_role_keys(raw, roles));
         } else if let Some((_, known)) = SECTION_KEYS.iter().find(|(name, _)| *name == key)
             && let Some(mapping) = value.as_mapping()
         {
@@ -388,9 +386,34 @@ fn unknown_keys(raw: &str) -> Vec<UnknownKey> {
     unknown
 }
 
+/// The keys of each role's mapping under `roles:` that this codev does not
+/// know, named `roles.<id>.<key>`. A role written as a scalar has none.
+fn unknown_role_keys(raw: &str, roles: &serde_norway::Mapping) -> Vec<UnknownKey> {
+    use codev_core::yaml_lines::{Step, unknown_keys_of};
+    let mut unknown = Vec::new();
+    for (id, setting) in roles {
+        let (Some(id), Some(setting)) = (id.as_str(), setting.as_mapping()) else {
+            continue;
+        };
+        unknown.extend(unknown_keys_of(
+            raw,
+            setting,
+            codev_core::roles::ROLE_SETTING_KEYS,
+            &[Step::Key("roles"), Step::Key(id)],
+            &format!("roles.{id}."),
+        ));
+    }
+    unknown
+}
+
 /// The 1-based line where `key` is written — at the top level, or in the
 /// block of `parent`. A text scan, only used to point at the key: 1 when
 /// not found.
+///
+/// It predates `codev_core::yaml_lines`, which locates a key at any depth
+/// and in sequences; both give the same line for a key at these two
+/// levels. New lookups use `yaml_lines`; this one stays for its existing
+/// callers (top-level, `mcp`, `review`, `roles:` ids, `triggers:`).
 pub(crate) fn key_line(raw: &str, parent: Option<&str>, key: &str) -> usize {
     let names = |line: &str, name: &str| {
         line.strip_prefix(name)
@@ -442,13 +465,20 @@ fn with_requirement_hint(reason: String, raw: &str) -> String {
     }
 }
 
-/// The message of an `unknown_config_key` warning or finding.
-pub fn unknown_key_message(key: &str, codev_version: Option<&str>) -> String {
+/// The file named by an `unknown_config_key` warning.
+pub const CONFIG_FILE: &str = "_codev/config.yaml";
+
+/// The message of a warning or finding about a key this codev ignores in a
+/// hand-written `file` — `unknown_config_key`, `change_unknown_key`,
+/// `schema_unknown_key`, `decision_unknown_field`. One function, so that
+/// every file says the same thing: the key, the file, the project's
+/// requirement when it has one, and the way out (decision 0013).
+pub fn unknown_key_message(file: &str, key: &str, codev_version: Option<&str>) -> String {
     let requirement = codev_version
         .map(|r| format!(" (it requires codev_version: \"{r}\")"))
         .unwrap_or_default();
     format!(
-        "_codev/config.yaml: `{key}` is not a key this codev knows and is ignored; \
+        "{file}: `{key}` is not a key this codev knows and is ignored; \
          the project may need a newer codev{requirement} — run `codev self-update`, \
          or correct the key if it is a typo"
     )
@@ -467,7 +497,7 @@ pub fn resolve(fs: &dyn FileSystem, env: &dyn Env, layout: &Layout) -> Result<Re
         .map(|u| {
             Warning::new(
                 UNKNOWN_CONFIG_KEY,
-                unknown_key_message(&u.key, project.codev_version.as_deref()),
+                unknown_key_message(CONFIG_FILE, &u.key, project.codev_version.as_deref()),
             )
         })
         .collect();
@@ -839,6 +869,23 @@ mod tests {
     }
 
     #[test]
+    fn unknown_key_message_names_the_file_and_the_requirement() {
+        let message = unknown_key_message(
+            "_codev/changes/add-auth/change.yaml",
+            "ticket",
+            Some(">=0.6"),
+        );
+        assert_eq!(
+            message,
+            "_codev/changes/add-auth/change.yaml: `ticket` is not a key this codev knows \
+             and is ignored; the project may need a newer codev (it requires \
+             codev_version: \">=0.6\") — run `codev self-update`, or correct the key \
+             if it is a typo"
+        );
+        assert!(!unknown_key_message("x.yaml", "k", None).contains("codev_version"));
+    }
+
+    #[test]
     fn an_unknown_top_level_key_without_requirement_warns() {
         let fs = MemoryFileSystem::new().with_file("/p/_codev/config.yaml", "shema: spec-driven\n");
         let resolved = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
@@ -899,14 +946,28 @@ mod tests {
     }
 
     #[test]
-    fn an_unknown_key_inside_a_role_fails_the_configuration() {
+    fn unknown_key_inside_a_role_warns_and_keeps_the_model() {
         let fs = MemoryFileSystem::new().with_file(
             "/p/_codev/config.yaml",
-            "roles:\n  skeptic:\n    done-when: [x]\n",
+            "codev_version: \">=0.6\"\nroles:\n  skeptic:\n    cadence: weekly\n    model: sonnet\n",
         );
-        let err = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap_err();
-        assert_eq!(err.code(), "invalid");
-        assert!(err.to_string().contains("done-when"), "{err}");
+        let config = resolve(&fs, &env_with_home(), &Layout::new("/p")).unwrap();
+        assert_eq!(config.roles["skeptic"].model.as_deref(), Some("sonnet"));
+        assert_eq!(
+            config.unknown_keys,
+            [UnknownKey {
+                key: "roles.skeptic.cadence".into(),
+                line: 4,
+            }]
+        );
+        let warning = &config.warnings[0];
+        assert_eq!(warning.code, UNKNOWN_CONFIG_KEY);
+        assert!(
+            warning.message.contains("`roles.skeptic.cadence`")
+                && warning.message.contains("codev self-update"),
+            "{}",
+            warning.message
+        );
     }
 
     #[test]

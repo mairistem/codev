@@ -531,7 +531,11 @@ pub fn new_change(
         change,
         schema_name,
         created: applied.created,
-        warnings: config.warnings,
+        warnings: {
+            let mut warnings = config.warnings.clone();
+            warnings.extend(resolved.warnings(&layout, config.codev_version.as_deref()));
+            warnings
+        },
     })
 }
 
@@ -557,13 +561,15 @@ pub fn status(ctx: &Ctx, requested: Option<&str>) -> Result<StatusOutcome> {
     let ctxt = change::load(ctx.fs, &layout, &config, change.clone())?;
     // An invalid role setting fails the status too: the skills read it
     // first, and must not go on with roles they cannot trust.
-    engine_roles::resolve(ctx.fs, &layout, &config, Some(&ctxt))?;
+    let roles = engine_roles::resolve(ctx.fs, &layout, &config, Some(&ctxt))?;
+    let mut warnings = config.warnings.clone();
+    warnings.extend(roles.warnings);
 
     Ok(StatusOutcome {
         status: change::status(ctx.fs, &layout, &ctxt)?,
         planning_home: layout.project_root().to_path_buf(),
         change_root: layout.change_dir(&change),
-        warnings: config.warnings,
+        warnings,
         update: update_notice(ctx),
         requirement: version_requirement(ctx, config.codev_version.as_deref()),
     })
@@ -778,6 +784,7 @@ pub fn roles(
     }
 
     let mut warnings = config.warnings.clone();
+    warnings.extend(resolved.warnings.iter().cloned());
     // With a change, its diff feeds both the suggested domains and the
     // material of a reviewing step.
     let mut suggestions = None;
@@ -951,6 +958,7 @@ pub fn list_schemas(ctx: &Ctx) -> Result<SchemasOutcome> {
 pub fn validate(ctx: &Ctx, scope: ValidateArgs) -> Result<ValidateReport> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    require_codev_version(ctx, &config)?;
     let mut report = validate_items(ctx, &layout, &config, scope)?;
     add_suggested_domains(ctx, &layout, &config, &mut report);
     Ok(report)
@@ -1106,9 +1114,41 @@ fn resolve_validate_item(
 
 // ─────────────────────────────── sync / archive ───────────────────────────────
 
+/// Refuses, with `codev_version_unsatisfied`, when the running codev does
+/// not satisfy the project's `codev_version`. Called by the commands whose
+/// success is a verdict on the project — `validate`, `sync`, `archive` —
+/// right after the configuration is read, before any check or write: an
+/// older codev could ignore a key that tightens a check, and pass what a
+/// teammate's codev fails (decision 0013). Every other command keeps
+/// working, so that `codev status` and `codev doctor` can say what to
+/// install.
+fn require_codev_version(ctx: &Ctx, config: &config::ResolvedConfig) -> Result<()> {
+    let Some((requirement, satisfied)) = version_requirement(ctx, config.codev_version.as_deref())
+    else {
+        return Ok(());
+    };
+    if satisfied {
+        return Ok(());
+    }
+    // The cache only, like doctor: the refusal stays offline.
+    let latest_known = engine_update::cached_notice(ctx.fs, ctx.env, ctx.clock, ctx.version)
+        .map(|notice| notice.latest);
+    let fix = core_doctor::codev_version_fix(&requirement, ctx.version, latest_known.as_deref());
+    Err(Failure::new(
+        "codev_version_unsatisfied",
+        format!(
+            "codev {} does not satisfy this project's codev_version: \"{requirement}\"; \
+             validate, sync and archive refuse to give a verdict with it — run `{fix}`",
+            ctx.version
+        ),
+    )
+    .with_fix(fix))
+}
+
 pub fn sync(ctx: &Ctx, requested: Option<&str>) -> Result<SyncOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    require_codev_version(ctx, &config)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
     Ok(engine_sync::execute_sync(
         ctx.fs, &layout, &config, &change,
@@ -1118,6 +1158,7 @@ pub fn sync(ctx: &Ctx, requested: Option<&str>) -> Result<SyncOutcome> {
 pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
+    require_codev_version(ctx, &config)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
     Ok(engine_archive::execute_archive(
         ctx.fs, &layout, &config, ctx.clock, &change,
@@ -1152,11 +1193,13 @@ pub fn review(ctx: &Ctx, requested: Option<&str>) -> Result<ReviewOutcome> {
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
     let change_ctx = change::load(ctx.fs, &layout, &config, change.clone())?;
+    let mut warnings = config.warnings.clone();
+    warnings.extend(change_ctx.warnings(&layout, config.codev_version.as_deref()));
     Ok(ReviewOutcome {
         check: engine_review::check(ctx.fs, &layout, &config, &change_ctx)?,
         corrections: codev_engine::corrections::check(ctx.fs, &layout, &change)?,
         change,
-        warnings: config.warnings,
+        warnings,
     })
 }
 
@@ -1247,7 +1290,8 @@ pub fn decision_new(ctx: &Ctx, title: &str, status_raw: &str) -> Result<Decision
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
     let status = codev_core::decisions::DecisionStatus::from_raw(status_raw);
     let today = ctx.clock.today();
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
+    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout, cfg.codev_version.as_deref())
+        .map_err(action_to_failure)?;
     let create_plan =
         engine_actions::plan_new(&index, &seal_file, title, status.clone(), &today, &layout)
             .map_err(action_to_failure)?;
@@ -1526,7 +1570,8 @@ pub fn decision_seal(ctx: &Ctx, id: &str, force: bool) -> Result<DecisionSealedO
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
+    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout, cfg.codev_version.as_deref())
+        .map_err(action_to_failure)?;
     let today = ctx.clock.today();
 
     // Note whether there already was an entry, to distinguish, when
@@ -1565,7 +1610,8 @@ pub fn decision_accept(ctx: &Ctx, id: &str) -> Result<DecisionAcceptedOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let cfg = config::resolve(ctx.fs, ctx.env, &layout)?;
     let index = engine_decisions::index(ctx.fs, ctx.env, &layout, &cfg)?;
-    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout).map_err(action_to_failure)?;
+    let seal_file = engine_actions::read_seal_file(ctx.fs, &layout, cfg.codev_version.as_deref())
+        .map_err(action_to_failure)?;
     let today = ctx.clock.today();
     let plan = engine_actions::plan_accept(&index, &seal_file, id, &today, &layout, |path| {
         ctx.fs.read_to_string(path)
@@ -4013,6 +4059,175 @@ edition = "2024"
     }
 
     #[test]
+    fn validate_reports_an_unknown_adr_field_and_strict_fails() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let created = decision_new(&h.ctx(), "A choice", "accepted").unwrap();
+        let source = h.fs.read_to_string(&created.path).unwrap();
+        let with_field = source.replacen("\ndate:", "\nreview_by: 2027-01-01\ndate:", 1);
+        h.fs.write(&created.path, &with_field).unwrap();
+        let line = with_field
+            .lines()
+            .position(|l| l.starts_with("review_by:"))
+            .unwrap()
+            + 1;
+
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == codev_engine::validate::ItemKind::Decisions)
+            .unwrap();
+        assert_eq!(item.findings.len(), 1, "{item:#?}");
+        let finding = &item.findings[0];
+        assert_eq!(finding.finding.code, "decision_unknown_field");
+        assert_eq!(finding.finding.line as usize, line);
+        assert!(finding.finding.message.contains("`review_by`"));
+        assert!(finding.finding.message.contains("codev self-update"));
+        assert!(finding.path.ends_with("0001-a-choice.md"), "{finding:?}");
+        // A warning: plain `validate` passes, `--strict` fails.
+        assert!(report.has_warnings() && !report.has_errors(), "{report:#?}");
+        let listed = decision_list(&h.ctx()).unwrap();
+        assert_eq!(listed.decisions[0].status, "accepted");
+    }
+
+    #[test]
+    fn inherited_adr_unknown_field_is_not_reported() {
+        let h = Harness::new()
+            .with("/p/_codev/config.yaml", "inherits:\n  - path: ~/shared\n")
+            .with("/home/shared/_codev/config.yaml", "context: shared\n")
+            .with(
+                "/home/shared/_codev/decisions/0100.md",
+                "---\nid: \"0100\"\ntitle: Shared\nstatus: accepted\ndate: 2026-09-08\nreview_by: 2027-01-01\n---\n\n## Context\n\nx\n",
+            );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .flat_map(|i| &i.findings)
+                .all(|f| f.finding.code != "decision_unknown_field"),
+            "{report:#?}"
+        );
+        assert!(
+            !report.has_errors() && !report.has_warnings(),
+            "{report:#?}"
+        );
+        let listed = decision_list(&h.ctx()).unwrap();
+        let shared = listed
+            .decisions
+            .iter()
+            .find(|d| d.qualified_id == "path:~/shared/0100")
+            .unwrap();
+        assert_eq!(shared.status, "accepted");
+    }
+
+    #[test]
+    fn accept_keeps_unknown_frontmatter_fields() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let old = decision_new(&h.ctx(), "Old choice", "accepted").unwrap();
+        let new = decision_supersede(&h.ctx(), &old.decision.id, "New choice").unwrap();
+        let add_field = |path: &std::path::Path, field: &str| {
+            let source = h.fs.read_to_string(path).unwrap();
+            let edited = source.replacen("\ndate:", &format!("\n{field}\ndate:"), 1);
+            h.fs.write(path, &edited).unwrap();
+            codev_core::decisions::body_slice(&edited)
+                .unwrap()
+                .to_string()
+        };
+        let old_body = add_field(&old.path, "owner: platform-team");
+        let new_body = add_field(&new.new_path, "review_by: 2027-01-01");
+
+        decision_accept(&h.ctx(), &new.new_decision.id).unwrap();
+
+        let accepted = h.fs.read_to_string(&new.new_path).unwrap();
+        assert!(accepted.contains("status: accepted\n"), "{accepted}");
+        assert!(accepted.contains("review_by: 2027-01-01\n"), "{accepted}");
+        assert_eq!(
+            codev_core::decisions::body_slice(&accepted).unwrap(),
+            new_body
+        );
+        let superseded = h.fs.read_to_string(&old.path).unwrap();
+        assert!(superseded.contains("status: superseded\n"), "{superseded}");
+        assert!(
+            superseded.contains("owner: platform-team\n"),
+            "{superseded}"
+        );
+        assert_eq!(
+            codev_core::decisions::body_slice(&superseded).unwrap(),
+            old_body
+        );
+    }
+
+    const NEWER_SEAL: &str = "version: 2\nseals: []\nsigned_by: ci\n";
+
+    #[test]
+    fn validate_refuses_a_newer_seal_file() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        write_helper(&h, "/p/_codev/decisions/seal.yaml", NEWER_SEAL);
+        let err = validate(&h.ctx(), ValidateArgs::All).unwrap_err();
+        assert_eq!(err.code, "seal_version_unsupported");
+        for word in ["version 2", "version 1", "codev self-update"] {
+            assert!(err.message.contains(word), "{word}: {}", err.message);
+        }
+    }
+
+    #[test]
+    fn accept_writes_nothing_against_a_newer_seal_file() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        with_config(&h, "codev_version: \">=0.0.1\"\n");
+        let path = written_proposed_decision(&h);
+        write_helper(&h, "/p/_codev/decisions/seal.yaml", NEWER_SEAL);
+        let before = h.fs.read_to_string(&path).unwrap();
+        let err = decision_accept(&h.ctx(), "0001").unwrap_err();
+        assert_eq!(err.code, "seal_version_unsupported");
+        assert!(err.message.contains(">=0.0.1"), "{}", err.message);
+        assert_eq!(h.fs.read_to_string(&path).unwrap(), before);
+        assert_eq!(seal_yaml(&h).as_deref(), Some(NEWER_SEAL));
+    }
+
+    #[test]
+    fn seal_and_new_refuse_a_newer_seal_file() {
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        decision_new(&h.ctx(), "A choice", "accepted").unwrap();
+        write_helper(&h, "/p/_codev/decisions/seal.yaml", NEWER_SEAL);
+        let before = h.fs.paths();
+
+        let err = decision_seal(&h.ctx(), "0001", false).unwrap_err();
+        assert_eq!(err.code, "seal_version_unsupported");
+        let Err(err) = decision_new(&h.ctx(), "Another choice", "accepted") else {
+            panic!("a decision was created against a newer seal file");
+        };
+        assert_eq!(err.code, "seal_version_unsupported");
+
+        assert_eq!(h.fs.paths(), before, "no ADR created");
+        assert_eq!(seal_yaml(&h).as_deref(), Some(NEWER_SEAL));
+    }
+
+    #[test]
+    fn accept_refuses_an_unknown_seal_field() {
+        use codev_engine::FileSystem;
+        let h = Harness::new();
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let path = written_proposed_decision(&h);
+        let seal = "version: 1\nseals:\n  - id: \"0009\"\n    bodySha256: sha256:00\n    sealedAt: 2026-09-08\n    sealedBy: ci\n";
+        write_helper(&h, "/p/_codev/decisions/seal.yaml", seal);
+        let before = h.fs.read_to_string(&path).unwrap();
+        let err = decision_accept(&h.ctx(), "0001").unwrap_err();
+        assert_eq!(err.code, "seal_invalid", "{}", err.message);
+        assert_eq!(h.fs.read_to_string(&path).unwrap(), before);
+        assert_eq!(seal_yaml(&h).as_deref(), Some(seal));
+    }
+
+    #[test]
     fn decision_accept_refuses_an_unknown_id() {
         let h = Harness::new();
         init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
@@ -4110,11 +4325,12 @@ edition = "2024"
         decision_new(&h.ctx(), "Old choice", "accepted").unwrap();
         let old_path = "/p/_codev/decisions/0001-old-choice.md";
         let old_before = read(&h, old_path);
-        let old_seal = codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p"))
-            .unwrap()
-            .find("0001")
-            .cloned()
-            .unwrap();
+        let old_seal =
+            codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p"), None)
+                .unwrap()
+                .find("0001")
+                .cloned()
+                .unwrap();
 
         decision_supersede(&h.ctx(), "0001", "New choice").unwrap();
         assert!(decision_seal_findings(&h).is_empty());
@@ -4141,8 +4357,8 @@ edition = "2024"
             codev_core::decisions::body_slice(&old_after).unwrap(),
             codev_core::decisions::body_slice(&old_before).unwrap(),
         );
-        let seal =
-            codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p")).unwrap();
+        let seal = codev_engine::decisions_actions::read_seal_file(&h.fs, &Layout::new("/p"), None)
+            .unwrap();
         assert_eq!(seal.find("0001"), Some(&old_seal), "old seal untouched");
         assert_eq!(
             seal.find("0002").map(|s| s.body_sha256.as_str()),
@@ -5676,6 +5892,354 @@ The rationale for the choice.
             "{:?}",
             keys.fix
         );
+    }
+
+    #[test]
+    fn validate_warns_at_the_line_of_a_misspelled_role_key() {
+        let h = Harness::new();
+        project_with_change(&h);
+        with_config(
+            &h,
+            "schema: spec-driven\nroles:\n  skeptic:\n    done-when: [x]\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == codev_engine::validate::ItemKind::Config)
+            .expect("a config item");
+        assert_eq!(item.findings.len(), 1, "{item:?}");
+        let finding = &item.findings[0].finding;
+        assert_eq!(finding.code, "unknown_config_key");
+        assert_eq!(finding.line, 4);
+        assert!(
+            finding.message.contains("`roles.skeptic.done-when`"),
+            "{}",
+            finding.message
+        );
+        // A warning: `--strict` fails on it, plain `validate` does not.
+        assert!(item.has_warnings() && !item.has_errors(), "{item:?}");
+    }
+
+    #[test]
+    fn roles_warns_on_an_unknown_key_inside_a_role() {
+        let h = roles_project(
+            "roles:\n  skeptic:\n    cadence: weekly\n    model: sonnet\n",
+            "schema: spec-driven\n",
+        );
+        let json = roles_json(&h, None, None);
+        let skeptic = json["roles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["id"] == "skeptic")
+            .unwrap();
+        assert_eq!(skeptic["model"], "sonnet");
+        let warning = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["code"] == "unknown_config_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        let message = warning["message"].as_str().unwrap();
+        assert!(message.contains("`roles.skeptic.cadence`"), "{message}");
+        assert!(message.contains("codev self-update"), "{message}");
+    }
+
+    #[test]
+    fn doctor_reports_an_unknown_role_key_under_config_keys() {
+        let h = Harness::new().with(
+            "/p/_codev/config.yaml",
+            "language: en\nroles:\n  skeptic:\n    cadence: weekly\n",
+        );
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        let outcome = doctor(&h.ctx()).unwrap();
+        let keys = check(&outcome, "config.keys");
+        assert_eq!(keys.status, CheckStatus::Warning);
+        assert_eq!(keys.code, "unknown_config_key");
+        assert!(
+            keys.message.contains("roles.skeptic.cadence"),
+            "{}",
+            keys.message
+        );
+        assert_eq!(check(&outcome, "config.roles").status, CheckStatus::Ok);
+    }
+
+    // ─────────────── unknown keys of change.yaml and schemas ───────────────
+
+    /// `add-auth` with a valid delta and `change_yaml` as its `change.yaml`.
+    fn change_with_metadata(change_yaml: &str) -> Harness {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(
+            &h,
+            "/p/_codev/changes/add-auth/specs/user-auth/spec.md",
+            DELTA,
+        );
+        write_helper(&h, "/p/_codev/changes/add-auth/change.yaml", change_yaml);
+        h
+    }
+
+    fn change_item(report: &ValidateReport) -> &codev_engine::validate::ItemReport {
+        report
+            .items
+            .iter()
+            .find(|i| i.kind == codev_engine::validate::ItemKind::Change)
+            .expect("a change item")
+    }
+
+    #[test]
+    fn status_warns_on_an_unknown_change_key() {
+        let h = change_with_metadata("schema: spec-driven\nticket: JVS-12\n");
+        with_config(&h, "codev_version: \">=0.0.1\"\n");
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        assert!(!outcome.status.artifacts.is_empty());
+        let json = status_json(&outcome);
+        let warning = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["code"] == "change_unknown_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        let message = warning["message"].as_str().unwrap();
+        for word in ["`ticket`", "change.yaml", ">=0.0.1", "codev self-update"] {
+            assert!(message.contains(word), "{word}: {message}");
+        }
+    }
+
+    #[test]
+    fn roles_warns_on_an_unknown_review_key_of_a_change() {
+        let h = roles_project(
+            "",
+            "schema: spec-driven\nreview: { mode: isolated, budget: 3 }\n",
+        );
+        let json = roles_json(&h, Some("code.review"), Some("add-auth"));
+        assert_eq!(json["review"]["mode"], "isolated");
+        assert_eq!(json["review"]["origin"], "change");
+        let warning = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["code"] == "change_unknown_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        assert!(
+            warning["message"]
+                .as_str()
+                .unwrap()
+                .contains("`review.budget`"),
+            "{warning}"
+        );
+    }
+
+    #[test]
+    fn validate_warns_at_the_line_of_a_misspelled_change_key() {
+        let h = change_with_metadata("schema: spec-driven\ncreated: 2026-10-26\nskip_spec: true\n");
+        let report = validate(&h.ctx(), ValidateArgs::Item("add-auth".into())).unwrap();
+        let item = change_item(&report);
+        assert_eq!(item.findings.len(), 1, "{item:#?}");
+        let finding = &item.findings[0];
+        assert_eq!(finding.finding.code, "change_unknown_key");
+        assert_eq!(finding.finding.line, 3);
+        assert!(finding.finding.message.contains("`skip_spec`"));
+        assert_eq!(
+            codev_core::layout::slashed(&finding.path),
+            "_codev/changes/add-auth/change.yaml"
+        );
+        // `--strict` fails on a warning.
+        assert!(report.has_warnings() && !report.has_errors());
+    }
+
+    #[test]
+    fn validate_reports_an_unknown_change_key_as_a_warning_only() {
+        let h = change_with_metadata("schema: spec-driven\nticket: JVS-12\n");
+        let report = validate(&h.ctx(), ValidateArgs::Item("add-auth".into())).unwrap();
+        let item = change_item(&report);
+        assert_eq!(item.findings.len(), 1, "{item:#?}");
+        assert_eq!(item.findings[0].finding.code, "change_unknown_key");
+        // A plain `codev validate` fails on errors only.
+        assert!(!report.has_errors());
+    }
+
+    /// A project schema `lite` — `extra` added at the top level — and a
+    /// change `quick` using it.
+    fn lite_project(extra: &str, brief_role: &str) -> Harness {
+        let schema = format!(
+            "name: lite\ndescription: A light schema\nversion: 1\nartifacts:\n  - id: notes\n    generates: notes.md\n  - id: brief\n    generates: brief.md\n{brief_role}apply:\n  requires: [brief]\n  tracks: brief.md\n{extra}"
+        );
+        let h = Harness::new().with("/p/_codev/schemas/lite/schema.yaml", &schema);
+        init(&h.ctx(), ".", false, &test_init_opts()).unwrap();
+        new_change(&h.ctx(), "quick", Some("lite"), None).unwrap();
+        h
+    }
+
+    #[test]
+    fn status_warns_on_an_unknown_schema_key() {
+        let h = lite_project("gates: strict\n", "");
+        let outcome = status(&h.ctx(), Some("quick")).unwrap();
+        let ids: Vec<&str> = outcome
+            .status
+            .artifacts
+            .iter()
+            .map(|a| a.id.as_str())
+            .collect();
+        assert_eq!(ids, ["notes", "brief"]);
+        let json = status_json(&outcome);
+        let warning = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["code"] == "schema_unknown_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        let message = warning["message"].as_str().unwrap();
+        for word in [
+            "`gates`",
+            "_codev/schemas/lite/schema.yaml:12",
+            "codev self-update",
+        ] {
+            assert!(message.contains(word), "{word}: {message}");
+        }
+        // Still usable.
+        let schemas = list_schemas(&h.ctx()).unwrap();
+        assert!(schemas.schemas.iter().any(|s| s.name == "lite"));
+        assert!(
+            schemas.warnings.iter().all(|w| w.code != "schema_unusable"),
+            "{:?}",
+            schemas.warnings
+        );
+    }
+
+    #[test]
+    fn roles_warns_on_an_unknown_artifact_role_key() {
+        let h = lite_project(
+            "",
+            "    role: { id: editor, name: { en: Editor }, question: \"Is the brief clear?\", model: sonnet }\n",
+        );
+        with_config(&h, "schema: lite\n");
+        let json = roles_json(&h, Some("plan.write"), None);
+        assert!(
+            json["roles"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r["id"] == "editor"),
+            "{json}"
+        );
+        let warning = json["status"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["code"] == "schema_unknown_key")
+            .unwrap_or_else(|| panic!("{json}"));
+        assert!(
+            warning["message"].as_str().unwrap().contains("model"),
+            "{warning}"
+        );
+    }
+
+    #[test]
+    fn validate_warns_at_the_line_of_a_misspelled_schema_key() {
+        let h = lite_project("", "    require: [notes]\n");
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        let item = report
+            .items
+            .iter()
+            .find(|i| i.kind == codev_engine::validate::ItemKind::Config)
+            .expect("a config item");
+        assert_eq!(item.findings.len(), 1, "{item:#?}");
+        let finding = &item.findings[0];
+        assert_eq!(finding.finding.code, "schema_unknown_key");
+        assert_eq!(finding.finding.line, 9);
+        assert!(finding.finding.message.contains("require"));
+        assert_eq!(
+            codev_core::layout::slashed(&finding.path),
+            "_codev/schemas/lite/schema.yaml"
+        );
+        assert!(item.has_warnings() && !item.has_errors(), "{item:?}");
+    }
+
+    #[test]
+    fn no_config_item_when_config_and_schemas_are_clean() {
+        let h = lite_project("", "");
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        assert!(
+            report
+                .items
+                .iter()
+                .all(|i| i.kind != codev_engine::validate::ItemKind::Config),
+            "{report:#?}"
+        );
+    }
+
+    // ─────────────── verdict commands and codev_version ───────────────
+
+    /// `add-auth` with a valid delta, under `codev_version: <requirement>`.
+    fn gated_project(requirement: &str) -> Harness {
+        let h = change_with_metadata("schema: spec-driven\n");
+        with_config(&h, &format!("codev_version: \"{requirement}\"\n"));
+        h
+    }
+
+    #[test]
+    fn validate_refuses_below_the_requirement() {
+        let h = gated_project(">=99");
+        let err = validate(&h.ctx(), ValidateArgs::All).unwrap_err();
+        assert_eq!(err.code, "codev_version_unsatisfied");
+        for word in [">=99", "0.1.0", "codev self-update"] {
+            assert!(err.message.contains(word), "{word}: {}", err.message);
+        }
+        assert_eq!(err.fix.as_deref(), Some("codev self-update"));
+    }
+
+    #[test]
+    fn archive_refuses_and_moves_nothing_below_the_requirement() {
+        let h = gated_project(">=99");
+        let before = h.fs.paths();
+        let err = archive(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "codev_version_unsatisfied");
+        assert_eq!(h.fs.paths(), before);
+        assert!(
+            h.fs.read("/p/_codev/changes/add-auth/change.yaml")
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn sync_refuses_and_leaves_specs_below_the_requirement() {
+        let h = gated_project(">=99");
+        let err = sync(&h.ctx(), Some("add-auth")).unwrap_err();
+        assert_eq!(err.code, "codev_version_unsatisfied");
+        assert!(h.fs.read("/p/_codev/specs/user-auth/spec.md").is_none());
+    }
+
+    #[test]
+    fn validate_refusal_names_the_version_to_install_above_the_requirement() {
+        // The harness runs codev 0.1.0.
+        let h = gated_project("=0.0.1");
+        let err = validate(&h.ctx(), ValidateArgs::All).unwrap_err();
+        assert_eq!(err.code, "codev_version_unsatisfied");
+        assert!(
+            err.message.contains("codev self-update --version 0.0.1"),
+            "{}",
+            err.message
+        );
+    }
+
+    #[test]
+    fn status_still_works_below_the_requirement() {
+        let h = gated_project(">=99");
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        let json = status_json(&outcome);
+        assert_eq!(json["versionRequirement"]["satisfied"], false, "{json}");
+    }
+
+    #[test]
+    fn validate_runs_without_a_requirement() {
+        let h = change_with_metadata("schema: spec-driven\n");
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        assert!(!report.has_errors(), "{report:#?}");
+        // And a satisfied requirement does not refuse either.
+        with_config(&h, "codev_version: \">=0.0.1\"\n");
+        validate(&h.ctx(), ValidateArgs::All).unwrap();
     }
 
     #[test]

@@ -84,6 +84,22 @@ pub struct Decision {
     /// Position of the frontmatter in the source — useful for a future
     /// tool that would rewrite it without touching the body.
     pub frontmatter_span: Span,
+    /// The frontmatter fields this codev does not know, in file order:
+    /// ignored when reading, reported by `codev validate` for a local
+    /// decision, and kept by `codev decision accept` when it rewrites the
+    /// frontmatter (decision 0013).
+    pub unknown_fields: Vec<UnknownField>,
+}
+
+/// A frontmatter field this codev does not know, as written.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownField {
+    pub key: String,
+    /// 1-based line of the field in the ADR's file.
+    pub line: usize,
+    /// The field's lines as written, its continuation lines included,
+    /// without the final line break.
+    pub text: String,
 }
 
 #[cfg(test)]
@@ -155,6 +171,7 @@ mod tests {
                 span: span.clone(),
             }],
             frontmatter_span: span,
+            unknown_fields: vec![],
         };
         assert_eq!(decision.status.as_str(), "accepted");
         assert_eq!(decision.sections.len(), 1);

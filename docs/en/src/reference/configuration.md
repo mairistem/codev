@@ -2,8 +2,8 @@
 
 A codev project is configured by `_codev/config.yaml`. Every key is optional:
 a project can even run without the file. A key codev does not know is
-reported — as a warning at the top level, in `mcp` and in `review`, as an
-error elsewhere —
+reported — as a warning at the top level, in `mcp`, in `review` and inside
+a role's mapping, as an error in an `inherits` entry and in `changelog` —
 so a typo never goes unnoticed; see [Unknown keys](#unknown-keys).
 
 `codev init` generates the file with the values it detected, each preceded by
@@ -215,6 +215,23 @@ cache knows when it satisfies the requirement, otherwise from the requirement
 itself (`<=0.6.2` gives `0.6.2`, `^0.5` gives `0.5.0`). A value that is not a
 requirement makes every command fail with `invalid_codev_version`.
 
+`codev validate`, `codev sync` and `codev archive` — the commands whose
+success is a verdict on the project — **refuse to run** when the running
+codev does not satisfy `codev_version`: they check and write nothing and fail
+with `codev_version_unsatisfied`, whose message names the requirement, the
+running version and the same fix as `codev doctor`. An older codev could
+otherwise ignore a key that tightens a check and pass what a teammate's codev
+fails (see [Unknown keys](#unknown-keys)). Every other command keeps working,
+so that `codev status`, `codev doctor` and the skills can still tell you what
+to install. Two consequences to plan for:
+
+- a CI job pinned with `CODEV_VERSION=` (as `codev init` writes it) starts
+  failing once `codev_version` is raised above the pin: raise the pin in the
+  same commit;
+- a requirement with an upper bound (`^0.6`) refuses a newer codev too: widen
+  `codev_version` before upgrading past it, or install the version
+  `codev doctor` names.
+
 codev 0.5 and earlier do not know this key and reject the file: add it once
 everyone runs a version that does.
 
@@ -259,8 +276,10 @@ bound to no domain — as `invalid_role_activation`, and `never` on a role
 that cannot be disabled as `role_not_disableable` — errors of the
 `config` item, at the line of the role. `codev status`,
 `codev instructions` and `codev roles` fail with the same code. Any other
-key inside a role's mapping, such as a misspelled `done-when`, fails every
-command with `invalid`: ignoring it would drop criteria silently.
+key inside a role's mapping, such as a misspelled `done-when`, is ignored
+with an `unknown_config_key` warning named `roles.<id>.<key>`, at the line of
+the key: the rest of the role's mapping still applies, and
+`codev validate --strict` fails on it, so a typo is still caught.
 A `model` other than `opus`, `sonnet`, `haiku` or `inherit` is an
 `invalid_role_model` error, reported and failing the same way. A `model`
 on a role that serves no reviewing step (`plan.trace`, `plan.challenge`,
@@ -269,8 +288,8 @@ on a role that serves no reviewing step (`plan.trace`, `plan.challenge`,
 of `/codev-apply` in a sub-agent, in either review mode (decision 0012).
 
 **`model` and older codev versions.** A codev older than the release that
-introduced `model` refuses the key, like any unknown key inside a role:
-every command fails with `invalid`. Raise
+introduced `model` does not know the key: codev 0.6.1 and earlier refuse it,
+like any unknown key inside a role, and every command fails with `invalid`. Raise
 [`codev_version`](#codev_version) to that release before you set it, so
 every codev that reads the repository, CI included, understands it. A
 source shared through [`inherits`](#inherits) should not set it until
@@ -369,7 +388,7 @@ keys are treated according to what ignoring them would do:
 | `review` | warning `unknown_config_key` (`review.<key>`), key ignored | an unknown review setting leaves the review as it was |
 | an `inherits` entry | error `invalid` | ignoring it would read another source than the one you described |
 | `changelog` | error `invalid` | ignoring it would make `codev changelog --write` write another file |
-| a `roles` entry | error `invalid` | ignoring it would drop criteria or an activation |
+| a `roles` entry | warning `unknown_config_key` (`roles.<id>.<key>`), key ignored | the rest of the role's mapping still applies; a key whose ignoring would drop a review comes with a raised `codev_version` |
 | a `triggers` group | warning `invalid_trigger` from `codev validate`, key ignored | the rest of the group still suggests its domain |
 
 The warning names the key, says the project may need a newer codev, quotes
@@ -386,8 +405,26 @@ error does the same when `codev_version` is set. The warning appears:
 The keys of an inherited source's configuration are not reported: only its
 `context` and `rules` are read.
 
+The other files you write by hand follow the same rule, each with its own
+code, so you know which file to open:
+
+| File | Unknown key | Reported by |
+|---|---|---|
+| a change's `change.yaml`, top level or under `review:` | warning `change_unknown_key` (`review.<key>` under `review`), key ignored | the commands that read the change (`status`, `instructions`, `roles`, `review`), and `codev validate` on the change's item |
+| a project `schema.yaml`, at any level, an artifact's `role:` included | warning `schema_unknown_key`, key ignored | the commands that use the schema, and `codev validate` on the `config` item, located in the schema's file |
+| an ADR frontmatter | warning `decision_unknown_field`, field ignored and kept by `codev decision accept` | `codev validate` on the `decisions` item, at the field's line; an inherited decision's are not reported |
+
+A *value* codev does not know — a `review.mode`, a role activation, an ADR
+`status` — stays an error: it cannot be ignored without guessing what you
+meant. Files codev writes itself carry their format: a
+`_codev/decisions/seal.yaml` of a newer `version` is refused with
+`seal_version_unsupported`, which points to `codev self-update`. The policy
+is decision 0013 of codev's repository.
+
 This tolerance starts with the codev release that introduced it: **codev 0.5
-and earlier reject any unknown key**, at any level. When you add a key that
+and earlier reject any unknown key**, at any level, and **codev 0.6.1 and
+earlier reject an unknown key inside a role, in `change.yaml`, in a project
+schema and in an ADR frontmatter**. When you add a key that
 only recent versions know, raise `codev_version` too, so that teammates on an
 older codev learn from `codev doctor` and the skills which version to install.
 

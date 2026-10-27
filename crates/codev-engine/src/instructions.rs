@@ -148,6 +148,7 @@ pub fn for_artifact(
 
     let change_dir = layout.change_dir(&ctx.change);
     let mut warnings = config.warnings.clone();
+    warnings.extend(ctx.warnings(layout, config.codev_version.as_deref()));
     if state == ArtifactState::Skipped {
         warnings.push(Warning::new(
             "artifact_skipped",

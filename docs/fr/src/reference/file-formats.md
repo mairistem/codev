@@ -291,8 +291,15 @@ goal: Let users switch the UI to a dark theme
 | `roles` | table | Activations de rôles pour ce change seulement, par-dessus le [`roles:`](configuration.md#roles) du projet : `newcomer: always`. Activations uniquement — les critères relèvent du projet |
 | `review` | table | `mode: inline` ou `mode: isolated` pour ce change seulement, par-dessus le [`review:`](configuration.md#review) du projet. Une autre valeur échoue avec `invalid_review_mode` |
 
-Les clés inconnues sont rejetées — dans `review` aussi. Un codev antérieur à
-`review` refuse un `change.yaml` qui la définit : relevez le
+Une clé que codev ne connaît pas — au premier niveau, ou sous `review`
+(`review.<clé>`) — est ignorée avec un avertissement `change_unknown_key` qui
+la nomme, cite le `codev_version` du projet et renvoie à
+`codev self-update` ; `codev validate --strict` échoue dessus, à sa ligne. Le
+change a peut-être été écrit avec une version plus récente de codev, ou la
+clé est mal orthographiée. Une valeur que codev ne connaît pas — un
+`review.mode`, une activation de rôle — reste une erreur. codev 0.6.1 et les
+versions antérieures rejettent toute clé inconnue de ce fichier : un codev
+antérieur à `review` refuse donc un `change.yaml` qui la définit. Relevez le
 [`codev_version`](configuration.md#codev_version) du projet jusqu'à la
 version qui l'a introduite avant de l'utiliser. Un dossier de change dépourvu de
 `change.yaml` utilise le schéma du projet. Une entrée invalide de `roles` est
@@ -302,6 +309,9 @@ signalée par `codev validate` comme une erreur du change (`unknown_role`,
 Les artefacts d'un `schema.yaml` peuvent déclarer leur [rôle](../roles.md)
 comme une donnée, sous `role:` — voir
 [Schémas personnalisés](../guides/custom-schemas.md#déclarer-les-rôles-des-artefacts).
+Une clé d'un schéma de projet que codev ne connaît pas, à tout niveau, est
+ignorée avec un avertissement `schema_unknown_key` qui nomme la clé et sa
+ligne.
 
 ## review.md
 
@@ -482,6 +492,14 @@ vigueur, et `supersedes` comme `deviates_from` ne prennent effet que sur une
 décision `accepted` : un remplacement ou un écart `proposed` ne change rien
 avant `codev decision accept`.
 
+Un champ du frontmatter que codev ne connaît pas ne fait pas rejeter la
+décision : elle est lue à partir des champs que codev connaît, et
+`codev validate` signale le champ par un avertissement
+`decision_unknown_field` à sa ligne — `--strict` échoue dessus. Les champs
+inconnus d'une décision héritée ne sont pas signalés. `codev decision accept`
+conserve un tel champ, tel qu'il est écrit, lorsqu'il réécrit le frontmatter.
+codev 0.6.1 et les versions antérieures rejettent la décision à la place.
+
 Les fichiers enregistrés avec des fins de ligne Windows (CRLF) sont lus comme
 les autres. Lorsque codev réécrit le statut d'une décision — `codev decision
 accept`, ou un prédécesseur passé en `superseded` —, il conserve les fins de
@@ -504,6 +522,14 @@ seals:
 Chaque entrée enregistre l'empreinte SHA-256 du contenu d'une décision — tout
 ce qui suit le `---` fermant du frontmatter, octet pour octet — et la date de
 son scellement. Commitez ce fichier avec vos décisions.
+
+`version` est le format du fichier : un codev qui lui ajoute un champ ou une
+valeur relève la version. Chaque commande qui lit le fichier —
+`codev validate`, `codev decision new`, `codev decision accept`,
+`codev decision seal` — refuse une version qu'elle ne lit pas avec
+`seal_version_unsupported`, sans rien écrire ; le message nomme les deux
+versions et renvoie à `codev self-update`. Un champ inconnu dans un fichier
+d'une version connue est une corruption, signalée par `seal_invalid`.
 
 ## codev.lock
 

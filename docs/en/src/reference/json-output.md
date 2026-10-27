@@ -56,13 +56,15 @@ Common error codes:
 | `invalid_change_id` | A change name that is not kebab-case, or the reserved `archive`; the message names the rule it breaks |
 | `change_exists` | `new change` with a name already taken |
 | `schema_not_found` | Unknown schema name |
-| `schema_invalid`, `schema_unreadable` | A schema file that codev refuses: a structural defect, or invalid YAML or an unknown key |
+| `schema_invalid`, `schema_unreadable` | A schema file that codev refuses: a structural defect, or invalid YAML or a missing mandatory field. An unknown key is not refused: it is a `schema_unknown_key` warning |
 | `unknown_artifact` | `instructions` with an artifact that the change's schema does not have |
 | `no_artifact_ready` | `instructions` without an artifact, and none is ready |
 | `template_not_found` | A schema references a missing template |
 | `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
 | `review_blocked` | `archive` refused a change whose review record is missing for a reviewed step, holds a high-severity finding still open or disputed, or comes from a newer codev; the message names each reason |
 | `invalid_review_mode` | `review.mode` in `_codev/config.yaml` or a change's `change.yaml` is neither `inline` nor `isolated`; the message names the file and the allowed values |
+| `codev_version_unsatisfied` | `validate`, `sync` or `archive` refused to run: the running codev does not satisfy the project's `codev_version`; the message names the requirement, the running version and the fix |
+| `seal_version_unsupported` | `_codev/decisions/seal.yaml` has a `version` this codev does not read: written by a newer codev; the message points to `codev self-update` |
 | `invalid` | An invalid file, or a delta that cannot be merged into its main spec |
 | `unreadable` | A file could not be read |
 | `write_failed` | A file could not be written |
@@ -506,8 +508,13 @@ configuration cannot be read — and the other fields `null` or empty.
 ```
 
 `kind` is `change`, `spec`, `decisions` or `config` — the last one only when
-`_codev/config.yaml` holds keys this codev does not know (see
-[Unknown keys](configuration.md#unknown-keys)). Findings are reported in `items`,
+`_codev/config.yaml` or a project schema has a finding, such as a key this
+codev does not know (see [Unknown keys](configuration.md#unknown-keys)). A
+key of a project schema is a `schema_unknown_key` finding of the `config`
+item, whose `path` is the schema's file; a key of a change's `change.yaml` is
+a `change_unknown_key` finding of the change's item; a field of an ADR
+frontmatter is a `decision_unknown_field` finding of the `decisions` item.
+All three are warnings. Findings are reported in `items`,
 not in `status`: `status` only carries a failure of the command itself. See
 [Validation codes](file-formats.md#validation-codes).
 
