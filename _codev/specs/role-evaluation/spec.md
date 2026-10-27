@@ -1221,8 +1221,8 @@ sub-agent tool is then granted like `codev`. `--fixture-config <file>`
 SHALL append the YAML of `<file>` to each review case's
 `_codev/config.yaml` at the same moment, for a setting a measure needs,
 and to each implementation case's, as the `implementation-evaluation`
-capability says. Planning and update cases ignore both options;
-implementation cases ignore `--review-mode`. `--review-mode` accepts
+capability says. Planning, update, sync, archive and configure cases
+ignore both options; implementation cases ignore `--review-mode`. `--review-mode` accepts
 `inline` (the default) and `isolated`; an unknown mode, a
 `--fixture-config` file that is missing or not a YAML mapping, or one
 holding `review:` — the mode comes from `--review-mode` alone, so that
@@ -1305,3 +1305,11 @@ ends in error.
 - **WHEN** it is read
 - **THEN** it reads as `inline` with nothing appended, and resuming it
   without the options continues
+
+#### Scenario: A sync, archive or configure case ignores both options
+
+- **GIVEN** a `change.archive` case and a `configure.enrich` case
+- **WHEN** the user runs `codev-evals run --review-mode isolated
+  --fixture-config <file>` on them
+- **THEN** neither case's `_codev/config.yaml` gains `review:` nor the
+  file's text

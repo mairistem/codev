@@ -413,6 +413,8 @@ mod tests {
                 ],
                 read_repository: vec![],
             }),
+            merge: None,
+            configure: None,
         }
     }
 

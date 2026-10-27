@@ -1,0 +1,9 @@
+# The author answers no to the skill's confirmation: nothing is written.
+step: configure.enrich
+kind: seeded
+stacks: [rust]
+summary: "A small Rust library whose author declines the proposal: the configuration stays byte-identical and the skill says no changes were made."
+answer: no
+expected:
+  outcome: unchanged
+  contains: ["No changes made"]

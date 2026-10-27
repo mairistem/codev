@@ -1,0 +1,10 @@
+# Sync of `2026-10-12-forward-compatible-config`, laid on the commit before
+# the pull request that brought it to main.
+step: change.sync
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+change: forward-compatible-config
+summary: "A sync that merges two delta specs without moving the change, then suggests archiving."
+expected:
+  outcome: done
+  contains: ["ready to be archived"]

@@ -1,0 +1,99 @@
+{
+  "format": 2,
+  "case": "configure-python-preserves",
+  "error": null,
+  "costUsd": 0.27883600000000003,
+  "durationMs": 41578,
+  "consumption": {
+    "durationApiMs": 42185,
+    "turns": 7,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 995,
+      "cacheCreation": 22238,
+      "cacheRead": 212130,
+      "output": 2885
+    },
+    "toolCalls": 6,
+    "calls": [
+      {
+        "cacheCreation": 7462,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7462
+        }
+      },
+      {
+        "cacheCreation": 9964,
+        "cacheRead": 29131,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 9964
+        }
+      },
+      {
+        "cacheCreation": 945,
+        "cacheRead": 39095,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 945
+        }
+      },
+      {
+        "cacheCreation": 253,
+        "cacheRead": 40040,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 253
+        }
+      },
+      {
+        "cacheCreation": 1609,
+        "cacheRead": 40293,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 2,
+        "sources": {
+          "shell": 1609
+        }
+      },
+      {
+        "cacheCreation": 2005,
+        "cacheRead": 41902,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "edit": 605,
+          "output": 815,
+          "shell": 584
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "✓ `_codev/config.yaml` enriched.\n\n`context:` now has a full project description in place of \"Python project.\", and there is a new `rules:` block for `specs`, `design` and `tasks`, all in French because the file sets `language: fr`. The detection comment above `context:` is now `# written by /codev-configure`. `schema`, `language`, `codev_version` and `mcp` (`jira_tool`) are unchanged, and so is every other comment.\n\nI based this on `README.md`, `pyproject.toml`, the four files in `rendezvous/` and the two test files. The project has no `CONTRIBUTING.md`, no `docs/` folder and no CI workflow.\n\nI couldn't check that the YAML parses, because the command to load it wasn't approved. Open the file and look at the new `rules:` block before you rely on it.\n\nAs instructed for this evaluation run, I put the confirmation question in my reply and went ahead as if the author had answered \"yes\"."
+  ],
+  "configure": {
+    "before": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# detected from pyproject.toml\ncontext: |\n  Python project.\n",
+    "after": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# written by /codev-configure\ncontext: |\n  Service FastAPI (Python ≥ 3.11) de prise de rendez-vous pour cabinets médicaux ;\n  modèles en dataclasses et Pydantic v2, annotations de type partout.\n  Erreurs métier : exceptions héritant de DomainError (rendezvous/errors.py), chacune\n  porte son attribut `status` HTTP ; un seul gestionnaire (app.handle_domain_error)\n  les traduit en réponse JSON {\"error\": <NomDeClasse>}.\n  API REST : routes déclarées dans rendezvous/app.py, logique métier dans des modules\n  sans dépendance à FastAPI (ex. rendezvous/slots.py).\n  Commentaires et docstrings en français, courts, ils expliquent le pourquoi.\n\nrules:\n  specs:\n    - \"Chaque scénario d'erreur nomme l'exception métier attendue et son code HTTP (ex. SlotTaken → 409).\"\n    - \"Décrire le comportement observable via l'API REST (route, paramètres, statut, corps JSON).\"\n  design:\n    - \"Placer la logique métier dans un module de rendezvous/ indépendant de FastAPI ; app.py se limite au routage.\"\n    - \"Toute nouvelle erreur est une sous-classe de DomainError avec un `status` explicite, sans try/except dans les routes.\"\n  tasks:\n    - \"Chaque tâche indique comment vérifier qu'elle est terminée (test pytest nommé ou commande).\"\n    - \"Tests pytest dans tests/, en miroir de rendezvous/ (test_<module>.py) ; tests unitaires du métier avec fixtures et parametrize, tests d'API via fastapi.testclient.TestClient ; pytest et ruff check . passent.\"\n",
+    "codevRoot": true,
+    "statusError": null
+  }
+}

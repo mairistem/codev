@@ -1,0 +1,12 @@
+# A Python service tested with pytest, whose configuration sets the
+# language, the MCP, the codev version and comments: the skill writes
+# `context:` and `rules:` and keeps every other field and comment.
+step: configure.enrich
+kind: seeded
+stacks: [python]
+summary: "A FastAPI service tested with pytest, its configuration in French with an MCP, a codev_version and comments: all kept, the tasks rules naming pytest."
+answer: yes
+expected:
+  outcome: written
+  written:
+    tasks: [pytest]

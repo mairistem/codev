@@ -1,0 +1,11 @@
+# Archive of `2026-10-14-fewer-review-turns`, as archived: its last task
+# (6.1) is unchecked. Laid on the commit before the pull request that
+# brought it to main.
+step: change.archive
+kind: seeded
+ref: e9a65e9cd98783981fda33513577f8af330b8c49
+change: fewer-review-turns
+summary: "An archive of a change whose tasks are not all checked: codev archives it today, and the skill does too."
+expected:
+  outcome: done
+  contains: ["Moved to"]

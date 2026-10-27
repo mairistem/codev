@@ -1,0 +1,80 @@
+{
+  "format": 2,
+  "case": "configure-no-config",
+  "error": null,
+  "costUsd": 0.18811500000000003,
+  "durationMs": 14322,
+  "consumption": {
+    "durationApiMs": 14901,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 991,
+      "cacheCreation": 18383,
+      "cacheRead": 130005,
+      "output": 713
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7455,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7455
+        }
+      },
+      {
+        "cacheCreation": 10361,
+        "cacheRead": 29124,
+        "input": 2,
+        "output": 36,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 483,
+          "skill": 9878
+        }
+      },
+      {
+        "cacheCreation": 242,
+        "cacheRead": 39485,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 164,
+          "output": 78
+        }
+      },
+      {
+        "cacheCreation": 325,
+        "cacheRead": 39727,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 325
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "Step 1 per the skill: run `codev status --json`.",
+    "This project has no `_codev/`. Run `codev init` first, then come back to `/codev-configure`.\n\n`codev status --json` returned `no_codev_root`, and there's no `_codev/config.yaml` in the repo. The skill only enriches an existing config and never creates one, so it stopped here. Nothing was read past that check and nothing was written. Because it stopped before the proposal step, it never got to the confirmation question."
+  ],
+  "configure": {
+    "before": null,
+    "after": null,
+    "codevRoot": false,
+    "statusError": "no_codev_root: no codev project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-no-config-4 — run `codev init` at the project root"
+  }
+}

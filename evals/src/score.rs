@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::case::{Case, Expected, Kind, Location, Step};
+use crate::checked::CheckStepScore;
 use crate::implement::ImplementScore;
 use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
 use crate::plan::{AtRef, PlanOutcome, PlanScore, score_plan};
@@ -134,6 +135,10 @@ pub struct CaseScore {
     /// An implementation run's checks; `None` for any other run.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub implement: Option<ImplementScore>,
+    /// A sync, archive or configure run's checks; `None` for any other
+    /// run, and for a case gone stale, which is in error instead.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub checks: Option<crate::checked::CheckScore>,
 }
 
 impl CaseScore {
@@ -144,9 +149,12 @@ impl CaseScore {
     /// A run of a reviewing role, which the role measures count: neither a
     /// planning run nor an update run.
     fn is_review(&self) -> bool {
-        !self.is_planning()
-            && self.step != Step::PlanUpdate.as_str()
-            && self.step != Step::CodeImplement.as_str()
+        Step::parse(&self.step).is_none_or(Step::is_review)
+    }
+
+    /// The checks of a run at `step`, when it is one.
+    pub fn checks_at(&self, step: Step) -> Option<&crate::checked::CheckScore> {
+        self.checks.as_ref().filter(|_| self.step == step.as_str())
     }
 
     /// The same score, as repetition `n`.
@@ -189,6 +197,7 @@ fn unscored(case: &Case, observed: &Observed) -> CaseScore {
         plan: None,
         update: None,
         implement: None,
+        checks: None,
     }
 }
 
@@ -207,6 +216,40 @@ pub fn implement_case(case: &Case, observed: &Observed) -> CaseScore {
         &case.change_dir(),
         observed,
     ));
+    score
+}
+
+/// Scores one run of a sync or archive case by its checks, as the first
+/// repetition. A case whose reference run no longer agrees with it is in error
+/// rather than scored: it no longer describes what codev does.
+pub fn merge_case(case: &Case, observed: &Observed) -> CaseScore {
+    let mut score = unscored(case, observed);
+    let Some(expect) = &case.merge else {
+        return score;
+    };
+    if let Some(reason) = crate::merge::stale(case, expect, observed) {
+        score.outcome = Outcome::Error(reason);
+        return score;
+    }
+    score.outcome = match &observed.error {
+        Some(error) => Outcome::Error(error.clone()),
+        None => Outcome::Scored,
+    };
+    score.checks = Some(crate::merge::score_merge(case, expect, observed));
+    score
+}
+
+/// Scores one run of a configure case by its checks, as repetition 1.
+pub fn configure_case(case: &Case, observed: &Observed) -> CaseScore {
+    let mut score = unscored(case, observed);
+    let Some(expect) = &case.configure else {
+        return score;
+    };
+    score.outcome = match &observed.error {
+        Some(error) => Outcome::Error(error.clone()),
+        None => Outcome::Scored,
+    };
+    score.checks = Some(crate::configure::score_configure(expect, observed));
     score
 }
 
@@ -1023,6 +1066,31 @@ pub struct SuiteScore {
     /// The step `code.implement`, when the suite has implementation runs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub implement: Option<crate::implement::ImplementStepScore>,
+    /// The step `change.sync`, when the suite has sync runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub change_sync: Option<CheckStepScore>,
+    /// The step `change.archive`, when the suite has archive runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub change_archive: Option<CheckStepScore>,
+    /// The step `configure.enrich`, when the suite has configure runs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub configure_enrich: Option<CheckStepScore>,
+}
+
+impl SuiteScore {
+    /// The sync, archive and configure steps the suite holds runs of, in
+    /// order, with their section. `plan.update`, check-scored too, keeps its
+    /// own `update` section.
+    pub fn merge_and_configure_steps(&self) -> Vec<(Step, &CheckStepScore)> {
+        [
+            (Step::ChangeSync, &self.change_sync),
+            (Step::ChangeArchive, &self.change_archive),
+            (Step::ConfigureEnrich, &self.configure_enrich),
+        ]
+        .into_iter()
+        .filter_map(|(step, s)| s.as_ref().map(|s| (step, s)))
+        .collect()
+    }
 }
 
 /// One repetition of the planning runs, pooled as a role's tally is.
@@ -1203,6 +1271,12 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
     let planning = planning_score(&numbers, &cases, &case_consumption);
     let update = crate::update::step_score(&numbers, &cases, &case_consumption);
     let implement = crate::implement::step_score(&numbers, &cases, &case_consumption);
+    let checked = |step: Step| {
+        crate::checked::step_score(&numbers, &cases, &case_consumption, |c| c.checks_at(step))
+    };
+    let change_sync = checked(Step::ChangeSync);
+    let change_archive = checked(Step::ChangeArchive);
+    let configure_enrich = checked(Step::ConfigureEnrich);
     let sources = rank_sources(&case_consumption);
     let mut sources_by_step = BTreeMap::new();
     for step in case_consumption.iter().map(|c| c.step.as_str()) {
@@ -1235,6 +1309,9 @@ pub fn suite(run: RunInfo, mut cases: Vec<CaseScore>, thresholds: Thresholds) ->
         planning,
         update,
         implement,
+        change_sync,
+        change_archive,
+        configure_enrich,
     }
 }
 
@@ -1552,6 +1629,8 @@ pub(crate) mod tests {
             plan: None,
             update: None,
             implement: None,
+            merge: None,
+            configure: None,
         }
     }
 
@@ -1606,6 +1685,8 @@ pub(crate) mod tests {
             validate_before: None,
             messages: Vec::new(),
             implement: None,
+            merge: None,
+            configure: None,
         }
     }
 
@@ -2589,6 +2670,7 @@ pub(crate) mod tests_support {
             plan: None,
             update: None,
             implement: None,
+            checks: None,
         }
     }
 }

@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 use crate::case::Step;
+use crate::checked::{self, CheckStepScore};
 use crate::implement::ImplementStepScore;
 use crate::observed::RunInfo;
 use crate::score::{
@@ -197,31 +198,10 @@ fn planning_quality(base: &PlanningScore, cand: &PlanningScore) -> Vec<String> {
     out
 }
 
-/// The quality failures of the update step, judged as the planning step
-/// is: a share of runs passing under the baseline's minimum, or more runs
-/// modifying a file outside the step than its maximum. The share of checks
-/// passing is reported and never decides: the runs passing already judge
-/// the checks, a run at a time.
+/// The quality failures of the update step, judged as every
+/// check-scored step is (see [`checked::quality`]).
 fn update_quality(base: &UpdateStepScore, cand: &UpdateStepScore) -> Vec<String> {
-    let mut out = Vec::new();
-    if let (Some(c), Some(range)) = (cand.pass_rate, base.pass_rate)
-        && c.median < range.min
-    {
-        out.push(format!(
-            "plan.update: update pass rate {:.2} is under the baseline's minimum {:.2}",
-            c.median, range.min
-        ));
-    }
-    if let (Some(c), Some(range)) = (cand.strayed, base.strayed)
-        && c.median > range.max
-    {
-        out.push(format!(
-            "plan.update: {} run(s) modifying a file outside the step exceed the baseline's maximum {}",
-            number(c.median),
-            number(range.max)
-        ));
-    }
-    out
+    checked::quality("plan.update", "update pass rate", base, cand)
 }
 
 /// The quality failures of the implementation step, judged as the
@@ -327,23 +307,15 @@ fn improvements(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
         }
     }
     if let (Some(b), Some(c)) = (&baseline.update, &candidate.update) {
-        if let (Some(v), Some(r)) = (c.pass_rate, b.pass_rate)
-            && v.median > r.max
-        {
-            out.push(format!(
-                "plan.update: update pass rate, from {:.2} at best to {:.2}",
-                r.max, v.median
-            ));
-        }
-        if let (Some(v), Some(r)) = (c.strayed, b.strayed)
-            && v.median < r.min
-        {
-            out.push(format!(
-                "plan.update: runs modifying a file outside the step, from {} at best to {}",
-                number(r.min),
-                number(v.median)
-            ));
-        }
+        out.extend(checked::improvements(
+            "plan.update",
+            "update pass rate",
+            b,
+            c,
+        ));
+    }
+    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+        out.extend(checked::improvements(step.as_str(), "pass rate", b, c));
     }
     out
 }
@@ -393,6 +365,7 @@ pub fn compare(
     if let (Some(base), Some(cand)) = (&baseline.implement, &candidate.implement) {
         failures.extend(implement_quality(base, cand));
     }
+    failures.extend(merge_and_configure_quality(baseline, candidate));
     let improved = improvements(baseline, candidate);
     let base_floor = floor(baseline);
     let consumption_failures = consumption(baseline, candidate, base_floor);
@@ -411,6 +384,7 @@ pub fn compare(
         planning_section(baseline, candidate),
         update_section(baseline, candidate),
         implement_section(baseline, candidate),
+        merge_and_configure_sections(baseline, candidate),
         improved_section(&improved),
         consumption_section(baseline, candidate, &verdict),
         sources_section(baseline, candidate),
@@ -774,38 +748,69 @@ fn update_section(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
          runs modifying a file outside the step rise above its maximum; the share of checks passing \
          is reported and never decides.\n"
     );
-    let _ = writeln!(
-        out,
-        "| Measure | Baseline (min–max) | Candidate |\n|---|---|---|"
-    );
-    let show = |s: Option<Spread>, is_ratio: bool| {
-        s.map_or_else(
-            || "—".to_string(),
-            |s| {
-                if is_ratio {
-                    format!("{:.2}", s.median)
-                } else {
-                    number(s.median)
-                }
-            },
-        )
-    };
-    for (label, bs, cs, is_ratio) in [
-        ("Runs passing", b.pass_rate, c.pass_rate, true),
-        ("Checks passing", b.check_rate, c.check_rate, true),
-        (
-            "Runs modifying a file outside the step",
-            b.strayed,
-            c.strayed,
-            false,
-        ),
-    ] {
-        let base = if is_ratio {
-            ratio_range(bs)
+    checked::comparison_table(&mut out, b, c);
+    out
+}
+
+/// The sync, archive and configure steps both runs hold; `plan.update`
+/// is judged by [`update_quality`].
+fn merge_and_configure_pairs<'a>(
+    baseline: &'a SuiteScore,
+    candidate: &'a SuiteScore,
+) -> Vec<(Step, &'a CheckStepScore, &'a CheckStepScore)> {
+    let cand: BTreeMap<Step, &CheckStepScore> =
+        candidate.merge_and_configure_steps().into_iter().collect();
+    baseline
+        .merge_and_configure_steps()
+        .into_iter()
+        .filter_map(|(step, b)| cand.get(&step).map(|c| (step, b, *c)))
+        .collect()
+}
+
+/// Each case's share of runs passing at `step`.
+fn shares(score: &SuiteScore, step: Step) -> BTreeMap<String, (u32, u32)> {
+    checked::case_pass_shares(&score.cases, |c| c.checks_at(step))
+}
+
+/// The quality failures of the sync, archive and configure steps: the
+/// step's share of runs passing and its runs straying, as the update step
+/// is judged, then each case's share of runs passing against its share in
+/// the baseline — both scored with the cases as they now stand.
+fn merge_and_configure_quality(baseline: &SuiteScore, candidate: &SuiteScore) -> Vec<String> {
+    let mut out = Vec::new();
+    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+        out.extend(checked::quality(step.as_str(), "pass rate", b, c));
+        out.extend(checked::case_quality(
+            step.as_str(),
+            &shares(baseline, step),
+            &shares(candidate, step),
+        ));
+    }
+    out
+}
+
+fn merge_and_configure_sections(baseline: &SuiteScore, candidate: &SuiteScore) -> String {
+    let mut out = String::new();
+    for (step, b, c) in merge_and_configure_pairs(baseline, candidate) {
+        let _ = writeln!(out, "\n## `{}`\n", step.as_str());
+        let _ = writeln!(
+            out,
+            "The candidate's share of runs passing must not fall under the baseline's minimum, nor its \
+             runs modifying a file outside the step rise above its maximum, nor any case's share of runs \
+             passing fall under its share in the baseline; the share of checks passing is reported and \
+             never decides.\n"
+        );
+        checked::comparison_table(&mut out, b, c);
+        let failing = checked::not_all_passing(&shares(candidate, step));
+        if failing.is_empty() {
+            let _ = writeln!(out, "\nEvery case passes in all its candidate runs.");
         } else {
-            count_range(bs)
-        };
-        let _ = writeln!(out, "| {label} | {base} | {} |", show(cs, is_ratio));
+            let _ = writeln!(
+                out,
+                "\nCases not passing in all their candidate runs: {}.",
+                failing.join(", ")
+            );
+        }
     }
     out
 }
@@ -1511,6 +1516,216 @@ mod tests {
         assert_eq!(
             result.failures,
             ["plan.write: keyword share 0.50 is under the baseline's minimum 1.00"]
+        );
+    }
+
+    /// Archive runs: per case, whether each repetition passes.
+    fn archiving(runs: &[(&str, &[bool])], contains: &[&str], reply: &str) -> SuiteScore {
+        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_codev};
+        let mut scores = Vec::new();
+        for (id, passes) in runs {
+            let c = done_case(id, Step::ChangeArchive, contains);
+            for (n, pass) in passes.iter().enumerate() {
+                let o = if *pass {
+                    run_through_codev(id, &[reply])
+                } else {
+                    run_merged_by_hand(id, &[reply])
+                };
+                scores.push(crate::score::merge_case(&c, &o).at(n as u32 + 1));
+            }
+        }
+        suite(run(), scores, Thresholds::default())
+    }
+
+    #[test]
+    fn an_archive_regression_fails_the_comparison() {
+        let six = [true; 6];
+        let base = archiving(
+            &[
+                ("a", &six),
+                ("b", &six),
+                ("c", &six),
+                ("d", &six),
+                ("e", &[true, true, true, true, true, false]),
+            ],
+            &[],
+            "Moved to",
+        );
+        let cand = archiving(
+            &[
+                ("a", &[true, true]),
+                ("b", &[true, false]),
+                ("c", &[false, true]),
+                ("d", &[true, false]),
+                ("e", &[false, true]),
+            ],
+            &[],
+            "Moved to",
+        );
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(!result.pass);
+        assert!(
+            result.failures.iter().any(|f| f
+                == "change.archive: pass rate 0.60 is under the baseline's minimum 0.80"),
+            "{:?}",
+            result.failures
+        );
+        assert!(
+            result.report.contains("## `change.archive`"),
+            "{}",
+            result.report
+        );
+        assert!(
+            result
+                .report
+                .contains("Cases not passing in all their candidate runs:"),
+            "{}",
+            result.report
+        );
+    }
+
+    #[test]
+    fn one_case_regressing_fails_the_comparison() {
+        let five = [true; 5];
+        let base = archiving(
+            &[
+                ("archive-review-blocked", &five),
+                ("b", &five),
+                ("c", &five),
+                ("d", &five),
+                ("e", &[true, false, true, true, true]),
+            ],
+            &[],
+            "Moved to",
+        );
+        let cand = archiving(
+            &[
+                ("archive-review-blocked", &[false, true, false]),
+                ("b", &[true; 3]),
+                ("c", &[true; 3]),
+                ("d", &[true; 3]),
+                ("e", &[true; 3]),
+            ],
+            &[],
+            "Moved to",
+        );
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert_eq!(
+            result.failures,
+            [
+                "change.archive: case `archive-review-blocked` passes in 0.33 of its runs, under its baseline share 1.00"
+            ]
+        );
+        assert!(
+            result.report.contains("`archive-review-blocked` (1 of 3)"),
+            "{}",
+            result.report
+        );
+    }
+
+    #[test]
+    fn a_case_whose_expectation_changed_is_judged_on_the_rescored_baseline() {
+        // The case gained `unchecked` after the baseline was recorded: its
+        // baseline replies lack it, the candidate's hold it.
+        let five = [true; 5];
+        let base = archiving(
+            &[("archive-unchecked-tasks", &five), ("b", &five)],
+            &["unchecked"],
+            "Moved to",
+        );
+        let cand = archiving(
+            &[("archive-unchecked-tasks", &[true; 3]), ("b", &[true; 3])],
+            &["unchecked"],
+            "Moved to; 1 task unchecked",
+        );
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(result.pass, "{:?}", result.failures);
+        assert!(
+            result
+                .report
+                .contains("Every case passes in all its candidate runs."),
+            "{}",
+            result.report
+        );
+    }
+
+    /// Configure runs: per case, whether each repetition passes.
+    fn configuring(runs: &[(&str, &[bool])]) -> SuiteScore {
+        use crate::configure::tests::{run_leaving_the_file, run_writing_the_file, unchanged_case};
+        let mut scores = Vec::new();
+        for (id, passes) in runs {
+            let c = unchanged_case(id);
+            for (n, pass) in passes.iter().enumerate() {
+                scores.push(
+                    crate::score::configure_case(
+                        &c,
+                        &if *pass {
+                            run_leaving_the_file()
+                        } else {
+                            run_writing_the_file()
+                        },
+                    )
+                    .at(n as u32 + 1),
+                );
+            }
+        }
+        suite(run(), scores, Thresholds::default())
+    }
+
+    #[test]
+    fn a_configure_regression_fails_the_comparison() {
+        let base = configuring(&[
+            ("a", &[true; 5]),
+            ("b", &[true; 5]),
+            ("c", &[true; 5]),
+            ("d", &[true; 5]),
+            ("e", &[false, true, true, true, true]),
+        ]);
+        let cand = configuring(&[
+            ("a", &[true; 3]),
+            ("b", &[true; 3]),
+            ("c", &[false; 3]),
+            ("d", &[false; 3]),
+            ("e", &[false; 3]),
+        ]);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert!(
+            result.failures.contains(
+                &"configure.enrich: pass rate 0.40 is under the baseline's minimum 0.80"
+                    .to_string()
+            ),
+            "{:?}",
+            result.failures
+        );
+        assert!(
+            result.report.contains("## `configure.enrich`"),
+            "{}",
+            result.report
+        );
+    }
+
+    #[test]
+    fn one_configure_case_regressing_fails_the_comparison() {
+        let base = configuring(&[
+            ("configure-ts-jest", &[true; 5]),
+            ("b", &[true; 5]),
+            ("c", &[true; 5]),
+            ("d", &[true; 5]),
+            ("e", &[true, false, true, true, true]),
+        ]);
+        let cand = configuring(&[
+            ("configure-ts-jest", &[true, false, false]),
+            ("b", &[true; 3]),
+            ("c", &[true; 3]),
+            ("d", &[true; 3]),
+            ("e", &[true; 3]),
+        ]);
+        let result = compare(&base, &cand, &[], Mode::QualityOnly, false);
+        assert_eq!(result.failures.len(), 1, "{:?}", result.failures);
+        assert!(
+            result.failures[0].contains("`configure-ts-jest`"),
+            "{:?}",
+            result.failures
         );
     }
 }

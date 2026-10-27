@@ -1,0 +1,78 @@
+{
+  "format": 2,
+  "case": "configure-no-config",
+  "error": null,
+  "costUsd": 0.1831016,
+  "durationMs": 20964,
+  "consumption": {
+    "durationApiMs": 21754,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 991,
+      "cacheCreation": 18070,
+      "cacheRead": 129158,
+      "output": 596
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7453,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7453
+        }
+      },
+      {
+        "cacheCreation": 9962,
+        "cacheRead": 29122,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 9962
+        }
+      },
+      {
+        "cacheCreation": 199,
+        "cacheRead": 39084,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev status": 199
+        }
+      },
+      {
+        "cacheCreation": 456,
+        "cacheRead": 39283,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 412,
+          "shell": 44
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I stopped before making any changes. The skill only runs on a project that already has `_codev/config.yaml`, and this one doesn't.\n\nThis project has no `_codev/`. Run `codev init` first, then come back to `/codev-configure`.\n\nI checked with `codev status --json`, which returned `no_codev_root`. The project root contains only `README.md`, `index.js`, `package.json` and `.claude/`. The skill never creates the config itself, so I didn't explore the project, draft a patch or ask for confirmation."
+  ],
+  "configure": {
+    "before": null,
+    "after": null,
+    "codevRoot": false,
+    "statusError": "no_codev_root: no codev project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-no-config-1 — run `codev init` at the project root"
+  }
+}

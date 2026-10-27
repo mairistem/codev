@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::case::{self, Case, Catalog, Fixture, RoleSteps, Vocabulary};
 use crate::observed::{self, Observed, RunInfo};
 use crate::plan::AtRef;
-use crate::runner::read_tree;
+use crate::runner::{read_overlay, read_tree};
 use crate::score::{self, SuiteScore, Thresholds};
 
 /// The steps of every built-in role, from `assets/roles/*.md`.
@@ -61,6 +61,14 @@ pub fn load_cases(repo: &Path) -> Result<Vec<Case>, String> {
             base: read_tree(&root.join("base")).map_err(|e| format!("case `{id}`: {e}"))?,
             change: read_tree(&root.join("change")).map_err(|e| format!("case `{id}`: {e}"))?,
             acceptance: fs::read(root.join("acceptance.sh")).ok(),
+            ..Fixture::default()
+        };
+        let (overlay, links) =
+            read_overlay(&root.join("overlay")).map_err(|e| format!("case `{id}`: {e}"))?;
+        let fixture = Fixture {
+            overlay,
+            links,
+            ..fixture
         };
         cases.push(case::load(&id, &yaml, &fixture, &catalog).map_err(|e| e.to_string())?);
     }
@@ -336,6 +344,10 @@ pub fn score_dir_only(
             score::update_case(case, observed)
         } else if case.step == case::Step::CodeImplement {
             score::implement_case(case, observed)
+        } else if case.merge.is_some() {
+            score::merge_case(case, observed)
+        } else if case.configure.is_some() {
+            score::configure_case(case, observed)
         } else {
             score::case(case, observed)
         };

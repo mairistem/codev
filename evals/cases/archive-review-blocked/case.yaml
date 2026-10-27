@@ -1,0 +1,12 @@
+# Archive of `2026-10-20-role-models`, its high finding R-migration-1
+# reopened in `review.md`.
+step: change.archive
+kind: seeded
+ref: 778c4a46c8ca4cfb614654450dd01023cb9c6526
+change: role-models
+summary: "A review record with a high finding open: codev refuses, the skill points to `codev review` and decides nothing in the author's place."
+expected:
+  outcome: refused
+  code: review_blocked
+  contains: ["codev review"]
+  absent: ["Moved to"]

@@ -7,49 +7,24 @@
 
 use std::collections::BTreeMap;
 
-use serde::{Deserialize, Serialize};
-
 use crate::case::UpdateCase;
+use crate::checked::{self, Check, CheckRepetition, CheckScore, CheckStepScore, Checks, loose};
 use crate::observed::Observed;
-use crate::score::{CaseConsumption, CaseScore, Measures, Spread, ratio, spread};
+use crate::score::{CaseConsumption, CaseScore};
 
 /// The skill a refusal must point to for a missing artifact.
 pub const PROPOSE_SKILL: &str = "/codev-propose";
 
 /// One check of an update run, and whether it passed.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateCheck {
-    pub check: String,
-    pub passed: bool,
-}
+pub type UpdateCheck = Check;
 
 /// An update run's checks; it passes when every check passes.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateScore {
-    pub passed: bool,
-    pub checks: Vec<UpdateCheck>,
-}
-
-impl UpdateScore {
-    pub fn checks_passed(&self) -> usize {
-        self.checks.iter().filter(|c| c.passed).count()
-    }
-}
+pub type UpdateScore = CheckScore;
 
 /// Text compared as a file is: line endings aside, so a checkout that
 /// converts them does not read as an edit.
 pub(crate) fn same(a: &str, b: &str) -> bool {
     a.replace('\r', "") == b.replace('\r', "")
-}
-
-/// Text compared ignoring case and runs of whitespace.
-fn loose(text: &str) -> String {
-    text.split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_lowercase()
 }
 
 /// The errors of a `codev validate --json` report, counted by file and
@@ -111,8 +86,8 @@ pub fn score_update(case: &UpdateCase, change_dir: &str, observed: &Observed) ->
             .get(path)
             .is_some_and(|text| same(text, &case.files[path]))
     };
-    let mut checks = Vec::new();
-    let mut check = |check: String, passed: bool| checks.push(UpdateCheck { check, passed });
+    let mut checks = Checks::default();
+    let mut check = |check: String, passed: bool| checks.check(check, passed);
 
     for path in &case.revised {
         let changed = after
@@ -165,44 +140,15 @@ pub fn score_update(case: &UpdateCase, change_dir: &str, observed: &Observed) ->
             messages.contains(PROPOSE_SKILL),
         );
     }
-    UpdateScore {
-        passed: checks.iter().all(|c| c.passed),
-        checks,
-    }
+    checks.score()
 }
 
 /// One repetition of the update runs, pooled.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateRepetition {
-    pub repetition: u32,
-    pub runs: u32,
-    /// The runs whose every check passed.
-    pub passed: u32,
-    pub checks: u32,
-    pub checks_passed: u32,
-    /// The runs that modified a file outside the change's folder.
-    pub strayed: u32,
-    pub pass_rate: Option<f64>,
-    pub check_rate: Option<f64>,
-}
+pub type UpdateRepetition = CheckRepetition;
 
 /// The step `plan.update`: its measures per repetition, then their median
 /// and range. No threshold: `compare` judges them against the baseline.
-#[derive(Debug, Clone, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateStepScore {
-    pub cases: u32,
-    pub repetitions: Vec<UpdateRepetition>,
-    /// The share of runs that pass.
-    pub pass_rate: Option<Spread>,
-    /// The share of checks that pass.
-    pub check_rate: Option<Spread>,
-    /// The runs that modified a file outside the step.
-    pub strayed: Option<Spread>,
-    /// The sums of every update case's median consumption.
-    pub consumption: Measures,
-}
+pub type UpdateStepScore = CheckStepScore;
 
 /// The update section: each repetition's runs pooled, then medians and
 /// ranges; `None` without an update run.
@@ -211,55 +157,7 @@ pub fn step_score(
     cases: &[CaseScore],
     case_consumption: &[CaseConsumption],
 ) -> Option<UpdateStepScore> {
-    let runs: Vec<(&CaseScore, &UpdateScore)> = cases
-        .iter()
-        .filter_map(|c| c.update.as_ref().map(|u| (c, u)))
-        .collect();
-    if runs.is_empty() {
-        return None;
-    }
-    let repetitions: Vec<UpdateRepetition> = numbers
-        .iter()
-        .filter_map(|n| {
-            let these: Vec<&(&CaseScore, &UpdateScore)> =
-                runs.iter().filter(|(c, _)| c.repetition == *n).collect();
-            if these.is_empty() {
-                return None;
-            }
-            let count = these.len() as u32;
-            let passed = these.iter().filter(|(_, u)| u.passed).count() as u32;
-            let checks = these.iter().map(|(_, u)| u.checks.len()).sum::<usize>() as u32;
-            let checks_passed = these.iter().map(|(_, u)| u.checks_passed()).sum::<usize>() as u32;
-            Some(UpdateRepetition {
-                repetition: *n,
-                runs: count,
-                passed,
-                checks,
-                checks_passed,
-                strayed: these.iter().filter(|(c, _)| !c.strayed.is_empty()).count() as u32,
-                pass_rate: ratio(passed, count),
-                check_rate: ratio(checks_passed, checks),
-            })
-        })
-        .collect();
-    let values = |f: fn(&UpdateRepetition) -> Option<f64>| -> Vec<f64> {
-        repetitions.iter().filter_map(f).collect()
-    };
-    let mut distinct: Vec<&str> = runs.iter().map(|(c, _)| c.id.as_str()).collect();
-    distinct.dedup();
-    Some(UpdateStepScore {
-        cases: distinct.len() as u32,
-        pass_rate: spread(&values(|r| r.pass_rate)),
-        check_rate: spread(&values(|r| r.check_rate)),
-        strayed: spread(&values(|r| Some(f64::from(r.strayed)))),
-        consumption: Measures::sum_of(
-            case_consumption
-                .iter()
-                .filter(|c| distinct.contains(&c.id.as_str()))
-                .map(|c| &c.measures),
-        ),
-        repetitions,
-    })
+    checked::step_score(numbers, cases, case_consumption, |c| c.update.as_ref())
 }
 
 #[cfg(test)]
@@ -330,6 +228,8 @@ mod tests {
             validate_before: Some(validate(&[])),
             messages: messages.iter().map(|m| m.to_string()).collect(),
             implement: None,
+            merge: None,
+            configure: None,
         }
     }
 
