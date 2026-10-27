@@ -1,0 +1,10 @@
+# Archive of `2026-10-23-delegated-implementation`, laid on the commit before
+# the pull request that brought it to main.
+step: change.archive
+kind: seeded
+ref: 3e294dd5e44d986eb37e9a7647c9da1694c37ceb
+change: delegated-implementation
+summary: "An archive that merges four delta specs and moves the change: the project is left as `codev archive` leaves it, and the reply says where the change went."
+expected:
+  outcome: done
+  contains: ["Moved to"]

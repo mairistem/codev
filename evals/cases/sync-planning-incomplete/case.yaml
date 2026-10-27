@@ -1,0 +1,11 @@
+# Sync of `2026-10-23-delegated-implementation` without its `tasks.md`. The
+# skill's stop suggests `/codev-propose` or `/codev-continue`, a skill
+# codev does not install: the case checks the stop, not the suggestion.
+step: change.sync
+kind: seeded
+ref: 3e294dd5e44d986eb37e9a7647c9da1694c37ceb
+change: delegated-implementation
+summary: "A change whose planning is incomplete: the skill stops before `codev sync` and merges nothing."
+expected:
+  outcome: refused
+  absent: ["Synced"]

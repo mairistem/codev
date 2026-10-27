@@ -4,9 +4,9 @@
 - Model: Claude Code's default
 - Claude Code: 2.1.289 (Claude Code)
 - codev: codev 0.6.1
-- Cases: 77
+- Cases: 92
 - Repetitions: 5
-- Cost: 73.89 USD for one run of the suite (sum of the cases' medians), 371.80 USD in all
+- Cost: 77.13 USD for one run of the suite (sum of the cases' medians), 388.20 USD in all
 - Thresholds: recall ≥ 0.50, false positives ≤ 2, evidence validity ≥ 0.80
 - Verdict: **fail**
 
@@ -58,6 +58,30 @@ Per repetition, every implementation run pooled, the refusing cases apart: the s
 |---|---|---|---|---|---|---|
 | 4 | 1.00 | 1.00 | 1.00 | 1.00 | 0 | 13.02 |
 
+## `change.sync`
+
+Per repetition, every sync run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 4 | 1.00 (0.75–1.00) | 1.00 (0.92–1.00) | 0 | 0.79 |
+
+## `change.archive`
+
+Per repetition, every archive run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 6 | 1.00 (0.83–1.00) | 1.00 (0.91–1.00) | 0 | 1.14 |
+
+## `configure.enrich`
+
+Per repetition, every configure run pooled: the share of runs whose every check passes, the share of checks that pass, the runs that modified a file outside the step; then the median over the repetitions, with its range. No threshold: `codev-evals compare` judges these against the baseline, step by step and case by case.
+
+| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |
+|---|---|---|---|---|
+| 5 | 0.40 (0.20–0.60) | 0.91 (0.71–0.94) | 0 | 1.31 |
+
 ## Consumption
 
 Per case, the median over its runs not in error; per role and for the suite, the sum of those medians. Tokens are summed over every model a run used.
@@ -73,7 +97,7 @@ Per case, the median over its runs not in error; per role and for the suite, the
 | security | 1.92 | 154 | 153 | 46 | 2 | 7042 | 167082 | 1479147 | 13753 | 38 | 44545 | 365 |
 | skeptic | 1.20 | 109 | 109 | 31 | 6 | 3488 | 95501 | 1069377 | 10733 | 25 | 46659 | 418 |
 | tracer | 0.58 | 39 | 39 | 19 | 4 | 2180 | 53041 | 444499 | 3896 | 12 | 41555 | 344 |
-| **Suite** | 73.89 | 9131 | 9990 | 1308 | 80 | 89121 | 4617492 | 92624758 | 967504 | 1297 | 74435 | 729 |
+| **Suite** | 77.13 | 9390 | 10259 | 1391 | 94 | 103952 | 4907598 | 95251885 | 986327 | 1374 | 72396 | 702 |
 
 ## Where the tokens go
 
@@ -81,22 +105,46 @@ The tokens written to the cache, by source: per case the median over its runs, s
 
 | Source | Tokens | Share |
 |---|---:|---:|
-| file | 1055212 | 23 % |
-| skill | 982282 | 22 % |
-| prompt | 579438 | 13 % |
-| edit | 426418 | 9 % |
-| search | 402076 | 9 % |
-| shell | 345077 | 8 % |
-| output | 181811 | 4 % |
+| skill | 1085907 | 22 % |
+| file | 1060226 | 22 % |
+| prompt | 702154 | 14 % |
+| edit | 428935 | 9 % |
+| search | 403335 | 8 % |
+| shell | 347590 | 7 % |
+| output | 184447 | 4 % |
 | codev instructions | 172598 | 4 % |
 | codev roles | 111141 | 2 % |
 | codev review | 100105 | 2 % |
 | codev validate | 81415 | 2 % |
 | codev new | 62257 | 1 % |
+| codev status | 44523 | 1 % |
 | agent | 36667 | 1 % |
-| codev list | 26508 | 1 % |
-| codev status | 13111 | 0 % |
+| codev list | 26508 | 0 % |
+| codev archive | 3084 | 0 % |
 | codev --help | 2347 | 0 % |
+| codev sync | 1943 | 0 % |
+
+### `change.archive`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| prompt | 53959 | 52 % |
+| skill | 32434 | 31 % |
+| codev status | 14026 | 14 % |
+| codev archive | 3084 | 3 % |
+| search | 345 | 0 % |
+| output | 226 | 0 % |
+
+### `change.sync`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| prompt | 31454 | 46 % |
+| skill | 25658 | 38 % |
+| codev status | 7844 | 12 % |
+| codev sync | 1943 | 3 % |
+| search | 914 | 1 % |
+| output | 261 | 0 % |
 
 ### `code.implement`
 
@@ -127,6 +175,18 @@ The tokens written to the cache, by source: per case the median over its runs, s
 | shell | 12732 | 2 % |
 | file | 8560 | 1 % |
 | output | 608 | 0 % |
+
+### `configure.enrich`
+
+| Source | Tokens | Share |
+|---|---:|---:|
+| skill | 45533 | 44 % |
+| prompt | 37303 | 36 % |
+| codev status | 9542 | 9 % |
+| file | 5014 | 5 % |
+| edit | 2517 | 2 % |
+| shell | 2513 | 2 % |
+| output | 2149 | 2 % |
 
 ### `plan.challenge`
 
@@ -447,6 +507,737 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Expected `colour-only-errors` (use-of-colour, high): found by R-accessibility-1
 - Finding R-accessibility-1 [high / high] `design.md#Decision: Invalid fields turn red` Field errors are conveyed by a red border only, with no text: true positive
 - Finding R-accessibility-2 [medium / high] `proposal.md#What Changes` Removing the error list leaves submit with no error identification or focus move: duplicate
+
+### archive-merges-and-moves
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.20 · 17 · 17 · 5 · 1 · 986 · 18309 · 174136 · 796 · 5 · 38682 · 159
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.20 USD, 16 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.20 USD, 19 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.20 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.20 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 24 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+### archive-planning-incomplete
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.17 · 10 · 11 · 3 · 0 · 982 · 17681 · 89571 · 575 · 3 · 35969 · 170
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.17 USD, 10 s
+- Tool calls: 3, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "/codev-propose": passed
+- Check does not say "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.17 USD, 7 s
+- Tool calls: 2, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "/codev-propose": passed
+- Check does not say "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.17 USD, 12 s
+- Tool calls: 2, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "/codev-propose": passed
+- Check does not say "Moved to": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.17 USD, 12 s
+- Tool calls: 2, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "/codev-propose": passed
+- Check does not say "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.19 USD, 10 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "/codev-propose": passed
+- Check does not say "Moved to": passed
+
+### archive-review-blocked
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.19 · 8 · 9 · 5 · 1 · 985 · 18426 · 164187 · 581 · 5 · 36720 · 116
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.19 USD, 6 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev review": passed
+- Check does not say "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.19 USD, 8 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev review": passed
+- Check does not say "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.19 USD, 6 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev review": passed
+- Check does not say "Moved to": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.19 USD, 13 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev review": passed
+- Check does not say "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev review": passed
+- Check does not say "Moved to": passed
+
+### archive-unchecked-tasks
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.21 · 13 · 14 · 5 · 0 · 987 · 18814 · 164471 · 1046 · 5 · 37340 · 174
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.21 USD, 13 s
+- Tool calls: 5, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.20 USD, 10 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.21 USD, 14 s
+- Tool calls: 3, no artifact written
+- Checks: 1 of 3 passed, the run **fails**
+- Check files under `_codev/` as `codev archive` leaves them: **failed**
+- Check no file modified outside the step: passed
+- Check says "Moved to": **failed**
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.21 USD, 12 s
+- Tool calls: 5, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.21 USD, 13 s
+- Tool calls: 3, no artifact written
+- Checks: 1 of 3 passed, the run **fails**
+- Check files under `_codev/` as `codev archive` leaves them: **failed**
+- Check no file modified outside the step: passed
+- Check says "Moved to": **failed**
+
+### archive-validation-failed
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.18 · 8 · 9 · 5 · 1 · 987 · 17606 · 167116 · 477 · 5 · 37071 · 95
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.17 USD, 9 s
+- Tool calls: 3, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.19 USD, 21 s
+- Tool calls: 5, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.18 USD, 7 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "Moved to": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.18 USD, 7 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.19 USD, 8 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "Moved to": passed
+
+### archive-version-later
+
+- Role: planner at `change.archive`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.19 · 9 · 10 · 5 · 1 · 985 · 18208 · 163955 · 651 · 5 · 36666 · 130
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.19 USD, 7 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+- Check says "Moved to": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.18 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+- Check says "Moved to": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.19 USD, 8 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+- Check says "Moved to": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.19 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+- Check says "Moved to": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 18 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as `codev archive` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+- Check says "Moved to": passed
+
+### configure-answer-no
+
+- Role: planner at `configure.enrich`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.21 · 14 · 15 · 4 · 0 · 991 · 19248 · 125725 · 1195 · 4 · 36503 · 294
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.21 USD, 14 s
+- Tool calls: 4, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check configuration byte-identical to the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "No changes made": **failed**
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.21 USD, 18 s
+- Tool calls: 4, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check configuration byte-identical to the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "No changes made": **failed**
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.20 USD, 14 s
+- Tool calls: 3, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check configuration byte-identical to the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "No changes made": **failed**
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.21 USD, 18 s
+- Tool calls: 3, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check configuration byte-identical to the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "No changes made": **failed**
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 12 s
+- Tool calls: 3, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check configuration byte-identical to the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "No changes made": passed
+
+### configure-go-no-tests
+
+- Role: planner at `configure.enrich`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.29 · 33 · 34 · 8 · 1 · 997 · 21842 · 258828 · 2943 · 7 · 39813 · 484
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.29 USD, 32 s
+- Tool calls: 8, no artifact written
+- Checks: 10 of 10 passed, the run passes
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: passed
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "go test ./...": passed
+- Check `tasks` holds "go vet": passed
+- Check `tasks` holds "_test.go": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.29 USD, 35 s
+- Tool calls: 7, no artifact written
+- Checks: 10 of 10 passed, the run passes
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: passed
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "go test ./...": passed
+- Check `tasks` holds "go vet": passed
+- Check `tasks` holds "_test.go": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.25 USD, 33 s
+- Tool calls: 5, no artifact written
+- Checks: 3 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: **failed**
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: **failed**
+- Check `tasks` holds "go test ./...": **failed**
+- Check `tasks` holds "go vet": **failed**
+- Check `tasks` holds "_test.go": **failed**
+- Check `codev status --json` reads the configuration: **failed**
+- Check no file modified outside the step: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.35 USD, 45 s
+- Tool calls: 9, no artifact written
+- Checks: 10 of 10 passed, the run passes
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: passed
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "go test ./...": passed
+- Check `tasks` holds "go vet": passed
+- Check `tasks` holds "_test.go": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.27 USD, 30 s
+- Tool calls: 6, no artifact written
+- Checks: 9 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "go test ./...": passed
+- Check `tasks` holds "go vet": passed
+- Check `tasks` holds "_test.go": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+### configure-no-config
+
+- Role: planner at `configure.enrich`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.19 · 14 · 15 · 5 · 1 · 991 · 18383 · 129158 · 713 · 4 · 36858 · 178
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.18 USD, 20 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no `_codev/` folder created: passed
+- Check no file modified outside the step: passed
+- Check says "codev init": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.19 USD, 14 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no `_codev/` folder created: passed
+- Check no file modified outside the step: passed
+- Check says "codev init": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.19 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no `_codev/` folder created: passed
+- Check no file modified outside the step: passed
+- Check says "codev init": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.19 USD, 14 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no `_codev/` folder created: passed
+- Check no file modified outside the step: passed
+- Check says "codev init": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.19 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check no `_codev/` folder created: passed
+- Check no file modified outside the step: passed
+- Check says "codev init": passed
+
+### configure-python-preserves
+
+- Role: planner at `configure.enrich`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.30 · 39 · 39 · 8 · 2 · 997 · 22674 · 256342 · 3201 · 7 · 39995 · 457
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.31 USD, 37 s
+- Tool calls: 7, no artifact written
+- Checks: 7 of 8 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "pytest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.31 USD, 41 s
+- Tool calls: 9, no artifact written
+- Checks: 8 of 8 passed, the run passes
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: passed
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "pytest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.30 USD, 38 s
+- Tool calls: 7, no artifact written
+- Checks: 7 of 8 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "pytest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.28 USD, 41 s
+- Tool calls: 6, no artifact written
+- Checks: 7 of 8 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "pytest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.30 USD, 37 s
+- Tool calls: 7, no artifact written
+- Checks: 7 of 8 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "pytest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+### configure-ts-jest
+
+- Role: planner at `configure.enrich`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.33 · 42 · 42 · 10 · 3 · 1001 · 23231 · 335934 · 3446 · 9 · 39995 · 431
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.32 USD, 36 s
+- Tool calls: 8, no artifact written
+- Checks: 9 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "Jest": passed
+- Check `tasks` holds "__tests__/": passed
+- Check `tasks` does not hold "Vitest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.30 USD, 44 s
+- Tool calls: 8, no artifact written
+- Checks: 9 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "Jest": passed
+- Check `tasks` holds "__tests__/": passed
+- Check `tasks` does not hold "Vitest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.34 USD, 41 s
+- Tool calls: 16, no artifact written
+- Checks: 9 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "Jest": passed
+- Check `tasks` holds "__tests__/": passed
+- Check `tasks` does not hold "Vitest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.33 USD, 37 s
+- Tool calls: 9, no artifact written
+- Checks: 10 of 10 passed, the run passes
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: passed
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "Jest": passed
+- Check `tasks` holds "__tests__/": passed
+- Check `tasks` does not hold "Vitest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.33 USD, 43 s
+- Tool calls: 17, no artifact written
+- Checks: 9 of 10 passed, the run **fails**
+- Check keys other than `context` and `rules` preserved: passed
+- Check comments kept: passed
+- Check `# written by /codev-configure` above `context:`: passed
+- Check `context` spans two to five lines: **failed**
+- Check `rules` holds one or two `specs` and `design` rules, and `tasks` rules: passed
+- Check `tasks` holds "Jest": passed
+- Check `tasks` holds "__tests__/": passed
+- Check `tasks` does not hold "Vitest": passed
+- Check `codev status --json` reads the configuration: passed
+- Check no file modified outside the step: passed
 
 ### implement-decision-accept-command
 
@@ -3991,6 +4782,235 @@ The tokens written to the cache, by source: per case the median over its runs, s
 - Finding R-skeptic-3 [medium / high] `specs/customer-merge/spec.md#Requirement: Duplicate customers are merged` The spec covers only the happy path: **false positive** (at the location of `email-is-not-a-person`, another category)
 - Finding R-skeptic-4 [medium / high] `proposal.md#Domains` The operations domain is unticked for a new scheduled job: **false positive**
 - Finding R-skeptic-5 [low / low] `proposal.md#Why` The cause of the duplicates is left in place: unreported (low confidence)
+
+### sync-merges
+
+- Role: planner at `change.sync`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.22 · 14 · 15 · 6 · 1 · 987 · 20841 · 175996 · 847 · 5 · 39565 · 169
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.26 USD, 14 s
+- Tool calls: 5, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "ready to be archived": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.20 USD, 20 s
+- Tool calls: 5, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "ready to be archived": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.26 USD, 8 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "ready to be archived": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.19 USD, 7 s
+- Tool calls: 4, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "ready to be archived": **failed**
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.22 USD, 14 s
+- Tool calls: 5, no artifact written
+- Checks: 2 of 3 passed, the run **fails**
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says "ready to be archived": **failed**
+
+### sync-planning-incomplete
+
+- Role: planner at `change.sync`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.18 · 12 · 13 · 4 · 0 · 982 · 18572 · 90778 · 808 · 3 · 36777 · 216
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.18 USD, 8 s
+- Tool calls: 3, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check does not say "Synced": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.18 USD, 9 s
+- Tool calls: 3, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check does not say "Synced": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.17 USD, 15 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check does not say "Synced": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.32 USD, 15 s
+- Tool calls: 3, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check does not say "Synced": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.19 USD, 11 s
+- Tool calls: 2, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check does not say "Synced": passed
+
+### sync-validation-failed
+
+- Role: planner at `change.sync`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.19 · 14 · 14 · 5 · 1 · 987 · 17716 · 167032 · 684 · 5 · 37147 · 137
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.19 USD, 19 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "ready to be archived": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.19 USD, 19 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "ready to be archived": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.19 USD, 13 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "ready to be archived": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.18 USD, 7 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "ready to be archived": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.19 USD, 10 s
+- Tool calls: 4, no artifact written
+- Checks: 4 of 4 passed, the run passes
+- Check files under `_codev/` as the fixture's: passed
+- Check no file modified outside the step: passed
+- Check says "codev validate": passed
+- Check does not say "ready to be archived": passed
+
+### sync-version-later
+
+- Role: planner at `change.sync`, seeded
+- Consumption (median): Cost (USD) | Duration (s) | API duration (s) | Turns | Denials | Input, uncached | Cache writes | Cache reads | Output | Calls | Input/call | Output/call
+  0.20 · 11 · 12 · 5 · 1 · 986 · 18555 · 163898 · 860 · 5 · 36693 · 172
+
+#### Run 1
+
+- Outcome: scored
+- Cost: 0.20 USD, 10 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+
+#### Run 2
+
+- Outcome: scored
+- Cost: 0.20 USD, 9 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+
+#### Run 3
+
+- Outcome: scored
+- Cost: 0.20 USD, 11 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+
+#### Run 4
+
+- Outcome: scored
+- Cost: 0.20 USD, 13 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
+
+#### Run 5
+
+- Outcome: scored
+- Cost: 0.20 USD, 10 s
+- Tool calls: 4, no artifact written
+- Checks: 3 of 3 passed, the run passes
+- Check files under `_codev/` as `codev sync` leaves them: passed
+- Check no file modified outside the step: passed
+- Check says ">=99": passed
 
 ### tracer-control-complete-plan
 

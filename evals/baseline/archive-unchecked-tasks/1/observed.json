@@ -1,0 +1,144 @@
+{
+  "format": 2,
+  "case": "archive-unchecked-tasks",
+  "error": null,
+  "costUsd": 0.2129952,
+  "durationMs": 13348,
+  "consumption": {
+    "durationApiMs": 13722,
+    "turns": 6,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 989,
+      "cacheCreation": 18814,
+      "cacheRead": 204191,
+      "output": 1046
+    },
+    "toolCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7937,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7937
+        }
+      },
+      {
+        "cacheCreation": 4206,
+        "cacheRead": 29606,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 4206
+        }
+      },
+      {
+        "cacheCreation": 5601,
+        "cacheRead": 33812,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 5601
+        }
+      },
+      {
+        "cacheCreation": 171,
+        "cacheRead": 39413,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev archive": 171
+        }
+      },
+      {
+        "cacheCreation": 523,
+        "cacheRead": 39584,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "codev archive": 523
+        }
+      },
+      {
+        "cacheCreation": 376,
+        "cacheRead": 40107,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 0,
+        "sources": {
+          "search": 376
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "✓ Archived \"`fewer-review-turns`\": 0 specs created, 2 updated, 0 unchanged.\n\n**Updated:**\n- `_codev/specs/roles/spec.md`\n- `_codev/specs/skills/spec.md`\n\nMoved to: `_codev/changes/archive/2026-10-27-fewer-review-turns`\n\nOne task in `tasks.md` was still unchecked when the change was archived: **6.1**, the final check that `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test` and `codev validate --strict` all pass. The skill is meant for changes whose tasks are all checked, but the CLI's checks passed and archived it anyway. That check has not been run, so it's worth running those four commands before you commit.\n\nThe status check showed no codev update to act on, so I didn't ask about updating.\n\nThe Gmail, Google Calendar and Google Drive connectors need to be authorized in your claude.ai connector settings before they can be used. They weren't needed here."
+  ],
+  "merge": {
+    "changed": {
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/change.yaml": "cd54fe01555559ffd5cf6f7f1d1b06209492e5ba9147cdc3800201c09e2291d0",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/design.md": "0b3b76f02cde830adf8998707a2559c93b178cddaaf0b45cd2a193ee230b4d42",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/proposal.md": "c11b30de412bcf22165de2d221fe7765cc24d4dd8916b467f1e8010c3d33e966",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/review.md": "946559e7f5ebde484fa0d9ae5a592c7636c8e53b50a09939e86b73574d565a97",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/specs/roles/spec.md": "27c2762c16eb3c6ad49c3ef12a967e9ad5ce44368808709ec6d1799d72833079",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/specs/skills/spec.md": "c7c5f69a62f4610a103950d9ded986d255a95294392ecab292cf4f2ab9987710",
+      "_codev/changes/archive/2026-10-27-fewer-review-turns/tasks.md": "560edab5329be115e2354dd4ebeb215770a0f1ae595359ef3f8c408d882fdff5",
+      "_codev/changes/fewer-review-turns/change.yaml": null,
+      "_codev/changes/fewer-review-turns/design.md": null,
+      "_codev/changes/fewer-review-turns/proposal.md": null,
+      "_codev/changes/fewer-review-turns/review.md": null,
+      "_codev/changes/fewer-review-turns/specs/roles/spec.md": null,
+      "_codev/changes/fewer-review-turns/specs/skills/spec.md": null,
+      "_codev/changes/fewer-review-turns/tasks.md": null,
+      "_codev/specs/roles/spec.md": "dad1cbf96175537f7df34bf29a29d90d700959624b785352dce9f57a5a7fe137",
+      "_codev/specs/skills/spec.md": "4a75d8339f642b8f25b85ff4ac7c96b98dbc0986918368ffa67352f327a18438"
+    },
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "fewer-review-turns",
+        "created": [],
+        "deleted": [],
+        "movedTo": "_codev/changes/archive/2026-10-27-fewer-review-turns",
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/roles/spec.md",
+          "_codev/specs/skills/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/change.yaml": "cd54fe01555559ffd5cf6f7f1d1b06209492e5ba9147cdc3800201c09e2291d0",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/design.md": "0b3b76f02cde830adf8998707a2559c93b178cddaaf0b45cd2a193ee230b4d42",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/proposal.md": "c11b30de412bcf22165de2d221fe7765cc24d4dd8916b467f1e8010c3d33e966",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/review.md": "946559e7f5ebde484fa0d9ae5a592c7636c8e53b50a09939e86b73574d565a97",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/specs/roles/spec.md": "27c2762c16eb3c6ad49c3ef12a967e9ad5ce44368808709ec6d1799d72833079",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/specs/skills/spec.md": "c7c5f69a62f4610a103950d9ded986d255a95294392ecab292cf4f2ab9987710",
+        "_codev/changes/archive/2026-10-27-fewer-review-turns/tasks.md": "560edab5329be115e2354dd4ebeb215770a0f1ae595359ef3f8c408d882fdff5",
+        "_codev/changes/fewer-review-turns/change.yaml": null,
+        "_codev/changes/fewer-review-turns/design.md": null,
+        "_codev/changes/fewer-review-turns/proposal.md": null,
+        "_codev/changes/fewer-review-turns/review.md": null,
+        "_codev/changes/fewer-review-turns/specs/roles/spec.md": null,
+        "_codev/changes/fewer-review-turns/specs/skills/spec.md": null,
+        "_codev/changes/fewer-review-turns/tasks.md": null,
+        "_codev/specs/roles/spec.md": "dad1cbf96175537f7df34bf29a29d90d700959624b785352dce9f57a5a7fe137",
+        "_codev/specs/skills/spec.md": "4a75d8339f642b8f25b85ff4ac7c96b98dbc0986918368ffa67352f327a18438"
+      }
+    }
+  }
+}

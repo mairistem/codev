@@ -1,0 +1,6 @@
+{
+  "name": "csv-to-json",
+  "version": "0.1.0",
+  "bin": { "csv-to-json": "index.js" },
+  "scripts": { "test": "node --test" }
+}

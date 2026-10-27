@@ -1,0 +1,10 @@
+# A project without `_codev/config.yaml`: the skill refuses and points to
+# `codev init`; it never creates the file.
+step: configure.enrich
+kind: seeded
+stacks: [javascript]
+summary: "A project without codev's configuration: the skill refuses, points to `codev init` and creates nothing."
+answer: yes
+expected:
+  outcome: refused
+  contains: ["codev init"]

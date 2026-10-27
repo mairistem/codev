@@ -732,3 +732,202 @@ fn the_role_evaluation_spec_has_no_cut_scenario() {
     );
     assert!(text.contains("#### Scenario: A report of another run"));
 }
+
+#[test]
+fn the_suite_covers_the_sync_and_archive_paths() {
+    use codev_evals::case::{MergeOutcome, Step, tasks};
+    let cases = suite::load_cases(&repo()).unwrap();
+    let merges: Vec<_> = cases
+        .iter()
+        .filter_map(|c| c.merge.as_ref().map(|m| (c, m)))
+        .collect();
+    let of = |step: Step| merges.iter().filter(|(c, _)| c.step == step).count();
+    assert_eq!(of(Step::ChangeArchive), 6, "six change.archive cases");
+    assert_eq!(of(Step::ChangeSync), 4, "four change.sync cases");
+    let version = |m: &codev_evals::case::MergeCase| {
+        m.overlay
+            .get("_codev/config.yaml")
+            .is_some_and(|c| String::from_utf8_lossy(c).contains("codev_version: \">=99\""))
+    };
+    let planned = |m: &codev_evals::case::MergeCase| m.files.contains_key("tasks.md");
+    for step in [Step::ChangeArchive, Step::ChangeSync] {
+        let these: Vec<_> = merges.iter().filter(|(c, _)| c.step == step).collect();
+        let name = step.as_str();
+        let any = |test: &dyn Fn(&codev_evals::case::MergeCase) -> bool| {
+            these.iter().any(|(_, m)| test(m))
+        };
+        assert!(
+            any(&|m| m.outcome == MergeOutcome::Done && planned(m) && !version(m)),
+            "{name}: no case that merges"
+        );
+        assert!(
+            any(&|m| m.code.as_deref() == Some("validation_failed")),
+            "{name}: no refusal on a validation error"
+        );
+        assert!(
+            any(&|m| m.outcome == MergeOutcome::Refused && !planned(m)),
+            "{name}: no stop on incomplete planning"
+        );
+        assert!(
+            any(&|m| m.outcome == MergeOutcome::Done && version(m)),
+            "{name}: no case under an unsatisfied codev_version"
+        );
+    }
+    let archives: Vec<_> = merges
+        .iter()
+        .filter(|(c, _)| c.step == Step::ChangeArchive)
+        .collect();
+    assert!(
+        archives
+            .iter()
+            .any(|(_, m)| m.code.as_deref() == Some("review_blocked")),
+        "change.archive: no refusal by the review record"
+    );
+    assert!(
+        archives.iter().any(|(_, m)| m.outcome == MergeOutcome::Done
+            && m.files
+                .get("tasks.md")
+                .is_some_and(|t| tasks(t).iter().any(|(_, checked)| !checked))),
+        "change.archive: no archive of a change whose tasks are not all checked"
+    );
+    // Each change is drawn from this repository's archive: every file of
+    // `change/` is a file of the archived change, and at most one differs.
+    let archive = repo().join("_codev").join("changes").join("archive");
+    let archived: Vec<String> = fs::read_dir(&archive)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    for (case, merge) in &merges {
+        let dir = archived
+            .iter()
+            .find(|d| d.len() > 11 && d[11..] == case.change)
+            .unwrap_or_else(|| panic!("{}: `{}` is not an archived change", case.id, case.change));
+        let mut edited = 0;
+        for (path, text) in &merge.files {
+            let original = fs::read_to_string(archive.join(dir).join(path))
+                .unwrap_or_else(|_| panic!("{}: `change/{path}` is not in the archive", case.id));
+            edited += usize::from(original.replace("\r\n", "\n") != *text);
+        }
+        assert!(
+            edited <= 1,
+            "{}: {edited} files differ from the archive",
+            case.id
+        );
+    }
+}
+
+#[test]
+fn the_suite_covers_the_configure_projects() {
+    use codev_evals::case::{ConfigureOutcome, Step};
+    let cases = suite::load_cases(&repo()).unwrap();
+    let configures: Vec<_> = cases
+        .iter()
+        .filter(|c| c.step == Step::ConfigureEnrich)
+        .filter_map(|c| c.configure.as_ref().map(|k| (c, k)))
+        .collect();
+    assert_eq!(configures.len(), 5, "five configure.enrich cases");
+    let written_in = |stack: &str, texts: &[&str]| {
+        configures.iter().any(|(c, k)| {
+            c.stacks.iter().any(|s| s == stack)
+                && k.outcome == ConfigureOutcome::Written
+                && texts.iter().all(|t| {
+                    k.written
+                        .get("tasks")
+                        .is_some_and(|w| w.iter().any(|x| x == t))
+                })
+        })
+    };
+    assert!(
+        written_in("typescript", &["Jest", "__tests__/"]),
+        "no TypeScript project tested with Jest in __tests__/"
+    );
+    assert!(
+        written_in("go", &["go test ./...", "go vet", "_test.go"]),
+        "no Go project without tests"
+    );
+    assert!(
+        written_in("python", &["pytest"]),
+        "no Python project tested with pytest"
+    );
+    let go = configures
+        .iter()
+        .find(|(c, _)| c.stacks.iter().any(|s| s == "go"))
+        .unwrap();
+    assert!(
+        !suite_files(&go.0.id)
+            .iter()
+            .any(|p| p.ends_with("_test.go")),
+        "the Go project holds a test"
+    );
+    let preserves = configures.iter().any(|(_, k)| {
+        k.outcome == ConfigureOutcome::Written
+            && k.config.as_deref().is_some_and(|c| {
+                ["language: fr", "mcp:", "codev_version:"]
+                    .iter()
+                    .all(|key| c.contains(key))
+                    && c.lines()
+                        .filter(|l| l.trim_start().starts_with('#'))
+                        .count()
+                        >= 3
+            })
+    });
+    assert!(
+        preserves,
+        "no configuration with language, mcp, codev_version and comments"
+    );
+    assert!(
+        configures
+            .iter()
+            .any(|(_, k)| !k.answer && k.outcome == ConfigureOutcome::Unchanged),
+        "no author answering no"
+    );
+    assert!(
+        configures
+            .iter()
+            .any(|(_, k)| k.config.is_none() && k.outcome == ConfigureOutcome::Refused),
+        "no project without a configuration"
+    );
+}
+
+/// The files of a case's `base/`, by path.
+fn suite_files(id: &str) -> Vec<String> {
+    codev_evals::runner::read_tree(&repo().join("evals/cases").join(id).join("base"))
+        .unwrap()
+        .into_keys()
+        .collect()
+}
+
+#[test]
+fn contributing_chapters_document_the_sync_archive_and_configure_cases() {
+    let names = ["CONTRIBUTING.md", "CONTRIBUTING.fr.md"];
+    let texts: Vec<String> = names.iter().map(|n| read(n)).collect();
+    let files: Vec<(&str, &str)> = names
+        .iter()
+        .zip(&texts)
+        .map(|(n, t)| (*n, t.as_str()))
+        .collect();
+    let mut gaps = Vec::new();
+    for needle in [
+        "step: change.sync",
+        "step: change.archive",
+        "step: configure.enrich",
+        "--step change.sync",
+        "--step change.archive",
+        "--step configure.enrich",
+        "`overlay/`",
+        "`outcome`",
+        "`absent`",
+        "`answer`",
+        "**Later**",
+        // The reference run.
+        "codev archive --change <change> --json",
+        "codev sync --change <change> --json",
+        // A changed expectation is scored again, not recorded again.
+        "score evals/baseline",
+        "archive-version-later",
+    ] {
+        gaps.extend(missing_mention(&files, needle));
+    }
+    assert_eq!(gaps, Vec::<String>::new());
+}

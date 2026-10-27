@@ -1,0 +1,108 @@
+{
+  "format": 2,
+  "case": "sync-merges",
+  "error": null,
+  "costUsd": 0.1889838,
+  "durationMs": 7122,
+  "consumption": {
+    "durationApiMs": 7735,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 987,
+      "cacheCreation": 18075,
+      "cacheRead": 163159,
+      "output": 551
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7793,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7793
+        }
+      },
+      {
+        "cacheCreation": 4094,
+        "cacheRead": 29462,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 4094
+        }
+      },
+      {
+        "cacheCreation": 5587,
+        "cacheRead": 33556,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 5587
+        }
+      },
+      {
+        "cacheCreation": 186,
+        "cacheRead": 39143,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev sync": 135,
+          "output": 51
+        }
+      },
+      {
+        "cacheCreation": 415,
+        "cacheRead": 39329,
+        "input": 2,
+        "output": 106,
+        "toolCalls": 0,
+        "sources": {
+          "codev sync": 415
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "No update notice needed. Running sync.",
+    "✓ Synced \"`forward-compatible-config`\": 1 spec created, 1 updated, 0 unchanged.\n\n```\nCreated:\n  _codev/specs/configuration/spec.md\nUpdated:\n  _codev/specs/doctor/spec.md\n```\n\nYou can archive the change now if you want to close the cycle."
+  ],
+  "merge": {
+    "changed": {
+      "_codev/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
+      "_codev/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
+    },
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "forward-compatible-config",
+        "created": [
+          "_codev/specs/configuration/spec.md"
+        ],
+        "deleted": [],
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/doctor/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/specs/configuration/spec.md": "6855ac5f6ca1bf34ed74c2045e2baa8195a504ba889b629e3f34c2f7e68a9861",
+        "_codev/specs/doctor/spec.md": "6fd060df616c4fff73b53e2e248d4437dfcc6a2a471d3902c93a46eb3553d1eb"
+      }
+    }
+  }
+}

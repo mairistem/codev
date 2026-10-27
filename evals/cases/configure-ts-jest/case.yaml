@@ -1,0 +1,14 @@
+# A TypeScript API tested with Jest in `__tests__/` folders: the testing
+# rules follow what the project's tests do, not the other runner the skill
+# names.
+step: configure.enrich
+kind: seeded
+stacks: [typescript]
+summary: "A TypeScript API whose tests run with Jest in `__tests__/`: the tasks rules name Jest and `__tests__/`, never Vitest."
+answer: yes
+expected:
+  outcome: written
+  written:
+    tasks: [Jest, "__tests__/"]
+  unwritten:
+    tasks: [Vitest]

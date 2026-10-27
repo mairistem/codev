@@ -1,0 +1,108 @@
+# codev configuration for... codev itself.
+#
+# This repository uses the tool it builds. That is deliberate: the only reliable
+# way to know whether a format is pleasant to write is to write it.
+schema: spec-driven
+
+# Language of the prose skills write in artifacts (proposal, design,
+# tasks, specs). Structural keywords such as `## Why` or
+# `### Requirement:` always stay in English.
+language: en
+
+# Every contributor runs a codev that understands this repository's planning
+# format; `codev doctor` and the skills say so otherwise.
+codev_version: ">=99"
+
+workflows:
+  - propose
+  - explore
+  - apply
+  - sync
+  - archive
+  - update
+  - onboard
+  - configure
+
+# Isolated review: each reviewing role runs as a sub-agent that never sees
+# the conversation, then the skill merges their findings. codev's own
+# changes usually bring several reviewers (the skeptic or the newcomer,
+# `migration` for the JSON contract), which is where isolation and the
+# merge matter; we try the mode here before anyone else pays for it. The
+# default is `inline` (see the isolated-review design).
+review:
+  mode: isolated
+
+# The Jira MCP available in our Claude Code environment. Injected into the
+# skills' frontmatter at install time (see `mcp__claude_ai_Atlassian_Rovo__*`
+# in the tool listing of a recent session).
+mcp:
+  jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
+
+context: |
+  Rust project, Cargo workspace with four crates: codev-core (pure, no I/O),
+  codev-engine (effects through ports), codev-agents (Claude Code target),
+  codev-cli (imperative shell). The dependency graph between crates is acyclic
+  and serves as the dependency rule.
+
+  Functional core, imperative shell: the core returns plans of effects, the
+  shell executes them. Nothing in codev-core touches the disk.
+
+  The JSON output contract is a public API consumed by already installed
+  skills: it lives in codev-cli::contract::v1 and never derives directly from
+  the domain model.
+
+  Typed errors with thiserror in the libraries, anyhow only in the CLI.
+  Everything is written in English — code, identifiers, comments, messages —
+  and comments explain the why.
+
+  The documentation exists in English (docs/en) and French (docs/fr) with the
+  same chapters; a change to one edition is made in both.
+
+rules:
+  specs:
+    - A spec describes observable behavior, never an implementation. If the
+      code can change without the spec changing, the spec is at the right level.
+  design:
+    - Cite the decision(s) in _codev/decisions/ that constrain the approach,
+      rather than re-debating a choice already settled.
+  tasks:
+    # Quoted: a ": " inside a plain scalar would make YAML read this line as a
+    # map.
+    - "Each task states how to verify it is done: a named test, a command, or
+       an observable behavior."
+    - Every change of observable behavior includes a task that updates the
+      documentation in both docs/en and docs/fr (same chapters, French in
+      vouvoiement), or the change states that no documentation is affected.
+    - Every spec scenario is covered by an automated test, added or updated
+      in a task. A manual check is acceptable only when automation is
+      impossible, and the task says why.
+    - "Tests follow the project's Rust conventions: unit tests in a
+       #[cfg(test)] mod tests next to the code; cross-crate and golden tests
+       under crates/*/tests; test names describe the behavior
+       (sync_refuses_a_change_that_fails_validation); engine and CLI tests use
+       the in-memory FileSystem and FixedEnv ports, never temporary
+       directories; no assumption about the path separator or line endings,
+       since CI also runs on Windows."
+    - The definition of done for every task includes cargo fmt --all --check,
+      cargo clippy --workspace --all-targets -- -D warnings, and
+      cargo test --workspace, all passing.
+
+# Paths only this repository knows to be sensitive: the JSON contract is a
+# public API consumed by already installed skills, so a change to it
+# suggests the migration expert.
+triggers:
+  - domain: migration
+    paths:
+      - crates/codev-cli/src/contract.rs
+
+# `codev changelog`: archived changes already described by hand in
+# CHANGELOG.md's [Unreleased] section, written before release notes
+# existed. Once v0.5.0 is tagged they fall out of range and this list can be
+# emptied.
+changelog:
+  exclude:
+    - 2026-09-30-decision-lifecycle-via-accept
+    - 2026-10-01-propose-review-roles
+    - 2026-10-12-docs-and-tests-in-done
+    - 2026-10-12-init-complete-project
+    - 2026-10-12-specify-untracked-behaviors

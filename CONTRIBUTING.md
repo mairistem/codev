@@ -89,7 +89,9 @@ what its runs consume. Run both on the cases of the steps the pull
 request touches, with `--step` (repeatable): `review` for the review
 steps, `plan.write` for the planning of `/codev-propose`, `plan.update`
 for the revisions of `/codev-update`, `code.implement` for the
-implementation of `/codev-apply`. Accepted
+implementation of `/codev-apply`, `change.sync`, `change.archive` and
+`configure.enrich` for `/codev-sync`, `/codev-archive` and the default mode
+of `/codev-configure`. Accepted
 decision 0008 makes this the rule for every change to the workflow.
 Record the candidate with `--repeat 3` at least, and with the baseline's `--jobs`
 (4), so that both runs share the prompt cache alike.
@@ -100,7 +102,9 @@ signed in (or `ANTHROPIC_API_KEY` set). It calls a model: a run of the
 default; a planning case costs about 1.65 dollars and takes several
 minutes, capped at 6 dollars and 1,800 seconds by default, as is an update
 case; an implementation case writes, builds and reviews a whole change,
-capped at 30 dollars and 5,400 seconds by default.
+capped at 30 dollars and 5,400 seconds by default; a sync, archive or
+configure case costs about 0.20 to 0.30 dollars, capped at 3 dollars and
+600 seconds by default.
 
 ```bash
 cargo build --bin codev
@@ -109,6 +113,8 @@ cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
 cargo run -p codev-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
+cargo run -p codev-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
+cargo run -p codev-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
 cargo run -p codev-evals -- calibrate implement-decision-accept-command   # prove a script, no model
 cargo run -p codev-evals -- score target/evals/mine    # score again, no model
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
@@ -307,6 +313,81 @@ The report's `code.implement` section keeps the refusing cases apart;
 assertions passing or the share of refusals passing falls under the
 baseline's minimum.
 
+### Writing a sync or archive case
+
+A sync or archive case replays `/codev-sync` or `/codev-archive` on an
+active change, laid as an update case lays it: `case.yaml` gives
+`step: change.sync` or `step: change.archive`, `kind: seeded`, `ref` (the
+parent of the commit that brought the change to `main`), `change`,
+`summary` and `expected`; `change/` holds the archived change's files,
+edited when the case needs a refusal — a requirement without its normative
+keyword for a validation error, a `high` finding reopened in `review.md`,
+`tasks.md` removed for an incomplete plan. An optional `overlay/` holds
+files laid over the project root, replacing those of `ref`, such as a
+`_codev/config.yaml` setting `codev_version: ">=99"`; a symbolic link, a
+path under the change, or one leaving the case's directory is refused.
+`expected` gives `outcome` — `done` when the run must leave the project as
+codev's own command leaves it, `refused` when it must leave it as it found
+it —, `code` for a `refused` case codev itself refuses (`status[0].code`
+of its report, such as `validation_failed` or `review_blocked`),
+`contains`, texts the agent's messages must hold, and `absent`, texts
+they must not hold.
+
+Before the agent runs, the runner makes the reference: in a clone of the
+fixture next to the case's directory it runs
+`codev sync --change <change> --json` or
+`codev archive --change <change> --json` with the codev under test, and
+records its exit code, its report and the digest of every file under
+`_codev/` it changed. The prompt names the skill and the change, says to
+ask no question and, if the skill asks whether to update codev, to answer
+**Later** — the only answer a sandboxed run can take —, and says nothing
+of what to write or refuse. A run is scored without a model: a `done` run
+leaves `_codev/` as the reference did, the date of the archive folder
+aside; a `refused` run leaves it as the fixture; nothing is modified
+outside `_codev/specs/` (and `_codev/changes/` for an archive); every
+`contains` text is said and no `absent` text, ignoring case and runs of
+whitespace. A `done` case whose reference fails, or a `refused` case whose
+reference reports another `code`, ends in error: the case no longer
+describes what codev does.
+
+### Writing a configure case
+
+A configure case runs the default mode of `/codev-configure` on a small
+project. `case.yaml` gives `step: configure.enrich`, `kind: seeded`,
+`stacks`, `summary`, `answer` (`yes` or `no`, the author's answer to the
+skill's confirmation) and `expected`: `outcome` — `written`, `unchanged`
+or `refused` —, `written` and `unwritten`, texts each part of the
+proposal (`context`, `specs`, `design`, `tasks`) must or must not hold,
+and `contains`, texts the agent's messages must hold. `base/` holds the
+project, its `_codev/config.yaml` included unless the case is about a
+missing configuration. The runner installs the skills without changing
+that file — for a project without one, `codev init` then `_codev/`
+removed —, and the prompt plays the author: ask only the skill's
+confirmation, continue with `answer`, answer **Later** to an update
+question. A `written` run keeps every other top-level key and every
+comment (but the one above `context:`), puts
+`# written by /codev-configure` above `context:`, spans `context` over two
+to five lines, holds one or two `specs` and `design` rules and at least
+one `tasks` rule, holds the expected texts, and leaves a file
+`codev status --json` reads; an `unchanged` run leaves the file
+byte-identical; a `refused` run creates no `_codev/`. Nothing else may be
+modified.
+
+The report gives a `change.sync`, `change.archive` and `configure.enrich`
+section — the share of runs passing, of checks passing and the runs
+modifying a file outside the step — and each run's checks. `compare`
+fails when a step's share of runs passing falls under the baseline's
+minimum, its runs modifying a file outside the step rise above its
+maximum, or one case's share of runs passing falls under its share in the
+baseline; the report names every case whose candidate runs do not all
+pass. Scoring reads only the observations, so a change that edits the
+expectation of one of these cases — a waiting change turning
+`archive-version-later` into a refusal, say — does not record the
+baseline again: it scores it again
+(`cargo run -p codev-evals -- score evals/baseline`) and commits its
+report; the edited case then fails in the baseline and decides nothing,
+and it must pass in every candidate run, which the report lists.
+
 Changing a term of the vocabulary changes the scores: score the baseline
 again (`cargo run -p codev-evals -- score evals/baseline`) and say which
 findings it re-classifies.
@@ -321,14 +402,18 @@ with the Claude Code version `.github/workflows/evals.yml` pins
 (about 270 dollars and several hours, planning cases included) — which
 the tests check: five runs of every case, none in error. The cases of a
 new step — the update cases when `plan.update` came, the implementation
-cases with `code.implement` — may be recorded
+cases with `code.implement`, the sync, archive and configure cases with
+`--step change.sync --step change.archive --step configure.enrich` — may
+be recorded
 alone, into the existing baseline, when the other cases and the scoring are
 unchanged: with the pinned Claude Code and the codev the baseline names,
 `cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
 resumes it with the new cases' runs only (a resume refuses another Claude
 Code version), then `cargo run -p codev-evals -- score evals/baseline`
 and `cargo run -p codev-evals -- docs`. A changed case or a changed scoring
-still requires recording the whole baseline again. Claude Code's
+still requires recording the whole baseline again, but for a changed
+expectation of a sync, archive or configure case, scored again as said
+above. Claude Code's
 raw output of each run (`claude.jsonl`, `claude.stderr`) stays out of
 version control.
 
