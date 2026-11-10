@@ -241,10 +241,15 @@ their version does not know.
   `invalid`, naming the key. They need to update — `codev self-update` from
   a recent version, otherwise the installer of
   [Installation](installation.md).
-- **More recent versions** warn with `unknown_config_key` instead and keep
-  working; the warning quotes your `codev_version` and points to
-  `codev self-update`. An unknown key inside an `inherits` entry or
-  `changelog` still fails with `invalid`, quoting `codev_version`.
+- **codev 0.6.1 and earlier** also reject an unknown key inside a role's
+  mapping under `roles:`, in a change's `change.yaml`, in a project
+  `schema.yaml` and in an ADR frontmatter.
+- **More recent versions** warn instead and keep working —
+  `unknown_config_key`, `change_unknown_key`, `schema_unknown_key` or
+  `decision_unknown_field`, depending on the file; the warning quotes your
+  `codev_version` and points to `codev self-update`. An unknown key inside an
+  `inherits` entry or `changelog` still fails with `invalid`, quoting
+  `codev_version`.
 
 To make the message explicit for everyone, raise `codev_version` whenever you
 add a key that only recent versions know. See
@@ -259,6 +264,42 @@ the rest of the configuration applies. Either the key comes from a newer codev
 it. `codev validate --strict` fails until then. When `codev doctor` suggests
 `codev self-update --version <X.Y.Z>`, your codev is newer than the project's
 `codev_version` allows, and that command installs a version that satisfies it.
+
+### `change_unknown_key`
+
+A change's `change.yaml` holds a key this codev does not know, at the top level
+or under `review:` (`review.<key>`): it is ignored and the rest of the file
+applies. The change was written with a newer codev — run `codev self-update` —
+or the key is misspelled, such as `skip_spec` for `skip_specs`: correct it, or
+the marker it names is not applied. `codev validate --strict` fails until then.
+
+### `schema_unknown_key`
+
+A project schema, `_codev/schemas/<name>/schema.yaml`, holds a key this codev
+does not know: the warning names the key and its line, the key is ignored and
+the schema stays usable. Run `codev self-update` if the schema was written for
+a newer codev, otherwise correct the key — a misspelled `require` leaves the
+artifact without its dependency. `codev validate --strict` reports it on the
+`config` item.
+
+### `decision_unknown_field`
+
+An ADR frontmatter holds a field this codev does not know: the decision is
+read from the fields it knows, and `codev decision accept` keeps the field
+when it rewrites the frontmatter. Run `codev self-update` if a newer codev
+added it, otherwise correct or remove it. An inherited decision's fields are
+not reported: you cannot edit its source.
+
+### `codev validate`, `sync` or `archive` reports `codev_version_unsatisfied`
+
+The running codev does not satisfy the project's `codev_version`, and the
+commands whose success is a verdict on the project refuse to give one with it:
+an older codev could pass what a teammate's fails. Run the fix the message
+names — `codev self-update`, or `codev self-update --version <X.Y.Z>` when your
+codev is above an upper bound such as `^0.6` (or widen `codev_version` if the
+team is moving to the newer release). In CI, raise the `CODEV_VERSION=` pin
+whenever `codev_version` is raised. Every other command, `codev status` and
+`codev doctor` included, keeps working.
 
 ### `codev self-update` reports `update_checksum_mismatch`
 

@@ -400,6 +400,14 @@ GitHub Release. Its body is `codev changelog --until vX.Y.Z --format markdown`,
 run by the binary built from the tag, followed by GitHub's generated notes.
 The installers pick up the new version immediately.
 
+**Older codevs.** One repository is read by several codev versions at once, so
+a change that adds a key, a value or a format to a file codev reads follows
+[decision 0013](_codev/decisions/0013-a-file-written-for-a-newer-codev-warns-unless-ignoring-it-would-weaken-a-check.md):
+its design states what an older codev does with it — warns and ignores it,
+refuses it, or misreads it — and, when ignoring it would weaken a check, its
+release note gives the minimum `codev_version` a project must require before
+using it.
+
 ## Security
 
 Do not open a public issue for a vulnerability. Follow

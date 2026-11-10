@@ -4,7 +4,7 @@ use codev_core::keywords::Lang;
 use codev_core::schema::Artifact;
 use codev_core::{ArtifactGraph, Layout};
 
-use crate::error::{EngineError, Result};
+use crate::error::{EngineError, Result, Warning};
 use crate::ports::FileSystem;
 
 /// The only embedded schema. Everything else comes from the project.
@@ -144,7 +144,44 @@ pub fn list(fs: &dyn FileSystem, layout: &Layout) -> Vec<(String, SchemaOrigin)>
     schemas
 }
 
+/// The code of the warning and of the validate finding for a key of a
+/// project `schema.yaml` this codev ignores.
+pub const SCHEMA_UNKNOWN_KEY: &str = "schema_unknown_key";
+
 impl ResolvedSchema {
+    /// The schema's file when the project defines it; `None` for the
+    /// built-in schema.
+    pub fn file(&self) -> Option<PathBuf> {
+        match &self.origin {
+            SchemaOrigin::Project(dir) => Some(dir.join("schema.yaml")),
+            SchemaOrigin::Builtin => None,
+        }
+    }
+
+    /// One `schema_unknown_key` warning per key of the schema's file this
+    /// codev ignored, naming the file and the line.
+    pub fn warnings(&self, layout: &Layout, codev_version: Option<&str>) -> Vec<Warning> {
+        let Some(file) = self.file() else {
+            return Vec::new();
+        };
+        let file = crate::change::relative_text(layout, &file);
+        self.graph
+            .schema()
+            .unknown_keys
+            .iter()
+            .map(|u| {
+                Warning::new(
+                    SCHEMA_UNKNOWN_KEY,
+                    crate::config::unknown_key_message(
+                        &format!("{file}:{}", u.line),
+                        &u.key,
+                        codev_version,
+                    ),
+                )
+            })
+            .collect()
+    }
+
     /// The schema's name: the one it was resolved by.
     pub fn name(&self) -> &str {
         &self.name
@@ -214,6 +251,13 @@ mod tests {
     use super::*;
     use crate::ports::MemoryFileSystem;
     use codev_core::keywords::{self, Key};
+
+    #[test]
+    fn built_in_schema_has_no_unknown_key() {
+        // Decision 0013, point 4: content shipped in the binary is strict.
+        let schema = codev_core::Schema::parse(BUILTIN_SCHEMA_YAML).unwrap();
+        assert!(schema.unknown_keys.is_empty(), "{:?}", schema.unknown_keys);
+    }
 
     #[test]
     fn the_embedded_schema_is_valid() {

@@ -208,15 +208,17 @@ fn not_ok(
     }
 }
 
-/// The fix of an unsatisfied `codev_version`: a plain `codev self-update`
+/// The fix of an unsatisfied `codev_version`, for a codev `running` and the
+/// latest release the update cache knows: a plain `codev self-update`
 /// refuses to downgrade, so a codev above the requirement gets an explicit
-/// `--version`.
-fn version_fix(requirement: &str, version: &VersionFacts) -> String {
+/// `--version`. Shared by the `codev_version` check and the refusal of the
+/// commands that give a verdict, so both name the same fix.
+pub fn codev_version_fix(requirement: &str, running: &str, latest_known: Option<&str>) -> String {
     use crate::update::{RequirementSide, downgrade_target, requirement_side};
-    if requirement_side(requirement, &version.running) != Some(RequirementSide::Above) {
+    if requirement_side(requirement, running) != Some(RequirementSide::Above) {
         return "codev self-update".to_string();
     }
-    match downgrade_target(requirement, version.latest_known.as_deref()) {
+    match downgrade_target(requirement, latest_known) {
         Some(target) => format!("codev self-update --version {target}"),
         None => format!(
             "codev self-update --version <X.Y.Z>, with a release that satisfies \"{requirement}\""
@@ -401,7 +403,11 @@ pub fn evaluate(facts: &DoctorFacts) -> Vec<Check> {
                 "codev {} does not satisfy codev_version: \"{requirement}\"",
                 version.running
             ),
-            version_fix(requirement, version),
+            codev_version_fix(
+                requirement,
+                &version.running,
+                version.latest_known.as_deref(),
+            ),
         ),
         (_, Some(latest)) => not_ok(
             "codev_version",

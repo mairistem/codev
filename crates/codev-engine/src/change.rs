@@ -4,7 +4,8 @@ use codev_core::outputs::pattern_matches_any;
 use codev_core::{ChangeId, ChangeStatus, Layout, status};
 
 use crate::config::ResolvedConfig;
-use crate::error::{EngineError, Result};
+use crate::config::UnknownKey;
+use crate::error::{EngineError, Result, Warning};
 use crate::metadata::{self, ChangeMetadata};
 use crate::ports::FileSystem;
 use crate::schemas::{self, ResolvedSchema};
@@ -16,6 +17,34 @@ pub struct ChangeContext {
     pub change: ChangeId,
     pub metadata: ChangeMetadata,
     pub schema: ResolvedSchema,
+    /// The keys of `change.yaml` this codev ignored, in file order.
+    pub unknown_keys: Vec<UnknownKey>,
+}
+
+impl ChangeContext {
+    /// The warnings of the files this change is read from: one
+    /// `change_unknown_key` per key of `change.yaml` this codev ignored,
+    /// then the `schema_unknown_key` warnings of its schema.
+    pub fn warnings(&self, layout: &Layout, codev_version: Option<&str>) -> Vec<Warning> {
+        let file = layout.change_metadata(&self.change);
+        let file = relative_text(layout, &file);
+        self.unknown_keys
+            .iter()
+            .map(|u| {
+                Warning::new(
+                    metadata::CHANGE_UNKNOWN_KEY,
+                    crate::config::unknown_key_message(&file, &u.key, codev_version),
+                )
+            })
+            .chain(self.schema.warnings(layout, codev_version))
+            .collect()
+    }
+}
+
+/// `path` relative to the project root, with `/` separators: how a
+/// message names a file, whatever the OS.
+pub(crate) fn relative_text(layout: &Layout, path: &std::path::Path) -> String {
+    codev_core::layout::slashed(path.strip_prefix(layout.project_root()).unwrap_or(path))
 }
 
 /// Loads an existing change.
@@ -35,15 +64,20 @@ pub fn load(
         });
     }
 
-    let metadata =
-        metadata::load(fs, &layout.change_metadata(&change))?.unwrap_or(ChangeMetadata {
-            schema: config.schema.clone(),
-            created: None,
-            goal: None,
-            skip_specs: false,
-            retire_capabilities: false,
-            roles: Default::default(),
-            review: None,
+    let (metadata, unknown_keys) = metadata::load(fs, &layout.change_metadata(&change))?
+        .unwrap_or_else(|| {
+            (
+                ChangeMetadata {
+                    schema: config.schema.clone(),
+                    created: None,
+                    goal: None,
+                    skip_specs: false,
+                    retire_capabilities: false,
+                    roles: Default::default(),
+                    review: None,
+                },
+                Vec::new(),
+            )
         });
 
     let schema = schemas::resolve(fs, layout, &metadata.schema)?;
@@ -51,6 +85,7 @@ pub fn load(
         change,
         metadata,
         schema,
+        unknown_keys,
     })
 }
 

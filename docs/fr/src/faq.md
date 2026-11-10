@@ -254,11 +254,15 @@ une clé que sa version ne connaît pas.
   chaque commande échoue avec `invalid` en nommant la clé. Il doit mettre à
   jour : `codev self-update` depuis une version récente, sinon l'installateur
   décrit dans [Installation](installation.md).
-- **Les versions plus récentes** émettent à la place l'avertissement
-  `unknown_config_key` et continuent de fonctionner ; l'avertissement cite
-  votre `codev_version` et renvoie à `codev self-update`. Une clé inconnue
-  dans une entrée de `inherits` ou dans `changelog` échoue toujours avec
-  `invalid`, en citant `codev_version`.
+- **codev 0.6.1 et les versions antérieures** rejettent aussi une clé
+  inconnue dans la table d'un rôle sous `roles:`, dans le `change.yaml` d'un
+  change, dans un `schema.yaml` de projet et dans le frontmatter d'un ADR.
+- **Les versions plus récentes** émettent à la place un avertissement —
+  `unknown_config_key`, `change_unknown_key`, `schema_unknown_key` ou
+  `decision_unknown_field`, selon le fichier — et continuent de
+  fonctionner ; l'avertissement cite votre `codev_version` et renvoie à
+  `codev self-update`. Une clé inconnue dans une entrée de `inherits` ou dans
+  `changelog` échoue toujours avec `invalid`, en citant `codev_version`.
 
 Pour que le message soit explicite pour tous, relevez `codev_version` chaque
 fois que vous ajoutez une clé que seules les versions récentes connaissent.
@@ -275,6 +279,47 @@ faute de frappe, comme `shema` pour `schema` : corrigez-la.
 `codev self-update --version <X.Y.Z>`, votre codev est plus récent que ce
 qu'autorise le `codev_version` du projet, et cette commande installe une
 version qui le satisfait.
+
+### `change_unknown_key`
+
+Le `change.yaml` d'un change contient une clé que ce codev ne connaît pas, au
+premier niveau ou sous `review:` (`review.<clé>`) : elle est ignorée et le
+reste du fichier s'applique. Le change a été écrit avec une version plus
+récente de codev — lancez `codev self-update` — ou la clé est mal
+orthographiée, comme `skip_spec` pour `skip_specs` : corrigez-la, sinon le
+marqueur qu'elle désigne ne s'applique pas. `codev validate --strict` échoue
+d'ici là.
+
+### `schema_unknown_key`
+
+Un schéma de projet, `_codev/schemas/<nom>/schema.yaml`, contient une clé que
+ce codev ne connaît pas : l'avertissement nomme la clé et sa ligne, la clé
+est ignorée et le schéma reste utilisable. Lancez `codev self-update` si le
+schéma a été écrit pour une version plus récente de codev, sinon corrigez la
+clé — un `require` mal orthographié laisse l'artefact sans sa dépendance.
+`codev validate --strict` la signale sur l'élément `config`.
+
+### `decision_unknown_field`
+
+Le frontmatter d'un ADR contient un champ que ce codev ne connaît pas : la
+décision est lue à partir des champs qu'il connaît, et
+`codev decision accept` conserve le champ lorsqu'il réécrit le frontmatter.
+Lancez `codev self-update` si une version plus récente de codev l'a ajouté,
+sinon corrigez-le ou supprimez-le. Les champs d'une décision héritée ne sont
+pas signalés : vous ne pouvez pas modifier sa source.
+
+### `codev validate`, `sync` ou `archive` signale `codev_version_unsatisfied`
+
+Le codev en cours ne satisfait pas le `codev_version` du projet, et les
+commandes dont la réussite est un verdict sur le projet refusent d'en donner
+un avec lui : un codev plus ancien pourrait accepter ce que celui d'un
+collègue refuse. Appliquez la correction que nomme le message —
+`codev self-update`, ou `codev self-update --version <X.Y.Z>` lorsque votre
+codev dépasse une borne supérieure comme `^0.6` (ou élargissez
+`codev_version` si l'équipe passe à la version plus récente). En CI,
+relevez l'épinglage `CODEV_VERSION=` chaque fois que `codev_version` est
+relevé. Toutes les autres commandes, `codev status` et `codev doctor`
+compris, continuent de fonctionner.
 
 ### `codev self-update` signale `update_checksum_mismatch`
 

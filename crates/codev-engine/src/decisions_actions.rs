@@ -14,8 +14,14 @@ use crate::ports::FileSystem;
 ///
 /// This is the single access point to `seal.yaml` on the shell side — used
 /// before calling `plan_new`, `plan_accept` and `plan_seal`, and by
-/// `validate` to check the hashes.
-pub fn read_seal_file(fs: &dyn FileSystem, layout: &Layout) -> Result<SealFile, ActionError> {
+/// `validate` to check the hashes. A file of a newer format fails with
+/// `seal_version_unsupported`, whose message quotes `codev_version` when
+/// the project sets it.
+pub fn read_seal_file(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    codev_version: Option<&str>,
+) -> Result<SealFile, ActionError> {
     let path = layout.decisions_seal_file();
     if !fs.exists(&path) {
         return Ok(SealFile::empty());
@@ -23,7 +29,14 @@ pub fn read_seal_file(fs: &dyn FileSystem, layout: &Layout) -> Result<SealFile, 
     let source = fs
         .read_to_string(&path)
         .map_err(|e| ActionError::Seal(SealError::Invalid(e.to_string())))?;
-    seal::parse_seal_file(&source).map_err(ActionError::from)
+    seal::parse_seal_file(&source).map_err(|err| match err {
+        SealError::UnsupportedVersion { actual, expected } => ActionError::SealVersionUnsupported {
+            found: actual,
+            supported: expected,
+            requirement: codev_version.map(str::to_string),
+        },
+        other => ActionError::from(other),
+    })
 }
 
 const DECISION_TEMPLATE: &str = include_str!("../../../assets/templates/decision.md");
@@ -96,6 +109,17 @@ pub enum ActionError {
     SealConflict {
         id: String,
     },
+    /// `seal.yaml` has a `version` this codev does not read: written by a
+    /// newer codev. Kept apart from [`SealError`] to quote the project's
+    /// `codev_version`.
+    /// `SealError::UnsupportedVersion` never reaches `ActionError::Seal`
+    /// from [`read_seal_file`]: it becomes this variant, which only adds the
+    /// requirement to the message.
+    SealVersionUnsupported {
+        found: u32,
+        supported: u32,
+        requirement: Option<String>,
+    },
     /// An error from the `seal` module — stable code derived from it.
     Seal(SealError),
 }
@@ -117,6 +141,7 @@ impl ActionError {
             Self::AmbiguousDecisionHeading { .. } => "ambiguous_decision_heading",
             Self::AmbiguousDecisionId { .. } => "ambiguous_decision_id",
             Self::SealConflict { .. } => "seal_conflict",
+            Self::SealVersionUnsupported { .. } => "seal_version_unsupported",
             Self::Seal(err) => match err {
                 SealError::MissingFrontmatterCloser => "seal_body_unreadable",
                 SealError::UnsupportedVersion { .. } => "seal_version_unsupported",
@@ -221,6 +246,21 @@ impl ActionError {
                  use `codev decision seal {id} --force` to deliberately \
                  rewrite the seal"
             ),
+            Self::SealVersionUnsupported {
+                found,
+                supported,
+                requirement,
+            } => {
+                let requirement = requirement
+                    .as_deref()
+                    .map(|r| format!(" (this project requires codev_version: \"{r}\")"))
+                    .unwrap_or_default();
+                format!(
+                    "_codev/decisions/seal.yaml has version {found}, which this codev does not \
+                     read (it reads version {supported}): it was written by a newer codev{requirement} \
+                     — run `codev self-update`"
+                )
+            }
             Self::Seal(err) => err.to_string(),
         }
     }
@@ -1086,8 +1126,9 @@ fn yaml_scalar(raw: &str) -> String {
 }
 
 /// Rewrites the content of an existing ADR, changing only the frontmatter
-/// `status`. The body — everything after the second `---` — is preserved
-/// character for character.
+/// `status`: the known fields are rendered again, the unknown ones kept as
+/// written after them. The body — everything after the second `---` — is
+/// preserved character for character.
 pub fn rewrite_frontmatter_status(
     source: &str,
     decision: &codev_core::decisions::Decision,
@@ -1114,7 +1155,22 @@ pub fn rewrite_frontmatter_status(
         &decision.deviates_from,
     );
     // `render_frontmatter` ends on the closing `---`, without its line
-    // ending.
+    // ending. The fields this codev does not know go before it, as
+    // written and in their order: a newer codev's field survives an older
+    // one's acceptance (decision 0013). The body is untouched, so is the
+    // seal.
+    let frontmatter = match frontmatter.strip_suffix("---") {
+        Some(known) if !decision.unknown_fields.is_empty() => {
+            let mut out = known.to_string();
+            for field in &decision.unknown_fields {
+                out.push_str(&field.text);
+                out.push('\n');
+            }
+            out.push_str("---");
+            out
+        }
+        _ => frontmatter,
+    };
     let frontmatter = frontmatter.replace('\n', newline);
     format!("{frontmatter}{newline}{body}")
 }
@@ -1130,6 +1186,31 @@ mod tests {
         let mut env = FixedEnv::at("/p");
         env.vars.insert("HOME".into(), "/home".into());
         env
+    }
+
+    #[test]
+    fn rewriting_the_status_keeps_unknown_fields_as_written() {
+        let source = "---\r\nid: \"0001\"\r\ntitle: T\r\nreview_by: 2027-01-01\r\nstatus: proposed\r\ndate: 2026-09-08\r\nowners:\r\n  - platform\r\n---\r\n\r\n## Context\r\n\r\nx\r\n";
+        let decision = codev_core::decisions::parse_decision(source).value.unwrap();
+        let rewritten = rewrite_frontmatter_status(source, &decision, DecisionStatus::Accepted);
+        assert!(
+            rewritten.contains("review_by: 2027-01-01\r\nowners:\r\n  - platform\r\n---\r\n"),
+            "{rewritten:?}"
+        );
+        let reread = codev_core::decisions::parse_decision(&rewritten)
+            .value
+            .unwrap();
+        assert_eq!(reread.status, DecisionStatus::Accepted);
+        let keys: Vec<&str> = reread
+            .unknown_fields
+            .iter()
+            .map(|f| f.key.as_str())
+            .collect();
+        assert_eq!(keys, ["review_by", "owners"]);
+        assert_eq!(
+            codev_core::decisions::seal::body_slice(&rewritten).unwrap(),
+            codev_core::decisions::seal::body_slice(source).unwrap(),
+        );
     }
 
     #[test]

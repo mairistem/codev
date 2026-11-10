@@ -10,7 +10,7 @@ pub mod ast;
 pub mod parser;
 pub mod seal;
 
-pub use ast::{Decision, DecisionStatus, Section};
+pub use ast::{Decision, DecisionStatus, Section, UnknownField};
 pub use parser::parse_decision;
 pub use seal::{
     SEAL_FILE_VERSION, Seal, SealError, SealFile, VerificationCase, body_hash, body_slice,

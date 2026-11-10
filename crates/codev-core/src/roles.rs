@@ -84,9 +84,14 @@ const BUILTIN_ROLE_FILES: &[&str] = &[
 /// Display names by language code (`en`, `fr`…). `en` is always present.
 pub type Names = BTreeMap<String, String>;
 
-/// The `role:` of a schema artifact, as written in `schema.yaml`.
+/// The keys of an artifact's `role:` this codev knows; the schema reports
+/// any other as a `schema_unknown_key` warning. Keep it in sync with
+/// [`ArtifactRole`].
+pub const ARTIFACT_ROLE_KEYS: &[&str] = &["id", "name", "question", "done_when"];
+
+/// The `role:` of a schema artifact, as written in `schema.yaml`. Unknown
+/// keys are ignored here and reported by [`crate::schema::Schema::parse`].
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct ArtifactRole {
     pub id: String,
     pub name: Names,
@@ -489,10 +494,16 @@ pub struct RoleSetting {
     pub model: Option<String>,
 }
 
-/// The mapping form of a role entry. Strict: a misspelled `done-when`
-/// would otherwise drop criteria without a word.
+/// The keys of a role entry's mapping this codev knows. Any other key is
+/// ignored: the configuration reports it as an `unknown_config_key`
+/// warning named `roles.<id>.<key>` (decision 0013), so a misspelled
+/// `done-when` is still caught, by `codev validate --strict`. Keep it in
+/// sync with [`RoleSettingMapping`].
+pub const ROLE_SETTING_KEYS: &[&str] = &["when", "done_when", "model"];
+
+/// The mapping form of a role entry. Unknown keys are ignored here and
+/// reported by the configuration, against [`ROLE_SETTING_KEYS`].
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
 struct RoleSettingMapping {
     #[serde(default)]
     when: Option<Value>,
@@ -1307,11 +1318,29 @@ apply:
     }
 
     #[test]
-    fn an_unknown_key_inside_a_role_is_refused() {
-        let err =
-            serde_norway::from_str::<BTreeMap<String, RoleSetting>>("skeptic:\n  done-when: [x]\n")
-                .unwrap_err();
-        assert!(err.to_string().contains("done-when"), "{err}");
+    fn an_unknown_key_inside_a_role_is_ignored() {
+        let settings = serde_norway::from_str::<BTreeMap<String, RoleSetting>>(
+            "skeptic:\n  cadence: weekly\n  model: sonnet\n",
+        )
+        .unwrap();
+        assert_eq!(settings["skeptic"].model.as_deref(), Some("sonnet"));
+    }
+
+    #[test]
+    fn every_role_setting_key_is_recognized() {
+        let settings = serde_norway::from_str::<BTreeMap<String, RoleSetting>>(
+            "skeptic:\n  when: always\n  done_when: [x]\n  model: opus\n",
+        )
+        .unwrap();
+        let skeptic = &settings["skeptic"];
+        assert_eq!(skeptic.when.as_deref(), Some("always"));
+        assert_eq!(skeptic.done_when, ["x"]);
+        assert_eq!(skeptic.model.as_deref(), Some("opus"));
+        assert_eq!(
+            ROLE_SETTING_KEYS.len(),
+            3,
+            "a new key belongs in this test too"
+        );
     }
 
     #[test]

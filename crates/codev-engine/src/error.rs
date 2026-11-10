@@ -110,6 +110,11 @@ pub enum EngineError {
     #[error("{root} is not in a git repository, so `--since` and `--until` cannot be resolved")]
     NotAGitRepository { root: PathBuf },
 
+    /// `seal.yaml` has a format this codev does not read; the message
+    /// names both versions and the way out.
+    #[error("{message}")]
+    SealVersionUnsupported { message: String },
+
     #[error(transparent)]
     Core(#[from] CoreError),
 }
@@ -142,6 +147,7 @@ impl EngineError {
             Self::UnknownStep { .. } => "unknown_step",
             Self::UnknownRef { .. } => "unknown_ref",
             Self::NotAGitRepository { .. } => "not_a_git_repository",
+            Self::SealVersionUnsupported { .. } => "seal_version_unsupported",
             Self::Core(inner) => inner.code(),
         }
     }

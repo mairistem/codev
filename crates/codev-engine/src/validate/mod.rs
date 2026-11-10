@@ -52,6 +52,7 @@ pub fn validate_change(
 
     let mut findings = check_change_metadata(fs, layout, &ctx)?;
     findings.extend(check_change_roles(fs, layout, &ctx));
+    findings.extend(check_change_unknown_keys(layout, config, &ctx));
     findings.extend(check_proposal(fs, layout, &change_dir)?);
     // The record's defects only: an `open` finding is the normal state of
     // a change under review, and the archive gate is `archive`'s business.
@@ -163,8 +164,9 @@ pub fn validate_all(
     })
 }
 
-/// The findings of `_codev/config.yaml`: one warning per key this codev
-/// ignores, one error per invalid entry of `roles:` and one warning per
+/// The findings of `_codev/config.yaml` and of the project's schemas: one
+/// warning per key this codev ignores — the schemas' located in their own
+/// file — one error per invalid entry of `roles:` and one warning per
 /// model that never applies, each at its line, and
 /// the defects of `triggers:` at its key;
 /// `None` when there is none, so a clean project's report does not change.
@@ -182,7 +184,11 @@ pub fn validate_config(
         severity: Severity::Warning,
         code: crate::config::UNKNOWN_CONFIG_KEY,
         line: line_number(unknown.line),
-        message: crate::config::unknown_key_message(&unknown.key, config.codev_version.as_deref()),
+        message: crate::config::unknown_key_message(
+            crate::config::CONFIG_FILE,
+            &unknown.key,
+            config.codev_version.as_deref(),
+        ),
     });
     let roles = crate::roles::project_findings(fs, layout, config)
         .into_iter()
@@ -216,12 +222,13 @@ pub fn validate_config(
                 )
             }
         });
-    let findings: Vec<LocatedFinding> = unknown_keys
+    let mut findings: Vec<LocatedFinding> = unknown_keys
         .chain(roles)
         .chain(role_warnings)
         .chain(triggers)
         .map(|finding| LocatedFinding::from_finding(finding, relative.clone()))
         .collect();
+    findings.extend(check_schema_unknown_keys(fs, layout, config));
     if findings.is_empty() {
         return None;
     }
@@ -231,6 +238,85 @@ pub fn validate_config(
         path: relative,
         findings,
     })
+}
+
+/// A `warning` finding about a key this codev ignores in the hand-written
+/// file at `path`, located at `line` of that file (decision 0013).
+fn unknown_key_finding(
+    layout: &Layout,
+    path: &std::path::Path,
+    code: &'static str,
+    line: usize,
+    key: &str,
+    codev_version: Option<&str>,
+) -> LocatedFinding {
+    let relative = path
+        .strip_prefix(layout.project_root())
+        .unwrap_or(path)
+        .to_path_buf();
+    let file = change::relative_text(layout, path);
+    LocatedFinding::from_finding(
+        Finding::warning(
+            code,
+            line_number(line),
+            crate::config::unknown_key_message(&file, key, codev_version),
+        ),
+        relative,
+    )
+}
+
+/// The keys of a change's `change.yaml` this codev ignores, as warnings at
+/// their line: `--strict` fails on them, a plain run does not.
+fn check_change_unknown_keys(
+    layout: &Layout,
+    config: &ResolvedConfig,
+    ctx: &change::ChangeContext,
+) -> Vec<LocatedFinding> {
+    let path = layout.change_metadata(&ctx.change);
+    ctx.unknown_keys
+        .iter()
+        .map(|unknown| {
+            unknown_key_finding(
+                layout,
+                &path,
+                crate::metadata::CHANGE_UNKNOWN_KEY,
+                unknown.line,
+                &unknown.key,
+                config.codev_version.as_deref(),
+            )
+        })
+        .collect()
+}
+
+/// The keys of the project's schemas this codev ignores, as warnings
+/// located in each schema's file. A schema that cannot be resolved is left
+/// to the commands that use it, which report why.
+fn check_schema_unknown_keys(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    config: &ResolvedConfig,
+) -> Vec<LocatedFinding> {
+    let mut findings = Vec::new();
+    for (name, origin) in crate::schemas::list(fs, layout) {
+        if origin == crate::schemas::SchemaOrigin::Builtin {
+            continue;
+        }
+        let Ok(schema) = crate::schemas::resolve(fs, layout, &name) else {
+            continue;
+        };
+        let Some(path) = schema.file() else { continue };
+        for unknown in &schema.graph.schema().unknown_keys {
+            findings.push(unknown_key_finding(
+                layout,
+                &path,
+                crate::schemas::SCHEMA_UNKNOWN_KEY,
+                unknown.line,
+                &unknown.key,
+                config.codev_version.as_deref(),
+            ));
+        }
+    }
+    findings
 }
 
 /// The invalid entries of a change's `roles:`, as errors at the line of
@@ -278,10 +364,18 @@ pub fn validate_decisions(
     config: &ResolvedConfig,
 ) -> Result<ItemReport> {
     let index = decisions_index::index(fs, env, layout, config)?;
-    let seal_file =
-        decisions_actions::read_seal_file(fs, layout).map_err(|e| EngineError::Unreadable {
-            path: layout.decisions_seal_file(),
-            reason: e.to_string(),
+    let seal_file = decisions_actions::read_seal_file(fs, layout, config.codev_version.as_deref())
+        .map_err(|e| match e {
+            // Its own code: the way out is a newer codev, not a fix of the file.
+            decisions_actions::ActionError::SealVersionUnsupported { .. } => {
+                EngineError::SealVersionUnsupported {
+                    message: e.message(),
+                }
+            }
+            other => EngineError::Unreadable {
+                path: layout.decisions_seal_file(),
+                reason: other.to_string(),
+            },
         })?;
 
     // Only local `accepted` or `superseded` ADRs carry an immutability
@@ -401,6 +495,25 @@ pub fn validate_decisions(
             ),
         };
         findings.push(LocatedFinding::from_finding(finding, path));
+    }
+
+    // The fields of a local ADR this codev does not know (decision 0013).
+    // An inherited decision's are not reported: its source is read-only,
+    // and the inheriting project could not fix them.
+    for entry in &index.entries {
+        if entry.qualified_id.origin != Origin::Project {
+            continue;
+        }
+        for field in &entry.decision.unknown_fields {
+            findings.push(unknown_key_finding(
+                layout,
+                &entry.path,
+                codev_core::parser::codes::DECISION_UNKNOWN_FIELD,
+                field.line,
+                &field.key,
+                config.codev_version.as_deref(),
+            ));
+        }
     }
 
     // The report also carries the ADR parser's findings (missing

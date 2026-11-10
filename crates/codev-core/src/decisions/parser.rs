@@ -13,7 +13,7 @@ use serde::Deserialize;
 use crate::parser::ast::{Finding, Parsed, Span};
 use crate::parser::codes;
 
-use super::ast::{Decision, DecisionStatus, Section};
+use super::ast::{Decision, DecisionStatus, Section, UnknownField};
 
 /// Validates that a `deviates_from` is indeed a list of strings.
 ///
@@ -124,9 +124,51 @@ pub fn parse_decision(source: &str) -> Parsed<Option<Decision>> {
             deviates_from,
             sections,
             frontmatter_span,
+            unknown_fields: unknown_fields(frontmatter_raw),
         }),
         findings,
     }
+}
+
+/// The top-level fields of `frontmatter` this codev does not know, with
+/// their line in the file — the frontmatter starts on line 2 — and their
+/// text as written: the key's line and the indented or `- ` lines that
+/// continue it.
+fn unknown_fields(frontmatter: &str) -> Vec<UnknownField> {
+    let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(frontmatter) else {
+        return Vec::new();
+    };
+    let lines: Vec<&str> = frontmatter.lines().collect();
+    crate::yaml_lines::unknown_keys_of(frontmatter, &map, FRONTMATTER_FIELDS, &[], "")
+        .into_iter()
+        .map(|unknown| UnknownField {
+            text: field_text(&lines, unknown.line - 1),
+            key: unknown.key,
+            // The frontmatter starts after the opening `---`, on line 2.
+            line: unknown.line + 1,
+        })
+        .collect()
+}
+
+/// The text of the field starting at `lines[start]`: its own line and the
+/// indented or `- ` lines that continue it, without trailing blank lines.
+fn field_text(lines: &[&str], start: usize) -> String {
+    let mut end = start + 1;
+    while end < lines.len() {
+        let line = lines[end];
+        let continues = line.trim().is_empty()
+            || line.starts_with([' ', '\t'])
+            || line == "-"
+            || line.starts_with("- ");
+        if !continues {
+            break;
+        }
+        end += 1;
+    }
+    while end > start + 1 && lines[end - 1].trim().is_empty() {
+        end -= 1;
+    }
+    lines[start..end].join("\n")
 }
 
 /// Returns `(frontmatter content, offset of the first byte of the body)`.
@@ -224,8 +266,22 @@ fn section_name(line: &str) -> Option<String> {
 
 // ─────────────────────────── frontmatter deserialisation ───────────────────────────
 
+/// The frontmatter fields this codev knows. Keep it in sync with
+/// [`RawFrontmatter`] by hand: `every_known_field_is_recognized` only fails
+/// when a field is removed or the count changes.
+pub const FRONTMATTER_FIELDS: &[&str] = &[
+    "id",
+    "title",
+    "status",
+    "date",
+    "tags",
+    "supersedes",
+    "deviates_from",
+];
+
+/// No `deny_unknown_fields`: an unknown field is kept, as written, in
+/// [`Decision::unknown_fields`] (decision 0013).
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 struct RawFrontmatter {
     id: IdValue,
     title: String,
@@ -492,16 +548,45 @@ mod tests {
     }
 
     #[test]
-    fn unknown_key_in_frontmatter_is_reported() {
-        // deny_unknown_fields — consistent with ChangeMetadata and ProjectConfig.
-        let source =
-            "---\nid: 0001\ntitle: T\nstatus: accepted\ndate: 2026-09-08\nauthor: X\n---\n";
+    fn unknown_frontmatter_field_warns_and_the_decision_is_read() {
+        let source = "---\nid: 0007\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n\
+                      review_by: 2027-01-01\nreviewers:\n  - alice\n  - bob\n---\n\n## Context\n\nx\n";
         let parsed = parse_decision(source);
+        assert!(parsed.findings.is_empty(), "{:?}", parsed.findings);
+        let decision = parsed.value.unwrap();
+        assert_eq!(decision.id, "0007");
+        assert_eq!(decision.status, DecisionStatus::Accepted);
+        assert_eq!(
+            decision.unknown_fields,
+            [
+                UnknownField {
+                    key: "review_by".into(),
+                    line: 6,
+                    text: "review_by: 2027-01-01".into(),
+                },
+                UnknownField {
+                    key: "reviewers".into(),
+                    line: 7,
+                    text: "reviewers:\n  - alice\n  - bob".into(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn every_known_field_is_recognized() {
+        let source = "---\nid: 0001\ntitle: T\nstatus: accepted\ndate: 2026-09-08\n\
+                      tags: [a]\nsupersedes: [\"0000\"]\ndeviates_from: []\n---\n";
+        let decision = parse_decision(source).value.unwrap();
         assert!(
-            parsed
-                .findings
-                .iter()
-                .any(|f| f.code == codes::DECISION_MISSING_FIELD)
+            decision.unknown_fields.is_empty(),
+            "{:?}",
+            decision.unknown_fields
+        );
+        assert_eq!(
+            FRONTMATTER_FIELDS.len(),
+            7,
+            "a new field belongs in this test too"
         );
     }
 }

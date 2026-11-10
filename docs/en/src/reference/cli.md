@@ -754,6 +754,13 @@ Without `ITEM` or a flag, validates everything: every active change, every
 main spec, and the decision seals. `ITEM` is the name of an active change or
 the path of a capability (`ui/theme`).
 
+When the running codev does not satisfy the project's
+[`codev_version`](configuration.md#codev_version), `codev validate`,
+`codev sync` and `codev archive` refuse to run: they check and write nothing
+and fail with `codev_version_unsatisfied`, naming the requirement, the
+running version and the fix `codev doctor` gives. Raise a CI pin
+(`CODEV_VERSION=`) together with `codev_version`.
+
 Exit status:
 
 | Result | Without `--strict` | With `--strict` |

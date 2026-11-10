@@ -9,7 +9,7 @@ use codev_core::roles::{self as core_roles, ResolvedRole, RoleFinding, RoleSetti
 
 use crate::change::ChangeContext;
 use crate::config::ResolvedConfig;
-use crate::error::{EngineError, Result};
+use crate::error::{EngineError, Result, Warning};
 use crate::ports::FileSystem;
 use crate::schemas;
 
@@ -23,6 +23,10 @@ pub struct ResolvedRoles {
     /// The schema the artifact roles come from.
     pub schema_name: String,
     pub roles: Vec<ResolvedRole>,
+    /// The warnings of the files the roles were read from: the change's
+    /// `change.yaml` and its schema, or the configured schema without a
+    /// change. The configuration's own warnings stay in `ResolvedConfig`.
+    pub warnings: Vec<Warning>,
 }
 
 impl ResolvedRoles {
@@ -102,9 +106,14 @@ pub fn resolve(
         code: finding.code,
         message: finding.message,
     })?;
+    let warnings = match change {
+        Some(ctx) => ctx.warnings(layout, config.codev_version.as_deref()),
+        None => schema.warnings(layout, config.codev_version.as_deref()),
+    };
     Ok(ResolvedRoles {
         schema_name: schema.name().to_string(),
         roles,
+        warnings,
     })
 }
 

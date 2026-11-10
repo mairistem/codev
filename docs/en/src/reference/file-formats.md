@@ -282,7 +282,13 @@ goal: Let users switch the UI to a dark theme
 | `roles` | mapping | Role activations for this change only, over the project's [`roles:`](configuration.md#roles): `newcomer: always`. Activations only — criteria belong to the project |
 | `review` | mapping | `mode: inline` or `mode: isolated` for this change only, over the project's [`review:`](configuration.md#review). Another value fails with `invalid_review_mode` |
 
-Unknown keys are rejected — inside `review` too. A codev that predates
+A key codev does not know — at the top level, or under `review`
+(`review.<key>`) — is ignored with a `change_unknown_key` warning that names
+it, quotes the project's `codev_version` and points to `codev self-update`;
+`codev validate --strict` fails on it, at its line. The change may have been
+written with a newer codev, or the key is misspelled. A value codev does not
+know — a `review.mode`, a role activation — stays an error. codev 0.6.1 and
+earlier reject any unknown key of this file, so a codev that predates
 `review` refuses a `change.yaml` that sets it: raise the project's
 [`codev_version`](configuration.md#codev_version) to the release that
 introduced it before using it. A change folder without `change.yaml` uses the
@@ -292,7 +298,9 @@ project's schema. An invalid entry of `roles` is reported by
 
 The artifacts of a `schema.yaml` may declare their [role](../roles.md) as
 data under `role:` — see
-[Custom schemas](../guides/custom-schemas.md#declaring-artifact-roles).
+[Custom schemas](../guides/custom-schemas.md#declaring-artifact-roles). A key
+a project schema holds that codev does not know, at any level, is ignored
+with a `schema_unknown_key` warning naming the key and its line.
 
 ## review.md
 
@@ -463,6 +471,13 @@ superseded or deviated from are in effect, and `supersedes` and
 `deviates_from` only take effect on an `accepted` decision: a `proposed`
 supersession or deviation changes nothing until `codev decision accept`.
 
+A frontmatter field codev does not know does not reject the decision: it is
+read from the fields codev knows, and `codev validate` reports the field as a
+`decision_unknown_field` warning at its line — `--strict` fails on it. An
+inherited decision's unknown fields are not reported. `codev decision accept`
+keeps such a field, as written, when it rewrites the frontmatter. codev 0.6.1
+and earlier reject the decision instead.
+
 Files saved with Windows line endings (CRLF) are read like any other. When
 codev rewrites a decision's status — `codev decision accept`, or a
 predecessor marked `superseded` — it keeps the file's line endings and leaves
@@ -484,6 +499,14 @@ seals:
 Each entry records the SHA-256 of a decision's body — everything after the
 closing `---` of the frontmatter, byte for byte — and the date it was sealed.
 Commit this file with your decisions.
+
+`version` is the file's format: a codev that adds a field or a value to it
+raises the version. Every command that reads the file — `codev validate`,
+`codev decision new`, `codev decision accept`, `codev decision seal` — refuses
+a version it does not read with `seal_version_unsupported`, writing nothing;
+the message names both versions and points to `codev self-update`. An unknown
+field in a file of a known version is a corruption, reported as
+`seal_invalid`.
 
 ## codev.lock
 
