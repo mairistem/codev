@@ -534,6 +534,14 @@ a change that does not exist fails with `unknown_change`; `--change archive`
 fails with `invalid_change_id`, since that name is reserved for the archived
 changes.
 
+Once the change's tracked file exists — `tasks.md`, or the file the schema
+names in `apply.tracks` — a last line counts its
+[task boxes](file-formats.md#tasksmd): `Tasks:    <checked>/<total> checked`,
+or `Tasks:    no box in tasks.md` when it holds none. A tracked file that is
+not UTF-8 text gives `Tasks:    tasks.md unreadable` and a
+`tasks_unreadable` warning; the command still succeeds. The boxes never
+change the exit status.
+
 When a newer codev release is known and you have not snoozed it, stderr also
 carries ``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``.
 To know, `codev status` asks GitHub for the latest release at most once every
@@ -643,6 +651,7 @@ Usage: codev archive [OPTIONS]
 
 Options:
       --change <CHANGE>  Change name (inferred when there is only one)
+      --strict           Refuse when the tracked file has unchecked task boxes
       --json
   -h, --help             Print help
 ```
@@ -654,6 +663,18 @@ were active or a high-severity finding is still open or disputed; then
 merges its deltas into the main specs and moves it, record included, to
 `_codev/changes/archive/<YYYY-MM-DD>-<name>/`. See
 [Archive](../workflow.md#archive).
+
+After the review gate, it counts the boxes of the change's tracked file
+(`tasks.md` by default, see [tasks.md](file-formats.md#tasksmd)). Unchecked
+boxes do not stop the archive: after `Moved to:`, a warning names how many
+are left in which file, then lists each unchecked line, and the JSON
+`status` carries a `tasks_unchecked` warning. With `--strict`, unchecked
+boxes refuse the archive instead, with the code `tasks_unchecked`, before
+anything is written. A tracked file that is not UTF-8 text is refused with
+`tasks_unreadable`, with or without `--strict`. Only the change being
+archived is read: changes already archived are never evaluated, and
+`codev validate` says nothing about boxes. An older codev rejects
+`--strict` on `archive` as an unknown argument, before doing anything.
 
 ### codev changelog
 

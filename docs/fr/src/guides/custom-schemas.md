@@ -81,7 +81,7 @@ apply:
 | `artifacts[].requires` | non | Identifiants des artefacts qui doivent exister au préalable |
 | `artifacts[].role` | non | Le rôle qui a la charge de l'artefact — voir [Déclarer les rôles des artefacts](#déclarer-les-rôles-des-artefacts) |
 | `apply.requires` | oui | Artefacts qui doivent exister avant le début de l'implémentation |
-| `apply.tracks` | oui | Fichier dont les cases à cocher suivent l'avancement de l'implémentation |
+| `apply.tracks` | oui | Fichier dont les cases à cocher suivent l'avancement de l'implémentation, relatif au dossier du change : `codev status` les compte et `codev archive` signale celles qui ne sont pas cochées |
 | `apply.instruction` | non | Consignes pour la phase d'implémentation |
 
 Les clés inconnues sont rejetées : une faute de frappe ne peut donc pas
@@ -95,6 +95,13 @@ raison.
 Un artefact est **terminé** lorsque son fichier existe — ou, pour un motif
 glob, lorsqu'au moins un fichier correspond. Il est **prêt** lorsque tous les
 artefacts dont il dépend sont terminés.
+
+`apply.tracks` est lu par `codev status` et `codev archive`, relativement au
+dossier du change : un schéma avec `tracks: plan.md` est mesuré sur
+`plan.md`, jamais sur un `tasks.md` qui se trouverait à côté. Une valeur
+absolue ou contenant un segment `..` est traitée comme un fichier absent :
+rien n'est lu hors du dossier du change. Les cases sont comptées comme le
+décrit [tasks.md](../reference/file-formats.md#tasksmd).
 
 ## Déclarer les rôles des artefacts
 

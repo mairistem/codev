@@ -65,6 +65,8 @@ Codes d'erreur courants :
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
+| `tasks_unchecked` | `archive --strict` a refusé un change dont le fichier suivi contient encore des cases non cochées ; sans `--strict`, le même code est un avertissement d'un archivage réussi |
+| `tasks_unreadable` | Le fichier suivi existe mais n'est pas du texte UTF-8 : un avertissement dans `status`, un refus dans `archive` |
 | `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un codev plus récent ; le message nomme chaque raison |
 | `invalid_review_mode` | `review.mode`, dans `_codev/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
 | `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
@@ -356,6 +358,14 @@ son code dans `status`.
     "requirement": ">=0.5",
     "satisfied": true
   },
+  "tasks": {
+    "checked": 2,
+    "total": 3,
+    "groups": [
+      { "id": "1", "title": "Core", "checked": 1, "total": 2 },
+      { "id": "2", "title": "Docs", "checked": 1, "total": 1 }
+    ]
+  },
   "status": []
 }
 ```
@@ -373,6 +383,22 @@ jamais réussi. `versionRequirement` est présent lorsque `_codev/config.yaml`
 définit `codev_version` : `requirement` est sa valeur, `satisfied` indique si
 la version en cours la respecte. Ces deux objets s'ajoutent sans rien
 changer : un consommateur qui les ignore lit le document comme avant.
+
+`tasks` compte les cases du fichier suivi du change (l'`apply.tracks` du
+schéma, `tasks.md` par défaut), telles que [tasks.md](file-formats.md#tasksmd)
+les définit. Il vaut `null` tant que ce fichier est absent, ou lorsqu'il n'est
+pas du texte UTF-8 — `status` contient alors un avertissement
+`tasks_unreadable`. Un fichier sans aucune case donne
+`{ "checked": 0, "total": 0, "groups": [] }` : `null` et `total: 0` disent
+donc deux choses différentes. Chaque groupe réunit les cases d'un titre
+`##` : `id` est le numéro en tête du titre, sous forme de chaîne
+(`## 2. Moteur` donne `"2"`), `null` sans numéro ; `title` est le reste du
+titre ; les cases placées avant le premier titre `##` forment un groupe dont
+`id` et `title` valent tous deux `null`. Les titres sans case ne sont pas
+listés. Les groupes suivent l'ordre du fichier, et cet ordre fait leur
+identité : deux titres peuvent porter le même numéro. La clé est toujours
+présente ; un codev plus ancien l'omet, un consommateur doit donc accepter
+son absence.
 
 ### self-update
 
@@ -531,12 +557,23 @@ elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
   "unchanged": [],
   "deleted": [],
   "movedTo": "/home/you/acme-app/_codev/changes/archive/2026-09-30-add-dark-mode",
-  "status": []
+  "tasks": { "checked": 4, "total": 5, "groups": [] },
+  "status": [
+    {
+      "level": "warning",
+      "code": "tasks_unchecked",
+      "message": "1 unchecked task box in tasks.md"
+    }
+  ]
 }
 ```
 
-`codev sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
-les specs principales supprimées par un change qui retire une capacité.
+`codev sync --json` renvoie le même document, sans `movedTo` ni `tasks`.
+`deleted` liste les specs principales supprimées par un change qui retire une
+capacité. `tasks` est l'avancement du fichier suivi au moment de l'archivage,
+comme dans [`status`](#status) (groupes omis ci-dessus) ; avec des cases non
+cochées, un archivage réussi porte un avertissement `tasks_unchecked`, et
+`archive --strict` échoue avec ce code à la place.
 
 ### review
 

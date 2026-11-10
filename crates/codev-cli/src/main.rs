@@ -347,6 +347,9 @@ enum Command {
         /// Change name (inferred when there is only one)
         #[arg(long)]
         change: Option<String>,
+        /// Refuse when the tracked file has unchecked task boxes
+        #[arg(long)]
+        strict: bool,
         #[arg(long)]
         json: bool,
     },
@@ -838,8 +841,9 @@ fn run(cli: Cli) -> i32 {
                         &outcome.change_root,
                         &outcome.warnings,
                     )
-                    .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
-                    || render::status(&outcome.status),
+                    .with_update(outcome.update.as_ref(), outcome.requirement.as_ref())
+                    .with_tasks(outcome.tasks.progress()),
+                    || render::status_report(&outcome),
                 );
                 if !json {
                     render::warnings(&outcome.warnings);
@@ -935,7 +939,11 @@ fn run(cli: Cli) -> i32 {
             Err(err) => fail(json, contract::review_shape(), &err),
         },
 
-        Command::Archive { change, json } => match commands::archive(&ctx, change.as_deref()) {
+        Command::Archive {
+            change,
+            strict,
+            json,
+        } => match commands::archive(&ctx, change.as_deref(), strict) {
             Ok(outcome) => {
                 emit(json, ArchiveReportV1::from(&outcome), || {
                     render::archive(&outcome)
@@ -1388,6 +1396,7 @@ fn status_shape() -> serde_json::Value {
         "applyRequires": [],
         "isPlanningComplete": false,
         "artifacts": [],
+        "tasks": null,
     })
 }
 
@@ -1487,6 +1496,7 @@ fn archive_shape() -> serde_json::Value {
         "unchanged": [],
         "deleted": [],
         "movedTo": null,
+        "tasks": null,
     })
 }
 
@@ -1696,6 +1706,30 @@ mod doctor_tests {
     }
 
     #[test]
+    fn status_failure_json_carries_tasks_null() {
+        let json = crate::contract::failure(
+            super::status_shape(),
+            "unknown_change",
+            "change `ghost` does not exist — `codev list` shows the existing ones",
+        );
+        assert!(
+            json.get("tasks").is_some_and(serde_json::Value::is_null),
+            "{json}"
+        );
+        assert_eq!(json["status"][0]["code"], "unknown_change");
+    }
+
+    #[test]
+    fn archive_cli_accepts_strict() {
+        use clap::Parser as _;
+        let cli = super::Cli::try_parse_from(["codev", "archive", "--strict", "--json"]).unwrap();
+        let super::Command::Archive { strict, json, .. } = cli.command else {
+            panic!("expected `archive`");
+        };
+        assert!(strict && json);
+    }
+
+    #[test]
     fn status_failure_keeps_the_shape() {
         let json = crate::contract::failure(
             super::status_shape(),
@@ -1707,6 +1741,7 @@ mod doctor_tests {
         assert_eq!(json["artifacts"], serde_json::json!([]));
         assert_eq!(json["applyRequires"], serde_json::json!([]));
         assert_eq!(json["isPlanningComplete"], false);
+        assert!(json.get("tasks").is_some_and(serde_json::Value::is_null));
         assert_eq!(json["status"][0]["code"], "ambiguous_change");
     }
 

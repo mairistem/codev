@@ -10,8 +10,7 @@ To weigh in, open an issue or comment on an existing one.
 
 - `codev show` to read a spec, a change or its deltas from the terminal,
   including a diff of what a change will do to the main specs.
-- Task progress in `codev status`, computed from the checkboxes of `tasks.md`.
-- A check that archived changes have no unchecked task.
+- The `/codev-archive` skill relays the warning about unchecked tasks.
 - Reading the specs of inherited sources, not only their context, rules and
   decisions.
 

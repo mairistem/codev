@@ -79,7 +79,7 @@ apply:
 | `artifacts[].requires` | no | Ids of the artifacts that must exist first |
 | `artifacts[].role` | no | The role that owns the artifact — see [Declaring artifact roles](#declaring-artifact-roles) |
 | `apply.requires` | yes | Artifacts that must exist before implementation starts |
-| `apply.tracks` | yes | The file whose checkboxes track implementation progress |
+| `apply.tracks` | yes | The file whose checkboxes track implementation progress, relative to the change folder: `codev status` counts them and `codev archive` reports the unchecked ones |
 | `apply.instruction` | no | Guidance for the implementation phase |
 
 Unknown keys are rejected, so a typo cannot silently produce a workflow that
@@ -90,6 +90,13 @@ reports the refused one as a warning `schema_unusable` with the reason.
 
 An artifact is **done** when its file exists — or, for a glob, when at least
 one file matches. It is **ready** when all the artifacts it requires are done.
+
+`apply.tracks` is read by `codev status` and `codev archive`, relative to the
+change folder: a schema with `tracks: plan.md` is measured on `plan.md`,
+never on a `tasks.md` that happens to sit beside it. A value that is
+absolute or holds a `..` segment is treated as an absent file, so nothing
+outside the change folder is read. The boxes are counted as
+[tasks.md](../reference/file-formats.md#tasksmd) describes.
 
 ## Declaring artifact roles
 

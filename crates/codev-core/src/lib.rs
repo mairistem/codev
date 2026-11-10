@@ -35,6 +35,7 @@ pub mod roles;
 pub mod schema;
 pub mod search;
 pub mod status;
+pub mod tasks;
 pub mod triggers;
 pub mod update;
 pub mod validate;

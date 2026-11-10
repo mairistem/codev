@@ -61,6 +61,8 @@ Common error codes:
 | `no_artifact_ready` | `instructions` without an artifact, and none is ready |
 | `template_not_found` | A schema references a missing template |
 | `validation_failed` | `sync` or `archive` refused a change whose validation reports errors |
+| `tasks_unchecked` | `archive --strict` refused a change whose tracked file still holds unchecked boxes; without `--strict`, the same code is a warning of a successful archive |
+| `tasks_unreadable` | The tracked file exists but is not UTF-8 text: a warning in `status`, a refusal in `archive` |
 | `review_blocked` | `archive` refused a change whose review record is missing for a reviewed step, holds a high-severity finding still open or disputed, or comes from a newer codev; the message names each reason |
 | `invalid_review_mode` | `review.mode` in `_codev/config.yaml` or a change's `change.yaml` is neither `inline` nor `isolated`; the message names the file and the allowed values |
 | `invalid` | An invalid file, or a delta that cannot be merged into its main spec |
@@ -348,6 +350,14 @@ and its code in `status`.
     "requirement": ">=0.5",
     "satisfied": true
   },
+  "tasks": {
+    "checked": 2,
+    "total": 3,
+    "groups": [
+      { "id": "1", "title": "Core", "checked": 1, "total": 2 },
+      { "id": "2", "title": "Docs", "checked": 1, "total": 1 }
+    ]
+  },
   "status": []
 }
 ```
@@ -365,6 +375,20 @@ disabled (`CI`, `CODEV_NO_UPDATE_CHECK=1`) or has never succeeded.
 `codev_version`: `requirement` is its value, `satisfied` whether the running
 version matches it. Both objects are additive: a consumer that ignores them
 reads the document as before.
+
+`tasks` counts the boxes of the change's tracked file (the schema's
+`apply.tracks`, `tasks.md` by default), as [tasks.md](file-formats.md#tasksmd)
+defines them. It is `null` while that file is absent, or when it is not
+UTF-8 text — then `status` holds a `tasks_unreadable` warning. A file
+without any box gives `{ "checked": 0, "total": 0, "groups": [] }`, so
+`null` and `total: 0` say different things. Each group holds the boxes
+under one `##` heading: `id` is the heading's leading number as a string
+(`## 2. Engine` gives `"2"`), `null` without one; `title` is the rest of the
+heading; boxes before the first `##` heading form a group whose `id` and
+`title` are both `null`. Headings without a box are not listed. Groups are
+in file order, and that order is their identity: two headings may share a
+number. The key is always present; an older codev omits it, so a consumer
+must accept its absence.
 
 ### self-update
 
@@ -522,12 +546,23 @@ not in `status`: `status` only carries a failure of the command itself. See
   "unchanged": [],
   "deleted": [],
   "movedTo": "/home/you/acme-app/_codev/changes/archive/2026-09-30-add-dark-mode",
-  "status": []
+  "tasks": { "checked": 4, "total": 5, "groups": [] },
+  "status": [
+    {
+      "level": "warning",
+      "code": "tasks_unchecked",
+      "message": "1 unchecked task box in tasks.md"
+    }
+  ]
 }
 ```
 
-`codev sync --json` returns the same document without `movedTo`. `deleted`
-lists main specs removed by a change that retires a capability.
+`codev sync --json` returns the same document without `movedTo` and
+`tasks`. `deleted` lists main specs removed by a change that retires a
+capability. `tasks` is the tracked file's progress at the time of the
+archive, as in [`status`](#status) (groups elided above); with unchecked
+boxes, a successful archive carries one `tasks_unchecked` warning, and
+`archive --strict` fails with that code instead.
 
 ### review
 

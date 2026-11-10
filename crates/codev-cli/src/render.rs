@@ -19,7 +19,7 @@ use crate::commands::{
     DecisionDeviatedOutcome, DecisionListOutcome, DecisionPromotedOutcome, DecisionSealedOutcome,
     DecisionShowOutcome, DecisionSupersededOutcome, DoctorOutcome, NewChangeOutcome, ReviewOutcome,
     SchemasOutcome, SearchOutcome, SetupOutcome, ShowOutcome, SourcesListOutcome,
-    SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome,
+    SourcesShowOutcome, SourcesUpdateOutcome, SpecsOutcome, StatusOutcome, TaskState,
 };
 use codev_engine::search::{Hit, ShowResult};
 
@@ -383,6 +383,31 @@ pub fn status(status: &ChangeStatus) -> String {
             let _ = writeln!(
                 out,
                 "Nothing ready: a required artifact is blocked, see above."
+            );
+        }
+    }
+    out
+}
+
+/// `codev status`: the artifacts, then — only once the tracked file exists —
+/// a last `Tasks:` line.
+pub fn status_report(outcome: &StatusOutcome) -> String {
+    let mut out = status(&outcome.status);
+    let tracks = &outcome.tracks;
+    match &outcome.tasks {
+        TaskState::Absent => {}
+        TaskState::Unreadable => {
+            let _ = writeln!(out, "Tasks:    {tracks} unreadable");
+        }
+        TaskState::Counted(progress) if progress.total() == 0 => {
+            let _ = writeln!(out, "Tasks:    no box in {tracks}");
+        }
+        TaskState::Counted(progress) => {
+            let _ = writeln!(
+                out,
+                "Tasks:    {}/{} checked",
+                progress.checked(),
+                progress.total()
             );
         }
     }
@@ -769,6 +794,16 @@ pub fn archive(outcome: &ArchiveOutcome) -> String {
         &outcome.deleted,
     );
     let _ = writeln!(out, "\nMoved to: {}", outcome.moved_to.display());
+    // Archived anyway: the warning names what was left open, line by line,
+    // as the person wrote it.
+    if let Some(warning) =
+        crate::contract::tasks_unchecked_warning(outcome.tasks.as_ref(), &outcome.tracks)
+    {
+        let _ = writeln!(out, "\nwarning: {}", warning.message);
+        for task in outcome.tasks.iter().flat_map(|t| &t.unchecked) {
+            let _ = writeln!(out, "  {}", task.text);
+        }
+    }
     out
 }
 

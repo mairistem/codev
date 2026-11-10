@@ -699,6 +699,9 @@ pub struct MemoryFileSystem {
     links: RefCell<Vec<PathBuf>>,
     /// Every path `read_to_string` was asked for, in order.
     reads: RefCell<Vec<PathBuf>>,
+    /// Files that exist but whose bytes are not UTF-8: reading them as text
+    /// fails, as it does on a real disk.
+    undecodable: RefCell<Vec<PathBuf>>,
 }
 
 impl MemoryFileSystem {
@@ -716,6 +719,15 @@ impl MemoryFileSystem {
     /// reading it fails.
     pub fn with_symlink(self, path: impl Into<PathBuf>) -> Self {
         self.links.borrow_mut().push(path.into());
+        self
+    }
+
+    /// Seeds a regular file whose bytes are not valid UTF-8: it exists and
+    /// is listed, but `read_to_string` fails with `InvalidData`.
+    pub fn with_undecodable_file(self, path: impl Into<PathBuf>) -> Self {
+        let path = path.into();
+        self.files.borrow_mut().insert(path.clone(), String::new());
+        self.undecodable.borrow_mut().push(path);
         self
     }
 
@@ -753,6 +765,12 @@ impl FileSystem for MemoryFileSystem {
 
     fn read_to_string(&self, path: &Path) -> io::Result<String> {
         self.reads.borrow_mut().push(path.to_path_buf());
+        if self.undecodable.borrow().iter().any(|p| p == path) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "stream did not contain valid UTF-8",
+            ));
+        }
         self.files.borrow().get(path).cloned().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::NotFound,

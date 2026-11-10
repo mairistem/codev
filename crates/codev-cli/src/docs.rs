@@ -715,6 +715,48 @@ mod tests {
     }
 
     #[test]
+    fn both_languages_document_task_progress() {
+        for lang in [Lang::En, Lang::Fr] {
+            let chapter = |path: &str| {
+                lang.chapters()
+                    .iter()
+                    .find(|(p, _)| *p == path)
+                    .map(|(_, source)| *source)
+                    .unwrap_or_else(|| panic!("{lang:?}: no chapter {path}"))
+            };
+            let cli = chapter("reference/cli.md");
+            let archive = cli
+                .split("### codev archive")
+                .nth(1)
+                .and_then(|rest| rest.split("\n### ").next())
+                .unwrap_or_else(|| panic!("{lang:?}: no `codev archive` section"));
+            for needle in ["--strict", "tasks_unchecked", "tasks_unreadable"] {
+                assert!(archive.contains(needle), "{lang:?}: archive lacks {needle}");
+            }
+            let status = cli
+                .split("### codev status")
+                .nth(1)
+                .and_then(|rest| rest.split("\n### ").next())
+                .unwrap_or_else(|| panic!("{lang:?}: no `codev status` section"));
+            assert!(status.contains("Tasks:"), "{lang:?}");
+            let json = chapter("reference/json-output.md");
+            for code in ["tasks_unchecked", "tasks_unreadable"] {
+                assert!(json.contains(&format!("| `{code}` |")), "{lang:?}: {code}");
+            }
+            assert!(json.contains("\"tasks\""), "{lang:?}");
+            assert!(
+                chapter("reference/file-formats.md").contains("apply.tracks"),
+                "{lang:?}"
+            );
+            assert!(
+                chapter("guides/custom-schemas.md").contains("`apply.tracks` is read")
+                    || chapter("guides/custom-schemas.md").contains("`apply.tracks` est lu"),
+                "{lang:?}"
+            );
+        }
+    }
+
+    #[test]
     fn roles_chapters_carry_the_review_scales() {
         use codev_core::review::{Confidence, Severity};
         let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");

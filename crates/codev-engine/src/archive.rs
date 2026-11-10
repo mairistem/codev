@@ -5,10 +5,12 @@
 //! (`codev-engine::validate::validate_change`). No error code is
 //! duplicated here; on an error finding, pointing to `codev validate`
 //! is enough. Then the review gate (`codev-engine::review`): a settled
-//! review is a condition of archiving, not of validity.
+//! review is a condition of archiving, not of validity. Last, the boxes of
+//! the tracked file: reported, and refused only under `--strict`.
 
 use std::path::PathBuf;
 
+use codev_core::tasks::TaskProgress;
 use codev_core::{ChangeId, Layout, Plan};
 
 use crate::apply;
@@ -26,6 +28,10 @@ pub struct ArchivePlan {
     pub archive_dir: PathBuf,
     /// The combined `Plan` — sync.plan + final move.
     pub plan: Plan,
+    /// The tracked file's progress; `None` when it is absent.
+    pub tasks: Option<TaskProgress>,
+    /// The tracked file, as the schema's `apply.tracks` names it.
+    pub tracks: String,
 }
 
 /// What the archive actually did.
@@ -39,17 +45,24 @@ pub struct ArchiveOutcome {
     /// Main specs deleted by the change (retired capabilities). Empty in the common case.
     pub deleted: Vec<PathBuf>,
     pub moved_to: PathBuf,
+    /// The tracked file's progress at the time of the archive; `None` when
+    /// it is absent. Unchecked boxes here are a warning to report.
+    pub tasks: Option<TaskProgress>,
+    /// The tracked file, as the schema's `apply.tracks` names it.
+    pub tracks: String,
 }
 
 /// Builds the plan without writing. Checks with `validate` first (through
 /// [`sync::plan_sync`]) — if the change has any error at all, it refuses
-/// without even preparing the plan.
+/// without even preparing the plan. With `strict`, unchecked boxes in the
+/// tracked file are a refusal too, before anything is planned.
 pub fn plan_archive(
     fs: &dyn FileSystem,
     layout: &Layout,
     config: &ResolvedConfig,
     clock: &dyn Clock,
     change_id: &ChangeId,
+    strict: bool,
 ) -> Result<ArchivePlan> {
     // Preflight: `plan_sync` runs the validator first — an error finding
     // is a refusal before the plan is even prepared.
@@ -69,6 +82,23 @@ pub fn plan_archive(
         });
     }
 
+    // The boxes come last: a change that does not validate or whose review
+    // is not settled is refused for that first. Only this change is read,
+    // never the archived ones. An unreadable tracked file is a refusal,
+    // strict or not: the archive would claim a check it could not make.
+    let tasks = change::task_progress(fs, layout, &ctx)?;
+    let tracks = ctx.schema.graph.schema().apply.tracks.clone();
+    if strict
+        && let Some(progress) = &tasks
+        && !progress.unchecked.is_empty()
+    {
+        return Err(EngineError::TasksUnchecked {
+            change: change_id.to_string(),
+            file: tracks,
+            count: progress.unchecked.len(),
+        });
+    }
+
     // Move target: `changes/archive/<date>-<name>/`. The date prefix
     // gives a chronological ordering on disk.
     let archive_dir = layout.archived_change_dir(change_id, &clock.today());
@@ -83,6 +113,8 @@ pub fn plan_archive(
         sync: sync_plan,
         archive_dir,
         plan: combined,
+        tasks,
+        tracks,
     })
 }
 
@@ -93,8 +125,9 @@ pub fn execute_archive(
     config: &ResolvedConfig,
     clock: &dyn Clock,
     change_id: &ChangeId,
+    strict: bool,
 ) -> Result<ArchiveOutcome> {
-    let archive_plan = plan_archive(fs, layout, config, clock, change_id)?;
+    let archive_plan = plan_archive(fs, layout, config, clock, change_id, strict)?;
     let applied = apply::execute(&archive_plan.plan, fs)?;
 
     // The sync told creates and updates apart at planning time; we take them
@@ -109,6 +142,8 @@ pub fn execute_archive(
         unchanged: archive_plan.sync.unchanged.clone(),
         deleted: archive_plan.sync.deleted.clone(),
         moved_to: archive_plan.archive_dir.clone(),
+        tasks: archive_plan.tasks.clone(),
+        tracks: archive_plan.tracks.clone(),
     };
     // Sanity check: the move did happen.
     let expected_source = layout.change_dir(change_id);
@@ -163,6 +198,10 @@ mod tests {
     }
 
     fn archive(fs: &MemoryFileSystem) -> Result<ArchiveOutcome> {
+        archive_with(fs, false)
+    }
+
+    fn archive_with(fs: &MemoryFileSystem, strict: bool) -> Result<ArchiveOutcome> {
         let layout = Layout::new("/p");
         let cfg = resolved(fs);
         execute_archive(
@@ -171,7 +210,74 @@ mod tests {
             &cfg,
             &FixedClock("2026-09-08".into()),
             &ChangeId::parse("add-auth").unwrap(),
+            strict,
         )
+    }
+
+    const TASKS: &str =
+        "## 1. Core\n\n- [x] 1.1 Parser\n\n## 9. Release\n\n- [ ] 9.1 Tag the release\n";
+
+    #[test]
+    fn archive_warns_but_proceeds_with_unchecked_tasks() {
+        let fs = well_formed_project().with_file("/p/_codev/changes/add-auth/tasks.md", TASKS);
+        let outcome = archive(&fs).unwrap();
+        let tasks = outcome.tasks.unwrap();
+        assert_eq!((tasks.checked(), tasks.total()), (1, 2));
+        assert_eq!(tasks.unchecked.len(), 1);
+        assert_eq!(tasks.unchecked[0].text, "- [ ] 9.1 Tag the release");
+        assert_eq!(outcome.tracks, "tasks.md");
+        assert!(!still_active(&fs));
+    }
+
+    #[test]
+    fn strict_archive_refuses_unchecked_tasks_and_writes_nothing() {
+        let main_spec = "## Purpose\n\nHandles authentication.\n\n## Requirements\n";
+        let fs = well_formed_project()
+            .with_file("/p/_codev/specs/user-auth/spec.md", main_spec)
+            .with_file("/p/_codev/changes/add-auth/tasks.md", TASKS);
+        let err = archive_with(&fs, true).unwrap_err();
+        assert_eq!(err.code(), "tasks_unchecked");
+        let message = err.to_string();
+        assert!(
+            message.contains("1 unchecked task box in tasks.md"),
+            "{message}"
+        );
+        assert!(still_active(&fs));
+        assert_eq!(
+            fs.read("/p/_codev/specs/user-auth/spec.md").as_deref(),
+            Some(main_spec)
+        );
+    }
+
+    #[test]
+    fn strict_archive_accepts_all_checked_tasks() {
+        let fs = well_formed_project().with_file(
+            "/p/_codev/changes/add-auth/tasks.md",
+            TASKS.replace("- [ ]", "- [x]"),
+        );
+        let outcome = archive_with(&fs, true).unwrap();
+        assert_eq!(outcome.tasks.unwrap().unchecked, []);
+        assert!(!still_active(&fs));
+    }
+
+    #[test]
+    fn strict_archive_without_a_tracked_file_proceeds() {
+        let fs = well_formed_project();
+        let outcome = archive_with(&fs, true).unwrap();
+        assert_eq!(outcome.tasks, None);
+        assert!(!still_active(&fs));
+    }
+
+    #[test]
+    fn an_unreadable_tracked_file_blocks_the_archive_strict_or_not() {
+        for strict in [false, true] {
+            let fs =
+                well_formed_project().with_undecodable_file("/p/_codev/changes/add-auth/tasks.md");
+            let err = archive_with(&fs, strict).unwrap_err();
+            assert_eq!(err.code(), "tasks_unreadable");
+            assert!(still_active(&fs));
+            assert!(fs.read("/p/_codev/specs/user-auth/spec.md").is_none());
+        }
     }
 
     fn still_active(fs: &MemoryFileSystem) -> bool {
@@ -304,6 +410,7 @@ mod tests {
             &cfg,
             &clock,
             &ChangeId::parse("add-auth").unwrap(),
+            false,
         )
         .unwrap();
 
@@ -331,6 +438,7 @@ mod tests {
             &cfg,
             &clock,
             &ChangeId::parse("add-auth").unwrap(),
+            false,
         )
         .unwrap();
 
@@ -379,6 +487,7 @@ mod tests {
             &cfg,
             &clock,
             &ChangeId::parse("buggy").unwrap(),
+            false,
         )
         .unwrap_err();
         assert_eq!(err.code(), "validation_failed");

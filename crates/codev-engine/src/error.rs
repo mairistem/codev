@@ -88,6 +88,31 @@ pub enum EngineError {
         reasons: Vec<String>,
     },
 
+    /// The tracked file still holds unchecked boxes under
+    /// `codev archive --strict`. Only the strict archive refuses them; the
+    /// default archive reports them as a warning.
+    #[error(
+        "change `{change}` has {count} unchecked task box{} in {file}; check them or archive without --strict",
+        if *count == 1 { "" } else { "es" }
+    )]
+    TasksUnchecked {
+        change: String,
+        file: String,
+        count: usize,
+    },
+
+    /// The tracked file exists but cannot be read as UTF-8 text. Its own
+    /// code: `codev status` turns it into a warning, `codev archive` into a
+    /// refusal, since it cannot report boxes it could not count.
+    #[error(
+        "{file} of change `{change}` cannot be read as text, so its task boxes cannot be counted: {reason}"
+    )]
+    TasksUnreadable {
+        change: String,
+        file: String,
+        reason: String,
+    },
+
     #[error("failed to write {path}: {source}")]
     Write {
         path: PathBuf,
@@ -137,6 +162,8 @@ impl EngineError {
             Self::UnknownCapability { .. } => "unknown_capability",
             Self::UnknownRequirement { .. } => "unknown_requirement",
             Self::ReviewBlocked { .. } => "review_blocked",
+            Self::TasksUnchecked { .. } => "tasks_unchecked",
+            Self::TasksUnreadable { .. } => "tasks_unreadable",
             Self::Write { .. } => "write_failed",
             Self::RoleSetting { code, .. } => code,
             Self::UnknownStep { .. } => "unknown_step",

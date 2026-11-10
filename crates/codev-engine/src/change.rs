@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use codev_core::outputs::pattern_matches_any;
+use codev_core::tasks::{self, TaskProgress};
 use codev_core::{ChangeId, ChangeStatus, Layout, status};
 
 use crate::config::ResolvedConfig;
@@ -82,6 +83,55 @@ pub fn status(fs: &dyn FileSystem, layout: &Layout, ctx: &ChangeContext) -> Resu
     // the folder the schema was resolved by; the latter is the schema's name.
     status.schema_name = ctx.schema.name().to_string();
     Ok(status)
+}
+
+/// The progress of the file the schema tracks (`apply.tracks`), relative to
+/// the change folder.
+///
+/// `None` when the file is absent, and when the value is absolute or holds a
+/// `..` segment: the read stays inside the change folder. A file that exists
+/// but cannot be read as UTF-8 text — or a folder — is
+/// [`EngineError::TasksUnreadable`], a code of its own so that `status` can
+/// warn about it while `archive` refuses it.
+pub fn task_progress(
+    fs: &dyn FileSystem,
+    layout: &Layout,
+    ctx: &ChangeContext,
+) -> Result<Option<TaskProgress>> {
+    let tracks = &ctx.schema.graph.schema().apply.tracks;
+    if leaves_the_change_folder(tracks) {
+        return Ok(None);
+    }
+    let path = tracks
+        .split(['/', '\\'])
+        .filter(|s| !s.is_empty() && *s != ".")
+        .fold(layout.change_dir(&ctx.change), |path, s| path.join(s));
+    if !fs.exists(&path) {
+        return Ok(None);
+    }
+    let text = fs
+        .read_to_string(&path)
+        .map_err(|e| EngineError::TasksUnreadable {
+            change: ctx.change.to_string(),
+            file: tracks.clone(),
+            reason: e.to_string(),
+        })?;
+    Ok(Some(tasks::parse(&text)))
+}
+
+/// Whether a tracked path, relative to the change folder, could reach
+/// outside it. Checked on the text, the same on every platform, since the
+/// schema may be written on another one than the one reading it.
+fn leaves_the_change_folder(tracks: &str) -> bool {
+    // Absolute for the platform running codev.
+    std::path::Path::new(tracks).is_absolute()
+        // Rooted on another platform: `/x` on Windows, `\x` on Unix, where
+        // `is_absolute` says no.
+        || tracks.starts_with(['/', '\\'])
+        // A Windows drive letter, `C:x` or `C:\x`, which Unix reads as a
+        // relative name.
+        || tracks.get(1..2) == Some(":")
+        || tracks.split(['/', '\\']).any(|segment| segment == "..")
 }
 
 /// The active changes, in alphabetical order.
@@ -253,6 +303,75 @@ mod tests {
         let state = |id: &str| status.artifacts.iter().find(|a| a.id == id).unwrap().state;
         assert_eq!(state("specs"), ArtifactState::Skipped);
         assert_eq!(state("tasks"), ArtifactState::Ready);
+    }
+
+    fn progress(fs: &MemoryFileSystem) -> Result<Option<TaskProgress>> {
+        task_progress(fs, &Layout::new("/p"), &context(fs, "add-auth"))
+    }
+
+    fn project() -> MemoryFileSystem {
+        MemoryFileSystem::new()
+            .with_file("/p/_codev/config.yaml", "")
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: spec-driven",
+            )
+    }
+
+    fn project_schema(tracks: &str) -> MemoryFileSystem {
+        project()
+            .with_file(
+                "/p/_codev/changes/add-auth/change.yaml",
+                "schema: lite",
+            )
+            .with_file(
+                "/p/_codev/schemas/lite/schema.yaml",
+                format!(
+                    "name: lite\nartifacts:\n  - id: plan\n    generates: plan.md\napply:\n  requires: [plan]\n  tracks: {tracks}\n"
+                ),
+            )
+    }
+
+    #[test]
+    fn progress_is_none_without_the_tracked_file() {
+        let fs = project().with_file("/p/_codev/changes/add-auth/proposal.md", "- [ ] a\n");
+        assert_eq!(progress(&fs).unwrap(), None);
+    }
+
+    #[test]
+    fn progress_reads_the_schema_tracked_file_not_tasks_md() {
+        let fs = project_schema("plan.md")
+            .with_file("/p/_codev/changes/add-auth/plan.md", "- [x] 1.1 Done\n")
+            .with_file(
+                "/p/_codev/changes/add-auth/tasks.md",
+                "- [ ] 1.1 Open\n- [ ] 1.2 Open\n",
+            );
+        let progress = progress(&fs).unwrap().unwrap();
+        assert_eq!((progress.checked(), progress.total()), (1, 1));
+    }
+
+    #[test]
+    fn a_tracked_path_leaving_the_change_is_not_read() {
+        for tracks in ["../shared.md", "/p/_codev/changes/shared.md"] {
+            let fs = project_schema(tracks)
+                .with_file("/p/_codev/changes/shared.md", "- [ ] 1.1 Shared\n");
+            assert_eq!(progress(&fs).unwrap(), None, "{tracks}");
+            assert!(
+                !fs.reads().iter().any(|p| p.ends_with("shared.md")),
+                "{tracks}"
+            );
+        }
+    }
+
+    #[test]
+    fn an_undecodable_tracked_file_is_unreadable() {
+        let fs = project().with_undecodable_file("/p/_codev/changes/add-auth/tasks.md");
+        let err = progress(&fs).unwrap_err();
+        assert_eq!(err.code(), "tasks_unreadable");
+        assert!(err.to_string().contains("tasks.md"), "{err}");
+        // A folder in its place cannot be read either.
+        let fs = project().with_file("/p/_codev/changes/add-auth/tasks.md/inner.md", "x");
+        assert_eq!(progress(&fs).unwrap_err().code(), "tasks_unreadable");
     }
 
     #[test]

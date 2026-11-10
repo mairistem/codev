@@ -94,7 +94,71 @@ pub struct StatusV1 {
     /// The project's `codev_version`; absent when it sets none.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version_requirement: Option<VersionRequirementV1>,
+    /// The tracked file's boxes; `null` while it is absent or unreadable.
+    /// Always present, so that "no file" differs from "an older codev" (no
+    /// key). Additive in v1.
+    pub tasks: Option<TasksV1>,
     pub status: Vec<StatusEntry>,
+}
+
+/// `tasks` in `codev status --json` and `codev archive --json`.
+#[derive(Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TasksV1 {
+    pub checked: usize,
+    pub total: usize,
+    /// The groups holding at least one box, in file order: the order is
+    /// their identity, since two headings may share a number.
+    pub groups: Vec<TaskGroupV1>,
+}
+
+/// A group of `tasks`: the boxes under one `## ` heading, or before the
+/// first one (`id` and `title` both `null`).
+#[derive(Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskGroupV1 {
+    /// The heading's leading number, as a string; `null` without one.
+    pub id: Option<String>,
+    pub title: Option<String>,
+    pub checked: usize,
+    pub total: usize,
+}
+
+impl From<&codev_core::tasks::TaskProgress> for TasksV1 {
+    fn from(progress: &codev_core::tasks::TaskProgress) -> Self {
+        Self {
+            checked: progress.checked(),
+            total: progress.total(),
+            groups: progress
+                .groups
+                .iter()
+                .map(|g| TaskGroupV1 {
+                    id: g.id.clone(),
+                    title: g.title.clone(),
+                    checked: g.checked,
+                    total: g.total,
+                })
+                .collect(),
+        }
+    }
+}
+
+/// The `tasks_unchecked` warning of a successful `codev archive`, when the
+/// tracked file still holds open boxes.
+pub fn tasks_unchecked_warning(
+    tasks: Option<&codev_core::tasks::TaskProgress>,
+    tracks: &str,
+) -> Option<StatusEntry> {
+    let count = tasks?.unchecked.len();
+    (count > 0).then(|| {
+        StatusEntry::warning(
+            "tasks_unchecked",
+            format!(
+                "{count} unchecked task box{} in {tracks}",
+                if count == 1 { "" } else { "es" }
+            ),
+        )
+    })
 }
 
 /// `update` in `codev status --json`.
@@ -205,8 +269,14 @@ impl StatusV1 {
                 .collect(),
             update: None,
             version_requirement: None,
+            tasks: None,
             status: statuses(warnings),
         }
+    }
+
+    pub fn with_tasks(mut self, tasks: Option<&codev_core::tasks::TaskProgress>) -> Self {
+        self.tasks = tasks.map(TasksV1::from);
+        self
     }
 
     pub fn with_update(
@@ -1407,6 +1477,9 @@ pub struct ArchiveReportV1 {
     /// field, always present, empty in the common case.
     pub deleted: Vec<String>,
     pub moved_to: String,
+    /// The tracked file's boxes at the time of the archive, as in
+    /// `codev status`; `null` without the file. Always present, additive.
+    pub tasks: Option<TasksV1>,
     pub status: Vec<StatusEntry>,
 }
 
@@ -1420,7 +1493,10 @@ impl ArchiveReportV1 {
             unchanged: json_paths(&outcome.unchanged),
             deleted: json_paths(&outcome.deleted),
             moved_to: json_path(&outcome.moved_to),
-            status: Vec::new(),
+            tasks: outcome.tasks.as_ref().map(TasksV1::from),
+            status: tasks_unchecked_warning(outcome.tasks.as_ref(), &outcome.tracks)
+                .into_iter()
+                .collect(),
         }
     }
 }
@@ -1902,10 +1978,13 @@ apply:
             "applyRequires",
             "isPlanningComplete",
             "artifacts",
+            "tasks",
             "status",
         ] {
             assert!(json.get(field).is_some(), "missing field `{field}`");
         }
+        // `null`, never omitted: the key tells this codev from an older one.
+        assert!(json["tasks"].is_null());
     }
 
     #[test]
@@ -2638,6 +2717,8 @@ apply:
             unchanged: vec![],
             deleted: vec![],
             moved_to: PathBuf::from("_codev/changes/archive/2026-09-08-add-auth"),
+            tasks: None,
+            tracks: "tasks.md".into(),
         };
         let json = serde_json::to_value(ArchiveReportV1::from(&outcome)).unwrap();
         for field in [
@@ -2647,6 +2728,7 @@ apply:
             "created",
             "unchanged",
             "movedTo",
+            "tasks",
             "status",
         ] {
             assert!(json.get(field).is_some(), "archive: missing `{field}`");

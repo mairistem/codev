@@ -558,6 +558,15 @@ lancer. Un `--change` qui nomme un change inexistant échoue avec
 `unknown_change` ; `--change archive` échoue avec `invalid_change_id`, car ce
 nom est réservé aux changes archivés.
 
+Dès que le fichier suivi du change existe — `tasks.md`, ou le fichier que le
+schéma nomme dans `apply.tracks` —, une dernière ligne compte ses
+[cases de tâches](file-formats.md#tasksmd) :
+`Tasks:    <cochées>/<total> checked`, ou `Tasks:    no box in tasks.md`
+lorsqu'il n'en contient aucune.
+Un fichier suivi qui n'est pas du texte UTF-8 donne
+`Tasks:    tasks.md unreadable` et un avertissement `tasks_unreadable` ; la
+commande réussit malgré tout. Les cases ne changent jamais le code de sortie.
+
 Lorsqu'une release plus récente de codev est connue et que vous ne l'avez pas
 mise en sourdine, stderr porte aussi
 ``codev X.Y.Z is available (you have A.B.C) — run `codev self-update` ``. Pour
@@ -673,6 +682,7 @@ Usage: codev archive [OPTIONS]
 
 Options:
       --change <CHANGE>  Change name (inferred when there is only one)
+      --strict           Refuse when the tracked file has unchecked task boxes
       --json
   -h, --help             Print help
 ```
@@ -685,6 +695,19 @@ ou contesté ; fusionne ensuite ses deltas dans les specs principales et le
 déplace, compte rendu compris, dans
 `_codev/changes/archive/<YYYY-MM-DD>-<name>/`. Voir
 [Archive](../workflow.md#archive).
+
+Après la vérification de la revue, elle compte les cases du fichier suivi du
+change (`tasks.md` par défaut, voir [tasks.md](file-formats.md#tasksmd)).
+Des cases non cochées n'empêchent pas l'archivage : après `Moved to:`, un
+avertissement indique combien il en reste et dans quel fichier, puis liste
+chaque ligne non cochée, et le `status` JSON porte un avertissement
+`tasks_unchecked`. Avec `--strict`, des cases non cochées font au contraire
+refuser l'archivage, avec le code `tasks_unchecked`, avant toute écriture. Un
+fichier suivi qui n'est pas du texte UTF-8 est refusé avec
+`tasks_unreadable`, avec ou sans `--strict`. Seul le change archivé est lu :
+les changes déjà archivés ne sont jamais évalués, et `codev validate` ne dit
+rien des cases. Un codev plus ancien rejette `--strict` sur `archive` comme
+argument inconnu, avant de rien faire.
 
 ### codev changelog
 

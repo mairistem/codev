@@ -99,7 +99,8 @@ fn a_french_plan_from_the_templates_validates_and_archives_into_a_french_spec() 
     assert!(findings.is_empty(), "{findings:#?}");
 
     let clock = FixedClock("2026-10-23".into());
-    let plan = codev_engine::archive::plan_archive(&fs, &layout, &config, &clock, &id).unwrap();
+    let plan =
+        codev_engine::archive::plan_archive(&fs, &layout, &config, &clock, &id, false).unwrap();
     codev_engine::apply::execute(&plan.plan, &fs).unwrap();
     let spec = fs
         .read_to_string(Path::new("/p/_codev/specs/auth/spec.md"))

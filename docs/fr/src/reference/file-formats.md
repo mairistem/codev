@@ -270,6 +270,30 @@ Les tâches sont regroupées sous des titres `##` numérotés et s'écrivent
 `- [ ] X.Y <task>` ; `/codev-apply` les coche sous la forme `- [x]`. Chaque
 tâche indique comment la vérifier.
 
+`codev status` et `codev archive` comptent les cases de ce fichier — ou du
+fichier que le schéma nomme dans `apply.tracks`. Seule la structure Markdown
+est lue, jamais un mot : un fichier écrit dans n'importe quelle langue se
+compte de la même façon :
+
+- une case est une ligne qui commence, après d'éventuels espaces ou
+  tabulations, par `- [ ]` (ouverte), `- [x]` ou `- [X]` (cochée), suivie
+  d'un espace ou de la fin de la ligne. Toute autre ligne n'est pas une
+  case : `- [-]`, `* [ ]`, `-[ ]`, `1. [ ]`, `- [x]done` ;
+- une case indentée sous une autre compte comme une case à part entière :
+  une sous-étape ouverte est du travail restant ;
+- les cases placées dans un bloc de code délimité (trois accents graves ou
+  plus, ou trois tildes ou plus, quelle que soit l'indentation) ou dans un
+  commentaire HTML (`<!--` … `-->`) ne sont pas comptées. Un bloc ou un
+  commentaire jamais fermé masque la suite du fichier ;
+- les cases sont regroupées sous le dernier titre `##` ; le numéro en tête
+  de `## 2. Moteur` est l'identifiant du groupe. Les titres `#` et `###`
+  n'ouvrent pas de groupe.
+
+Une étape qui n'a lieu qu'après la fusion — une montée de version, un tag —
+n'est pas du travail du change : écrivez-la comme une simple puce
+(`- Taguer v1.2.0`), qui n'est pas une case, pour que `codev archive` ne la
+signale pas comme restée ouverte.
+
 ## change.yaml
 
 Chemin : `_codev/changes/<name>/change.yaml`. Écrit par `codev new change`.

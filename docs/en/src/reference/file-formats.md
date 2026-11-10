@@ -261,6 +261,28 @@ Tasks are grouped under numbered `##` headings and written as `- [ ] X.Y
 <task>`; `/codev-apply` checks them off as `- [x]`. Each task states how to
 verify it.
 
+`codev status` and `codev archive` count the boxes of this file — or of the
+file the schema names in `apply.tracks`. Only the Markdown structure is
+read, never a word, so a file written in any language counts the same:
+
+- a box is a line that starts, after any spaces or tabs, with `- [ ]`
+  (open), `- [x]` or `- [X]` (checked), followed by a space or the end of
+  the line. Any other line is not a box: `- [-]`, `* [ ]`, `-[ ]`,
+  `1. [ ]`, `- [x]done`;
+- a box indented under another one counts as a box of its own: an open
+  sub-step is work left;
+- boxes inside a fenced code block (three backticks or more, or three
+  tildes or more, at any indentation) or an HTML comment (`<!--` … `-->`)
+  are not counted. A fence or a comment never closed hides the rest of the
+  file;
+- boxes are grouped under the last `##` heading; the leading number of
+  `## 2. Engine` is the group's id. `#` and `###` headings do not open a
+  group.
+
+A step that only happens after the merge — a version bump, a tag — is not
+work of the change: write it as a plain bullet (`- Tag v1.2.0`), which is
+not a box, so that `codev archive` does not report it as left open.
+
 ## change.yaml
 
 Path: `_codev/changes/<name>/change.yaml`. Written by `codev new change`.

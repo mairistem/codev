@@ -537,9 +537,32 @@ pub fn new_change(
 
 // ─────────────────────────────── status ───────────────────────────────
 
+/// The tracked file, as `codev status` found it.
+#[derive(Debug)]
+pub enum TaskState {
+    /// No tracked file in the change folder (or a path leaving it).
+    Absent,
+    /// The file exists but cannot be read as UTF-8 text: a warning, never
+    /// a failure, since every skill calls `status` first.
+    Unreadable,
+    Counted(codev_core::tasks::TaskProgress),
+}
+
+impl TaskState {
+    pub fn progress(&self) -> Option<&codev_core::tasks::TaskProgress> {
+        match self {
+            Self::Counted(progress) => Some(progress),
+            Self::Absent | Self::Unreadable => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct StatusOutcome {
     pub status: ChangeStatus,
+    pub tasks: TaskState,
+    /// The tracked file, as the schema's `apply.tracks` names it.
+    pub tracks: String,
     pub planning_home: PathBuf,
     pub change_root: PathBuf,
     pub warnings: Vec<Warning>,
@@ -559,11 +582,24 @@ pub fn status(ctx: &Ctx, requested: Option<&str>) -> Result<StatusOutcome> {
     // first, and must not go on with roles they cannot trust.
     engine_roles::resolve(ctx.fs, &layout, &config, Some(&ctxt))?;
 
+    let mut warnings = config.warnings;
+    let tasks = match change::task_progress(ctx.fs, &layout, &ctxt) {
+        Ok(Some(progress)) => TaskState::Counted(progress),
+        Ok(None) => TaskState::Absent,
+        Err(err @ EngineError::TasksUnreadable { .. }) => {
+            warnings.push(Warning::new(err.code(), err.to_string()));
+            TaskState::Unreadable
+        }
+        Err(err) => return Err(err.into()),
+    };
+
     Ok(StatusOutcome {
         status: change::status(ctx.fs, &layout, &ctxt)?,
+        tasks,
+        tracks: ctxt.schema.graph.schema().apply.tracks.clone(),
         planning_home: layout.project_root().to_path_buf(),
         change_root: layout.change_dir(&change),
-        warnings: config.warnings,
+        warnings,
         update: update_notice(ctx),
         requirement: version_requirement(ctx, config.codev_version.as_deref()),
     })
@@ -1115,12 +1151,14 @@ pub fn sync(ctx: &Ctx, requested: Option<&str>) -> Result<SyncOutcome> {
     )?)
 }
 
-pub fn archive(ctx: &Ctx, requested: Option<&str>) -> Result<ArchiveOutcome> {
+/// `strict`: unchecked boxes in the tracked file refuse the archive
+/// instead of being reported as a warning.
+pub fn archive(ctx: &Ctx, requested: Option<&str>, strict: bool) -> Result<ArchiveOutcome> {
     let layout = root::discover_from_cwd(ctx.fs, ctx.env)?;
     let config = config::resolve(ctx.fs, ctx.env, &layout)?;
     let change = resolve_change(ctx.fs, &layout, requested)?;
     Ok(engine_archive::execute_archive(
-        ctx.fs, &layout, &config, ctx.clock, &change,
+        ctx.fs, &layout, &config, ctx.clock, &change, strict,
     )?)
 }
 
@@ -3213,7 +3251,7 @@ edition = "2024"
             "  - status: fixed\n    by: developer\n    ref: src/auth.rs uses the CSPRNG\n  - status: fixed\n    by: newcomer\n",
         ))
         .with_runner(login_repository());
-        archive(&h.ctx(), None).unwrap();
+        archive(&h.ctx(), None, false).unwrap();
         assert!(!asked_for_a_diff(&h.runner));
     }
 
@@ -3392,7 +3430,7 @@ edition = "2024"
             // Duplicate → validate reports it.
             "## Purpose\n\nx.\n\n## ADDED Requirements\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: S\n- **WHEN** a\n- **THEN** b\n\n### Requirement: A\nThe system SHALL a.\n\n#### Scenario: T\n- **WHEN** c\n- **THEN** d\n",
         );
-        let err = archive(&h.ctx(), None).unwrap_err();
+        let err = archive(&h.ctx(), None, false).unwrap_err();
         assert_eq!(err.code, "validation_failed");
         assert!(
             err.message.contains("codev validate buggy"),
@@ -3646,7 +3684,7 @@ edition = "2024"
     #[test]
     fn archive_json_refusal_carries_review_blocked() {
         let h = reviewed_change(&security_finding("high", ""));
-        let err = archive(&h.ctx(), None).unwrap_err();
+        let err = archive(&h.ctx(), None, false).unwrap_err();
         assert_eq!(err.code, "review_blocked");
         assert!(err.message.contains("R-newcomer-1"), "{}", err.message);
         assert!(
@@ -3658,7 +3696,7 @@ edition = "2024"
             "high",
             "  - status: fixed\n    by: developer\n    ref: src/auth.rs uses the CSPRNG\n  - status: fixed\n    by: newcomer\n",
         ));
-        let outcome = archive(&h.ctx(), None).unwrap();
+        let outcome = archive(&h.ctx(), None, false).unwrap();
         assert!(
             h.fs.read(outcome.moved_to.join("review.md")).is_some(),
             "the record moves with the change"
@@ -3800,6 +3838,228 @@ edition = "2024"
         let h = project_with_a_stray_spec_file();
         let err = validate(&h.ctx(), ValidateArgs::Item("notes/my".into())).unwrap_err();
         assert_eq!(err.code, "unknown_item");
+    }
+
+    // ─────────────── task progress in status and archive ───────────────
+
+    const NO_FINDING: &str = "## plan.challenge\n\n### skeptic\n\nNo finding.\n\n## code.review\n\n### newcomer\n\nNo finding.\n";
+
+    const TWO_GROUPS: &str = "# Tasks\n\n## 1. Core\n\n- [x] 1.1 Parser\n- [ ] 1.2 Engine\n\n## 2. Docs\n\n- [X] 2.1 Guide\n";
+
+    /// `reviewed_change`, settled, whose `tasks.md` is `tasks` (none when
+    /// empty).
+    fn archivable_change(tasks: &str) -> Harness {
+        let h = reviewed_change(NO_FINDING);
+        if !tasks.is_empty() {
+            write_helper(&h, "/p/_codev/changes/add-auth/tasks.md", tasks);
+        }
+        h
+    }
+
+    fn status_text(h: &Harness) -> String {
+        crate::render::status_report(&status(&h.ctx(), Some("add-auth")).unwrap())
+    }
+
+    fn still_active(h: &Harness) -> bool {
+        h.fs.read("/p/_codev/changes/add-auth/change.yaml")
+            .is_some()
+    }
+
+    #[test]
+    fn status_json_carries_task_progress_per_group() {
+        let h = archivable_change(TWO_GROUPS);
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert_eq!(
+            json["tasks"],
+            serde_json::json!({
+                "checked": 2,
+                "total": 3,
+                "groups": [
+                    { "id": "1", "title": "Core", "checked": 1, "total": 2 },
+                    { "id": "2", "title": "Docs", "checked": 1, "total": 1 }
+                ]
+            })
+        );
+    }
+
+    #[test]
+    fn status_json_tasks_is_null_without_tasks_md() {
+        let h = Harness::new();
+        project_with_change(&h);
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert!(
+            json.get("tasks").is_some_and(serde_json::Value::is_null),
+            "{json}"
+        );
+    }
+
+    #[test]
+    fn status_json_tasks_total_zero_without_boxes() {
+        let h = archivable_change("# Tasks\n\nNothing to tick yet.\n");
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert_eq!(
+            json["tasks"],
+            serde_json::json!({ "checked": 0, "total": 0, "groups": [] })
+        );
+    }
+
+    #[test]
+    fn status_json_groups_before_the_first_heading() {
+        let h = archivable_change("# Tasks\n- [ ] Read the plan\n## Wrap-up\n- [x] Validate\n");
+        let json = status_json(&status(&h.ctx(), Some("add-auth")).unwrap());
+        assert_eq!(
+            json["tasks"]["groups"],
+            serde_json::json!([
+                { "id": null, "title": null, "checked": 0, "total": 1 },
+                { "id": null, "title": "Wrap-up", "checked": 1, "total": 1 }
+            ])
+        );
+    }
+
+    #[test]
+    fn status_human_ends_with_the_tasks_line() {
+        let h = archivable_change("## 1. Core\n- [x] 1.1 a\n- [x] 1.2 b\n- [ ] 1.3 c\n");
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# P\n");
+        write_helper(&h, "/p/_codev/changes/add-auth/design.md", "# D\n");
+        let text = status_text(&h);
+        assert!(
+            text.ends_with("Planning is complete.\nTasks:    2/3 checked\n"),
+            "{text}"
+        );
+    }
+
+    #[test]
+    fn status_human_has_no_tasks_line_before_tasks_md() {
+        let h = Harness::new();
+        project_with_change(&h);
+        write_helper(&h, "/p/_codev/changes/add-auth/proposal.md", "# P\n");
+        let text = status_text(&h);
+        assert!(!text.contains("Tasks:"), "{text}");
+    }
+
+    #[test]
+    fn status_human_says_no_box_in_tasks_md() {
+        let h = archivable_change("# Tasks\n\nA paragraph.\n");
+        let text = status_text(&h);
+        assert!(text.ends_with("Tasks:    no box in tasks.md\n"), "{text}");
+    }
+
+    #[test]
+    fn an_unreadable_tracked_file_warns_in_status_and_blocks_archive() {
+        let mut h = reviewed_change(NO_FINDING);
+        h.fs =
+            std::mem::take(&mut h.fs).with_undecodable_file("/p/_codev/changes/add-auth/tasks.md");
+
+        let outcome = status(&h.ctx(), Some("add-auth")).unwrap();
+        let json = status_json(&outcome);
+        assert!(json["tasks"].is_null(), "{json}");
+        let warning = &json["status"][0];
+        assert_eq!(warning["level"], "warning");
+        assert_eq!(warning["code"], "tasks_unreadable");
+        assert!(
+            warning["message"].as_str().unwrap().contains("tasks.md"),
+            "{warning}"
+        );
+        assert!(
+            crate::render::status_report(&outcome).ends_with("Tasks:    tasks.md unreadable\n")
+        );
+
+        for strict in [false, true] {
+            let err = archive(&h.ctx(), None, strict).unwrap_err();
+            let json = crate::contract::failure(crate::archive_shape(), &err.code, &err.message);
+            assert_eq!(json["status"][0]["code"], "tasks_unreadable");
+            assert!(still_active(&h));
+        }
+    }
+
+    #[test]
+    fn archive_json_warns_tasks_unchecked_and_exits_zero() {
+        let h = archivable_change("- [x] 1.1 Parser\n- [ ] 9.1 Tag the release\n");
+        let outcome = archive(&h.ctx(), None, false).unwrap();
+        let json = serde_json::to_value(crate::contract::ArchiveReportV1::from(&outcome)).unwrap();
+        assert_eq!(json["status"].as_array().unwrap().len(), 1, "{json}");
+        assert_eq!(json["status"][0]["level"], "warning");
+        assert_eq!(json["status"][0]["code"], "tasks_unchecked");
+        assert_eq!(
+            json["status"][0]["message"],
+            "1 unchecked task box in tasks.md"
+        );
+        assert_eq!(json["tasks"]["checked"], 1);
+        assert_eq!(json["tasks"]["total"], 2);
+        assert!(!still_active(&h));
+    }
+
+    #[test]
+    fn archive_human_lists_each_unchecked_box() {
+        let h = archivable_change(
+            "- [x] 1.1 Parser\n  - [ ] 9.1 Tag the release\n- [ ] 9.2 Push the tag\n",
+        );
+        let text = crate::render::archive(&archive(&h.ctx(), None, false).unwrap());
+        let moved = text.find("Moved to:").unwrap();
+        let warning = text
+            .find("warning: 2 unchecked task boxes in tasks.md")
+            .unwrap_or_else(|| panic!("{text}"));
+        assert!(moved < warning, "{text}");
+        assert!(
+            text.ends_with("\n  - [ ] 9.1 Tag the release\n  - [ ] 9.2 Push the tag\n"),
+            "{text}"
+        );
+    }
+
+    #[test]
+    fn strict_archive_json_fails_with_tasks_unchecked() {
+        let h = archivable_change("- [x] 1.1 Parser\n- [ ] 9.1 Tag the release\n");
+        let err = archive(&h.ctx(), None, true).unwrap_err();
+        let json = crate::contract::failure(crate::archive_shape(), &err.code, &err.message);
+        assert_eq!(json["status"][0]["level"], "error");
+        assert_eq!(json["status"][0]["code"], "tasks_unchecked");
+        assert!(json["tasks"].is_null(), "{json}");
+        assert!(
+            err.message.contains("1 unchecked task box in tasks.md"),
+            "{}",
+            err.message
+        );
+        assert!(still_active(&h));
+        assert!(h.fs.read("/p/_codev/specs/user-auth/spec.md").is_none());
+    }
+
+    #[test]
+    fn strict_archive_json_with_all_checked_has_no_warning() {
+        let h = archivable_change(&TWO_GROUPS.replace("- [ ]", "- [x]"));
+        let outcome = archive(&h.ctx(), None, true).unwrap();
+        let json = serde_json::to_value(crate::contract::ArchiveReportV1::from(&outcome)).unwrap();
+        assert_eq!(json["status"], serde_json::json!([]));
+        assert_eq!(json["tasks"]["checked"], 3);
+        assert!(!still_active(&h));
+    }
+
+    #[test]
+    fn archive_json_tasks_null_without_tasks_md() {
+        let h = archivable_change("");
+        let outcome = archive(&h.ctx(), None, true).unwrap();
+        let json = serde_json::to_value(crate::contract::ArchiveReportV1::from(&outcome)).unwrap();
+        assert!(
+            json.get("tasks").is_some_and(serde_json::Value::is_null),
+            "{json}"
+        );
+        assert_eq!(json["status"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn archived_changes_are_never_evaluated() {
+        let h = archivable_change("- [x] 1.1 Parser\n");
+        write_helper(
+            &h,
+            "/p/_codev/changes/archive/2026-09-28-fix-thin-detection/tasks.md",
+            "- [ ] 1.1 Open\n- [ ] 1.2 Open\n",
+        );
+        let report = validate(&h.ctx(), ValidateArgs::All).unwrap();
+        // `codev validate --strict` fails on an error or a warning.
+        assert!(!report.has_errors() && !report.has_warnings(), "{report:?}");
+        assert!(!format!("{report:?}").contains("tasks_unchecked"));
+        let outcome = archive(&h.ctx(), Some("add-auth"), true).unwrap();
+        let json = serde_json::to_value(crate::contract::ArchiveReportV1::from(&outcome)).unwrap();
+        assert_eq!(json["status"], serde_json::json!([]));
     }
 
     /// Small helper that inserts a file into the harness's in-memory FS.
@@ -5296,7 +5556,8 @@ The rationale for the choice.
                 &outcome.change_root,
                 &outcome.warnings,
             )
-            .with_update(outcome.update.as_ref(), outcome.requirement.as_ref()),
+            .with_update(outcome.update.as_ref(), outcome.requirement.as_ref())
+            .with_tasks(outcome.tasks.progress()),
         )
         .unwrap()
     }
