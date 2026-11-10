@@ -30,6 +30,13 @@ pub enum Step {
     /// `/codev-apply` implementing an archived change's plan: an
     /// implementation case.
     CodeImplement,
+    /// `/codev-sync` merging an active change's deltas: a sync case.
+    ChangeSync,
+    /// `/codev-archive` closing an active change: an archive case.
+    ChangeArchive,
+    /// `/codev-configure` enriching a project's configuration: a
+    /// configure case.
+    ConfigureEnrich,
 }
 
 impl Step {
@@ -41,6 +48,9 @@ impl Step {
             "plan.write" => Some(Step::PlanWrite),
             "plan.update" => Some(Step::PlanUpdate),
             "code.implement" => Some(Step::CodeImplement),
+            "change.sync" => Some(Step::ChangeSync),
+            "change.archive" => Some(Step::ChangeArchive),
+            "configure.enrich" => Some(Step::ConfigureEnrich),
             _ => None,
         }
     }
@@ -53,14 +63,17 @@ impl Step {
             Step::PlanWrite => "plan.write",
             Step::PlanUpdate => "plan.update",
             Step::CodeImplement => "code.implement",
+            Step::ChangeSync => "change.sync",
+            Step::ChangeArchive => "change.archive",
+            Step::ConfigureEnrich => "configure.enrich",
         }
     }
 
     /// The review steps, those of a review case.
     pub fn is_review(self) -> bool {
-        !matches!(
+        matches!(
             self,
-            Step::PlanWrite | Step::PlanUpdate | Step::CodeImplement
+            Step::PlanChallenge | Step::CodeReview | Step::PlanTrace
         )
     }
 
@@ -68,7 +81,21 @@ impl Step {
     pub fn replays_history(self) -> bool {
         matches!(
             self,
-            Step::PlanWrite | Step::PlanUpdate | Step::CodeImplement
+            Step::PlanWrite
+                | Step::PlanUpdate
+                | Step::CodeImplement
+                | Step::ChangeSync
+                | Step::ChangeArchive
+        )
+    }
+
+    /// The sync, archive and configure steps: scored by named checks, as
+    /// `plan.update` is, but recorded in `CaseScore::checks` rather than in
+    /// a field of their own.
+    pub fn is_merge_or_configure(self) -> bool {
+        matches!(
+            self,
+            Step::ChangeSync | Step::ChangeArchive | Step::ConfigureEnrich
         )
     }
 
@@ -333,6 +360,11 @@ pub struct Case {
     /// What an implementation case replays and expects; `None` for any
     /// other case.
     pub implement: Option<ImplementCase>,
+    /// What a sync or archive case replays and expects; `None` for any
+    /// other case.
+    pub merge: Option<MergeCase>,
+    /// What a configure case lays and expects; `None` for any other case.
+    pub configure: Option<ConfigureCase>,
 }
 
 /// A requirement named as `<capability>::<requirement name>`.
@@ -464,6 +496,86 @@ pub struct ImplementCase {
     pub files: BTreeMap<String, String>,
 }
 
+/// How a sync or archive run must leave the project.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MergeOutcome {
+    /// As codev's own command leaves it.
+    Done,
+    /// As the run found it.
+    Refused,
+}
+
+impl MergeOutcome {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            MergeOutcome::Done => "done",
+            MergeOutcome::Refused => "refused",
+        }
+    }
+}
+
+/// A sync or archive case: an active change laid on the repository at
+/// `git_ref`, other files laid over the tree, and how the run must leave
+/// the project. Paths of `files` are relative to the change's folder,
+/// those of `overlay` to the project root.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MergeCase {
+    pub git_ref: String,
+    pub outcome: MergeOutcome,
+    /// For a `refused` case codev itself refuses: the code its own
+    /// command reports.
+    pub code: Option<String>,
+    /// Texts the agent's messages must hold.
+    pub contains: Vec<String>,
+    /// Texts they must not hold.
+    pub absent: Vec<String>,
+    /// The change's files as the case lays them, by path.
+    pub files: BTreeMap<String, String>,
+    /// The files laid over the tree, replacing those at `git_ref`.
+    pub overlay: BTreeMap<String, Vec<u8>>,
+}
+
+/// How a configure run must leave `_codev/config.yaml`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConfigureOutcome {
+    /// `context` and `rules` written, the rest preserved.
+    Written,
+    /// Byte-identical to the fixture's.
+    Unchanged,
+    /// Still missing: the skill refused.
+    Refused,
+}
+
+impl ConfigureOutcome {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ConfigureOutcome::Written => "written",
+            ConfigureOutcome::Unchanged => "unchanged",
+            ConfigureOutcome::Refused => "refused",
+        }
+    }
+}
+
+/// The parts of a configure proposal an expected text may name.
+pub const CONFIGURE_PARTS: [&str; 4] = ["context", "specs", "design", "tasks"];
+
+/// A configure case: a small project, the author's answer to the skill's
+/// confirmation, and what the run must leave.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigureCase {
+    /// `true` for `yes`.
+    pub answer: bool,
+    pub outcome: ConfigureOutcome,
+    /// Texts each part of the proposal must hold once written, by part.
+    pub written: BTreeMap<String, Vec<String>>,
+    /// Texts each part must not hold.
+    pub unwritten: BTreeMap<String, Vec<String>>,
+    /// Texts the agent's messages must hold.
+    pub contains: Vec<String>,
+    /// `base/_codev/config.yaml`; `None` for a project without one.
+    pub config: Option<String>,
+}
+
 /// The tasks of a `tasks.md`, in order: each one's id (`2.3`) and whether
 /// it is checked. A line that is not a task is skipped.
 pub fn tasks(text: &str) -> Vec<(String, bool)> {
@@ -499,6 +611,9 @@ pub trait History {
 /// expected requirements and decisions existed at that commit, and the
 /// state does not already hold the case — its answer.
 pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError> {
+    if let Some(merge) = &case.merge {
+        return check_replayed_change_history(case, &merge.git_ref, &[], history);
+    }
     if let Some(update) = &case.update {
         return check_replayed_change_history(case, &update.git_ref, &[], history);
     }
@@ -634,6 +749,10 @@ pub struct Fixture {
     pub change: BTreeMap<String, Vec<u8>>,
     /// `acceptance.sh` next to `case.yaml`, for an implementation case.
     pub acceptance: Option<Vec<u8>>,
+    /// The files of `overlay/`, for a sync or archive case.
+    pub overlay: BTreeMap<String, Vec<u8>>,
+    /// The paths of `overlay/` that are symbolic links, not followed.
+    pub links: Vec<String>,
 }
 
 impl Fixture {
@@ -873,6 +992,8 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
         }),
         update: None,
         implement: None,
+        merge: None,
+        configure: None,
     })
 }
 
@@ -1015,6 +1136,8 @@ fn load_update(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseErro
             files,
         }),
         implement: None,
+        merge: None,
+        configure: None,
     })
 }
 
@@ -1173,6 +1296,319 @@ fn load_implement(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseE
             script,
             files,
         }),
+        merge: None,
+        configure: None,
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MergeCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
+    #[allow(dead_code)]
+    step: String,
+    kind: String,
+    #[serde(rename = "ref")]
+    git_ref: String,
+    change: String,
+    summary: String,
+    expected: MergeExpectedFile,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MergeExpectedFile {
+    outcome: String,
+    #[serde(default)]
+    code: Option<String>,
+    #[serde(default)]
+    contains: Vec<String>,
+    #[serde(default)]
+    absent: Vec<String>,
+}
+
+/// Trimmed texts, refusing an empty one under the name `field`.
+fn texts(field: &str, list: &[String]) -> Result<Vec<String>, String> {
+    let out: Vec<String> = list.iter().map(|t| t.trim().to_string()).collect();
+    if out.iter().any(String::is_empty) {
+        return Err(format!("a text of `{field}` is empty"));
+    }
+    Ok(out)
+}
+
+/// Why an `overlay/` path cannot be laid: one that leaves the case's
+/// directory, or one under the change the case lays from `change/`.
+fn overlay_problem(path: &str, change_dir: &str) -> Option<String> {
+    let leaves = path.starts_with('/')
+        || path.contains('\\')
+        || path.contains(':')
+        || path.split('/').any(|part| part == ".." || part == ".git");
+    if leaves {
+        return Some(format!(
+            "`overlay/{path}` would be laid outside the case's directory"
+        ));
+    }
+    if path == change_dir || path.starts_with(&format!("{change_dir}/")) {
+        return Some(format!(
+            "`overlay/{path}` lies under `{change_dir}/`, which `change/` lays"
+        ));
+    }
+    None
+}
+
+/// Loads a sync or archive case: a `case.yaml`, its `change/` — the files
+/// of `_codev/changes/<change>/` — and an optional `overlay/`, laid over
+/// the project root.
+fn load_merge(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: MergeCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for a {} case; expected seeded",
+            file.kind,
+            step.as_str()
+        )));
+    }
+    for (key, value) in [("ref", &file.git_ref), ("change", &file.change)] {
+        if value.trim().is_empty() {
+            return Err(fail(format!("`{key}` is empty")));
+        }
+    }
+    if !fixture.base.is_empty() {
+        return Err(fail(format!(
+            "a {} case has no `base/`: its fixture is the repository at `ref`",
+            step.as_str()
+        )));
+    }
+    if fixture.change.is_empty() {
+        return Err(fail(
+            "`change/` is missing: it holds the files of the change the case lays".into(),
+        ));
+    }
+    if let Some(link) = fixture.links.first() {
+        return Err(fail(format!(
+            "`overlay/{link}` is a symbolic link; an overlay holds files only"
+        )));
+    }
+    let change = file.change.trim().to_string();
+    let change_dir = format!("_codev/changes/{change}");
+    for path in fixture.overlay.keys() {
+        if let Some(problem) = overlay_problem(path, &change_dir) {
+            return Err(fail(problem));
+        }
+    }
+    check_fixture_files(fixture).map_err(fail)?;
+    let expected = file.expected;
+    let outcome = match expected.outcome.as_str() {
+        "done" => MergeOutcome::Done,
+        "refused" => MergeOutcome::Refused,
+        other => {
+            return Err(fail(format!(
+                "unknown outcome `{other}`; expected done or refused"
+            )));
+        }
+    };
+    let code = match expected.code.as_deref().map(str::trim) {
+        None => None,
+        Some("") => return Err(fail("`code` is empty".into())),
+        Some(_) if outcome == MergeOutcome::Done => {
+            return Err(fail(
+                "`code` is for a refused case: a done case's command succeeds".into(),
+            ));
+        }
+        Some(code) => Some(code.to_string()),
+    };
+    let contains = texts("contains", &expected.contains).map_err(fail)?;
+    let absent = texts("absent", &expected.absent).map_err(fail)?;
+    let files: BTreeMap<String, String> = fixture
+        .change
+        .iter()
+        .map(|(path, bytes)| (path.clone(), String::from_utf8_lossy(bytes).into_owned()))
+        .collect();
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step,
+        change,
+        stacks: Vec::new(),
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: None,
+        update: None,
+        implement: None,
+        merge: Some(MergeCase {
+            git_ref: file.git_ref.trim().to_string(),
+            outcome,
+            code,
+            contains,
+            absent,
+            files,
+            overlay: fixture.overlay.clone(),
+        }),
+        configure: None,
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ConfigureCaseFile {
+    // Read by `load` to dispatch here; declared so that
+    // `deny_unknown_fields` accepts it.
+    #[allow(dead_code)]
+    step: String,
+    kind: String,
+    #[serde(default)]
+    stacks: Vec<String>,
+    summary: String,
+    // A value, not a string: YAML 1.1 readers take a bare `yes` for a
+    // boolean, and the case means the author's word either way.
+    answer: serde_norway::Value,
+    expected: ConfigureExpectedFile,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ConfigureExpectedFile {
+    outcome: String,
+    #[serde(default)]
+    written: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
+    unwritten: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
+    contains: Vec<String>,
+}
+
+/// The path of a project's configuration.
+pub const CONFIG_PATH: &str = "_codev/config.yaml";
+
+/// Loads a configure case: a `case.yaml` and its `base/`, the project as
+/// it stands.
+fn load_configure(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+    let fail = |message: String| CaseError {
+        case: id.to_string(),
+        message,
+    };
+    let file: ConfigureCaseFile =
+        serde_norway::from_str(yaml).map_err(|e| fail(format!("case.yaml: {e}")))?;
+    if file.kind != "seeded" {
+        return Err(fail(format!(
+            "unknown kind `{}` for a configure case; expected seeded",
+            file.kind
+        )));
+    }
+    if !fixture.change.is_empty() || !fixture.overlay.is_empty() {
+        return Err(fail(
+            "a configure case holds only `base/`: the project as it stands".into(),
+        ));
+    }
+    if fixture.base.is_empty() {
+        return Err(fail("`base/` is missing: it holds the project".into()));
+    }
+    check_fixture_files(fixture).map_err(fail)?;
+    let answer = match &file.answer {
+        serde_norway::Value::Bool(b) => *b,
+        serde_norway::Value::String(s) if s == "yes" => true,
+        serde_norway::Value::String(s) if s == "no" => false,
+        other => {
+            return Err(fail(format!(
+                "unknown answer `{}`; expected yes or no",
+                serde_norway::to_string(other).unwrap_or_default().trim()
+            )));
+        }
+    };
+    let expected = file.expected;
+    let outcome = match expected.outcome.as_str() {
+        "written" => ConfigureOutcome::Written,
+        "unchanged" => ConfigureOutcome::Unchanged,
+        "refused" => ConfigureOutcome::Refused,
+        other => {
+            return Err(fail(format!(
+                "unknown outcome `{other}`; expected written, unchanged or refused"
+            )));
+        }
+    };
+    let parts = |field: &str,
+                 map: &BTreeMap<String, Vec<String>>|
+     -> Result<BTreeMap<String, Vec<String>>, CaseError> {
+        if !map.is_empty() && outcome != ConfigureOutcome::Written {
+            return Err(fail(format!(
+                "`{field}` is for a written outcome, not `{}`",
+                outcome.as_str()
+            )));
+        }
+        let mut out = BTreeMap::new();
+        for (part, list) in map {
+            if !CONFIGURE_PARTS.contains(&part.as_str()) {
+                return Err(fail(format!(
+                    "`{field}` names `{part}`; expected {}",
+                    CONFIGURE_PARTS.join(", ")
+                )));
+            }
+            out.insert(
+                part.clone(),
+                texts(&format!("{field}.{part}"), list).map_err(fail)?,
+            );
+        }
+        Ok(out)
+    };
+    let written = parts("written", &expected.written)?;
+    let unwritten = parts("unwritten", &expected.unwritten)?;
+    if outcome == ConfigureOutcome::Written && !answer {
+        return Err(fail(
+            "a written outcome needs the answer yes: the skill writes nothing on a no".into(),
+        ));
+    }
+    let config = fixture
+        .base
+        .get(CONFIG_PATH)
+        .map(|bytes| String::from_utf8_lossy(bytes).into_owned());
+    match (outcome, &config) {
+        (ConfigureOutcome::Refused, Some(_)) => {
+            return Err(fail(format!(
+                "a refused outcome is for a project without `{CONFIG_PATH}`, which `base/` holds"
+            )));
+        }
+        (ConfigureOutcome::Written | ConfigureOutcome::Unchanged, None) => {
+            return Err(fail(format!(
+                "`base/` holds no `{CONFIG_PATH}`: only a refused outcome fits a project without one"
+            )));
+        }
+        _ => {}
+    }
+    let contains = texts("contains", &expected.contains).map_err(fail)?;
+    Ok(Case {
+        id: id.to_string(),
+        role: PLANNER.to_string(),
+        step: Step::ConfigureEnrich,
+        change: String::new(),
+        stacks: file.stacks,
+        kind: Kind::Seeded,
+        summary: file.summary,
+        expected: Vec::new(),
+        fixed: Vec::new(),
+        unchanged: Vec::new(),
+        planned: Vec::new(),
+        plan: None,
+        update: None,
+        implement: None,
+        merge: None,
+        configure: Some(ConfigureCase {
+            answer,
+            outcome,
+            written,
+            unwritten,
+            contains,
+            config,
+        }),
     })
 }
 
@@ -1194,6 +1630,11 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         Some("plan.write") => return load_plan(id, yaml, fixture),
         Some("plan.update") => return load_update(id, yaml, fixture),
         Some("code.implement") => return load_implement(id, yaml, fixture),
+        Some(step @ ("change.sync" | "change.archive")) => {
+            let step = Step::parse(step).expect("a known step");
+            return load_merge(id, step, yaml, fixture);
+        }
+        Some("configure.enrich") => return load_configure(id, yaml, fixture),
         _ => {}
     }
     let file: CaseFile =
@@ -1201,7 +1642,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
 
     let step = Step::parse(&file.step).ok_or_else(|| {
         fail(format!(
-            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write, plan.update or code.implement",
+            "unknown step `{}`; expected plan.challenge, code.review, plan.trace, plan.write, plan.update, code.implement, change.sync, change.archive or configure.enrich",
             file.step
         ))
     })?;
@@ -1357,11 +1798,17 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
         plan: None,
         update: None,
         implement: None,
+        merge: None,
+        configure: None,
     })
 }
 
 fn check_fixture_files(fixture: &Fixture) -> Result<(), String> {
-    for (tree, files) in [("base", &fixture.base), ("change", &fixture.change)] {
+    for (tree, files) in [
+        ("base", &fixture.base),
+        ("change", &fixture.change),
+        ("overlay", &fixture.overlay),
+    ] {
         for (path, bytes) in files {
             if bytes.len() > MAX_FIXTURE_FILE_BYTES {
                 return Err(format!(
@@ -1807,6 +2254,8 @@ pub(crate) mod tests {
             plan: None,
             update: None,
             implement: None,
+            merge: None,
+            configure: None,
         }
     }
 
@@ -1939,6 +2388,7 @@ pub(crate) mod tests {
             base: [("a.txt".to_string(), b"x".to_vec())].into(),
             change: BTreeMap::new(),
             acceptance: None,
+            ..Fixture::default()
         };
         let err = load("p", PLAN_YAML, &fixture, &Catalog::default()).unwrap_err();
         assert!(err.message.contains("only its case.yaml"), "{err}");
@@ -2377,5 +2827,184 @@ pub(crate) mod tests {
     fn a_keyword_language_outside_the_catalog_is_refused() {
         let unknown = PLAN_YAML.replace("expected:\n", "expected:\n  keyword_language: es\n");
         assert!(planning_case(&unknown).unwrap_err().message.contains("es"));
+    }
+    const ARCHIVE_YAML: &str = "step: change.archive\nkind: seeded\nref: abc1234\nchange: add-auth\nsummary: An archive.\nexpected:\n  outcome: done\n  contains: [\"Moved to\"]\n";
+
+    fn merge_fixture() -> Fixture {
+        let mut f = Fixture::default();
+        for path in [
+            "proposal.md",
+            "design.md",
+            "tasks.md",
+            "specs/doctor/spec.md",
+        ] {
+            f.change
+                .insert(path.into(), format!("# {path}\n").into_bytes());
+        }
+        f
+    }
+
+    fn merge_case(yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+        load("archive-x", yaml, fixture, &Catalog::default())
+    }
+
+    #[test]
+    fn an_archive_case_loads() {
+        let case = merge_case(ARCHIVE_YAML, &merge_fixture()).unwrap();
+        assert_eq!(case.step, Step::ChangeArchive);
+        assert_eq!(case.change, "add-auth");
+        let merge = case.merge.unwrap();
+        assert_eq!(merge.outcome, MergeOutcome::Done);
+        assert_eq!(merge.contains, ["Moved to"]);
+        assert_eq!(merge.files.len(), 4);
+        let sync = ARCHIVE_YAML.replace("change.archive", "change.sync");
+        assert_eq!(
+            merge_case(&sync, &merge_fixture()).unwrap().step,
+            Step::ChangeSync
+        );
+        let unknown = ARCHIVE_YAML.replace("summary:", "extra: 1\nsummary:");
+        let err = merge_case(&unknown, &merge_fixture()).unwrap_err();
+        assert!(err.to_string().contains("archive-x") && err.message.contains("extra"));
+        let err = merge_case(ARCHIVE_YAML, &Fixture::default()).unwrap_err();
+        assert!(err.message.contains("`change/` is missing"), "{err}");
+        let empty = ARCHIVE_YAML.replace("\"Moved to\"", "\" \"");
+        let err = merge_case(&empty, &merge_fixture()).unwrap_err();
+        assert!(err.message.contains("`contains` is empty"), "{err}");
+    }
+
+    #[test]
+    fn an_overlay_link_fails() {
+        let sync = ARCHIVE_YAML.replace("change.archive", "change.sync");
+        let mut f = merge_fixture();
+        f.links = vec!["outside".into()];
+        let err = merge_case(&sync, &f).unwrap_err();
+        assert!(err.to_string().contains("archive-x"), "{err}");
+        assert!(err.message.contains("`overlay/outside`"), "{err}");
+        let mut f = merge_fixture();
+        f.overlay
+            .insert("_codev/changes/add-auth/review.md".into(), b"x".to_vec());
+        let err = merge_case(&sync, &f).unwrap_err();
+        assert!(err.message.contains("lies under"), "{err}");
+        let mut f = merge_fixture();
+        f.overlay.insert("../outside".into(), b"x".to_vec());
+        let err = merge_case(&sync, &f).unwrap_err();
+        assert!(
+            err.message.contains("outside the case's directory"),
+            "{err}"
+        );
+        let mut f = merge_fixture();
+        f.overlay.insert(
+            "_codev/config.yaml".into(),
+            b"codev_version: \">=99\"\n".to_vec(),
+        );
+        let case = merge_case(&sync, &f).unwrap();
+        assert_eq!(case.merge.unwrap().overlay.len(), 1);
+    }
+
+    #[test]
+    fn an_unknown_outcome_fails() {
+        let yaml = ARCHIVE_YAML.replace("outcome: done", "outcome: skipped");
+        let err = merge_case(&yaml, &merge_fixture()).unwrap_err();
+        assert!(err.to_string().contains("archive-x"), "{err}");
+        assert!(err.message.contains("`skipped`"), "{err}");
+    }
+
+    #[test]
+    fn a_code_on_a_done_case_fails() {
+        let yaml =
+            ARCHIVE_YAML.replace("outcome: done", "outcome: done\n  code: validation_failed");
+        let err = merge_case(&yaml, &merge_fixture()).unwrap_err();
+        assert!(
+            err.message.contains("`code` is for a refused case"),
+            "{err}"
+        );
+        let refused = ARCHIVE_YAML.replace(
+            "outcome: done",
+            "outcome: refused\n  code: validation_failed",
+        );
+        let merge = merge_case(&refused, &merge_fixture())
+            .unwrap()
+            .merge
+            .unwrap();
+        assert_eq!(merge.outcome, MergeOutcome::Refused);
+        assert_eq!(merge.code.as_deref(), Some("validation_failed"));
+    }
+
+    const CONFIGURE_YAML: &str = "step: configure.enrich\nkind: seeded\nstacks: [typescript]\nsummary: Jest tests.\nanswer: yes\nexpected:\n  outcome: written\n  written: { tasks: [Jest, \"__tests__/\"] }\n  unwritten: { tasks: [Vitest] }\n";
+
+    fn configure_fixture(with_config: bool) -> Fixture {
+        let mut f = Fixture::default();
+        f.base.insert(
+            "package.json".into(),
+            b"{\"devDependencies\":{\"jest\":\"29\"}}\n".to_vec(),
+        );
+        if with_config {
+            f.base
+                .insert(CONFIG_PATH.into(), b"schema: spec-driven\n".to_vec());
+        }
+        f
+    }
+
+    fn configure_case(yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
+        load("configure-x", yaml, fixture, &Catalog::default())
+    }
+
+    #[test]
+    fn a_configure_case_loads() {
+        let case = configure_case(CONFIGURE_YAML, &configure_fixture(true)).unwrap();
+        assert_eq!(case.step, Step::ConfigureEnrich);
+        assert_eq!(case.stacks, ["typescript"]);
+        let c = case.configure.unwrap();
+        assert!(c.answer);
+        assert_eq!(c.outcome, ConfigureOutcome::Written);
+        assert_eq!(c.written["tasks"], ["Jest", "__tests__/"]);
+        assert_eq!(c.config.as_deref(), Some("schema: spec-driven\n"));
+        let quoted = CONFIGURE_YAML.replace("answer: yes", "answer: \"yes\"");
+        assert!(configure_case(&quoted, &configure_fixture(true)).is_ok());
+        let unknown = CONFIGURE_YAML.replace("summary:", "role: x\nsummary:");
+        assert!(configure_case(&unknown, &configure_fixture(true)).is_err());
+        let other_part = CONFIGURE_YAML.replace("written: { tasks", "written: { proposal");
+        let err = configure_case(&other_part, &configure_fixture(true)).unwrap_err();
+        assert!(err.message.contains("`proposal`"), "{err}");
+        let maybe = CONFIGURE_YAML.replace("answer: yes", "answer: maybe");
+        let err = configure_case(&maybe, &configure_fixture(true)).unwrap_err();
+        assert!(err.message.contains("unknown answer"), "{err}");
+    }
+
+    #[test]
+    fn a_written_outcome_with_a_no_fails() {
+        let yaml = CONFIGURE_YAML.replace("answer: yes", "answer: no");
+        let err = configure_case(&yaml, &configure_fixture(true)).unwrap_err();
+        assert!(err.to_string().contains("configure-x"), "{err}");
+        assert!(err.message.contains("answer yes"), "{err}");
+    }
+
+    #[test]
+    fn a_refusing_case_with_a_configuration_fails() {
+        let yaml = "step: configure.enrich\nkind: seeded\nsummary: s\nanswer: yes\nexpected:\n  outcome: refused\n  contains: [codev init]\n";
+        let err = configure_case(yaml, &configure_fixture(true)).unwrap_err();
+        assert!(err.message.contains("`_codev/config.yaml`"), "{err}");
+        let case = configure_case(yaml, &configure_fixture(false)).unwrap();
+        assert_eq!(case.configure.unwrap().config, None);
+        let unchanged = yaml.replace("refused", "unchanged");
+        assert!(configure_case(&unchanged, &configure_fixture(false)).is_err());
+    }
+
+    #[test]
+    fn expected_texts_for_another_outcome_fail() {
+        let yaml = "step: configure.enrich\nkind: seeded\nsummary: s\nanswer: no\nexpected:\n  outcome: unchanged\n  written: { tasks: [pytest] }\n";
+        let err = configure_case(yaml, &configure_fixture(true)).unwrap_err();
+        assert!(err.to_string().contains("configure-x"), "{err}");
+        assert!(err.message.contains("`written`"), "{err}");
+    }
+
+    #[test]
+    fn a_binary_configure_fixture_file_fails() {
+        let mut f = configure_fixture(true);
+        f.base
+            .insert("logo.png".into(), vec![0x89, 0x50, 0xff, 0xfe]);
+        let err = configure_case(CONFIGURE_YAML, &f).unwrap_err();
+        assert!(err.to_string().contains("configure-x"), "{err}");
+        assert!(err.message.contains("`base/logo.png`"), "{err}");
     }
 }

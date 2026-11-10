@@ -1,0 +1,120 @@
+{
+  "format": 2,
+  "case": "configure-python-preserves",
+  "error": null,
+  "costUsd": 0.31386700000000006,
+  "durationMs": 37513,
+  "consumption": {
+    "durationApiMs": 38299,
+    "turns": 8,
+    "permissionDenials": 2,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 999,
+      "cacheCreation": 23171,
+      "cacheRead": 297235,
+      "output": 3410
+    },
+    "toolCalls": 7,
+    "calls": [
+      {
+        "cacheCreation": 7464,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7464
+        }
+      },
+      {
+        "cacheCreation": 5477,
+        "cacheRead": 29133,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 5477
+        }
+      },
+      {
+        "cacheCreation": 5866,
+        "cacheRead": 34610,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 5866
+        }
+      },
+      {
+        "cacheCreation": 319,
+        "cacheRead": 40476,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 319
+        }
+      },
+      {
+        "cacheCreation": 1668,
+        "cacheRead": 40795,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1668
+        }
+      },
+      {
+        "cacheCreation": 1117,
+        "cacheRead": 42463,
+        "input": 2,
+        "output": 29,
+        "toolCalls": 1,
+        "sources": {
+          "file": 747,
+          "output": 370
+        }
+      },
+      {
+        "cacheCreation": 929,
+        "cacheRead": 43580,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 823,
+          "output": 106
+        }
+      },
+      {
+        "cacheCreation": 331,
+        "cacheRead": 44509,
+        "input": 2,
+        "output": 9,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 331
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "Writing the approved patch now.",
+    "✓ `_codev/config.yaml` enriched.\n\n- **Changed:** only `context:` (now 8 lines, in French because the file sets `language: fr`) and a new `rules:` block. The old `# detected from pyproject.toml` comment is now `# written by /codev-configure`.\n- **Left as they were:** `schema`, `language`, `codev_version`, `mcp`, and every other comment.\n- **What's in it:** `context` covers the FastAPI/Pydantic stack, business errors as `DomainError` subclasses turned into HTTP responses by one handler, the action-style REST routes, keeping business logic out of FastAPI, and French comments that explain the why. `rules` has two rules each for `specs`, `design` and `tasks`; the testing rules follow what the existing tests do (pytest fixtures and `parametrize`, `TestClient` for routes, then `pytest` and `ruff check .`).\n- **Not checked:** I didn't confirm the new YAML parses, because the parse command needed an approval this run couldn't get. I checked it by eye only; running `codev status` would confirm the file still loads.\n- **What I read:** `README.md`, `pyproject.toml`, the 4 source files and the 2 test files. There was no `CONTRIBUTING.md`, `docs/` folder or CI workflow.\n\n**Connectors needing sign-in:** Gmail, Google Calendar and Google Drive (none used here) won't work until you authorize them in your claude.ai connector settings."
+  ],
+  "configure": {
+    "before": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# detected from pyproject.toml\ncontext: |\n  Python project.\n",
+    "after": "# Configuration codev du service rendezvous.\nschema: spec-driven\n\n# Les artefacts sont rédigés en français.\nlanguage: fr\n\n# Toute l'équipe utilise une version de codev qui lit ce format.\ncodev_version: \">=0.6\"\n\n# Le MCP Jira de l'équipe, injecté dans les skills à l'installation.\nmcp:\n  jira_tool: mcp__jira__getIssue\n\n# written by /codev-configure\ncontext: |\n  Service FastAPI (Python >= 3.11, Pydantic v2) de prise de rendez-vous pour\n  cabinets médicaux. Erreurs métier = exceptions héritant de DomainError\n  (rendezvous/errors.py), chacune portant son attribut `status` ; un seul\n  gestionnaire (app.handle_domain_error) les traduit en JSON {\"error\": <classe>}.\n  API REST : routes POST orientées action (/slots/{slot}/book), logique métier\n  dans des dataclasses (slots.Agenda), indépendantes de FastAPI.\n  Commentaires et docstrings en français ; ils expliquent le pourquoi.\n  Code entièrement annoté en types, lignes de 100 caractères maximum (ruff).\n\nrules:\n  specs:\n    - Décrire chaque comportement par la requête HTTP et le code de statut attendu (200, 404, 409…).\n    - Nommer l'exception métier de rendezvous/errors.py associée à chaque cas d'erreur.\n  design:\n    - Placer la règle métier dans un module de rendezvous/ sans import de FastAPI ; app.py ne fait que router.\n    - Toute nouvelle erreur est une sous-classe de DomainError avec son `status` HTTP, sans nouveau gestionnaire.\n  tasks:\n    - Chaque tâche indique le test pytest qui prouve qu'elle est faite.\n    - \"Tests pytest dans tests/test_<module>.py, miroir de rendezvous/ : fixtures et\n      pytest.mark.parametrize pour la logique métier, fastapi.testclient.TestClient\n      pour les routes ; valider avec `pytest` puis `ruff check .`.\"\n",
+    "codevRoot": true,
+    "statusError": null
+  }
+}

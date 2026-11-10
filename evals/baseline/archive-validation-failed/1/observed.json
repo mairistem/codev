@@ -1,0 +1,95 @@
+{
+  "format": 2,
+  "case": "archive-validation-failed",
+  "error": null,
+  "costUsd": 0.1737772,
+  "durationMs": 9053,
+  "consumption": {
+    "durationApiMs": 9751,
+    "turns": 4,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 985,
+      "cacheCreation": 17455,
+      "cacheRead": 128141,
+      "output": 390
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7809,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7809
+        }
+      },
+      {
+        "cacheCreation": 8684,
+        "cacheRead": 29478,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 8684
+        }
+      },
+      {
+        "cacheCreation": 670,
+        "cacheRead": 38162,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 670
+        }
+      },
+      {
+        "cacheCreation": 292,
+        "cacheRead": 38832,
+        "input": 2,
+        "output": 40,
+        "toolCalls": 0,
+        "sources": {
+          "codev archive": 256,
+          "output": 36
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "No update notice needed, and planning is complete.",
+    "I couldn't archive the change: there are validation errors. Run `codev validate forward-compatible-config` to see the details."
+  ],
+  "merge": {
+    "changed": {},
+    "reference": {
+      "exitCode": 1,
+      "report": {
+        "changeName": null,
+        "created": [],
+        "deleted": [],
+        "movedTo": null,
+        "status": [
+          {
+            "code": "validation_failed",
+            "level": "error",
+            "message": "change `forward-compatible-config` has errors; run `codev validate forward-compatible-config` for details"
+          }
+        ],
+        "unchanged": [],
+        "updated": []
+      },
+      "changed": {}
+    }
+  }
+}

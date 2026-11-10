@@ -15,6 +15,8 @@ use std::fmt::Write as _;
 
 use serde::Deserialize;
 
+use crate::case::Step;
+
 use crate::observed::{RunInfo, check_format, parse_run_info};
 use crate::score::{
     EvidenceCounts, Measures, SourceShare, Spread, SuiteFigures, Thresholds, number,
@@ -166,16 +168,20 @@ pub struct PlanningFigures {
     pub invalid: Option<Spread>,
 }
 
-/// The update figures of `report.json`: medians and ranges over the
-/// repetitions.
+/// The figures of a check-scored step in `report.json` — `plan.update`,
+/// `change.sync`, `change.archive` or `configure.enrich`: medians and
+/// ranges over the repetitions.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateFigures {
+pub struct CheckStepFigures {
     pub cases: u32,
     pub pass_rate: Option<Spread>,
     pub check_rate: Option<Spread>,
     pub strayed: Option<Spread>,
 }
+
+/// The figures of the update step, by the name they had first.
+pub type UpdateFigures = CheckStepFigures;
 
 /// The implementation figures of `report.json`: medians and ranges over
 /// the repetitions, the refusing cases apart.
@@ -209,9 +215,15 @@ pub struct Baseline {
     /// The planning step, when the baseline holds planning cases.
     pub planning: Option<PlanningFigures>,
     /// The update step, when the baseline holds update runs.
-    pub update: Option<UpdateFigures>,
+    pub update: Option<CheckStepFigures>,
     /// The implementation step, when the baseline holds implementation runs.
     pub implement: Option<ImplementFigures>,
+    /// The sync step, when the baseline holds sync runs.
+    pub change_sync: Option<CheckStepFigures>,
+    /// The archive step, when the baseline holds archive runs.
+    pub change_archive: Option<CheckStepFigures>,
+    /// The configure step, when the baseline holds configure runs.
+    pub configure_enrich: Option<CheckStepFigures>,
     /// The sums of the cases' median consumption.
     pub consumption: Option<Measures>,
     /// Where the tokens go, ranked by cost; empty when no run recorded its
@@ -236,9 +248,15 @@ struct ReportFile {
     #[serde(default)]
     planning: Option<PlanningFigures>,
     #[serde(default)]
-    update: Option<UpdateFigures>,
+    update: Option<CheckStepFigures>,
     #[serde(default)]
     implement: Option<ImplementFigures>,
+    #[serde(default)]
+    change_sync: Option<CheckStepFigures>,
+    #[serde(default)]
+    change_archive: Option<CheckStepFigures>,
+    #[serde(default)]
+    configure_enrich: Option<CheckStepFigures>,
     #[serde(default)]
     consumption: Option<Measures>,
     #[serde(default)]
@@ -298,6 +316,9 @@ impl Baseline {
             planning: report.planning,
             update: report.update,
             implement: report.implement,
+            change_sync: report.change_sync,
+            change_archive: report.change_archive,
+            configure_enrich: report.configure_enrich,
             consumption: report.consumption,
             sources: report.sources,
         })
@@ -545,6 +566,15 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
             lang.pick("implementation", "d'implémentation")
         ));
     }
+    for (figures, en, fr) in [
+        (&b.change_sync, "sync", "de synchronisation"),
+        (&b.change_archive, "archive", "d'archivage"),
+        (&b.configure_enrich, "configure", "de configuration"),
+    ] {
+        if let Some(f) = figures {
+            planning.push_str(&format!(", {} {}", f.cases, lang.pick(en, fr)));
+        }
+    }
     let model = b.run.model.as_deref().map_or_else(
         || {
             lang.pick("Claude Code's default", "celui de Claude Code par défaut")
@@ -755,6 +785,15 @@ pub fn page(b: &Baseline, lang: Lang) -> String {
     }
     if let Some(i) = &b.implement {
         implement_section(&mut out, i, lang);
+    }
+    if let Some(f) = &b.change_sync {
+        checked_section(&mut out, Step::ChangeSync, f, lang);
+    }
+    if let Some(f) = &b.change_archive {
+        checked_section(&mut out, Step::ChangeArchive, f, lang);
+    }
+    if let Some(f) = &b.configure_enrich {
+        checked_section(&mut out, Step::ConfigureEnrich, f, lang);
     }
     if let Some(m) = &b.consumption {
         consumption_section(&mut out, b, m, lang);
@@ -1153,7 +1192,7 @@ fn implement_section(out: &mut String, i: &ImplementFigures, lang: Lang) {
 }
 
 /// The update step: its three measures, median and range.
-fn update_section(out: &mut String, u: &UpdateFigures, lang: Lang) {
+fn update_section(out: &mut String, u: &CheckStepFigures, lang: Lang) {
     let _ = writeln!(
         out,
         "## {}\n",
@@ -1209,6 +1248,99 @@ fn update_section(out: &mut String, u: &UpdateFigures, lang: Lang) {
                 "Exécutions qui modifient un fichier hors du change",
             ),
             u.strayed,
+            false,
+        ),
+    ] {
+        let _ = writeln!(out, "| {label} | {} |", spread_text(lang, s, ratio));
+    }
+    out.push('\n');
+}
+
+/// A sync, archive or configure step: what its cases do, then its three
+/// measures, median and range.
+fn checked_section(out: &mut String, step: Step, f: &CheckStepFigures, lang: Lang) {
+    let (title_en, title_fr) = match step {
+        Step::ChangeSync => ("Syncing a change", "La synchronisation d'un change"),
+        Step::ChangeArchive => ("Archiving a change", "L'archivage d'un change"),
+        Step::ConfigureEnrich => ("Configuring a project", "La configuration d'un projet"),
+        other => unreachable!("{} has no check-scored section", other.as_str()),
+    };
+    let skill = if step == Step::ChangeSync {
+        "sync"
+    } else {
+        "archive"
+    };
+    let _ = writeln!(out, "## {}\n", lang.pick(title_en, title_fr));
+    let n = f.cases;
+    let c = lang.colon();
+    let text = match (step, lang) {
+        (Step::ChangeSync | Step::ChangeArchive, Lang::En) => format!(
+            "{n} cases (`{step}`) lay a change of this repository's archive on the repository as \
+             it was before it, and run `/codev-{skill}` on it. Each run is checked without a model\
+             : the files under `_codev/` are as `codev {skill}` itself leaves them on a copy — or \
+             as they were, when the skill must stop —, no file outside the step is modified, and \
+             the reply says what the case expects. When the skill asks whether to update codev, \
+             the run answers **Later**.",
+            step = step.as_str(),
+        ),
+        (Step::ChangeSync | Step::ChangeArchive, Lang::Fr) => format!(
+            "{n} cas (`{step}`) posent un change de l'archive de ce dépôt sur le dépôt tel qu'il \
+             était avant lui, et lancent `/codev-{skill}` dessus. Chaque exécution est vérifiée \
+             sans modèle{c}les fichiers sous `_codev/` sont ceux que `codev {skill}` laisse \
+             lui-même sur une copie — ou tels qu'ils étaient, quand la skill doit s'arrêter —, \
+             aucun fichier hors de l'étape n'est modifié, et la réponse dit ce que le cas attend. \
+             Quand la skill demande s'il faut mettre codev à jour, l'exécution répond **Plus tard**.",
+            step = step.as_str(),
+        ),
+        (_, Lang::En) => format!(
+            "{n} cases (`configure.enrich`) run `/codev-configure` on a small project, the \
+             author's answer to its confirmation set by the case. Each run is checked without a \
+             model{c}the configuration's other fields and comments are kept, `context:` and \
+             `rules:` have the expected shape and name what the project's tests do, codev still \
+             reads the file — or nothing is written on a no, and nothing created without a \
+             configuration."
+        ),
+        (_, Lang::Fr) => format!(
+            "{n} cas (`configure.enrich`) lancent `/codev-configure` sur un petit projet, la \
+             réponse de l'auteur à sa confirmation fixée par le cas. Chaque exécution est vérifiée \
+             sans modèle{c}les autres champs et les commentaires de la configuration sont \
+             conservés, `context:` et `rules:` ont la forme attendue et nomment ce que font les \
+             tests du projet, codev lit toujours le fichier — ou rien n'est écrit sur un non, et \
+             rien n'est créé sans configuration."
+        ),
+    };
+    let _ = writeln!(
+        out,
+        "{text} {}\n",
+        lang.pick(
+            "A run **passes** when every check passes. Each figure is the median over the \
+             repetitions, with its range.",
+            "Une exécution **réussit** quand toutes ses vérifications réussissent. Chaque chiffre \
+             est la médiane sur les répétitions, avec son écart."
+        )
+    );
+    let _ = writeln!(
+        out,
+        "| {} |\n|---|---:|",
+        lang.pick("Measure | Median (range)", "Mesure | Médiane (écart)")
+    );
+    for (label, s, ratio) in [
+        (
+            lang.pick("Runs that pass", "Exécutions qui réussissent"),
+            f.pass_rate,
+            true,
+        ),
+        (
+            lang.pick("Checks that pass", "Vérifications qui réussissent"),
+            f.check_rate,
+            true,
+        ),
+        (
+            lang.pick(
+                "Runs that modify a file outside the step",
+                "Exécutions qui modifient un fichier hors de l'étape",
+            ),
+            f.strayed,
             false,
         ),
     ] {
@@ -1964,6 +2096,9 @@ mod tests {
             planning: None,
             update: None,
             implement: None,
+            change_sync: None,
+            change_archive: None,
+            configure_enrich: None,
             consumption: None,
             sources: vec![],
         }
@@ -2209,7 +2344,7 @@ mod tests {
     fn the_page_gives_the_update_figures_when_the_baseline_has_update_runs() {
         let mut b = baseline(vec![role("security", 2, 2, 0)]);
         let s = |median, min, max| Some(Spread { median, min, max });
-        b.update = Some(UpdateFigures {
+        b.update = Some(CheckStepFigures {
             cases: 6,
             pass_rate: s(0.833, 0.667, 1.0),
             check_rate: s(0.95, 0.95, 0.95),
@@ -2327,5 +2462,79 @@ mod tests {
             // Long source names fit left of the plot.
             assert!(chart.contains("x=\"142.0\""), "{chart}");
         }
+    }
+
+    fn figures(cases: u32) -> CheckStepFigures {
+        let s = |median, min, max| Some(Spread { median, min, max });
+        CheckStepFigures {
+            cases,
+            pass_rate: s(0.9, 0.8, 1.0),
+            check_rate: s(0.97, 0.97, 0.97),
+            strayed: s(0.0, 0.0, 0.0),
+        }
+    }
+
+    #[test]
+    fn the_reliability_pages_give_the_sync_and_archive_measures() {
+        let report = report_json("2026-10-13", 2).replace(
+            r#""cases":[{"id":"a"}"#,
+            r#""changeSync":{"cases":4,"passRate":{"median":0.9,"min":0.8,"max":1.0},"checkRate":null,"strayed":null,"repetitions":[]},"changeArchive":{"cases":6,"passRate":null,"checkRate":null,"strayed":null,"repetitions":[]},"cases":[{"id":"a"}"#,
+        );
+        let parsed = Baseline::parse(&report, RUN_JSON).unwrap();
+        assert_eq!(parsed.change_sync.unwrap().cases, 4);
+        assert_eq!(parsed.change_archive.unwrap().cases, 6);
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        b.change_sync = Some(figures(4));
+        b.change_archive = Some(figures(6));
+        let en = page(&b, Lang::En);
+        for needle in [
+            "## Syncing a change",
+            "## Archiving a change",
+            "(`change.sync`)",
+            "(`change.archive`)",
+            "| Runs that pass | 0.90 (0.80–1.00) |",
+            "**Later**",
+            "4 sync, 6 archive)",
+        ] {
+            assert!(en.contains(needle), "missing {needle} in {en}");
+        }
+        let fr = page(&b, Lang::Fr);
+        for needle in [
+            "## La synchronisation d'un change",
+            "## L'archivage d'un change",
+            "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
+            "**Plus tard**",
+            "4 de synchronisation, 6 d'archivage)",
+        ] {
+            assert!(fr.contains(needle), "missing {needle} in {fr}");
+        }
+        assert!(!fr.contains("{c}"), "{fr}");
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("Syncing a change"));
+    }
+
+    #[test]
+    fn the_reliability_pages_give_the_configure_measures() {
+        let mut b = baseline(vec![role("security", 2, 2, 0)]);
+        b.configure_enrich = Some(figures(5));
+        let en = page(&b, Lang::En);
+        for needle in [
+            "## Configuring a project",
+            "5 cases (`configure.enrich`)",
+            "| Runs that pass | 0.90 (0.80–1.00) |",
+            "5 configure)",
+        ] {
+            assert!(en.contains(needle), "missing {needle} in {en}");
+        }
+        let fr = page(&b, Lang::Fr);
+        for needle in [
+            "## La configuration d'un projet",
+            "| Exécutions qui réussissent | 0,90 (0,80–1,00) |",
+            "5 de configuration)",
+        ] {
+            assert!(fr.contains(needle), "missing {needle} in {fr}");
+        }
+        let without = page(&baseline(vec![role("security", 2, 2, 0)]), Lang::En);
+        assert!(!without.contains("Configuring a project"));
     }
 }

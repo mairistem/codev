@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "configure-go-no-tests",
+  "error": null,
+  "costUsd": 0.25296799999999997,
+  "durationMs": 33303,
+  "consumption": {
+    "durationApiMs": 34378,
+    "turns": 6,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 993,
+      "cacheCreation": 21065,
+      "cacheRead": 173750,
+      "output": 2445
+    },
+    "toolCalls": 5,
+    "calls": [
+      {
+        "cacheCreation": 7467,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7467
+        }
+      },
+      {
+        "cacheCreation": 10479,
+        "cacheRead": 29136,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 726,
+          "skill": 9753
+        }
+      },
+      {
+        "cacheCreation": 1290,
+        "cacheRead": 39615,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 1290
+        }
+      },
+      {
+        "cacheCreation": 1520,
+        "cacheRead": 40905,
+        "input": 2,
+        "output": 3,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 785,
+          "output": 735
+        }
+      },
+      {
+        "cacheCreation": 309,
+        "cacheRead": 42425,
+        "input": 2,
+        "output": 326,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 309
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I replaced the one-line `context:` and empty `rules:` in `_codev/config.yaml` with the patch shown above. I couldn't check that the YAML still parses: running the parser needed permission and wasn't approved.\n\n- **What changed:** only `context:` and `rules:` (for `specs`, `design` and `tasks`). I added `# written by /codev-configure` above `context:`. `schema: spec-driven` is unchanged. The file had no other fields or comments to keep.\n- **What I read:** `README.md`, `go.mod` and all three Go source files. There is no `CONTRIBUTING.md`, no `docs/` folder and no CI setup to read.\n- **Testing rules:** the project has no tests yet, so the testing rule falls back on the skill's standard Go conventions. It also says to test `Check` against a local `httptest.Server` rather than the real network, since `Check` already takes an `*http.Client` as input.\n\n✓ `_codev/config.yaml` enriched."
+  ],
+  "configure": {
+    "before": "schema: spec-driven\n\ncontext: |\n  Go project.\n",
+    "after": "schema: spec-driven\n\n# written by /codev-configure\ncontext: |\n  Go 1.22 CLI (module example.com/linkcheck), standard library only: net/http,\n  regexp, no third-party dependencies. `cmd/linkcheck/main.go` is a thin entry\n  point; logic lives in `internal/links` (Extract, then Check).\n  Errors are returned and wrapped with fmt.Errorf(\"...: %w\", err); only main\n  prints them (to stderr) and exits: 0 all links OK, 1 a link fails, 2 usage error.\n  Dependencies are injected (Check receives an *http.Client) rather than created\n  inside the package. Comments in English, godoc style: each starts with the\n  name it documents and states what it returns.\n\nrules:\n  specs:\n    - Describe behavior as observable CLI output: the lines printed to stdout,\n      the stderr message and the exit code (0, 1 or 2) for each scenario.\n  design:\n    - Place new logic in an internal/ package and keep cmd/linkcheck/main.go\n      limited to argument parsing, printing and os.Exit.\n    - State how each new error is wrapped (fmt.Errorf with %w) and which exit\n      code it maps to in main.\n  tasks:\n    - Each task names the function or file it changes and the go command that\n      verifies it is done.\n    - \"The project has no tests yet: add _test.go files in the same package\n       (package links), table-driven with t.Run subtests; test Check against an\n       httptest.Server, never a real network. Run go test ./... and go vet ./...;\n       gofmt -l . must print nothing.\"\n",
+    "codevRoot": true,
+    "statusError": "invalid: /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-go-no-tests-3/_codev/config.yaml is invalid: rules.specs[0]: invalid type: map, expected a string at line 16 column 7"
+  }
+}

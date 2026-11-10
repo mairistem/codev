@@ -1,0 +1,11 @@
+# A Go command-line tool without a single test: the testing rules fall back
+# on the language's conventions, as the skill says.
+step: configure.enrich
+kind: seeded
+stacks: [go]
+summary: "A Go tool without tests: the tasks rules give Go's conventions, `_test.go` files, `go test ./...` and `go vet`."
+answer: yes
+expected:
+  outcome: written
+  written:
+    tasks: ["go test ./...", "go vet", "_test.go"]

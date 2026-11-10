@@ -66,6 +66,16 @@ fn sources_table(out: &mut String, ranked: &[SourceShare]) {
     }
 }
 
+/// What a run of a check-scored step is called in the report.
+fn checked_noun(step: crate::case::Step) -> &'static str {
+    match step {
+        crate::case::Step::ChangeSync => "sync",
+        crate::case::Step::ChangeArchive => "archive",
+        crate::case::Step::ConfigureEnrich => "configure",
+        other => unreachable!("{} has no check-scored section", other.as_str()),
+    }
+}
+
 pub fn markdown(score: &SuiteScore) -> String {
     let mut out = String::new();
     let run = &score.run;
@@ -261,6 +271,36 @@ pub fn markdown(score: &SuiteScore) -> String {
         );
     }
 
+    for (step, c) in score.merge_and_configure_steps() {
+        let spread = |s: Option<Spread>, ratio: bool| match s {
+            None => "—".to_string(),
+            Some(s) if ratio => ratio_range(Some(s.median), Some(s), repeated),
+            Some(s) => count_range(s.median, Some(s), repeated),
+        };
+        let _ = writeln!(
+            out,
+            "\n## `{}`\n\nPer repetition, every {} run pooled: the share of runs whose every check \
+             passes, the share of checks that pass, the runs that modified a file outside the step; then \
+             the median over the repetitions, with its range. No threshold: `codev-evals compare` judges \
+             these against the baseline, step by step and case by case.\n",
+            step.as_str(),
+            checked_noun(step)
+        );
+        let _ = writeln!(
+            out,
+            "| Cases | Runs passing | Checks passing | Runs modifying a file outside the step | Cost (USD) |\n|---|---|---|---|---|"
+        );
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} | {} | {} |",
+            c.cases,
+            spread(c.pass_rate, true),
+            spread(c.check_rate, true),
+            spread(c.strayed, false),
+            Measure::Cost.show(c.consumption.cost_usd, 2),
+        );
+    }
+
     let _ = writeln!(out, "\n## Consumption\n");
     let _ = writeln!(
         out,
@@ -381,6 +421,7 @@ pub fn markdown(score: &SuiteScore) -> String {
             let checks = c
                 .update
                 .as_ref()
+                .or(c.checks.as_ref())
                 .map(|u| (u.passed, u.checks_passed(), u.checks.len(), &u.checks))
                 .map(|(p, n, of, checks)| {
                     let list: Vec<(&str, bool)> = checks
@@ -837,5 +878,94 @@ mod tests {
         );
         let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
         assert_eq!(json["planning"]["keywordRate"]["median"], 0.0);
+    }
+
+    fn archive_suite() -> SuiteScore {
+        use crate::case::Step;
+        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_codev};
+        let c = done_case(
+            "archive-merges-and-moves",
+            Step::ChangeArchive,
+            &["Moved to"],
+        );
+        let review = a_case(
+            "security",
+            Kind::Seeded,
+            &[("sqli", &["src/users.ts:12-14"])],
+        );
+        suite(
+            run(),
+            vec![
+                case(&review, &observed("no-finding", &[], json!([]))),
+                crate::score::merge_case(&c, &run_through_codev(&c.id, &["Moved to: `x`"])),
+                crate::score::merge_case(&c, &run_merged_by_hand(&c.id, &["Done."])).at(2),
+            ],
+            Thresholds::default(),
+        )
+    }
+
+    #[test]
+    fn the_report_has_an_archive_section() {
+        let s = archive_suite();
+        let md = markdown(&s);
+        assert!(md.contains("## `change.archive`"), "{md}");
+        assert!(md.contains("| 1 | 0.50 (0.00–1.00) |"), "{md}");
+        assert!(
+            md.contains("- Check files under `_codev/` as `codev archive` leaves them: **failed**"),
+            "{md}"
+        );
+        assert!(md.contains("- Check says \"Moved to\": passed"), "{md}");
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["changeArchive"]["cases"], 1);
+        let run = json["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == "archive-merges-and-moves")
+            .unwrap();
+        assert_eq!(run["checks"]["passed"], true);
+        assert_eq!(run["checks"]["checks"][0]["passed"], true);
+    }
+
+    #[test]
+    fn a_report_without_sync_cases_has_no_sync_section() {
+        let s = archive_suite();
+        assert!(!markdown(&s).contains("change.sync"));
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert!(json.get("changeSync").is_none());
+        assert!(json.get("configureEnrich").is_none());
+    }
+
+    #[test]
+    fn the_report_has_a_configure_section() {
+        use crate::configure::tests::{run_leaving_the_file, run_writing_the_file, unchanged_case};
+        let c = unchanged_case("configure-answer-no");
+        let s = suite(
+            run(),
+            vec![
+                crate::score::configure_case(&c, &run_leaving_the_file()),
+                crate::score::configure_case(&c, &run_writing_the_file()).at(2),
+            ],
+            Thresholds::default(),
+        );
+        let md = markdown(&s);
+        assert!(md.contains("## `configure.enrich`"), "{md}");
+        assert!(md.contains("every configure run pooled"), "{md}");
+        assert!(
+            md.contains("- Check configuration byte-identical to the fixture's: **failed**"),
+            "{md}"
+        );
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert_eq!(json["configureEnrich"]["cases"], 1);
+        assert_eq!(json["configureEnrich"]["passRate"]["median"], 0.5);
+    }
+
+    #[test]
+    fn a_report_without_configure_cases_has_no_configure_section() {
+        let s = scores();
+        assert!(!markdown(&s).contains("configure.enrich"));
+        let json: serde_json::Value = serde_json::from_str(&json(&s)).unwrap();
+        assert!(json.get("configureEnrich").is_none());
+        assert!(json["cases"][0].get("checks").is_none());
     }
 }

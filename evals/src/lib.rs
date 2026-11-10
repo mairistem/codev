@@ -7,11 +7,14 @@
 //! and tested without a model.
 
 pub mod case;
+pub mod checked;
 pub mod checks;
 pub mod compare;
+pub mod configure;
 pub mod implement;
 pub mod implement_run;
 pub mod lint;
+pub mod merge;
 pub mod observed;
 pub mod plan;
 pub mod reliability;

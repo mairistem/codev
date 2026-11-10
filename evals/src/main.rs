@@ -106,7 +106,8 @@ struct RunArgs {
     roles: Vec<String>,
     /// Run only the cases of this step (repeatable): `review` for the three
     /// review steps, or `plan.challenge`, `code.review`, `plan.trace`,
-    /// `plan.write`, `plan.update`, `code.implement`
+    /// `plan.write`, `plan.update`, `code.implement`, `change.sync`,
+    /// `change.archive`, `configure.enrich`
     #[arg(long = "step")]
     steps: Vec<String>,
     /// Output directory (default: target/evals/run-<timestamp>); a directory

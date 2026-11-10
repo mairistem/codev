@@ -1,0 +1,11 @@
+# Archive of `2026-10-20-role-models` in a project that requires
+# codev >=99, which the codev under test does not satisfy; the run answers
+# Later to the update check.
+step: change.archive
+kind: seeded
+ref: 778c4a46c8ca4cfb614654450dd01023cb9c6526
+change: role-models
+summary: "An archive under a `codev_version` the running codev does not satisfy, the update check answered Later: today the skill goes on and archives."
+expected:
+  outcome: done
+  contains: [">=99", "Moved to"]

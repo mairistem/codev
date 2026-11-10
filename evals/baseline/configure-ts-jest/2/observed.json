@@ -1,0 +1,128 @@
+{
+  "format": 2,
+  "case": "configure-ts-jest",
+  "error": null,
+  "costUsd": 0.30167580000000005,
+  "durationMs": 44725,
+  "consumption": {
+    "durationApiMs": 45443,
+    "turns": 9,
+    "permissionDenials": 3,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 1001,
+      "cacheCreation": 22263,
+      "cacheRead": 335934,
+      "output": 2777
+    },
+    "toolCalls": 8,
+    "calls": [
+      {
+        "cacheCreation": 7466,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7466
+        }
+      },
+      {
+        "cacheCreation": 6688,
+        "cacheRead": 29135,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 6688
+        }
+      },
+      {
+        "cacheCreation": 3380,
+        "cacheRead": 35823,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 3380
+        }
+      },
+      {
+        "cacheCreation": 1071,
+        "cacheRead": 39203,
+        "input": 2,
+        "output": 17,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 1071
+        }
+      },
+      {
+        "cacheCreation": 277,
+        "cacheRead": 40274,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 277
+        }
+      },
+      {
+        "cacheCreation": 1524,
+        "cacheRead": 40551,
+        "input": 2,
+        "output": 5,
+        "toolCalls": 1,
+        "sources": {
+          "file": 1524
+        }
+      },
+      {
+        "cacheCreation": 1403,
+        "cacheRead": 42075,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 577,
+          "output": 826
+        }
+      },
+      {
+        "cacheCreation": 248,
+        "cacheRead": 43478,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 248
+        }
+      },
+      {
+        "cacheCreation": 206,
+        "cacheRead": 43726,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 0,
+        "sources": {
+          "shell": 206
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "✓ `_codev/config.yaml` enriched.\n\nThe new `context:` and `rules:` blocks replace the one-line \"TypeScript project.\" stub. The comment above `context:` now reads `# written by /codev-configure`, and `schema: spec-driven` and `language: en` are untouched. I checked that only that file changed, but I couldn't parse the YAML to confirm it's valid because that command needed approval.\n\nWhat I read: `README.md`, `package.json`, `jest.config.js`, `tsconfig.json`, all four source files and both test files. The project has no `CONTRIBUTING.md`, no `docs/` and no CI workflow.\n\nThe `lint` script in `package.json` points at a root `__tests__/` folder that doesn't exist, because the tests live in `src/invoices/__tests__/`. ESLint fails on a path that doesn't exist, so `npm run lint` will probably fail even though the new rules tell tasks to run it. I didn't run it to confirm."
+  ],
+  "configure": {
+    "before": "schema: spec-driven\nlanguage: en\n\n# detected from package.json\ncontext: |\n  TypeScript project.\n",
+    "after": "schema: spec-driven\nlanguage: en\n\n# written by /codev-configure\ncontext: |\n  REST API on Express 4 (strict TypeScript, CommonJS), one folder per resource\n  under src/ (src/invoices/: router.ts + store.ts). Request bodies are validated\n  with zod `safeParse` in the router; a validation failure answers 400 with\n  `{ issues }` listing every issue, success answers 201 with the created resource.\n  Storage is an in-memory store class; amounts are integer cents (`amountCents`).\n  `buildApp()` in src/app.ts is kept apart from src/server.ts so tests drive the\n  app without opening a port. Comments are in English and explain the why.\n\nrules:\n  specs:\n    - State each endpoint's method, path, status codes and response body shape, including the 400 `{ issues }` case.\n  design:\n    - Place a new resource in its own src/<resource>/ folder with a router.ts (zod schema + routes) and a store.ts, mounted in buildApp().\n  tasks:\n    - Each task states how to verify it is done (a named test or an npm script).\n    - \"Jest via ts-jest: tests in __tests__/ next to the code, named *.test.ts; store logic tested as unit tests, routes tested over HTTP with supertest on buildApp(); run npm test, npm run lint and npm run build.\"\n",
+    "codevRoot": true,
+    "statusError": null
+  }
+}

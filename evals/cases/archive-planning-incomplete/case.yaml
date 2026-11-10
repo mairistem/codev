@@ -1,0 +1,10 @@
+# Archive of `2026-10-23-delegated-implementation` without its `tasks.md`.
+step: change.archive
+kind: seeded
+ref: 3e294dd5e44d986eb37e9a7647c9da1694c37ceb
+change: delegated-implementation
+summary: "A change whose planning is incomplete: the skill stops before `codev archive`, names the missing tasks and points to `/codev-propose`."
+expected:
+  outcome: refused
+  contains: ["/codev-propose"]
+  absent: ["Moved to"]

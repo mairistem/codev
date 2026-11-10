@@ -1,0 +1,89 @@
+{
+  "format": 2,
+  "case": "sync-planning-incomplete",
+  "error": null,
+  "costUsd": 0.1777186,
+  "durationMs": 9903,
+  "consumption": {
+    "durationApiMs": 10503,
+    "turns": 4,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 982,
+      "cacheCreation": 17810,
+      "cacheRead": 89993,
+      "output": 827
+    },
+    "toolCalls": 3,
+    "calls": [
+      {
+        "cacheCreation": 7933,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7933
+        }
+      },
+      {
+        "cacheCreation": 9120,
+        "cacheRead": 29602,
+        "input": 2,
+        "output": 38,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 1298,
+          "skill": 7822
+        }
+      },
+      {
+        "cacheCreation": 757,
+        "cacheRead": 38722,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 734,
+          "output": 23
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "Note: no tasks.md exists. Check status.",
+    "I didn't sync `delegated-implementation` because its planning isn't finished. The change has no `tasks.md`.\n\nThe proposal, specs and design are done. The tasks artifact is the only one missing: its prerequisites are met, but it hasn't been written yet. Nothing in the main specs was changed.\n\nTo finish the planning, run `/codev-continue` to write `tasks.md`, then run `/codev-sync delegated-implementation` again. The skill points to `/codev-continue` when some artifacts already exist, but that command isn't among the installed skills here. If it isn't available, `/codev-propose` is the installed skill that writes planning artifacts."
+  ],
+  "merge": {
+    "changed": {},
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "delegated-implementation",
+        "created": [],
+        "deleted": [],
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/implementation-evaluation/spec.md",
+          "_codev/specs/role-evaluation/spec.md",
+          "_codev/specs/roles/spec.md",
+          "_codev/specs/skills/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+        "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+        "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+        "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+      }
+    }
+  }
+}

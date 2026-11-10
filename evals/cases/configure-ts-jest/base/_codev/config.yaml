@@ -1,0 +1,6 @@
+schema: spec-driven
+language: en
+
+# detected from package.json
+context: |
+  TypeScript project.

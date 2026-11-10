@@ -121,6 +121,37 @@ pub fn prompt(case: &Case) -> String {
              included. Do not archive the change and do not sync it. Cargo works offline: the dependencies are \
              already fetched and built."
         ),
+        // The prompt names the skill and the evaluation mode, and nothing of
+        // what to write or refuse: the checks measure what the skill makes
+        // the agent do. **Later** is the only answer a sandboxed run can
+        // take (`self-update` needs the network).
+        Step::ChangeSync | Step::ChangeArchive => {
+            let skill = if case.step == Step::ChangeSync {
+                "codev-sync"
+            } else {
+                "codev-archive"
+            };
+            format!(
+                "Run the `{skill}` skill (read .claude/skills/{skill}/SKILL.md and follow it) on the change \
+                 `{change}`.\n\
+                 \n\
+                 {EVALUATION_MODE} {LATER}"
+            )
+        }
+        Step::ConfigureEnrich => {
+            let answer = match case.configure.as_ref().map(|c| c.answer) {
+                Some(false) => "no",
+                _ => "yes",
+            };
+            format!(
+                "Run the `codev-configure` skill (read .claude/skills/codev-configure/SKILL.md and follow it) \
+                 on this project.\n\
+                 \n\
+                 This is a codev evaluation run, without a user: ask no question but the skill's own \
+                 confirmation. Ask it as the skill says, then continue as if the author had answered \
+                 « {answer} ». {LATER}"
+            )
+        }
         Step::PlanTrace => format!(
             "This is a codev role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
@@ -135,6 +166,13 @@ pub fn prompt(case: &Case) -> String {
         ),
     }
 }
+
+/// The evaluation mode of a sync or archive run: no user to answer.
+const EVALUATION_MODE: &str = "This is a codev evaluation run, without a user: ask no question — \
+     wherever the skill says to ask, make the most reasonable assumption.";
+
+/// The author's answer to the skills' update check.
+const LATER: &str = "If the skill asks whether to update codev, the author answers **Later**.";
 
 /// How Claude Code is run, from the environment.
 #[derive(Debug, Clone, PartialEq)]
@@ -237,7 +275,8 @@ pub const ALLOWED_TOOLS: &str = "Bash(codev:*)";
 pub const SUB_AGENT_TOOL: &str = "Agent";
 
 /// What the review cases are played with: their mode, and a configuration
-/// appended to each of them. Planning and update cases ignore both.
+/// appended to each of them. Planning, update, sync, archive and configure
+/// cases ignore both.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct ReviewSettings {
     pub mode: ReviewMode,
@@ -529,7 +568,7 @@ pub fn claude_args(
 
 /// The steps `--step` accepts: `review` for the three review steps, or a
 /// step's own name.
-pub const STEP_SELECTORS: [&str; 7] = [
+pub const STEP_SELECTORS: [&str; 10] = [
     "review",
     "plan.challenge",
     "code.review",
@@ -537,6 +576,9 @@ pub const STEP_SELECTORS: [&str; 7] = [
     "plan.write",
     "plan.update",
     "code.implement",
+    "change.sync",
+    "change.archive",
+    "configure.enrich",
 ];
 
 /// The cases of the steps named, all of them when none is; an unknown name
@@ -616,7 +658,12 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
                 !path.starts_with("_codev/")
                     || (path.starts_with(&change_dir) && !path.ends_with("/corrections.md"))
             }
-            _ => path == review,
+            // The merge writes the main specs; the archive also moves the
+            // change, which leaves its folder for the archive's.
+            Step::ChangeSync => path.starts_with(SPECS_DIR),
+            Step::ChangeArchive => path.starts_with(SPECS_DIR) || path.starts_with(CHANGES_DIR),
+            Step::ConfigureEnrich => path == crate::case::CONFIG_PATH,
+            Step::PlanChallenge | Step::CodeReview => path == review,
         };
         if !allowed {
             out.push(path.to_string());
@@ -627,6 +674,7 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
 }
 
 const CHANGES_DIR: &str = "_codev/changes/";
+const SPECS_DIR: &str = "_codev/specs/";
 
 /// The changes a planning run created: the directories of
 /// `_codev/changes/` (archive aside) that hold a file git does not track,
@@ -1204,6 +1252,42 @@ pub fn read_tree(root: &Path) -> std::io::Result<BTreeMap<String, Vec<u8>>> {
     Ok(files)
 }
 
+/// Reads an `overlay/` without following links: its files by relative
+/// `/`-separated path, and the paths that are symbolic links, which a
+/// case may not lay — one could point anywhere on the operator's machine.
+#[allow(clippy::type_complexity)]
+pub fn read_overlay(root: &Path) -> std::io::Result<(BTreeMap<String, Vec<u8>>, Vec<String>)> {
+    let (mut files, mut links) = (BTreeMap::new(), Vec::new());
+    if fs::symlink_metadata(root).is_err() {
+        return Ok((files, links));
+    }
+    let relative = |path: &Path| {
+        path.strip_prefix(root)
+            .expect("under the root")
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join("/")
+    };
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        for entry in fs::read_dir(&dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            let kind = fs::symlink_metadata(&path)?.file_type();
+            if kind.is_symlink() {
+                links.push(relative(&path));
+            } else if kind.is_dir() {
+                stack.push(path);
+            } else {
+                files.insert(relative(&path), fs::read(&path)?);
+            }
+        }
+    }
+    links.sort();
+    Ok((files, links))
+}
+
 fn write_tree(root: &Path, files: &BTreeMap<String, Vec<u8>>) -> std::io::Result<()> {
     for (path, bytes) in files {
         let target = root.join(path);
@@ -1409,7 +1493,8 @@ pub fn setup_plan(
         .map(|p| p.git_ref.as_str())
         .or_else(|| case.update.as_ref().map(|u| u.git_ref.as_str()))
         .or_else(|| case.implement.as_ref().map(|i| i.git_ref.as_str()))
-        .ok_or_else(|| "not a planning, update or implementation case".to_string())?;
+        .or_else(|| case.merge.as_ref().map(|m| m.git_ref.as_str()))
+        .ok_or_else(|| "not a case replayed from the history".to_string())?;
     if dir.exists() {
         fs::remove_dir_all(dir).map_err(io)?;
     }
@@ -1440,13 +1525,19 @@ pub fn setup_plan(
         .update
         .as_ref()
         .map(|u| &u.files)
-        .or(case.implement.as_ref().map(|i| &i.files));
+        .or(case.implement.as_ref().map(|i| &i.files))
+        .or(case.merge.as_ref().map(|m| &m.files));
     if let Some(files) = laid {
         let change: BTreeMap<String, Vec<u8>> = files
             .iter()
             .map(|(path, text)| (path.clone(), text.clone().into_bytes()))
             .collect();
         write_tree(&dir.join(case.change_dir()), &change).map_err(io)?;
+    }
+    // Laid over the tree, relative to the project root, replacing what the
+    // state at `ref` holds: a configuration that sets `codev_version`.
+    if let Some(merge) = &case.merge {
+        write_tree(dir, &merge.overlay).map_err(io)?;
     }
     if let Some(extra) = extra_config {
         let path = dir.join("_codev").join("config.yaml");
@@ -1474,6 +1565,192 @@ pub fn setup_plan(
         ],
     )?;
     Ok(())
+}
+
+/// Builds a configure case's project in `dir`: `base/` in a new
+/// repository, the skills of the codev under test installed without
+/// changing the case's configuration, committed. A project without
+/// `_codev/config.yaml` gets the skills from `codev init`, then loses
+/// `_codev/`, so that the skill meets the project a user would have.
+pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
+    let io = |e: std::io::Error| format!("setting up the fixture: {e}");
+    if dir.exists() {
+        fs::remove_dir_all(dir).map_err(io)?;
+    }
+    fs::create_dir_all(dir).map_err(io)?;
+    write_tree(dir, &read_tree(&case_dir.join("base")).map_err(io)?).map_err(io)?;
+    git(tools, dir, &["init", "-q", "-b", "main"])?;
+    let config_path = dir.join(crate::case::CONFIG_PATH);
+    match fs::read(&config_path) {
+        Ok(before) => {
+            run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+            if fs::read(&config_path).ok().as_deref() != Some(before.as_slice()) {
+                return Err(
+                    "`codev update --force` changed the case's `_codev/config.yaml`".to_string(),
+                );
+            }
+        }
+        Err(_) => {
+            run_tool(
+                &tools.codev,
+                &[
+                    "init",
+                    "--yes",
+                    "--no-detect",
+                    "--no-integration",
+                    "--preset",
+                    "full",
+                    "--language",
+                    "en",
+                    ".",
+                ],
+                dir,
+                codev_dir(tools),
+            )?;
+            fs::remove_dir_all(dir.join("_codev")).map_err(io)?;
+        }
+    }
+    git(tools, dir, &["add", "-A"])?;
+    git(tools, dir, &["commit", "-q", "-m", "project"])?;
+    Ok(())
+}
+
+/// The digest of every file under `dir/_codev/`, by path from `dir`:
+/// SHA-256 of its content, line endings aside, so that a checkout that
+/// converts them does not read as an edit.
+pub fn codev_digests(dir: &Path) -> BTreeMap<String, String> {
+    read_tree(&dir.join("_codev"))
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(path, bytes)| {
+            let text: Vec<u8> = bytes.into_iter().filter(|b| *b != b'\r').collect();
+            (
+                format!("_codev/{path}"),
+                codev_core::update::sha256_hex(&text),
+            )
+        })
+        .collect()
+}
+
+/// What `after` holds that `before` does not: each file added or changed
+/// with its digest, each file removed as `None`.
+pub fn digest_changes(
+    before: &BTreeMap<String, String>,
+    after: &BTreeMap<String, String>,
+) -> crate::observed::Digests {
+    let mut changed: crate::observed::Digests = after
+        .iter()
+        .filter(|(path, digest)| before.get(*path) != Some(*digest))
+        .map(|(path, digest)| (path.clone(), Some(digest.clone())))
+        .collect();
+    for path in before.keys().filter(|p| !after.contains_key(*p)) {
+        changed.insert(path.clone(), None);
+    }
+    changed
+}
+
+/// The arguments of the reference command of a sync or archive case.
+pub fn reference_args(case: &Case) -> Vec<String> {
+    let command = if case.step == Step::ChangeSync {
+        "sync"
+    } else {
+        "archive"
+    };
+    vec![
+        command.to_string(),
+        "--change".to_string(),
+        case.change.clone(),
+        "--json".to_string(),
+    ]
+}
+
+/// A report with the paths of `dir` made relative: they name the
+/// operator's machine, which the scoring never reads.
+fn relative_report(text: &str, dirs: &[&Path]) -> Option<serde_json::Value> {
+    let mut text = text.to_string();
+    for dir in dirs {
+        let prefix = dir.to_string_lossy().into_owned();
+        text = text.replace(&format!("{prefix}/"), "");
+        text = text.replace(&prefix, ".");
+    }
+    serde_json::from_str(&text).ok().map(without_root)
+}
+
+/// codev's own command on a copy of the case's directory, made before the
+/// agent runs: a clone of the fixture's commit next to `work_dir`, the
+/// command run with the environment the runner gives codev, its exit
+/// code, its report and what it left under `_codev/` against `before`,
+/// then the copy removed. The case's own directory is left as committed.
+pub fn make_reference(
+    case: &Case,
+    work_dir: &Path,
+    before: &BTreeMap<String, String>,
+    tools: &Tools,
+) -> Result<crate::observed::Reference, String> {
+    let name = work_dir
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let copy = work_dir.with_file_name(format!("{name}-reference"));
+    if copy.exists() {
+        fs::remove_dir_all(&copy).map_err(|e| format!("{}: {e}", copy.display()))?;
+    }
+    let source = work_dir.to_string_lossy().into_owned();
+    let target = copy.to_string_lossy().into_owned();
+    let parent = work_dir.parent().unwrap_or(Path::new("."));
+    git(tools, parent, &["clone", "-q", &source, &target])?;
+    let args = reference_args(case);
+    let output = tool_command(&tools.codev, &copy, codev_dir(tools))
+        .args(&args)
+        .output()
+        .map_err(|e| format!("cannot run `codev {}`: {e}", args.join(" ")));
+    let result = output.map(|output| {
+        let canonical = fs::canonicalize(&copy).unwrap_or_else(|_| copy.clone());
+        crate::observed::Reference {
+            exit_code: output.status.code(),
+            report: relative_report(
+                &String::from_utf8_lossy(&output.stdout),
+                &[canonical.as_path(), copy.as_path()],
+            ),
+            changed: digest_changes(before, &codev_digests(&copy)),
+        }
+    });
+    let _ = fs::remove_dir_all(&copy);
+    result
+}
+
+/// Why a `codev status --json` report says the project cannot be read;
+/// `None` when it can. A project without an active change — every
+/// configure fixture — is reported as an error with the code
+/// `no_active_change`, which says nothing of the configuration.
+pub fn status_problem(stdout: &[u8]) -> Option<String> {
+    let Ok(report) = serde_json::from_slice::<serde_json::Value>(stdout) else {
+        return Some("`codev status --json` printed no JSON report".to_string());
+    };
+    report["status"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|s| s["level"] == "error" && s["code"] != "no_active_change")
+        .map(|s| {
+            format!(
+                "{}: {}",
+                s["code"].as_str().unwrap_or("error"),
+                s["message"].as_str().unwrap_or("")
+            )
+        })
+}
+
+/// Why `codev status --json` does not read the project in `dir`; `None`
+/// when it does.
+fn status_error(tools: &Tools, dir: &Path) -> Option<String> {
+    match tool_command(&tools.codev, dir, codev_dir(tools))
+        .args(["status", "--json"])
+        .output()
+    {
+        Ok(output) => status_problem(&output.stdout),
+        Err(e) => Some(format!("cannot run `codev status --json`: {e}")),
+    }
 }
 
 /// Runs Claude Code in `dir` with a timeout; returns its standard output.
@@ -1619,12 +1896,16 @@ pub fn run_case(
         validate_before: None,
         messages: Vec::new(),
         implement: None,
+        merge: None,
+        configure: None,
     };
     if let Err(e) = fs::create_dir_all(log) {
         observed.error = Some(format!("cannot create {}: {e}", log.display()));
         return observed;
     }
-    let built = if case.step.replays_history() {
+    let built = if case.step == Step::ConfigureEnrich {
+        setup_configure(case_dir, work_dir, tools)
+    } else if case.step.replays_history() {
         setup_plan(case, repo, work_dir, tools, extra_config_for(case, review))
     } else {
         setup(case, case_dir, work_dir, tools, date, review)
@@ -1650,6 +1931,20 @@ pub fn run_case(
             }
         }
     }
+    // The fixture under `_codev/`, and what codev's own command makes of
+    // it, before the agent touches anything.
+    let mut merge_before = None;
+    if case.merge.is_some() {
+        let before = codev_digests(work_dir);
+        match make_reference(case, work_dir, &before, tools) {
+            Ok(reference) => merge_before = Some((before, reference)),
+            Err(e) => {
+                observed.error = Some(e);
+                return observed;
+            }
+        }
+    }
+    let configure_before = fs::read_to_string(work_dir.join(crate::case::CONFIG_PATH)).ok();
     let config_before = fs::read(work_dir.join(".git").join("config")).unwrap_or_default();
     let args = claude_args(&prompt(case), settings, case.step, review);
     let isolated = review.isolated_at(case.step);
@@ -1680,9 +1975,10 @@ pub fn run_case(
             {
                 observed.error = Some(e);
             }
-            // Only the update score reads the agent's messages; keeping them
-            // for the other steps would only make `observed.json` larger.
-            if case.step == Step::PlanUpdate {
+            // Only the check-scored steps read the agent's messages; keeping
+            // them for the other steps would only make `observed.json`
+            // larger.
+            if case.step == Step::PlanUpdate || case.step.is_merge_or_configure() {
                 observed.messages = output.messages;
             }
         }
@@ -1725,6 +2021,20 @@ pub fn run_case(
             }
             Err(e) => observed.error = Some(e),
         }
+    }
+    if let Some((before, reference)) = merge_before {
+        observed.merge = Some(crate::observed::MergeObserved {
+            changed: digest_changes(&before, &codev_digests(work_dir)),
+            reference,
+        });
+    }
+    if case.step == Step::ConfigureEnrich {
+        observed.configure = Some(crate::observed::ConfigureObserved {
+            before: configure_before,
+            after: fs::read_to_string(work_dir.join(crate::case::CONFIG_PATH)).ok(),
+            codev_root: work_dir.join("_codev").is_dir(),
+            status_error: status_error(tools, work_dir),
+        });
     }
     if case.step.records_findings() {
         match codev_json(
@@ -3624,5 +3934,188 @@ mod tests {
         );
         let plain = planning_case("r");
         assert_eq!(extra_config_for(&plain, &ReviewSettings::default()), None);
+    }
+    fn merge_case(id: &str, step: Step, change: &str) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = id.into();
+        case.step = step;
+        case.change = change.into();
+        case.merge = Some(crate::case::MergeCase {
+            git_ref: "abc123".into(),
+            outcome: crate::case::MergeOutcome::Done,
+            code: None,
+            contains: vec![],
+            absent: vec![],
+            files: BTreeMap::from([("proposal.md".to_string(), "# P\n".to_string())]),
+            overlay: BTreeMap::new(),
+        });
+        case
+    }
+
+    #[test]
+    fn the_archive_prompt_names_the_skill_and_answers_later() {
+        let text = prompt(&merge_case("archive-x", Step::ChangeArchive, "add-auth"));
+        for needle in [
+            "`codev-archive`",
+            ".claude/skills/codev-archive/SKILL.md",
+            "`add-auth`",
+            "ask no question",
+            "the author answers **Later**",
+        ] {
+            assert!(text.contains(needle), "missing {needle} in {text}");
+        }
+        let lower = text.to_lowercase();
+        for word in ["refus", "write", "modify", "merge", "move"] {
+            assert!(
+                !lower.contains(word),
+                "the prompt says what to do ({word}): {text}"
+            );
+        }
+        let sync = prompt(&merge_case("sync-x", Step::ChangeSync, "add-auth"));
+        assert!(sync.contains("`codev-sync`") && sync.contains("**Later**"));
+        let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
+        for step in [Step::ChangeSync, Step::ChangeArchive, Step::ConfigureEnrich] {
+            assert_eq!(defaults.budget_for(step), 3.0);
+            assert_eq!(defaults.timeout_for(step), Duration::from_secs(600));
+        }
+    }
+
+    #[test]
+    fn a_sync_run_that_edits_the_code_strays() {
+        let case = merge_case("sync-x", Step::ChangeSync, "add-auth");
+        let status =
+            " M _codev/specs/doctor/spec.md\0?? _codev/specs/auth/spec.md\0 M src/lib.rs\0";
+        assert_eq!(strayed(status, &case), ["src/lib.rs"]);
+    }
+
+    #[test]
+    fn moving_the_change_is_within_the_archive_step() {
+        let archive = merge_case("archive-x", Step::ChangeArchive, "add-auth");
+        let moved = " M _codev/specs/doctor/spec.md\0 D _codev/changes/add-auth/proposal.md\0?? _codev/changes/archive/2026-10-27-add-auth/proposal.md\0";
+        assert_eq!(strayed(moved, &archive), Vec::<String>::new());
+        let sync = merge_case("sync-x", Step::ChangeSync, "add-auth");
+        let edited = " M _codev/specs/doctor/spec.md\0 M _codev/changes/add-auth/tasks.md\0";
+        assert_eq!(strayed(edited, &sync), ["_codev/changes/add-auth/tasks.md"]);
+    }
+
+    #[test]
+    fn change_sync_selects_only_the_sync_cases() {
+        let mut review = a_case("security", Kind::Seeded, &[]);
+        review.id = "r".into();
+        let update = update_case("add-auth", crate::case::Artifact::Design, "r");
+        let cases = vec![
+            review,
+            update,
+            merge_case("sync-x", Step::ChangeSync, "a"),
+            merge_case("archive-x", Step::ChangeArchive, "a"),
+        ];
+        let ids = |steps: &[&str]| -> Vec<String> {
+            select_steps(
+                &cases,
+                &steps.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()
+            .iter()
+            .map(|c| c.id.clone())
+            .collect()
+        };
+        assert_eq!(ids(&["change.sync"]), ["sync-x"]);
+        assert_eq!(ids(&["change.archive"]), ["archive-x"]);
+        assert_eq!(ids(&["review"]), ["r"]);
+        let err = select_steps(&cases, &["change.sinc".to_string()]).unwrap_err();
+        assert!(
+            err.contains("change.sinc")
+                && err.contains("change.sync")
+                && err.contains("configure.enrich"),
+            "{err}"
+        );
+    }
+
+    fn configure_case(answer: bool) -> Case {
+        let mut case = a_case("planner", Kind::Seeded, &[]);
+        case.id = "configure-x".into();
+        case.step = Step::ConfigureEnrich;
+        case.change = String::new();
+        case.configure = Some(crate::case::ConfigureCase {
+            answer,
+            outcome: if answer {
+                crate::case::ConfigureOutcome::Written
+            } else {
+                crate::case::ConfigureOutcome::Unchanged
+            },
+            written: BTreeMap::new(),
+            unwritten: BTreeMap::new(),
+            contains: vec![],
+            config: Some("schema: spec-driven\n".into()),
+        });
+        case
+    }
+
+    #[test]
+    fn the_configure_prompt_carries_the_answer() {
+        let text = prompt(&configure_case(false));
+        for needle in [
+            "`codev-configure`",
+            ".claude/skills/codev-configure/SKILL.md",
+            "ask no question but the skill's own confirmation",
+            "« no »",
+            "the author answers **Later**",
+        ] {
+            assert!(text.contains(needle), "missing {needle} in {text}");
+        }
+        let lower = text.to_lowercase();
+        for word in ["preserve", "context", "rules", "comment"] {
+            assert!(
+                !lower.contains(word),
+                "the prompt says what to do ({word}): {text}"
+            );
+        }
+        assert!(prompt(&configure_case(true)).contains("« yes »"));
+        let cases = vec![configure_case(true), a_case("security", Kind::Seeded, &[])];
+        let selected = select_steps(&cases, &["configure.enrich".to_string()]).unwrap();
+        assert_eq!(selected.len(), 1);
+        assert_eq!(selected[0].id, "configure-x");
+        let review = select_steps(&cases, &["review".to_string()]).unwrap();
+        assert!(review.iter().all(|c| c.step != Step::ConfigureEnrich));
+    }
+
+    #[test]
+    fn a_configure_run_that_edits_the_code_strays() {
+        let case = configure_case(true);
+        let status = " M _codev/config.yaml\0 M src/index.ts\0?? _codev/specs/x/spec.md\0";
+        assert_eq!(
+            strayed(status, &case),
+            ["_codev/specs/x/spec.md", "src/index.ts"]
+        );
+    }
+
+    #[test]
+    fn sync_archive_and_configure_cases_ignore_the_review_options() {
+        let review = ReviewSettings {
+            mode: ReviewMode::Isolated,
+            fixture_config: Some("roles: { skeptic: { done_when: [\"x\"] } }\n".into()),
+        };
+        for case in [
+            merge_case("archive-x", Step::ChangeArchive, "add-auth"),
+            merge_case("sync-x", Step::ChangeSync, "add-auth"),
+            configure_case(true),
+        ] {
+            assert_eq!(extra_config_for(&case, &review), None, "{}", case.id);
+            assert!(!review.isolated_at(case.step), "{}", case.id);
+            assert_eq!(allowed_tools(case.step, &review), ALLOWED_TOOLS);
+        }
+    }
+
+    #[test]
+    fn a_project_without_a_change_reads_but_a_broken_configuration_does_not() {
+        let no_change =
+            br#"{"status":[{"code":"no_active_change","level":"error","message":"m"}]}"#;
+        assert_eq!(status_problem(no_change), None);
+        let broken = br#"{"status":[{"code":"invalid","level":"error","message":"config.yaml is invalid"}]}"#;
+        assert_eq!(
+            status_problem(broken).as_deref(),
+            Some("invalid: config.yaml is invalid")
+        );
+        assert!(status_problem(b"not json").is_some());
     }
 }

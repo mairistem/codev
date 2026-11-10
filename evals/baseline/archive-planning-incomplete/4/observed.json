@@ -1,0 +1,103 @@
+{
+  "format": 2,
+  "case": "archive-planning-incomplete",
+  "error": null,
+  "costUsd": 0.1657902,
+  "durationMs": 12727,
+  "consumption": {
+    "durationApiMs": 13407,
+    "turns": 3,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 982,
+      "cacheCreation": 17297,
+      "cacheRead": 89571,
+      "output": 437
+    },
+    "toolCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7939,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7939
+        }
+      },
+      {
+        "cacheCreation": 8686,
+        "cacheRead": 29608,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 8686
+        }
+      },
+      {
+        "cacheCreation": 672,
+        "cacheRead": 38294,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 672
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I did not archive `delegated-implementation` because its planning isn't finished.\n\n`codev status` shows `isPlanningComplete: false`. The `tasks` artifact (`tasks.md`) hasn't been written yet: it is ready to write, and the proposal, specs and design are all done. The skill says to stop at this point, so I didn't run `codev archive`.\n\nNext step: run `/codev-propose` to write `tasks.md`, then `/codev-apply` to implement the tasks. After that the change can be archived."
+  ],
+  "merge": {
+    "changed": {},
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "delegated-implementation",
+        "created": [],
+        "deleted": [],
+        "movedTo": "_codev/changes/archive/2026-10-27-delegated-implementation",
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/implementation-evaluation/spec.md",
+          "_codev/specs/role-evaluation/spec.md",
+          "_codev/specs/roles/spec.md",
+          "_codev/specs/skills/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/changes/archive/2026-10-27-delegated-implementation/change.yaml": "54c2a6955b514abf783374521da3b6364c1d6b221970ad9faa7124a7e1124528",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/design.md": "9b94036b97932cc616b6ca12209246287b9c8c549f81591ef47e6a8b8d6c6bca",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/proposal.md": "414a1f1a533b6791b387407cd25efeae7507da36cbb266ece7cc74c1dc37e7b0",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/review.md": "84ae5b20048a92a66ebefd584ae69de976f49e58870be478611afd8b8c833899",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/implementation-evaluation/spec.md": "3d074df3d616fb0fc10d2770a4b531d1441c6bed50e5a6ba059e8a489860a387",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/role-evaluation/spec.md": "786a731716b7c435588fe3a0aff47f132cde34331b0927ce5f7104a67ab0c1cf",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/roles/spec.md": "b5c1ea5a159767d911a9bd0b07ee760eab824f0915e6b7f79759d90ff520c206",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/skills/spec.md": "f0356be00820f30de73665da401ba33fab0a0b9761114ca67448945aeb388156",
+        "_codev/changes/delegated-implementation/change.yaml": null,
+        "_codev/changes/delegated-implementation/design.md": null,
+        "_codev/changes/delegated-implementation/proposal.md": null,
+        "_codev/changes/delegated-implementation/review.md": null,
+        "_codev/changes/delegated-implementation/specs/implementation-evaluation/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/role-evaluation/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/roles/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/skills/spec.md": null,
+        "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+        "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+        "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+        "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+      }
+    }
+  }
+}

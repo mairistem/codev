@@ -102,7 +102,9 @@ les cas des étapes que la pull request touche, avec `--step`
 (répétable) : `review` pour les étapes de revue, `plan.write` pour la
 planification de `/codev-propose`, `plan.update` pour les révisions de
 `/codev-update`, `code.implement` pour l'implémentation de
-`/codev-apply`. La décision acceptée 0008 en fait la
+`/codev-apply`, `change.sync`, `change.archive` et `configure.enrich` pour
+`/codev-sync`, `/codev-archive` et le mode par défaut de
+`/codev-configure`. La décision acceptée 0008 en fait la
 règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
@@ -114,7 +116,9 @@ chaque cas étant plafonné à 3 par défaut ; un cas de planification coûte
 environ 1,65 dollar et prend plusieurs minutes, plafonné par défaut à
 6 dollars et 1 800 secondes, tout comme un cas de révision ; un cas
 d'implémentation écrit, construit et relit un change entier, plafonné par
-défaut à 30 dollars et 5 400 secondes.
+défaut à 30 dollars et 5 400 secondes ; un cas de synchronisation,
+d'archivage ou de configuration coûte environ 0,20 à 0,30 dollar, plafonné
+par défaut à 3 dollars et 600 secondes.
 
 ```bash
 cargo build --bin codev
@@ -123,6 +127,8 @@ cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target
 cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
 cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
 cargo run -p codev-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
+cargo run -p codev-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
+cargo run -p codev-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
 cargo run -p codev-evals -- calibrate implement-decision-accept-command   # éprouver un script, sans modèle
 cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
 cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
@@ -339,6 +345,88 @@ section `code.implement` du rapport met les cas de refus à part ;
 assertions d'acceptation ou celle des refus qui réussissent passe sous le
 minimum de la ligne de base.
 
+### Écrire un cas de synchronisation ou d'archivage
+
+Un cas de synchronisation ou d'archivage rejoue `/codev-sync` ou
+`/codev-archive` sur un change actif, posé comme le pose un cas de
+révision : `case.yaml` donne `step: change.sync` ou `step: change.archive`,
+`kind: seeded`, `ref` (le parent du commit qui a amené le change sur
+`main`), `change`, `summary` et `expected` ; `change/` contient les
+fichiers du change archivé, modifiés quand le cas demande un refus — une
+exigence privée de son mot normatif pour une erreur de validation, un
+constat `high` rouvert dans `review.md`, `tasks.md` retiré pour une
+planification incomplète. Un dossier `overlay/` facultatif contient des
+fichiers posés sur la racine du projet, qui remplacent ceux de `ref`,
+comme un `_codev/config.yaml` qui fixe `codev_version: ">=99"` ; un lien
+symbolique, un chemin sous le change ou un chemin qui sort du dossier du
+cas est refusé. `expected` donne `outcome` — `done` quand l'exécution
+doit laisser le projet comme le laisse la commande de codev elle-même,
+`refused` quand elle doit le laisser tel qu'elle l'a trouvé —, `code` pour
+un cas `refused` que codev refuse lui-même (le `status[0].code` de son
+rapport, comme `validation_failed` ou `review_blocked`), `contains`, les
+textes que les messages de l'agent doivent contenir, et `absent`, ceux
+qu'ils ne doivent pas contenir.
+
+Avant l'agent, le runner fait la référence : dans un clone de la fixture
+à côté du dossier du cas, il lance
+`codev sync --change <change> --json` ou
+`codev archive --change <change> --json` avec le codev évalué, et relève
+son code de sortie, son rapport et l'empreinte de chaque fichier de
+`_codev/` qu'il a modifié. Le prompt nomme la skill et le change, demande
+de ne poser aucune question et, si la skill demande s'il faut mettre codev
+à jour, de répondre **Later** — la seule réponse possible dans le bac à
+sable —, et ne dit rien de ce qu'il faut écrire ou refuser. Une exécution
+est notée sans modèle : une exécution `done` laisse `_codev/` comme l'a
+laissé la référence, à la date du dossier d'archive près ; une exécution
+`refused` le laisse tel que la fixture ; rien n'est modifié hors de
+`_codev/specs/` (et de `_codev/changes/` pour un archivage) ; chaque
+texte de `contains` est dit et aucun de `absent`, sans tenir compte de la
+casse ni des suites d'espaces. Un cas `done` dont la référence échoue, ou
+un cas `refused` dont la référence rapporte un autre `code`, finit en
+erreur : le cas ne décrit plus ce que fait codev.
+
+### Écrire un cas de configuration
+
+Un cas de configuration lance le mode par défaut de `/codev-configure` sur
+un petit projet. `case.yaml` donne `step: configure.enrich`,
+`kind: seeded`, `stacks`, `summary`, `answer` (`yes` ou `no`, la réponse
+de l'auteur à la confirmation de la skill) et `expected` : `outcome` —
+`written`, `unchanged` ou `refused` —, `written` et `unwritten`, les
+textes que chaque partie de la proposition (`context`, `specs`, `design`,
+`tasks`) doit ou ne doit pas contenir, et `contains`, les textes que les
+messages de l'agent doivent contenir. `base/` contient le projet, son
+`_codev/config.yaml` compris, sauf si le cas porte sur une configuration
+absente. Le runner installe les skills sans toucher ce fichier — pour un
+projet qui n'en a pas, `codev init` puis `_codev/` retiré —, et le prompt
+joue l'auteur : ne poser que la confirmation de la skill, continuer avec
+`answer`, répondre **Later** à une question de mise à jour. Une exécution
+`written` garde toutes les autres clés de premier niveau et tous les
+commentaires (sauf celui au-dessus de `context:`), place
+`# written by /codev-configure` au-dessus de `context:`, étale `context`
+sur deux à cinq lignes, contient une ou deux règles `specs` et `design` et
+au moins une règle `tasks`, contient les textes attendus, et laisse un
+fichier que `codev status --json` lit ; une exécution `unchanged` laisse
+le fichier identique à l'octet près ; une exécution `refused` ne crée
+aucun `_codev/`. Rien d'autre ne doit être modifié.
+
+Le rapport donne une section `change.sync`, `change.archive` et
+`configure.enrich` — la part des exécutions qui réussissent, celle des
+vérifications qui réussissent et les exécutions qui modifient un fichier
+hors de l'étape — et les vérifications de chaque exécution. `compare`
+échoue quand la part des exécutions qui réussissent d'une étape passe
+sous le minimum de la ligne de base, que ses exécutions qui modifient un
+fichier hors de l'étape dépassent son maximum, ou que la part des
+exécutions qui réussissent d'un cas passe sous sa part dans la ligne de
+base ; le rapport nomme chaque cas dont les exécutions candidates ne
+réussissent pas toutes. La notation ne lit que les observations : un
+change qui modifie l'attente de l'un de ces cas — un change en attente qui
+fait de `archive-version-later` un refus, par exemple — n'enregistre pas
+de nouveau la ligne de base, il la renote
+(`cargo run -p codev-evals -- score evals/baseline`) et commite son
+rapport ; le cas modifié échoue alors dans la ligne de base et ne décide
+de rien, et il doit réussir dans toutes ses exécutions candidates, que le
+rapport liste.
+
 Changer un terme du vocabulaire change les scores : renotez la ligne de
 base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
 constats il reclasse.
@@ -355,8 +443,10 @@ vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
 (environ 270 dollars et plusieurs heures, cas de planification compris) —,
 ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
 erreur. Les cas d'une nouvelle étape — les cas de révision à l'arrivée de
-`plan.update`, les cas d'implémentation avec `code.implement` — peuvent
-être enregistrés seuls, dans la ligne de base
+`plan.update`, les cas d'implémentation avec `code.implement`, les cas
+de synchronisation, d'archivage et de configuration avec
+`--step change.sync --step change.archive --step configure.enrich` —
+peuvent être enregistrés seuls, dans la ligne de base
 existante, quand les autres cas et la notation n'ont pas changé : avec le
 Claude Code épinglé et le codev que nomme la ligne de base,
 `cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
@@ -364,7 +454,9 @@ la reprend en n'y ajoutant que les exécutions des nouveaux cas (une reprise
 refuse une autre version de Claude Code), puis lancez
 `cargo run -p codev-evals -- score evals/baseline` et
 `cargo run -p codev-evals -- docs`. Un cas modifié ou une notation modifiée
-demande toujours d'enregistrer de nouveau toute la ligne de base. La sortie brute de Claude Code de chaque exécution
+demande toujours d'enregistrer de nouveau toute la ligne de base, sauf
+l'attente modifiée d'un cas de synchronisation, d'archivage ou de
+configuration, renotée comme dit plus haut. La sortie brute de Claude Code de chaque exécution
 (`claude.jsonl`, `claude.stderr`) reste hors du contrôle de version.
 
 ## Commits

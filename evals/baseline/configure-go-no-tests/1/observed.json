@@ -1,0 +1,112 @@
+{
+  "format": 2,
+  "case": "configure-go-no-tests",
+  "error": null,
+  "costUsd": 0.28776360000000006,
+  "durationMs": 32466,
+  "consumption": {
+    "durationApiMs": 33033,
+    "turns": 9,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 997,
+      "cacheCreation": 21918,
+      "cacheRead": 258828,
+      "output": 2992
+    },
+    "toolCalls": 8,
+    "calls": [
+      {
+        "cacheCreation": 7459,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "prompt": 7459
+        }
+      },
+      {
+        "cacheCreation": 10480,
+        "cacheRead": 29128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "shell": 727,
+          "skill": 9753
+        }
+      },
+      {
+        "cacheCreation": 1319,
+        "cacheRead": 39608,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 1319
+        }
+      },
+      {
+        "cacheCreation": 784,
+        "cacheRead": 40927,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "file": 179,
+          "output": 605
+        }
+      },
+      {
+        "cacheCreation": 741,
+        "cacheRead": 41711,
+        "input": 2,
+        "output": 2,
+        "toolCalls": 2,
+        "sources": {
+          "edit": 741
+        }
+      },
+      {
+        "cacheCreation": 881,
+        "cacheRead": 42452,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "edit": 382,
+          "output": 185,
+          "shell": 314
+        }
+      },
+      {
+        "cacheCreation": 254,
+        "cacheRead": 43333,
+        "input": 2,
+        "output": 8,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 254
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "The specs rule contains `: `, which YAML would read as a mapping, so I'll quote it and check that the file parses.",
+    "✓ `_codev/config.yaml` enriched.\n\nWhat changed:\n- **`context:`** now says it's a Go 1.22 CLI that uses only the standard library. It describes the `cmd/linkcheck` / `internal/links` split, the error style (errors are wrapped with `%w`, and only `main` prints them and sets the exit code: 0, 1 or 2) and how comments are written (godoc sentences in English).\n- **`rules:`** has one rule each for `specs` and `design`, and two for `tasks`. The project has no tests yet, so the testing rule uses the standard Go conventions: table-driven tests in `_test.go` files in the same package, `httptest` servers instead of real network calls, and `go test ./...` plus `go vet ./...` must pass.\n- Only `context:` and `rules:` were touched. `schema:` is unchanged, and the new `# written by /codev-configure` comment sits above `context:`.\n\nI put quotes around the specs rule because its `: ` would otherwise make YAML read the line as a mapping instead of a string. I didn't get to run a YAML parser on the file (the command needed an approval I don't have). `codev status` still runs and gives the same result as before the edit, the expected \"no active change\" error, so codev hasn't been shown to choke on the new config."
+  ],
+  "configure": {
+    "before": "schema: spec-driven\n\ncontext: |\n  Go project.\n",
+    "after": "schema: spec-driven\n\n# written by /codev-configure\ncontext: |\n  Go 1.22 CLI (`linkcheck`), standard library only (net/http, regexp): no third-party module in go.mod.\n  Layout: entry point in cmd/linkcheck/main.go, logic in internal/links (Extract parses Markdown, Check probes URLs with an injected *http.Client).\n  Errors are returned and wrapped with fmt.Errorf(\"...: %w\", err); only main prints them and picks the exit code (0 all links OK, 1 a link fails, 2 usage error).\n  Comments in English, as godoc sentences that start with the identifier's name and state what it returns.\n\nrules:\n  specs:\n    - \"Describe behavior observable from the command line: arguments, stdout/stderr lines, and exit code (0, 1 or 2).\"\n  design:\n    - Place new logic in an internal/ package that takes its dependencies (such as *http.Client) as parameters; cmd/linkcheck/main.go only parses arguments, prints and exits.\n  tasks:\n    - Each task states how to verify it is done (a test name or a linkcheck command and its expected exit code).\n    - \"Tests in _test.go files in the same package, table-driven; Check tested against net/http/httptest servers, never the network; go test ./... and go vet ./... pass.\"\n",
+    "codevRoot": true,
+    "statusError": null
+  }
+}

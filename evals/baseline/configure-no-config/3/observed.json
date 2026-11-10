@@ -1,0 +1,78 @@
+{
+  "format": 2,
+  "case": "configure-no-config",
+  "error": null,
+  "costUsd": 0.189755,
+  "durationMs": 9754,
+  "consumption": {
+    "durationApiMs": 10502,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 991,
+      "cacheCreation": 18617,
+      "cacheRead": 125170,
+      "output": 749
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7459,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7459
+        }
+      },
+      {
+        "cacheCreation": 5475,
+        "cacheRead": 29128,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 5475
+        }
+      },
+      {
+        "cacheCreation": 5167,
+        "cacheRead": 34603,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 2,
+        "sources": {
+          "codev status": 5167
+        }
+      },
+      {
+        "cacheCreation": 516,
+        "cacheRead": 39770,
+        "input": 2,
+        "output": 6,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 466,
+          "shell": 50
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I stopped at the skill's first step. This project has no `_codev/` folder: `codev status --json` returned `no_codev_root`, and the root holds only `README.md`, `index.js`, `package.json` and `.claude/`.\n\nThe skill won't create `_codev/config.yaml` itself, so I didn't get as far as reading the project, drafting a proposal or asking the confirmation question. Nothing was written.\n\nRun `codev init` first, then come back to `/codev-configure`.\n\nSeparately, the claude.ai Gmail, Google Calendar and Google Drive connectors need authorizing in your claude.ai connector settings before they can be used. This task didn't need them."
+  ],
+  "configure": {
+    "before": null,
+    "after": null,
+    "codevRoot": false,
+    "statusError": "no_codev_root: no codev project found from /private/var/folders/_q/1rcqgglx47vf231xmn4fcvdc0000gq/T/codev-evals-1793099175-43364/configure-no-config-3 — run `codev init` at the project root"
+  }
+}

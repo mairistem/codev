@@ -1,0 +1,103 @@
+{
+  "format": 2,
+  "case": "archive-review-blocked",
+  "error": null,
+  "costUsd": 0.1867518,
+  "durationMs": 6104,
+  "consumption": {
+    "durationApiMs": 6932,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 985,
+      "cacheCreation": 18475,
+      "cacheRead": 160034,
+      "output": 310
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 7928,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7928
+        }
+      },
+      {
+        "cacheCreation": 4555,
+        "cacheRead": 29597,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 4555
+        }
+      },
+      {
+        "cacheCreation": 625,
+        "cacheRead": 34152,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 625
+        }
+      },
+      {
+        "cacheCreation": 5062,
+        "cacheRead": 34777,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev archive": 5062
+        }
+      },
+      {
+        "cacheCreation": 305,
+        "cacheRead": 39839,
+        "input": 2,
+        "output": 33,
+        "toolCalls": 0,
+        "sources": {
+          "codev archive": 305
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "The review record blocks archiving. Run `codev review --change role-models` to see what is left to decide."
+  ],
+  "merge": {
+    "changed": {},
+    "reference": {
+      "exitCode": 1,
+      "report": {
+        "changeName": null,
+        "created": [],
+        "deleted": [],
+        "movedTo": null,
+        "status": [
+          {
+            "code": "review_blocked",
+            "level": "error",
+            "message": "change `role-models` cannot be archived yet: R-migration-1 (A shared source that sets `model:` silently drops its context and rules in consumer projects still on an older codev) is high and still open; fix it, or a human accepts the risk or defers it (review_unresolved); run `codev review --change role-models` for details"
+          }
+        ],
+        "unchanged": [],
+        "updated": []
+      },
+      "changed": {}
+    }
+  }
+}

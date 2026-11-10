@@ -1,0 +1,86 @@
+{
+  "format": 2,
+  "case": "sync-planning-incomplete",
+  "error": null,
+  "costUsd": 0.1874348,
+  "durationMs": 11950,
+  "consumption": {
+    "durationApiMs": 12604,
+    "turns": 3,
+    "permissionDenials": 0,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 982,
+      "cacheCreation": 19459,
+      "cacheRead": 91689,
+      "output": 634
+    },
+    "toolCalls": 2,
+    "calls": [
+      {
+        "cacheCreation": 7935,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 21,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 7935
+        }
+      },
+      {
+        "cacheCreation": 10812,
+        "cacheRead": 29604,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 10812
+        }
+      },
+      {
+        "cacheCreation": 712,
+        "cacheRead": 40416,
+        "input": 2,
+        "output": 4,
+        "toolCalls": 0,
+        "sources": {
+          "codev status": 712
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "I didn't run the sync for `delegated-implementation`, because its planning isn't finished.\n\n**Missing artifact:** `tasks.md`. The proposal, specs and design are done, and `codev status` reports tasks as ready to write. Nothing was merged into the main specs and nothing was changed.\n\n**Next step:** write the tasks for this change, then run `/codev-sync delegated-implementation` again. The skill suggests `/codev-continue` here, because only tasks are left. That skill isn't installed in this project, though, so you'd need to use `/codev-propose`."
+  ],
+  "merge": {
+    "changed": {},
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "delegated-implementation",
+        "created": [],
+        "deleted": [],
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/implementation-evaluation/spec.md",
+          "_codev/specs/role-evaluation/spec.md",
+          "_codev/specs/roles/spec.md",
+          "_codev/specs/skills/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+        "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+        "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+        "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+      }
+    }
+  }
+}

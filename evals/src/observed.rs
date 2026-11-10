@@ -49,6 +49,69 @@ pub struct Observed {
     /// change's files; `None` for any other run.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub implement: Option<ImplementObserved>,
+    /// What a sync or archive run left under `_codev/`, and what codev's
+    /// own command left; `None` for any other run.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merge: Option<MergeObserved>,
+    /// The configuration before and after a configure run; `None` for any
+    /// other run.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub configure: Option<ConfigureObserved>,
+}
+
+/// The files under `_codev/` a run or a command left different from the
+/// fixture, by path from the project root: the digest of the content
+/// (SHA-256, line endings aside), or `None` for a file removed. Every
+/// other file under `_codev/` is the fixture's: recording only the
+/// difference keeps an observation small, where the whole of `_codev/`
+/// holds hundreds of archived files.
+pub type Digests = BTreeMap<String, Option<String>>;
+
+/// A sync or archive run, as the runner observed it.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MergeObserved {
+    /// What the run left under `_codev/`.
+    pub changed: Digests,
+    /// What `codev sync` or `codev archive` left, run by the runner on a
+    /// copy of the fixture before the agent.
+    pub reference: Reference,
+}
+
+/// codev's own command on a copy of the fixture.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Reference {
+    /// Its exit code; `None` when a signal stopped it.
+    pub exit_code: Option<i32>,
+    /// Its JSON report, paths relative to the project; `None` when it
+    /// printed none.
+    pub report: Option<serde_json::Value>,
+    /// What it left under `_codev/`.
+    pub changed: Digests,
+}
+
+impl Reference {
+    /// `status[0].code` of its report.
+    pub fn code(&self) -> Option<&str> {
+        self.report.as_ref()?["status"][0]["code"].as_str()
+    }
+}
+
+/// A configure run, as the runner observed it.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigureObserved {
+    /// `_codev/config.yaml` before the run; `None` without one.
+    pub before: Option<String>,
+    /// `_codev/config.yaml` after the run; `None` without one.
+    pub after: Option<String>,
+    /// Whether a `_codev/` folder exists after the run.
+    #[serde(default)]
+    pub codev_root: bool,
+    /// Why `codev status --json` did not read the project after the run;
+    /// `None` when it did.
+    pub status_error: Option<String>,
 }
 
 /// An implementation run, as the runner checked it after the agent.

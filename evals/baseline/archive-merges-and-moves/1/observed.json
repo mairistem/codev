@@ -1,0 +1,150 @@
+{
+  "format": 2,
+  "case": "archive-merges-and-moves",
+  "error": null,
+  "costUsd": 0.19937219999999997,
+  "durationMs": 16521,
+  "consumption": {
+    "durationApiMs": 17177,
+    "turns": 5,
+    "permissionDenials": 1,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-opus-5-5"
+    ],
+    "tokens": {
+      "input": 986,
+      "cacheCreation": 18691,
+      "cacheRead": 171016,
+      "output": 744
+    },
+    "toolCalls": 4,
+    "calls": [
+      {
+        "cacheCreation": 9961,
+        "cacheRead": 21669,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "prompt": 9961
+        }
+      },
+      {
+        "cacheCreation": 7029,
+        "cacheRead": 31630,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "skill": 7029
+        }
+      },
+      {
+        "cacheCreation": 742,
+        "cacheRead": 38659,
+        "input": 2,
+        "output": 31,
+        "toolCalls": 1,
+        "sources": {
+          "codev status": 742
+        }
+      },
+      {
+        "cacheCreation": 256,
+        "cacheRead": 39401,
+        "input": 2,
+        "output": 16,
+        "toolCalls": 1,
+        "sources": {
+          "codev archive": 184,
+          "output": 72
+        }
+      },
+      {
+        "cacheCreation": 703,
+        "cacheRead": 39657,
+        "input": 2,
+        "output": 159,
+        "toolCalls": 0,
+        "sources": {
+          "codev archive": 703
+        }
+      }
+    ]
+  },
+  "strayed": [],
+  "review": null,
+  "files": {},
+  "messages": [
+    "No update notice. Planning is complete.",
+    "✓ Archived \"`delegated-implementation`\": 0 specs created, 4 updated, 0 unchanged.\n\nUpdated:\n- `_codev/specs/implementation-evaluation/spec.md`\n- `_codev/specs/role-evaluation/spec.md`\n- `_codev/specs/roles/spec.md`\n- `_codev/specs/skills/spec.md`\n\nMoved to: `_codev/changes/archive/2026-10-27-delegated-implementation`"
+  ],
+  "merge": {
+    "changed": {
+      "_codev/changes/archive/2026-10-27-delegated-implementation/change.yaml": "54c2a6955b514abf783374521da3b6364c1d6b221970ad9faa7124a7e1124528",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/design.md": "9b94036b97932cc616b6ca12209246287b9c8c549f81591ef47e6a8b8d6c6bca",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/proposal.md": "414a1f1a533b6791b387407cd25efeae7507da36cbb266ece7cc74c1dc37e7b0",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/review.md": "84ae5b20048a92a66ebefd584ae69de976f49e58870be478611afd8b8c833899",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/specs/implementation-evaluation/spec.md": "3d074df3d616fb0fc10d2770a4b531d1441c6bed50e5a6ba059e8a489860a387",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/specs/role-evaluation/spec.md": "786a731716b7c435588fe3a0aff47f132cde34331b0927ce5f7104a67ab0c1cf",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/specs/roles/spec.md": "b5c1ea5a159767d911a9bd0b07ee760eab824f0915e6b7f79759d90ff520c206",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/specs/skills/spec.md": "f0356be00820f30de73665da401ba33fab0a0b9761114ca67448945aeb388156",
+      "_codev/changes/archive/2026-10-27-delegated-implementation/tasks.md": "04d76b8393b862844565a79cac842819177577bb80ba20df379ec2dc244f03f9",
+      "_codev/changes/delegated-implementation/change.yaml": null,
+      "_codev/changes/delegated-implementation/design.md": null,
+      "_codev/changes/delegated-implementation/proposal.md": null,
+      "_codev/changes/delegated-implementation/review.md": null,
+      "_codev/changes/delegated-implementation/specs/implementation-evaluation/spec.md": null,
+      "_codev/changes/delegated-implementation/specs/role-evaluation/spec.md": null,
+      "_codev/changes/delegated-implementation/specs/roles/spec.md": null,
+      "_codev/changes/delegated-implementation/specs/skills/spec.md": null,
+      "_codev/changes/delegated-implementation/tasks.md": null,
+      "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+      "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+      "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+      "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+    },
+    "reference": {
+      "exitCode": 0,
+      "report": {
+        "changeName": "delegated-implementation",
+        "created": [],
+        "deleted": [],
+        "movedTo": "_codev/changes/archive/2026-10-27-delegated-implementation",
+        "status": [],
+        "unchanged": [],
+        "updated": [
+          "_codev/specs/implementation-evaluation/spec.md",
+          "_codev/specs/role-evaluation/spec.md",
+          "_codev/specs/roles/spec.md",
+          "_codev/specs/skills/spec.md"
+        ]
+      },
+      "changed": {
+        "_codev/changes/archive/2026-10-27-delegated-implementation/change.yaml": "54c2a6955b514abf783374521da3b6364c1d6b221970ad9faa7124a7e1124528",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/design.md": "9b94036b97932cc616b6ca12209246287b9c8c549f81591ef47e6a8b8d6c6bca",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/proposal.md": "414a1f1a533b6791b387407cd25efeae7507da36cbb266ece7cc74c1dc37e7b0",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/review.md": "84ae5b20048a92a66ebefd584ae69de976f49e58870be478611afd8b8c833899",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/implementation-evaluation/spec.md": "3d074df3d616fb0fc10d2770a4b531d1441c6bed50e5a6ba059e8a489860a387",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/role-evaluation/spec.md": "786a731716b7c435588fe3a0aff47f132cde34331b0927ce5f7104a67ab0c1cf",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/roles/spec.md": "b5c1ea5a159767d911a9bd0b07ee760eab824f0915e6b7f79759d90ff520c206",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/specs/skills/spec.md": "f0356be00820f30de73665da401ba33fab0a0b9761114ca67448945aeb388156",
+        "_codev/changes/archive/2026-10-27-delegated-implementation/tasks.md": "04d76b8393b862844565a79cac842819177577bb80ba20df379ec2dc244f03f9",
+        "_codev/changes/delegated-implementation/change.yaml": null,
+        "_codev/changes/delegated-implementation/design.md": null,
+        "_codev/changes/delegated-implementation/proposal.md": null,
+        "_codev/changes/delegated-implementation/review.md": null,
+        "_codev/changes/delegated-implementation/specs/implementation-evaluation/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/role-evaluation/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/roles/spec.md": null,
+        "_codev/changes/delegated-implementation/specs/skills/spec.md": null,
+        "_codev/changes/delegated-implementation/tasks.md": null,
+        "_codev/specs/implementation-evaluation/spec.md": "de5e7694bffd61b5154a7a614067c9a043e6330fb4c2cecfce526624fb28e086",
+        "_codev/specs/role-evaluation/spec.md": "6c639a2e37ea56f4144c3848b235f7e2e598787da6c0b5e0d0c9d0a77076c1c4",
+        "_codev/specs/roles/spec.md": "469078c6ed948fee3dd6168bf1668adbb1fc18906d28dce1eb03dfff670ed39c",
+        "_codev/specs/skills/spec.md": "d2b29f9d8aca99d55c73b9fe468fa292fd649679690b3e87e9f8525a20c1a083"
+      }
+    }
+  }
+}

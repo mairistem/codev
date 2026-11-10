@@ -1,0 +1,13 @@
+# Sync of `2026-10-12-forward-compatible-config`, the normative keywords
+# of its first ADDED configuration requirement removed: `codev validate`
+# reports `requirement_no_shall`.
+step: change.sync
+kind: seeded
+ref: 8ada63ac05af1a98b90d4e022b6341436e63c6c0
+change: forward-compatible-config
+summary: "A change that fails validation: codev refuses the sync, the skill points to `codev validate` and changes nothing."
+expected:
+  outcome: refused
+  code: validation_failed
+  contains: ["codev validate"]
+  absent: ["ready to be archived"]
