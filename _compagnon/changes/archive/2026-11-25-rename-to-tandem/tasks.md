@@ -188,9 +188,11 @@ renames the crates and the repository.
   verified by `compagnon validate --strict` reporting no
   `decision_seal_mismatch` and `git diff` of each re-sealed body showing
   only name changes.
-- [ ] 5.5 Update the CI, docs and evals workflows (`cargo run --bin
+- [x] 5.5 Update the CI, docs and evals workflows (`cargo run --bin
   compagnon`, job names, `COMPAGNON_EVAL_*` secrets' names) and the issue
   templates; verified by the CI run of the pull request being green.
+  Green on mairistem/codev#63 (Ubuntu, Windows, lint, MSRV, audit, specs,
+  docs); macOS gets no runner, as on `main`.
 
 ## 6. Evaluations (decision 0008)
 

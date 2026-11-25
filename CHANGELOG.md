@@ -41,6 +41,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - `roles: { <role>: { model: opus | sonnet | haiku | inherit } }` in `_compagnon/config.yaml` sets the model a role's review runs on in the isolated review mode; no role sets one by default. A project that sets it should first raise `compagnon_version` to this release, since an older compagnon refuses the key — and a source shared through `inherits:` should not set it until every project inheriting from it runs this release.
 - a model set on the `developer` role (`roles: { developer: { model: sonnet } }`) now runs the implementation of `/compagnon-apply` in a sub-agent on that model, while the session keeps the review; without a model nothing changes.
 - `compagnon instructions --json` gives `keywordLanguage` and `keywords`, the language and the texts of the structural keywords to write; a project schema may hold one template set per language under `templates/<language>/`.
+- `compagnon migrate` converts a project set up with codev — planning folder, lock file, configuration, skills, `CLAUDE.md` and CI workflow — and Compagnon tells you to run it when it finds a codev project.
+- Compagnon has its own logo, in the documentation, the README and the site.
 
 ### Changed
 
@@ -48,6 +50,9 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - **BREAKING** `compagnon archive` refuses (`review_blocked`) a change whose review record is missing for a step where roles were active, or that still has a high-severity finding open or disputed. For a change started with an earlier compagnon, run the review again or turn its review roles off in its `change.yaml`; a team that does not use the skills turns `skeptic` and `newcomer` off in `_compagnon/config.yaml`.
 - **BREAKING** A project whose `language:` is French now gets its planning artifacts written entirely in French, structural keywords included (`## Changements`, `### Exigence :`, `DOIT`). Every teammate and the CI need a compagnon that reads French keywords: raise `compagnon_version` to this release. Existing artifacts and specs keep their keywords. To keep English keywords, set `language: en`, which also writes the prose in English.
 - **BREAKING** `compagnon validate`, `compagnon sync` and `compagnon archive` refuse to run when the running compagnon does not satisfy the project's `compagnon_version`; run `compagnon self-update`. Projects without `compagnon_version` are unaffected. With an upper bound (`^0.6`), widen `compagnon_version` before upgrading past it, or install the version `compagnon doctor` names. A CI job pinned with `COMPAGNON_VERSION=` needs its pin raised whenever `compagnon_version` is.
+- **BREAKING** codev is now **Compagnon**. The command is `compagnon`, the planning folder is `_compagnon/`, the skills are `/compagnon-*`, the configuration key is `compagnon_version` and environment variables start with `COMPAGNON_`. Run `compagnon migrate` once in each existing project.
+- **BREAKING** Release archives are named `compagnon-<version>-<target>`, the repository is `mairistem/compagnon` (installers and update check), the lock file is `_compagnon/compagnon.lock`, the generated CI workflow is `.github/workflows/compagnon.yml`, the update cache lives in a `compagnon` folder, and managed markers read `compagnon`. Scripts that download `codev-*` archives or read these paths must be updated; `compagnon migrate` handles the project files.
+- **BREAKING** JSON error codes that contained `codev` are renamed (`no_codev_root` becomes `no_compagnon_root`, and so on).
 - `/compagnon-propose` caps its Points to challenge at five across the skeptic and the experts, and `/compagnon-apply` ends with up to five Review notes (formerly Readability notes), each tagged with its role; a high-severity security or privacy finding is never dropped.
 - `compagnon doctor` names the roles activated by domain.
 - The default schema's instructions no longer start with a `Role:` prose block; the role comes in the `role` field of `compagnon instructions`, and `/compagnon-propose` and `/compagnon-apply` take their review criteria from `compagnon roles`.
@@ -63,6 +68,8 @@ Detailed notes for each version are on the corresponding GitHub Release.
 - once the proposal is written, `compagnon instructions` names the existing requirements the change likely touches, and `/compagnon-propose` reads and modifies them rather than adding new ones beside them.
 - An unknown key in a change's `change.yaml`, a project `schema.yaml`, a role's settings in `_compagnon/config.yaml` or an ADR frontmatter is now ignored with a warning naming it and pointing to `compagnon self-update`, instead of failing; `compagnon validate --strict` still fails on it. A file written for a newer compagnon no longer stops an older one.
 - `compagnon decision accept` keeps the frontmatter fields it does not know when it rewrites an ADR.
+- Existing CI jobs that install codev with `CODEV_VERSION` keep installing codev; switch them to `COMPAGNON_VERSION` and `compagnon` when you migrate. GitLab jobs and hand-edited workflows are not changed by `compagnon migrate`.
+- A codev 0.6 binary can still `self-update` during the 0.7 series; it then tells you to rename it to `compagnon`.
 
 ### Fixed
 

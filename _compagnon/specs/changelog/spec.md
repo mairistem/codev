@@ -37,14 +37,18 @@ single spaces. A `None` note MUST produce no changelog item.
 
 ### Requirement: `compagnon changelog` selects the changes archived between two git refs
 
-`compagnon changelog` SHALL list the changes present in `_compagnon/changes/archive/`
-at `--until` — by default, in the working tree — and absent from it at
-`--since`. Presence at a ref MUST be read from git, never from dates. The
-default `--since` is the highest `v*` tag by version order, excluding
-`--until` and any tag of a higher version when `--until` names a version
-tag; with no such tag, every archived change is in range. Changes are
-listed in archive order. Changes named under `changelog.exclude` in
-`_compagnon/config.yaml` are left out without a warning.
+`compagnon changelog` SHALL list the changes present in
+`_compagnon/changes/archive/` at `--until` — by default, in the working tree —
+and absent from it at `--since`. Presence at a ref MUST be read from git,
+never from dates. At a ref whose tree holds no `_compagnon/` but holds the
+former planning root `_codev/`, presence SHALL be read from
+`_codev/changes/archive/` at that ref, so that a change archived before the
+project was migrated is never listed again. The default `--since` is the
+highest `v*` tag by version order, excluding `--until` and any tag of a
+higher version when `--until` names a version tag; with no such tag, every
+archived change is in range. Changes are listed in archive order. Changes
+named under `changelog.exclude` in `_compagnon/config.yaml` are left out
+without a warning.
 
 Outside a git repository, every archived change of the working tree SHALL
 be listed with the warning `not_a_git_repository`; passing `--since` or
@@ -64,6 +68,14 @@ the working tree is skipped with the warning `archived_change_unreadable`.
 
 - **GIVEN** the same repository
 - **WHEN** the user runs `compagnon changelog --until v0.10.0`
+- **THEN** only the items of `b` are listed
+
+#### Scenario: A range that spans the migration
+
+- **GIVEN** a git repository tagged `v0.6.1` while its planning root was
+  `_codev/`, holding the archived change `a`, then migrated to `_compagnon/`,
+  then given the archived change `b`
+- **WHEN** the user runs `compagnon changelog`
 - **THEN** only the items of `b` are listed
 
 #### Scenario: No tag yet
