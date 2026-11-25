@@ -180,3 +180,133 @@ history:
   - status: fixed
     by: accessibility
 ```
+
+## code.review
+
+Mode: isolated.
+Summarized: crates/compagnon-cli/src/docs.rs — beyond the material limit (484 637 bytes for 163 840).
+Summarized: crates/compagnon-cli/src/docs_checks.rs — beyond the material limit.
+Summarized: crates/compagnon-cli/src/main.rs — beyond the material limit.
+Summarized: docs/assets/compagnon-logo.svg — beyond the material limit.
+Summarized: docs/en/src/reference/cli.md — beyond the material limit.
+Summarized: docs/fr/src/reference/cli.md — beyond the material limit.
+Summarized: docs/site/index.html — beyond the material limit.
+Summarized: docs/theme/mairistem.css — beyond the material limit.
+
+### accessibility
+
+#### R-accessibility-3 The README logo's alt text omits the "by Mairistem" byline
+
+```yaml
+severity: low
+confidence: high
+location: "README.md:4"
+evidence: |
+  <img src="docs/assets/compagnon-logo.svg"
+recommendation: 'The logo now reads "Compagnon by Mairistem" but the README img kept alt="Compagnon": a screen reader misses the byline (WCAG 1.1.1, image of text). Set alt="Compagnon by Mairistem" in README.md and README.fr.md and make the test require it.'
+history:
+  - status: open
+    by: accessibility
+  - status: fixed
+    by: developer
+    ref: "README.md:4, README.fr.md:4, crates/compagnon-cli/tests/repository.rs both_readmes_show_the_light_and_dark_mark"
+  - status: fixed
+    by: accessibility
+```
+
+### newcomer
+
+#### R-newcomer-1 shell_blocks has its own fence parser that disagrees with lines()
+
+```yaml
+severity: medium
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:241"
+evidence: |
+  pub fn shell_blocks(md: &str) -> Vec<String> {
+recommendation: 'shell_blocks only knew ``` fences while lines() also knows ~~~: a ~~~bash block in guides/review-a-plan.md passed review_a_plan_covers_the_plan_without_a_terminal. Share one definition of a fence line.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs fence_marker, used by lines() and shell_blocks; ~~~sh case added to a_shell_block_in_review_a_plan_is_caught (fails without the fix)"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-2 The sections doc comment names a fixed level the function does not have
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:164"
+evidence: |
+  fn sections(md: &str, level: &str) -> Vec<(String, String)> {
+recommendation: 'The comment said "## sections" while how_to_ask_problems calls it with "### ". Describe the level parameter.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs sections doc comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-3 The test named "four skills" checks three skill steps
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:664"
+evidence: |
+  fn the_quickstart_walks_the_four_skills_in_order() {
+recommendation: 'The fourth step, reading the plan, hides in a bare p + 1 < a. Name the condition and say what the step between is.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: comment and reading_the_plan_comes_between binding; the name stays the spec scenario's, as every test of the change"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-4 parts[4].1 hides which part and which field are meant
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/src/docs_checks.rs:587"
+evidence: |
+  for c in ["origins.md", "architecture.md", "reliability.md"] {
+recommendation: 'Bind the Contributing part chapters to a named variable before the loop.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "docs_checks.rs: let (_, contributing) = &parts[4] with a comment"
+  - status: fixed
+    by: newcomer
+```
+
+#### R-newcomer-5 readme_words is a third word counter with its own rules
+
+```yaml
+severity: low
+confidence: high
+location: "crates/compagnon-cli/tests/repository.rs:360"
+evidence: |
+  fn readme_words(text: &str) -> usize {
+recommendation: 'Say why it differs from prose_words (the integration test cannot reach it; it skips every HTML line), accept ~~~ fences, and drop the state mutated inside filter for a plain loop.'
+history:
+  - status: open
+    by: newcomer
+  - status: fixed
+    by: developer
+    ref: "repository.rs readme_words: doc comment naming the differences, plain for loop, ~~~ fences"
+  - status: fixed
+    by: newcomer
+```

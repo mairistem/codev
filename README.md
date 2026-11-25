@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/compagnon-logo-dark.svg">
-    <img src="docs/assets/compagnon-logo.svg" alt="Compagnon" width="420">
+    <img src="docs/assets/compagnon-logo.svg" alt="Compagnon by Mairistem" width="420">
   </picture>
 </p>
 

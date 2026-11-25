@@ -244,7 +244,7 @@ fn both_readmes_show_the_light_and_dark_mark() {
         let text = read(readme);
         for needle in [
             "srcset=\"docs/assets/compagnon-logo-dark.svg\"",
-            "src=\"docs/assets/compagnon-logo.svg\" alt=\"Compagnon\"",
+            "src=\"docs/assets/compagnon-logo.svg\" alt=\"Compagnon by Mairistem\"",
         ] {
             assert!(text.contains(needle), "{readme} must contain `{needle}`");
         }
@@ -352,21 +352,29 @@ fn site_and_introductions_name_compagnon() {
     }
 }
 
-/// The words of a README's prose: outside fenced code blocks and HTML
-/// lines (the mark's `<picture>`).
+/// The words of a README's prose: outside fenced code blocks (```` ``` ````
+/// or `~~~`) and HTML lines (the mark's `<picture>`, the demo image).
+/// Unlike the chapters' `prose_words`, which this integration test cannot
+/// reach, every line starting with `<` is skipped: a README has no
+/// `<details>` block, only HTML for its images.
 fn readme_words(text: &str) -> usize {
     let mut fence = false;
-    text.lines()
-        .filter(|l| {
-            if l.trim_start().starts_with("```") {
-                fence = !fence;
-                return false;
-            }
-            !fence && !l.trim_start().starts_with('<')
-        })
-        .flat_map(str::split_whitespace)
-        .filter(|w| w.chars().any(char::is_alphanumeric))
-        .count()
+    let mut words = 0;
+    for line in text.lines() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            fence = !fence;
+            continue;
+        }
+        if fence || trimmed.starts_with('<') {
+            continue;
+        }
+        words += line
+            .split_whitespace()
+            .filter(|w| w.chars().any(char::is_alphanumeric))
+            .count();
+    }
+    words
 }
 
 #[test]

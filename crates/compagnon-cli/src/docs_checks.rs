@@ -29,6 +29,15 @@ struct Line<'a> {
     details: bool,
 }
 
+/// The language of a fence line (```` ``` ```` or `~~~`), empty when it
+/// names none; `None` for any other line.
+fn fence_marker(trimmed: &str) -> Option<&str> {
+    trimmed
+        .strip_prefix("```")
+        .or_else(|| trimmed.strip_prefix("~~~"))
+        .map(str::trim)
+}
+
 /// Walks a chapter, line by line, keeping track of fences and `<details>`.
 /// Fence lines and `<details>`/`</details>` lines themselves are skipped.
 fn lines(md: &str) -> Vec<Line<'_>> {
@@ -37,13 +46,10 @@ fn lines(md: &str) -> Vec<Line<'_>> {
     let mut details = 0usize;
     for text in md.lines() {
         let trimmed = text.trim_start();
-        if let Some(rest) = trimmed
-            .strip_prefix("```")
-            .or_else(|| trimmed.strip_prefix("~~~"))
-        {
+        if let Some(lang) = fence_marker(trimmed) {
             fence = match fence {
                 Some(_) => None,
-                None => Some(rest.trim()),
+                None => Some(lang),
             };
             continue;
         }
@@ -152,7 +158,9 @@ pub fn stray_commands(md: &str) -> Vec<String> {
         .collect()
 }
 
-/// The `## ` sections of a chapter: heading and body.
+/// The sections of a chapter opened by headings starting with `level`
+/// (`"## "`, `"### "`): heading and body. A deeper heading stays in the
+/// body; text before the first heading is dropped.
 fn sections(md: &str, level: &str) -> Vec<(String, String)> {
     let mut out: Vec<(String, String)> = Vec::new();
     for line in md.lines() {
@@ -228,15 +236,15 @@ pub fn profile_problems(md: &str, headings: &[&str; 5], chapters: &[&str]) -> Ve
     problems
 }
 
-/// The shell languages of a chapter's fenced blocks.
+/// The shell languages of a chapter's fenced blocks, one entry per block,
+/// fences recognised as in [`lines`].
 pub fn shell_blocks(md: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut open = false;
     for line in md.lines() {
-        let t = line.trim_start();
-        if let Some(lang) = t.strip_prefix("```") {
-            if !open && SHELL_LANGS.contains(&lang.trim()) {
-                out.push(lang.trim().to_string());
+        if let Some(lang) = fence_marker(line.trim_start()) {
+            if !open && SHELL_LANGS.contains(&lang) {
+                out.push(lang.to_string());
             }
             open = !open;
         }
@@ -470,6 +478,7 @@ mod tests {
             ["bash"]
         );
         assert!(shell_blocks("```text\nWHEN the user…\n```\n").is_empty());
+        assert_eq!(shell_blocks("~~~sh\nls\n~~~\n"), ["sh"]);
     }
 
     #[test]
@@ -573,9 +582,11 @@ mod chapter_tests {
             let parts = parts(summary);
             let found: Vec<&str> = parts.iter().map(|(t, _)| t.as_str()).collect();
             assert_eq!(found, expected, "{}", lang.tag());
+            // The fifth part is Contributing: its chapter paths.
+            let (_, contributing) = &parts[4];
             for c in ["origins.md", "architecture.md", "reliability.md"] {
                 assert!(
-                    parts[4].1.iter().any(|p| p == c),
+                    contributing.iter().any(|p| p == c),
                     "{}: Contributing lacks {c}",
                     lang.tag()
                 );
@@ -667,8 +678,11 @@ mod chapter_tests {
                 position("compagnon-apply"),
                 position("compagnon-archive"),
             );
+            // Four steps: propose, then reading the plan — a step of its
+            // own, with no skill — then apply, then archive.
+            let reading_the_plan_comes_between = p + 1 < a;
             assert!(
-                p + 1 < a && a < r,
+                reading_the_plan_comes_between && a < r,
                 "{}: steps out of order: {headings:?}",
                 lang.tag()
             );
