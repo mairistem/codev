@@ -26,7 +26,8 @@ the jargon from coming back in the next page written.
   kept only between parentheses where it helps match the screen, and in
   commands and paths. The French example requests follow it (« réalise la
   modification », not « applique le change »); `README.fr.md` too.
-- The glossary gains the terms of that list it does not define yet, and
+- The glossary gains the terms of that list it does not define yet ("main
+  specs" aside: it is replaced everywhere, never defined), and
   its French entries take the lexicon's names.
 - The rule is checked by the test suite, so that a future everyday page
   that uses a listed term without explaining it fails.

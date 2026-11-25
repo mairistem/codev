@@ -3,7 +3,13 @@
 Every task's definition of done also includes `cargo fmt --all --check`,
 `cargo clippy --workspace --all-targets -- -D warnings`,
 `cargo test --workspace`, and `mdbook build docs/en` and
-`mdbook build docs/fr` succeeding. Each chapter is rewritten in both
+`mdbook build docs/fr` succeeding — except
+`every_everyday_chapter_explains_its_terms`,
+`the_french_everyday_pages_hold_no_anglicism` and
+`the_glossary_defines_every_required_term`, which cover every chapter and
+fail from task 1.2 until task 2.6, which turns them green; until then, a
+task is verified by these tests reporting no problem naming its own
+chapters. Each chapter is rewritten in both
 editions in the same task; the French one follows the lexicon of the
 design, in *vouvoiement*.
 
@@ -11,7 +17,8 @@ design, in *vouvoiement*.
 
 - [ ] 1.1 In `crates/compagnon-cli/src/docs_checks.rs`, add
   `unexplained_terms` and `anglicisms`, with the term lists of each
-  edition, and unit tests one per scenario:
+  edition (French: delta, artefact, capacité, schéma, déroulé,
+  frontmatter, kebab-case), and unit tests one per scenario:
   `a_term_used_without_a_link_is_caught`,
   `a_link_to_the_top_of_the_glossary_is_caught` (a bare `glossary.md`, or
   an anchor no glossary heading produces),
@@ -23,16 +30,21 @@ design, in *vouvoiement*.
 - [ ] 1.2 Add the tests on the real chapters,
   `every_everyday_chapter_explains_its_terms` and
   `the_french_everyday_pages_hold_no_anglicism` (the ten French everyday
-  chapters and `README.fr.md`), and extend `glossary_terms` with artifact,
-  schema, workflow, frontmatter, kebab-case and the French names of the
-  lexicon, which `the_glossary_defines_every_required_term` then
-  requires; verified by these tests failing until group 2 (the red state
+  chapters and `README.fr.md`), and change `glossary_terms`: English adds
+  Artifact, Schema, Workflow, Frontmatter, Kebab-case; French replaces
+  Change, Skill, Spec and Revue with Modification, Compétence,
+  Spécification and Relecture, and adds Artefact, Schéma, Déroulé,
+  Frontmatter, Kebab-case — which `the_glossary_defines_every_required_term`
+  then requires, and the existing
+  `a_missing_or_overlong_glossary_entry_is_caught` keeps guarding; verified by these tests failing until group 2 (the red state
   is shown in the pull request).
 
 ## 2. The rewrite, chapter by chapter, both editions
 
-- [ ] 2.1 Glossary: the new entries (artifact, schema, workflow,
-  frontmatter, kebab-case), the French entries under the lexicon's names,
+- [ ] 2.1 Glossary: the new entries (English Artifact, Schema, Workflow,
+  Frontmatter, Kebab-case; French Artefact, Schéma, Déroulé, Frontmatter,
+  Kebab-case), the French entries Change, Skill, Spec and Revue renamed
+  Modification, Compétence, Spécification and Relecture,
   each saying the English word it stands for, every definition in
   everyday words; verified by `the_glossary_defines_every_required_term`
   and `the_french_everyday_pages_hold_no_anglicism` on the glossary.
@@ -43,10 +55,16 @@ design, in *vouvoiement*.
   `the_start_here_path_stays_under_its_caps`,
   `each_quickstart_step_leads_with_a_plain_request` and
   `both_editions_open_with_the_start_here_path`.
-- [ ] 2.3 Installation and Reviewing a plan; verified by the two new tests
-  and the existing `review_a_plan_covers_the_plan_without_a_terminal`.
-- [ ] 2.4 The workflow and Concepts; verified by the two new tests.
-- [ ] 2.5 Claude Code skills — its table first (« Met à jour les
+- [ ] 2.3 Installation and Reviewing a plan, and the French words
+  `review_a_plan_covers_the_plan_without_a_terminal` looks for (« specs »
+  becomes « spécification »); verified by the two new tests and that
+  test.
+- [ ] 2.4 The workflow and Concepts — the French title « Le workflow »
+  becomes « Le déroulé », in the chapter and in `SUMMARY.md`; verified by
+  the two new tests.
+- [ ] 2.5 Claude Code skills — the French title « Les skills Claude Code »
+  becomes « Les compétences Claude Code », in the chapter and in
+  `SUMMARY.md`; its table first (« Met à jour les
   spécifications du projet avec ce que la modification apporte, sans la
   clore » for sync) and the « Comment demander » examples (« réalise la
   modification »); verified by the two new tests and the existing

@@ -7,7 +7,7 @@ excepted, the first use of a listed technical term SHALL be a link to its
 glossary entry; the later uses of that term in the chapter need no link.
 The listed terms are, in English, delta, artifact, capability, schema,
 workflow, frontmatter and kebab-case, and in French, delta, artefact,
-capacité, schéma, workflow, frontmatter and kebab-case. The phrase "main
+capacité, schéma, déroulé, frontmatter and kebab-case. The phrase "main
 specs" ("specs principales") MUST NOT appear in these chapters: they say
 "the project's specs" ("les spécifications du projet"). Headings, inline code,
 fenced code blocks and "Under the hood" blocks are not concerned: a
@@ -57,7 +57,7 @@ The French chapters of the "Start here" and "Everyday use" parts, and
 this lexicon: change → modification, skill → compétence, spec →
 spécification, workflow → déroulé, review → relecture, commit →
 enregistrement, pull request → demande de fusion. The English word MAY
-appear only between parentheses right after its French equivalent, so that
+appear only between parentheses, placed after its French equivalent so that
 a reader can match the screen ("une compétence (skill)"), and stays
 untouched in inline code, fenced code, "Under the hood" blocks, command
 names and paths (`/compagnon-apply`, `_compagnon/changes/`). The example
