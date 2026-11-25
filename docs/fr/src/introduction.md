@@ -1,132 +1,58 @@
 # Compagnon
 
-**Le développement piloté par les specs pour Claude Code.**
+**Planifiez avec Claude avant qu'il ne code.**
 
-Compagnon ajoute une fine couche de spécifications à un dépôt, pour que vous et
-votre agent de code vous accordiez sur ce qu'il faut construire avant d'écrire
-la moindre ligne — et pour que les décisions d'architecture, une fois prises,
-cessent d'être remises en débat à chaque change.
+Compagnon vous aide à travailler avec Claude Code, l'assistant de
+programmation d'Anthropic, sans perdre la main. Avant d'écrire la moindre
+ligne de code, Claude met par écrit ce qu'il s'apprête à construire : un
+plan court que vous pouvez lire, discuter et corriger. Une fois que vous
+êtes d'accord, Claude construit exactement cela, et le plan reste dans votre
+dépôt comme trace de ce qui a été fait, et pourquoi.
 
-L'outil se compose de deux moitiés :
+Inutile de savoir comment fonctionne l'IA pour l'utiliser. Vous demandez
+avec vos mots — « ajoute un mode sombre qui suit le réglage du système » — et
+Compagnon guide Claude pour le reste.
 
-| Où | Quoi | Exemples |
-|---|---|---|
-| Votre terminal | Le binaire `compagnon` : le moteur | `compagnon init`, `compagnon status`, `compagnon archive` |
-| Le chat Claude Code | Les skills générées : le volant | `/compagnon-propose`, `/compagnon-apply` |
+## Qui décide
 
-`compagnon init` installe les skills dans `.claude/skills/`. Dès lors, vous
-travaillez surtout dans le chat, et les skills pilotent la CLI à votre place.
+Vous. À chaque étape, Claude propose et vous décidez :
 
-Compagnon n'appelle jamais de modèle de langage. Il gère des fichiers Markdown, le
-graphe de dépendances entre les artefacts de planification, la validation et la
-fusion des modifications de specs. Votre agent rédige ; Compagnon lui indique quoi
-écrire, où, et sous quelles contraintes.
+1. **Vous demandez** un changement, avec vos mots.
+2. **Claude propose un plan** : pourquoi ce changement, ce qui change,
+   comment, et la liste des tâches.
+3. **Vous le relisez et le validez** — ou demandez des corrections. Rien
+   n'est construit avant votre accord.
+4. **Claude le réalise**, tâche par tâche, et vérifie son propre travail.
+5. **Vous relisez le résultat** et classez le changement.
 
-## Pourquoi Compagnon
+Rien n'est appliqué sans votre accord, et chaque décision est consignée là
+où toute votre équipe peut la lire.
 
-Dans un dépôt sans specs, l'intention n'existe que dans la tête des gens. Le
-code s'écrit d'un côté, se relit de l'autre, et six mois plus tard quelqu'un
-fouille l'historique des commits pour retrouver pourquoi un comportement existe.
-Compagnon inverse la démarche : pour chaque change significatif, vous commencez par
-écrire ce que vous voulez, vous le relisez, puis vous l'implémentez.
+## Le nom
 
-Ce que Compagnon vous apporte :
+Compagnon vient du compagnonnage, la tradition des métiers d'art : un
+maître mène l'ouvrage, les compagnons le réalisent, et chacun suit des plans
+arrêtés à l'avance. Ici, vous êtes le maître, et les agents de Claude sont
+vos compagnons.
 
-- **Un cycle explicite.** Chaque change passe par quatre étapes : propose,
-  apply, sync et archive. Chaque étape a son artefact et sa skill Claude Code
-  dédiée. Voir [Le workflow](workflow.md).
-- **Des deltas de specs, fusionnés avec précision.** Un change ne réécrit
-  jamais une spec en entier. Il déclare des exigences `ADDED`, `MODIFIED`,
-  `REMOVED` ou `RENAMED`, que Compagnon fusionne dans les specs principales à
-  l'archivage du change, sans toucher au reste du fichier. C'est ce qui rend
-  Compagnon utilisable sur du code existant, et pas seulement sur des projets
-  neufs.
-- **Des décisions d'architecture immuables.** Les décisions acceptées (ADR)
-  sont scellées par une empreinte de leur contenu. `compagnon validate` signale
-  toute réécriture silencieuse. On ne modifie pas une décision : on la
-  remplace par une nouvelle.
-- **Des conventions partagées entre dépôts.** Un projet peut hériter du
-  contexte, des règles et des décisions d'un autre dépôt, en lecture seule,
-  épinglés sur un commit git. Voir [Sources héritées](guides/inherited-sources.md).
-- **La langue de votre équipe.** Les artefacts sont rédigés dans la langue
-  définie dans la configuration, tandis que leur structure reste lisible par la
-  machine. Voir [Langue des artefacts](guides/artifact-language.md).
-- **Un binaire natif unique.** Aucun environnement d'exécution à installer.
-  Des binaires précompilés pour macOS, Linux et Windows, vérifiés par SHA-256
-  à l'installation.
+## Ce que vous y gagnez
 
-## Origines
+- **Moins de surprises.** Vous voyez ce que Claude va faire avant qu'il le
+  fasse.
+- **Une mémoire partagée.** Les plans et les décisions restent dans le
+  dépôt, en texte simple : chacun peut comprendre plus tard pourquoi une
+  chose a été construite.
+- **Des décisions qui tiennent.** Une fois qu'un choix est tranché par votre
+  équipe, Claude le suit au lieu de le remettre en cause à chaque
+  changement.
 
-Compagnon s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec) (MIT),
-l'outil TypeScript qui a popularisé un cycle de développement piloté par les
-specs pour les agents de code. Compagnon en reprend l'ossature, la reconstruit en
-Rust et fait ses propres choix par-dessus.
+## Par où commencer
 
-**Ce que Compagnon doit à OpenSpec :**
+- [Choisissez votre parcours](choose-your-path.md) : les pages à lire selon
+  votre profil, que vous codiez ou non.
+- [Votre premier change](quickstart.md) : essayez en une dizaine de minutes.
+- [Glossaire](glossary.md) : chaque terme, en mots simples.
 
-- Le cycle propose → apply → archive, et l'idée que le *change* est l'unité de
-  travail.
-- Les deltas de specs et leurs quatre opérations lisibles — `ADDED`,
-  `MODIFIED`, `REMOVED`, `RENAMED`.
-- La notion de *capacité*, qui regroupe un comportement observable plutôt que
-  des fichiers ou des modules.
-- Des workflows et des templates traités comme des données, et non comme du
-  code.
-
-**Ce que Compagnon fait autrement :**
-
-- **Un binaire Rust plutôt qu'un paquet Node.js.** Un exécutable précompilé,
-  sans environnement d'exécution.
-- **Un dossier `_compagnon/` visible.** Les artefacts de planification sont des
-  fichiers sources à part entière : vous les lisez, les comparez et les
-  relisez. Le tiret bas initial laisse le dossier visible pour des outils comme
-  ripgrep et fd, qui ignorent par défaut les répertoires cachés.
-- **Un cœur pur et une coquille impérative.** La bibliothèque centrale
-  n'effectue aucune entrée-sortie ; chacune de ses décisions se teste sans
-  disque. Voir [Architecture](architecture.md).
-- **Une seule cible, bien servie.** Compagnon cible uniquement Claude Code, là où
-  OpenSpec prend en charge de nombreux outils.
-
-**Ce qui est propre à Compagnon :**
-
-- Des décisions d'architecture scellées, avec remplacement, écarts locaux par
-  rapport aux décisions héritées, et promotion d'une décision de design en ADR.
-- Des sources héritées en lecture seule, épinglées par commit git dans
-  `_compagnon/compagnon.lock`.
-- Une intégration MCP côté skills : `/compagnon-propose` détecte un identifiant de
-  ticket comme `PROJ-123` et récupère le ticket via le serveur MCP Jira
-  configuré pour le projet.
-- Un contrat JSON versionné sur chaque commande, pour que les skills puissent
-  s'appuyer sur un format de sortie stable.
-- Une documentation embarquée dans le binaire (`compagnon docs`), consultable hors
-  ligne.
-
-**Le nom.** Compagnon vient du compagnonnage : un maître mène l'ouvrage, les
-compagnons le réalisent, et chacun suit des plans arrêtés à l'avance. Ici,
-vous êtes le maître et les agents Claude sont vos compagnons. Jusqu'à la 0.6,
-le produit s'appelait codev ; [Migrer depuis codev](guides/moving-from-codev.md)
-explique comment convertir un projet créé à cette époque.
-
-## Développé avec Compagnon
-
-Compagnon est développé avec Compagnon : chaque évolution de son dépôt est planifiée,
-relue et archivée avec l'outil lui-même. Son dossier `_compagnon/` est un exemple
-réel que vous pouvez parcourir :
-
-- [les specs vivantes](https://github.com/mairistem/compagnon/tree/main/_compagnon/specs), qui décrivent ce que fait Compagnon
-  aujourd'hui ;
-- [les changes archivés](https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive), chacun avec son proposal,
-  ses deltas de spec, son design et ses tâches ;
-- [un compte rendu de revue](https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md), avec les remarques, leurs preuves, les
-  réponses de l'auteur et la façon dont chacune a été tranchée ;
-- [les décisions d'architecture](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions), scellées.
-
-## Pour aller plus loin
-
-- Vous découvrez Compagnon ? Commencez par l'[Installation](installation.md), puis
-  le [Démarrage rapide](quickstart.md).
-- Vous voulez comprendre le modèle ? Lisez [Le workflow](workflow.md) et
-  [Concepts](concepts.md).
-- Vous cherchez une option ou une clé ? Consultez la
-  [référence de la CLI](reference/cli.md) et la
-  [référence de la configuration](reference/configuration.md).
+Jusqu'à la 0.6, Compagnon s'appelait codev : [Migrer depuis codev](guides/moving-from-codev.md)
+explique comment convertir un projet créé à cette époque. D'où vient
+Compagnon, et pourquoi, est raconté dans [Origines](origins.md).

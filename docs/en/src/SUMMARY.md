@@ -1,22 +1,24 @@
 # Summary
 
-[Introduction](introduction.md)
+# Start here
 
-# Getting started
+- [Compagnon in two minutes](introduction.md)
+- [Choose your path](choose-your-path.md)
+- [Your first change](quickstart.md)
+- [Glossary](glossary.md)
+
+# Everyday use
 
 - [Installation](installation.md)
-- [Quickstart](quickstart.md)
-
-# Using Compagnon
-
 - [The workflow](workflow.md)
 - [Claude Code skills](skills.md)
-- [Roles](roles.md)
-- [Reliability of the roles](reliability.md)
+- [Reviewing a plan](guides/review-a-plan.md)
 - [Concepts](concepts.md)
+- [FAQ and troubleshooting](faq.md)
 
-# Guides
+# Going further
 
+- [Roles](roles.md)
 - [Moving from codev](guides/moving-from-codev.md)
 - [Inherited sources](guides/inherited-sources.md)
 - [Repository integration and compagnon doctor](guides/repository-integration.md)
@@ -33,7 +35,8 @@
 - [File formats](reference/file-formats.md)
 - [JSON output](reference/json-output.md)
 
-# Appendix
+# Contributing
 
-- [FAQ and troubleshooting](faq.md)
+- [Origins](origins.md)
 - [Architecture](architecture.md)
+- [Reliability of the roles](reliability.md)

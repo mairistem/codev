@@ -515,6 +515,33 @@ td:first-child code {
   fill: var(--soft);
 }
 
+/* "Under the hood" blocks: the native disclosure element, closed by
+   default; the marker takes the summary's colour, the global
+   :focus-visible outline applies to the summary. */
+details {
+  margin: 1.25em 0;
+  padding: 0 1em;
+  border: 1px solid var(--border-card);
+  border-radius: 6px;
+  background: var(--soft);
+}
+
+details > summary {
+  padding: .6em 0;
+  color: var(--strong);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+details > summary::marker {
+  color: currentColor;
+}
+
+details[open] > summary {
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: .75em;
+}
+
 @media print {
   :root {
     --heading: #004c66;

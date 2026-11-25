@@ -222,10 +222,13 @@ fn compagnon_marks_use_only_the_mairistem_palette() {
                 "{file} uses {color}, outside the palette"
             );
         }
-        assert!(
-            svg.contains("<title id=\"t\">Compagnon</title>"),
-            "{file} has no title"
-        );
+        // The logos carry the byline, the marks the name alone.
+        let title = if file.contains("-logo") {
+            "<title id=\"t\">Compagnon by Mairistem</title>"
+        } else {
+            "<title id=\"t\">Compagnon</title>"
+        };
+        assert!(svg.contains(title), "{file} must hold `{title}`");
     }
 }
 
@@ -345,6 +348,55 @@ fn site_and_introductions_name_compagnon() {
         assert!(
             intro.contains(needle),
             "docs/{lang} introduction explains the name"
+        );
+    }
+}
+
+/// The words of a README's prose: outside fenced code blocks and HTML
+/// lines (the mark's `<picture>`).
+fn readme_words(text: &str) -> usize {
+    let mut fence = false;
+    text.lines()
+        .filter(|l| {
+            if l.trim_start().starts_with("```") {
+                fence = !fence;
+                return false;
+            }
+            !fence && !l.trim_start().starts_with('<')
+        })
+        .flat_map(str::split_whitespace)
+        .filter(|w| w.chars().any(char::is_alphanumeric))
+        .count()
+}
+
+#[test]
+fn both_readmes_stay_short_keep_the_one_liners_and_link_the_profiles() {
+    for (file, heading, cap) in [
+        ("README.md", "## Getting started", 600),
+        ("README.fr.md", "## Démarrer", 750),
+    ] {
+        let text = read(file);
+        let words = readme_words(&text);
+        assert!(words <= cap, "{file}: {words} words, cap {cap}");
+        let start = text
+            .find(heading)
+            .unwrap_or_else(|| panic!("{file} has no `{heading}`"));
+        let rest = &text[start + heading.len()..];
+        let section = &rest[..rest.find("\n## ").unwrap_or(rest.len())];
+        for needle in [
+            "curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh",
+            "iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex",
+            "compagnon init",
+            "/compagnon-propose",
+        ] {
+            assert!(
+                section.contains(needle),
+                "{file}: `{heading}` lacks `{needle}`"
+            );
+        }
+        assert!(
+            text.contains("choose-your-path.html"),
+            "{file} does not link Choose your path"
         );
     }
 }

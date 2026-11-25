@@ -53,7 +53,7 @@ impl Lang {
         }
     }
 
-    fn chapters(self) -> &'static [(&'static str, &'static str)] {
+    pub(crate) fn chapters(self) -> &'static [(&'static str, &'static str)] {
         match self {
             Lang::En => CHAPTERS_EN,
             Lang::Fr => CHAPTERS_FR,

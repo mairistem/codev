@@ -17,6 +17,77 @@ son nom comme commande slash, par exemple `/compagnon-propose`.
 | `/compagnon-sync` | Fusionne les deltas d'un change dans les specs principales sans l'archiver | Uniquement via `compagnon sync` |
 | `/compagnon-archive` | Valide un change, le fusionne et le déplace dans l'archive | Uniquement via `compagnon archive` |
 
+## Comment demander
+
+Inutile de retenir les commandes. Claude Code lit la description de chaque
+skill installée et lance celle qui correspond à votre demande : dites ce
+que vous voulez, avec vos mots et dans votre langue. La commande
+`/compagnon-…` n'est qu'un raccourci qui nomme directement la skill. Si
+Claude choisit la mauvaise skill, ou aucune, précisez laquelle (« utilise
+Compagnon pour planifier ça ») ou tapez le raccourci.
+
+### Pour planifier un change (`/compagnon-propose`)
+
+L'indice : vous demandez un plan, une proposition, ou quelque chose de
+nouveau à construire ou à corriger « avec Compagnon ».
+
+- « Prépare un plan pour un mode sombre qui suit le réglage du système. »
+- « Rédige une proposition pour exporter les factures en PDF. »
+- « Prépare un change pour le ticket PROJ-123. »
+
+### Pour réfléchir à une idée (`/compagnon-explore`)
+
+L'indice : vous ne savez pas encore quoi construire, ou voulez comparer des
+options. Rien n'est écrit.
+
+- « Explorons comment mettre en cache les résultats de recherche. »
+- « J'hésite entre deux façons de stocker les sessions : compare-les. »
+
+### Pour une visite guidée (`/compagnon-onboard`)
+
+L'indice : vous découvrez Compagnon ou le projet, et voulez savoir où en
+sont les choses.
+
+- « Fais-moi visiter Compagnon. »
+- « Où en est ce projet, et que dois-je faire ensuite ? »
+
+### Pour adapter l'installation (`/compagnon-configure`)
+
+L'indice : vous voulez que Compagnon connaisse les conventions de votre
+projet.
+
+- « Configure Compagnon pour ce projet. »
+- « Lis notre README et notre code, et propose des règles pour les plans. »
+
+### Pour réaliser un change planifié (`/compagnon-apply`)
+
+L'indice : un plan existe et vous le validez.
+
+- « Le plan me va, implémente-le. »
+- « Réalise les tâches de add-dark-mode. »
+
+### Pour réviser un plan (`/compagnon-update`)
+
+L'indice : vous voulez modifier un plan déjà rédigé, avant sa réalisation.
+
+- « Dans le plan, garde le choix de l'utilisateur quand il choisit un thème à la main. »
+- « Mets à jour la conception de add-dark-mode : on stocke le thème dans un cookie. »
+
+### Pour publier les specs plus tôt (`/compagnon-sync`)
+
+L'indice : un autre change a besoin des specs de celui-ci avant son
+archivage.
+
+- « Fusionne les specs de add-dark-mode dans les specs principales, sans archiver. »
+- « Synchronise maintenant les specs de ce change. »
+
+### Pour classer un change terminé (`/compagnon-archive`)
+
+L'indice : le travail est fini et vérifié.
+
+- « Le change est terminé, archive-le. »
+- « Archive add-dark-mode. »
+
 ## Permissions des outils
 
 Chaque skill déclare les outils qu'elle peut utiliser dans le champ

@@ -7,6 +7,8 @@
 mod commands;
 mod contract;
 mod docs;
+#[cfg(test)]
+mod docs_checks;
 mod init_prompts;
 mod render;
 

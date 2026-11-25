@@ -16,6 +16,75 @@ by typing its name as a slash command, such as `/compagnon-propose`.
 | `/compagnon-sync` | Merges a change's deltas into the main specs without archiving | Through `compagnon sync` only |
 | `/compagnon-archive` | Validates, merges and moves a change to the archive | Through `compagnon archive` only |
 
+## How to ask
+
+You do not need to remember the commands. Claude Code reads the
+description of every installed skill and starts the one that matches your
+request: say what you want, in your own words and in your own language.
+The `/compagnon-…` command is only a shortcut that names the skill
+directly. If Claude picks the wrong skill, or none, say which one you mean
+("use Compagnon to plan this") or type the shortcut.
+
+### To plan a change (`/compagnon-propose`)
+
+The cue: you ask for a plan, a proposal, or for something new to build or
+fix "with Compagnon".
+
+- "Plan a dark mode that follows the system setting."
+- "Write a proposal to let users export their invoices as PDF."
+- "Prepare a change for ticket PROJ-123."
+
+### To think an idea through (`/compagnon-explore`)
+
+The cue: you are not sure yet what to build, or want options compared.
+Nothing is written.
+
+- "Let's explore how we could cache the search results."
+- "I'm hesitating between two ways to store sessions: compare them."
+
+### To get a tour (`/compagnon-onboard`)
+
+The cue: you are new to Compagnon or to the project, and want to know where
+things stand.
+
+- "Show me around Compagnon."
+- "Where does this project stand, and what should I do next?"
+
+### To tailor the setup (`/compagnon-configure`)
+
+The cue: you want Compagnon to know your project's conventions.
+
+- "Configure Compagnon for this project."
+- "Read our README and code, and suggest rules for the plans."
+
+### To build a planned change (`/compagnon-apply`)
+
+The cue: a plan exists and you approve it.
+
+- "The plan is good, implement it."
+- "Carry out the tasks of add-dark-mode."
+
+### To revise a plan (`/compagnon-update`)
+
+The cue: you want to change a plan already written, before it is built.
+
+- "In the plan, keep the user's choice when they pick a theme by hand."
+- "Update the design of add-dark-mode: we store the theme in a cookie."
+
+### To publish the specs early (`/compagnon-sync`)
+
+The cue: another change needs this change's specs before it is archived.
+
+- "Merge the specs of add-dark-mode into the main specs, without archiving."
+- "Sync the specs of this change now."
+
+### To file a finished change (`/compagnon-archive`)
+
+The cue: the work is done and checked.
+
+- "The change is done, archive it."
+- "Archive add-dark-mode."
+
 ## Tool permissions
 
 Each skill declares the tools it may use in the `allowed-tools` field of its

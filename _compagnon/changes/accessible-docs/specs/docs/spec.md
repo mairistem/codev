@@ -106,6 +106,36 @@ install Compagnon or run `compagnon init`.
 - **WHEN** the check runs on it
 - **THEN** it passes
 
+### Requirement: The documentation shows how to ask in plain words
+
+Claude Code starts a skill when a request matches its description; the
+`/compagnon-…` command is a shortcut, not a requirement. Each step of the
+quickstart SHALL show first the sentence to say to Claude in plain words
+(in the edition's language), then the skill's command as an alternative.
+The Skills chapter SHALL hold a section "How to ask" ("Comment demander")
+with, for each installed skill, at least two example requests in plain
+words and the cue that makes Claude pick that skill.
+
+#### Scenario: Each quickstart step leads with a plain request
+
+- **GIVEN** the quickstart of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** in each step section, a quoted plain-words request comes before
+  the skill's `/compagnon-…` command
+
+#### Scenario: Every skill has examples
+
+- **GIVEN** the Skills chapter of both editions
+- **WHEN** the test suite of `compagnon-cli` runs
+- **THEN** its "How to ask" section names each of the eight skills with at
+  least two quoted example requests
+
+#### Scenario: A skill without examples is caught
+
+- **GIVEN** a "How to ask" section that gives `compagnon-sync` one example
+- **WHEN** the check runs on it
+- **THEN** it fails naming `compagnon-sync`
+
 ### Requirement: The glossary defines every term of the Start here path
 
 `glossary.md` SHALL hold one `## <Term>` section per term, defining, in

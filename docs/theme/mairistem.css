@@ -1766,3 +1766,31 @@ html:not(.js) {
 .rel-chart .rel-row:hover .rel-hit {
   fill: var(--mx-surface-soft);
 }
+
+/* "Under the hood" blocks: the native disclosure element, closed by
+   default. The marker stays the browser's own and takes the summary's
+   colour (above 4.5:1 in both schemes); the global :focus-visible outline
+   applies to the summary. */
+.content details {
+  margin: 1.25em 0;
+  padding: 0 1em;
+  border: 1px solid var(--mx-border-card);
+  border-radius: var(--mx-radius-sm);
+  background: var(--mx-surface-soft);
+}
+
+.content details > summary {
+  padding: .6em 0;
+  color: var(--mx-strong);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.content details > summary::marker {
+  color: currentColor;
+}
+
+.content details[open] > summary {
+  border-bottom: 1px solid var(--mx-hairline);
+  margin-bottom: .75em;
+}

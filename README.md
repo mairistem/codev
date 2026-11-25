@@ -7,7 +7,7 @@
 
 # Compagnon
 
-**Spec-driven development for Claude Code.**
+**Plan with Claude before it codes.**
 
 [![CI](https://github.com/mairistem/compagnon/actions/workflows/ci.yml/badge.svg)](https://github.com/mairistem/compagnon/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/mairistem/compagnon)](https://github.com/mairistem/compagnon/releases/latest)
@@ -16,26 +16,72 @@
 
 English · [Français](README.fr.md)
 
-Compagnon adds a thin layer of specifications to your repository, so that you and
-Claude Code agree on what must be built before a line of code is written — and
-so that architecture decisions, once made, stop being re-debated on every
-change.
+Compagnon lets you and Claude Code agree on what to build before a line of
+code is written: Claude writes a short plan, you approve it, then Claude
+builds exactly that — and the plan stays in your repository.
 
 <p align="center">
   <img src="docs/assets/demo.gif" alt="Terminal recording: compagnon init, a new change whose plan is validated and archived, and the resulting living spec" width="800">
 </p>
 
-## Why
+## Getting started
 
-Without specs, intent lives in chat history and in people's heads. With Compagnon,
-every change starts as a small plan in `_compagnon/changes/`: why, what, how, and
-a **spec delta** that states the behavior it adds or modifies.
+1. **Install Compagnon** — no Rust toolchain needed. On macOS and Linux:
 
-A change adds one requirement:
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
+   ```
+
+   On Windows (PowerShell):
+
+   ```powershell
+   iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
+   ```
+
+   Both scripts verify the SHA-256 of the binary they download. Other ways
+   are in the [installation guide](https://mairistem.github.io/compagnon/en/installation.html).
+
+2. **Set up your repository**, once, at its root:
+
+   ```bash
+   compagnon init
+   ```
+
+3. **Ask Claude Code for a change**, in plain words — "plan a dark mode that
+   follows the system setting" — or with the shortcut:
+
+   ```text
+   /compagnon-propose add a dark mode that follows the system setting
+   ```
+
+   Claude writes the plan and waits for your approval. [Your first
+   change](https://mairistem.github.io/compagnon/en/quickstart.html) walks through the whole cycle.
+
+## Find your way
+
+The documentation has a path for each profile:
+
+- [I am discovering AI agents](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-am-discovering-ai-agents)
+- [I do not code, I read and approve plans](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-do-not-code-i-read-and-approve-plans)
+- [I develop with Compagnon](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-develop-with-compagnon)
+- [I set Compagnon up for my team](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-set-compagnon-up-for-my-team)
+- [I contribute to Compagnon](https://mairistem.github.io/compagnon/en/choose-your-path.html#i-contribute-to-compagnon)
+
+## How it works
+
+Every change follows the same cycle, with one Claude Code skill per step:
+
+```text
+┌───────────┐    ┌───────────┐    ┌───────────┐
+│  propose  │───▶│   apply   │───▶│  archive  │
+│ plan it   │    │ build it  │    │ file it   │
+└───────────┘    └───────────┘    └───────────┘
+```
+
+The plan lives in `_compagnon/changes/`: why, what, how, the tasks, and a
+**spec delta** stating the behavior it adds:
 
 ```markdown
-## ADDED Requirements
-
 ### Requirement: The chosen theme is remembered
 
 The application SHALL restore the theme the user last picked, on every device they sign in from.
@@ -47,137 +93,20 @@ The application SHALL restore the theme the user last picked, on every device th
 - **THEN** the application renders with the dark theme
 ```
 
-When the change is archived, Compagnon merges the delta into the living spec,
-`_compagnon/specs/ui/theme/spec.md`, and leaves everything else in it untouched:
-
-```markdown
-# Theme Specification
-
-## Purpose
-
-Let users choose the color theme of the interface.
-
-## Requirements
-
-### Requirement: Theme follows the system preference by default
-
-The application SHALL render with the operating system's color scheme until the user picks a theme.
-
-#### Scenario: No theme chosen yet
-…
-
-### Requirement: The chosen theme is remembered
-
-The application SHALL restore the theme the user last picked, on every device they sign in from.
-
-#### Scenario: Returning user
-…
-```
-
-The spec always describes what the system does today, and each archived
-change records why it changed. Compagnon never calls a model itself: Claude Code
-writes, and Compagnon tells it what to write, where, and under which constraints.
-
-## Getting started
-
-Install Compagnon — no Rust toolchain needed.
-
-macOS and Linux:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
-```
-
-Windows (PowerShell):
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
-```
-
-Both scripts verify the SHA-256 of the binary they download. You can also
-download a binary from the
-[releases page](https://github.com/mairistem/compagnon/releases/latest), or build
-from source with `cargo install --path crates/compagnon-cli`; see the
-[installation guide](https://mairistem.github.io/compagnon/en/installation.html).
-
-**Requirements:** macOS (Apple Silicon or Intel), Linux x86_64 or Windows
-x86_64, and [Claude Code](https://claude.com/claude-code) to use the skills.
-
-### Quick start
-
-```bash
-cd your-project
-compagnon init
-```
-
-Then, in Claude Code:
-
-```text
-/compagnon-propose add a dark mode that follows the system preference
-/compagnon-apply add-dark-mode
-/compagnon-archive add-dark-mode
-```
-
-The [quickstart](https://mairistem.github.io/compagnon/en/quickstart.html) walks
-through it step by step.
-
-## How it works
-
-Every change follows the same cycle, with one Claude Code skill per step:
-
-```text
-┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
-│  propose  │───▶│   apply   │───▶│   sync    │───▶│  archive  │
-│ plan it   │    │ build it  │    │ merge the │    │ file it   │
-│           │    │           │    │ deltas    │    │ away      │
-└───────────┘    └───────────┘    └───────────┘    └───────────┘
-```
-
-- **propose** — writes the plan: proposal, spec deltas, design, tasks. No code.
-- **apply** — implements the tasks, running their verification and checking
-  them off.
-- **sync** — merges the deltas into the main specs (optional; archive does it).
-- **archive** — validates, merges, and moves the change to a dated archive.
-
-`/compagnon-explore`, `/compagnon-update`, `/compagnon-onboard` and `/compagnon-configure`
-complete the set. Behind the skills, the `compagnon` CLI does the atomic work —
-status, instructions, validation, merging — with a stable JSON output.
-
-Everything lives in a visible folder at the root of your repository:
-
-```text
-_compagnon/
-├── specs/        # behavior contracts — what the system does
-├── decisions/    # architecture decisions — why it is built this way
-├── changes/      # work in progress, and the dated archive
-└── config.yaml   # context, rules, language, inherited sources
-```
-
-- **Changes are deltas.** A change declares `ADDED`, `MODIFIED`, `REMOVED` or
-  `RENAMED` requirements instead of rewriting specs, which makes Compagnon work on
-  existing code, not only on new projects.
-- **Decisions are immutable.** Accepted ADRs are sealed with a hash; changing
-  one means superseding it, and `compagnon validate` catches silent edits.
-- **Conventions can be shared.** A project can inherit context, rules and
-  decisions from another repository, read-only and pinned to a git commit.
-- **Your language.** Artifacts are written in the language your team sets;
-  their structure stays machine-readable.
+On archiving, Compagnon merges the delta into the living specs of
+`_compagnon/specs/`, which always describe what the system does today.
+Architecture decisions, once accepted, are sealed: Claude follows them
+instead of re-debating them. Compagnon never calls a model itself: Claude
+Code writes, and Compagnon tells it what to write, where, and under which
+constraints.
 
 ## Built with Compagnon
 
-Compagnon is developed with Compagnon. Every change to this repository — including
-the roles, experts and review records described above — was planned,
-reviewed and archived with the tool itself, and every pull request runs
-`compagnon validate --strict`. Browse it as a real-world example:
-
-- [`_compagnon/specs/`](_compagnon/specs/) — the living specs describing what Compagnon
-  does today;
-- [`_compagnon/changes/archive/`](_compagnon/changes/archive/) — every change, with
-  its proposal, spec deltas, design and tasks;
-- [a review record](_compagnon/changes/archive/2026-10-13-review-record/review.md) — findings with their evidence, the author's answers
-  and how each was settled;
-- [`_compagnon/decisions/`](_compagnon/decisions/) — the sealed architecture
-  decisions.
+Every change to this repository was planned, reviewed and archived with
+Compagnon itself. Browse [the living specs](_compagnon/specs/),
+[the archived changes](_compagnon/changes/archive/),
+[a review record](_compagnon/changes/archive/2026-10-13-review-record/review.md)
+and [the sealed decisions](_compagnon/decisions/).
 
 ## Comparison
 
@@ -202,9 +131,8 @@ this table is out of date, please open an issue.
 ## Documentation
 
 The full documentation is at
-**[mairistem.github.io/compagnon](https://mairistem.github.io/compagnon/en/)** —
-workflow, concepts, guides, and the CLI, configuration and file format
-references. It is also embedded in the binary, readable offline:
+**[mairistem.github.io/compagnon](https://mairistem.github.io/compagnon/en/)**. It is also embedded in the
+binary, readable offline:
 
 ```bash
 compagnon docs

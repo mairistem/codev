@@ -1,22 +1,24 @@
 # Sommaire
 
-[Introduction](introduction.md)
+# Commencer ici
 
-# Premiers pas
+- [Compagnon en deux minutes](introduction.md)
+- [Choisissez votre parcours](choose-your-path.md)
+- [Votre premier change](quickstart.md)
+- [Glossaire](glossary.md)
+
+# Au quotidien
 
 - [Installation](installation.md)
-- [Démarrage rapide](quickstart.md)
-
-# Utiliser Compagnon
-
 - [Le workflow](workflow.md)
 - [Les skills Claude Code](skills.md)
-- [Rôles](roles.md)
-- [Fiabilité des rôles](reliability.md)
+- [Relire un plan](guides/review-a-plan.md)
 - [Concepts](concepts.md)
+- [FAQ et dépannage](faq.md)
 
-# Guides
+# Aller plus loin
 
+- [Rôles](roles.md)
 - [Migrer depuis codev](guides/moving-from-codev.md)
 - [Sources héritées](guides/inherited-sources.md)
 - [Intégration au dépôt et compagnon doctor](guides/repository-integration.md)
@@ -33,7 +35,8 @@
 - [Formats de fichiers](reference/file-formats.md)
 - [Sortie JSON](reference/json-output.md)
 
-# Annexes
+# Contribuer
 
-- [FAQ et dépannage](faq.md)
+- [Origines](origins.md)
 - [Architecture](architecture.md)
+- [Fiabilité des rôles](reliability.md)

@@ -571,6 +571,15 @@ a:hover { color: var(--corail-texte-hover); }
   .delta-card figcaption { padding: 14px 18px; }
   .delta-card figcaption code { display: none; }
 }
+@media (max-width: 440px) {
+  .site-header .container { gap: 8px; }
+  .logo { height: 18px; }
+  .brand, .brand-product { gap: 8px; }
+  .brand-product { font-size: 16px; }
+  .brand-product::before { height: 18px; }
+  .site-nav { margin-right: -6px; }
+  .site-nav a { padding: 0 6px; font-size: 14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
@@ -622,6 +631,39 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
 <span class="k">-</span> <span class="g">**WHEN**</span> they sign in on their phone
 <span class="k">-</span> <span class="g">**THEN**</span> the application renders with the dark theme</code></pre>
       </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="paths-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Choose your path</p>
+        <h2 id="paths-title">Start where you are</h2>
+        <p>You do not need to read everything. Pick the profile closest to yours: the documentation gives you its pages, in order.</p>
+      </div>
+      <ul class="features">
+        <li class="feature">
+          <h3><a href="en/choose-your-path.html#i-am-discovering-ai-agents">I am discovering AI agents</a></h3>
+          <p>See what working with an agent looks like, safely: what Compagnon does, the words to know, a first try.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/choose-your-path.html#i-do-not-code-i-read-and-approve-plans">I do not code, I read and approve plans</a></h3>
+          <p>Claude writes the plan; check it says the right thing and ask for changes, without a terminal.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/choose-your-path.html#i-develop-with-compagnon">I develop with Compagnon</a></h3>
+          <p>Run the whole cycle once, then learn how to ask for each step.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/choose-your-path.html#i-set-compagnon-up-for-my-team">I set Compagnon up for my team</a></h3>
+          <p>Installation, CI and pull requests, review roles, shared conventions.</p>
+        </li>
+        <li class="feature">
+          <h3><a href="en/choose-your-path.html#i-contribute-to-compagnon">I contribute to Compagnon</a></h3>
+          <p>Why it exists, how it is built, and how skill changes are measured.</p>
+        </li>
+      </ul>
+      <p class="more"><a class="link-arrow" href="en/choose-your-path.html">All the paths <span aria-hidden="true">→</span></a><a class="link-arrow" href="fr/choose-your-path.html" hreflang="fr" lang="fr">Les parcours, en français <span aria-hidden="true">→</span></a></p>
     </div>
   </section>
 

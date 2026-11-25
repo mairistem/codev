@@ -27,6 +27,9 @@ reader sees now.
     `/compagnon-archive`; the CLI equivalents and what `compagnon init` does
     underneath move into collapsible "Under the hood" blocks.
   - A **Glossary**: every term the Start here path uses, in plain words.
+- Plain-words requests come first: each quickstart step shows the sentence
+  to say to Claude, the `/compagnon-…` command as a shortcut; the Skills
+  chapter gains a "How to ask" section with example requests per skill.
 - A **Choose your path** page names five profiles and the pages each one
   reads, in order: discovering AI agents; not coding but reading and
   approving plans; developing; configuring Compagnon for a team; contributing
