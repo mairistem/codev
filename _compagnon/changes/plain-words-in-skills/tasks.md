@@ -58,7 +58,8 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   `apply_refusal_suggests_finishing_the_plan_in_plain_words_first`,
   `archive_and_sync_refusals_offer_the_errors_in_plain_words` and
   `the_six_skills_still_name_their_commands`.
-- [ ] 2.3 Rewrite the eight descriptions of the `CATALOG`: what the skill
+- [ ] 2.3 Rewrite the descriptions of the six skills in the `CATALOG`
+  (`explore` and `onboard` unchanged): what the skill
   does, then `Use for requests like "…", « … »` with requests specific to
   the step; verified by `every_description_names_english_and_french_requests`
   and the existing frontmatter tests of `crates/compagnon-agents/src/claude.rs`

@@ -110,8 +110,11 @@ on the steps `plan.write`, `plan.update`, `code.implement`, `change.sync`,
 `change.archive` and `configure.enrich`, against the committed baseline, and the pull request carries the output of
 `compare`. The run calls a model and costs money — a planning case about
 1.65 USD, repeated — so it starts only once the user has agreed to its
-estimated cost; descriptions, which only steer the choice of a skill, are
-not measured by the suite, which runs each skill by name.
+estimated cost. The suite runs each skill by name and so does not measure
+how Claude Code chooses a skill from its description; it does read the
+whole `SKILL.md`, description included, so the six descriptions changed
+are part of what it measures. The descriptions of `explore` and `onboard`
+wait, with their bodies, for the change that covers them first.
 
 **Alternatives considered**: skipping the evaluation as for the rename —
 this change alters what the agents read and say, the case decision 0008

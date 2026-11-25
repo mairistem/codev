@@ -19,13 +19,13 @@ still contradict it.
   command they named stays, as the shortcut.
 - A shared fragment states that rule once, and each of the six skills
   includes it.
-- The descriptions of all eight skills, which Claude Code matches against a
-  request to pick a skill, name the kinds of plain requests that should
-  start them, in English and in French.
+- The descriptions of the same six skills, which Claude Code matches
+  against a request to pick a skill, name the kinds of plain requests that
+  should start them, in English and in French.
 - `compagnon init`'s closing hint invites the user to ask Claude Code in
   plain words ("ask Claude Code to configure Compagnon for this project"),
   the slash command given as the shortcut.
-- The bodies of `explore` and `onboard` are left as they are: the
+- `explore` and `onboard`, body and description, are left as they are: the
   evaluation suite does not cover them yet, so per decision 0008 a
   following change covers them first, then converts them.
 

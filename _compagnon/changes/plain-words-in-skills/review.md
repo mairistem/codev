@@ -40,6 +40,11 @@ recommendation: 'Decision 0008 has an unevaluated step covered first, by its own
 history:
   - status: open
     by: skeptic
+  - status: fixed
+    by: product
+    ref: "proposal.md What Changes, specs/skills/spec.md (six descriptions), design.md, tasks.md 2.3 — the user chose to change only the six evaluated skills' descriptions"
+  - status: fixed
+    by: skeptic
 ```
 
 #### R-skeptic-3 The rule keeps `/compagnon-continue`, which names no skill

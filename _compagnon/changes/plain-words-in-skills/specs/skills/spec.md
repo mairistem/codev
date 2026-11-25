@@ -47,7 +47,8 @@ command the skill runs itself — is not concerned.
 
 ### Requirement: Skill descriptions name the plain requests that start them
 
-The description of each of the eight skills — the text Claude Code matches
+The description of the `propose`, `apply`, `update`, `sync`, `archive` and
+`configure` skills — the text Claude Code matches
 against a request to choose a skill — SHALL name, besides what the skill
 does, examples of plain requests that should start it, at least one in
 English and one in French. Each description MUST stay within 1024
@@ -55,7 +56,7 @@ characters.
 
 #### Scenario: Every description names English and French requests
 
-- **GIVEN** the catalog of the eight workflows
+- **GIVEN** the six workflows of the catalog named by this requirement
 - **WHEN** the test suite of `compagnon-agents` runs
 - **THEN** each description holds at least one quoted English request and
   one quoted French request
