@@ -1,8 +1,8 @@
 # File formats
 
-codev's files are Markdown and YAML meant to be written by people and agents,
-and parsed by codev. This chapter gives the exact rules, with the English
-keywords. codev also reads their French equivalents (`### Exigence :`,
+Compagnon's files are Markdown and YAML meant to be written by people and agents,
+and parsed by Compagnon. This chapter gives the exact rules, with the English
+keywords. Compagnon also reads their French equivalents (`### Exigence :`,
 `## Exigences AJOUTÉES`, `DOIT`…), listed in
 [Artifact language](../guides/artifact-language.md).
 
@@ -11,10 +11,10 @@ parsers, so templates can carry guidance in `<!-- … -->` comments.
 
 ## Main spec
 
-Path: `_codev/specs/<capability>/spec.md`, where `<capability>` is one or more
+Path: `_compagnon/specs/<capability>/spec.md`, where `<capability>` is one or more
 kebab-case segments (`ui/theme`). Only a file named exactly `spec.md` is a
-main spec: other files under `_codev/specs/`, such as a `README.md`, are
-ignored by `codev list --specs` and `codev validate`.
+main spec: other files under `_compagnon/specs/`, such as a `README.md`, are
+ignored by `compagnon list --specs` and `compagnon validate`.
 
 ```markdown
 # Theme Specification
@@ -54,7 +54,7 @@ the delta's `## Purpose`.
 
 ## Spec delta
 
-Path: `_codev/changes/<name>/specs/<capability>/spec.md`, with the same
+Path: `_compagnon/changes/<name>/specs/<capability>/spec.md`, with the same
 capability path as the main spec it modifies.
 
 ```markdown
@@ -157,13 +157,13 @@ Capabilities* requires `retire_capabilities: true`.
 ### Release note
 
 What end users read in the changelog, built by
-[`codev changelog`](cli.md#codev-changelog). Either one or more items:
+[`compagnon changelog`](cli.md#compagnon-changelog). Either one or more items:
 
 ```markdown
 ## Release note
 
-- Added: `--format json` on `codev export`.
-- Changed: **BREAKING** `codev export` writes to stdout by default; pass
+- Added: `--format json` on `compagnon export`.
+- Changed: **BREAKING** `compagnon export` writes to stdout by default; pass
   `--output <PATH>` to write a file.
 ```
 
@@ -180,7 +180,7 @@ Each item is `- <Category>: <text>`, the category being one of `Added`,
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). An item may wrap
 over several lines. A breaking item starts its text with `**BREAKING**`. The
 text follows the project's artifact language.
-`codev validate` reports a missing section as a warning and an unknown
+`compagnon validate` reports a missing section as a warning and an unknown
 category, an item without text or an empty section as errors, on active
 changes only.
 
@@ -206,7 +206,7 @@ or, when it touches none of them, write the single line `None`.
 `- [x] <domain>` or `- <domain>` ticks a domain, `- [ ] <domain>` leaves it
 unticked, and the text after the domain name is a free comment. The
 domains are `security`, `personal-data`, `user-interface`, `performance`,
-`operations` and `migration`. `codev validate` reports, on active changes
+`operations` and `migration`. `compagnon validate` reports, on active changes
 only, an unknown domain (`unknown_domain`) and a line that is neither an
 item nor `None`, or `None` next to a ticked domain (`domains_invalid`), as
 errors, and a missing section (`domains_missing`) as a warning.
@@ -216,7 +216,7 @@ That comment is also how you answer a
 does not touch: an unticked domain with a reason after its name is
 `justified` — `- [ ] security — only renames a variable`. Leading dashes,
 colons and spaces are not part of the reason; `None` justifies nothing.
-`codev validate` reports each suggested domain neither ticked nor
+`compagnon validate` reports each suggested domain neither ticked nor
 justified as `domain_suggested`, a warning at the domain's line.
 
 ## design.md
@@ -242,7 +242,7 @@ justified as `domain_suggested`, a warning at the domain's line.
 ```
 
 Each `### Decision: <title>` block can be promoted to an ADR with
-`codev decision promote <change> "<title>"`. *Risks / Trade-offs* uses the
+`compagnon decision promote <change> "<title>"`. *Risks / Trade-offs* uses the
 `[Risk] → Mitigation` form. *Migration Plan* and *Open Questions* are removed
 when they do not apply.
 
@@ -258,12 +258,12 @@ when they do not apply.
 ```
 
 Tasks are grouped under numbered `##` headings and written as `- [ ] X.Y
-<task>`; `/codev-apply` checks them off as `- [x]`. Each task states how to
+<task>`; `/compagnon-apply` checks them off as `- [x]`. Each task states how to
 verify it.
 
 ## change.yaml
 
-Path: `_codev/changes/<name>/change.yaml`. Written by `codev new change`.
+Path: `_compagnon/changes/<name>/change.yaml`. Written by `compagnon new change`.
 `<name>` is never `archive`, the folder of archived changes.
 
 ```yaml
@@ -274,7 +274,7 @@ goal: Let users switch the UI to a dark theme
 
 | Key | Type | Meaning |
 |---|---|---|
-| `schema` | string, required | Schema of the change: `spec-driven`, or the folder name of a project schema under `_codev/schemas/` |
+| `schema` | string, required | Schema of the change: `spec-driven`, or the folder name of a project schema under `_compagnon/schemas/` |
 | `created` | date | Creation date, `YYYY-MM-DD` |
 | `goal` | string | The goal given with `--goal` |
 | `skip_specs` | boolean | The change intentionally has no spec delta: the artifacts writing under `specs/` are skipped, and validation accepts zero deltas |
@@ -282,38 +282,38 @@ goal: Let users switch the UI to a dark theme
 | `roles` | mapping | Role activations for this change only, over the project's [`roles:`](configuration.md#roles): `newcomer: always`. Activations only — criteria belong to the project |
 | `review` | mapping | `mode: inline` or `mode: isolated` for this change only, over the project's [`review:`](configuration.md#review). Another value fails with `invalid_review_mode` |
 
-A key codev does not know — at the top level, or under `review`
+A key Compagnon does not know — at the top level, or under `review`
 (`review.<key>`) — is ignored with a `change_unknown_key` warning that names
-it, quotes the project's `codev_version` and points to `codev self-update`;
-`codev validate --strict` fails on it, at its line. The change may have been
-written with a newer codev, or the key is misspelled. A value codev does not
-know — a `review.mode`, a role activation — stays an error. codev 0.6.1 and
-earlier reject any unknown key of this file, so a codev that predates
+it, quotes the project's `compagnon_version` and points to `compagnon self-update`;
+`compagnon validate --strict` fails on it, at its line. The change may have been
+written with a newer Compagnon, or the key is misspelled. A value Compagnon does not
+know — a `review.mode`, a role activation — stays an error. Compagnon 0.6.1 and
+earlier reject any unknown key of this file, so a Compagnon that predates
 `review` refuses a `change.yaml` that sets it: raise the project's
-[`codev_version`](configuration.md#codev_version) to the release that
+[`compagnon_version`](configuration.md#compagnon_version) to the release that
 introduced it before using it. A change folder without `change.yaml` uses the
 project's schema. An invalid entry of `roles` is reported by
-`codev validate` as an error of the change (`unknown_role`,
+`compagnon validate` as an error of the change (`unknown_role`,
 `invalid_role_activation`, `role_not_disableable`).
 
 The artifacts of a `schema.yaml` may declare their [role](../roles.md) as
 data under `role:` — see
 [Custom schemas](../guides/custom-schemas.md#declaring-artifact-roles). A key
-a project schema holds that codev does not know, at any level, is ignored
+a project schema holds that Compagnon does not know, at any level, is ignored
 with a `schema_unknown_key` warning naming the key and its line.
 
 ## review.md
 
-Path: `_codev/changes/<name>/review.md`. The change's
-[review record](../guides/review-record.md), written by `/codev-propose`
-(`plan.challenge`) and `/codev-apply` (`code.review`), or by hand. It is
-not a planning artifact: `codev status` ignores it, `codev sync` leaves
-it, `codev archive` moves it with the change.
+Path: `_compagnon/changes/<name>/review.md`. The change's
+[review record](../guides/review-record.md), written by `/compagnon-propose`
+(`plan.challenge`) and `/compagnon-apply` (`code.review`), or by hand. It is
+not a planning artifact: `compagnon status` ignores it, `compagnon sync` leaves
+it, `compagnon archive` moves it with the change.
 
 ````markdown
 # Review record: add-sessions
 
-<!-- codev-review: 1 -->
+<!-- compagnon-review: 1 -->
 
 ## plan.challenge
 
@@ -352,7 +352,7 @@ Disabled by configuration.
 
 | Element | Rule |
 |---|---|
-| `<!-- codev-review: <n> -->` | Optional format marker; without it, format 1. A greater format is not checked and blocks archiving |
+| `<!-- compagnon-review: <n> -->` | Optional format marker; without it, format 1. A greater format is not checked and blocks archiving |
 | `## <step>` | `plan.challenge` or `code.review`, once each |
 | `### <role-id>` | One per role under a step, once each. Holds findings, or the line `No finding.`, or the line `Disabled by configuration.` |
 | `#### <id> <title>` | A finding: `R-<role-id>-<n>`, unique in the record, never reused, followed by one fenced `yaml` block |
@@ -378,26 +378,26 @@ Disabled by configuration.
 | `note` | The argument (`disputed`), the justification (`accepted-risk`, `by` a human), or why a fix does not hold (`open` after `fixed`) |
 | `to` | Where a `deferred` finding goes: a change or an issue. A `high` one is deferred by a human |
 
-A field this codev does not know is a warning, `review_unknown_field`, and
-is ignored: a later codev may add optional fields without changing the
+A field this Compagnon does not know is a warning, `review_unknown_field`, and
+is ignored: a later Compagnon may add optional fields without changing the
 format. A new status, step or required field raises the format marker
-instead, which an older codev refuses to check. The transitions and the checks are in
-[Review record](../guides/review-record.md#what-codev-checks).
+instead, which an older Compagnon refuses to check. The transitions and the checks are in
+[Review record](../guides/review-record.md#what-compagnon-checks).
 
 ## corrections.md
 
-Path: `_codev/changes/<name>/corrections.md`. The instructions the author
+Path: `_compagnon/changes/<name>/corrections.md`. The instructions the author
 gave the agent about how the project does things, noted by
-`/codev-propose`, `/codev-apply` and `/codev-update` — see
+`/compagnon-propose`, `/compagnon-apply` and `/compagnon-update` — see
 [the author's corrections](../skills.md#the-authors-corrections). Like
-`review.md`, it is not a planning artifact: `codev status` and
-`codev changelog` ignore it, `codev sync` leaves it, `codev archive` moves
+`review.md`, it is not a planning artifact: `compagnon status` and
+`compagnon changelog` ignore it, `compagnon sync` leaves it, `compagnon archive` moves
 it with the change, and reviewers are not briefed with it.
 
 ````markdown
 # Corrections: add-sessions
 
-<!-- codev-corrections: 1 -->
+<!-- compagnon-corrections: 1 -->
 
 ### C-1 Typed errors in the libraries
 
@@ -410,7 +410,7 @@ asked: Use a thiserror type; anyhow stays in the CLI.
 ````
 
 The format marker is required: a file without it is some other document
-of the same name, which codev neither checks nor lists. Each entry is a
+of the same name, which Compagnon neither checks nor lists. Each entry is a
 `### C-<n> <title>` heading, `<n>` unique from 1, and one `yaml` block:
 
 | Field | Meaning |
@@ -420,19 +420,19 @@ of the same name, which codev neither checks nor lists. Each entry is a
 | `did` | What the agent had done, in one line |
 | `asked` | What the author asked instead, in one line |
 
-A field this codev does not know is a warning, `corrections_unknown_field`,
+A field this Compagnon does not know is a warning, `corrections_unknown_field`,
 and is ignored. A `did` or `asked` over 300 characters is a warning,
 `corrections_too_long`: an entry states an instruction, never the
 conversation. Only active changes are checked.
 
 An entry names no person and quotes no personal data or secret. It is
 kept as long as the archive. To remove one that slipped through, edit or
-delete it in its change, archived or not — codev never checks archived
+delete it in its change, archived or not — Compagnon never checks archived
 changes again — and rewrite the history if the commit was already pushed.
 
 ## Decision (ADR)
 
-Path: `_codev/decisions/NNNN-<slug>.md`. Every `.md` file in this folder is
+Path: `_compagnon/decisions/NNNN-<slug>.md`. Every `.md` file in this folder is
 parsed as a decision.
 
 ```markdown
@@ -469,23 +469,23 @@ body is split into `##` sections; the template's four sections are a
 convention, not a requirement. Only `accepted` decisions that are not
 superseded or deviated from are in effect, and `supersedes` and
 `deviates_from` only take effect on an `accepted` decision: a `proposed`
-supersession or deviation changes nothing until `codev decision accept`.
+supersession or deviation changes nothing until `compagnon decision accept`.
 
-A frontmatter field codev does not know does not reject the decision: it is
-read from the fields codev knows, and `codev validate` reports the field as a
+A frontmatter field Compagnon does not know does not reject the decision: it is
+read from the fields Compagnon knows, and `compagnon validate` reports the field as a
 `decision_unknown_field` warning at its line — `--strict` fails on it. An
-inherited decision's unknown fields are not reported. `codev decision accept`
-keeps such a field, as written, when it rewrites the frontmatter. codev 0.6.1
+inherited decision's unknown fields are not reported. `compagnon decision accept`
+keeps such a field, as written, when it rewrites the frontmatter. Compagnon 0.6.1
 and earlier reject the decision instead.
 
 Files saved with Windows line endings (CRLF) are read like any other. When
-codev rewrites a decision's status — `codev decision accept`, or a
+Compagnon rewrites a decision's status — `compagnon decision accept`, or a
 predecessor marked `superseded` — it keeps the file's line endings and leaves
 the body byte for byte as it was, so the seal stays valid.
 
 ## seal.yaml
 
-Path: `_codev/decisions/seal.yaml`. Maintained by codev; do not edit it by
+Path: `_compagnon/decisions/seal.yaml`. Maintained by Compagnon; do not edit it by
 hand.
 
 ```yaml
@@ -500,23 +500,23 @@ Each entry records the SHA-256 of a decision's body — everything after the
 closing `---` of the frontmatter, byte for byte — and the date it was sealed.
 Commit this file with your decisions.
 
-`version` is the file's format: a codev that adds a field or a value to it
-raises the version. Every command that reads the file — `codev validate`,
-`codev decision new`, `codev decision accept`, `codev decision seal` — refuses
+`version` is the file's format: a Compagnon that adds a field or a value to it
+raises the version. Every command that reads the file — `compagnon validate`,
+`compagnon decision new`, `compagnon decision accept`, `compagnon decision seal` — refuses
 a version it does not read with `seal_version_unsupported`, writing nothing;
-the message names both versions and points to `codev self-update`. An unknown
+the message names both versions and points to `compagnon self-update`. An unknown
 field in a file of a known version is a corruption, reported as
 `seal_invalid`.
 
-## codev.lock
+## compagnon.lock
 
-Path: `_codev/codev.lock`. Written only by `codev sources update`, in TOML.
+Path: `_compagnon/compagnon.lock`. Written only by `compagnon sources update`, in TOML.
 
 ```toml
 version = 1
 
 [[source]]
-git = "git@github.com:acme/codev-standards.git"
+git = "git@github.com:acme/compagnon-standards.git"
 ref = "main"
 commit = "12958274cbed0eb66985f57d3272c6d3134b672d"
 resolved_at = "2026-09-30"
@@ -527,17 +527,17 @@ commit it is pinned to, and, when set, its `subpath`. Commit this file.
 
 ## SKILL.md
 
-Path: `.claude/skills/codev-<workflow>/SKILL.md`. Generated by `codev init`
-and `codev update`:
+Path: `.claude/skills/compagnon-<workflow>/SKILL.md`. Generated by `compagnon init`
+and `compagnon update`:
 
 ```markdown
 ---
-name: codev-explore
-description: "Explore an idea, investigate a problem or clarify a need before creating a codev change. …"
-allowed-tools: "Bash(codev:*), Read, Glob, Grep"
+name: compagnon-explore
+description: "Explore an idea, investigate a problem or clarify a need before creating a compagnon change. …"
+allowed-tools: "Bash(compagnon:*), Read, Glob, Grep"
 license: MIT
 metadata:
-  generator: codev
+  generator: compagnon
   version: "0.6.1"
   checksum: "8d676b09…"
 ---
@@ -546,22 +546,22 @@ metadata:
 ```
 
 `metadata.checksum` is the SHA-256 of the whole skill without that line. With
-`metadata.version`, it is how `codev update` tells codev's renderings from
-your edits. `codev update` rewrites a skill stamped with another version;
+`metadata.version`, it is how `compagnon update` tells Compagnon's renderings from
+your edits. `compagnon update` rewrites a skill stamped with another version;
 among the skills stamped with its own version, it rewrites one whose content
-still hashes to its `checksum` — codev's rendering, from an earlier build or
+still hashes to its `checksum` — Compagnon's rendering, from an earlier build or
 for the other [review mode](configuration.md#review) — and preserves one that
 no longer does, edited by hand, unless you pass `--force`. A skill without a
 checksum, rendered before checksums existed, is preserved when it carries this
 version's stamp and differs from the rendering by more than the review mode:
-run `codev update --force` once to bring such skills under the checksum — it
+run `compagnon update --force` once to bring such skills under the checksum — it
 also overwrites a skill you really edited, so check `git diff` first and apply
 your edits again after; an edit made then is preserved, since it no longer
 matches the checksum.
 
 ## Validation codes
 
-Every finding reported by `codev validate` carries a stable code. Messages
+Every finding reported by `compagnon validate` carries a stable code. Messages
 may be reworded between versions; codes are not.
 
 | Code | Severity | Meaning |
@@ -581,7 +581,7 @@ may be reworded between versions; codes are not.
 | `modified_uses_old_name` | error | `MODIFIED` uses the old name of a renamed requirement |
 | `zero_delta_without_marker` | error | A change has no delta and does not declare `skip_specs: true` |
 | `skip_specs_conflict` | error | A change declares `skip_specs: true` but has deltas |
-| `decision_missing_frontmatter` | error | A file in `_codev/decisions/` has no frontmatter |
+| `decision_missing_frontmatter` | error | A file in `_compagnon/decisions/` has no frontmatter |
 | `decision_missing_field` | error | A decision lacks a required field, or has an unknown one |
 | `decision_unknown_status` | error | A decision has an unknown status |
 | `decision_field_type_mismatch` | error | A frontmatter field has the wrong shape |
@@ -593,7 +593,7 @@ may be reworded between versions; codes are not.
 | `domains_invalid` | error | The proposal's `## Domains` has a line that is neither an item nor `None`, or `None` next to a ticked domain |
 | `domains_missing` | warning | An active change's proposal has no `## Domains` section |
 | `domain_suggested` | warning | The change's diff suggests a domain the proposal neither ticks nor keeps unticked with a reason |
-| `invalid_trigger` | error | A group of `triggers:` in `_codev/config.yaml` has no known domain, no trigger, or a glob or expression that does not compile (a warning for a key codev does not know) |
+| `invalid_trigger` | error | A group of `triggers:` in `_compagnon/config.yaml` has no known domain, no trigger, or a glob or expression that does not compile (a warning for a key Compagnon does not know) |
 | `review_invalid` | error | The review record's layout, a finding's field, id or location, a status or a transition is wrong |
 | `review_decision_incomplete` | error | A history entry lacks its `ref`, `note` or `to`, or a risk is accepted, or a high finding deferred, by someone other than a human |
 | `review_location_missing` | error | A finding cites a file, a line or a heading that does not exist |
@@ -602,15 +602,15 @@ may be reworded between versions; codes are not.
 | `review_evidence_moved` | warning | A finding's evidence is in the file, more than 5 lines away from the cited lines |
 | `review_evidence_unchecked` | warning | The cited file is not UTF-8 text, holds NUL bytes, or is larger than 4 MiB: the evidence is not compared |
 | `review_unknown_section` | warning | A step or a role the record should not hold; it is ignored |
-| `review_unknown_field` | warning | A finding field this codev does not know; it is ignored |
-| `review_format_unsupported` | warning | The record comes from a newer codev; nothing in it is checked |
+| `review_unknown_field` | warning | A finding field this Compagnon does not know; it is ignored |
+| `review_format_unsupported` | warning | The record comes from a newer Compagnon; nothing in it is checked |
 | `corrections_invalid` | error | An entry of `corrections.md` has a wrong heading or id, no `yaml` block, or a missing, empty or invalid field |
-| `corrections_unknown_field` | warning | A correction field this codev does not know; it is ignored |
+| `corrections_unknown_field` | warning | A correction field this Compagnon does not know; it is ignored |
 | `corrections_too_long` | warning | A correction's `did` or `asked` is over 300 characters |
-| `corrections_format_unsupported` | warning | `corrections.md` comes from a newer codev; nothing in it is checked |
+| `corrections_format_unsupported` | warning | `corrections.md` comes from a newer Compagnon; nothing in it is checked |
 | `delta_section_empty` | warning | A delta section has no entry, so nothing of it is merged |
 | `decision_unsealed` | warning | An accepted or superseded local decision has no seal |
-| `unknown_config_key` | warning | `_codev/config.yaml` holds a top-level or `mcp` key this codev does not know — see [Unknown keys](configuration.md#unknown-keys) |
+| `unknown_config_key` | warning | `_compagnon/config.yaml` holds a top-level or `mcp` key this Compagnon does not know — see [Unknown keys](configuration.md#unknown-keys) |
 | `decision_orphan_seal` | warning | A seal has no matching decision |
 | `decision_supersedes_unknown` | warning | `supersedes` names an unknown decision |
 | `decision_id_collision` | warning | A local and an inherited decision share an id |

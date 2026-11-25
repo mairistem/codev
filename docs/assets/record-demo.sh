@@ -6,7 +6,7 @@
 # 2. ffmpeg stamps the white Mairistem logo in the bottom-left margin and
 #    re-encodes the GIF with an optimized palette.
 #
-# Prerequisites: vhs, ffmpeg, rsvg-convert (librsvg), git, and a `codev`
+# Prerequisites: vhs, ffmpeg, rsvg-convert (librsvg), git, and a `compagnon`
 # binary on PATH. Run from anywhere:
 #
 #   docs/assets/record-demo.sh

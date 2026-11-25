@@ -1,0 +1,602 @@
+//! Generation of `_compagnon/config.yaml` by `compagnon init`.
+//!
+//! Two pure building blocks:
+//!
+//! - [`GeneratedConfig`] and its renderer [`render`] — write the YAML **by
+//!   hand**, character by character, with provenance comments above the
+//!   keys that carry one. No serialization library preserves comments;
+//!   manual rendering is simple and covered by golden tests.
+//! - [`from_detected`] — assembles a `GeneratedConfig` from the probe
+//!   report plus the user's choices.
+//!
+//! The cross-check "what we write must be readable by
+//! `compagnon-engine::config`" lives in the `compagnon-engine` integration
+//! tests — avoiding a dependency cycle.
+
+use crate::detect::Detected;
+
+pub mod choices;
+pub mod inherit;
+
+pub use choices::UserChoices;
+pub use inherit::InheritArg;
+
+/// A generated YAML value, with its (optional) source.
+///
+/// The provenance becomes a `# ...` comment on the line directly
+/// above the key. No formatting: just the origin, written
+/// verbatim.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GeneratedValue<T> {
+    pub value: T,
+    pub provenance: Option<String>,
+}
+
+impl<T> GeneratedValue<T> {
+    pub fn without_source(value: T) -> Self {
+        Self {
+            value,
+            provenance: None,
+        }
+    }
+
+    pub fn with_source(value: T, provenance: impl Into<String>) -> Self {
+        Self {
+            value,
+            provenance: Some(provenance.into()),
+        }
+    }
+}
+
+/// The config, ready to be rendered as YAML.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GeneratedConfig {
+    pub schema: String,
+    /// Language skills write artifacts in (ISO 639 code): their prose, and
+    /// their structural keywords when compagnon ships the language.
+    pub language: GeneratedValue<String>,
+    /// Selected workflows, in the order they should appear in the YAML.
+    pub workflows: Vec<String>,
+    /// Jira MCP tool ID, if detected and confirmed.
+    pub mcp_jira: Option<GeneratedValue<String>>,
+    /// Free-form `context:` block. `None` = key omitted from the YAML.
+    pub context: Option<GeneratedValue<String>>,
+    /// Inherited sources given with `compagnon init --inherit`, in order. Empty
+    /// = no `inherits:` key.
+    pub inherits: Vec<InheritArg>,
+}
+
+/// The provenance comment written above `inherits:`.
+pub const INHERITS_PROVENANCE: &str = "set with compagnon init --inherit";
+
+impl Default for GeneratedConfig {
+    fn default() -> Self {
+        Self {
+            schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
+            workflows: Vec::new(),
+            mcp_jira: None,
+            context: None,
+            inherits: Vec::new(),
+        }
+    }
+}
+
+/// The artifact language when neither `--language` nor the locale gives one.
+pub const DEFAULT_LANGUAGE: &str = "en";
+
+/// A `_compagnon/config.yaml` is **thin** when it does not yet carry any
+/// guidance useful for steering the skills. The only criterion used
+/// is **the absence of `rules:`** — it is the only reliable signal of
+/// user intent, because per-artifact rules are never
+/// auto-detected.
+///
+/// The previous version combined "short `context:`" and "empty
+/// `rules:`", but the context is filled automatically by the
+/// `compagnon init` probe (stack, dependencies, license, CI), so its size
+/// says nothing about what the user wrote — a TypeScript project with
+/// ten dependencies easily exceeded the threshold without any user
+/// intent having been expressed. See change
+/// `fix-thin-detection`.
+///
+/// This function is the sole judge — the three hint sites
+/// (`compagnon init`, `compagnon status`, the `onboard` skill) call the same
+/// primitive, guaranteeing consistent behavior.
+pub fn is_config_thin(rules_empty: bool) -> bool {
+    rules_empty
+}
+
+/// Assembles a `GeneratedConfig` from detection results and choices.
+///
+/// Rules:
+/// - The final context is the concatenation of the auto-detected context
+///   (derived from the stack) and the user's addition, separated by a blank line.
+///   If neither exists, the `context:` key is omitted.
+/// - The Jira MCP tool is only kept if a candidate was confirmed
+///   (decided by the imperative shell — here we take whatever `choices` carries).
+pub fn from_detected(detected: &Detected, choices: &UserChoices) -> GeneratedConfig {
+    let context_detected = build_context_from_detection(detected);
+    let addition = choices
+        .context_addition
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty());
+    let context = match (context_detected, addition) {
+        (None, None) => None,
+        (Some(auto), None) => Some(GeneratedValue::with_source(
+            auto,
+            provenance_for_stack(detected),
+        )),
+        (None, Some(addition)) => Some(GeneratedValue::without_source(addition.to_string())),
+        (Some(auto), Some(addition)) => {
+            let merged = format!("{auto}\n\n{addition}");
+            Some(GeneratedValue::with_source(
+                merged,
+                provenance_for_stack(detected),
+            ))
+        }
+    };
+
+    let mcp_jira = choices.jira_tool_confirmed.as_ref().map(|tool_id| {
+        let source = detected
+            .mcps
+            .iter()
+            .find(|m| crate::detect::mcp::matches_jira(m))
+            .map(|m| format!("detected from {} → server \"{}\"", m.source, m.name))
+            .unwrap_or_else(|| "provided manually".to_string());
+        GeneratedValue::with_source(tool_id.clone(), source)
+    });
+
+    let language = match (&choices.language, &detected.locale) {
+        (Some(code), _) => {
+            GeneratedValue::with_source(code.clone(), "set with `compagnon init --language`")
+        }
+        (None, Some(locale)) => GeneratedValue::with_source(
+            locale.language.clone(),
+            format!("detected from {}={}", locale.var, locale.value),
+        ),
+        (None, None) => GeneratedValue::with_source(
+            DEFAULT_LANGUAGE.to_string(),
+            "default — no locale detected",
+        ),
+    };
+
+    GeneratedConfig {
+        schema: "spec-driven".to_string(),
+        language,
+        workflows: choices.workflows.clone(),
+        mcp_jira,
+        context,
+        inherits: Vec::new(),
+    }
+}
+
+fn build_context_from_detection(d: &Detected) -> Option<String> {
+    let mut parts: Vec<String> = Vec::new();
+    if let Some(stack) = &d.stack {
+        let head = match (stack.workspace_crate_count, &stack.edition_or_version) {
+            (Some(n), Some(v)) => format!(
+                "{} workspace project ({} crates), {}.",
+                stack.language, n, v
+            ),
+            (Some(n), None) => format!("{} workspace project ({} crates).", stack.language, n),
+            (None, Some(v)) => format!("{} project, {}.", stack.language, v),
+            (None, None) => format!("{} project.", stack.language),
+        };
+        parts.push(head);
+        if !stack.dependencies_summary.is_empty() {
+            let deps = stack.dependencies_summary.join(", ");
+            parts.push(format!("Main dependencies: {deps}."));
+        }
+    }
+    if let Some(lic) = &d.license {
+        parts.push(format!("License: {lic}."));
+    }
+    if d.has_ci {
+        parts.push("GitHub Actions CI enabled.".to_string());
+    }
+    if parts.is_empty() {
+        None
+    } else {
+        Some(parts.join(" "))
+    }
+}
+
+fn provenance_for_stack(d: &Detected) -> String {
+    match d.stack.as_ref().map(|s| s.language.as_str()) {
+        Some("Rust") => "detected from Cargo.toml".to_string(),
+        Some("TypeScript" | "JavaScript") => "detected from package.json".to_string(),
+        Some("Python") => "detected from pyproject.toml".to_string(),
+        Some("Go") => "detected from go.mod".to_string(),
+        Some("Java") => "detected from pom.xml".to_string(),
+        _ => "detected from the environment".to_string(),
+    }
+}
+
+/// Renders a `GeneratedConfig` as YAML, with provenance comments.
+///
+/// Key order is fixed: `schema`, `language`, `workflows`, `mcp`,
+/// `inherits`, `context`.
+/// Each non-trivial key carries, on the line above it, a
+/// `# <provenance>` comment if the entry has one.
+///
+/// Rendering is deterministic: same inputs, same bytes.
+pub fn render(config: &GeneratedConfig) -> String {
+    let mut out = String::new();
+
+    out.push_str("# compagnon configuration — generated by `compagnon init`.\n");
+    out.push_str("# Hand-editable: each non-trivial field carries its source as a comment.\n\n");
+
+    // schema
+    out.push_str(&format!("schema: {}\n", config.schema));
+
+    // language
+    out.push_str("\n# Language skills write the artifacts in (proposal, design, tasks,\n");
+    out.push_str("# specs). Structural keywords such as `## Why` or `### Requirement:`\n");
+    out.push_str("# follow it when compagnon ships the language, and stay in English otherwise.\n");
+    if let Some(source) = &config.language.provenance {
+        out.push_str(&format!("# {source}\n"));
+    }
+    out.push_str(&format!("language: {}\n", config.language.value));
+
+    // workflows
+    if !config.workflows.is_empty() {
+        out.push_str("\nworkflows:\n");
+        for w in &config.workflows {
+            out.push_str(&format!("  - {w}\n"));
+        }
+    }
+
+    // mcp
+    if let Some(jira) = &config.mcp_jira {
+        out.push('\n');
+        if let Some(source) = &jira.provenance {
+            out.push_str(&format!("# {source}\n"));
+        }
+        out.push_str("mcp:\n");
+        out.push_str(&format!("  jira_tool: {}\n", jira.value));
+    }
+
+    // inherits — one provenance comment for the whole list: every entry
+    // comes from the same flag.
+    if !config.inherits.is_empty() {
+        out.push_str(&format!("\n# {INHERITS_PROVENANCE}\n"));
+        out.push_str("inherits:\n");
+        for source in &config.inherits {
+            match source {
+                InheritArg::Git { url, git_ref } => {
+                    out.push_str(&format!("  - git: {}\n", yaml_scalar(url)));
+                    out.push_str(&format!("    ref: {}\n", yaml_scalar(git_ref)));
+                }
+                InheritArg::Path(path) => {
+                    out.push_str(&format!("  - path: {}\n", yaml_scalar(path)));
+                }
+            }
+        }
+    }
+
+    // context — YAML literal block `|`
+    if let Some(ctx) = &config.context {
+        out.push('\n');
+        if let Some(source) = &ctx.provenance {
+            out.push_str(&format!("# {source} — edit as needed\n"));
+        }
+        out.push_str("context: |\n");
+        for line in ctx.value.lines() {
+            if line.is_empty() {
+                out.push('\n');
+            } else {
+                out.push_str(&format!("  {line}\n"));
+            }
+        }
+    }
+
+    out
+}
+
+/// Renders a string as a YAML scalar that reads back as that same string.
+///
+/// Plain when it is unambiguous — URLs and paths usually are — and
+/// double-quoted otherwise: a ref such as `1.0` or `no` would read back as a
+/// number or a boolean, and `: ` or ` #` would change the structure.
+fn yaml_scalar(value: &str) -> String {
+    let first_ok = value
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || matches!(c, '/' | '~' | '.' | '_'));
+    let chars_ok = value
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || "/._-~@:+".contains(c));
+    let reserved = matches!(
+        value.to_ascii_lowercase().as_str(),
+        "true" | "false" | "yes" | "no" | "on" | "off" | "null" | "y" | "n" | "~"
+    );
+    if first_ok && chars_ok && !reserved && !value.ends_with(':') {
+        value.to_string()
+    } else {
+        let escaped = value.replace('\\', "\\\\").replace('"', "\\\"");
+        format!("\"{escaped}\"")
+    }
+}
+
+// ─────────────────────────────── tests ───────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::detect::{locale::DetectedLocale, mcp::DetectedMcp, stack::Stack};
+
+    fn workspace_rust_detected() -> Detected {
+        Detected {
+            stack: Some(Stack {
+                language: "Rust".into(),
+                edition_or_version: Some("2024".into()),
+                workspace_crate_count: Some(4),
+                dependencies_summary: vec!["serde".into(), "anyhow".into()],
+            }),
+            project_name: Some("compagnon".into()),
+            license: Some("MIT".into()),
+            has_ci: true,
+            is_git_repo: true,
+            mcps: vec![DetectedMcp {
+                name: "claude.ai Atlassian Rovo".into(),
+                command: None,
+                url: Some("https://mcp.atlassian.com/".into()),
+                source: ".mcp.json".into(),
+            }],
+            locale: Some(DetectedLocale {
+                var: "LANG".into(),
+                value: "fr_FR.UTF-8".into(),
+                language: "fr".into(),
+            }),
+        }
+    }
+
+    #[test]
+    fn from_detected_full_produces_context_and_mcp() {
+        let detected = workspace_rust_detected();
+        let choices = UserChoices {
+            workflows: vec!["propose".into(), "apply".into()],
+            context_addition: Some("In-house conventions: typed errors.".into()),
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
+        };
+        let g = from_detected(&detected, &choices);
+        assert_eq!(g.schema, "spec-driven");
+        assert_eq!(g.workflows, vec!["propose", "apply"]);
+        assert_eq!(
+            g.mcp_jira.as_ref().unwrap().value,
+            "mcp__claude_ai_Atlassian_Rovo__getJiraIssue"
+        );
+        assert!(
+            g.mcp_jira
+                .as_ref()
+                .unwrap()
+                .provenance
+                .as_deref()
+                .unwrap()
+                .contains(".mcp.json")
+        );
+        let ctx = g.context.unwrap();
+        assert!(ctx.value.contains("Rust workspace"));
+        assert!(ctx.value.contains("In-house conventions"));
+        assert_eq!(ctx.provenance.as_deref(), Some("detected from Cargo.toml"));
+    }
+
+    #[test]
+    fn from_detected_empty_produces_minimal_config() {
+        let detected = Detected::empty();
+        let choices = UserChoices {
+            workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
+            context_addition: None,
+            jira_tool_confirmed: None,
+            language: None,
+        };
+        let g = from_detected(&detected, &choices);
+        assert_eq!(g.workflows.len(), 3);
+        assert!(g.mcp_jira.is_none());
+        assert!(g.context.is_none());
+        assert_eq!(g.language.value, "en");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("default — no locale detected")
+        );
+    }
+
+    #[test]
+    fn language_comes_from_the_locale_when_not_chosen() {
+        let g = from_detected(&workspace_rust_detected(), &UserChoices::defaults_full());
+        assert_eq!(g.language.value, "fr");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("detected from LANG=fr_FR.UTF-8")
+        );
+    }
+
+    #[test]
+    fn explicit_language_wins_over_the_locale() {
+        let choices = UserChoices {
+            language: Some("de".into()),
+            ..UserChoices::defaults_full()
+        };
+        let g = from_detected(&workspace_rust_detected(), &choices);
+        assert_eq!(g.language.value, "de");
+        assert_eq!(
+            g.language.provenance.as_deref(),
+            Some("set with `compagnon init --language`")
+        );
+    }
+
+    #[test]
+    fn full_defaults_install_every_workflow() {
+        let full = UserChoices::defaults_full();
+        assert_eq!(full.workflows.len(), 8);
+        assert!(full.workflows.iter().any(|w| w == "configure"));
+    }
+
+    #[test]
+    fn from_detected_mcp_only_without_free_context() {
+        let detected = workspace_rust_detected();
+        let choices = UserChoices {
+            workflows: vec!["propose".into()],
+            context_addition: None,
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
+        };
+        let g = from_detected(&detected, &choices);
+        // The auto context comes on its own, without the user's addition.
+        assert!(g.context.as_ref().unwrap().value.contains("Rust workspace"));
+        assert!(!g.context.as_ref().unwrap().value.contains("Conventions"));
+    }
+
+    const GOLDEN_FULL: &str = "# compagnon configuration — generated by `compagnon init`.
+# Hand-editable: each non-trivial field carries its source as a comment.
+
+schema: spec-driven
+
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when compagnon ships the language, and stay in English otherwise.
+# detected from LANG=fr_FR.UTF-8
+language: fr
+
+workflows:
+  - propose
+  - explore
+  - onboard
+  - apply
+  - sync
+  - archive
+  - update
+
+# detected from .mcp.json → server \"claude.ai Atlassian Rovo\"
+mcp:
+  jira_tool: mcp__claude_ai_Atlassian_Rovo__getJiraIssue
+
+# detected from Cargo.toml — edit as needed
+context: |
+  Rust workspace project (4 crates), 2024. Main dependencies: serde, anyhow. License: MIT. GitHub Actions CI enabled.
+
+  In-house conventions: typed errors.
+";
+
+    #[test]
+    fn render_full_matches_golden() {
+        let detected = workspace_rust_detected();
+        let choices = UserChoices {
+            workflows: vec![
+                "propose".into(),
+                "explore".into(),
+                "onboard".into(),
+                "apply".into(),
+                "sync".into(),
+                "archive".into(),
+                "update".into(),
+            ],
+            context_addition: Some("In-house conventions: typed errors.".into()),
+            jira_tool_confirmed: Some("mcp__claude_ai_Atlassian_Rovo__getJiraIssue".to_string()),
+            language: None,
+        };
+        let g = from_detected(&detected, &choices);
+        let rendered = render(&g);
+        assert_eq!(rendered, GOLDEN_FULL);
+    }
+
+    const GOLDEN_MINIMAL: &str = "# compagnon configuration — generated by `compagnon init`.
+# Hand-editable: each non-trivial field carries its source as a comment.
+
+schema: spec-driven
+
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when compagnon ships the language, and stay in English otherwise.
+# default
+language: en
+
+workflows:
+  - propose
+  - explore
+  - onboard
+";
+
+    #[test]
+    fn is_config_thin_true_when_rules_empty() {
+        assert!(is_config_thin(true));
+    }
+
+    #[test]
+    fn is_config_thin_false_when_rules_present() {
+        assert!(!is_config_thin(false));
+    }
+
+    #[test]
+    fn render_minimal_matches_golden() {
+        let g = GeneratedConfig {
+            schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
+            workflows: vec!["propose".into(), "explore".into(), "onboard".into()],
+            mcp_jira: None,
+            context: None,
+            inherits: Vec::new(),
+        };
+        assert_eq!(render(&g), GOLDEN_MINIMAL);
+    }
+
+    const GOLDEN_INHERITS: &str = "# compagnon configuration — generated by `compagnon init`.
+# Hand-editable: each non-trivial field carries its source as a comment.
+
+schema: spec-driven
+
+# Language skills write the artifacts in (proposal, design, tasks,
+# specs). Structural keywords such as `## Why` or `### Requirement:`
+# follow it when compagnon ships the language, and stay in English otherwise.
+# default
+language: en
+
+# set with compagnon init --inherit
+inherits:
+  - git: git@github.com:acme/conventions.git
+    ref: v2
+  - git: https://example.com/acme/shared.git
+    ref: \"1.0\"
+  - path: /home/you/conventions
+  - path: \"/home/you/my notes #1\"
+";
+
+    #[test]
+    fn render_with_inherits_matches_golden() {
+        let g = GeneratedConfig {
+            schema: "spec-driven".to_string(),
+            language: GeneratedValue::with_source(DEFAULT_LANGUAGE.to_string(), "default"),
+            workflows: Vec::new(),
+            mcp_jira: None,
+            context: None,
+            inherits: vec![
+                InheritArg::Git {
+                    url: "git@github.com:acme/conventions.git".into(),
+                    git_ref: "v2".into(),
+                },
+                InheritArg::Git {
+                    url: "https://example.com/acme/shared.git".into(),
+                    git_ref: "1.0".into(),
+                },
+                InheritArg::Path("/home/you/conventions".into()),
+                InheritArg::Path("/home/you/my notes #1".into()),
+            ],
+        };
+        assert_eq!(render(&g), GOLDEN_INHERITS);
+    }
+
+    #[test]
+    fn generated_language_comment_says_keywords_follow_the_language() {
+        let text = render(&from_detected(
+            &workspace_rust_detected(),
+            &UserChoices::defaults_full(),
+        ));
+        assert!(
+            text.contains("follow it when compagnon ships the language"),
+            "{text}"
+        );
+        assert!(!text.contains("always stay in English"), "{text}");
+    }
+}

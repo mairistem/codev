@@ -1,27 +1,27 @@
 #!/bin/sh
-# codev — installer for macOS and Linux.
+# compagnon — installer for macOS and Linux.
 #
 # Usage:
 #
 #   # Latest release
-#   curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
+#   curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 #
 #   # Specific version
-#   curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | \
-#     CODEV_VERSION=0.2.0 sh
+#   curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | \
+#     COMPAGNON_VERSION=0.2.0 sh
 #
 # Detects OS and architecture, downloads the matching binary from GitHub
 # Releases, verifies its SHA-256 checksum, then copies it to
-# ~/.local/bin/codev.
+# ~/.local/bin/compagnon.
 #
 # No Rust toolchain needed. Requires: POSIX sh, curl, tar, and sha256sum or
 # shasum.
 
 set -eu
 
-REPO="mairistem/codev"
+REPO="mairistem/compagnon"
 INSTALL_DIR="${HOME}/.local/bin"
-BIN_NAME="codev"
+BIN_NAME="compagnon"
 
 # ─────────────────────────── helpers ───────────────────────────
 
@@ -59,7 +59,7 @@ case "${os}-${arch}" in
     die "unsupported platform: ${os}-${arch}
 Prebuilt binaries: macOS arm64, macOS x86_64, Linux x86_64 (and Windows x86_64
 via install.ps1). For other platforms, install the Rust toolchain and run
-'cargo install --path crates/codev-cli' from a clone of the repository."
+'cargo install --path crates/compagnon-cli' from a clone of the repository."
     ;;
 esac
 
@@ -67,7 +67,7 @@ log "detected platform: ${target}"
 
 # ─────────────────────────── version ───────────────────────────
 
-version="${CODEV_VERSION:-}"
+version="${COMPAGNON_VERSION:-}"
 
 if [ -z "${version}" ]; then
   log "resolving the latest release from the GitHub API..."
@@ -76,7 +76,7 @@ if [ -z "${version}" ]; then
     | grep '"tag_name":' | head -1 | cut -d '"' -f 4)"
   if [ -z "${latest}" ]; then
     die "could not resolve the latest release (GitHub API request failed). \
-Try again later, or pin a version with CODEV_VERSION=x.y.z."
+Try again later, or pin a version with COMPAGNON_VERSION=x.y.z."
   fi
   version="${latest#v}"
 fi
@@ -85,7 +85,7 @@ log "target version: ${version}"
 
 # ─────────────────────────── download ───────────────────────────
 
-archive="codev-${version}-${target}.tar.gz"
+archive="compagnon-${version}-${target}.tar.gz"
 base_url="https://github.com/${REPO}/releases/download/v${version}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT INT TERM
@@ -118,7 +118,7 @@ log "SHA-256 checksum verified"
 log "extracting..."
 tar -xzf "${tmp}/${archive}" -C "${tmp}"
 
-extracted="${tmp}/codev-${version}-${target}/${BIN_NAME}"
+extracted="${tmp}/compagnon-${version}-${target}/${BIN_NAME}"
 if [ ! -f "${extracted}" ]; then
   die "binary not found in archive: ${extracted}"
 fi
@@ -134,7 +134,7 @@ log "installed ${INSTALL_DIR}/${BIN_NAME}"
 case ":${PATH:-}:" in
   *":${INSTALL_DIR}:"*)
     log "${INSTALL_DIR} is already on your PATH."
-    log "Check with: codev --version"
+    log "Check with: compagnon --version"
     ;;
   *)
     warn "${INSTALL_DIR} is not on your PATH."
@@ -144,4 +144,4 @@ case ":${PATH:-}:" in
     ;;
 esac
 
-log "codev v${version} is ready. Next: cd into a repository and run codev init"
+log "compagnon v${version} is ready. Next: cd into a repository and run compagnon init"

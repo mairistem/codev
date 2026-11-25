@@ -1,17 +1,17 @@
-# codev - installer for Windows.
+# compagnon - installer for Windows.
 #
 # Usage:
 #
 #   # Latest release
-#   iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+#   iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 #
 #   # Specific version
-#   $env:CODEV_VERSION = '0.2.0'
-#   iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+#   $env:COMPAGNON_VERSION = '0.2.0'
+#   iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 #
 # Detects the architecture, downloads the binary from GitHub Releases,
 # verifies its SHA-256 checksum, then copies it to
-# %LOCALAPPDATA%\Programs\codev\codev.exe.
+# %LOCALAPPDATA%\Programs\compagnon\compagnon.exe.
 #
 # No Rust toolchain needed. Requires PowerShell 5.1+ (built into Windows 10+).
 # Does not call `Set-ExecutionPolicy` - a script piped through `iex` is not
@@ -24,9 +24,9 @@
 
 $ErrorActionPreference = 'Stop'
 
-$repo       = 'mairistem/codev'
-$installDir = Join-Path $env:LOCALAPPDATA 'Programs\codev'
-$binName    = 'codev.exe'
+$repo       = 'mairistem/compagnon'
+$installDir = Join-Path $env:LOCALAPPDATA 'Programs\compagnon'
+$binName    = 'compagnon.exe'
 
 function Say([string]$msg)  { Write-Host "==> $msg" }
 function Warn([string]$msg) { Write-Warning $msg }
@@ -42,7 +42,7 @@ switch ($arch) {
 Unsupported architecture: $arch
 The only prebuilt Windows target is x86_64 (AMD64).
 For ARM64 or other architectures, install the Rust toolchain and run
-'cargo install --path crates/codev-cli' from a clone of the repository.
+'cargo install --path crates/compagnon-cli' from a clone of the repository.
 "@
     }
 }
@@ -50,23 +50,23 @@ Say "detected platform: $target"
 
 # ----------------------------- version ------------------------------
 
-$version = $env:CODEV_VERSION
+$version = $env:COMPAGNON_VERSION
 if ([string]::IsNullOrEmpty($version)) {
     Say 'resolving the latest release from the GitHub API...'
     try {
-        $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -Headers @{ 'User-Agent' = 'codev-installer' }
+        $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -Headers @{ 'User-Agent' = 'compagnon-installer' }
         $version = $latest.tag_name -replace '^v', ''
     } catch {
-        Die "could not resolve the latest release (GitHub API request failed: $_). Pin a version with `$env:CODEV_VERSION = 'x.y.z'`."
+        Die "could not resolve the latest release (GitHub API request failed: $_). Pin a version with `$env:COMPAGNON_VERSION = 'x.y.z'`."
     }
 }
 Say "target version: $version"
 
 # ----------------------------- download -----------------------------
 
-$archive     = "codev-$version-$target.zip"
+$archive     = "compagnon-$version-$target.zip"
 $baseUrl     = "https://github.com/$repo/releases/download/v$version"
-$tmp         = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "codev-install-$([guid]::NewGuid())") -Force
+$tmp         = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "compagnon-install-$([guid]::NewGuid())") -Force
 $archivePath = Join-Path $tmp $archive
 $sumsPath    = Join-Path $tmp 'SHA256SUMS'
 
@@ -105,7 +105,7 @@ try {
     Say 'extracting...'
     Expand-Archive -Path $archivePath -DestinationPath $tmp -Force
 
-    $extractedBin = Join-Path $tmp "codev-$version-$target\$binName"
+    $extractedBin = Join-Path $tmp "compagnon-$version-$target\$binName"
     if (-not (Test-Path $extractedBin)) {
         Die "binary not found in archive: $extractedBin"
     }
@@ -120,7 +120,7 @@ try {
     $entries  = if ($userPath) { $userPath -split ';' } else { @() }
     if ($entries -contains $installDir) {
         Say "$installDir is already on your user PATH."
-        Say 'Check with: codev --version'
+        Say 'Check with: compagnon --version'
     } else {
         Warn "$installDir is not on your user PATH."
         Write-Host ''
@@ -135,7 +135,7 @@ try {
         Write-Host 'Then open a new PowerShell window to reload PATH.'
     }
 
-    Say "codev v$version is ready. Next: cd into a repository and run codev init"
+    Say "compagnon v$version is ready. Next: cd into a repository and run compagnon init"
 }
 finally {
     Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue

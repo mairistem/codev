@@ -4,12 +4,12 @@
 
 Closes #
 
-<!-- codev:begin — managed by codev; `codev update` rewrites this block, edit outside it -->
-## codev
+<!-- compagnon:begin — managed by Compagnon; `compagnon update` rewrites this block, edit outside it -->
+## Compagnon
 
-- codev change: <!-- folder under `_codev/changes/`, or "trivial fix, no change" -->
-- [ ] `codev validate --strict` passes.
-<!-- codev:end -->
+- compagnon change: <!-- folder under `_compagnon/changes/`, or "trivial fix, no change" -->
+- [ ] `compagnon validate --strict` passes.
+<!-- compagnon:end -->
 
 ## Checklist
 

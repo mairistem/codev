@@ -1,16 +1,16 @@
 # Jira et autres serveurs MCP
 
-Les skills de codev peuvent puiser du contexte dans des systèmes externes via
+Les skills de Compagnon peuvent puiser du contexte dans des systèmes externes via
 les serveurs MCP connectés à votre session Claude Code. La CLI elle-même ne
 communique jamais avec eux : ce sont les skills qui détectent dans votre
 demande ce dont elles ont besoin et qui appellent directement l'outil MCP.
 
-Une intégration est disponible aujourd'hui : `/codev-propose` lit un ticket
+Une intégration est disponible aujourd'hui : `/compagnon-propose` lit un ticket
 Jira.
 
 ## Jira
 
-Lorsque votre demande à `/codev-propose` contient un identifiant de ticket —
+Lorsque votre demande à `/compagnon-propose` contient un identifiant de ticket —
 toute chaîne correspondant à `[A-Z]{2,}-\d+`, comme `PROJ-123` — et qu'un
 outil MCP Jira est configuré, la skill :
 
@@ -44,12 +44,12 @@ dans votre installation de Claude Code ; il se configure donc projet par
 projet :
 
 ```yaml
-# _codev/config.yaml
+# _compagnon/config.yaml
 mcp:
   jira_tool: mcp__atlassian__getJiraIssue
 ```
 
-`codev init` le renseigne pour vous lorsqu'il trouve, dans `.mcp.json`,
+`compagnon init` le renseigne pour vous lorsqu'il trouve, dans `.mcp.json`,
 `.claude/settings.json` ou `~/.claude.json`, un serveur dont le nom, la
 commande ou l'URL mentionne Jira ou Atlassian :
 
@@ -66,12 +66,12 @@ serveur sont remplacés par des tirets bas — par exemple, un connecteur nommé
 le nom exact dans la liste des outils d'une session Claude Code et
 renseignez-le à la main.
 
-À l'installation, codev ajoute l'outil aux `allowed-tools` de
-`codev-propose` : la skill peut ainsi l'appeler, et rien d'autre sur ce
+À l'installation, Compagnon ajoute l'outil aux `allowed-tools` de
+`compagnon-propose` : la skill peut ainsi l'appeler, et rien d'autre sur ce
 serveur. Après avoir modifié `mcp:`, régénérez les skills :
 
 ```bash
-codev update --force
+compagnon update --force
 ```
 
 Sans `mcp.jira_tool`, la détection de tickets reste inactive : la skill se
@@ -84,21 +84,21 @@ comporte exactement comme dans un projet sans intégration MCP.
 
 ## Ajouter une autre intégration MCP
 
-Les intégrations MCP font partie de codev lui-même : chacune consiste en une
+Les intégrations MCP font partie de Compagnon lui-même : chacune consiste en une
 clé de configuration et un emplacement réservé dans un workflow. En ajouter une
 — par exemple pour une page Confluence ou un outil de design — relève donc de
-la contribution à codev, et non du paramétrage. Le principe est le même que
+la contribution à Compagnon, et non du paramétrage. Le principe est le même que
 pour Jira :
 
 1. Ajoutez une clé sous `mcp:` dans la configuration du projet
-   (`crates/codev-engine/src/config.rs`).
+   (`crates/compagnon-engine/src/config.rs`).
 2. Transmettez-la au contexte de rendu des skills et substituez un emplacement
    réservé comme `{{JIRA_MCP_TOOL}}` à la fois dans les `allowed-tools` et dans
-   le corps du workflow qui l'utilise (`crates/codev-agents/src/claude.rs`).
+   le corps du workflow qui l'utilise (`crates/compagnon-agents/src/claude.rs`).
 3. Décrivez la détection et l'appel dans le fichier du workflow sous
    `assets/workflows/`, avec un repli propre lorsque la clé est absente.
 
 On enrichit la skill existante plutôt que de la dupliquer : il n'existe qu'une
-seule `/codev-propose`, quelle que soit l'origine de la demande. Consultez
-[CONTRIBUTING.fr.md](https://github.com/mairistem/codev/blob/main/CONTRIBUTING.fr.md)
+seule `/compagnon-propose`, quelle que soit l'origine de la demande. Consultez
+[CONTRIBUTING.fr.md](https://github.com/mairistem/compagnon/blob/main/CONTRIBUTING.fr.md)
 pour en proposer une.

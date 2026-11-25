@@ -1,7 +1,7 @@
 # Installation
 
-codev is a single binary. Prebuilt binaries are published on
-[GitHub Releases](https://github.com/mairistem/codev/releases) for these
+Compagnon is a single binary. Prebuilt binaries are published on
+[GitHub Releases](https://github.com/mairistem/compagnon/releases) for these
 platforms:
 
 | Platform | Target |
@@ -17,12 +17,12 @@ require Rust.
 ## macOS and Linux: install.sh
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
 The script detects your OS and architecture, downloads the matching archive
 and the `SHA256SUMS` file from the latest GitHub Release, verifies the
-archive's SHA-256, and installs the binary to `~/.local/bin/codev`. It
+archive's SHA-256, and installs the binary to `~/.local/bin/compagnon`. It
 refuses to install if the checksum does not match, and it creates
 `~/.local/bin` if needed.
 
@@ -33,10 +33,10 @@ add to `~/.zshrc` or `~/.bashrc`:
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-To install a specific version, set `CODEV_VERSION`:
+To install a specific version, set `COMPAGNON_VERSION`:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | CODEV_VERSION=0.6.1 sh
+curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | COMPAGNON_VERSION=0.6.1 sh
 ```
 
 The script requires `curl`, `tar`, and `sha256sum` or `shasum`.
@@ -46,18 +46,18 @@ The script requires `curl`, `tar`, and `sha256sum` or `shasum`.
 In PowerShell 5.1 or later (including PowerShell 7):
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
 The script downloads the `.zip` archive and `SHA256SUMS`, verifies the
-archive with `Get-FileHash`, and copies `codev.exe` to
-`%LOCALAPPDATA%\Programs\codev\`.
+archive with `Get-FileHash`, and copies `compagnon.exe` to
+`%LOCALAPPDATA%\Programs\compagnon\`.
 
 It does **not** modify your `PATH`. When the folder is missing from your user
 `PATH`, it prints the command to add it:
 
 ```powershell
-[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ";$env:LOCALAPPDATA\Programs\codev", 'User')
+[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ";$env:LOCALAPPDATA\Programs\compagnon", 'User')
 ```
 
 This writes the *user* `PATH` only. Avoid `setx PATH "$env:PATH;..."`: it
@@ -68,8 +68,8 @@ takes effect.
 To install a specific version:
 
 ```powershell
-$env:CODEV_VERSION = '0.6.1'
-iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+$env:COMPAGNON_VERSION = '0.6.1'
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
 Only x86_64 (`AMD64`) is available prebuilt on Windows. On ARM64, build from
@@ -79,9 +79,9 @@ source.
 
 If you prefer not to pipe a script into your shell, download the files
 yourself from the
-[latest release](https://github.com/mairistem/codev/releases/latest). Each
+[latest release](https://github.com/mairistem/compagnon/releases/latest). Each
 release contains one archive per target, named
-`codev-<version>-<target>.tar.gz` (`.zip` on Windows), and a `SHA256SUMS`
+`compagnon-<version>-<target>.tar.gz` (`.zip` on Windows), and a `SHA256SUMS`
 file.
 
 **macOS and Linux.** Download your archive and `SHA256SUMS` into the same
@@ -91,74 +91,74 @@ folder, then:
 # Verify the checksum — on macOS: shasum -a 256 -c SHA256SUMS --ignore-missing
 sha256sum -c SHA256SUMS --ignore-missing
 
-tar -xzf codev-*.tar.gz
+tar -xzf compagnon-*.tar.gz
 mkdir -p ~/.local/bin
-cp codev-*/codev ~/.local/bin/
-chmod 755 ~/.local/bin/codev
+cp compagnon-*/compagnon ~/.local/bin/
+chmod 755 ~/.local/bin/compagnon
 ```
 
-**Windows.** Download `codev-<version>-x86_64-pc-windows-msvc.zip` and
+**Windows.** Download `compagnon-<version>-x86_64-pc-windows-msvc.zip` and
 `SHA256SUMS`, then in PowerShell:
 
 ```powershell
 # Verify the checksum
-$zip = Get-Item codev-*-x86_64-pc-windows-msvc.zip
+$zip = Get-Item compagnon-*-x86_64-pc-windows-msvc.zip
 $expected = (Select-String -Path SHA256SUMS -Pattern $zip.Name).Line.Split(' ')[0]
 $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
 if ($actual -ne $expected) { throw "SHA-256 mismatch" }
 
 # Extract and install
 Expand-Archive $zip -DestinationPath .
-$dst = "$env:LOCALAPPDATA\Programs\codev"
+$dst = "$env:LOCALAPPDATA\Programs\compagnon"
 New-Item -ItemType Directory -Path $dst -Force | Out-Null
-Copy-Item codev-*\codev.exe $dst
+Copy-Item compagnon-*\compagnon.exe $dst
 ```
 
 Then add the folder to your user `PATH` as shown above.
 
 ## From source: cargo install
 
-With a Rust toolchain (1.89 or later), you can build codev from a clone of the
+With a Rust toolchain (1.89 or later), you can build Compagnon from a clone of the
 repository. This is the path for contributors and for platforms without a
 prebuilt binary.
 
 ```bash
-git clone https://github.com/mairistem/codev.git
-cd codev
-cargo install --path crates/codev-cli
+git clone https://github.com/mairistem/compagnon.git
+cd compagnon
+cargo install --path crates/compagnon-cli
 ```
 
-The binary is installed to `~/.cargo/bin/codev`.
+The binary is installed to `~/.cargo/bin/compagnon`.
 
 ## Check the installation
 
 ```bash
-codev --version
+compagnon --version
 ```
 
-On macOS and Linux, `command -v codev` shows which binary your shell runs. On
-Windows, use `Get-Command codev`. If the command is not found, the install
+On macOS and Linux, `command -v compagnon` shows which binary your shell runs. On
+Windows, use `Get-Command compagnon`. If the command is not found, the install
 folder is not on your `PATH`; see the instructions above for your platform.
 
 ## Shell completions
 
-`codev completions <SHELL>` prints a completion script to stdout for `bash`,
+`compagnon completions <SHELL>` prints a completion script to stdout for `bash`,
 `zsh`, `fish`, `powershell` or `elvish`:
 
 ```bash
 # bash
-codev completions bash > ~/.local/share/bash-completion/completions/codev
+compagnon completions bash > ~/.local/share/bash-completion/completions/compagnon
 
 # zsh — then run `compinit`
-codev completions zsh > "${fpath[1]}/_codev"
+compagnon completions zsh > "${fpath[1]}/_compagnon"
 
 # fish
-codev completions fish > ~/.config/fish/completions/codev.fish
+compagnon completions fish > ~/.config/fish/completions/compagnon.fish
 ```
 
 ```powershell
 # PowerShell, current session
-codev completions powershell | Out-String | Invoke-Expression
+compagnon completions powershell | Out-String | Invoke-Expression
 ```
 
 ## Requirements
@@ -169,40 +169,40 @@ codev completions powershell | Out-String | Invoke-Expression
 
 ## Upgrading
 
-Run `codev self-update`:
+Run `compagnon self-update`:
 
 ```bash
-codev self-update                  # asks for confirmation on a terminal
-codev self-update --check          # only report the running and latest versions
-codev self-update --version 0.5.0  # a specific version, downgrades included
+compagnon self-update                  # asks for confirmation on a terminal
+compagnon self-update --check          # only report the running and latest versions
+compagnon self-update --version 0.5.0  # a specific version, downgrades included
 ```
 
 It downloads the latest release for your platform, verifies its SHA-256
 against the release's `SHA256SUMS` — as the installers do — and replaces the
-binary in place. Then, inside a codev project, it runs `codev update` with
+binary in place. Then, inside a Compagnon project, it runs `compagnon update` with
 the new binary. It needs `curl` and `tar`, which macOS, most Linux
 distributions and Windows 10 or later include.
 
-`codev self-update` only replaces a binary installed by `install.sh`,
-`install.ps1` or by hand. When codev was installed with `cargo install`,
+`compagnon self-update` only replaces a binary installed by `install.sh`,
+`install.ps1` or by hand. When Compagnon was installed with `cargo install`,
 built from a clone, or installed by a package manager, it prints the command
 that upgrades it and changes nothing. It never downgrades unless you pass
-`--version`. On Windows, the previous binary is kept as `codev.old.exe` next
-to the new one until the next codev command removes it.
+`--version`. On Windows, the previous binary is kept as `compagnon.old.exe` next
+to the new one until the next Compagnon command removes it.
 
-`codev status` tells you when a newer release exists, at most once a day; see
-[Does codev check for updates?](faq.md#does-codev-check-for-updates) to turn
+`compagnon status` tells you when a newer release exists, at most once a day; see
+[Does Compagnon check for updates?](faq.md#does-compagnon-check-for-updates) to turn
 that off.
 
 You can still run the installer again, or download a newer release. Then, in
 each project, regenerate the skills so they match the new version:
 
 ```bash
-codev update
+compagnon update
 ```
 
-`codev update` also refreshes codev's managed sections in `CLAUDE.md` and the
-pull request template, and the codev version pinned in
-`.github/workflows/codev.yml`, where `codev init` wrote them. See
-[`codev update`](reference/cli.md#codev-update) for how hand-edited skills
-are handled, and `codev doctor` to check the result.
+`compagnon update` also refreshes Compagnon's managed sections in `CLAUDE.md` and the
+pull request template, and the compagnon version pinned in
+`.github/workflows/compagnon.yml`, where `compagnon init` wrote them. See
+[`compagnon update`](reference/cli.md#compagnon-update) for how hand-edited skills
+are handled, and `compagnon doctor` to check the result.

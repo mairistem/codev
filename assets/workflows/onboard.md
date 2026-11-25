@@ -1,8 +1,8 @@
-Introduce codev to a user discovering it: what the tool does, the current
+Introduce Compagnon to a user discovering it: what the tool does, the current
 state of the project, and the recommended next action.
 
 **Strict read-only boundary.** This skill **modifies nothing**. It does not
-create a change, does not run `codev init` on the user's behalf, does not
+create a change, does not run `compagnon init` on the user's behalf, does not
 check off a task. It **guides** — the user acts.
 
 ---
@@ -10,18 +10,18 @@ check off a task. It **guides** — the user acts.
 ## Input
 
 Nothing. The skill is invoked without arguments. If the user asks a
-question, it informs about codev; it does not implement anything.
+question, it informs about Compagnon; it does not implement anything.
 
 ## Steps
 
-### 1. Describe codev (block 1 — "codev is")
+### 1. Describe Compagnon (block 1 — "Compagnon is")
 
 Exactly three sentences, displayed as markdown:
 
-> **codev** is a versioned planning tool for software projects: every
+> **Compagnon** is a versioned planning tool for software projects: every
 > change goes through a **propose → apply → archive** cycle documented
-> in `_codev/`. Each step is driven by a Claude Code skill
-> (`/codev-<step>`), and the `codev` CLI does the atomic work
+> in `_compagnon/`. Each step is driven by a Claude Code skill
+> (`/compagnon-<step>`), and the `compagnon` CLI does the atomic work
 > underneath. Your planning lives in the repository, alongside the
 > code.
 
@@ -30,26 +30,26 @@ Exactly three sentences, displayed as markdown:
 **First check whether the repository is initialized**:
 
 ```bash
-codev list
+compagnon list
 ```
 
 This command lists the active changes. Three cases:
 
 - **Success** → the repository is initialized. Continue.
-- **Failure with code `no_codev_root`** → no `_codev/` under the
-  current folder. Go straight to step 3, "`codev init`" branch.
+- **Failure with code `no_compagnon_root`** → no `_compagnon/` under the
+  current folder. Go straight to step 3, "`compagnon init`" branch.
 - **Other failure** → relay the message as is and stop.
 
 If the repository is initialized, complete the picture:
 
 ```bash
-codev list --specs           # capabilities already specified
-codev decision list          # local and inherited decisions
-ls _codev/changes/archive/   # number of archived changes (optional)
+compagnon list --specs           # capabilities already specified
+compagnon decision list          # local and inherited decisions
+ls _compagnon/changes/archive/   # number of archived changes (optional)
 ```
 
 Count the entries of the form `<date>-<name>/` in
-`_codev/changes/archive/` (ignore `.gitkeep` and hidden files).
+`_compagnon/changes/archive/` (ignore `.gitkeep` and hidden files).
 
 Display a compact summary — **count, do not list exhaustively**:
 
@@ -65,10 +65,10 @@ A freshly initialized project (no spec, no change, no decision) is a
 normal case — say so: "freshly initialized project, ready for your
 first change".
 
-Then check what the codev setup still lacks:
+Then check what the Compagnon setup still lacks:
 
 ```bash
-codev doctor --json
+compagnon doctor --json
 ```
 
 Each entry of `checks` has an `id`, a `status` (`ok`, `missing`,
@@ -78,15 +78,15 @@ Each entry of `checks` has an `id`, a `status` (`ok`, `missing`,
   each, with their `fix` verbatim:
 
   > - Setup to complete:
-  >   - `config.rules` — fix: `/codev-configure`
-  >   - `specs` — fix: `/codev-propose <a change>`
+  >   - `config.rules` — fix: `/compagnon-configure`
+  >   - `specs` — fix: `/compagnon-propose <a change>`
 
-- or, when none is `missing`, one line: "codev setup complete".
+- or, when none is `missing`, one line: "Compagnon setup complete".
 
-Warnings may be summarized as a count ("1 warning, see `codev doctor`").
-Never run a fix yourself — not even `codev init` or `codev update`: name
-it, the user acts. If `codev doctor` fails or does not exist (an older
-codev), skip this list silently and go on. The recommended next action
+Warnings may be summarized as a count ("1 warning, see `compagnon doctor`").
+Never run a fix yourself — not even `compagnon init` or `compagnon update`: name
+it, the user acts. If `compagnon doctor` fails or does not exist (an older
+Compagnon), skip this list silently and go on. The recommended next action
 of block 3 does not change.
 
 ### 3. Recommend the next action (block 3 — "what's next")
@@ -96,23 +96,23 @@ Ordered resolution, from the most constraining to the most general.
 
 | State | Recommendation |
 |---|---|
-| `_codev/` missing | `codev init` |
-| No active change AND thin config (no entry under `rules:`) | **`/codev-configure` first** — Claude will enrich the config from the project; then `/codev-propose <an-idea>` |
-| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then `/codev-propose <an-idea>`; `/codev-explore <topic>` as an alternative |
-| A single active change, planning incomplete | `/codev-propose <that-name>` to continue |
-| A single active change, planning complete | `/codev-apply <that-name>` |
+| `_compagnon/` missing | `compagnon init` |
+| No active change AND thin config (no entry under `rules:`) | **`/compagnon-configure` first** — Claude will enrich the config from the project; then `/compagnon-propose <an-idea>` |
+| No active change, non-thin config | **Read `README.md`** to get a feel for the project, then `/compagnon-propose <an-idea>`; `/compagnon-explore <topic>` as an alternative |
+| A single active change, planning incomplete | `/compagnon-propose <that-name>` to continue |
+| A single active change, planning complete | `/compagnon-apply <that-name>` |
 | Several active changes | List them; let the user choose the skill |
 
-To assess whether the config is "thin", read `_codev/config.yaml` and
+To assess whether the config is "thin", read `_compagnon/config.yaml` and
 look at the `rules:` key:
 
-- **`rules:` missing or empty** → thin. `/codev-configure` really
+- **`rules:` missing or empty** → thin. `/compagnon-configure` really
   has something to contribute.
 - **`rules:` has at least one entry** → non-thin. The user has
   already written their rules; the hint no longer applies.
 
 The `context:` field does **not** factor into the decision. It is
-usually filled by the `codev init` probe from the detected manifests,
+usually filled by the `compagnon init` probe from the detected manifests,
 which makes its length meaningless — a TypeScript project with several
 dependencies has a long context without the user having written
 anything.
@@ -120,34 +120,34 @@ anything.
 How to determine whether a change's planning is complete:
 
 ```bash
-codev status --change "<name>"
+compagnon status --change "<name>"
 ```
 
 The last lines say "Planning: N/N artifacts" and "Planning is
 complete." when everything is ready.
 
 **Make the suggestion actionable**: quote the exact command to type,
-not just "run `codev-propose`". A useful example on a new project whose
+not just "run `compagnon-propose`". A useful example on a new project whose
 config is thin:
 
 > **What's next**: your config is sparse. Start with
-> `/codev-configure` — Claude will read the project (README, docs,
-> a sample of the code) and enrich `_codev/config.yaml`. Then type
-> `/codev-propose <an-idea>` for your first change.
+> `/compagnon-configure` — Claude will read the project (README, docs,
+> a sample of the code) and enrich `_compagnon/config.yaml`. Then type
+> `/compagnon-propose <an-idea>` for your first change.
 
 On a project whose config is already well filled in:
 
 > **What's next**: start by reading `README.md` to get a feel for the
 > project. Then, when an idea comes up, type
-> `/codev-propose <an-idea>`. Alternative if you have a question but
-> no idea for an action yet: `/codev-explore <topic>`.
+> `/compagnon-propose <an-idea>`. Alternative if you have a question but
+> no idea for an action yet: `/compagnon-explore <topic>`.
 
 And with an active change:
 
-> **What's next**: you can type `/codev-propose add-user-auth` to
+> **What's next**: you can type `/compagnon-propose add-user-auth` to
 > plan your first change.
 
-A non-case: if the user has already typed `/codev-onboard` for the
+A non-case: if the user has already typed `/compagnon-onboard` for the
 Nth time, the state is stable; say the same thing again without
 apologizing — the skill's role is to stay **predictable**.
 
@@ -160,18 +160,18 @@ that…"). The reader wants the map of the terrain, not a guided tour.
 ## Guardrails
 
 - **No writing** — no file, no skill, no change, no decision.
-  `allowed-tools` contains only `Bash(codev:*), Read, Glob`.
-- **Never run a doctor fix** — `codev doctor` only reports; relay its
+  `allowed-tools` contains only `Bash(compagnon:*), Read, Glob`.
+- **Never run a doctor fix** — `compagnon doctor` only reports; relay its
   `fix` lines, do not execute them.
-- **Never run `codev init`** — if the repository is not initialized,
+- **Never run `compagnon init`** — if the repository is not initialized,
   display the command and let the user type it.
 - **No excess detail** — numbers, not exhaustive lists. A user who
-  wants the details runs `/codev-explore` or the commands
-  `codev decision list` / `codev list --specs`.
+  wants the details runs `/compagnon-explore` or the commands
+  `compagnon decision list` / `compagnon list --specs`.
 - **Never suggest a missing skill** — only recommend
-  `/codev-<something>` if the workflow exists in the installed
+  `/compagnon-<something>` if the workflow exists in the installed
   catalog. In practice, this skill always ships with the workflows of
   the default catalog; the opt-in ones (`apply`, `sync`, `archive`,
-  `update`) may not be installed. If you recommend `/codev-apply`
+  `update`) may not be installed. If you recommend `/compagnon-apply`
   when it is not installed, the user will not find the skill — check
   first by listing the skills in `.claude/skills/`.

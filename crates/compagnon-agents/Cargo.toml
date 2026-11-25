@@ -1,0 +1,21 @@
+[package]
+name = "compagnon-agents"
+description = "compagnon skill generation for coding agents — targets Claude Code"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+compagnon-core = { workspace = true }
+compagnon-engine = { workspace = true }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+serde_norway = { workspace = true }

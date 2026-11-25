@@ -60,14 +60,14 @@ jobs:
       - run: cargo check --workspace --locked
 
   dogfood:
-    name: Validate codev's own specs
+    name: Validate compagnon's own specs
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      # codev is developed with codev: its own `_codev/` tree must stay valid.
-      - run: cargo run --locked --quiet --bin codev -- validate --strict
+      # compagnon is developed with compagnon: its own `_compagnon/` tree must stay valid.
+      - run: cargo run --locked --quiet --bin compagnon -- validate --strict
 
   audit:
     name: Dependency audit

@@ -1,16 +1,16 @@
 # Configuration
 
-Un projet codev se configure dans `_codev/config.yaml`. Toutes les clés sont
+Un projet Compagnon se configure dans `_compagnon/config.yaml`. Toutes les clés sont
 facultatives : un projet peut même fonctionner sans ce fichier. Une clé que
-codev ne connaît pas est signalée, par un avertissement au premier niveau,
+Compagnon ne connaît pas est signalée, par un avertissement au premier niveau,
 dans `mcp`, dans `review` et dans la table d'un rôle, par une erreur dans une
 entrée de `inherits` et dans `changelog` : une faute de frappe ne passe donc
 jamais inaperçue. Voir [Clés inconnues](#clés-inconnues).
 
-`codev init` génère le fichier avec les valeurs qu'il a détectées, chacune
+`compagnon init` génère le fichier avec les valeurs qu'il a détectées, chacune
 précédée d'un commentaire indiquant sa provenance. Vous pouvez le modifier à la
 main à tout moment. Après avoir modifié `workflows`, `mcp` ou `review`,
-lancez `codev update` pour que les skills reflètent la modification.
+lancez `compagnon update` pour que les skills reflètent la modification.
 
 ## Exemple complet
 
@@ -37,13 +37,13 @@ rules:
   specs:
     - Describe observable behavior, never implementation.
   design:
-    - Cite the decisions in _codev/decisions/ that constrain the approach.
+    - Cite the decisions in _compagnon/decisions/ that constrain the approach.
   tasks:
     - "Each task states how to verify it: a named test, a command, or an observable behavior."
 
 inherits:
   - path: ~/src/acme-standards
-  - git: git@github.com:acme/codev-standards.git
+  - git: git@github.com:acme/compagnon-standards.git
     ref: main
     subpath: standards
 
@@ -54,7 +54,7 @@ changelog:
   exclude:
     - 2026-03-02-legacy-import
 
-codev_version: ">=0.5"
+compagnon_version: ">=0.5"
 
 roles:
   newcomer: never
@@ -73,8 +73,8 @@ review:
 ## schema
 
 Le schéma de workflow utilisé par les nouveaux changes. Valeur par défaut :
-`spec-driven`, le schéma embarqué dans codev. Le nom d'un schéma défini sous
-`_codev/schemas/` est également accepté. Un change enregistre son schéma dans
+`spec-driven`, le schéma embarqué dans Compagnon. Le nom d'un schéma défini sous
+`_compagnon/schemas/` est également accepté. Un change enregistre son schéma dans
 son propre `change.yaml` : modifier cette clé n'affecte donc pas les changes
 en cours. Voir [Schémas personnalisés](../guides/custom-schemas.md).
 
@@ -83,9 +83,9 @@ en cours. Voir [Schémas personnalisés](../guides/custom-schemas.md).
 La langue dans laquelle les skills rédigent les artefacts, sous la
 forme d'un code ISO 639 : deux ou trois lettres minuscules, éventuellement
 suivies d'une sous-étiquette (`en`, `fr`, `pt-BR`, `zh-Hant`). Valeur par
-défaut : `en`. Il fixe la prose, et les mots-clés structurels quand codev
+défaut : `en`. Il fixe la prose, et les mots-clés structurels quand Compagnon
 fournit la langue (anglais et français) ; une autre langue garde les
-mots-clés anglais. codev lit les mots-clés en anglais comme en français,
+mots-clés anglais. Compagnon lit les mots-clés en anglais comme en français,
 quel que soit ce réglage. Voir
 [Langue des artefacts](../guides/artifact-language.md).
 
@@ -102,7 +102,7 @@ Voir [Les skills Claude Code](../skills.md).
 Texte libre transmis à l'agent avec les instructions de **chaque** artefact :
 votre stack, vos conventions, vos contraintes — tout ce qui ne peut pas se
 déduire du code. C'est une contrainte imposée à l'agent, jamais un contenu à
-recopier dans les fichiers. `/codev-configure` peut le rédiger pour vous.
+recopier dans les fichiers. `/compagnon-configure` peut le rédiger pour vous.
 
 ## rules
 
@@ -115,7 +115,7 @@ Dans un scalaire simple, YAML interprète `key: value` comme une table :
 mettez donc entre guillemets toute règle contenant un deux-points suivi d'une
 espace, comme la règle `tasks` ci-dessus.
 
-`/codev-propose` applique les règles une seconde fois lorsqu'elle relit le plan
+`/compagnon-propose` applique les règles une seconde fois lorsqu'elle relit le plan
 terminé : `rules` est donc aussi le moyen d'ajouter un angle de relecture
 propre à votre projet :
 
@@ -125,9 +125,9 @@ rules:
     - "Évaluer l'impact sur l'accessibilité (RGAA) de toute modification de l'interface utilisateur."
 ```
 
-Les règles de test se placent sous `tasks` : `/codev-propose` rédige le plan
-en les respectant, et `/codev-apply` les suit lorsqu'elle écrit les tests.
-Décrivez ce que font vos tests existants — `/codev-configure` en rédige la
+Les règles de test se placent sous `tasks` : `/compagnon-propose` rédige le plan
+en les respectant, et `/compagnon-apply` les suit lorsqu'elle écrit les tests.
+Décrivez ce que font vos tests existants — `/compagnon-configure` en rédige la
 règle à partir d'eux :
 
 ```yaml
@@ -146,8 +146,8 @@ rules:
     - "JUnit 5 sous src/test/java, à l'image du paquet principal, Mockito seulement aux frontières ; mvn verify."
 ```
 
-Tant que `rules` est vide, `codev init` et `codev status` suggèrent de lancer
-`/codev-configure`.
+Tant que `rules` est vide, `compagnon init` et `compagnon status` suggèrent de lancer
+`/compagnon-configure`.
 
 ## inherits
 
@@ -157,28 +157,28 @@ soit un dossier local, soit un dépôt git :
 
 | Clé | S'applique à | Signification |
 |---|---|---|
-| `path` | local | Dossier contenant un projet codev ; chemin absolu ou commençant par `~` |
+| `path` | local | Dossier contenant un projet Compagnon ; chemin absolu ou commençant par `~` |
 | `git` | git | URL du dépôt, telle que `git` la comprend |
 | `ref` | git | Branche ou tag à suivre — obligatoire |
-| `subpath` | git | Dossier du dépôt qui contient le projet codev |
+| `subpath` | git | Dossier du dépôt qui contient le projet Compagnon |
 
 Une entrée déclare exactement une clé parmi `path` et `git` ; `ref` et
 `subpath` sont rejetées sur une entrée `path`. Les sources git sont épinglées
-dans `_codev/codev.lock` par `codev sources update`. Voir
+dans `_compagnon/compagnon.lock` par `compagnon sources update`. Voir
 [Sources héritées](../guides/inherited-sources.md).
 
-`codev init --inherit <SOURCE>` écrit cette clé pour vous lorsqu'il crée la
+`compagnon init --inherit <SOURCE>` écrit cette clé pour vous lorsqu'il crée la
 configuration, une entrée par option, sous un commentaire
-`# set with codev init --inherit`, et épingle aussitôt les sources git :
+`# set with compagnon init --inherit`, et épingle aussitôt les sources git :
 
 ```bash
-codev init --yes --inherit git@github.com:acme/codev-standards.git@v2 --inherit ~/src/acme-standards
+compagnon init --yes --inherit git@github.com:acme/compagnon-standards.git@v2 --inherit ~/src/acme-standards
 ```
 
 ```yaml
-# set with codev init --inherit
+# set with compagnon init --inherit
 inherits:
-  - git: git@github.com:acme/codev-standards.git
+  - git: git@github.com:acme/compagnon-standards.git
     ref: v2
   - path: ~/src/acme-standards
 ```
@@ -190,63 +190,63 @@ chaque installation de Claude Code et ne sont donc jamais hérités.
 
 | Clé | Signification |
 |---|---|
-| `jira_tool` | Outil qui récupère un ticket Jira, utilisé par `/codev-propose` lorsqu'un identifiant de ticket est mentionné |
+| `jira_tool` | Outil qui récupère un ticket Jira, utilisé par `/compagnon-propose` lorsqu'un identifiant de ticket est mentionné |
 
 Voir [Jira et autres serveurs MCP](../guides/mcp.md).
 
 ## changelog
 
-Les réglages de [`codev changelog`](cli.md#codev-changelog). Propres au
+Les réglages de [`compagnon changelog`](cli.md#compagnon-changelog). Propres au
 projet, jamais hérités.
 
 | Clé | Signification |
 |---|---|
-| `exclude` | Noms de dossiers d'archive (`<date>-<nom>`) des changes déjà décrits à la main dans `CHANGELOG.md`. `codev changelog` les laisse de côté, sans avertissement |
+| `exclude` | Noms de dossiers d'archive (`<date>-<nom>`) des changes déjà décrits à la main dans `CHANGELOG.md`. `compagnon changelog` les laisse de côté, sans avertissement |
 
-Utilisez-la pour adopter `codev changelog` dans un projet dont le
+Utilisez-la pour adopter `compagnon changelog` dans un projet dont le
 `CHANGELOG.md` décrit déjà des changes archivés sans note de version, afin
 qu'ils ne soient pas listés deux fois. Voir
 [Notes de version et CHANGELOG](../guides/release-notes.md).
 
-## codev_version
+## compagnon_version
 
-Les versions de codev que l'équipe accepte, sous forme d'exigence de version
+Les versions de Compagnon que l'équipe accepte, sous forme d'exigence de version
 sémantique dans la syntaxe de Cargo : `">=0.5"`, `"^0.6"`, `">=0.5, <0.8"`.
 Mettez la valeur entre guillemets, car YAML interprète `>` à sa façon. Propre
 au projet, jamais héritée.
 
-Lorsque le codev en cours ne la satisfait pas, `codev doctor` signale la
-vérification `codev_version` comme manquante et les skills proposent de mettre
-à jour avant d'agir. La correction est `codev self-update` quand le codev en
+Lorsque le Compagnon en cours ne la satisfait pas, `compagnon doctor` signale la
+vérification `compagnon_version` comme manquante et les skills proposent de mettre
+à jour avant d'agir. La correction est `compagnon self-update` quand le Compagnon en
 cours est trop ancien. Quand il est trop récent — au-delà d'une borne
-supérieure comme `<0.7` — un simple `codev self-update` refuserait de
+supérieure comme `<0.7` — un simple `compagnon self-update` refuserait de
 rétrograder : la correction nomme donc une version,
-`codev self-update --version 0.6.4`, prise dans la dernière version publiée
+`compagnon self-update --version 0.6.4`, prise dans la dernière version publiée
 que connaît le cache de mise à jour si elle satisfait l'exigence, sinon dans
 l'exigence elle-même (`<=0.6.2` donne `0.6.2`, `^0.5` donne `0.5.0`). Une
 valeur qui n'est pas une exigence fait échouer toutes les commandes avec
-`invalid_codev_version`.
+`invalid_compagnon_version`.
 
-`codev validate`, `codev sync` et `codev archive` — les commandes dont la
+`compagnon validate`, `compagnon sync` et `compagnon archive` — les commandes dont la
 réussite est un verdict sur le projet — **refusent de s'exécuter** lorsque le
-codev en cours ne satisfait pas `codev_version` : elles ne vérifient et
-n'écrivent rien, et échouent avec `codev_version_unsatisfied`, dont le
+Compagnon en cours ne satisfait pas `compagnon_version` : elles ne vérifient et
+n'écrivent rien, et échouent avec `compagnon_version_unsatisfied`, dont le
 message nomme l'exigence, la version en cours et la même correction que
-`codev doctor`. Sans cela, un codev plus ancien pourrait ignorer une clé qui
-resserre une vérification et accepter ce que le codev d'un collègue refuse
+`compagnon doctor`. Sans cela, un Compagnon plus ancien pourrait ignorer une clé qui
+resserre une vérification et accepter ce que le Compagnon d'un collègue refuse
 (voir [Clés inconnues](#clés-inconnues)). Toutes les autres commandes
-continuent de fonctionner, pour que `codev status`, `codev doctor` et les
+continuent de fonctionner, pour que `compagnon status`, `compagnon doctor` et les
 skills puissent encore vous dire quoi installer. Deux conséquences à
 anticiper :
 
-- un job de CI épinglé avec `CODEV_VERSION=` (comme l'écrit `codev init`)
-  se met à échouer dès que `codev_version` dépasse cette version : relevez
+- un job de CI épinglé avec `COMPAGNON_VERSION=` (comme l'écrit `compagnon init`)
+  se met à échouer dès que `compagnon_version` dépasse cette version : relevez
   l'épinglage dans le même commit ;
-- une exigence avec une borne supérieure (`^0.6`) refuse aussi un codev plus
-  récent : élargissez `codev_version` avant de passer au-delà, ou installez
-  la version que nomme `codev doctor`.
+- une exigence avec une borne supérieure (`^0.6`) refuse aussi un Compagnon plus
+  récent : élargissez `compagnon_version` avant de passer au-delà, ou installez
+  la version que nomme `compagnon doctor`.
 
-codev 0.5 et les versions antérieures ne connaissent pas cette clé et
+Compagnon 0.5 et les versions antérieures ne connaissent pas cette clé et
 rejettent le fichier : ajoutez-la une fois que tout le monde utilise une
 version qui la connaît.
 
@@ -287,33 +287,33 @@ et le `developer` ne peuvent pas être désactivés ; leurs critères peuvent
 d'un change peut changer l'activation pour ce change seulement — voir
 [change.yaml](file-formats.md#changeyaml).
 
-`codev validate` signale un identifiant inconnu par `unknown_role`, une
+`compagnon validate` signale un identifiant inconnu par `unknown_role`, une
 activation autre que `always`, `never` ou `on_domain` — ou `on_domain` sur
 un rôle lié à aucun domaine — par `invalid_role_activation`, et `never` sur
 un rôle qui ne peut pas être désactivé par `role_not_disableable` — des erreurs de l'élément `config`, à la ligne du
-rôle. `codev status`, `codev instructions` et `codev roles` échouent avec
+rôle. `compagnon status`, `compagnon instructions` et `compagnon roles` échouent avec
 le même code. Toute autre clé dans la table d'un rôle, comme un `done-when`
 mal orthographié, est ignorée avec un avertissement `unknown_config_key`
 nommé `roles.<id>.<clé>`, à la ligne de la clé : le reste de la table du
-rôle s'applique, et `codev validate --strict` échoue dessus, si bien qu'une
+rôle s'applique, et `compagnon validate --strict` échoue dessus, si bien qu'une
 faute de frappe reste détectée. Un `model` autre que `opus`,
 `sonnet`, `haiku` ou `inherit` est une erreur `invalid_role_model`,
 signalée et bloquante de la même façon. Un `model` sur un rôle qui ne sert
 aucune étape de relecture (`plan.trace`, `plan.challenge`, `code.review`)
 et qui n'est pas le `developer` ne s'applique jamais : c'est un
 avertissement `role_model_unused`. Le modèle du `developer` implémente les
-tâches de `/codev-apply` dans un sous-agent, quel que soit le mode de
+tâches de `/compagnon-apply` dans un sous-agent, quel que soit le mode de
 revue (décision 0012).
 
-**`model` et les versions plus anciennes de codev.** Un codev antérieur à
-la version qui a introduit `model` ne connaît pas la clé : codev 0.6.1 et
+**`model` et les versions plus anciennes de Compagnon.** Un Compagnon antérieur à
+la version qui a introduit `model` ne connaît pas la clé : Compagnon 0.6.1 et
 les versions antérieures la refusent, comme toute clé inconnue dans un
 rôle, et chaque commande échoue avec `invalid`. Relevez
-[`codev_version`](#codev_version) à cette version avant de l'indiquer,
-pour que chaque codev qui lit le dépôt, CI comprise, la comprenne. Une
+[`compagnon_version`](#compagnon_version) à cette version avant de l'indiquer,
+pour que chaque Compagnon qui lit le dépôt, CI comprise, la comprenne. Une
 source partagée par [`inherits`](#inherits) ne devrait pas l'indiquer tant
 que chaque projet qui en hérite n'utilise pas cette version : à partir
-d'elle, le `roles:` d'une source est ignoré sans être lu, mais un codev
+d'elle, le `roles:` d'une source est ignoré sans être lu, mais un Compagnon
 plus ancien le lit encore et perdrait le contexte et les règles de la
 source.
 
@@ -347,17 +347,17 @@ un alias. Leurs correspondances ont la source `project`, et ils sont
 en temps linéaire, quelle que soit leur forme, et leur taille compilée est
 plafonnée.
 
-`codev validate` signale, à la ligne de `triggers:`, une erreur
+`compagnon validate` signale, à la ligne de `triggers:`, une erreur
 `invalid_trigger` pour un groupe sans `domain` connu, sans aucun
 déclencheur, ou avec un glob ou une expression qui ne compile pas — le
 groupe est alors ignoré par toutes les commandes, qui le signalent dans
 leur `status` —, et un avertissement `invalid_trigger` pour une clé
 qu'il ne connaît pas, ignorée tandis que le reste du groupe s'applique.
 
-codev 0.6 et les versions antérieures ne connaissent pas cette clé : elles
+Compagnon 0.6 et les versions antérieures ne connaissent pas cette clé : elles
 émettent l'avertissement `unknown_config_key`, qui fait échouer leur
-`codev validate --strict`. Lorsque vous l'ajoutez, relevez
-`codev_version` jusqu'à la version qui l'a introduite.
+`compagnon validate --strict`. Lorsque vous l'ajoutez, relevez
+`compagnon_version` jusqu'à la version qui l'a introduite.
 
 ## review
 
@@ -376,37 +376,37 @@ review:
 Un change peut la remplacer dans son `change.yaml`, avec la même clé :
 `review: { mode: inline }` pour corriger une coquille dans un projet
 isolé, ou `isolated` pour un change sensible dans un projet en ligne.
-`codev roles --json` donne le mode en vigueur et son origine
+`compagnon roles --json` donne le mode en vigueur et son origine
 (`review.mode`, `review.origin`). Toute autre valeur fait échouer chaque
 commande avec `invalid_review_mode`, qui nomme `inline` et `isolated` ;
 une clé inconnue sous `review` est un avertissement `unknown_config_key`
 (`review.<clé>`).
 
-**Changer de mode.** Définissez la clé, puis lancez `codev update` : en
-mode isolé, les skills `/codev-propose` et `/codev-apply` demandent
+**Changer de mode.** Définissez la clé, puis lancez `compagnon update` : en
+mode isolé, les skills `/compagnon-propose` et `/compagnon-apply` demandent
 l'outil `Agent` de Claude Code, en mode en ligne elles ne le demandent
-pas, et `codev doctor` signale `skills_review_mode` tant qu'elles n'ont
+pas, et `compagnon doctor` signale `skills_review_mode` tant qu'elles n'ont
 pas été régénérées. Une skill que vous avez modifiée à la main est
-conservée ; `codev update --force` la réécrit.
+conservée ; `compagnon update --force` la réécrit.
 
 **Pourquoi `inline` par défaut.** La revue isolée multiplie la lecture de
 la matière par le nombre de rôles, et son bénéfice n'est pas encore
-mesuré : les évaluations des rôles de codev font travailler un rôle à la
+mesuré : les évaluations des rôles de Compagnon font travailler un rôle à la
 fois, sans conversation d'écriture, et ne peuvent donc pas comparer les
 deux modes. Voir
 [Revue en ligne ou isolée](../roles.md#revue-en-ligne-ou-isolée).
 
-codev 0.6 et les versions antérieures ne connaissent pas cette clé :
+Compagnon 0.6 et les versions antérieures ne connaissent pas cette clé :
 elles émettent l'avertissement `unknown_config_key` — qui fait échouer
-leur `codev validate --strict` — et refusent un `change.yaml` qui la
-définit. Lorsque vous la définissez, relevez `codev_version` jusqu'à la
-version qui l'a introduite, pour que chaque codev qui lit le dépôt, CI
+leur `compagnon validate --strict` — et refusent un `change.yaml` qui la
+définit. Lorsque vous la définissez, relevez `compagnon_version` jusqu'à la
+version qui l'a introduite, pour que chaque Compagnon qui lit le dépôt, CI
 comprise, la comprenne.
 
 ## Clés inconnues
 
-Une version plus récente de codev peut ajouter des clés qu'une version plus
-ancienne ne connaît pas. Pour qu'un codev plus ancien continue de fonctionner
+Une version plus récente de Compagnon peut ajouter des clés qu'une version plus
+ancienne ne connaît pas. Pour qu'un Compagnon plus ancien continue de fonctionner
 sur une configuration plus récente et vous dise ce dont il a besoin, les clés
 inconnues sont traitées selon ce que produirait le fait de les ignorer :
 
@@ -416,21 +416,21 @@ inconnues sont traitées selon ce que produirait le fait de les ignorer :
 | `mcp` | avertissement `unknown_config_key` (`mcp.<clé>`), clé ignorée | un outil inconnu laisse seulement cette intégration non configurée |
 | `review` | avertissement `unknown_config_key` (`review.<clé>`), clé ignorée | un réglage de revue inconnu laisse la revue telle qu'elle était |
 | une entrée de `inherits` | erreur `invalid` | l'ignorer ferait lire une autre source que celle que vous avez décrite |
-| `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `codev changelog --write` |
-| une entrée de `roles` | avertissement `unknown_config_key` (`roles.<id>.<clé>`), clé ignorée | le reste de la table du rôle s'applique ; une clé dont l'oubli ferait disparaître une relecture s'accompagne d'un `codev_version` relevé |
-| un groupe de `triggers` | avertissement `invalid_trigger` de `codev validate`, clé ignorée | le reste du groupe suggère toujours son domaine |
+| `changelog` | erreur `invalid` | l'ignorer ferait écrire un autre fichier à `compagnon changelog --write` |
+| une entrée de `roles` | avertissement `unknown_config_key` (`roles.<id>.<clé>`), clé ignorée | le reste de la table du rôle s'applique ; une clé dont l'oubli ferait disparaître une relecture s'accompagne d'un `compagnon_version` relevé |
+| un groupe de `triggers` | avertissement `invalid_trigger` de `compagnon validate`, clé ignorée | le reste du groupe suggère toujours son domaine |
 
 L'avertissement nomme la clé, indique que le projet demande peut-être une
-version plus récente de codev, cite `codev_version` quand le fichier la
-définit et renvoie à `codev self-update` ; l'erreur fait de même quand
-`codev_version` est définie. L'avertissement apparaît :
+version plus récente de Compagnon, cite `compagnon_version` quand le fichier la
+définit et renvoie à `compagnon self-update` ; l'erreur fait de même quand
+`compagnon_version` est définie. L'avertissement apparaît :
 
-- dans la sortie de `codev status`, `codev new change`, `codev init` et
-  `codev update`, et dans le tableau `status` de leur sortie `--json` ;
-- dans `codev validate`, comme constat `warning` d'un élément `config`, à la
-  ligne de la clé : `codev validate --strict` — le cas de la CI — échoue
-  donc, tandis que `codev validate` seul réussit ;
-- dans `codev doctor`, comme vérification `config.keys`.
+- dans la sortie de `compagnon status`, `compagnon new change`, `compagnon init` et
+  `compagnon update`, et dans le tableau `status` de leur sortie `--json` ;
+- dans `compagnon validate`, comme constat `warning` d'un élément `config`, à la
+  ligne de la clé : `compagnon validate --strict` — le cas de la CI — échoue
+  donc, tandis que `compagnon validate` seul réussit ;
+- dans `compagnon doctor`, comme vérification `config.keys`.
 
 Les clés de la configuration d'une source héritée ne sont pas signalées :
 seuls son `context` et ses `rules` sont lus.
@@ -440,33 +440,33 @@ avec son propre code, pour que vous sachiez quel fichier ouvrir :
 
 | Fichier | Clé inconnue | Signalée par |
 |---|---|---|
-| le `change.yaml` d'un change, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent le change (`status`, `instructions`, `roles`, `review`), et `codev validate` sur l'élément du change |
-| un `schema.yaml` de projet, à tout niveau, `role:` d'un artefact compris | avertissement `schema_unknown_key`, clé ignorée | les commandes qui utilisent le schéma, et `codev validate` sur l'élément `config`, localisé dans le fichier du schéma |
-| le frontmatter d'un ADR | avertissement `decision_unknown_field`, champ ignoré et conservé par `codev decision accept` | `codev validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
+| le `change.yaml` d'un change, au premier niveau ou sous `review:` | avertissement `change_unknown_key` (`review.<clé>` sous `review`), clé ignorée | les commandes qui lisent le change (`status`, `instructions`, `roles`, `review`), et `compagnon validate` sur l'élément du change |
+| un `schema.yaml` de projet, à tout niveau, `role:` d'un artefact compris | avertissement `schema_unknown_key`, clé ignorée | les commandes qui utilisent le schéma, et `compagnon validate` sur l'élément `config`, localisé dans le fichier du schéma |
+| le frontmatter d'un ADR | avertissement `decision_unknown_field`, champ ignoré et conservé par `compagnon decision accept` | `compagnon validate` sur l'élément `decisions`, à la ligne du champ ; ceux d'une décision héritée ne sont pas signalés |
 
-Une *valeur* que codev ne connaît pas — un `review.mode`, une activation de
+Une *valeur* que Compagnon ne connaît pas — un `review.mode`, une activation de
 rôle, un `status` d'ADR — reste une erreur : on ne peut pas l'ignorer sans
-deviner ce que vous vouliez dire. Les fichiers que codev écrit lui-même
-portent leur format : un `_codev/decisions/seal.yaml` d'une `version` plus
+deviner ce que vous vouliez dire. Les fichiers que Compagnon écrit lui-même
+portent leur format : un `_compagnon/decisions/seal.yaml` d'une `version` plus
 récente est refusé avec `seal_version_unsupported`, qui renvoie à
-`codev self-update`. Cette politique est la décision 0013 du dépôt de codev.
+`compagnon self-update`. Cette politique est la décision 0013 du dépôt de Compagnon.
 
-Cette tolérance commence avec la version de codev qui l'a introduite :
-**codev 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
-niveau, et **codev 0.6.1 et les versions antérieures rejettent une clé
+Cette tolérance commence avec la version de Compagnon qui l'a introduite :
+**Compagnon 0.5 et les versions antérieures rejettent toute clé inconnue**, à tout
+niveau, et **Compagnon 0.6.1 et les versions antérieures rejettent une clé
 inconnue dans un rôle, dans `change.yaml`, dans un schéma de projet et dans
 le frontmatter d'un ADR**. Lorsque vous ajoutez une clé que seules les versions récentes
-connaissent, relevez aussi `codev_version` : les membres de l'équipe restés
-sur un codev plus ancien apprendront par `codev doctor` et les skills quelle
+connaissent, relevez aussi `compagnon_version` : les membres de l'équipe restés
+sur un Compagnon plus ancien apprendront par `compagnon doctor` et les skills quelle
 version installer.
 
 ## Variables d'environnement
 
 | Variable | Utilisée par | Effet |
 |---|---|---|
-| `LC_ALL`, `LC_MESSAGES`, `LANG` | `codev init` | Valeur par défaut de `language:` lorsque `--language` n'est pas fourni |
-| `XDG_CACHE_HOME` | sources git, vérification des mises à jour | Emplacement du cache : `$XDG_CACHE_HOME/codev/`, sinon `~/.cache/codev/` |
-| `CI` | `codev status` | N'importe quelle valeur désactive la vérification des mises à jour |
-| `CODEV_NO_UPDATE_CHECK` | `codev status` | `1` désactive la vérification des mises à jour |
-| `VISUAL`, `EDITOR` | `codev init` | Éditeur ouvert lorsque la question du contexte reste sans réponse |
-| `CODEV_VERSION` | `install.sh`, `install.ps1` | Version à installer à la place de la plus récente |
+| `LC_ALL`, `LC_MESSAGES`, `LANG` | `compagnon init` | Valeur par défaut de `language:` lorsque `--language` n'est pas fourni |
+| `XDG_CACHE_HOME` | sources git, vérification des mises à jour | Emplacement du cache : `$XDG_CACHE_HOME/compagnon/`, sinon `~/.cache/compagnon/` |
+| `CI` | `compagnon status` | N'importe quelle valeur désactive la vérification des mises à jour |
+| `COMPAGNON_NO_UPDATE_CHECK` | `compagnon status` | `1` désactive la vérification des mises à jour |
+| `VISUAL`, `EDITOR` | `compagnon init` | Éditeur ouvert lorsque la question du contexte reste sans réponse |
+| `COMPAGNON_VERSION` | `install.sh`, `install.ps1` | Version à installer à la place de la plus récente |

@@ -13,7 +13,7 @@ use crate::observed::{Consumption, Observed, Review, ReviewFinding, RunInfo};
 use crate::plan::{AtRef, PlanOutcome, PlanScore, score_plan};
 use crate::update::{UpdateScore, UpdateStepScore, score_update};
 
-/// Evidence and location codes of `codev review`, by their effect here.
+/// Evidence and location codes of `compagnon review`, by their effect here.
 const EVIDENCE_INVALID: [&str; 2] = ["review_evidence_not_found", "review_location_missing"];
 const EVIDENCE_MOVED: &str = "review_evidence_moved";
 const EVIDENCE_UNCHECKED: &str = "review_evidence_unchecked";
@@ -27,7 +27,7 @@ pub enum Outcome {
     Error(String),
     /// No review record was written.
     NoRecord,
-    /// The record has an error that kept codev from reading the role.
+    /// The record has an error that kept compagnon from reading the role.
     RecordInvalid(String),
     /// The evaluated role has no section, or reads disabled.
     RoleNotRun(String),
@@ -221,7 +221,7 @@ pub fn implement_case(case: &Case, observed: &Observed) -> CaseScore {
 
 /// Scores one run of a sync or archive case by its checks, as the first
 /// repetition. A case whose reference run no longer agrees with it is in error
-/// rather than scored: it no longer describes what codev does.
+/// rather than scored: it no longer describes what compagnon does.
 pub fn merge_case(case: &Case, observed: &Observed) -> CaseScore {
     let mut score = unscored(case, observed);
     let Some(expect) = &case.merge else {
@@ -536,8 +536,8 @@ fn is_evidence_code(code: &str) -> bool {
     EVIDENCE_INVALID.contains(&code) || code == EVIDENCE_MOVED || code == EVIDENCE_UNCHECKED
 }
 
-/// The evidence state of a finding, from the issues codev reported for it.
-/// codev starts each evidence message with the finding's id.
+/// The evidence state of a finding, from the issues compagnon reported for it.
+/// compagnon starts each evidence message with the finding's id.
 fn evidence(review: &Review, id: &str) -> Evidence {
     let prefix = format!("{id}:");
     let codes: Vec<&str> = review
@@ -586,7 +586,7 @@ pub struct ThresholdFlags {
 }
 
 impl Thresholds {
-    /// Flags win over `CODEV_EVAL_*` variables, which win over defaults. A
+    /// Flags win over `COMPAGNON_EVAL_*` variables, which win over defaults. A
     /// value that does not parse names its flag or variable.
     pub fn resolve(
         flags: &ThresholdFlags,
@@ -610,21 +610,21 @@ impl Thresholds {
             }
         };
         let min_recall = ratio(
-            pick(&flags.min_recall, "min-recall", "CODEV_EVAL_MIN_RECALL"),
+            pick(&flags.min_recall, "min-recall", "COMPAGNON_EVAL_MIN_RECALL"),
             default.min_recall,
         )?;
         let min_evidence = ratio(
             pick(
                 &flags.min_evidence,
                 "min-evidence",
-                "CODEV_EVAL_MIN_EVIDENCE",
+                "COMPAGNON_EVAL_MIN_EVIDENCE",
             ),
             default.min_evidence,
         )?;
         let max_false_positives = match pick(
             &flags.max_false_positives,
             "max-false-positives",
-            "CODEV_EVAL_MAX_FALSE_POSITIVES",
+            "COMPAGNON_EVAL_MAX_FALSE_POSITIVES",
         ) {
             None => default.max_false_positives,
             Some((text, source)) => text
@@ -1717,7 +1717,7 @@ pub(crate) mod tests {
         o.review = None;
         if let Some(name) = modified {
             o.files.insert(
-                format!("_codev/changes/c/specs/{cap}/spec.md"),
+                format!("_compagnon/changes/c/specs/{cap}/spec.md"),
                 Some(format!(
                     "## MODIFIED Requirements\n\n### Requirement: {name}\n\nIt SHALL.\n\n#### Scenario: S\n\n- **WHEN** w\n- **THEN** t\n"
                 )),
@@ -1803,7 +1803,13 @@ pub(crate) mod tests {
             observed("no-finding", &[], json!([])),
             &[
                 (100_000, 0, 0, 10, &[("prompt", 0), ("file", 15_000)]),
-                (0, 0, 0, 10, &[("skill", 60_000), ("codev roles", 25_000)]),
+                (
+                    0,
+                    0,
+                    0,
+                    10,
+                    &[("skill", 60_000), ("compagnon roles", 25_000)],
+                ),
             ],
         );
         let s = suite(run(), vec![case(&review, &traced)], Thresholds::default());
@@ -1816,7 +1822,7 @@ pub(crate) mod tests {
             ranked,
             [
                 ("skill", 60_000.0, 0.6),
-                ("codev roles", 25_000.0, 0.25),
+                ("compagnon roles", 25_000.0, 0.25),
                 ("file", 15_000.0, 0.15)
             ]
         );
@@ -1827,7 +1833,10 @@ pub(crate) mod tests {
                 .unwrap_or_else(|| panic!("{needle} in {md}"))
         };
         assert!(at("## Where the tokens go") < at("| skill | 60000 | 60 % |"));
-        assert!(at("| skill |") < at("| codev roles |") && at("| codev roles |") < at("| file |"));
+        assert!(
+            at("| skill |") < at("| compagnon roles |")
+                && at("| compagnon roles |") < at("| file |")
+        );
     }
 
     #[test]
@@ -2363,12 +2372,12 @@ pub(crate) mod tests {
         c.step = Step::PlanTrace;
         if kind == Kind::Seeded {
             c.fixed = vec![FixedCheck {
-                path: "_codev/changes/c/tasks.md".into(),
+                path: "_compagnon/changes/c/tasks.md".into(),
                 contains: "expired link".into(),
             }];
         } else {
             c.unchanged = vec![UnchangedCheck {
-                path: "_codev/changes/c/tasks.md".into(),
+                path: "_compagnon/changes/c/tasks.md".into(),
                 original: "- [ ] 1.1 Task\n".into(),
             }];
         }
@@ -2379,7 +2388,7 @@ pub(crate) mod tests {
         let mut o = observed("findings", &[], json!([]));
         o.review = None;
         o.files
-            .insert("_codev/changes/c/tasks.md".into(), Some(text.into()));
+            .insert("_compagnon/changes/c/tasks.md".into(), Some(text.into()));
         o
     }
 
@@ -2397,7 +2406,7 @@ pub(crate) mod tests {
         let c = trace_case(Kind::Control);
         assert!(case(&c, &files("- [ ] 1.1 Task\r\n")).changed.is_empty());
         let s = case(&c, &files("- [ ] 1.1 Task, verified by a test\n"));
-        assert_eq!(s.changed, ["_codev/changes/c/tasks.md"]);
+        assert_eq!(s.changed, ["_compagnon/changes/c/tasks.md"]);
         let suite = suite(run(), vec![s], Thresholds::default());
         assert_eq!(suite.roles[0].false_positives, 1.0);
     }
@@ -2408,7 +2417,7 @@ pub(crate) mod tests {
             model: None,
             date: "2026-10-13".into(),
             claude_version: None,
-            codev_version: None,
+            compagnon_version: None,
             repeat: None,
             jobs: None,
             review_mode: None,
@@ -2475,10 +2484,10 @@ pub(crate) mod tests {
 
     #[test]
     fn an_invalid_threshold_in_the_environment_is_a_usage_error() {
-        let env = |name: &str| (name == "CODEV_EVAL_MIN_RECALL").then(|| "lots".to_string());
+        let env = |name: &str| (name == "COMPAGNON_EVAL_MIN_RECALL").then(|| "lots".to_string());
         let err = Thresholds::resolve(&ThresholdFlags::default(), &env).unwrap_err();
         assert!(
-            err.contains("CODEV_EVAL_MIN_RECALL") && err.contains("lots"),
+            err.contains("COMPAGNON_EVAL_MIN_RECALL") && err.contains("lots"),
             "{err}"
         );
         let flags = ThresholdFlags {
@@ -2487,7 +2496,8 @@ pub(crate) mod tests {
         };
         let resolved = Thresholds::resolve(&flags, &env).unwrap();
         assert_eq!(resolved.min_recall, 0.7, "the flag wins over the variable");
-        let env = |name: &str| (name == "CODEV_EVAL_MAX_FALSE_POSITIVES").then(|| "3".to_string());
+        let env =
+            |name: &str| (name == "COMPAGNON_EVAL_MAX_FALSE_POSITIVES").then(|| "3".to_string());
         let resolved = Thresholds::resolve(&ThresholdFlags::default(), &env).unwrap();
         assert_eq!(resolved.max_false_positives, 3);
     }

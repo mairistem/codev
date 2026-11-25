@@ -1,4 +1,4 @@
-//! `codev-evals`: list, run and score the role evaluation suite.
+//! `compagnon-evals`: list, run and score the role evaluation suite.
 //!
 //! Exit codes: 0 every role passes, 1 a role fails or a case stopped,
 //! 2 usage (invalid case, threshold or observation, missing tool).
@@ -11,19 +11,19 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use clap::{Args, Parser, Subcommand};
 
-use codev_evals::observed::{self, FORMAT, RunInfo};
-use codev_evals::reliability::{self, Baseline, Lang};
-use codev_evals::runner::{self, ClaudeSettings, RunOptions, Tools};
-use codev_evals::score::{self, SuiteScore, ThresholdFlags, Thresholds};
-use codev_evals::{case, compare, report, suite};
+use compagnon_evals::observed::{self, FORMAT, RunInfo};
+use compagnon_evals::reliability::{self, Baseline, Lang};
+use compagnon_evals::runner::{self, ClaudeSettings, RunOptions, Tools};
+use compagnon_evals::score::{self, SuiteScore, ThresholdFlags, Thresholds};
+use compagnon_evals::{case, compare, report, suite};
 
 #[derive(Parser)]
 #[command(
-    name = "codev-evals",
-    about = "Measure what codev's reviewing roles find, miss and invent"
+    name = "compagnon-evals",
+    about = "Measure what compagnon's reviewing roles find, miss and invent"
 )]
 struct Cli {
-    /// The codev repository (default: the one this binary was built from)
+    /// The compagnon repository (default: the one this binary was built from)
     #[arg(long, global = true)]
     repo: Option<PathBuf>,
     #[command(subcommand)]
@@ -85,13 +85,13 @@ struct DocsArgs {
 
 #[derive(Args)]
 struct ThresholdArgs {
-    /// Minimum recall per role, 0 to 1 [env: CODEV_EVAL_MIN_RECALL] [default: 0.5]
+    /// Minimum recall per role, 0 to 1 [env: COMPAGNON_EVAL_MIN_RECALL] [default: 0.5]
     #[arg(long)]
     min_recall: Option<String>,
-    /// Maximum false positives per role [env: CODEV_EVAL_MAX_FALSE_POSITIVES] [default: 2]
+    /// Maximum false positives per role [env: COMPAGNON_EVAL_MAX_FALSE_POSITIVES] [default: 2]
     #[arg(long)]
     max_false_positives: Option<String>,
-    /// Minimum evidence validity per role, 0 to 1 [env: CODEV_EVAL_MIN_EVIDENCE] [default: 0.8]
+    /// Minimum evidence validity per role, 0 to 1 [env: COMPAGNON_EVAL_MIN_EVIDENCE] [default: 0.8]
     #[arg(long)]
     min_evidence: Option<String>,
 }
@@ -129,10 +129,10 @@ struct RunArgs {
     /// Cases run at the same time
     #[arg(long, default_value_t = 2)]
     jobs: usize,
-    /// The codev binary under test (default: target/debug/codev of the repository)
+    /// The compagnon binary under test (default: target/debug/compagnon of the repository)
     #[arg(long)]
-    codev: Option<PathBuf>,
-    /// The Claude Code command [env: CODEV_EVAL_CLAUDE] [default: claude]
+    compagnon: Option<PathBuf>,
+    /// The Claude Code command [env: COMPAGNON_EVAL_CLAUDE] [default: claude]
     #[arg(long)]
     claude: Option<PathBuf>,
     /// The mode the review cases run in: `inline`, the default, or
@@ -140,7 +140,7 @@ struct RunArgs {
     #[arg(long)]
     review_mode: Option<String>,
     /// A YAML file appended to every review and implementation case's
-    /// `_codev/config.yaml`, for a setting a measure needs
+    /// `_compagnon/config.yaml`, for a setting a measure needs
     #[arg(long)]
     fixture_config: Option<PathBuf>,
     #[command(flatten)]
@@ -172,7 +172,7 @@ fn thresholds(args: &ThresholdArgs) -> Result<Thresholds, String> {
 }
 
 fn usage(message: impl std::fmt::Display) -> ExitCode {
-    eprintln!("codev-evals: {message}");
+    eprintln!("compagnon-evals: {message}");
     ExitCode::from(2)
 }
 
@@ -226,10 +226,10 @@ fn main() -> ExitCode {
     }
 }
 
-/// `codev-evals calibrate`: 0 when the script is calibrated, 1 naming each
+/// `compagnon-evals calibrate`: 0 when the script is calibrated, 1 naming each
 /// cause otherwise, 2 when the case is not one or a tree cannot be built.
 fn calibrate(repo: &Path, cases: &[case::Case], args: &CalibrateArgs) -> ExitCode {
-    use codev_evals::implement_run;
+    use compagnon_evals::implement_run;
     let Some(implement) = cases
         .iter()
         .find(|c| c.id == args.case)
@@ -291,7 +291,7 @@ fn calibrate(repo: &Path, cases: &[case::Case], args: &CalibrateArgs) -> ExitCod
         ExitCode::SUCCESS
     } else {
         for cause in &causes {
-            eprintln!("codev-evals: {cause}");
+            eprintln!("compagnon-evals: {cause}");
         }
         ExitCode::from(1)
     }
@@ -457,19 +457,19 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     let tools = Tools {
         claude: args
             .claude
-            .or_else(|| env("CODEV_EVAL_CLAUDE").map(PathBuf::from))
+            .or_else(|| env("COMPAGNON_EVAL_CLAUDE").map(PathBuf::from))
             .unwrap_or_else(|| PathBuf::from("claude")),
-        codev: args
-            .codev
-            .unwrap_or_else(|| repo.join("target").join("debug").join("codev")),
+        compagnon: args
+            .compagnon
+            .unwrap_or_else(|| repo.join("target").join("debug").join("compagnon")),
         git: PathBuf::from("git"),
     };
-    let (claude_version, codev_version) = match runner::preflight(&tools) {
+    let (claude_version, compagnon_version) = match runner::preflight(&tools) {
         Ok(v) => v,
         Err(e) => return usage(e),
     };
     let tools = Tools {
-        codev: fs::canonicalize(&tools.codev).unwrap_or(tools.codev),
+        compagnon: fs::canonicalize(&tools.compagnon).unwrap_or(tools.compagnon),
         ..tools
     };
     let mut info = RunInfo {
@@ -477,7 +477,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
         model: settings.model.clone(),
         date,
         claude_version: Some(claude_version),
-        codev_version: Some(codev_version),
+        compagnon_version: Some(compagnon_version),
         repeat: Some(repeat),
         jobs: Some(args.jobs as u32),
         review_mode: None,
@@ -506,7 +506,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     let recorded = suite::recorded(&out);
     let pending = runner::pending(&selected, &recorded, repeat, args.rerun);
     eprintln!(
-        "[codev-evals] {} run(s) to make, {} already recorded in {}",
+        "[compagnon-evals] {} run(s) to make, {} already recorded in {}",
         pending.len(),
         selected.len() * repeat as usize - pending.len(),
         out.display()
@@ -533,7 +533,7 @@ fn run(repo: &Path, cases: &[case::Case], args: RunArgs) -> ExitCode {
     };
     if limited {
         eprintln!(
-            "[codev-evals] stopped: the account's usage limit is reached; run the same command \
+            "[compagnon-evals] stopped: the account's usage limit is reached; run the same command \
              again once it resets, and it resumes where it stopped"
         );
         return ExitCode::from(1);

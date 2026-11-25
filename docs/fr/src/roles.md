@@ -1,6 +1,6 @@
 # Rôles
 
-Une skill codev est un seul agent, mais il n'aborde pas chaque étape dans le
+Une skill Compagnon est un seul agent, mais il n'aborde pas chaque étape dans le
 même état d'esprit. Chaque étape reçoit un rôle : une question dont il a la
 charge, et des critères « Done when » que l'agent vérifie avant de passer à
 la suite. Vous et votre équipe validez à des moments définis — l'agent ne
@@ -14,9 +14,9 @@ que soit le ton de la prose. Certains rôles portent aussi des
 références dont ils ont besoin pour bien vérifier leurs critères — voir
 [Experts et domaines](#experts-et-domaines).
 
-Les rôles sont des données, pas de la prose enfouie dans les skills. codev
-les sert : à chaque étape, les skills demandent `codev roles --at <step>` et
-appliquent ce qui leur revient, et `codev instructions` transmet à l'agent
+Les rôles sont des données, pas de la prose enfouie dans les skills. Compagnon
+les sert : à chaque étape, les skills demandent `compagnon roles --at <step>` et
+appliquent ce qui leur revient, et `compagnon instructions` transmet à l'agent
 le rôle de chaque artefact. Votre projet peut désactiver un rôle, ajouter
 ses propres critères et changer l'activation pour un seul change — voir
 [Configurer les rôles](#configurer-les-rôles).
@@ -42,33 +42,33 @@ ses propres critères et changer l'activation pour un seul change — voir
 | `developer` | Développeur | étape | `code.implement` | Chaque tâche fonctionne-t-elle, vérification à l'appui ? |
 | `newcomer` | Nouvel arrivant | étape | `code.review` | Un développeur qui n'a pas vu le plan peut-il suivre ce code ? |
 
-Les rôles d'étape et les experts sont intégrés à codev. Les rôles
+Les rôles d'étape et les experts sont intégrés à Compagnon. Les rôles
 d'artefact viennent du schéma par défaut `spec-driven`, qui déclare un rôle
 par artefact ; un [schéma personnalisé](guides/custom-schemas.md) déclare
 les siens, ou aucun.
 
-Pour lire les critères « Done when » d'un rôle, interrogez codev — c'est la
+Pour lire les critères « Done when » d'un rôle, interrogez Compagnon — c'est la
 liste que reçoit l'agent :
 
 ```bash
-codev roles --at plan.challenge
+compagnon roles --at plan.challenge
 ```
 
-Sans `--at`, `codev roles` liste tous les rôles avec leur activation ;
+Sans `--at`, `compagnon roles` liste tous les rôles avec leur activation ;
 ajoutez `--knowledge` pour lire aussi les connaissances d'un rôle. Voir
-[`codev roles`](reference/cli.md#codev-roles).
+[`compagnon roles`](reference/cli.md#compagnon-roles).
 
 ## Étapes
 
 | Étape | Skill | Ce qui s'y passe |
 |---|---|---|
-| `plan.understand` | `/codev-propose` | La demande est comprise avant que le change soit créé ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
-| `plan.investigate` | `/codev-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
-| `plan.write` | `/codev-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `codev instructions` renvoie dans `role` |
-| `plan.trace` | `/codev-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
-| `plan.challenge` | `/codev-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; chaque constat va dans le [compte rendu de revue](#gravité-confiance-et-compte-rendu-de-revue), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
-| `code.implement` | `/codev-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
-| `code.review` | `/codev-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de revue ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
+| `plan.understand` | `/compagnon-propose` | La demande est comprise avant que le change soit créé ; un ticket comme `PROJ-123` est lu via le MCP Jira lorsqu'il est configuré |
+| `plan.investigate` | `/compagnon-propose` | Le code, les tests, la configuration et la documentation sont étudiés avant la rédaction de chaque artefact |
+| `plan.write` | `/compagnon-propose` | Chaque artefact est rédigé, puis vérifié à l'aide de son rôle, que `compagnon instructions` renvoie dans `role` |
+| `plan.trace` | `/compagnon-propose` | Les artefacts sont confrontés entre eux ; les manques sont corrigés dans les artefacts |
+| `plan.challenge` | `/compagnon-propose` | Le plan est relu par le contradicteur et par les experts qu'activent les domaines du change ; chaque constat va dans le [compte rendu de revue](#gravité-confiance-et-compte-rendu-de-revue), l'auteur le corrige ou le conteste et le relecteur vérifie la réponse ; au plus cinq **points à challenger**, tous rôles confondus et chacun marqué de son rôle, puis ce qu'il vous revient de décider terminent le résumé |
+| `code.implement` | `/compagnon-apply` | Chaque tâche est implémentée, vérifiée, puis cochée |
+| `code.review` | `/compagnon-apply` | Une fois toutes les tâches cochées, le code du change est relu par le nouvel arrivant et par les experts actifs ; chaque constat va dans le compte rendu de revue ; ce qui ne fait pas de doute est simplifié, et au plus cinq **notes de relecture**, chacune marquée de son rôle, puis ce qu'il vous revient de décider terminent le résumé — un constat de sécurité ou de données personnelles de gravité haute n'est jamais écarté |
 
 La procédure de chaque étape — ce qu'il faut écrire, les plafonds, les
 garde-fous — reste dans la skill. Les critères et les connaissances
@@ -105,15 +105,15 @@ section `## Domains` — les six ci-dessus, à cocher, ou la seule ligne
 ```
 
 Le product owner vérifie que chaque domaine touché par le change est coché.
-`codev validate` signale un domaine inconnu (`unknown_domain`) ou une
+`compagnon validate` signale un domaine inconnu (`unknown_domain`) ou une
 section mal formée (`domains_invalid`) comme une erreur, et une section
 absente sur un change actif (`domains_missing`) comme un avertissement —
 voir [Formats de fichiers](reference/file-formats.md#proposalmd).
 
 **Activation `on_domain`.** Un expert n'est actif à ses étapes que lorsque
-la proposal du change coche son domaine. Sans change — `codev roles` sans
+la proposal du change coche son domaine. Sans change — `compagnon roles` sans
 `--change` — ou tant que la proposal n'a pas de section `## Domains`, il
-est inactif. `codev roles --json` indique pourquoi chaque rôle actif l'est
+est inactif. `compagnon roles --json` indique pourquoi chaque rôle actif l'est
 dans `activatedBy` : `always`, `project`, `change` ou `domain:<nom>`. Vous
 pouvez toujours forcer un expert, pour le projet ou pour un change — voir
 [Configurer les rôles](#configurer-les-rôles).
@@ -128,7 +128,7 @@ sections, toujours dans cet ordre :
 - **Signals** — des motifs concrets à repérer, chacun avec un exemple
   d'une ligne ;
 - **By stack** — les pièges en Rust, TypeScript/JavaScript, Python, Go et
-  Java ; codev sert la partie qui concerne les langages de votre projet
+  Java ; Compagnon sert la partie qui concerne les langages de votre projet
   (voir [Filtre par stack](#les-déclencheurs-et-les-domaines-suggérés)) ;
 - **References** — les référentiels qui font autorité, comme l'OWASP
   Top 10, les WCAG 2.2, le RGAA 4 ou le RGPD ;
@@ -148,14 +148,14 @@ que la section `## Domains` de la proposal coche chaque domaine que le
 plan touche, pour que son expert le relise. Les autres rôles d'étape n'en
 portent pas. Les connaissances ne sont servies qu'aux rôles actifs : un
 expert inactif ne coûte rien à l'agent. Lisez-les avec
-`codev roles --at code.review --change <nom> --knowledge`.
+`compagnon roles --at code.review --change <nom> --knowledge`.
 
 ## Les déclencheurs et les domaines suggérés
 
 Cocher les domaines est un jugement porté pendant la planification, avant
 que le code existe. Pour qu'un domaine que le change finit par toucher ne
 soit pas oublié en silence, chaque expert porte des **déclencheurs** — des
-indices qu'un change touche son domaine — et codev les confronte au diff du
+indices qu'un change touche son domaine — et Compagnon les confronte au diff du
 change.
 
 **Trois sortes de déclencheurs**, en groupes qui nomment chacun le domaine
@@ -182,19 +182,19 @@ Les motifs intégrés privilégient la précision : `access_token` plutôt que
 `token` (un analyseur lexical a des tokens), `street_address` plutôt
 qu'`address` (une socket en a une). Ce qu'ils manquent pour votre projet,
 ajoutez-le avec [`triggers:`](reference/configuration.md#triggers) dans
-`_codev/config.yaml`.
+`_compagnon/config.yaml`.
 
-**Le diff.** codev demande à git, localement, ce que la branche a changé
+**Le diff.** Compagnon demande à git, localement, ce que la branche a changé
 depuis qu'elle a quitté la branche par défaut — `origin/HEAD`, sinon
 `main`, sinon `master` —, commité ou non, plus les fichiers non suivis,
 dans le seul dossier du projet. Il ne contacte jamais de dépôt distant.
 Hors de git, sans commit ou sans branche par défaut — ou dans un clone
 superficiel de CI sans la base commune ; utilisez-y `fetch-depth: 0` —, il
-n'y a pas de diff : codev le dit et ne suggère rien, et aucune commande
+n'y a pas de diff : Compagnon le dit et ne suggère rien, et aucune commande
 n'échoue pour autant.
 
 Certains fichiers échappent à tout déclencheur : le dossier de
-planification `_codev/` et les skills codev (`planning`), les dépendances
+planification `_compagnon/` et les skills Compagnon (`planning`), les dépendances
 embarquées — `node_modules`, `vendor`, `third_party` (`vendored`) —, les
 fichiers de verrouillage comme `Cargo.lock` ou `package-lock.json`
 (`lockfile`), et les fichiers générés comme `*.min.js` ou `*.pb.go`
@@ -205,7 +205,7 @@ ajoutées par fichier, 1 Mio par fichier non suivi et 2 Mio de lignes
 ajoutées au total, et ignore les lignes de plus de 2000 caractères ; le
 diff indique alors qu'il a été tronqué.
 
-**Les suggestions.** `codev roles --change <nom>` présente le diff et
+**Les suggestions.** `compagnon roles --change <nom>` présente le diff et
 chaque domaine suggéré avec son état :
 
 - `ticked` — la proposal le coche ;
@@ -219,33 +219,33 @@ chaque domaine suggéré avec son état :
 - [ ] personal-data — the fields matched are test fixtures
 ```
 
-`codev validate` signale chaque suggestion `unticked` par l'avertissement
+`compagnon validate` signale chaque suggestion `unticked` par l'avertissement
 `domain_suggested`, à la ligne du domaine, en nommant le déclencheur et le
-fichier concernés ; `codev validate --strict` échoue alors. `codev
-archive` et `codev doctor` ne lisent pas le diff. Le diff est celui de
+fichier concernés ; `compagnon validate --strict` échoue alors. `compagnon
+archive` et `Compagnon doctor` ne lisent pas le diff. Le diff est celui de
 l'arbre de travail : deux changes actifs sur une même branche le
 partagent. Un rôle réglé sur `never` n'apporte aucune suggestion.
 
-`/codev-propose` lit les suggestions avant d'écrire `## Domains`, et le
+`/compagnon-propose` lit les suggestions avant d'écrire `## Domains`, et le
 skeptic consigne un constat pour chacune restée `unticked`. Avant que le
 code existe, le diff est en général vide : c'est la revue qui tranche.
-`/codev-apply` liste chaque suggestion encore `unticked` sous **To
+`/compagnon-apply` liste chaque suggestion encore `unticked` sous **To
 decide** — cochez-la, et son expert relit le code, ou justifiez-la.
 
-**Filtre par stack.** codev détecte les langages de votre projet à partir
+**Filtre par stack.** Compagnon détecte les langages de votre projet à partir
 de ses manifestes de dépendances — à la racine et jusqu'à trois dossiers
 en dessous, si bien qu'un monorepo obtient toutes ses stacks — et la
 partie `By stack` des connaissances qu'il sert ne garde que ces langages.
-`codev roles --json` les indique dans `stacks` ; sans aucun manifeste,
-tout est conservé. `codev roles --all-stacks` sert tous les langages.
+`compagnon roles --json` les indique dans `stacks` ; sans aucun manifeste,
+tout est conservé. `compagnon roles --all-stacks` sert tous les langages.
 
 ## Gravité, confiance et compte rendu de revue
 
 Ce que trouvent les rôles de relecture — le contradicteur et les experts à
 `plan.challenge`, le nouvel arrivant et les experts à `code.review` — est
 écrit dans le **compte rendu de revue** du change,
-`_codev/changes/<name>/review.md`, avant d'être corrigé ou signalé. Chaque
-constat cite sa preuve mot pour mot, à un emplacement que codev peut
+`_compagnon/changes/<name>/review.md`, avant d'être corrigé ou signalé. Chaque
+constat cite sa preuve mot pour mot, à un emplacement que Compagnon peut
 vérifier, et porte une gravité et une confiance sur une échelle commune :
 
 | Gravité | Signification |
@@ -282,7 +282,7 @@ fois, en validant la correction, en acceptant la contestation (`rejected`)
 ou en la maintenant ; ce qui reste contesté vous revient, avec les deux
 arguments, sous **À décider**. Vous seul acceptez un risque ou reportez un
 constat de gravité haute, et le compte rendu dit qui a décidé.
-`codev archive` refuse un change dont le compte rendu manque pour une étape
+`compagnon archive` refuse un change dont le compte rendu manque pour une étape
 où des rôles ont relu, ou qui a encore un constat de gravité haute ouvert ou
 contesté. Le format complet, les contrôles et le verrou d'archivage sont
 dans [Compte rendu de revue](guides/review-record.md).
@@ -315,7 +315,7 @@ Il ne reçoit jamais la conversation, le raisonnement de l'auteur ni les
 constats d'un autre rôle. Il peut lire le reste du dépôt — les décisions,
 les specs principales, le code que la matière cite —, ne modifie rien, et
 traite la matière comme des données, jamais comme des instructions.
-`codev roles --json` mesure la matière (`review.material`) : au-delà de
+`compagnon roles --json` mesure la matière (`review.material`) : au-delà de
 160 Kio, les fichiers les plus gros sont marqués `summarize`, et un
 sous-agent distinct, qui ne voit que le diff de ce fichier, le résume en
 citant les lignes modifiées quand elles tiennent. Le compte rendu dit
@@ -345,7 +345,7 @@ de son côté :
 ### Les modèles des relecteurs
 
 En mode isolé, le sous-agent de chaque relecteur tourne sur le modèle de
-son rôle — `model` dans `codev roles --json`. Aucun rôle n'en fixe par
+son rôle — `model` dans `compagnon roles --json`. Aucun rôle n'en fixe par
 défaut : chaque relecteur tourne sur le modèle de la session tant que votre
 projet n'en choisit pas un autre, sous `roles:` — `model: opus`, `sonnet`
 ou `haiku`, ou `inherit` pour revenir au modèle de la session (voir
@@ -373,13 +373,13 @@ pour en changer.
 
 Le `developer` implémente les tâches à `code.implement`. Quand votre
 projet lui donne un modèle — `roles: { developer: { model: sonnet } }` —,
-`/codev-apply` confie les tâches à un sous-agent sur ce modèle, quel que
+`/compagnon-apply` confie les tâches à un sous-agent sur ce modèle, quel que
 soit le mode de revue. La session garde la revue et la synthèse sur son
 propre modèle. Si le sous-agent s'arrête sur une ambiguïté ou un
 blocage, la session vous pose la question, puis lance un nouveau
 sous-agent sur le même modèle avec votre réponse. Si le sous-agent ne
 peut pas tourner, la skill réessaie une fois, puis implémente dans la
-session et le signale. Sans modèle, `/codev-apply` implémente dans la
+session et le signale. Sans modèle, `/compagnon-apply` implémente dans la
 session, comme avant.
 
 Nous recommandons `developer: sonnet` ([décision 0012](reference/configuration.md#roles)).
@@ -394,7 +394,7 @@ planification reste sur le modèle le plus fort.
 
 ## Configurer les rôles
 
-Tous les rôles sont actifs par défaut. Dans `_codev/config.yaml`, `roles:`
+Tous les rôles sont actifs par défaut. Dans `_compagnon/config.yaml`, `roles:`
 associe un identifiant de rôle à son réglage :
 
 ```yaml
@@ -423,7 +423,7 @@ roles:
   aux rôles de `plan.trace`, `plan.challenge` et `code.review` en mode
   isolé, et au `developer` dans les deux modes — voir
   [Le modèle du développeur](#le-modèle-du-développeur). Relevez d'abord
-  [`codev_version`](reference/configuration.md#codev_version) : un codev
+  [`compagnon_version`](reference/configuration.md#compagnon_version) : un Compagnon
   plus ancien refuse la clé.
 - **Par change.** Le `change.yaml` d'un change peut changer l'activation
   pour ce change seulement :
@@ -441,20 +441,20 @@ roles:
 - **Les sources héritées** n'apportent aucun rôle : seul le `roles:` de
   votre projet est lu.
 
-`codev validate` signale un identifiant de rôle inconnu (`unknown_role`),
+`compagnon validate` signale un identifiant de rôle inconnu (`unknown_role`),
 une activation autre que `always`, `never` ou `on_domain`, ou `on_domain`
 sur un rôle sans domaine (`invalid_role_activation`), et `never` sur un
 rôle qui ne peut pas être désactivé (`role_not_disableable`), et un modèle
 autre que `opus`, `sonnet`, `haiku` ou `inherit` (`invalid_role_model`) ;
-`codev status`, `codev instructions` et `codev roles` échouent avec le même
+`compagnon status`, `compagnon instructions` et `compagnon roles` échouent avec le même
 code. Un modèle sur un rôle qui ne sert aucune étape de relecture et
-n'est pas le `developer` ne s'applique jamais : `codev validate` le signale par l'avertissement
-`role_model_unused`. `codev doctor` liste les rôles actifs, les rôles actifs selon le
+n'est pas le `developer` ne s'applique jamais : `compagnon validate` le signale par l'avertissement
+`role_model_unused`. `compagnon doctor` liste les rôles actifs, les rôles actifs selon le
 domaine avec leurs domaines, et les rôles désactivés.
 
-## Implémenter un change (`/codev-apply`)
+## Implémenter un change (`/compagnon-apply`)
 
-### Développeur (`/codev-apply`)
+### Développeur (`/compagnon-apply`)
 
 Implémente les tâches d'un change planifié, dans l'ordre du fichier. Done
 when, pour chaque tâche :
@@ -471,12 +471,12 @@ when, pour chaque tâche :
 
 Elle s'arrête sur une ambiguïté importante ou un blocage technique sans
 cocher la tâche, et décrit les options. Une fois toutes les cases cochées,
-et après la [relecture](#nouvel-arrivant-et-experts-codev-apply),
+et après la [relecture](#nouvel-arrivant-et-experts-compagnon-apply),
 elle lance une fois la suite de tests complète du projet ; un échec est
 signalé à la place du résumé. Elle ne contourne jamais un test en échec, ne
 touche jamais un autre change, ne synchronise jamais et n'archive jamais.
 
-### Nouvel arrivant et experts (`/codev-apply`)
+### Nouvel arrivant et experts (`/compagnon-apply`)
 
 Une fois toutes les tâches cochées, et avant la suite de tests complète,
 relit uniquement le code que le change a ajouté ou modifié : le nouvel
@@ -507,13 +507,13 @@ ne se configurent pas.
 
 | Skill | Posture | Sa question | Ce qu'elle écrit |
 |---|---|---|---|
-| `/codev-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-codev-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
-| `/codev-sync`, `/codev-archive` | [Mainteneur des specs vivantes](#mainteneur-des-specs-vivantes-codev-sync-codev-archive) | Les specs principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
-| `/codev-update` | [Éditeur](#éditeur-codev-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_codev/changes/<name>/` uniquement |
-| `/codev-onboard` | [Guide](#guide-codev-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
-| `/codev-configure` | [Analyste de configuration](#analyste-de-configuration-codev-configure) | Que doit savoir un agent sur ce projet avant d'écrire ? | `_codev/config.yaml`, après confirmation |
+| `/compagnon-explore` | [Partenaire de réflexion](#partenaire-de-réflexion-compagnon-explore) | Cela vaut-il la peine d'être construit, et comment ? | Rien |
+| `/compagnon-sync`, `/compagnon-archive` | [Mainteneur des specs vivantes](#mainteneur-des-specs-vivantes-compagnon-sync-compagnon-archive) | Les specs principales décrivent-elles ce qui a été planifié et livré ? | Uniquement via la CLI |
+| `/compagnon-update` | [Éditeur](#éditeur-compagnon-update) | L'artefact révisé reste-t-il cohérent avec les autres ? | `_compagnon/changes/<name>/` uniquement |
+| `/compagnon-onboard` | [Guide](#guide-compagnon-onboard) | Où en est ce projet, et que faire ensuite ? | Rien |
+| `/compagnon-configure` | [Analyste de configuration](#analyste-de-configuration-compagnon-configure) | Que doit savoir un agent sur ce projet avant d'écrire ? | `_compagnon/config.yaml`, après confirmation |
 
-### Partenaire de réflexion (`/codev-explore`)
+### Partenaire de réflexion (`/compagnon-explore`)
 
 Explore une idée, un problème ou un besoin, sans engager quoi que ce soit.
 Done when :
@@ -529,30 +529,30 @@ Done when :
 - les hypothèses sont présentées comme des hypothèses ;
 - l'exploration se termine de l'une de trois façons, nommée : elle se
   cristallise (problème, approche, périmètre, et la proposition de lancer
-  `/codev-propose`), une information manque (laquelle, et qui peut la
+  `/compagnon-propose`), une information manque (laquelle, et qui peut la
   fournir), ou la piste ne valait pas la peine.
 
 Elle n'écrit aucun fichier, ne crée aucun change et n'implémente pas, même
 si on le lui demande.
 
-### Mainteneur des specs vivantes (`/codev-sync`, `/codev-archive`)
+### Mainteneur des specs vivantes (`/compagnon-sync`, `/compagnon-archive`)
 
-Veille à ce que `_codev/specs/` décrive le système. `/codev-sync` fusionne
-les deltas d'un change sans le déplacer ; `/codev-archive` les fusionne et
-déplace le change dans `_codev/changes/archive/<date>-<name>/`. Done when :
+Veille à ce que `_compagnon/specs/` décrive le système. `/compagnon-sync` fusionne
+les deltas d'un change sans le déplacer ; `/compagnon-archive` les fusionne et
+déplace le change dans `_compagnon/changes/archive/<date>-<name>/`. Done when :
 
 - la planification est complète — sinon rien n'est lancé ;
-- la fusion passe par `codev sync` ou `codev archive`, jamais par un fichier
+- la fusion passe par `compagnon sync` ou `compagnon archive`, jamais par un fichier
   que la skill écrirait elle-même ;
 - les specs créées, mises à jour et inchangées sont indiquées (et, pour
   l'archivage, l'endroit où le change a été déplacé).
 
 Sur une erreur de validation, les deux refusent : elles répondent que le
-change comporte des erreurs et renvoient vers `codev validate <name>`, sans
+change comporte des erreurs et renvoient vers `compagnon validate <name>`, sans
 réessayer ni corriger le change elles-mêmes. Toute autre erreur est relayée
 telle que la CLI l'a écrite.
 
-### Éditeur (`/codev-update`)
+### Éditeur (`/compagnon-update`)
 
 Révise un artefact de planification qui existe déjà dans un change actif.
 Done when :
@@ -566,23 +566,23 @@ Done when :
   supprimée ou un scénario renommé, une décision du design qui ne
   correspond plus, une tâche qui contredit une exigence — avec une action
   suivante suggérée, appliquée seulement après votre confirmation ;
-- `codev validate` a été lancé et son rapport est relayé.
+- `compagnon validate` a été lancé et son rapport est relayé.
 
 Elle refuse de créer un artefact manquant, de toucher à un change archivé
 ou de modifier le code.
 
-### Guide (`/codev-onboard`)
+### Guide (`/compagnon-onboard`)
 
-Présente codev à qui le découvre. Done when elle a affiché trois blocs : ce
-qu'est codev, l'état du projet (nombre de specs, de décisions et de changes,
+Présente Compagnon à qui le découvre. Done when elle a affiché trois blocs : ce
+qu'est Compagnon, l'état du projet (nombre de specs, de décisions et de changes,
 et jusqu'à cinq éléments d'installation manquants signalés par
-`codev doctor`, avec leur correction), et exactement une action recommandée,
+`compagnon doctor`, avec leur correction), et exactement une action recommandée,
 citée sous la forme de la commande à taper. Elle est strictement en lecture
-seule : elle ne lance aucune correction, pas même `codev init`.
+seule : elle ne lance aucune correction, pas même `compagnon init`.
 
-### Analyste de configuration (`/codev-configure`)
+### Analyste de configuration (`/compagnon-configure`)
 
-Propose le `context:` et les `rules:` par artefact de `_codev/config.yaml` à
+Propose le `context:` et les `rules:` par artefact de `_compagnon/config.yaml` à
 partir du projet lui-même. Done when :
 
 - la lecture reste dans son budget — README et CONTRIBUTING en entier, au
@@ -597,11 +597,11 @@ partir du projet lui-même. Done when :
 
 Elle n'écrit qu'après votre oui, ne modifie que `context:` et `rules:`,
 préserve tous les autres champs et commentaires, et refuse d'agir si
-`_codev/config.yaml` n'existe pas.
+`_compagnon/config.yaml` n'existe pas.
 
 ## Mesurer les rôles
 
-Le dépôt de codev mesure ses rôles de revue intégrés — le sceptique, le
+Le dépôt de Compagnon mesure ses rôles de revue intégrés — le sceptique, le
 traceur, le nouvel arrivant et les six experts — avec une suite
 d'évaluation, `evals/`. Chaque cas est un petit projet avec un change
 planifié : soit **ensemencé** de défauts que le rôle devrait trouver,
@@ -624,7 +624,7 @@ revue qu'il a écrit :
   nomment un autre problème. Les constats de confiance basse, qui ne vous
   sont jamais présentés, sont comptés à part ;
 - **validité des preuves** — la part des constats dont la citation est
-  retrouvée par `codev review` aux lignes indiquées ;
+  retrouvée par `compagnon review` aux lignes indiquées ;
 - **accord de gravité** — la gravité trouvée est celle attendue.
 
 Le traceur, qui corrige le plan au lieu d'enregistrer des constats, est
@@ -643,14 +643,14 @@ des tests que son projet contient, pour qu'une lacune du cas ne soit
 jamais comptée contre le rôle.
 
 Les scores de référence sont la ligne de base versionnée,
-[`evals/baseline/report.md`](https://github.com/mairistem/codev/blob/main/evals/baseline/report.md) :
+[`evals/baseline/report.md`](https://github.com/mairistem/compagnon/blob/main/evals/baseline/report.md) :
 cinq exécutions de chaque cas, avec le modèle par défaut de Claude Code à
 la date qu'elle indique, chaque score étant la médiane des cinq. Un modèle
 ne répond pas deux fois de la même façon : une modification d'un fichier
-de rôle se juge donc avec `codev-evals compare --quality-only` face à la
+de rôle se juge donc avec `compagnon-evals compare --quality-only` face à la
 ligne de base, avec le même modèle ; la médiane de chaque rôle doit rester
 dans l'écart couvert par les exécutions de la ligne de base. La suite ne tourne jamais dans la CI habituelle et ne
-fait pas partie du binaire `codev`.
+fait pas partie du binaire `compagnon`.
 
 [Fiabilité des rôles](reliability.md) présente ces scores, rôle par rôle,
 avec les seuils que chaque rôle respecte ou dépasse et les limites de la
@@ -660,25 +660,25 @@ mesure.
 
 L'agent s'arrête et vous passe la main à ces moments :
 
-- **Questions de clarification.** `/codev-propose` vous interroge avant de
+- **Questions de clarification.** `/compagnon-propose` vous interroge avant de
   créer un change lorsqu'une ambiguïté changerait sensiblement le résultat,
   et de nouveau lorsqu'un artefact demande une décision ou qu'une Open
-  Question change ce qu'il faut construire. `/codev-explore` pose les
-  questions auxquelles le code ne peut pas répondre. `/codev-apply` s'arrête
+  Question change ce qu'il faut construire. `/compagnon-explore` pose les
+  questions auxquelles le code ne peut pas répondre. `/compagnon-apply` s'arrête
   sur une ambiguïté ou un blocage et vous laisse décider.
-- **Valider le plan.** `/codev-propose` s'arrête une fois les artefacts
+- **Valider le plan.** `/compagnon-propose` s'arrête une fois les artefacts
   rédigés. Commencez votre relecture par les points à challenger, ce qui
   reste à décider et les Open Questions du design ; quand le plan vous convient, demandez
-  `/codev-apply`. Pour modifier d'abord un artefact, utilisez
-  `/codev-update`.
+  `/compagnon-apply`. Pour modifier d'abord un artefact, utilisez
+  `/compagnon-update`.
 - **Accepter les décisions.** Un design suit les décisions en vigueur ou
   propose explicitement d'en remplacer une. Une décision ne prend effet que
-  lorsque vous lancez [`codev decision accept`](concepts.md#décision).
-- **Confirmer la configuration.** `/codev-configure` n'écrit qu'après votre
+  lorsque vous lancez [`compagnon decision accept`](concepts.md#décision).
+- **Confirmer la configuration.** `/compagnon-configure` n'écrit qu'après votre
   oui à son diff.
-- **Appliquer une répercussion.** `/codev-update` signale ce que la révision
+- **Appliquer une répercussion.** `/compagnon-update` signale ce que la révision
   affecte par ailleurs ; vous acceptez, refusez ou reportez chaque suite.
-- **Mettre à jour codev.** Lorsqu'un codev plus récent est disponible ou que
+- **Mettre à jour Compagnon.** Lorsqu'un Compagnon plus récent est disponible ou que
   le projet exige une autre version, la skill demande **Update now** ou
   **Later** avant d'agir (voir
   [Annonce des mises à jour](skills.md#annonce-des-mises-à-jour)).
@@ -690,6 +690,6 @@ L'agent s'arrête et vous passe la main à ces moments :
   sous **À décider** : le corriger, en accepter le risque avec une
   justification, ou le reporter vers un autre change ou un ticket. La skill
   consigne votre décision avec votre nom ; elle n'accepte jamais un risque à
-  votre place. `codev review` montre ce qui reste.
-- **Archiver.** `/codev-apply` n'archive jamais : une fois l'implémentation
-  relue, en commençant par ses notes de relecture, lancez `/codev-archive` ou `codev archive`.
+  votre place. `compagnon review` montre ce qui reste.
+- **Archiver.** `/compagnon-apply` n'archive jamais : une fois l'implémentation
+  relue, en commençant par ses notes de relecture, lancez `/compagnon-archive` ou `compagnon archive`.

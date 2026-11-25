@@ -60,7 +60,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement through a
-[private report](https://github.com/mairistem/codev/security/advisories/new)
+[private report](https://github.com/mairistem/compagnon/security/advisories/new)
 on this repository. All complaints will be reviewed and investigated promptly
 and fairly.
 

@@ -5,14 +5,14 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use codev_evals::case::coverage_gaps;
-use codev_evals::checks::{
+use compagnon_evals::case::coverage_gaps;
+use compagnon_evals::checks::{
     missing_from_baseline, missing_mention, repetitions_in_error, too_few_repetitions,
 };
-use codev_evals::reliability::{self, Baseline, Lang};
-use codev_evals::report;
-use codev_evals::score::Thresholds;
-use codev_evals::suite;
+use compagnon_evals::reliability::{self, Baseline, Lang};
+use compagnon_evals::report;
+use compagnon_evals::score::Thresholds;
+use compagnon_evals::suite;
 
 fn repo() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -62,10 +62,10 @@ fn the_suite_covers_the_implementation_of_past_changes() {
 }
 
 #[test]
-fn implementation_cases_check_the_repository_with_the_codev_the_change_builds() {
-    // `codev` on the agent's path is the codev under test, which judges an
+fn implementation_cases_check_the_repository_with_the_compagnon_the_change_builds() {
+    // `compagnon` on the agent's path is the compagnon under test, which judges an
     // older change by today's rules: a task checks the repository with the
-    // codev the change builds, and the case's summary says so.
+    // compagnon the change builds, and the case's summary says so.
     let cases = suite::load_cases(&repo()).unwrap();
     let mut gaps = Vec::new();
     for case in &cases {
@@ -73,12 +73,12 @@ fn implementation_cases_check_the_repository_with_the_codev_the_change_builds() 
             continue;
         };
         let tasks = &implement.files["tasks.md"].replace('\n', " ");
-        // The forms a task checks the repository with; `codev validate` or
-        // `codev doctor` named as content of the change are not checks.
+        // The forms a task checks the repository with; `compagnon validate` or
+        // `compagnon doctor` named as content of the change are not checks.
         for bare in [
-            "`codev validate --strict`",
-            "`codev doctor --strict`",
-            "`codev doctor` on this repository",
+            "`compagnon validate --strict`",
+            "`compagnon doctor --strict`",
+            "`compagnon doctor` on this repository",
         ] {
             if tasks.contains(bare) {
                 gaps.push(format!(
@@ -87,7 +87,8 @@ fn implementation_cases_check_the_repository_with_the_codev_the_change_builds() 
                 ));
             }
         }
-        if tasks.contains("cargo run -q -p codev-cli --") && !case.summary.contains("cargo run") {
+        if tasks.contains("cargo run -q -p compagnon-cli --") && !case.summary.contains("cargo run")
+        {
             gaps.push(format!(
                 "{}: the summary does not say a task was reworded",
                 case.id
@@ -108,7 +109,7 @@ fn no_implementation_case_holds_roles_at_its_ref() {
         let out = std::process::Command::new("git")
             .arg("-C")
             .arg(repo())
-            .args(["show", &format!("{git_ref}:_codev/config.yaml")])
+            .args(["show", &format!("{git_ref}:_compagnon/config.yaml")])
             .output()
             .unwrap();
         let config = String::from_utf8_lossy(&out.stdout);
@@ -172,7 +173,7 @@ fn the_baseline_agrees_with_the_scoring() {
         report::json(&score),
         read("evals/baseline/report.json"),
         "scoring the baseline's observations must give its committed report; \
-         run `cargo run -p codev-evals -- score evals/baseline` after changing the scoring rules"
+         run `cargo run -p compagnon-evals -- score evals/baseline` after changing the scoring rules"
     );
     assert_eq!(report::markdown(&score), read("evals/baseline/report.md"));
 }
@@ -188,7 +189,7 @@ fn the_reliability_pages_follow_the_baseline() {
         let path = format!("docs/{}/src/reliability.md", lang.tag());
         assert!(
             read(&path) == reliability::page(&baseline, lang),
-            "{path} differs from the baseline; run `cargo run -p codev-evals -- docs`"
+            "{path} differs from the baseline; run `cargo run -p compagnon-evals -- docs`"
         );
     }
 }
@@ -223,7 +224,7 @@ fn the_workflow_checks_the_secret_before_running() {
         .find("if [ -z \"$ANTHROPIC_API_KEY\" ]")
         .expect("the workflow tests the secret");
     let run = workflow
-        .find("codev-evals -- run")
+        .find("compagnon-evals -- run")
         .expect("the workflow runs the suite");
     assert!(check < run, "the secret is tested before the suite runs");
     assert!(workflow.contains("Evaluations skipped"));
@@ -250,10 +251,10 @@ fn contributing_and_roles_chapters_name_the_baseline() {
     let mut gaps = missing_mention(&files, "evals/baseline");
     gaps.extend(missing_mention(&files[..2], "assets/roles/"));
     gaps.extend(missing_mention(&files[..2], "assets/workflows/"));
-    gaps.extend(missing_mention(&files[..2], "codev-evals -- docs"));
-    gaps.extend(missing_mention(&files, "codev-evals"));
-    gaps.extend(missing_mention(&files[..2], "codev-evals -- compare"));
-    gaps.extend(missing_mention(&files[2..], "codev-evals compare"));
+    gaps.extend(missing_mention(&files[..2], "compagnon-evals -- docs"));
+    gaps.extend(missing_mention(&files, "compagnon-evals"));
+    gaps.extend(missing_mention(&files[..2], "compagnon-evals -- compare"));
+    gaps.extend(missing_mention(&files[2..], "compagnon-evals compare"));
     gaps.extend(missing_mention(&files[..2], "--repeat 3"));
     assert_eq!(gaps, Vec::<String>::new());
 }
@@ -276,8 +277,8 @@ fn contributing_chapters_document_the_update_cases() {
         "`ripple`",
         "`contains`",
         "`refuse`",
-        "/codev-propose",
-        "codev validate <change> --json",
+        "/compagnon-propose",
+        "compagnon validate <change> --json",
         // A new step's cases recorded alone into the baseline.
         "run --step plan.update --out evals/baseline --repeat 5",
     ] {
@@ -303,7 +304,7 @@ fn contributing_chapters_document_the_implementation_cases() {
         "`acceptance`",
         "acceptance.sh",
         "`ok <",
-        "codev-evals -- calibrate",
+        "compagnon-evals -- calibrate",
         "`mdbook`",
         // The commands the runner starts itself have a timeout.
         "200 second",
@@ -322,8 +323,8 @@ fn contributing_chapters_say_the_frozen_binary_keeps_its_name() {
         .zip(&texts)
         .map(|(n, t)| (*n, t.as_str()))
         .collect();
-    let mut gaps = missing_mention(&files, "--codev <");
-    gaps.extend(missing_mention(&files, "/codev`"));
+    let mut gaps = missing_mention(&files, "--compagnon <");
+    gaps.extend(missing_mention(&files, "/compagnon`"));
     assert_eq!(gaps, Vec::<String>::new());
 }
 
@@ -395,7 +396,7 @@ fn the_workflow_passes_repeat_through_the_environment() {
     let bound = workflow
         .find("^[1-3]$")
         .expect("the run step bounds repeat");
-    let run = workflow.find("codev-evals -- run").unwrap();
+    let run = workflow.find("compagnon-evals -- run").unwrap();
     assert!(bound < run, "repeat is checked before the suite runs");
 }
 
@@ -423,7 +424,7 @@ fn the_workflows_check_out_the_full_history() {
         // `fetch-depth: 0` before it.
         let running: Vec<String> = jobs(&workflow)
             .into_iter()
-            .filter(|j| j.contains("cargo test") || j.contains("codev-evals -- run"))
+            .filter(|j| j.contains("cargo test") || j.contains("compagnon-evals -- run"))
             .collect();
         assert!(!running.is_empty(), "{path}: no job runs the suite");
         for job in &running {
@@ -453,7 +454,7 @@ fn the_workflow_bounds_a_planning_run() {
     let bound = workflow
         .find("[ \"$EVAL_STEP\" = \"plan.write\" ] && [ \"$EVAL_REPEAT\" != \"1\" ]")
         .expect("the run step bounds a planning run to one repetition");
-    let run = workflow.find("codev-evals -- run").unwrap();
+    let run = workflow.find("compagnon-evals -- run").unwrap();
     assert!(bound < run, "the bound is checked before the suite runs");
 }
 
@@ -464,7 +465,7 @@ fn the_workflow_installs_the_sandbox() {
         .find("apt-get install -y bubblewrap socat")
         .expect("the workflow installs the sandbox");
     assert!(workflow.contains("profile bwrap /usr/bin/bwrap"));
-    let run = workflow.find("codev-evals -- run").unwrap();
+    let run = workflow.find("compagnon-evals -- run").unwrap();
     assert!(
         install < run,
         "the sandbox is installed before the suite runs"
@@ -531,7 +532,7 @@ fn the_baseline_is_recorded_with_the_pinned_claude_code() {
 
 #[test]
 fn the_planning_suite_covers_past_changes_and_decisions() {
-    use codev_evals::case::{DecisionExpect, Step};
+    use compagnon_evals::case::{DecisionExpect, Step};
     let cases = suite::load_cases(&repo()).unwrap();
     assert!(
         cases.iter().any(|c| c.step.is_review()) && cases.iter().any(|c| c.step == Step::PlanWrite),
@@ -585,7 +586,7 @@ fn the_planning_suite_covers_the_keyword_language() {
 
 #[test]
 fn the_suite_covers_the_update_behaviors() {
-    use codev_evals::case::{Artifact, Step};
+    use compagnon_evals::case::{Artifact, Step};
     let cases = suite::load_cases(&repo()).unwrap();
     let updates: Vec<_> = cases
         .iter()
@@ -626,7 +627,7 @@ fn the_suite_covers_the_update_behaviors() {
     );
     // Each case's change is an archived change, copied as the archive
     // keeps it.
-    let archive = repo().join("_codev").join("changes").join("archive");
+    let archive = repo().join("_compagnon").join("changes").join("archive");
     let archived: Vec<String> = fs::read_dir(&archive)
         .unwrap()
         .filter_map(|e| e.ok())
@@ -638,7 +639,7 @@ fn the_suite_covers_the_update_behaviors() {
             .find(|d| d.len() > 11 && d[11..] == case.change)
             .unwrap_or_else(|| panic!("{}: `{}` is not an archived change", case.id, case.change));
         for (path, text) in &update.files {
-            let original = read(&format!("_codev/changes/archive/{dir}/{path}"));
+            let original = read(&format!("_compagnon/changes/archive/{dir}/{path}"));
             assert!(
                 original == *text,
                 "{}: `change/{path}` differs from the archive",
@@ -665,7 +666,7 @@ fn word_runs(text: &str, n: usize) -> BTreeSet<String> {
 #[test]
 fn no_request_copies_its_proposal() {
     let cases = suite::load_cases(&repo()).unwrap();
-    let archive = repo().join("_codev").join("changes").join("archive");
+    let archive = repo().join("_compagnon").join("changes").join("archive");
     let mut proposals = BTreeSet::new();
     for entry in fs::read_dir(&archive).unwrap().filter_map(|e| e.ok()) {
         if let Ok(text) = fs::read_to_string(entry.path().join("proposal.md")) {
@@ -692,10 +693,10 @@ fn no_request_copies_its_proposal() {
 /// The main spec of role evaluations as the next sync leaves it: with this
 /// change's delta merged while the change is active, as it stands after.
 fn role_evaluation_spec() -> String {
-    use codev_core::merge::{apply_edits, merge_into_existing};
-    use codev_core::parser::{parse_delta, parse_spec};
-    let main = read("_codev/specs/role-evaluation/spec.md");
-    let delta = repo().join("_codev/changes/evaluate-planning/specs/role-evaluation/spec.md");
+    use compagnon_core::merge::{apply_edits, merge_into_existing};
+    use compagnon_core::parser::{parse_delta, parse_spec};
+    let main = read("_compagnon/specs/role-evaluation/spec.md");
+    let delta = repo().join("_compagnon/changes/evaluate-planning/specs/role-evaluation/spec.md");
     let Ok(delta) = fs::read_to_string(delta) else {
         return main;
     };
@@ -708,7 +709,7 @@ fn role_evaluation_spec() -> String {
 #[test]
 fn the_role_evaluation_spec_has_no_cut_scenario() {
     let text = role_evaluation_spec();
-    let spec = codev_core::parser::parse_spec(&text).value;
+    let spec = compagnon_core::parser::parse_spec(&text).value;
     let mut cut = Vec::new();
     for requirement in &spec.requirements {
         for scenario in &requirement.scenarios {
@@ -735,7 +736,7 @@ fn the_role_evaluation_spec_has_no_cut_scenario() {
 
 #[test]
 fn the_suite_covers_the_sync_and_archive_paths() {
-    use codev_evals::case::{MergeOutcome, Step, tasks};
+    use compagnon_evals::case::{MergeOutcome, Step, tasks};
     let cases = suite::load_cases(&repo()).unwrap();
     let merges: Vec<_> = cases
         .iter()
@@ -744,16 +745,16 @@ fn the_suite_covers_the_sync_and_archive_paths() {
     let of = |step: Step| merges.iter().filter(|(c, _)| c.step == step).count();
     assert_eq!(of(Step::ChangeArchive), 6, "six change.archive cases");
     assert_eq!(of(Step::ChangeSync), 4, "four change.sync cases");
-    let version = |m: &codev_evals::case::MergeCase| {
+    let version = |m: &compagnon_evals::case::MergeCase| {
         m.overlay
-            .get("_codev/config.yaml")
-            .is_some_and(|c| String::from_utf8_lossy(c).contains("codev_version: \">=99\""))
+            .get("_compagnon/config.yaml")
+            .is_some_and(|c| String::from_utf8_lossy(c).contains("compagnon_version: \">=99\""))
     };
-    let planned = |m: &codev_evals::case::MergeCase| m.files.contains_key("tasks.md");
+    let planned = |m: &compagnon_evals::case::MergeCase| m.files.contains_key("tasks.md");
     for step in [Step::ChangeArchive, Step::ChangeSync] {
         let these: Vec<_> = merges.iter().filter(|(c, _)| c.step == step).collect();
         let name = step.as_str();
-        let any = |test: &dyn Fn(&codev_evals::case::MergeCase) -> bool| {
+        let any = |test: &dyn Fn(&compagnon_evals::case::MergeCase) -> bool| {
             these.iter().any(|(_, m)| test(m))
         };
         assert!(
@@ -770,7 +771,7 @@ fn the_suite_covers_the_sync_and_archive_paths() {
         );
         assert!(
             any(&|m| m.outcome == MergeOutcome::Done && version(m)),
-            "{name}: no case under an unsatisfied codev_version"
+            "{name}: no case under an unsatisfied compagnon_version"
         );
     }
     let archives: Vec<_> = merges
@@ -792,7 +793,7 @@ fn the_suite_covers_the_sync_and_archive_paths() {
     );
     // Each change is drawn from this repository's archive: every file of
     // `change/` is a file of the archived change, and at most one differs.
-    let archive = repo().join("_codev").join("changes").join("archive");
+    let archive = repo().join("_compagnon").join("changes").join("archive");
     let archived: Vec<String> = fs::read_dir(&archive)
         .unwrap()
         .filter_map(|e| e.ok())
@@ -819,7 +820,7 @@ fn the_suite_covers_the_sync_and_archive_paths() {
 
 #[test]
 fn the_suite_covers_the_configure_projects() {
-    use codev_evals::case::{ConfigureOutcome, Step};
+    use compagnon_evals::case::{ConfigureOutcome, Step};
     let cases = suite::load_cases(&repo()).unwrap();
     let configures: Vec<_> = cases
         .iter()
@@ -863,7 +864,7 @@ fn the_suite_covers_the_configure_projects() {
     let preserves = configures.iter().any(|(_, k)| {
         k.outcome == ConfigureOutcome::Written
             && k.config.as_deref().is_some_and(|c| {
-                ["language: fr", "mcp:", "codev_version:"]
+                ["language: fr", "mcp:", "compagnon_version:"]
                     .iter()
                     .all(|key| c.contains(key))
                     && c.lines()
@@ -874,7 +875,7 @@ fn the_suite_covers_the_configure_projects() {
     });
     assert!(
         preserves,
-        "no configuration with language, mcp, codev_version and comments"
+        "no configuration with language, mcp, compagnon_version and comments"
     );
     assert!(
         configures
@@ -892,7 +893,7 @@ fn the_suite_covers_the_configure_projects() {
 
 /// The files of a case's `base/`, by path.
 fn suite_files(id: &str) -> Vec<String> {
-    codev_evals::runner::read_tree(&repo().join("evals/cases").join(id).join("base"))
+    compagnon_evals::runner::read_tree(&repo().join("evals/cases").join(id).join("base"))
         .unwrap()
         .into_keys()
         .collect()
@@ -921,8 +922,8 @@ fn contributing_chapters_document_the_sync_archive_and_configure_cases() {
         "`answer`",
         "**Later**",
         // The reference run.
-        "codev archive --change <change> --json",
-        "codev sync --change <change> --json",
+        "compagnon archive --change <change> --json",
+        "compagnon sync --change <change> --json",
         // A changed expectation is scored again, not recorded again.
         "score evals/baseline",
         "archive-version-later",

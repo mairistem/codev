@@ -2,17 +2,17 @@
 
 Un schéma définit le workflow de planification d'un change : les artefacts
 qu'il comporte, leurs dépendances mutuelles, ainsi que l'instruction et le
-template que suit l'agent pour chacun. codev embarque un schéma,
+template que suit l'agent pour chacun. Compagnon embarque un schéma,
 `spec-driven` — proposal, specs, design, tasks —, qui convient à la plupart des
 projets. Lorsque ce n'est pas le cas, vous pouvez définir le vôtre, sous forme
 de simples fichiers de données : ni code, ni recompilation.
 
 ## Emplacement des schémas
 
-Un schéma de projet est un dossier situé sous `_codev/schemas/` :
+Un schéma de projet est un dossier situé sous `_compagnon/schemas/` :
 
 ```text
-_codev/schemas/
+_compagnon/schemas/
 └── lite/
     ├── schema.yaml
     └── templates/
@@ -21,7 +21,7 @@ _codev/schemas/
         └── tasks.md
 ```
 
-`codev schemas` liste les schémas disponibles :
+`compagnon schemas` liste les schémas disponibles :
 
 ```text
 Available schemas:
@@ -35,15 +35,15 @@ Un schéma de projet nommé `spec-driven` remplace le schéma intégré, sans ri
 changer d'autre.
 
 Le nom d'un schéma est son dossier : `--schema lite`, `schema: lite` et
-`change.yaml` désignent tous `_codev/schemas/lite/`. Gardez le `name:` de
-`schema.yaml` identique au dossier ; s'il diffère, codev utilise tout de même
-le nom du dossier et `codev schemas` signale un avertissement
+`change.yaml` désignent tous `_compagnon/schemas/lite/`. Gardez le `name:` de
+`schema.yaml` identique au dossier ; s'il diffère, Compagnon utilise tout de même
+le nom du dossier et `compagnon schemas` signale un avertissement
 `schema_name_mismatch`.
 
 ## Écrire un schéma
 
 ```yaml
-# _codev/schemas/lite/schema.yaml
+# _compagnon/schemas/lite/schema.yaml
 name: lite
 description: Small changes — a short brief, spec deltas and a task list
 artifacts:
@@ -69,7 +69,7 @@ apply:
 
 | Clé | Obligatoire | Signification |
 |---|---|---|
-| `name` | oui | Nom du schéma, en kebab-case — le nom du dossier du schéma, celui qu'utilise codev |
+| `name` | oui | Nom du schéma, en kebab-case — le nom du dossier du schéma, celui qu'utilise Compagnon |
 | `version` | non | Version du format de schéma, `1` par défaut |
 | `description` | non | Description en une ligne |
 | `artifacts` | oui | Les artefacts d'un change, au moins un |
@@ -87,14 +87,14 @@ apply:
 Une clé inconnue — au premier niveau, dans un artefact, dans `apply` ou dans
 le `role:` d'un artefact — n'est pas rejetée : elle est ignorée avec un
 avertissement `schema_unknown_key` qui nomme la clé et sa ligne, dans chaque
-commande qui utilise le schéma, et `codev validate --strict` échoue dessus.
-Le schéma a peut-être été écrit pour une version plus récente de codev
-(lancez `codev self-update`), ou la clé est une faute de frappe qui
+commande qui utilise le schéma, et `compagnon validate --strict` échoue dessus.
+Le schéma a peut-être été écrit pour une version plus récente de Compagnon
+(lancez `compagnon self-update`), ou la clé est une faute de frappe qui
 produirait sinon un workflow se comportant autrement que ce que vous avez
-écrit : corrigez-la. codev 0.6.1 et les versions antérieures rejettent le
-schéma à la place. codev rejette un schéma dont les dépendances font référence à
+écrit : corrigez-la. Compagnon 0.6.1 et les versions antérieures rejettent le
+schéma à la place. Compagnon rejette un schéma dont les dépendances font référence à
 un artefact inexistant ou forment un cycle, en nommant les artefacts
-concernés. `codev schemas` liste malgré tout les autres schémas, et signale
+concernés. `compagnon schemas` liste malgré tout les autres schémas, et signale
 celui qui est refusé par un avertissement `schema_unusable` qui en donne la
 raison.
 
@@ -105,8 +105,8 @@ artefacts dont il dépend sont terminés.
 ## Déclarer les rôles des artefacts
 
 Un artefact peut déclarer le [rôle](../roles.md) qui en a la charge. L'agent
-le reçoit dans le champ `role` de `codev instructions` et vérifie ses
-critères avant de passer à la suite ; `codev roles --at plan.write` le
+le reçoit dans le champ `role` de `compagnon instructions` et vérifie ses
+critères avant de passer à la suite ; `compagnon roles --at plan.write` le
 liste.
 
 ```yaml
@@ -138,10 +138,10 @@ quelle.
 Choisissez un schéma pour un change donné :
 
 ```bash
-codev new change quick-fix --schema lite
+compagnon new change quick-fix --schema lite
 ```
 
-ou faites-en le schéma par défaut du projet dans `_codev/config.yaml` :
+ou faites-en le schéma par défaut du projet dans `_compagnon/config.yaml` :
 
 ```yaml
 schema: lite
@@ -151,9 +151,9 @@ Le schéma est enregistré dans le `change.yaml` de chaque change, sous le nom
 de son dossier : modifier le schéma par défaut n'affecte donc pas les changes
 déjà en cours.
 
-Les skills fonctionnent avec n'importe quel schéma : `/codev-propose` rédige
+Les skills fonctionnent avec n'importe quel schéma : `/compagnon-propose` rédige
 les artefacts prêts, dans l'ordre des dépendances, au moyen de
-`codev instructions`. Les `rules:` par artefact de la configuration sont
+`compagnon instructions`. Les `rules:` par artefact de la configuration sont
 indexées par identifiant d'artefact : des règles écrites pour `brief`
 s'appliquent donc à l'artefact `brief` du schéma `lite`.
 

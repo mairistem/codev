@@ -1,28 +1,28 @@
-# codev
+# Compagnon
 
 **Le développement piloté par les specs pour Claude Code.**
 
-[![CI](https://github.com/mairistem/codev/actions/workflows/ci.yml/badge.svg)](https://github.com/mairistem/codev/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/mairistem/codev)](https://github.com/mairistem/codev/releases/latest)
+[![CI](https://github.com/mairistem/compagnon/actions/workflows/ci.yml/badge.svg)](https://github.com/mairistem/compagnon/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/mairistem/compagnon)](https://github.com/mairistem/compagnon/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](https://github.com/mairistem/codev/releases/latest)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](https://github.com/mairistem/compagnon/releases/latest)
 
 [English](README.md) · Français
 
-codev ajoute une fine couche de spécifications à votre dépôt, pour que vous et
+Compagnon ajoute une fine couche de spécifications à votre dépôt, pour que vous et
 Claude Code vous accordiez sur ce qu'il faut construire avant d'écrire la
 moindre ligne de code — et pour que les décisions d'architecture, une fois
 prises, cessent d'être remises en débat à chaque change.
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Enregistrement de terminal : codev init, un change dont le plan est validé puis archivé, et la spec vivante qui en résulte" width="800">
+  <img src="docs/assets/demo.gif" alt="Enregistrement de terminal : compagnon init, un change dont le plan est validé puis archivé, et la spec vivante qui en résulte" width="800">
 </p>
 
 ## Pourquoi
 
 Sans specs, l'intention se perd dans l'historique des conversations et dans la
-tête des gens. Avec codev, chaque change commence par un petit plan dans
-`_codev/changes/` : le pourquoi, le quoi, le comment, et un **delta de spec**
+tête des gens. Avec Compagnon, chaque change commence par un petit plan dans
+`_compagnon/changes/` : le pourquoi, le quoi, le comment, et un **delta de spec**
 qui énonce le comportement ajouté ou modifié.
 
 Un change ajoute une exigence :
@@ -41,8 +41,8 @@ L'application SHALL restaurer le dernier thème choisi par l'utilisateur, sur ch
 - **THEN** l'application s'affiche avec le thème sombre
 ```
 
-À l'archivage du change, codev fusionne le delta dans la spec vivante,
-`_codev/specs/ui/theme/spec.md`, sans toucher au reste de son contenu :
+À l'archivage du change, Compagnon fusionne le delta dans la spec vivante,
+`_compagnon/specs/ui/theme/spec.md`, sans toucher au reste de son contenu :
 
 ```markdown
 # Theme Specification
@@ -69,31 +69,31 @@ L'application SHALL restaurer le dernier thème choisi par l'utilisateur, sur ch
 ```
 
 La spec décrit toujours ce que fait le système aujourd'hui, et chaque change
-archivé garde la trace de ce qui l'a fait évoluer. codev n'appelle jamais
-lui-même de modèle : Claude Code rédige, et codev lui indique quoi écrire, où,
+archivé garde la trace de ce qui l'a fait évoluer. Compagnon n'appelle jamais
+lui-même de modèle : Claude Code rédige, et Compagnon lui indique quoi écrire, où,
 et sous quelles contraintes.
 
 ## Premiers pas
 
-Installez codev — aucune chaîne d'outils Rust n'est nécessaire.
+Installez Compagnon — aucune chaîne d'outils Rust n'est nécessaire.
 
 macOS et Linux :
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh
 ```
 
 Windows (PowerShell) :
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex
 ```
 
 Les deux scripts vérifient l'empreinte SHA-256 du binaire qu'ils téléchargent.
 Vous pouvez aussi télécharger un binaire depuis la
-[page des releases](https://github.com/mairistem/codev/releases/latest), ou
-compiler depuis les sources avec `cargo install --path crates/codev-cli` ;
-voir le [guide d'installation](https://mairistem.github.io/codev/fr/installation.html).
+[page des releases](https://github.com/mairistem/compagnon/releases/latest), ou
+compiler depuis les sources avec `cargo install --path crates/compagnon-cli` ;
+voir le [guide d'installation](https://mairistem.github.io/compagnon/fr/installation.html).
 
 **Prérequis :** macOS (Apple Silicon ou Intel), Linux x86_64 ou Windows
 x86_64, et [Claude Code](https://claude.com/claude-code) pour utiliser les
@@ -103,18 +103,18 @@ skills.
 
 ```bash
 cd your-project
-codev init
+compagnon init
 ```
 
 Puis, dans Claude Code :
 
 ```text
-/codev-propose add a dark mode that follows the system preference
-/codev-apply add-dark-mode
-/codev-archive add-dark-mode
+/compagnon-propose add a dark mode that follows the system preference
+/compagnon-apply add-dark-mode
+/compagnon-archive add-dark-mode
 ```
 
-Le [démarrage rapide](https://mairistem.github.io/codev/fr/quickstart.html)
+Le [démarrage rapide](https://mairistem.github.io/compagnon/fr/quickstart.html)
 détaille chaque étape.
 
 ## Fonctionnement
@@ -137,15 +137,15 @@ Chaque change suit le même cycle, avec une skill Claude Code par étape :
 - **archive** — valide le change, le fusionne et le déplace dans une archive
   datée.
 
-`/codev-explore`, `/codev-update`, `/codev-onboard` et `/codev-configure`
-complètent l'ensemble. Derrière les skills, la CLI `codev` effectue le travail
+`/compagnon-explore`, `/compagnon-update`, `/compagnon-onboard` et `/compagnon-configure`
+complètent l'ensemble. Derrière les skills, la CLI `compagnon` effectue le travail
 unitaire — état, instructions, validation, fusion — avec une sortie JSON
 stable.
 
 Tout se trouve dans un dossier visible à la racine de votre dépôt :
 
 ```text
-_codev/
+_compagnon/
 ├── specs/        # contrats de comportement — ce que fait le système
 ├── decisions/    # décisions d'architecture — pourquoi il est construit ainsi
 ├── changes/      # travail en cours, et l'archive datée
@@ -153,11 +153,11 @@ _codev/
 ```
 
 - **Les changes sont des deltas.** Un change déclare des exigences `ADDED`,
-  `MODIFIED`, `REMOVED` ou `RENAMED` au lieu de réécrire les specs : codev
+  `MODIFIED`, `REMOVED` ou `RENAMED` au lieu de réécrire les specs : Compagnon
   fonctionne ainsi sur du code existant, et pas seulement sur des projets
   neufs.
 - **Les décisions sont immuables.** Les ADR acceptés sont scellés par une
-  empreinte ; pour en changer un, on le remplace, et `codev validate` détecte
+  empreinte ; pour en changer un, on le remplace, et `compagnon validate` détecte
   les modifications silencieuses.
 - **Les conventions se partagent.** Un projet peut hériter du contexte, des
   règles et des décisions d'un autre dépôt, en lecture seule et épinglés sur un
@@ -165,29 +165,29 @@ _codev/
 - **Votre langue.** Les artefacts sont rédigés dans la langue choisie par votre
   équipe ; leur structure reste lisible par la machine.
 
-## Développé avec codev
+## Développé avec Compagnon
 
-codev est développé avec codev. Chaque évolution de ce dépôt — y compris les
+Compagnon est développé avec Compagnon. Chaque évolution de ce dépôt — y compris les
 rôles, les experts et les comptes rendus de revue décrits plus haut — a été
 planifiée, relue et archivée avec l'outil lui-même, et chaque pull request
-passe `codev validate --strict`. Parcourez-le comme un exemple réel :
+passe `compagnon validate --strict`. Parcourez-le comme un exemple réel :
 
-- [`_codev/specs/`](_codev/specs/) — les specs vivantes, qui décrivent ce que
-  fait codev aujourd'hui ;
-- [`_codev/changes/archive/`](_codev/changes/archive/) — chaque change, avec
+- [`_compagnon/specs/`](_compagnon/specs/) — les specs vivantes, qui décrivent ce que
+  fait Compagnon aujourd'hui ;
+- [`_compagnon/changes/archive/`](_compagnon/changes/archive/) — chaque change, avec
   son proposal, ses deltas de spec, son design et ses tâches ;
-- [un compte rendu de revue](_codev/changes/archive/2026-10-13-review-record/review.md) — les remarques avec leurs preuves, les
+- [un compte rendu de revue](_compagnon/changes/archive/2026-10-13-review-record/review.md) — les remarques avec leurs preuves, les
   réponses de l'auteur et la façon dont chacune a été tranchée ;
-- [`_codev/decisions/`](_codev/decisions/) — les décisions d'architecture
+- [`_compagnon/decisions/`](_compagnon/decisions/) — les décisions d'architecture
   scellées.
 
 ## Comparaison
 
-codev fait partie des nombreux outils de développement piloté par les specs
+Compagnon fait partie des nombreux outils de développement piloté par les specs
 destinés aux agents de code. Voici une synthèse des fonctionnalités
 documentées, en septembre 2026 :
 
-| | codev | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | [Spec Kit](https://github.com/github/spec-kit) |
+| | Compagnon | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | [Spec Kit](https://github.com/github/spec-kit) |
 |---|---|---|---|
 | Distribution | Binaire natif unique | Paquet npm (Node.js) | CLI Python (installée avec uv) |
 | Agents pris en charge | Claude Code | Plus de 30 outils | De nombreux agents, dont GitHub Copilot |
@@ -196,7 +196,7 @@ documentées, en septembre 2026 :
 | Partage entre dépôts | Sources en lecture seule, épinglées par commit git | Stores (bêta) | — |
 | Licence | MIT | MIT | MIT |
 
-codev s'appuie directement sur les idées d'OpenSpec : le cycle
+Compagnon s'appuie directement sur les idées d'OpenSpec : le cycle
 propose → apply → archive, le change comme unité de travail, et les opérations
 de delta `ADDED` / `MODIFIED` / `REMOVED` / `RENAMED` viennent toutes
 d'OpenSpec. Si vous avez besoin d'un autre agent que Claude Code, OpenSpec et
@@ -206,20 +206,20 @@ jour, merci d'ouvrir une issue.
 ## Documentation
 
 La documentation complète se trouve sur
-**[mairistem.github.io/codev](https://mairistem.github.io/codev/fr/)** —
+**[mairistem.github.io/compagnon](https://mairistem.github.io/compagnon/fr/)** —
 workflow, concepts, guides, et références de la CLI, de la configuration et
 des formats de fichiers. Elle est aussi embarquée dans le binaire et
 consultable hors ligne :
 
 ```bash
-codev docs --lang fr
+compagnon docs --lang fr
 ```
 
 ## Contribuer
 
-Les contributions sont les bienvenues. codev est développé avec codev : les
+Les contributions sont les bienvenues. Compagnon est développé avec Compagnon : les
 petites corrections passent par une pull request classique, et tout le reste
-commence par un change codev. Consultez [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md),
+commence par un change Compagnon. Consultez [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md),
 ainsi que la [feuille de route](ROADMAP.md) (en anglais) pour ce qui est prévu.
 
 Merci de signaler les problèmes de sécurité en privé, comme indiqué dans
@@ -228,7 +228,7 @@ Merci de signaler les problèmes de sécurité en privé, comme indiqué dans
 
 ## Licence
 
-codev est distribué sous [licence MIT](LICENSE).
+Compagnon est distribué sous [licence MIT](LICENSE).
 
-codev s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec), de
+Compagnon s'inspire d'[OpenSpec](https://github.com/Fission-AI/OpenSpec), de
 Fission AI, également distribué sous licence MIT.

@@ -59,7 +59,7 @@ pub fn command_env(
     if offline {
         env.push(("CARGO_NET_OFFLINE".into(), "true".into()));
     }
-    env.push(("CODEV_NO_UPDATE_CHECK".into(), "1".into()));
+    env.push(("COMPAGNON_NO_UPDATE_CHECK".into(), "1".into()));
     env
 }
 
@@ -103,7 +103,7 @@ pub const PREPARATION: [CargoCommand; 2] = [
 /// The build of the binary the acceptance script drives.
 pub const BUILD: CargoCommand = CargoCommand {
     name: "build",
-    args: &["build", "-p", "codev-cli"],
+    args: &["build", "-p", "compagnon-cli"],
     online: false,
 };
 
@@ -137,7 +137,11 @@ pub const CHECKS: [CargoCommand; 4] = [
 
 /// The binary [`CHECKS`]' build leaves, relative to the case's directory.
 pub fn built_binary(dir: &Path) -> PathBuf {
-    let name = if cfg!(windows) { "codev.exe" } else { "codev" };
+    let name = if cfg!(windows) {
+        "compagnon.exe"
+    } else {
+        "compagnon"
+    };
     dir.join("target").join("debug").join(name)
 }
 
@@ -394,7 +398,7 @@ pub fn run_checks(dir: &Path, log: &Path) -> Vec<CommandCheck> {
 }
 
 /// Runs `script` with `bash` in a new empty directory under `log`, with
-/// `CODEV` naming `binary`, under [`ACCEPTANCE_TIMEOUT`]; returns what it
+/// `COMPAGNON` naming `binary`, under [`ACCEPTANCE_TIMEOUT`]; returns what it
 /// printed and how it ended.
 pub fn run_acceptance(
     script: &str,
@@ -415,8 +419,8 @@ pub fn run_acceptance(
         .into_iter()
         .filter(|(name, _)| kept(name))
         .collect();
-    env.push(("CODEV".into(), binary.to_string_lossy().into_owned()));
-    env.push(("CODEV_NO_UPDATE_CHECK".into(), "1".into()));
+    env.push(("COMPAGNON".into(), binary.to_string_lossy().into_owned()));
+    env.push(("COMPAGNON_NO_UPDATE_CHECK".into(), "1".into()));
     let output = log.join("acceptance.log");
     let file_arg = file.to_string_lossy().into_owned();
     let end = run_command(
@@ -440,7 +444,7 @@ pub fn remove_build_outputs(dir: &Path) {
     }
 }
 
-/// What `codev-evals calibrate` found on a case: what the script printed
+/// What `compagnon-evals calibrate` found on a case: what the script printed
 /// on the merged commit and on the commit before it, and the checks on the
 /// merged commit.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -661,7 +665,8 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn a_command_that_times_out_fails_its_check() {
-        let log = std::env::temp_dir().join(format!("codev-evals-timeout-{}", std::process::id()));
+        let log =
+            std::env::temp_dir().join(format!("compagnon-evals-timeout-{}", std::process::id()));
         let _ = fs::remove_file(&log);
         let env = vec![("PATH".to_string(), "/bin:/usr/bin".to_string())];
         let check = run_command(
@@ -710,12 +715,12 @@ mod tests {
 
     #[test]
     fn a_read_of_the_cases_repository_is_recorded() {
-        // A root absolute on every platform: `/src/codev` has no drive on
+        // A root absolute on every platform: `/src/compagnon` has no drive on
         // Windows.
         let root = if cfg!(windows) {
-            r"C:\src\codev"
+            r"C:\src\compagnon"
         } else {
-            "/src/codev"
+            "/src/compagnon"
         };
         let sep = std::path::MAIN_SEPARATOR;
         let script = format!("{root}{sep}evals{sep}cases{sep}x{sep}acceptance.sh");
@@ -830,7 +835,7 @@ mod tests {
         let root = std::env::temp_dir()
             .canonicalize()
             .unwrap()
-            .join(format!("codev-evals-acceptance-{}", std::process::id()));
+            .join(format!("compagnon-evals-acceptance-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         let cwd = std::env::current_dir().unwrap().canonicalize().unwrap();

@@ -26,7 +26,7 @@ et que vous pouvez utiliser dans vos scripts et votre CI.
   lorsqu'ils sont vides, comme indiqué ci-dessous.
 
 Le code de sortie suit les mêmes règles qu'en mode lisible : `0` en cas de
-succès, `1` en cas d'échec et, pour `codev validate`, `1` en présence
+succès, `1` en cas d'échec et, pour `compagnon validate`, `1` en présence
 d'erreurs (ou de tout constat avec `--strict`).
 
 ## Le tableau status
@@ -46,29 +46,29 @@ d'erreurs (ou de tout constat avec `--strict`).
 | Champ | Valeurs |
 |---|---|
 | `level` | `error` ou `warning` |
-| `code` | Un identifiant stable, comme `no_codev_root` |
+| `code` | Un identifiant stable, comme `no_compagnon_root` |
 | `message` | Texte lisible par un humain |
 
 Codes d'erreur courants :
 
 | Code | Signification |
 |---|---|
-| `no_codev_root` | Aucun `_codev/` dans le répertoire courant ni dans ses parents |
+| `no_compagnon_root` | Aucun `_compagnon/` dans le répertoire courant ni dans ses parents |
 | `no_active_change` | Le projet n'a aucun change actif |
 | `ambiguous_change` | Plusieurs changes actifs et aucun `--change` |
 | `unknown_change` | Le change désigné n'existe pas |
 | `invalid_change_id` | Un nom de change qui n'est pas en kebab-case, ou le nom réservé `archive` ; le message nomme la règle enfreinte |
 | `change_exists` | `new change` avec un nom déjà pris |
 | `schema_not_found` | Nom de schéma inconnu |
-| `schema_invalid`, `schema_unreadable` | Un fichier de schéma que codev refuse : un défaut de structure, ou un YAML invalide ou un champ obligatoire manquant. Une clé inconnue n'est pas refusée : c'est un avertissement `schema_unknown_key` |
+| `schema_invalid`, `schema_unreadable` | Un fichier de schéma que Compagnon refuse : un défaut de structure, ou un YAML invalide ou un champ obligatoire manquant. Une clé inconnue n'est pas refusée : c'est un avertissement `schema_unknown_key` |
 | `unknown_artifact` | `instructions` avec un artefact que le schéma du change n'a pas |
 | `no_artifact_ready` | `instructions` sans artefact, alors qu'aucun n'est prêt |
 | `template_not_found` | Un schéma fait référence à un template manquant |
 | `validation_failed` | `sync` ou `archive` a refusé un change dont la validation signale des erreurs |
-| `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un codev plus récent ; le message nomme chaque raison |
-| `invalid_review_mode` | `review.mode`, dans `_codev/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
-| `codev_version_unsatisfied` | `validate`, `sync` ou `archive` a refusé de s'exécuter : le codev en cours ne satisfait pas le `codev_version` du projet ; le message nomme l'exigence, la version en cours et la correction |
-| `seal_version_unsupported` | `_codev/decisions/seal.yaml` a une `version` que ce codev ne lit pas : il a été écrit par un codev plus récent ; le message renvoie à `codev self-update` |
+| `review_blocked` | `archive` a refusé un change dont le compte rendu de revue manque pour une étape relue, contient un constat de gravité haute encore ouvert ou contesté, ou vient d'un Compagnon plus récent ; le message nomme chaque raison |
+| `invalid_review_mode` | `review.mode`, dans `_compagnon/config.yaml` ou le `change.yaml` d'un change, n'est ni `inline` ni `isolated` ; le message nomme le fichier et les valeurs admises |
+| `compagnon_version_unsatisfied` | `validate`, `sync` ou `archive` a refusé de s'exécuter : le Compagnon en cours ne satisfait pas le `compagnon_version` du projet ; le message nomme l'exigence, la version en cours et la correction |
+| `seal_version_unsupported` | `_compagnon/decisions/seal.yaml` a une `version` que ce Compagnon ne lit pas : il a été écrit par un Compagnon plus récent ; le message renvoie à `compagnon self-update` |
 | `invalid` | Un fichier invalide, ou un delta qui ne peut pas être fusionné dans sa spec principale |
 | `unreadable` | Un fichier n'a pas pu être lu |
 | `write_failed` | Un fichier n'a pas pu être écrit |
@@ -81,7 +81,7 @@ exemple `inherit_unresolved`, `git_source_unlocked`, `unknown_workflow` ou
 
 ### init et update
 
-`codev init --json` et `codev update --json` :
+`compagnon init --json` et `compagnon update --json` :
 
 ```json
 {
@@ -89,8 +89,8 @@ exemple `inherit_unresolved`, `git_source_unlocked`, `unknown_workflow` ou
   "created": ["…"],
   "updated": ["…"],
   "untouched": ["…"],
-  "preserved": ["/home/you/acme-app/.claude/skills/codev-apply/SKILL.md"],
-  "skills": ["codev-propose", "codev-explore", "…"],
+  "preserved": ["/home/you/acme-app/.claude/skills/compagnon-apply/SKILL.md"],
+  "skills": ["compagnon-propose", "compagnon-explore", "…"],
   "integration": [
     {
       "step": "claude_md",
@@ -101,8 +101,8 @@ exemple `inherit_unresolved`, `git_source_unlocked`, `unknown_workflow` ou
     {
       "step": "ci",
       "action": "skipped",
-      "path": ".github/workflows/codev.yml",
-      "reason": ".github/workflows/ci.yml already runs codev validate"
+      "path": ".github/workflows/compagnon.yml",
+      "reason": ".github/workflows/ci.yml already runs compagnon validate"
     },
     {
       "step": "pr_template",
@@ -120,19 +120,19 @@ modifiées à la main. `integration` compte une entrée par étape d'intégratio
 au dépôt : `step` vaut `claude_md`, `ci` ou `pr_template` ; `action` vaut
 `created`, `appended`, `refreshed`, `unchanged` ou `skipped` ; `path` est
 relatif au projet, ou `null` ; `reason` explique une étape écartée, ou vaut
-`null`. `codev update` ne liste que les fichiers gérés qu'il a trouvés.
-L'indication `codev doctor` et le job GitLab n'apparaissent que dans la
+`null`. `compagnon update` ne liste que les fichiers gérés qu'il a trouvés.
+L'indication `compagnon doctor` et le job GitLab n'apparaissent que dans la
 sortie humaine.
 
 Avertissements propres à `init` : `inherit_not_written` (`--inherit` alors
 que `config.yaml` existe), `inherit_pin_failed` (une source git n'a pas pu
-être épinglée) et `managed_section_malformed` (marqueurs codev déséquilibrés ;
+être épinglée) et `managed_section_malformed` (marqueurs Compagnon déséquilibrés ;
 le fichier reste intact). Une valeur `--inherit` invalide échoue avec
 `invalid_inherit`.
 
 ### doctor
 
-`codev doctor --json` :
+`compagnon doctor --json` :
 
 ```json
 {
@@ -143,8 +143,8 @@ le fichier reste intact). Une valeur `--inherit` invalide échoue avec
       "group": "configuration",
       "status": "missing",
       "code": "rules_missing",
-      "message": "no rules: in _codev/config.yaml",
-      "fix": "/codev-configure"
+      "message": "no rules: in _compagnon/config.yaml",
+      "fix": "/compagnon-configure"
     },
     {
       "id": "config.language",
@@ -180,7 +180,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 | `config.roles` | `configuration` | `roles_invalid` (avertissement) ; lorsqu'il est `ok`, `message` liste les rôles actifs, les rôles actifs selon le domaine avec leurs domaines, et les rôles désactivés |
 | `skills` | `configuration` | `skills_missing`, `skills_outdated`, `skills_review_mode` |
 | `sources` | `configuration` | `source_unpinned`, `lock_stale` (avertissement) |
-| `codev_version` | `configuration` | `codev_version_unsatisfied`, `update_available` (avertissement) |
+| `compagnon_version` | `configuration` | `compagnon_version_unsatisfied`, `update_available` (avertissement) |
 | `specs` | `planning` | `no_main_spec` |
 | `decisions` | `planning` | `no_accepted_decision` (avertissement) |
 | `validate` | `planning` | `validate_errors`, `validate_warnings` (avertissement) |
@@ -191,7 +191,7 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
 
 ### changelog
 
-`codev changelog --format json` (le `--json` de cette commande) :
+`compagnon changelog --format json` (le `--json` de cette commande) :
 
 ```json
 {
@@ -202,14 +202,14 @@ tableau ci-dessous ; `pr_template` n'apparaît que pour un dépôt GitHub.
   "entries": [
     {
       "category": "Added",
-      "text": "`--format json` pour `codev export`.",
+      "text": "`--format json` pour `compagnon export`.",
       "breaking": false,
       "change": "2026-10-02-export-json",
-      "archivePath": "_codev/changes/archive/2026-10-02-export-json",
+      "archivePath": "_compagnon/changes/archive/2026-10-02-export-json",
       "source": "release_note"
     }
   ],
-  "markdown": "## [Unreleased]\n\n### Added\n\n- `--format json` pour `codev export`.\n",
+  "markdown": "## [Unreleased]\n\n### Added\n\n- `--format json` pour `compagnon export`.\n",
   "written": null,
   "status": []
 }
@@ -239,9 +239,9 @@ Avertissements dans `status` : `release_note_missing`,
 {
   "changeName": "add-audit-log",
   "schemaName": "spec-driven",
-  "changeRoot": "/home/you/acme-app/_codev/changes/add-audit-log",
+  "changeRoot": "/home/you/acme-app/_compagnon/changes/add-audit-log",
   "created": [
-    "/home/you/acme-app/_codev/changes/add-audit-log/change.yaml"
+    "/home/you/acme-app/_compagnon/changes/add-audit-log/change.yaml"
   ],
   "status": []
 }
@@ -262,7 +262,7 @@ capacités.
 
 ### search
 
-`codev search --json` :
+`compagnon search --json` :
 
 ```json
 {
@@ -275,7 +275,7 @@ capacités.
       "id": "decisions::Body seal recorded by the CLI",
       "capability": "decisions",
       "requirement": "Body seal recorded by the CLI",
-      "excerpt": "The CLI SHALL maintain a `_codev/decisions/seal.yaml` file…"
+      "excerpt": "The CLI SHALL maintain a `_compagnon/decisions/seal.yaml` file…"
     },
     {
       "kind": "decision",
@@ -303,7 +303,7 @@ décision, pas le tableau des erreurs de la racine.
 
 ### show
 
-`codev show --json` :
+`compagnon show --json` :
 
 ```json
 {
@@ -317,7 +317,7 @@ décision, pas le tableau des erreurs de la racine.
 }
 ```
 
-`codev show <capacité>` porte `requirements`, les noms des exigences, et
+`compagnon show <capacité>` porte `requirements`, les noms des exigences, et
 `purpose` au lieu de `requirement`. Un échec porte `capability: null` et
 son code dans `status`.
 
@@ -328,7 +328,7 @@ son code dans `status`.
   "changeName": "add-audit-log",
   "schemaName": "spec-driven",
   "planningHome": "/home/you/acme-app",
-  "changeRoot": "/home/you/acme-app/_codev/changes/add-audit-log",
+  "changeRoot": "/home/you/acme-app/_compagnon/changes/add-audit-log",
   "applyRequires": ["tasks"],
   "isPlanningComplete": false,
   "artifacts": [
@@ -350,7 +350,7 @@ son code dans `status`.
   "update": {
     "current": "0.5.0",
     "latest": "0.6.0",
-    "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+    "url": "https://github.com/mairistem/compagnon/releases/tag/v0.6.0",
     "available": true,
     "snoozed": false
   },
@@ -366,28 +366,28 @@ Le `status` d'un artefact vaut `done`, `ready`, `blocked` ou `skipped`.
 `planningHome` est la racine du projet ; les skills s'en servent plutôt que de
 supposer le répertoire courant.
 
-`update` est présent lorsque la dernière release de codev est connue :
+`update` est présent lorsque la dernière release de Compagnon est connue :
 `current` est la version en cours, `latest` la dernière release, `url` sa
 page, `available` indique si `latest` est plus récente, et `snoozed` si
-`codev self-update --snooze` l'a mise en sourdine. Il est absent lorsque la
-vérification est désactivée (`CI`, `CODEV_NO_UPDATE_CHECK=1`) ou n'a encore
-jamais réussi. `versionRequirement` est présent lorsque `_codev/config.yaml`
-définit `codev_version` : `requirement` est sa valeur, `satisfied` indique si
+`compagnon self-update --snooze` l'a mise en sourdine. Il est absent lorsque la
+vérification est désactivée (`CI`, `COMPAGNON_NO_UPDATE_CHECK=1`) ou n'a encore
+jamais réussi. `versionRequirement` est présent lorsque `_compagnon/config.yaml`
+définit `compagnon_version` : `requirement` est sa valeur, `satisfied` indique si
 la version en cours la respecte. Ces deux objets s'ajoutent sans rien
 changer : un consommateur qui les ignore lit le document comme avant.
 
 ### self-update
 
-`codev self-update --json`, qui implique `--yes` :
+`compagnon self-update --json`, qui implique `--yes` :
 
 ```json
 {
   "current": "0.5.0",
   "latest": "0.6.0",
-  "url": "https://github.com/mairistem/codev/releases/tag/v0.6.0",
+  "url": "https://github.com/mairistem/compagnon/releases/tag/v0.6.0",
   "action": "updated",
   "installMethod": "standalone",
-  "path": "/home/you/.local/bin/codev",
+  "path": "/home/you/.local/bin/compagnon",
   "hint": null,
   "projectUpdated": true,
   "status": []
@@ -397,9 +397,9 @@ changer : un consommateur qui les ignore lit le document comme avant.
 `action` vaut `updated`, `up_to_date`, `available` (avec `--check`),
 `snoozed`, `nothing_to_snooze` ou `managed_elsewhere`. `installMethod` vaut
 `standalone`, `cargo`, `build` ou `package_manager` ; pour les trois
-derniers, `hint` contient la commande qui met codev à jour. `latest` et `url`
+derniers, `hint` contient la commande qui met Compagnon à jour. `latest` et `url`
 valent `null` lorsqu'ils sont inconnus. Les échecs gardent cette forme et
-portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
+portent leur code dans `status` — voir les [codes](cli.md#compagnon-self-update).
 
 ### instructions
 
@@ -409,7 +409,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
   "schemaName": "spec-driven",
   "artifact": "design",
   "description": "Technical approach and decisions",
-  "resolvedOutputPath": "/home/you/acme-app/_codev/changes/add-dark-mode/design.md",
+  "resolvedOutputPath": "/home/you/acme-app/_compagnon/changes/add-dark-mode/design.md",
   "instruction": "Write the document that explains HOW to implement the change.\n…",
   "template": "# Design: <change title>\n…",
   "language": "en",
@@ -423,7 +423,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
     { "origin": "project", "text": "Cite the decisions that constrain the approach." }
   ],
   "dependencies": [
-    { "id": "proposal", "path": "/home/you/acme-app/_codev/changes/add-dark-mode/proposal.md", "done": true }
+    { "id": "proposal", "path": "/home/you/acme-app/_compagnon/changes/add-dark-mode/proposal.md", "done": true }
   ],
   "unlocks": ["tasks"],
   "decisions": [
@@ -433,7 +433,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
       "title": "Use SQLite for persistence",
       "status": "accepted",
       "tags": [],
-      "path": "_codev/decisions/0003-use-sqlite-for-persistence.md",
+      "path": "_compagnon/decisions/0003-use-sqlite-for-persistence.md",
       "origin": "project"
     }
   ],
@@ -441,7 +441,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
     {
       "capability": "decisions",
       "requirement": "Creating a decision through the CLI",
-      "excerpt": "`codev decision new <title>` SHALL create a new ADR in the project…"
+      "excerpt": "`compagnon decision new <title>` SHALL create a new ADR in the project…"
     }
   ],
   "skipped": false,
@@ -475,7 +475,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 | `resolvedOutputPath` | Où écrire ; peut être un motif glob comme `…/specs/**/*.md` |
 | `instruction`, `template` | Issus du schéma ; `null` lorsque le schéma n'en définit pas |
 | `language` | La langue des artefacts, `en` par défaut |
-| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du template servi, sinon `language` quand codev en fournit les mots-clés, `en` sinon |
+| `keywordLanguage` | La langue dans laquelle les mots-clés structurels sont écrits : celle des mots-clés du template servi, sinon `language` quand Compagnon en fournit les mots-clés, `en` sinon |
 | `keywords` | Le texte à écrire pour chaque mot-clé du catalogue dans `keywordLanguage`, par clé (`requirement`, `delta.added`…) ; une liste pour `normative` et `none` |
 | `related` | Les exigences existantes que le change touche probablement, classées par rapport au `Why` et au `What Changes` de la proposition, au plus 10, chacune avec `capability`, `requirement` et `excerpt` — pour les artefacts qui requièrent directement la proposition (`specs`, `design`), une fois celle-ci écrite ; un tableau vide sinon |
 | `context`, `rules` | Blocs ordonnés de la source la plus générale jusqu'au projet, chacun avec son `origin` (`project`, `path:<path>` ou `git:<url>`) |
@@ -483,7 +483,7 @@ portent leur code dans `status` — voir les [codes](cli.md#codev-self-update).
 | `unlocks` | Les artefacts qui deviennent rédigeables dès que celui-ci existe |
 | `decisions` | Les décisions en vigueur — renseigné pour `design`, vide pour les autres artefacts |
 | `skipped` | `true` lorsque `skip_specs` désactive cet artefact : il ne doit pas être rédigé |
-| `role` | Le rôle qui a la charge de l'artefact, sous la forme de [`codev roles`](#roles) ; `null` lorsque le schéma n'en déclare pas |
+| `role` | Le rôle qui a la charge de l'artefact, sous la forme de [`compagnon roles`](#roles) ; `null` lorsque le schéma n'en déclare pas |
 
 Un échec conserve cette forme, avec `language`, `keywordLanguage` et
 `keywords` toujours renseignés — d'après la langue configurée, ou `en`
@@ -499,10 +499,10 @@ lorsque la configuration ne peut pas être lue — et les autres champs à
     {
       "kind": "change",
       "name": "add-audit-log",
-      "path": "_codev/changes/add-audit-log",
+      "path": "_compagnon/changes/add-audit-log",
       "findings": [
         {
-          "path": "_codev/changes/add-audit-log/change.yaml",
+          "path": "_compagnon/changes/add-audit-log/change.yaml",
           "line": 1,
           "severity": "error",
           "code": "zero_delta_without_marker",
@@ -517,8 +517,8 @@ lorsque la configuration ne peut pas être lue — et les autres champs à
 ```
 
 `kind` vaut `change`, `spec`, `decisions` ou `config` — ce dernier seulement
-lorsque `_codev/config.yaml` ou un schéma de projet a un constat, comme une
-clé que ce codev ne connaît pas (voir
+lorsque `_compagnon/config.yaml` ou un schéma de projet a un constat, comme une
+clé que ce Compagnon ne connaît pas (voir
 [Clés inconnues](configuration.md#clés-inconnues)). Une clé d'un schéma de
 projet est un constat `schema_unknown_key` de l'élément `config`, dont le
 `path` est le fichier du schéma ; une clé du `change.yaml` d'un change est un
@@ -535,15 +535,15 @@ elle-même. Voir [Codes de validation](file-formats.md#codes-de-validation).
   "changeName": "add-dark-mode",
   "root": "/home/you/acme-app",
   "updated": [],
-  "created": ["/home/you/acme-app/_codev/specs/ui/theme/spec.md"],
+  "created": ["/home/you/acme-app/_compagnon/specs/ui/theme/spec.md"],
   "unchanged": [],
   "deleted": [],
-  "movedTo": "/home/you/acme-app/_codev/changes/archive/2026-09-30-add-dark-mode",
+  "movedTo": "/home/you/acme-app/_compagnon/changes/archive/2026-09-30-add-dark-mode",
   "status": []
 }
 ```
 
-`codev sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
+`compagnon sync --json` renvoie le même document, sans `movedTo`. `deleted` liste
 les specs principales supprimées par un change qui retire une capacité.
 
 ### review
@@ -551,7 +551,7 @@ les specs principales supprimées par un change qui retire une capacité.
 ```json
 {
   "changeName": "add-sessions",
-  "path": "_codev/changes/add-sessions/review.md",
+  "path": "_compagnon/changes/add-sessions/review.md",
   "exists": true,
   "format": 1,
   "steps": [
@@ -615,7 +615,7 @@ les specs principales supprimées par un change qui retire une capacité.
 | Champ | Signification |
 |---|---|
 | `exists` | `false` sans `review.md` ; `format` et `findings` sont alors `null` ou vides |
-| `steps[].activeRoles` | Les rôles actifs à l'étape pour le change, tels que `codev roles --at <step> --change <name>` les renvoie |
+| `steps[].activeRoles` | Les rôles actifs à l'étape pour le change, tels que `compagnon roles --at <step> --change <name>` les renvoie |
 | `steps[].roles[].state` | `findings`, `no-finding`, `disabled`, `empty` (une section sans rien d'exploitable), ou `missing` (un rôle actif sans section, dans une étape consignée) |
 | `steps[].roles[].fallback` | La ligne `Fallback:` du rôle — pourquoi il a relu en ligne lors d'une revue isolée — ou `null` |
 | `steps[].roles[].credited` | Les identifiants des constats d'autres rôles de l'étape dont le `raised_by` nomme ce rôle |
@@ -635,7 +635,7 @@ champs que le fichier omet ou rend invalides valent `null`.
 
 ### roles
 
-`codev roles --at plan.challenge --change add-dark-mode --json` :
+`compagnon roles --at plan.challenge --change add-dark-mode --json` :
 
 ```json
 {
@@ -728,7 +728,7 @@ champs que le fichier omet ou rend invalides valent `null`.
       "totalBytes": 18342,
       "summarized": false,
       "files": [
-        { "path": "_codev/changes/add-dark-mode/design.md", "bytes": 6120, "treatment": "full" },
+        { "path": "_compagnon/changes/add-dark-mode/design.md", "bytes": 6120, "treatment": "full" },
         "…"
       ]
     }
@@ -789,8 +789,8 @@ nom de son dossier, avec un avertissement `schema_name_mismatch`.
 
 ### decision
 
-`codev decision list --json` renvoie `{ "root", "decisions": [...], "status" }`,
-et `codev decision show --json` renvoie `{ "root", "decision", "content",
+`compagnon decision list --json` renvoie `{ "root", "decisions": [...], "status" }`,
+et `compagnon decision show --json` renvoie `{ "root", "decision", "content",
 "status" }`, où `content` est le Markdown complet du fichier. Une décision se
 présente ainsi :
 
@@ -804,7 +804,7 @@ présente ainsi :
   "tags": [],
   "supersedes": [],
   "deviatesFrom": [],
-  "path": "…/_codev/decisions/0001-use-postgresql-for-persistence.md",
+  "path": "…/_compagnon/decisions/0001-use-postgresql-for-persistence.md",
   "origin": "project",
   "inEffect": false,
   "supersededBy": "project/0003"
@@ -835,8 +835,8 @@ prédécesseurs que `decision accept` a passés à `superseded` — chacun avec 
 `id`, son `qualifiedId` et son `path` — et reste vide quand la décision ne
 remplace rien.
 
-Par exemple, `codev decision accept 0002 --json` pour une décision créée par
-`codev decision supersede 0001 "Use SQLite"` :
+Par exemple, `compagnon decision accept 0002 --json` pour une décision créée par
+`compagnon decision supersede 0001 "Use SQLite"` :
 
 ```json
 {
@@ -852,18 +852,18 @@ Par exemple, `codev decision accept 0002 --json` pour une décision créée par
       "0001"
     ],
     "deviatesFrom": [],
-    "path": "_codev/decisions/0002-use-sqlite.md",
+    "path": "_compagnon/decisions/0002-use-sqlite.md",
     "origin": "project",
     "inEffect": true,
     "supersededBy": null
   },
-  "path": "/home/you/acme-app/_codev/decisions/0002-use-sqlite.md",
+  "path": "/home/you/acme-app/_compagnon/decisions/0002-use-sqlite.md",
   "bodySha256": "sha256:c8873b83c178dbf8434045f43a722911b9d9913ee9f13915ccda893539b788c1",
   "superseded": [
     {
       "id": "0001",
       "qualifiedId": "project/0001",
-      "path": "/home/you/acme-app/_codev/decisions/0001-use-postgresql.md"
+      "path": "/home/you/acme-app/_compagnon/decisions/0001-use-postgresql.md"
     }
   ],
   "status": []
@@ -877,17 +877,17 @@ Une acceptation refusée garde la même forme, avec `decision` et `path` à
 
 ### sources
 
-`codev sources list --json` renvoie `{ "root", "sources": [...], "status" }`,
+`compagnon sources list --json` renvoie `{ "root", "sources": [...], "status" }`,
 où une source se présente ainsi :
 
 ```json
 {
   "type": "git",
-  "address": "git@github.com:acme/codev-standards.git",
+  "address": "git@github.com:acme/compagnon-standards.git",
   "state": "locked",
   "gitRef": "main",
   "sha": "12958274cbed0eb66985f57d3272c6d3134b672d",
-  "resolvedPath": "/home/you/.cache/codev/content/12958274cbed0eb66985f57d3272c6d3134b672d"
+  "resolvedPath": "/home/you/.cache/compagnon/content/12958274cbed0eb66985f57d3272c6d3134b672d"
 }
 ```
 
@@ -895,8 +895,8 @@ où une source se présente ainsi :
 `unreadable`, `unlocked`, `locked`, `needs_update`. `gitRef`, `subpath`, `sha`
 et `resolvedPath` sont omis lorsqu'ils ne s'appliquent pas.
 
-`codev sources show --json` renvoie `{ "source", "filesExposed", "root",
-"status" }`. `codev sources update --json` renvoie `{ "root", "changes",
+`compagnon sources show --json` renvoie `{ "source", "filesExposed", "root",
+"status" }`. `compagnon sources update --json` renvoie `{ "root", "changes",
 "lockWritten", "status" }`, où chaque modification comporte un `kind`
 (`added`, `moved` ou `unchanged`), `url`, `gitRef`, `from` (pour `moved`) et
 `to`.

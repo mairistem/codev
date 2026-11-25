@@ -3,15 +3,15 @@
 Ce chapitre s'adresse aux contributeurs : comment le code est organisé, et
 pourquoi. Les décisions qui le sous-tendent, avec leur contexte et les
 alternatives envisagées, sont consignées sous forme d'ADR dans
-[`_codev/decisions/`](https://github.com/mairistem/codev/tree/main/_codev/decisions)
-— codev est développé avec codev. Ce chapitre les résume et les relie entre
+[`_compagnon/decisions/`](https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions)
+— Compagnon est développé avec Compagnon. Ce chapitre les résume et les relie entre
 elles.
 
 ## Un cœur pur, une coquille impérative
 
-codev suit un principe : **décider n'est pas exécuter**.
+Compagnon suit un principe : **décider n'est pas exécuter**.
 
-- Tout ce qui est pur vit dans `codev-core` : le modèle du domaine, les
+- Tout ce qui est pur vit dans `compagnon-core` : le modèle du domaine, les
   schémas, le graphe des artefacts, les analyseurs, les règles de validation,
   la fusion et le calcul des plans. Ni `std::fs`, ni `std::env`, ni horloge,
   ni réseau.
@@ -24,7 +24,7 @@ respecter, sans interfaces de façade ni conteneur d'injection de dépendances.
 ## Le graphe des crates
 
 ```text
-codev-cli ──▶ codev-agents ──▶ codev-engine ──▶ codev-core
+compagnon-cli ──▶ compagnon-agents ──▶ compagnon-engine ──▶ compagnon-core
     │                               ▲                ▲
     ├───────────────────────────────┘                │
     └────────────────────────────────────────────────┘
@@ -32,12 +32,12 @@ codev-cli ──▶ codev-agents ──▶ codev-engine ──▶ codev-core
 
 | Crate | Rôle | Entrées-sorties |
 |---|---|---|
-| `codev-core` | Modèle, schémas, graphe des artefacts, analyseurs, règles de validation, fusion, plans | Aucune |
-| `codev-engine` | Organisation sur disque, configuration, résolution des schémas, index des décisions, sources héritées, exécution des plans | Via des ports |
-| `codev-agents` | Le trait `AgentTarget` et son implémentation pour Claude Code ; le catalogue des workflows | Via des ports |
-| `codev-cli` | Analyse des arguments, rendu lisible, contrat JSON versionné, questions interactives, documentation embarquée | Oui — c'est la coquille |
+| `compagnon-core` | Modèle, schémas, graphe des artefacts, analyseurs, règles de validation, fusion, plans | Aucune |
+| `compagnon-engine` | Organisation sur disque, configuration, résolution des schémas, index des décisions, sources héritées, exécution des plans | Via des ports |
+| `compagnon-agents` | Le trait `AgentTarget` et son implémentation pour Claude Code ; le catalogue des workflows | Via des ports |
+| `compagnon-cli` | Analyse des arguments, rendu lisible, contrat JSON versionné, questions interactives, documentation embarquée | Oui — c'est la coquille |
 
-`codev-agents` dépend aussi de `codev-core`, et `codev-cli` de toutes les
+`compagnon-agents` dépend aussi de `compagnon-core`, et `compagnon-cli` de toutes les
 crates.
 
 Un module ne devient une crate que lorsqu'il l'a mérité — une frontière de
@@ -66,7 +66,7 @@ Il existe quatre ports, réservés aux effets :
 | `Env` | Répertoire personnel, `XDG_CACHE_HOME`, variables de locale |
 | `ProcessRunner` | Pilotage de `git` pour les sources git héritées |
 
-Ce que codev s'interdit : pas de trait de dépôt masquant `std::fs`, pas de
+Ce que Compagnon s'interdit : pas de trait de dépôt masquant `std::fs`, pas de
 structures `*UseCase` à méthode unique, pas d'`Arc<dyn Trait>` par défaut. Les
 traits servent les frontières réellement ouvertes (`AgentTarget`, `Rule`), les
 génériques servent le reste, et les enums modélisent les ensembles fermés.
@@ -80,7 +80,7 @@ génériques servent le reste, et les enums modélisent les ensembles fermés.
 2. **La dérive du contrat JSON.** La sortie JSON est une API publique,
    consommée par des skills déjà installées sur les machines des
    utilisateurs. Les types du domaine ne dérivent donc pas `Serialize` :
-   `codev-cli` dispose d'un module `contract` dédié, dont les types traduisent
+   `compagnon-cli` dispose d'un module `contract` dédié, dont les types traduisent
    le domaine, avec des tests qui figent les noms des champs. C'est la seule
    frontière DTO du projet, et elle a une raison d'être.
 
@@ -102,10 +102,10 @@ génériques servent le reste, et les enums modélisent les ensembles fermés.
 | `assets/schemas/spec-driven/` | Le schéma intégré et ses templates |
 | `assets/templates/decision.md` | Le template d'ADR |
 | `assets/workflows/*.md` | Le corps de chaque skill |
-| `crates/codev-agents/src/workflows.rs` | Le catalogue des workflows : descriptions, `allowed-tools`, valeurs par défaut |
-| `crates/codev-cli/src/contract.rs` | Le contrat JSON, version 1 |
-| `crates/codev-cli/build.rs` | Embarque les chapitres de documentation listés dans `docs/<lang>/src/SUMMARY.md` |
-| `_codev/` | Les specs, décisions et changes de codev lui-même |
+| `crates/compagnon-agents/src/workflows.rs` | Le catalogue des workflows : descriptions, `allowed-tools`, valeurs par défaut |
+| `crates/compagnon-cli/src/contract.rs` | Le contrat JSON, version 1 |
+| `crates/compagnon-cli/build.rs` | Embarque les chapitres de documentation listés dans `docs/<lang>/src/SUMMARY.md` |
+| `_compagnon/` | Les specs, décisions et changes de Compagnon lui-même |
 
 ## Décisions d'architecture
 
@@ -113,7 +113,7 @@ génériques servent le reste, et les enums modélisent les ensembles fermés.
 |---|---|
 | 0001 | Cœur fonctionnel, coquille impérative : le cœur renvoie des plans, la coquille les exécute |
 | 0002 | Le graphe des crates fait respecter la règle de dépendance ; quatre ports pour les effets |
-| 0003 | La racine de planification est `_codev/`, un dossier visible |
+| 0003 | La racine de planification est `_compagnon/`, un dossier visible |
 | 0004 | Une identité unique pour une skill et sa commande slash ; pas de fichiers de commande séparés |
 | 0005 | Les sources héritées sont en lecture seule et épinglées par commit, et non des dépôts partagés accessibles en écriture |
 | 0006 | `serde_norway` pour le YAML, le fork maintenu de `serde_yaml` |
@@ -121,7 +121,7 @@ génériques servent le reste, et les enums modélisent les ensembles fermés.
 ## Conventions de code
 
 - **Erreurs.** `thiserror` et des erreurs typées dans les crates de
-  bibliothèque ; `anyhow` uniquement dans `codev-cli`, où les erreurs sont
+  bibliothèque ; `anyhow` uniquement dans `compagnon-cli`, où les erreurs sont
   traduites dans le tableau `status` du contrat JSON.
 - **Commentaires.** Ils sont rédigés en anglais et expliquent le *pourquoi*.
   Un commentaire qui paraphrase le code n'est que du bruit.

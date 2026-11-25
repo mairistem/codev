@@ -1,8 +1,8 @@
-# Structural keywords of codev documents, in English.
+# Structural keywords of compagnon documents, in English.
 #
 # Each key names one keyword; its value is the text, or a list of texts
-# whose first one is the form codev writes. The keys are the same in every
-# language file: see `codev-core/src/keywords.rs`. `{title}` in `spec.title`
+# whose first one is the form compagnon writes. The keys are the same in every
+# language file: see `compagnon-core/src/keywords.rs`. `{title}` in `spec.title`
 # is replaced by the capability's title.
 spec.title: "# {title} Specification"
 spec.purpose: "## Purpose"

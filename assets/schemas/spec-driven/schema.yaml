@@ -1,6 +1,6 @@
 name: spec-driven
 version: 1
-description: Default codev workflow — proposal → specs → design → tasks
+description: Default compagnon workflow — proposal → specs → design → tasks
 
 artifacts:
   - id: proposal
@@ -35,7 +35,7 @@ artifacts:
           project's existing organization.
         - *Modified Capabilities*: only those whose REQUIREMENTS change,
           not those where only the implementation changes. Reuse the exact
-          existing path under `_codev/specs/`.
+          existing path under `_compagnon/specs/`.
       - **Impact**: affected code, APIs, dependencies and systems, and the
         documentation to update (user docs, README, reference, help).
       - **Domains**: tick each domain the change touches — `security`
@@ -49,7 +49,7 @@ artifacts:
         `- <Category>: <one or two sentences>`, Category among `Added`,
         `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`; a breaking
         item starts its text with `**BREAKING**`. A change users will not
-        notice writes the single line `None`. `codev changelog` builds
+        notice writes the single line `None`. `compagnon changelog` builds
         release notes from this section.
 
       The Capabilities section is the contract between this artifact and the
@@ -134,7 +134,7 @@ artifacts:
       done_when:
         - each decision names the alternative it rejects and why
         - each risk has a mitigation
-        - the accepted decisions in `_codev/decisions/` that constrain the
+        - the accepted decisions in `_compagnon/decisions/` that constrain the
           approach are cited and followed, or a supersession is explicitly
           proposed
         - the approach is the simplest that satisfies the specs, and a
@@ -163,7 +163,7 @@ artifacts:
         task breakdown, resolve it now — ask the user rather than guess.
 
       Before settling anything, read the decisions in force in
-      `_codev/decisions/`. An accepted decision is not re-debated: either you
+      `_compagnon/decisions/`. An accepted decision is not re-debated: either you
       follow it, or you explicitly propose to supersede it.
 
   - id: tasks

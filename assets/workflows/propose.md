@@ -18,7 +18,7 @@ of what the user wants to build.
 Some steps belong to a role. At each one, run:
 
 ```bash
-codev roles --at <step> --change "<name>" --json
+compagnon roles --at <step> --change "<name>" --json
 ```
 
 Without `--change` for `plan.understand`: the change does not exist yet.
@@ -81,18 +81,18 @@ Apply the analyst's criteria. Derive a kebab-case name from the description
 ### 2. Create the change
 
 ```bash
-codev new change "<name>"
+compagnon new change "<name>"
 ```
 
 Add `--schema "<name>"` only if the user explicitly asked for a particular
 workflow. Otherwise, omit the flag to keep the configured schema.
 
-If the user asks which workflows exist: `codev schemas --json`.
+If the user asks which workflows exist: `compagnon schemas --json`.
 
 ### 3. Get the build order
 
 ```bash
-codev status --change "<name>" --json
+compagnon status --change "<name>" --json
 ```
 
 {{fragment:version-check}}
@@ -113,7 +113,7 @@ For each artifact whose `status` is `ready`:
 **a. Get its instructions.**
 
 ```bash
-codev instructions <artifact-id> --change "<name>" --json
+compagnon instructions <artifact-id> --change "<name>" --json
 ```
 
 The response contains:
@@ -123,7 +123,7 @@ The response contains:
 | `instruction` | The schema's guidance for this artifact type. Final authority |
 | `template` | The structure of the file to produce |
 | `language` | The language to write the prose in (ISO 639 code, e.g. `fr`) |
-| `keywordLanguage` | The language the structural keywords are written in — that of `template`'s keywords, else `language` when codev ships its keywords, `en` otherwise |
+| `keywordLanguage` | The language the structural keywords are written in — that of `template`'s keywords, else `language` when Compagnon ships its keywords, `en` otherwise |
 | `keywords` | The text of each structural keyword in `keywordLanguage`, for one `template` does not show |
 | `resolvedOutputPath` | Where to write. If it is a glob pattern, `instruction` says how to choose the concrete path |
 | `context` | Project context — a **constraint on you**, never content to copy |
@@ -165,7 +165,7 @@ sections, requirement and scenario headings, the scenario lines, the
 normative words — exactly as `template` and `keywords` give them, in
 `keywordLanguage`; never translate a keyword yourself. `instruction`
 names them in English: write the `keywords` text of the key it means.
-codev parses them; a keyword of your own is a broken artifact.
+Compagnon parses them; a keyword of your own is a broken artifact.
 
 **Special case: the change's first artifact when a ticket was detected
 in step 0.** Right after the template's title line, before its first
@@ -193,7 +193,7 @@ And for multiple tickets, add a second line right after:
 ```
 
 **Special case: the proposal's `## Domains`.** Before writing it, run
-`codev roles --change "<name>" --json` and read `diff` and `suggestions`:
+`compagnon roles --change "<name>" --json` and read `diff` and `suggestions`:
 each suggestion is a domain a trigger of the change's diff points to —
 a path, a dependency manifest or an added line, listed in its `matches`.
 For each one, either tick the domain, or, when the match does not mean
@@ -207,7 +207,7 @@ alone; the review, once the code exists, checks again.
 
 ### 5. Loop until the required set is complete
 
-After each creation, run `codev status --change "<name>" --json` again.
+After each creation, run `compagnon status --change "<name>" --json` again.
 
 The required set is `applyRequires` **plus every artifact reachable from
 those identifiers by following the `requires` edges**, transitively. With the
@@ -261,7 +261,7 @@ Ask the user only if a finding changes the scope materially.
 ### 8. Show the final status
 
 ```bash
-codev status --change "<name>"
+compagnon status --change "<name>"
 ```
 
 {{fragment:memory-capture}}

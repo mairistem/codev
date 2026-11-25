@@ -1521,13 +1521,13 @@ mod tests {
 
     /// Archive runs: per case, whether each repetition passes.
     fn archiving(runs: &[(&str, &[bool])], contains: &[&str], reply: &str) -> SuiteScore {
-        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_codev};
+        use crate::merge::tests::{done_case, run_merged_by_hand, run_through_compagnon};
         let mut scores = Vec::new();
         for (id, passes) in runs {
             let c = done_case(id, Step::ChangeArchive, contains);
             for (n, pass) in passes.iter().enumerate() {
                 let o = if *pass {
-                    run_through_codev(id, &[reply])
+                    run_through_compagnon(id, &[reply])
                 } else {
                     run_merged_by_hand(id, &[reply])
                 };

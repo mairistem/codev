@@ -19,12 +19,12 @@
 ### Modified Capabilities
 
 <!-- One line per capability whose REQUIREMENTS change, with its exact path
-     under `_codev/specs/`. Leave empty if none. -->
+     under `_compagnon/specs/`. Leave empty if none. -->
 
 ### Removed Capabilities
 
 <!-- One line per capability this change removes entirely. Each entry is the
-     exact path under `_codev/specs/`. Requires `retire_capabilities: true`
+     exact path under `_compagnon/specs/`. Requires `retire_capabilities: true`
      in `change.yaml` and a `## REMOVED Requirements` section that empties
      the spec. Without the marker, sync/archive refuses rather than perform
      an irreversible operation. Leave empty if none. -->

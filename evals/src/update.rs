@@ -1,8 +1,8 @@
-//! Scoring an update run, without a model: whether `/codev-update` revised
+//! Scoring an update run, without a model: whether `/compagnon-update` revised
 //! what it should, left the rest byte-identical, named the ripple instead
 //! of editing it, kept the change valid, and refused what it must. Every
 //! check is one a reader can redo by hand on the observation. Pure: the
-//! runner records the change's files, the agent's messages and `codev
+//! runner records the change's files, the agent's messages and `compagnon
 //! validate` before and after the run.
 
 use std::collections::BTreeMap;
@@ -13,7 +13,7 @@ use crate::observed::Observed;
 use crate::score::{CaseConsumption, CaseScore};
 
 /// The skill a refusal must point to for a missing artifact.
-pub const PROPOSE_SKILL: &str = "/codev-propose";
+pub const PROPOSE_SKILL: &str = "/compagnon-propose";
 
 /// One check of an update run, and whether it passed.
 pub type UpdateCheck = Check;
@@ -27,7 +27,7 @@ pub(crate) fn same(a: &str, b: &str) -> bool {
     a.replace('\r', "") == b.replace('\r', "")
 }
 
-/// The errors of a `codev validate --json` report, counted by file and
+/// The errors of a `compagnon validate --json` report, counted by file and
 /// code. The message is left out: it may cite a line the revision moved.
 fn errors(report: Option<&serde_json::Value>) -> BTreeMap<(String, String), usize> {
     let mut counts = BTreeMap::new();
@@ -167,7 +167,7 @@ mod tests {
     use crate::observed::FORMAT;
     use serde_json::json;
 
-    const CHANGE_DIR: &str = "_codev/changes/forward-compatible-config";
+    const CHANGE_DIR: &str = "_compagnon/changes/forward-compatible-config";
 
     fn case(revised: &[&str], kept: &[&str], ripple: &[&str], refuse: bool) -> UpdateCase {
         let files = [
@@ -300,12 +300,12 @@ mod tests {
         let o = run(
             &c,
             &[],
-            &["The change has no design.md: run `/codev-propose` to create it."],
+            &["The change has no design.md: run `/compagnon-propose` to create it."],
         );
         let score = score_update(&c, CHANGE_DIR, &o);
         assert_eq!(failed(&score), Vec::<&str>::new());
         assert!(score.passed);
-        let created = run(&c, &[("design.md", "# Design\n")], &["/codev-propose"]);
+        let created = run(&c, &[("design.md", "# Design\n")], &["/compagnon-propose"]);
         assert_eq!(
             failed(&score_update(&c, CHANGE_DIR, &created)),
             ["change folder untouched"]
@@ -313,7 +313,7 @@ mod tests {
         let silent = run(&c, &[], &["I cannot do that."]);
         assert_eq!(
             failed(&score_update(&c, CHANGE_DIR, &silent)),
-            ["points to `/codev-propose`"]
+            ["points to `/compagnon-propose`"]
         );
     }
 
@@ -321,7 +321,7 @@ mod tests {
     fn an_error_already_in_the_fixture_passes_validity() {
         let c = case(&["design.md"], &[], &[], false);
         let mut o = run(&c, &[("design.md", "# Design\n\nRevised.\n")], &[]);
-        let existing = [("_codev/changes/c/review.md", "review_role_missing")];
+        let existing = [("_compagnon/changes/c/review.md", "review_role_missing")];
         o.validate_before = Some(validate(&existing));
         o.validate
             .insert("forward-compatible-config".into(), validate(&existing));
@@ -331,13 +331,13 @@ mod tests {
             "forward-compatible-config".into(),
             validate(&[
                 existing[0],
-                ("_codev/changes/c/design.md", "decision_missing"),
+                ("_compagnon/changes/c/design.md", "decision_missing"),
             ]),
         );
         let score = score_update(&c, CHANGE_DIR, &o);
         assert_eq!(
             failed(&score),
-            ["no validation error added (decision_missing in _codev/changes/c/design.md)"]
+            ["no validation error added (decision_missing in _compagnon/changes/c/design.md)"]
         );
     }
 

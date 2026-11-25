@@ -1,14 +1,14 @@
 [book]
-title = "codev"
+title = "Compagnon"
 description = "Le développement piloté par les specs pour Claude Code"
-authors = ["The codev contributors"]
+authors = ["The compagnon contributors"]
 language = "fr"
 src = "src"
 
 [output.html]
-git-repository-url = "https://github.com/mairistem/codev"
-edit-url-template = "https://github.com/mairistem/codev/edit/main/docs/fr/{path}"
-site-url = "/codev/fr/"
+git-repository-url = "https://github.com/mairistem/compagnon"
+edit-url-template = "https://github.com/mairistem/compagnon/edit/main/docs/fr/{path}"
+site-url = "/compagnon/fr/"
 
 # Mairistem theme, shared by both books: `theme/` is a symlink to
 # ../theme. Light is Mairistem light; `navy` is restyled as Mairistem dark.

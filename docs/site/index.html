@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  codev documentation site: landing page, published at the site root.
+  Compagnon documentation site: landing page, published at the site root.
   Mairistem design system. Self-contained apart from the IBM Plex Sans files
   and favicon, which .github/workflows/docs.yml copies next to this page from
   docs/theme/ (fonts/*.woff2, favicon.svg). No external requests.
@@ -9,8 +9,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>codev — Spec-driven development for Claude Code</title>
-<meta name="description" content="codev adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written.">
+<title>Compagnon — Spec-driven development for Claude Code</title>
+<meta name="description" content="Compagnon adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="alternate" hreflang="en" href="en/">
@@ -581,14 +581,14 @@ a:hover { color: var(--corail-texte-hover); }
 
 <header class="site-header">
   <div class="container">
-    <a class="brand" href="./" aria-label="codev, by Mairistem — home">
+    <a class="brand" href="./" aria-label="compagnon, by Mairistem — home">
       <svg class="logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"/></svg>
-      <span class="brand-product">codev</span>
+      <span class="brand-product">compagnon</span>
     </a>
     <nav class="site-nav" aria-label="Main">
       <a class="nav-docs" href="en/">Documentation</a>
       <a href="fr/" hreflang="fr" lang="fr">Français</a>
-      <a href="https://github.com/mairistem/codev">GitHub</a>
+      <a href="https://github.com/mairistem/compagnon">GitHub</a>
     </nav>
   </div>
 </header>
@@ -599,12 +599,12 @@ a:hover { color: var(--corail-texte-hover); }
       <div>
         <p class="eyebrow">Open source · Claude Code</p>
         <h1 id="hero-title">Spec-driven development for Claude Code.</h1>
-        <p class="lead">codev adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written — and so that architecture decisions, once made, stop being re-debated on every change.</p>
+        <p class="lead">compagnon adds a thin layer of specifications to your repository, so that you and Claude Code agree on what must be built before a line of code is written — and so that architecture decisions, once made, stop being re-debated on every change.</p>
         <div class="actions">
           <a class="button button-primary" href="en/">Read the documentation</a>
           <a class="button button-outline" href="fr/" hreflang="fr" lang="fr">Documentation en français</a>
         </div>
-        <p class="hero-links"><a class="link-arrow" href="https://github.com/mairistem/codev">View the source on GitHub <span aria-hidden="true">→</span></a></p>
+        <p class="hero-links"><a class="link-arrow" href="https://github.com/mairistem/compagnon">View the source on GitHub <span aria-hidden="true">→</span></a></p>
       </div>
       <figure class="delta-card">
         <figcaption><span>A change adds one requirement</span><code>specs/ui/theme/spec.md</code></figcaption>
@@ -627,27 +627,27 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">Getting started</p>
-        <h2 id="install-title">Install codev</h2>
+        <h2 id="install-title">Install compagnon</h2>
         <p>No Rust toolchain needed. Both scripts verify the SHA-256 of the binary they download.</p>
       </div>
       <div class="install-grid">
         <div class="install">
           <h3 id="install-unix">macOS and Linux</h3>
           <div class="code">
-            <pre aria-labelledby="install-unix"><code>curl -sSL https://raw.githubusercontent.com/mairistem/codev/main/install.sh | sh</code></pre>
+            <pre aria-labelledby="install-unix"><code>curl -sSL https://raw.githubusercontent.com/mairistem/compagnon/main/install.sh | sh</code></pre>
             <button class="copy" type="button" data-copy aria-describedby="install-unix">Copy</button>
           </div>
         </div>
         <div class="install">
           <h3 id="install-win">Windows (PowerShell)</h3>
           <div class="code">
-            <pre aria-labelledby="install-win"><code>iwr -useb https://raw.githubusercontent.com/mairistem/codev/main/install.ps1 | iex</code></pre>
+            <pre aria-labelledby="install-win"><code>iwr -useb https://raw.githubusercontent.com/mairistem/compagnon/main/install.ps1 | iex</code></pre>
             <button class="copy" type="button" data-copy aria-describedby="install-win">Copy</button>
           </div>
         </div>
       </div>
       <div class="install-note">
-        <p>Then, in your project: <code>codev init</code></p>
+        <p>Then, in your project: <code>compagnon init</code></p>
         <a class="link-arrow" href="en/quickstart.html">Follow the quickstart <span aria-hidden="true">→</span></a>
         <a class="link-arrow" href="en/installation.html">Other ways to install <span aria-hidden="true">→</span></a>
       </div>
@@ -665,15 +665,15 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
       <ul class="features">
         <li class="feature">
           <div class="feature-title"><svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#00c39b" d="M518.83,0v518.83h-125.02V213.42L88.41,518.83,0,430.43,305.41,125.02H0V0h518.83Z"/></svg><h3>Changes are deltas</h3></div>
-          <p>A change declares <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code> or <code>RENAMED</code> requirements against the current specs, so codev works on existing code, not only on new projects.</p>
+          <p>A change declares <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code> or <code>RENAMED</code> requirements against the current specs, so compagnon works on existing code, not only on new projects.</p>
         </li>
         <li class="feature">
           <div class="feature-title"><svg class="symbol" viewBox="0 0 518.83 518.83" aria-hidden="true" focusable="false"><path fill="#ffab03" d="M393.76,259.15c0,17.02,0,56.87-63.44,96.38-25.33,15.77-51.91,32.15-70.9,38.23-18.99-6.08-45.57-22.46-70.9-38.23-63.44-39.51-63.44-79.36-63.44-96.38V125.07h268.69v134.08ZM518.83,0H0v259.02c0,210.81,259.41,259.81,259.41,259.81,0,0,259.42-49,259.42-259.81V0h0Z"/></svg><h3>Decisions are sealed and accepted</h3></div>
-          <p>An architecture decision takes effect when you accept it; codev seals its text with a hash, and changing it means superseding it.</p>
+          <p>An architecture decision takes effect when you accept it; compagnon seals its text with a hash, and changing it means superseding it.</p>
         </li>
         <li class="feature">
           <div class="feature-title"><svg class="symbol" viewBox="0 0 518.82 518.8" aria-hidden="true" focusable="false"><path fill="#ff5331" d="M518.82,518.3v.5H0v-.5c0-140.11,111.12-254.32,250.1-259.22-67.29-4.77-120.4-60.87-120.4-129.37S187.77,0,259.41,0s129.71,58.07,129.71,129.71-53.11,124.6-120.4,129.37c138.98,4.91,250.1,119.11,250.1,259.22Z"/></svg><h3>Plans challenged before your review</h3></div>
-          <p><code>/codev-propose</code> checks traceability, re-reads the plan as a skeptical reviewer, joined by experts for the domains it touches, and hands you at most five points to challenge.</p>
+          <p><code>/compagnon-propose</code> checks traceability, re-reads the plan as a skeptical reviewer, joined by experts for the domains it touches, and hands you at most five points to challenge.</p>
         </li>
         <li class="feature">
           <h3>Docs and tests in every plan</h3>
@@ -688,16 +688,16 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
           <p>A project can inherit context, rules and decisions, read-only, from a shared folder or a git repository pinned to a commit.</p>
         </li>
         <li class="feature">
-          <h3>A complete project from <code>codev init</code></h3>
-          <p>Skills, <code>CLAUDE.md</code> and, on GitHub, a CI workflow and a pull request template; <code>codev doctor</code> tells you what is still missing.</p>
+          <h3>A complete project from <code>compagnon init</code></h3>
+          <p>Skills, <code>CLAUDE.md</code> and, on GitHub, a CI workflow and a pull request template; <code>compagnon doctor</code> tells you what is still missing.</p>
         </li>
         <li class="feature">
           <h3>Release notes generated</h3>
-          <p>Each proposal carries a release note; <code>codev changelog</code> assembles those of the changes archived since the last release.</p>
+          <p>Each proposal carries a release note; <code>compagnon changelog</code> assembles those of the changes archived since the last release.</p>
         </li>
         <li class="feature">
           <h3>Updates in one command</h3>
-          <p><code>codev self-update</code> installs the latest release after verifying its checksum, then refreshes the project’s skills.</p>
+          <p><code>compagnon self-update</code> installs the latest release after verifying its checksum, then refreshes the project’s skills.</p>
         </li>
       </ul>
       <p class="more"><a class="link-arrow" href="en/workflow.html">See the workflow <span aria-hidden="true">→</span></a></p>
@@ -709,7 +709,7 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
       <div class="section-head">
         <p class="eyebrow">Roles</p>
         <h2 id="plan-title">How a plan is built</h2>
-        <p><code>/codev-propose</code> takes one role after another, each with criteria it checks before moving on. Then it stops: the plan is yours to approve.</p>
+        <p><code>/compagnon-propose</code> takes one role after another, each with criteria it checks before moving on. Then it stops: the plan is yours to approve.</p>
       </div>
       <ol class="roles">
         <li class="role"><div class="role-card"><span class="role-name">Analyst</span><span class="role-what">understands the request</span></div></li>
@@ -720,7 +720,7 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
         <li class="role"><div class="role-card"><span class="role-name">Tech lead</span><span class="role-what">tasks and their tests</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">Tracer</span><span class="role-what">every scenario covered</span></div></li>
         <li class="role"><div class="role-card"><span class="role-name">Skeptic</span><span class="role-what">points to challenge</span></div></li>
-        <li class="role role-you"><div class="role-card"><span class="role-name">You approve</span><span class="role-what">then ask for <code>/codev-apply</code></span></div></li>
+        <li class="role role-you"><div class="role-card"><span class="role-name">You approve</span><span class="role-what">then ask for <code>/compagnon-apply</code></span></div></li>
       </ol>
       <p class="more"><a class="link-arrow" href="en/roles.html">Read about roles <span aria-hidden="true">→</span></a><a class="link-arrow" href="en/reliability.html">Measured, not assumed <span aria-hidden="true">→</span></a><a class="link-arrow" href="fr/roles.html" hreflang="fr" lang="fr">Les rôles, en français <span aria-hidden="true">→</span></a></p>
     </div>
@@ -729,15 +729,15 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
   <section class="section" aria-labelledby="dogfood-title">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Built with codev</p>
-        <h2 id="dogfood-title">codev is developed with codev</h2>
-        <p>Every change to this repository is planned, reviewed and archived with the tool itself, and every pull request runs <code>codev validate --strict</code>. Its <code>_codev/</code> folder is a real-world example you can browse.</p>
+        <p class="eyebrow">Built with compagnon</p>
+        <h2 id="dogfood-title">compagnon is developed with compagnon</h2>
+        <p>Every change to this repository is planned, reviewed and archived with the tool itself, and every pull request runs <code>compagnon validate --strict</code>. Its <code>_compagnon/</code> folder is a real-world example you can browse.</p>
       </div>
       <p class="more">
-        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/specs">The living specs <span aria-hidden="true">→</span></a>
-        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/changes/archive">Every archived change <span aria-hidden="true">→</span></a>
-        <a class="link-arrow" href="https://github.com/mairistem/codev/blob/main/_codev/changes/archive/2026-10-13-review-record/review.md">A review record <span aria-hidden="true">→</span></a>
-        <a class="link-arrow" href="https://github.com/mairistem/codev/tree/main/_codev/decisions">The architecture decisions <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/compagnon/tree/main/_compagnon/specs">The living specs <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/compagnon/tree/main/_compagnon/changes/archive">Every archived change <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/compagnon/blob/main/_compagnon/changes/archive/2026-10-13-review-record/review.md">A review record <span aria-hidden="true">→</span></a>
+        <a class="link-arrow" href="https://github.com/mairistem/compagnon/tree/main/_compagnon/decisions">The architecture decisions <span aria-hidden="true">→</span></a>
       </p>
     </div>
   </section>
@@ -747,13 +747,13 @@ The application <span class="k">SHALL</span> restore the theme the user last pic
   <div class="container">
     <div class="footer-brand">
       <a href="https://www.jvs-mairistem.fr/" aria-label="Mairistem"><svg class="logo" viewBox="0 0 1113 249" role="img" aria-label="Mairistem by JVS"><use href="#mx-logo"/></svg></a>
-      <p>codev — an open-source project by <a href="https://www.jvs-mairistem.fr/">Mairistem</a> · <a href="https://github.com/mairistem/codev/blob/main/LICENSE">MIT License</a></p>
+      <p>compagnon — an open-source project by <a href="https://www.jvs-mairistem.fr/">Mairistem</a> · <a href="https://github.com/mairistem/compagnon/blob/main/LICENSE">MIT License</a></p>
     </div>
     <ul class="footer-links">
       <li><a href="en/">Documentation</a></li>
       <li><a href="fr/" hreflang="fr" lang="fr">Documentation en français</a></li>
-      <li><a href="https://github.com/mairistem/codev/releases/latest">Releases</a></li>
-      <li><a href="https://github.com/mairistem/codev">GitHub</a></li>
+      <li><a href="https://github.com/mairistem/compagnon/releases/latest">Releases</a></li>
+      <li><a href="https://github.com/mairistem/compagnon">GitHub</a></li>
     </ul>
   </div>
 </footer>

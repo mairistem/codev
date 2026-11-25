@@ -20,12 +20,12 @@ ask:
 the code can answer. In this order:
 
 ```bash
-codev list --specs          # behaviors already specified
-codev list                  # changes in progress, to avoid duplicating work
+compagnon list --specs          # behaviors already specified
+compagnon list                  # changes in progress, to avoid duplicating work
 ```
 
 Then read the relevant specs, the decisions in effect in
-`_codev/decisions/`, and the relevant implementation.
+`_compagnon/decisions/`, and the relevant implementation.
 
 **Ask the questions that actually move things forward.** A good question is
 about a dependency, a constraint or a trade-off the code cannot settle — not
@@ -37,7 +37,7 @@ costs and what it rules out. A recommendation, not a catalog. If one option
 is better, say so.
 
 **Check against existing decisions.** If a direction departs from an
-accepted decision in `_codev/decisions/`, flag it early: either the direction
+accepted decision in `_compagnon/decisions/`, flag it early: either the direction
 changes, or the decision is the thing to propose superseding. Do not silently
 reopen a choice that has already been settled.
 
@@ -50,7 +50,7 @@ The exploration ends in one of these three ways, and you say which one:
 
 1. **It crystallizes.** Summarize in three points: the problem, the chosen
    approach, the scope. Then offer: "I can create the change — ask me for
-   `/codev-propose`."
+   `/compagnon-propose`."
 2. **Information is missing.** Name precisely what is missing and who or
    what can provide it.
 3. **It was not worth pursuing.** Say so. An exploration that concludes "this
@@ -63,4 +63,4 @@ The exploration ends in one of these three ways, and you say which one:
 - Do not present an assumption as an observed fact. Say "I assume" when you
   are assuming.
 - If the user asks you to implement during the exploration, do not: tell
-  them you go through `/codev-propose` first, and why.
+  them you go through `/compagnon-propose` first, and why.

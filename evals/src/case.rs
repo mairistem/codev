@@ -22,19 +22,19 @@ pub enum Step {
     PlanChallenge,
     CodeReview,
     PlanTrace,
-    /// `/codev-propose` writing a plan for a request: a planning case.
+    /// `/compagnon-propose` writing a plan for a request: a planning case.
     PlanWrite,
-    /// `/codev-update` revising one artifact of an active change: an
+    /// `/compagnon-update` revising one artifact of an active change: an
     /// update case.
     PlanUpdate,
-    /// `/codev-apply` implementing an archived change's plan: an
+    /// `/compagnon-apply` implementing an archived change's plan: an
     /// implementation case.
     CodeImplement,
-    /// `/codev-sync` merging an active change's deltas: a sync case.
+    /// `/compagnon-sync` merging an active change's deltas: a sync case.
     ChangeSync,
-    /// `/codev-archive` closing an active change: an archive case.
+    /// `/compagnon-archive` closing an active change: an archive case.
     ChangeArchive,
-    /// `/codev-configure` enriching a project's configuration: a
+    /// `/compagnon-configure` enriching a project's configuration: a
     /// configure case.
     ConfigureEnrich,
 }
@@ -415,7 +415,7 @@ pub struct PlanCase {
     /// The requirements the real change also modified in passing.
     pub collateral: Vec<RequirementId>,
     pub decisions: Vec<ExpectedDecision>,
-    /// YAML appended to the fixture's `_codev/config.yaml` before the
+    /// YAML appended to the fixture's `_compagnon/config.yaml` before the
     /// skills are installed, such as `language: fr`.
     pub config: Option<String>,
     /// The language whose structural keywords the plan must be written in.
@@ -499,7 +499,7 @@ pub struct ImplementCase {
 /// How a sync or archive run must leave the project.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MergeOutcome {
-    /// As codev's own command leaves it.
+    /// As compagnon's own command leaves it.
     Done,
     /// As the run found it.
     Refused,
@@ -522,7 +522,7 @@ impl MergeOutcome {
 pub struct MergeCase {
     pub git_ref: String,
     pub outcome: MergeOutcome,
-    /// For a `refused` case codev itself refuses: the code its own
+    /// For a `refused` case compagnon itself refuses: the code its own
     /// command reports.
     pub code: Option<String>,
     /// Texts the agent's messages must hold.
@@ -535,7 +535,7 @@ pub struct MergeCase {
     pub overlay: BTreeMap<String, Vec<u8>>,
 }
 
-/// How a configure run must leave `_codev/config.yaml`.
+/// How a configure run must leave `_compagnon/config.yaml`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConfigureOutcome {
     /// `context` and `rules` written, the rest preserved.
@@ -572,7 +572,7 @@ pub struct ConfigureCase {
     pub unwritten: BTreeMap<String, Vec<String>>,
     /// Texts the agent's messages must hold.
     pub contains: Vec<String>,
-    /// `base/_codev/config.yaml`; `None` for a project without one.
+    /// `base/_compagnon/config.yaml`; `None` for a project without one.
     pub config: Option<String>,
 }
 
@@ -599,10 +599,10 @@ pub fn tasks(text: &str) -> Vec<(String, bool)> {
 /// What the repository's history says at a commit, read by the shell.
 pub trait History {
     fn has_commit(&self, git_ref: &str) -> bool;
-    /// The requirement names of `_codev/specs/<capability>/spec.md` at
+    /// The requirement names of `_compagnon/specs/<capability>/spec.md` at
     /// `git_ref`; `None` when the spec is absent.
     fn requirement_names(&self, git_ref: &str, capability: &str) -> Option<Vec<String>>;
-    /// The ids (`0007`) of `_codev/decisions/` at `git_ref`.
+    /// The ids (`0007`) of `_compagnon/decisions/` at `git_ref`.
     fn decision_ids(&self, git_ref: &str) -> Vec<String>;
     fn has_path(&self, git_ref: &str, path: &str) -> bool;
 }
@@ -648,7 +648,7 @@ pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError
             .any(|n| normalize_heading(n) == normalize_heading(&req.name))
         {
             return Err(fail(format!(
-                "requirement `{req}` is not in `_codev/specs/{}/spec.md` at {}",
+                "requirement `{req}` is not in `_compagnon/specs/{}/spec.md` at {}",
                 req.capability, plan.git_ref
             )));
         }
@@ -657,7 +657,7 @@ pub fn check_history(case: &Case, history: &dyn History) -> Result<(), CaseError
     for d in &plan.decisions {
         if !ids.contains(&d.id) {
             return Err(fail(format!(
-                "decision `{}` is not in `_codev/decisions/` at {}",
+                "decision `{}` is not in `_compagnon/decisions/` at {}",
                 d.id, plan.git_ref
             )));
         }
@@ -710,7 +710,7 @@ fn check_replayed_change_history(
 impl Case {
     /// The change's directory, relative to the project root.
     pub fn change_dir(&self) -> String {
-        format!("_codev/changes/{}", self.change)
+        format!("_compagnon/changes/{}", self.change)
     }
 
     /// The files whose content the runner records after the run.
@@ -961,7 +961,7 @@ fn load_plan(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError>
     let keyword_language = match file.expected.keyword_language.as_deref().map(str::trim) {
         None => None,
         Some(code) => {
-            if !codev_core::keywords::Lang::all().any(|lang| lang.code() == code) {
+            if !compagnon_core::keywords::Lang::all().any(|lang| lang.code() == code) {
                 return Err(fail(format!(
                     "`keyword_language` `{code}` is not a language of the keyword catalog"
                 )));
@@ -1030,7 +1030,7 @@ struct UpdateExpectedFile {
 }
 
 /// Loads an update case: a `case.yaml` and its `change/`, the files of
-/// `_codev/changes/<change>/` by path relative to that folder.
+/// `_compagnon/changes/<change>/` by path relative to that folder.
 fn load_update(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
     let fail = |message: String| CaseError {
         case: id.to_string(),
@@ -1169,7 +1169,7 @@ struct ImplementExpectedFile {
 }
 
 /// Loads an implementation case: a `case.yaml`, its `change/` — the
-/// planning files of `_codev/changes/<change>/` — and, unless it refuses,
+/// planning files of `_compagnon/changes/<change>/` — and, unless it refuses,
 /// its `acceptance.sh`.
 fn load_implement(id: &str, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
     let fail = |message: String| CaseError {
@@ -1358,7 +1358,7 @@ fn overlay_problem(path: &str, change_dir: &str) -> Option<String> {
 }
 
 /// Loads a sync or archive case: a `case.yaml`, its `change/` — the files
-/// of `_codev/changes/<change>/` — and an optional `overlay/`, laid over
+/// of `_compagnon/changes/<change>/` — and an optional `overlay/`, laid over
 /// the project root.
 fn load_merge(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Case, CaseError> {
     let fail = |message: String| CaseError {
@@ -1396,7 +1396,7 @@ fn load_merge(id: &str, step: Step, yaml: &str, fixture: &Fixture) -> Result<Cas
         )));
     }
     let change = file.change.trim().to_string();
-    let change_dir = format!("_codev/changes/{change}");
+    let change_dir = format!("_compagnon/changes/{change}");
     for path in fixture.overlay.keys() {
         if let Some(problem) = overlay_problem(path, &change_dir) {
             return Err(fail(problem));
@@ -1488,7 +1488,7 @@ struct ConfigureExpectedFile {
 }
 
 /// The path of a project's configuration.
-pub const CONFIG_PATH: &str = "_codev/config.yaml";
+pub const CONFIG_PATH: &str = "_compagnon/config.yaml";
 
 /// Loads a configure case: a `case.yaml` and its `base/`, the project as
 /// it stands.
@@ -1669,7 +1669,7 @@ pub fn load(id: &str, yaml: &str, fixture: &Fixture, catalog: &Catalog) -> Resul
 
     check_fixture_files(fixture).map_err(fail)?;
     let files = fixture.merged();
-    let change_dir = format!("_codev/changes/{}", file.change);
+    let change_dir = format!("_compagnon/changes/{}", file.change);
     if !files.contains_key(format!("{change_dir}/proposal.md").as_str()) {
         return Err(fail(format!(
             "the fixture has no `{change_dir}/proposal.md` in `change/`"
@@ -1986,11 +1986,11 @@ pub(crate) mod tests {
         let users: String = (1..=40).map(|n| format!("line {n}\n")).collect();
         f.change.insert("src/users.ts".into(), users.into_bytes());
         f.change.insert(
-            "_codev/changes/add-search/proposal.md".into(),
+            "_compagnon/changes/add-search/proposal.md".into(),
             b"# Proposal: Search\n\n## Why\n\nFind users.\n".to_vec(),
         );
         f.change.insert(
-            "_codev/changes/add-search/design.md".into(),
+            "_compagnon/changes/add-search/design.md".into(),
             b"# Design\n\n### Decision: Tokens are stored as given\n\nText.\n".to_vec(),
         );
         f
@@ -2164,7 +2164,7 @@ pub(crate) mod tests {
     fn plan_case(tasks: &str, planned: &str) -> Result<Case, CaseError> {
         let mut f = fixture();
         f.change.insert(
-            "_codev/changes/add-search/tasks.md".into(),
+            "_compagnon/changes/add-search/tasks.md".into(),
             tasks.as_bytes().to_vec(),
         );
         let yaml = SEEDED
@@ -2181,7 +2181,7 @@ pub(crate) mod tests {
     fn a_plan_citing_a_missing_file_is_refused() {
         let mut f = fixture();
         f.change.insert(
-            "_codev/changes/add-search/proposal.md".into(),
+            "_compagnon/changes/add-search/proposal.md".into(),
             b"# Proposal: Search\n\n## Impact\n\n- `src/cli/progress.rs`, `src/users.ts`.\n"
                 .to_vec(),
         );
@@ -2210,7 +2210,7 @@ pub(crate) mod tests {
     fn a_task_verified_by_a_missing_test_is_refused() {
         let mut f = fixture();
         f.change.insert(
-            "_codev/changes/add-search/tasks.md".into(),
+            "_compagnon/changes/add-search/tasks.md".into(),
             b"- [x] 1.2 Docs, verified by `cargo test docs_mention_every_flag`\n".to_vec(),
         );
         let err = load("c", SEEDED, &f, &catalog()).unwrap_err();
@@ -2522,7 +2522,7 @@ pub(crate) mod tests {
         let case = update_case(UPDATE_YAML).unwrap();
         assert_eq!(case.step, Step::PlanUpdate);
         assert_eq!(case.change, "add-auth");
-        assert_eq!(case.change_dir(), "_codev/changes/add-auth");
+        assert_eq!(case.change_dir(), "_compagnon/changes/add-auth");
         let update = case.update.unwrap();
         assert_eq!(update.artifact, Artifact::Design);
         assert_eq!(update.revised, ["design.md"]);
@@ -2584,9 +2584,12 @@ pub(crate) mod tests {
         let case = update_case(UPDATE_YAML).unwrap();
         assert!(check_history(&case, &good_history()).is_ok());
         let mut h = good_history();
-        h.paths.push("_codev/changes/add-auth".into());
+        h.paths.push("_compagnon/changes/add-auth".into());
         let err = check_history(&case, &h).unwrap_err();
-        assert!(err.message.contains("_codev/changes/add-auth/"), "{err}");
+        assert!(
+            err.message.contains("_compagnon/changes/add-auth/"),
+            "{err}"
+        );
         let mut h = good_history();
         h.paths.push("evals/cases/update-design".into());
         assert!(
@@ -2645,7 +2648,10 @@ pub(crate) mod tests {
         let case = implement_case(IMPLEMENT_YAML, &implement_fixture()).unwrap();
         assert_eq!(case.step, Step::CodeImplement);
         assert!(case.step.replays_history() && !case.step.is_review());
-        assert_eq!(case.change_dir(), "_codev/changes/decision-accept-command");
+        assert_eq!(
+            case.change_dir(),
+            "_compagnon/changes/decision-accept-command"
+        );
         let implement = case.implement.unwrap();
         assert_eq!(implement.git_ref, "abc1234");
         assert_eq!(implement.merged, "def5678");
@@ -2775,11 +2781,11 @@ pub(crate) mod tests {
     fn an_implementation_case_whose_ref_holds_the_change_fails() {
         let case = implement_case(IMPLEMENT_YAML, &implement_fixture()).unwrap();
         let mut history = implement_history();
-        history.paths = vec!["_codev/changes/decision-accept-command".into()];
+        history.paths = vec!["_compagnon/changes/decision-accept-command".into()];
         let err = check_history(&case, &history).unwrap_err();
         assert!(
             err.message
-                .contains("_codev/changes/decision-accept-command/"),
+                .contains("_compagnon/changes/decision-accept-command/"),
             "{err}"
         );
         history.paths = vec!["evals/cases/implement-accept".into()];
@@ -2881,8 +2887,10 @@ pub(crate) mod tests {
         assert!(err.to_string().contains("archive-x"), "{err}");
         assert!(err.message.contains("`overlay/outside`"), "{err}");
         let mut f = merge_fixture();
-        f.overlay
-            .insert("_codev/changes/add-auth/review.md".into(), b"x".to_vec());
+        f.overlay.insert(
+            "_compagnon/changes/add-auth/review.md".into(),
+            b"x".to_vec(),
+        );
         let err = merge_case(&sync, &f).unwrap_err();
         assert!(err.message.contains("lies under"), "{err}");
         let mut f = merge_fixture();
@@ -2894,8 +2902,8 @@ pub(crate) mod tests {
         );
         let mut f = merge_fixture();
         f.overlay.insert(
-            "_codev/config.yaml".into(),
-            b"codev_version: \">=99\"\n".to_vec(),
+            "_compagnon/config.yaml".into(),
+            b"compagnon_version: \">=99\"\n".to_vec(),
         );
         let case = merge_case(&sync, &f).unwrap();
         assert_eq!(case.merge.unwrap().overlay.len(), 1);
@@ -2981,9 +2989,9 @@ pub(crate) mod tests {
 
     #[test]
     fn a_refusing_case_with_a_configuration_fails() {
-        let yaml = "step: configure.enrich\nkind: seeded\nsummary: s\nanswer: yes\nexpected:\n  outcome: refused\n  contains: [codev init]\n";
+        let yaml = "step: configure.enrich\nkind: seeded\nsummary: s\nanswer: yes\nexpected:\n  outcome: refused\n  contains: [compagnon init]\n";
         let err = configure_case(yaml, &configure_fixture(true)).unwrap_err();
-        assert!(err.message.contains("`_codev/config.yaml`"), "{err}");
+        assert!(err.message.contains("`_compagnon/config.yaml`"), "{err}");
         let case = configure_case(yaml, &configure_fixture(false)).unwrap();
         assert_eq!(case.configure.unwrap().config, None);
         let unchanged = yaml.replace("refused", "unchanged");

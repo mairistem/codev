@@ -1,7 +1,7 @@
-//! Scoring a configure run, without a model: whether `/codev-configure`
+//! Scoring a configure run, without a model: whether `/compagnon-configure`
 //! wrote a `context:` and `rules:` of the expected shape, grounded in the
 //! project, and kept every other field and comment of
-//! `_codev/config.yaml` — or wrote nothing on a no, or refused without a
+//! `_compagnon/config.yaml` — or wrote nothing on a no, or refused without a
 //! configuration. The keys and the rules are read as YAML; the comments
 //! and the lines of `context` as text, where a folded block keeps its
 //! lines. Pure: it reads the observation only.
@@ -13,7 +13,7 @@ use crate::checked::{CheckScore, Checks, holds};
 use crate::observed::{ConfigureObserved, Observed};
 
 /// The comment the skill writes directly above `context:`.
-pub const MARKER: &str = "# written by /codev-configure";
+pub const MARKER: &str = "# written by /compagnon-configure";
 
 /// The fields the skill writes; every other top-level key is preserved.
 const WRITTEN_KEYS: [&str; 2] = ["context", "rules"];
@@ -176,7 +176,7 @@ fn score_written(expect: &ConfigureCase, seen: Option<&ConfigureObserved>, check
         }
     }
     checks.check(
-        "`codev status --json` reads the configuration",
+        "`compagnon status --json` reads the configuration",
         seen.is_some_and(|s| s.status_error.is_none() && s.after.is_some()),
     );
 }
@@ -196,8 +196,8 @@ pub fn score_configure(expect: &ConfigureCase, observed: &Observed) -> CheckScor
             seen.is_some_and(|s| s.after.is_some() && s.after == s.before),
         ),
         ConfigureOutcome::Refused => checks.check(
-            "no `_codev/` folder created",
-            seen.is_some_and(|s| !s.codev_root && s.after.is_none()),
+            "no `_compagnon/` folder created",
+            seen.is_some_and(|s| !s.compagnon_root && s.after.is_none()),
         ),
     }
     checks.check(
@@ -221,10 +221,10 @@ pub(crate) mod tests {
     use std::collections::BTreeMap;
 
     const BEFORE: &str = "\
-# codev configuration.
+# compagnon configuration.
 schema: spec-driven
 language: fr
-codev_version: \">=0.6\"
+compagnon_version: \">=0.6\"
 
 # The Jira MCP.
 mcp:
@@ -241,16 +241,16 @@ triggers:
 ";
 
     const WRITTEN: &str = "\
-# codev configuration.
+# compagnon configuration.
 schema: spec-driven
 language: fr
-codev_version: \">=0.6\"
+compagnon_version: \">=0.6\"
 
 # The Jira MCP.
 mcp:
   jira_tool: mcp__jira__getIssue
 
-# written by /codev-configure
+# written by /compagnon-configure
 context: >
   Service FastAPI en Python 3.12.
   Erreurs levées en exceptions typées.
@@ -303,7 +303,7 @@ triggers:
             configure: Some(ConfigureObserved {
                 before: before.map(str::to_string),
                 after: after.map(str::to_string),
-                codev_root: after.is_some(),
+                compagnon_root: after.is_some(),
                 status_error: None,
             }),
         }
@@ -376,13 +376,13 @@ triggers:
             )),
             [shape]
         );
-        let no_marker = WRITTEN.replace("# written by /codev-configure\n", "");
+        let no_marker = WRITTEN.replace("# written by /compagnon-configure\n", "");
         assert_eq!(
             failed(&score_configure(
                 &e,
                 &run(Some(BEFORE), Some(&no_marker), &[])
             )),
-            ["`# written by /codev-configure` above `context:`"]
+            ["`# written by /compagnon-configure` above `context:`"]
         );
     }
 
@@ -402,12 +402,12 @@ triggers:
     }
 
     #[test]
-    fn a_configuration_codev_cannot_read_fails() {
+    fn a_configuration_compagnon_cannot_read_fails() {
         let mut o = run(Some(BEFORE), Some(WRITTEN), &[]);
         o.configure.as_mut().unwrap().status_error = Some("invalid config".into());
         assert_eq!(
             failed(&score_configure(&expect(ConfigureOutcome::Written), &o)),
-            ["`codev status --json` reads the configuration"]
+            ["`compagnon status --json` reads the configuration"]
         );
     }
 
@@ -430,7 +430,7 @@ triggers:
         let o = run(
             Some(BEFORE),
             Some(BEFORE),
-            &["No changes made. Run `/codev-configure` again whenever you want to retry."],
+            &["No changes made. Run `/compagnon-configure` again whenever you want to retry."],
         );
         let score = score_configure(&e, &o);
         assert_eq!(failed(&score), Vec::<&str>::new());
@@ -446,17 +446,21 @@ triggers:
     fn a_configuration_created_on_a_refusal_fails() {
         let mut e = expect(ConfigureOutcome::Refused);
         e.config = None;
-        e.contains = vec!["codev init".into()];
+        e.contains = vec!["compagnon init".into()];
         let refused = run(
             None,
             None,
-            &["This project has no `_codev/`. Run `codev init` first."],
+            &["This project has no `_compagnon/`. Run `compagnon init` first."],
         );
         assert!(score_configure(&e, &refused).passed);
-        let created = run(None, Some("schema: spec-driven\n"), &["Run `codev init`"]);
+        let created = run(
+            None,
+            Some("schema: spec-driven\n"),
+            &["Run `compagnon init`"],
+        );
         assert_eq!(
             failed(&score_configure(&e, &created)),
-            ["no `_codev/` folder created"]
+            ["no `_compagnon/` folder created"]
         );
     }
 

@@ -93,9 +93,9 @@ jobs:
           }
           EOF
           sudo systemctl reload apparmor
-      - name: Build codev
+      - name: Build compagnon
         if: steps.key.outputs.present == 'true'
-        run: cargo build --locked --bin codev
+        run: cargo build --locked --bin compagnon
       - name: Run the evaluations
         if: steps.key.outputs.present == 'true'
         # Inputs reach the script through the environment, quoted, never
@@ -103,8 +103,8 @@ jobs:
         # job that holds the key.
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          CODEV_EVAL_MODEL: ${{ inputs.model }}
-          CODEV_EVAL_MIN_RECALL: ${{ inputs.min_recall }}
+          COMPAGNON_EVAL_MODEL: ${{ inputs.model }}
+          COMPAGNON_EVAL_MIN_RECALL: ${{ inputs.min_recall }}
           EVAL_ROLES: ${{ inputs.roles }}
           EVAL_REPEAT: ${{ inputs.repeat }}
           EVAL_STEP: ${{ inputs.step }}
@@ -120,7 +120,7 @@ jobs:
           read -ra roles <<< "$EVAL_ROLES"
           args=()
           for role in "${roles[@]}"; do args+=(--role "$role"); done
-          cargo run --locked -p codev-evals -- run --out evals-output --step "$EVAL_STEP" --repeat "$EVAL_REPEAT" --jobs 4 "${args[@]}"
+          cargo run --locked -p compagnon-evals -- run --out evals-output --step "$EVAL_STEP" --repeat "$EVAL_REPEAT" --jobs 4 "${args[@]}"
       - name: Keep the output
         if: always() && steps.key.outputs.present == 'true'
         uses: actions/upload-artifact@v7

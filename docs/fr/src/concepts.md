@@ -1,12 +1,12 @@
 # Concepts
 
-codev conserve trois types d'enregistrements dans le dépôt : les **specs**
+Compagnon conserve trois types d'enregistrements dans le dépôt : les **specs**
 disent ce que fait le système, les **décisions** expliquent pourquoi il est
 construit ainsi, et les **changes** sont le travail en cours qui modifie les
 unes et les autres.
 
 ```text
-_codev/
+_compagnon/
 ├── config.yaml     # configuration du projet
 ├── specs/          # contrats de comportement — CE QUE fait le système
 ├── decisions/      # décisions d'architecture — POURQUOI il est construit ainsi
@@ -14,10 +14,10 @@ _codev/
 │   ├── <name>/     #   proposal.md, design.md, tasks.md, specs/** (deltas)
 │   └── archive/    #   changes terminés, datés
 ├── schemas/        # schémas de workflow personnalisés (facultatif)
-└── codev.lock      # sources git héritées et épinglées (le cas échéant)
+└── compagnon.lock      # sources git héritées et épinglées (le cas échéant)
 ```
 
-codev trouve ce dossier en remontant l'arborescence depuis le répertoire
+Compagnon trouve ce dossier en remontant l'arborescence depuis le répertoire
 courant : chaque commande fonctionne donc depuis n'importe quel
 sous-répertoire du projet.
 
@@ -33,7 +33,7 @@ votre domaine métier, et non selon celle de votre code.
 ## Spec
 
 La spec principale d'une capacité se trouve dans
-`_codev/specs/<capability>/spec.md`. Elle comporte une section `## Purpose` —
+`_compagnon/specs/<capability>/spec.md`. Elle comporte une section `## Purpose` —
 une ou deux phrases sur la raison d'être de la capacité — et une section
 `## Requirements` :
 
@@ -69,21 +69,21 @@ lisible.
 
 ## Change
 
-Un change est un dossier `_codev/changes/<name>/` qui porte une évolution du
+Un change est un dossier `_compagnon/changes/<name>/` qui porte une évolution du
 système : une proposal, des deltas de specs, un design et une liste de tâches,
 ainsi qu'un fichier `change.yaml` contenant ses métadonnées. Les artefacts que
 comporte un change sont définis par son [schéma](guides/custom-schemas.md) ;
 le schéma par défaut, `spec-driven`, est décrit dans
 [Le workflow](workflow.md).
 
-Un change est **actif** tant qu'il se trouve dans `_codev/changes/<name>/`.
-L'archivage le déplace dans `_codev/changes/archive/<YYYY-MM-DD>-<name>/`, où
+Un change est **actif** tant qu'il se trouve dans `_compagnon/changes/<name>/`.
+L'archivage le déplace dans `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`, où
 il devient la trace du pourquoi et du comment de l'évolution des specs.
 
 ## Delta
 
 Un delta est la partie d'un change qui modifie une spec. Il se trouve dans
-`_codev/changes/<name>/specs/<capability>/spec.md` — le même chemin de
+`_compagnon/changes/<name>/specs/<capability>/spec.md` — le même chemin de
 capacité que la spec principale qu'il cible — et s'organise en quatre
 opérations au plus :
 
@@ -135,20 +135,20 @@ La syntaxe exacte figure dans [Formats de fichiers](reference/file-formats.md).
 ## Décision
 
 Une décision, ou ADR (*architecture decision record*), est un fichier
-`_codev/decisions/NNNN-<slug>.md` qui consigne un choix d'architecture : son
+`_compagnon/decisions/NNNN-<slug>.md` qui consigne un choix d'architecture : son
 contexte, la décision elle-même, ses conséquences et les alternatives
 envisagées.
 
 ```bash
-codev decision new "Use PostgreSQL for persistence"
-codev decision accept 0001
+compagnon decision new "Use PostgreSQL for persistence"
+compagnon decision accept 0001
 ```
 
 Une décision a l'un des cinq statuts suivants : `accepted`, `superseded`,
 `proposed`, `deprecated` ou `rejected`. Toutes les commandes qui créent une
-décision — `codev decision new`, [`supersede`](#remplacement),
+décision — `compagnon decision new`, [`supersede`](#remplacement),
 [`deviate`](#écart) et [`promote`](#promotion) — la créent `proposed`, afin que
-vous puissiez la rédiger librement ; `codev decision accept` la passe à
+vous puissiez la rédiger librement ; `compagnon decision accept` la passe à
 `accepted` une fois son texte définitif. L'acceptation est la seule étape qui
 fait entrer une décision en vigueur : une décision `proposed` ne remplace encore
 rien et ne s'écarte encore de rien. Une décision est **en vigueur**
@@ -164,11 +164,11 @@ pour une décision héritée d'un autre dépôt.
 ## Sceau
 
 Une décision acceptée est immuable. Lorsqu'une décision devient acceptée par
-une commande `codev decision` — `accept`, ou `new --status accepted` — codev
+une commande `compagnon decision` — `accept`, ou `new --status accepted` — Compagnon
 enregistre une empreinte SHA-256 du contenu de la décision dans
-`_codev/decisions/seal.yaml` ; `codev decision seal` fait
+`_compagnon/decisions/seal.yaml` ; `compagnon decision seal` fait
 de même pour une décision que vous avez acceptée à la main.
-`codev validate` compare le contenu de chaque décision locale `accepted` ou
+`compagnon validate` compare le contenu de chaque décision locale `accepted` ou
 `superseded` à son empreinte, et signale une modification par l'erreur
 `decision_seal_mismatch` et un sceau manquant par l'avertissement
 `decision_unsealed`. Une décision `proposed` n'est pas scellée.
@@ -178,9 +178,9 @@ Le frontmatter n'est pas couvert par le sceau : un statut peut donc passer de
 
 > **Remarque**
 > Scellez une décision lorsque son texte est définitif : rédigez d'abord la
-> décision `proposed`, puis lancez `codev decision accept <ID>`, qui change
+> décision `proposed`, puis lancez `compagnon decision accept <ID>`, qui change
 > le statut et enregistre le sceau en une seule étape. Si vous avez modifié
-> volontairement une décision scellée, `codev decision seal <ID> --force`
+> volontairement une décision scellée, `compagnon decision seal <ID> --force`
 > enregistre le nouveau contenu ; pour changer ce que dit une décision
 > acceptée, [remplacez-la](#remplacement) plutôt.
 
@@ -189,22 +189,22 @@ Le frontmatter n'est pas couvert par le sceau : un statut peut donc passer de
 Pour changer une décision, remplacez-la plutôt que de la modifier :
 
 ```bash
-codev decision supersede 0001 "Use SQLite for persistence"
+compagnon decision supersede 0001 "Use SQLite for persistence"
 ```
 
-codev crée une nouvelle décision `proposed` dont le frontmatter indique
+Compagnon crée une nouvelle décision `proposed` dont le frontmatter indique
 `supersedes: ["0001"]`, et ne touche pas à `0001` : elle reste `accepted`, et en
 vigueur, pendant que vous rédigez la nouvelle. Accepter la nouvelle décision
 marque `0001` comme `superseded` dans la même étape :
 
 ```bash
-codev decision accept 0002
+compagnon decision accept 0002
 ```
 
 Le contenu de l'ancienne décision reste strictement identique : son sceau reste
 valide et l'historique du raisonnement est préservé. Seule une décision
 `accepted` peut être remplacée : si une autre décision a remplacé `0001`
-entre-temps, `codev decision accept` refuse avec `predecessor_not_accepted` et
+entre-temps, `compagnon decision accept` refuse avec `predecessor_not_accepted` et
 n'écrit rien.
 
 ## Écart
@@ -214,13 +214,13 @@ votre projet, puisque vous ne pouvez pas écrire dans sa source. Consignez
 plutôt un écart local :
 
 ```bash
-codev decision deviate path:~/shared/0100 "Services log in logfmt"
+compagnon decision deviate path:~/shared/0100 "Services log in logfmt"
 ```
 
 Cette commande crée une décision locale `proposed` dont le champ
 `deviates_from` pointe vers la décision héritée. L'écart entre en vigueur
-lorsque vous l'acceptez avec `codev decision accept` : la décision héritée reste
-alors visible dans `codev decision list`, mais elle n'est plus en vigueur pour
+lorsque vous l'acceptez avec `compagnon decision accept` : la décision héritée reste
+alors visible dans `compagnon decision list`, mais elle n'est plus en vigueur pour
 votre projet et n'est plus transmise à l'agent lorsqu'il rédige des designs.
 D'ici là, la décision héritée reste en vigueur.
 
@@ -231,30 +231,30 @@ Rédigez-la dans `design.md` sous la forme d'un bloc `### Decision: <title>`,
 puis promouvez-la :
 
 ```bash
-codev decision promote add-audit-log "Append-only audit table"
+compagnon decision promote add-audit-log "Append-only audit table"
 ```
 
-codev crée un ADR `proposed` dont la section `## Decision` reprend tel quel le
+Compagnon crée un ADR `proposed` dont la section `## Decision` reprend tel quel le
 contenu du bloc, et remplace le contenu du bloc par une référence au nouvel
 ADR. Relisez-le et répartissez le texte promu dans les sections de l'ADR, puis
-acceptez-le avec `codev decision accept`, qui le scelle — idéalement avant
+acceptez-le avec `compagnon decision accept`, qui le scelle — idéalement avant
 d'archiver le change.
 
 ## Source héritée
 
-Un projet peut hériter, en lecture seule, du contenu d'autres dépôts codev —
+Un projet peut hériter, en lecture seule, du contenu d'autres dépôts Compagnon —
 un dossier partagé sur votre machine (`path:`) ou un dépôt git épinglé sur un
 commit (`git:`). Chaque source apporte son `context:`, ses `rules:` et ses
 décisions. Rien d'exécutable n'est jamais hérité, et rien n'est lu depuis une
-branche mouvante : les sources git sont épinglées dans `_codev/codev.lock`.
+branche mouvante : les sources git sont épinglées dans `_compagnon/compagnon.lock`.
 Voir [Sources héritées](guides/inherited-sources.md).
 
 ## Schéma
 
 Un schéma définit les artefacts que comporte un change, les prérequis de
 chacun, ainsi que les instructions et les templates que suit l'agent pour les
-rédiger. codev embarque un schéma, `spec-driven`. Un projet peut définir les
-siens dans `_codev/schemas/`. Voir
+rédiger. Compagnon embarque un schéma, `spec-driven`. Un projet peut définir les
+siens dans `_compagnon/schemas/`. Voir
 [Schémas personnalisés](guides/custom-schemas.md).
 
 Dans `spec-driven`, chaque instruction s'ouvre sur le rôle qui porte

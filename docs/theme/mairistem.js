@@ -1,5 +1,5 @@
 /*
- * Mairistem theme for the codev documentation: small progressive
+ * Mairistem theme for the compagnon documentation: small progressive
  * enhancements. The pages read correctly without it.
  *
  * - Callouts: a blockquote opening with **Note** / **Remarque** (or

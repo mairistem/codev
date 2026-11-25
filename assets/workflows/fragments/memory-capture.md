@@ -3,7 +3,7 @@
 When the author corrects what you did with an instruction about how this
 project does things — a convention, a technical choice, an expectation on
 an artifact — note it once in the change's `corrections.md`: the line
-`<!-- codev-corrections: 1 -->` first when the file is new, then
+`<!-- compagnon-corrections: 1 -->` first when the file is new, then
 `### C-<n> <the instruction in a few words>`, `<n>` the next free number,
 and a `yaml` block with `step` (`propose`, `apply` or `update`), `where`
 (the file or artifact), `did` (what you had done) and `asked` (what the

@@ -3,10 +3,10 @@
 Quand le contradicteur et les experts challengent un plan, ou que le nouvel
 arrivant et les experts relisent le code, ce qu'ils trouvent ne reste pas
 dans la conversation. Tout va dans le compte rendu de revue du change,
-`_codev/changes/<name>/review.md` : chaque constat avec sa gravité, la
+`_compagnon/changes/<name>/review.md` : chaque constat avec sa gravité, la
 preuve sur laquelle il repose, et chaque réponse qu'il a reçue — qui l'a
-corrigé, qui l'a contesté et pourquoi, qui en a accepté le risque. codev
-vérifie ce qui peut l'être, et `codev archive` ne clôt pas un change dont
+corrigé, qui l'a contesté et pourquoi, qui en a accepté le risque. Compagnon
+vérifie ce qui peut l'être, et `compagnon archive` ne clôt pas un change dont
 la revue n'est pas tranchée.
 
 ## Ce que contient un constat
@@ -47,7 +47,7 @@ history:
   ou le fragment qui compte. Un relecteur prouve ce qu'il avance.
 
 Le format complet est dans [Formats de fichiers](../reference/file-formats.md#reviewmd).
-Les titres, les clés et les valeurs du bloc restent en anglais : codev les
+Les titres, les clés et les valeurs du bloc restent en anglais : Compagnon les
 lit.
 
 ## Les revues isolées
@@ -93,15 +93,15 @@ No finding.
   défaut, le constat est écrit une seule fois, sous le rôle qui l'a jugé
   le plus grave, et liste chaque rôle qui l'a relevé, le sien en premier.
   C'est ce rôle qui revérifie les réponses. Un rôle dont tous les constats
-  ont été fusionnés indique `No finding.` ; `codev review` le montre
+  ont été fusionnés indique `No finding.` ; `compagnon review` le montre
   crédité sur le constat partagé.
 - **`Fallback:`** — le sous-agent du rôle a échoué deux fois et le rôle a
   relu en ligne, dans la conversation.
 
-`codev validate` signale un `Mode:` autre que `inline` ou `isolated`, une
+`compagnon validate` signale un `Mode:` autre que `inline` ou `isolated`, une
 deuxième ligne `Mode:` ou `Fallback:`, et un `raised_by` qui n'est pas une
 liste d'identifiants de rôles distincts commençant par le rôle du constat
-(`review_invalid`). Un codev antérieur à ces lignes les ignore, et signale
+(`review_invalid`). Un Compagnon antérieur à ces lignes les ignore, et signale
 `raised_by` comme champ inconnu (`review_unknown_field`).
 
 ## La boucle de réponse
@@ -137,9 +137,9 @@ Un constat commence `open`. Ensuite :
 `accepted-risk`, `deferred` et `rejected` sont définitifs : pour revenir
 sur l'un d'eux, ouvrez un nouveau constat.
 
-## Ce que codev vérifie
+## Ce que Compagnon vérifie
 
-`codev validate` lit le compte rendu de chaque change actif. Il ne juge
+`compagnon validate` lit le compte rendu de chaque change actif. Il ne juge
 jamais un constat — un constat `open` est l'état normal d'une revue — mais
 il vérifie tout ce qui ne demande pas de jugement :
 
@@ -166,10 +166,10 @@ il vérifie tout ce qui ne demande pas de jugement :
 
 Aucun contrôle n'utilise git ni le réseau : ils lisent l'arbre de travail.
 
-## codev review
+## compagnon review
 
 ```bash
-codev review --change add-sessions
+compagnon review --change add-sessions
 ```
 
 Affiche le compte rendu étape par étape — chaque rôle, chaque constat avec
@@ -183,23 +183,23 @@ compte rendu contient une erreur.
 
 ## Archiver
 
-`codev archive` vérifie la revue après la validation. Il refuse, avec le
+`compagnon archive` vérifie la revue après la validation. Il refuse, avec le
 code `review_blocked`, quand :
 
 - des rôles étaient actifs à `plan.challenge` ou `code.review` et que le
   compte rendu n'existe pas (`review_record_missing`), ou n'a pas de section
   pour cette étape (`review_step_missing`) ;
 - un constat `high` est encore `open` ou `disputed` (`review_unresolved`) ;
-- le compte rendu vient d'un codev plus récent (`review_format_unsupported`).
+- le compte rendu vient d'un Compagnon plus récent (`review_format_unsupported`).
 
-Une étape sans rôle actif n'a pas besoin de section. `codev sync` ne
+Une étape sans rôle actif n'a pas besoin de section. `compagnon sync` ne
 regarde pas le compte rendu.
 
 ## Les changes commencés avant le compte rendu
 
-Un change planifié avec un codev antérieur n'a pas de compte rendu : son
+Un change planifié avec un Compagnon antérieur n'a pas de compte rendu : son
 archivage est donc refusé. Relancez les étapes de relecture —
-`/codev-apply` relit le code et écrit le compte rendu — ou dites
+`/compagnon-apply` relit le code et écrit le compte rendu — ou dites
 explicitement que le change n'a pas été relu en désactivant ses rôles de
 relecture dans son `change.yaml` :
 
@@ -210,9 +210,9 @@ roles:
 ```
 
 Une équipe qui n'utilise pas du tout les skills fait de même dans
-`_codev/config.yaml`. Pour que tout le monde utilise un codev qui applique
-le verrou, relevez [`codev_version`](../reference/configuration.md) à la
-version qui l'apporte : un codev plus ancien ignore `review.md` et archive
+`_compagnon/config.yaml`. Pour que tout le monde utilise un Compagnon qui applique
+le verrou, relevez [`compagnon_version`](../reference/configuration.md) à la
+version qui l'apporte : un Compagnon plus ancien ignore `review.md` et archive
 quand même.
 
 ## Cas particuliers
@@ -228,5 +228,5 @@ quand même.
   fichiers binaires et très volumineux ne sont pas comparés.
 - **Windows** : `\` dans un emplacement se lit `/`, et les fins de ligne
   `\r\n` sont ignorées dans le compte rendu comme dans les fichiers cités.
-- **Monorepos** : les chemins sont relatifs à la racine du projet codev ;
+- **Monorepos** : les chemins sont relatifs à la racine du projet Compagnon ;
   un fichier hors de cette racine ne peut pas être cité.

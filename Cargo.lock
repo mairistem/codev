@@ -148,24 +148,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
-name = "codev-agents"
+name = "colorchoice"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
+
+[[package]]
+name = "compagnon-agents"
 version = "0.6.1"
 dependencies = [
- "codev-core",
- "codev-engine",
+ "compagnon-core",
+ "compagnon-engine",
  "serde_norway",
 ]
 
 [[package]]
-name = "codev-cli"
+name = "compagnon-cli"
 version = "0.6.1"
 dependencies = [
  "anyhow",
  "clap",
  "clap_complete",
- "codev-agents",
- "codev-core",
- "codev-engine",
+ "compagnon-agents",
+ "compagnon-core",
+ "compagnon-engine",
  "dialoguer",
  "open",
  "pulldown-cmark",
@@ -174,7 +180,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "codev-core"
+name = "compagnon-core"
 version = "0.6.1"
 dependencies = [
  "globset",
@@ -190,10 +196,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "codev-engine"
+name = "compagnon-engine"
 version = "0.6.1"
 dependencies = [
- "codev-core",
+ "compagnon-core",
  "serde",
  "serde_json",
  "serde_norway",
@@ -204,21 +210,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "codev-evals"
+name = "compagnon-evals"
 version = "0.6.1"
 dependencies = [
  "clap",
- "codev-core",
+ "compagnon-core",
  "serde",
  "serde_json",
  "serde_norway",
 ]
-
-[[package]]
-name = "colorchoice"
-version = "1.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "console"

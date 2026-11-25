@@ -1,8 +1,8 @@
-# Contribuer à codev
+# Contribuer à Compagnon
 
 [English](CONTRIBUTING.md) · Français
 
-Merci de contribuer à l'amélioration de codev. Ce guide explique comment
+Merci de contribuer à l'amélioration de Compagnon. Ce guide explique comment
 proposer une modification, mettre en place un environnement de développement
 et faire fusionner une pull request.
 
@@ -10,24 +10,24 @@ et faire fusionner une pull request.
 
 **Les petites corrections : une pull request classique.** Une coquille, la
 formulation d'un passage de la documentation, un commentaire, un test
-manquant : ouvrez directement une pull request. Aucun change codev n'est
+manquant : ouvrez directement une pull request. Aucun change Compagnon n'est
 nécessaire.
 
-**Tout le reste : un change codev.** codev est développé avec codev. Une
+**Tout le reste : un change Compagnon.** Compagnon est développé avec Compagnon. Une
 nouvelle fonctionnalité, une modification de comportement, une nouvelle
-option ou une refactorisation commence par un change sous `_codev/changes/`,
+option ou une refactorisation commence par un change sous `_compagnon/changes/`,
 relu en même temps que le code :
 
 1. Pour toute contribution d'envergure, ouvrez d'abord une issue afin d'en
    discuter.
-2. Dans votre clone, lancez `/codev-propose <your idea>` dans Claude Code — ou
-   créez le change à la main avec `codev new change <name>` et rédigez ses
+2. Dans votre clone, lancez `/compagnon-propose <your idea>` dans Claude Code — ou
+   créez le change à la main avec `compagnon new change <name>` et rédigez ses
    artefacts.
-3. Implémentez-le, avec `/codev-apply` ou à la main, en cochant les tâches de
+3. Implémentez-le, avec `/compagnon-apply` ou à la main, en cochant les tâches de
    `tasks.md`.
 4. Une fois le travail terminé, archivez le change avec
-   `codev archive --change <name>`, pour que les specs principales de
-   `_codev/specs/` décrivent le nouveau comportement.
+   `compagnon archive --change <name>`, pour que les specs principales de
+   `_compagnon/specs/` décrivent le nouveau comportement.
 5. Ouvrez une pull request contenant le change archivé et le code.
 
 Si vous ne savez pas quelle voie s'applique, ouvrez tout de même la pull
@@ -45,16 +45,16 @@ Il vous faut :
   (facultatif).
 
 ```bash
-git clone https://github.com/mairistem/codev.git
-cd codev
+git clone https://github.com/mairistem/compagnon.git
+cd compagnon
 cargo build
-cargo run --bin codev -- --help
+cargo run --bin compagnon -- --help
 ```
 
 Pour utiliser votre build sur d'autres projets, installez-le :
 
 ```bash
-cargo install --path crates/codev-cli
+cargo install --path crates/compagnon-cli
 ```
 
 Le [chapitre Architecture](docs/fr/src/architecture.md) explique comment le
@@ -69,7 +69,7 @@ local avant de pousser :
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
-cargo run --locked --quiet --bin codev -- validate --strict
+cargo run --locked --quiet --bin compagnon -- validate --strict
 ```
 
 La CI lance aussi les tests sous Linux, macOS et Windows, vérifie que le
@@ -77,7 +77,7 @@ workspace compile avec Rust 1.89 (`cargo check --workspace --locked`) et
 audite les dépendances avec `cargo audit`. Les avertissements sont traités
 comme des erreurs.
 
-La dernière commande valide l'arborescence `_codev/` de codev lui-même : les
+La dernière commande valide l'arborescence `_compagnon/` de Compagnon lui-même : les
 specs, les changes actifs et les sceaux des décisions doivent rester valides.
 
 ## Modifier un rôle
@@ -86,25 +86,25 @@ Les rôles intégrés (`assets/roles/`) sont des prompts : leur effet se
 mesure, il ne se devine pas. Une pull request qui modifie un fichier de
 `assets/roles/` exécute les évaluations des rôles concernés et colle dans
 sa description la sortie de
-`cargo run -p codev-evals -- compare --quality-only` face à la ligne de
+`cargo run -p compagnon-evals -- compare --quality-only` face à la ligne de
 base versionnée, `evals/baseline/` : le rappel, les faux positifs et la
 validité des preuves de chaque rôle doivent rester dans l'écart couvert
 par les répétitions de la ligne de base. Une pull request destinée à
 réduire la consommation des skills colle la sortie de
-`cargo run -p codev-evals -- compare`, sans `--quality-only` : la qualité
+`cargo run -p compagnon-evals -- compare`, sans `--quality-only` : la qualité
 doit tenir et le coût passer sous le plancher de la ligne de base, chaque
 cas à son exécution la moins chère. Toute autre pull request qui change
 ce que fait une skill — un fichier de `assets/workflows/`, ou le JSON
-qu'une skill lit, `crates/codev-cli/src/contract.rs` — colle la sortie de
-`cargo run -p codev-evals -- compare --quality-only`, qui rapporte
+qu'une skill lit, `crates/compagnon-cli/src/contract.rs` — colle la sortie de
+`cargo run -p compagnon-evals -- compare --quality-only`, qui rapporte
 toujours ce que ses exécutions consomment. Lancez l'une et l'autre sur
 les cas des étapes que la pull request touche, avec `--step`
 (répétable) : `review` pour les étapes de revue, `plan.write` pour la
-planification de `/codev-propose`, `plan.update` pour les révisions de
-`/codev-update`, `code.implement` pour l'implémentation de
-`/codev-apply`, `change.sync`, `change.archive` et `configure.enrich` pour
-`/codev-sync`, `/codev-archive` et le mode par défaut de
-`/codev-configure`. La décision acceptée 0008 en fait la
+planification de `/compagnon-propose`, `plan.update` pour les révisions de
+`/compagnon-update`, `code.implement` pour l'implémentation de
+`/compagnon-apply`, `change.sync`, `change.archive` et `configure.enrich` pour
+`/compagnon-sync`, `/compagnon-archive` et le mode par défaut de
+`/compagnon-configure`. La décision acceptée 0008 en fait la
 règle pour tout changement du workflow. Enregistrez le candidat avec
 `--repeat 3` au moins, et avec le `--jobs` de la ligne de base (4), pour
 que les deux exécutions profitent du cache de prompt de la même façon.
@@ -121,30 +121,30 @@ d'archivage ou de configuration coûte environ 0,20 à 0,30 dollar, plafonné
 par défaut à 3 dollars et 600 secondes.
 
 ```bash
-cargo build --bin codev
-cargo run -p codev-evals -- list                       # les cas
-cargo run -p codev-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
-cargo run -p codev-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
-cargo run -p codev-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
-cargo run -p codev-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
-cargo run -p codev-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
-cargo run -p codev-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
-cargo run -p codev-evals -- calibrate implement-decision-accept-command   # éprouver un script, sans modèle
-cargo run -p codev-evals -- score target/evals/mine    # renoter, sans modèle
-cargo run -p codev-evals -- compare evals/baseline target/evals/mine --quality-only
+cargo build --bin compagnon
+cargo run -p compagnon-evals -- list                       # les cas
+cargo run -p compagnon-evals -- run --role security --repeat 3 --jobs 4 --out target/evals/mine
+cargo run -p compagnon-evals -- run --step plan.write --repeat 3 --jobs 4 --out target/evals/plan
+cargo run -p compagnon-evals -- run --step plan.update --repeat 3 --jobs 4 --out target/evals/update
+cargo run -p compagnon-evals -- run --step code.implement --repeat 3 --jobs 2 --out target/evals/implement
+cargo run -p compagnon-evals -- run --step change.sync --step change.archive --repeat 3 --jobs 4 --out target/evals/archive
+cargo run -p compagnon-evals -- run --step configure.enrich --repeat 3 --jobs 4 --out target/evals/configure
+cargo run -p compagnon-evals -- calibrate implement-decision-accept-command   # éprouver un script, sans modèle
+cargo run -p compagnon-evals -- score target/evals/mine    # renoter, sans modèle
+cargo run -p compagnon-evals -- compare evals/baseline target/evals/mine --quality-only
 ```
 
-Pour mesurer un autre binaire que `target/debug/codev`, ou en figer un
+Pour mesurer un autre binaire que `target/debug/compagnon`, ou en figer un
 pendant que vous continuez à travailler, copiez-le dans un dossier à lui
-et passez-le avec `--codev <dossier>/codev` : le fichier garde le nom
-`codev`. Le runner place ce dossier en tête du chemin de recherche, et
-l'agent appelle `codev` par son nom ; sous un autre nom, l'agent
-lancerait n'importe quel autre `codev` installé. `codev-evals run`
+et passez-le avec `--compagnon <dossier>/compagnon` : le fichier garde le nom
+`compagnon`. Le runner place ce dossier en tête du chemin de recherche, et
+l'agent appelle `compagnon` par son nom ; sous un autre nom, l'agent
+lancerait n'importe quel autre `compagnon` installé. `compagnon-evals run`
 refuse un tel binaire.
 
 L'agent tourne dans le bac à sable (sandbox) de Claude Code, comme le
 ferait un utilisateur qui s'en sert : les commandes shell que Claude Code
-connaît, et `codev`, s'exécutent sans demande, mais elles ne peuvent
+connaît, et `compagnon`, s'exécutent sans demande, mais elles ne peuvent
 écrire que dans le répertoire du cas et dans le répertoire temporaire du
 système — qui contient aussi ceux des autres cas —, ne joindre que l'API
 d'Anthropic, et ne pas lire la clé d'API ; les outils de fichiers, hors du
@@ -167,12 +167,12 @@ rapport donne la médiane de chaque mesure sur les exécutions, avec son
 écart, et ce qu'elles ont consommé (coût, durées, tours, tokens, refus de
 permission, appels au modèle avec leur entrée et leur sortie par appel),
 et où vont les tokens : chaque source — la lecture de la skill, chaque
-sous-commande `codev`, les fichiers, les recherches, la sortie du modèle
+sous-commande `compagnon`, les fichiers, les recherches, la sortie du modèle
 lui-même — avec sa part du coût. La sortie ne décide jamais d'une
 comparaison : elle porte le raisonnement du modèle, que gardent les
 mesures de qualité. Un répertoire qui contient déjà des observations est repris :
-seules les exécutions manquantes, et celles en erreur, sont refaites. `CODEV_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
-Code), `CODEV_EVAL_BUDGET_USD` et `CODEV_EVAL_TIMEOUT_SECS` bornent chaque
+seules les exécutions manquantes, et celles en erreur, sont refaites. `COMPAGNON_EVAL_MODEL` choisit le modèle (par défaut celui de Claude
+Code), `COMPAGNON_EVAL_BUDGET_USD` et `COMPAGNON_EVAL_TIMEOUT_SECS` bornent chaque
 cas, quelle que soit son étape. Comparez avec le même modèle que la ligne de base. Les mainteneurs
 peuvent aussi lancer à la main le workflow **Role evaluations** ; il
 demande le secret de dépôt `ANTHROPIC_API_KEY` et s'arrête sans rien faire
@@ -180,7 +180,7 @@ sinon.
 
 Les cas de revue tournent par défaut dans le mode `inline`.
 `--review-mode isolated` les joue dans le mode `isolated` : le
-`_codev/config.yaml` de chaque cas reçoit `review: { mode: isolated }`
+`_compagnon/config.yaml` de chaque cas reçoit `review: { mode: isolated }`
 avant le rendu des skills, l'outil de sous-agent (`Agent`) est accordé,
 et un cas dont le rôle n'a pas tourné seul — pas de ligne
 `Mode: isolated.`, une ligne `Fallback:`, ou aucun sous-agent lancé —
@@ -188,7 +188,7 @@ s'arrête en erreur. Les tokens que les totaux de la session comptent
 au-delà de ses propres appels vont à la source `sub-agents` ; une
 exécution dont les totaux sont inférieurs à ses propres appels s'arrête
 en erreur. `--fixture-config <fichier>` ajoute un mapping YAML au
-`_codev/config.yaml` de chaque cas de revue, pour un réglage dont une
+`_compagnon/config.yaml` de chaque cas de revue, pour un réglage dont une
 mesure a besoin, et à celui de chaque cas d'implémentation — avec
 `roles: { developer: { model: sonnet } }`, par exemple, pour mesurer
 l'implémentation sur le modèle du développeur ; il ne peut pas définir
@@ -204,16 +204,16 @@ modèles diffèrent et nomme les deux en tête de son rapport. Enregistrez
 les deux exécutions le même jour, dans le même mode :
 
 ```bash
-cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/opus
-CODEV_EVAL_MODEL=claude-sonnet-5-5 cargo run -p codev-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/sonnet
-cargo run -p codev-evals -- compare target/evals/opus target/evals/sonnet --across-models --quality-only
+cargo run -p compagnon-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/opus
+COMPAGNON_EVAL_MODEL=claude-sonnet-5-5 cargo run -p compagnon-evals -- run --step review --review-mode isolated --repeat 3 --jobs 4 --out target/evals/sonnet
+cargo run -p compagnon-evals -- compare target/evals/opus target/evals/sonnet --across-models --quality-only
 ```
 
 Le [chapitre sur la fiabilité](docs/fr/src/reliability.md) de la
 documentation présente la ligne de base aux lecteurs. Il est généré,
 jamais modifié à la main : chaque fois que `evals/baseline/` change —
 enregistrée ou notée de nouveau —, lancez
-`cargo run -p codev-evals -- docs`, qui réécrit
+`cargo run -p compagnon-evals -- docs`, qui réécrit
 `docs/en/src/reliability.md` et `docs/fr/src/reliability.md`. Les tests
 échouent tant que les pages diffèrent de la ligne de base.
 
@@ -234,7 +234,7 @@ un test que son projet ne contient pas : un relecteur signalerait à juste
 titre la lacune, et le rôle se verrait compter un faux positif. Une étape
 de plan peut nommer ce qu'elle va créer sous `planned` ; un cas
 `code.review`, dont les tâches sont faites, ne planifie rien.
-`cargo run -p codev-evals -- list` charge tous les cas et nomme ce qui ne
+`cargo run -p compagnon-evals -- list` charge tous les cas et nomme ce qui ne
 va pas.
 
 ### Écrire un cas de planification
@@ -250,7 +250,7 @@ exigences sur lesquelles porte la demande, `collateral`, celles que le
 vrai change a modifiées au passage, chacune sous la forme
 `<capacité>::<nom de l'exigence>`, et `decisions`, chacune avec son `id`
 et `expect` (`follow` ou `supersede`). Le lanceur reconstruit le projet à
-partir de `git archive <ref>` et y installe les skills du codev testé :
+partir de `git archive <ref>` et y installe les skills du Compagnon testé :
 la suite demande donc l'historique complet. Un clone superficiel ne
 charge pas les cas et nomme le commit (`git fetch --unshallow`). Le
 chargement refuse aussi une exigence ou une décision qui n'existait pas
@@ -259,11 +259,11 @@ chargement refuse aussi une exigence ou une décision qui n'existait pas
 ### Écrire un cas de révision
 
 Un cas de révision rejoue la demande d'un auteur qui veut réviser un
-artefact d'un change actif avec `/codev-update`. Aucun commit de `main` ne
+artefact d'un change actif avec `/compagnon-update`. Aucun commit de `main` ne
 contient de change actif — les pull requests sont fusionnées en un seul
 commit avec leur archivage —, aussi le cas apporte-t-il le change : son
 `change/` contient les fichiers d'un change archivé, copiés tels que
-l'archive les garde, que le lanceur écrit dans `_codev/changes/<change>/`
+l'archive les garde, que le lanceur écrit dans `_compagnon/changes/<change>/`
 sur l'arbre de `ref`, le parent du commit qui a amené le change sur
 `main`. `case.yaml` donne `step: plan.update`, `kind: seeded`, `ref`,
 `change` (le nom du change), `artifact` (`proposal`, `specs`, `design` ou
@@ -277,7 +277,7 @@ que la skill doit refuser (le cas n'attend alors ni chemin `revised` ni
 `contains`). Le chargement refuse un chemin que `change/` ne contient pas,
 et un `ref` dont l'arbre contient déjà le change ou le cas.
 
-Avant l'exécution, le lanceur enregistre `codev validate <change> --json`
+Avant l'exécution, le lanceur enregistre `compagnon validate <change> --json`
 sur le projet ; le prompt nomme la skill, le change, l'artefact et la
 demande, et dit de ne poser aucune question, de signaler une répercussion
 sans l'appliquer et de ne rien modifier hors du dossier du change. Une
@@ -287,8 +287,8 @@ fichier `kept` et `ripple` est inchangé ; chaque chemin `ripple` est nommé
 dans les messages de l'agent — tous les messages qu'il a écrits, appels
 d'outils et leurs sorties exclus ; chaque texte `contains` figure dans un
 fichier révisé, sans tenir compte de la casse ni des suites d'espaces ;
-`codev validate` ne signale aucune erreur que le projet n'avait pas déjà ;
-et un refus laisse le dossier du change tel quel et nomme `/codev-propose`.
+`compagnon validate` ne signale aucune erreur que le projet n'avait pas déjà ;
+et un refus laisse le dossier du change tel quel et nomme `/compagnon-propose`.
 Une exécution réussit quand toutes ses vérifications réussissent. La
 section `plan.update` du rapport donne, par répétition, la part des
 exécutions qui réussissent, la part des vérifications qui réussissent et
@@ -301,7 +301,7 @@ son maximum.
 ### Écrire un cas d'implémentation
 
 Un cas d'implémentation rejoue l'implémentation d'un change archivé avec
-`/codev-apply`. `case.yaml` donne `step: code.implement`, `kind: seeded`,
+`/compagnon-apply`. `case.yaml` donne `step: code.implement`, `kind: seeded`,
 `ref` (le parent du commit qui a apporté le change sur `main`), `merged`
 (ce commit), `change`, `summary` et `expected` : `refuse`, pour un plan que
 la skill doit refuser d'implémenter ; `docs`, quand l'exécution doit
@@ -314,19 +314,19 @@ lancer, et `summary` le dit. Un cas de refus n'a ni `tasks.md` ni script.
 
 À côté de `case.yaml`, `acceptance.sh` est la vérification cachée : écrit
 d'après les scénarios des specs delta du change, il est lancé par `bash`
-dans un dossier vide, `CODEV` nommant le binaire construit, en 300 secondes
+dans un dossier vide, `COMPAGNON` nommant le binaire construit, en 300 secondes
 au plus, et affiche une ligne par assertion, `ok <nom>` ou `not ok <nom>` ;
 une assertion pour laquelle il n'affiche pas `ok` échoue. Avant d'utiliser
-un cas, `cargo run -p codev-evals -- calibrate <cas>` construit `merged` et
+un cas, `cargo run -p compagnon-evals -- calibrate <cas>` construit `merged` et
 `ref` et doit sortir avec 0 : toutes les assertions `ok` sur `merged`, son
 format, son lint et ses tests passant avec la chaîne d'outils actuelle, et
 au moins une assertion en échec sur `ref`.
 
 Le runner pose `change/` sur l'arbre de `ref`, installe les skills,
 télécharge et construit les dépendances dans un Cargo home à l'intérieur du
-projet, enregistre `codev validate <change> --json`, puis lance Claude Code
+projet, enregistre `compagnon validate <change> --json`, puis lance Claude Code
 hors ligne dans son bac à sable, avec les outils qu'accorde la skill
-`codev-apply` installée. Après l'exécution, il formate, analyse, teste et
+`compagnon-apply` installée. Après l'exécution, il formate, analyse, teste et
 construit lui-même le projet, puis lance le script. Ces commandes exécutent
 hors du bac à sable du code écrit par l'agent : chacune démarre avec un
 environnement vidé — le chemin de recherche, le dossier personnel, les
@@ -335,8 +335,8 @@ locale, jamais la clé d'API ni un jeton — et un délai de 1 200 secondes.
 Ne lancez cette étape que sur vos propres cas, sur une machine où c'est
 acceptable. Une exécution réussit quand toutes les tâches sont cochées, que
 les quatre commandes passent, que toutes les assertions sont `ok`, que le
-compte rendu de revue contient `code.review`, que `codev validate`
-n'ajoute aucune erreur, que rien n'a changé sous `_codev/` hors du change,
+compte rendu de revue contient `code.review`, que `compagnon validate`
+n'ajoute aucune erreur, que rien n'a changé sous `_compagnon/` hors du change,
 que le change n'est pas archivé, que la documentation est touchée quand
 c'est attendu, et que l'agent n'a rien lu du dépôt d'où viennent les cas —
 ses lectures et recherches sont relevées dans ses appels d'outils. La
@@ -347,8 +347,8 @@ minimum de la ligne de base.
 
 ### Écrire un cas de synchronisation ou d'archivage
 
-Un cas de synchronisation ou d'archivage rejoue `/codev-sync` ou
-`/codev-archive` sur un change actif, posé comme le pose un cas de
+Un cas de synchronisation ou d'archivage rejoue `/compagnon-sync` ou
+`/compagnon-archive` sur un change actif, posé comme le pose un cas de
 révision : `case.yaml` donne `step: change.sync` ou `step: change.archive`,
 `kind: seeded`, `ref` (le parent du commit qui a amené le change sur
 `main`), `change`, `summary` et `expected` ; `change/` contient les
@@ -357,37 +357,37 @@ exigence privée de son mot normatif pour une erreur de validation, un
 constat `high` rouvert dans `review.md`, `tasks.md` retiré pour une
 planification incomplète. Un dossier `overlay/` facultatif contient des
 fichiers posés sur la racine du projet, qui remplacent ceux de `ref`,
-comme un `_codev/config.yaml` qui fixe `codev_version: ">=99"` ; un lien
+comme un `_compagnon/config.yaml` qui fixe `compagnon_version: ">=99"` ; un lien
 symbolique, un chemin sous le change ou un chemin qui sort du dossier du
 cas est refusé. `expected` donne `outcome` — `done` quand l'exécution
-doit laisser le projet comme le laisse la commande de codev elle-même,
+doit laisser le projet comme le laisse la commande de Compagnon elle-même,
 `refused` quand elle doit le laisser tel qu'elle l'a trouvé —, `code` pour
-un cas `refused` que codev refuse lui-même (le `status[0].code` de son
+un cas `refused` que Compagnon refuse lui-même (le `status[0].code` de son
 rapport, comme `validation_failed` ou `review_blocked`), `contains`, les
 textes que les messages de l'agent doivent contenir, et `absent`, ceux
 qu'ils ne doivent pas contenir.
 
 Avant l'agent, le runner fait la référence : dans un clone de la fixture
 à côté du dossier du cas, il lance
-`codev sync --change <change> --json` ou
-`codev archive --change <change> --json` avec le codev évalué, et relève
+`compagnon sync --change <change> --json` ou
+`compagnon archive --change <change> --json` avec le Compagnon évalué, et relève
 son code de sortie, son rapport et l'empreinte de chaque fichier de
-`_codev/` qu'il a modifié. Le prompt nomme la skill et le change, demande
-de ne poser aucune question et, si la skill demande s'il faut mettre codev
+`_compagnon/` qu'il a modifié. Le prompt nomme la skill et le change, demande
+de ne poser aucune question et, si la skill demande s'il faut mettre Compagnon
 à jour, de répondre **Later** — la seule réponse possible dans le bac à
 sable —, et ne dit rien de ce qu'il faut écrire ou refuser. Une exécution
-est notée sans modèle : une exécution `done` laisse `_codev/` comme l'a
+est notée sans modèle : une exécution `done` laisse `_compagnon/` comme l'a
 laissé la référence, à la date du dossier d'archive près ; une exécution
 `refused` le laisse tel que la fixture ; rien n'est modifié hors de
-`_codev/specs/` (et de `_codev/changes/` pour un archivage) ; chaque
+`_compagnon/specs/` (et de `_compagnon/changes/` pour un archivage) ; chaque
 texte de `contains` est dit et aucun de `absent`, sans tenir compte de la
 casse ni des suites d'espaces. Un cas `done` dont la référence échoue, ou
 un cas `refused` dont la référence rapporte un autre `code`, finit en
-erreur : le cas ne décrit plus ce que fait codev.
+erreur : le cas ne décrit plus ce que fait Compagnon.
 
 ### Écrire un cas de configuration
 
-Un cas de configuration lance le mode par défaut de `/codev-configure` sur
+Un cas de configuration lance le mode par défaut de `/compagnon-configure` sur
 un petit projet. `case.yaml` donne `step: configure.enrich`,
 `kind: seeded`, `stacks`, `summary`, `answer` (`yes` ou `no`, la réponse
 de l'auteur à la confirmation de la skill) et `expected` : `outcome` —
@@ -395,19 +395,19 @@ de l'auteur à la confirmation de la skill) et `expected` : `outcome` —
 textes que chaque partie de la proposition (`context`, `specs`, `design`,
 `tasks`) doit ou ne doit pas contenir, et `contains`, les textes que les
 messages de l'agent doivent contenir. `base/` contient le projet, son
-`_codev/config.yaml` compris, sauf si le cas porte sur une configuration
+`_compagnon/config.yaml` compris, sauf si le cas porte sur une configuration
 absente. Le runner installe les skills sans toucher ce fichier — pour un
-projet qui n'en a pas, `codev init` puis `_codev/` retiré —, et le prompt
+projet qui n'en a pas, `compagnon init` puis `_compagnon/` retiré —, et le prompt
 joue l'auteur : ne poser que la confirmation de la skill, continuer avec
 `answer`, répondre **Later** à une question de mise à jour. Une exécution
 `written` garde toutes les autres clés de premier niveau et tous les
 commentaires (sauf celui au-dessus de `context:`), place
-`# written by /codev-configure` au-dessus de `context:`, étale `context`
+`# written by /compagnon-configure` au-dessus de `context:`, étale `context`
 sur deux à cinq lignes, contient une ou deux règles `specs` et `design` et
 au moins une règle `tasks`, contient les textes attendus, et laisse un
-fichier que `codev status --json` lit ; une exécution `unchanged` laisse
+fichier que `compagnon status --json` lit ; une exécution `unchanged` laisse
 le fichier identique à l'octet près ; une exécution `refused` ne crée
-aucun `_codev/`. Rien d'autre ne doit être modifié.
+aucun `_compagnon/`. Rien d'autre ne doit être modifié.
 
 Le rapport donne une section `change.sync`, `change.archive` et
 `configure.enrich` — la part des exécutions qui réussissent, celle des
@@ -422,13 +422,13 @@ réussissent pas toutes. La notation ne lit que les observations : un
 change qui modifie l'attente de l'un de ces cas — un change en attente qui
 fait de `archive-version-later` un refus, par exemple — n'enregistre pas
 de nouveau la ligne de base, il la renote
-(`cargo run -p codev-evals -- score evals/baseline`) et commite son
+(`cargo run -p compagnon-evals -- score evals/baseline`) et commite son
 rapport ; le cas modifié échoue alors dans la ligne de base et ne décide
 de rien, et il doit réussir dans toutes ses exécutions candidates, que le
 rapport liste.
 
 Changer un terme du vocabulaire change les scores : renotez la ligne de
-base (`cargo run -p codev-evals -- score evals/baseline`) et dites quels
+base (`cargo run -p compagnon-evals -- score evals/baseline`) et dites quels
 constats il reclasse.
 
 N'ajustez pas un rôle et ses cas dans la même pull request : un cas dit
@@ -439,7 +439,7 @@ qu'épingle `.github/workflows/evals.yml`
 (`npm install -g @anthropic-ai/claude-code@<cette version>` ; un test
 vérifie `evals/baseline/run.json` face à l'épinglage) — supprimez
 `evals/baseline/`, puis
-`cargo run -p codev-evals -- run --out evals/baseline --repeat 5 --jobs 4`
+`cargo run -p compagnon-evals -- run --out evals/baseline --repeat 5 --jobs 4`
 (environ 270 dollars et plusieurs heures, cas de planification compris) —,
 ce que les tests vérifient : cinq exécutions de chaque cas, aucune en
 erreur. Les cas d'une nouvelle étape — les cas de révision à l'arrivée de
@@ -448,12 +448,12 @@ de synchronisation, d'archivage et de configuration avec
 `--step change.sync --step change.archive --step configure.enrich` —
 peuvent être enregistrés seuls, dans la ligne de base
 existante, quand les autres cas et la notation n'ont pas changé : avec le
-Claude Code épinglé et le codev que nomme la ligne de base,
-`cargo run -p codev-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
+Claude Code épinglé et le Compagnon que nomme la ligne de base,
+`cargo run -p compagnon-evals -- run --step plan.update --out evals/baseline --repeat 5 --jobs 4`
 la reprend en n'y ajoutant que les exécutions des nouveaux cas (une reprise
 refuse une autre version de Claude Code), puis lancez
-`cargo run -p codev-evals -- score evals/baseline` et
-`cargo run -p codev-evals -- docs`. Un cas modifié ou une notation modifiée
+`cargo run -p compagnon-evals -- score evals/baseline` et
+`cargo run -p compagnon-evals -- docs`. Un cas modifié ou une notation modifiée
 demande toujours d'enregistrer de nouveau toute la ligne de base, sauf
 l'attente modifiée d'un cas de synchronisation, d'archivage ou de
 configuration, renotée comme dit plus haut. La sortie brute de Claude Code de chaque exécution
@@ -465,7 +465,7 @@ Les messages de commit suivent la convention
 [Conventional Commits](https://www.conventionalcommits.org/), en anglais :
 
 ```text
-feat(cli): add --lang to codev docs
+feat(cli): add --lang to compagnon docs
 fix(engine): name the missing requirement when a MODIFIED delta fails
 docs: explain inherited git sources
 ```
@@ -486,14 +486,14 @@ request que la version française reste à mettre à jour, pour qu'un mainteneur
 puisse s'en charger.
 
 Chaque chapitre commence par un unique titre `# `, et les chapitres sont
-listés dans `docs/<lang>/src/SUMMARY.md`. `codev docs` embarque les chapitres
+listés dans `docs/<lang>/src/SUMMARY.md`. `compagnon docs` embarque les chapitres
 de cette liste, dans l'ordre, en une seule page : les liens entre chapitres
 doivent donc être relatifs (`concepts.md#delta`) et pointer vers des titres
 uniques dans tout le livre.
 
 Les encadrés sont des citations qui commencent par un titre en gras :
 `> **Note**` ou `> **Warning**` en anglais, `> **Remarque**` ou
-`> **Attention**` en français. Le site et `codev docs` affichent les remarques
+`> **Attention**` en français. Le site et `compagnon docs` affichent les remarques
 avec un filet vert et les avertissements avec un filet corail.
 
 Pour prévisualiser le site, installez [mdBook](https://rust-lang.github.io/mdBook/)
@@ -501,25 +501,25 @@ et lancez `mdbook serve docs/fr`.
 
 Les changements visibles par les utilisateurs sont décrits dans la section
 `## Release note` de leur proposition. Une fois le changement archivé,
-`codev changelog --write` les ajoute à la section `## [Unreleased]` de
-[CHANGELOG.md](CHANGELOG.md) ; `codev doctor` signale quand elle est en retard.
+`compagnon changelog --write` les ajoute à la section `## [Unreleased]` de
+[CHANGELOG.md](CHANGELOG.md) ; `compagnon doctor` signale quand elle est en retard.
 
 ## Processus de release
 
 Pour les mainteneurs :
 
-1. Vérifiez que `main` est au vert et que `codev doctor` indique `changelog`
+1. Vérifiez que `main` est au vert et que `compagnon doctor` indique `changelog`
    ok.
 2. Incrémentez `version` dans la section `[workspace.package]` du
    `Cargo.toml` racine, puis lancez `cargo build` pour mettre à jour
    `Cargo.lock`.
-3. Lancez `codev changelog --release X.Y.Z --write` : les éléments générés de
+3. Lancez `compagnon changelog --release X.Y.Z --write` : les éléments générés de
    `[Unreleased]` deviennent la section `## [X.Y.Z] - YYYY-MM-DD` de
    `CHANGELOG.md`, sous une nouvelle section `## [Unreleased]` vide.
    Relisez-la, et mettez à jour les liens en bas du fichier.
 4. Commitez avec le message `chore(release): vX.Y.Z`.
 5. Créez le tag et poussez aussitôt — tant que le tag n'existe pas,
-   `codev changelog` compte encore les changements publiés comme non publiés :
+   `compagnon changelog` compte encore les changements publiés comme non publiés :
 
    ```bash
    git tag vX.Y.Z
@@ -528,18 +528,18 @@ Pour les mainteneurs :
 
 Le workflow de release compile les quatre binaires précompilés (macOS arm64 et
 x86_64, Linux x86_64 musl, Windows x86_64), calcule `SHA256SUMS` et publie la
-GitHub Release. Son texte est `codev changelog --until vX.Y.Z --format markdown`,
+GitHub Release. Son texte est `compagnon changelog --until vX.Y.Z --format markdown`,
 produit par le binaire compilé depuis le tag, suivi des notes générées par
 GitHub. Les installateurs prennent en compte la nouvelle version
 immédiatement.
 
-**Les codev plus anciens.** Un même dépôt est lu par plusieurs versions de
-codev à la fois : un change qui ajoute une clé, une valeur ou un format à un
-fichier que codev lit suit donc la
-[décision 0013](_codev/decisions/0013-a-file-written-for-a-newer-codev-warns-unless-ignoring-it-would-weaken-a-check.md).
-Son design indique ce qu'en fait un codev plus ancien — il l'ignore avec un
+**Les Compagnon plus anciens.** Un même dépôt est lu par plusieurs versions de
+Compagnon à la fois : un change qui ajoute une clé, une valeur ou un format à un
+fichier que Compagnon lit suit donc la
+[décision 0013](_compagnon/decisions/0013-a-file-written-for-a-newer-compagnon-warns-unless-ignoring-it-would-weaken-a-check.md).
+Son design indique ce qu'en fait un Compagnon plus ancien — il l'ignore avec un
 avertissement, la refuse, ou la lit de travers — et, lorsque l'ignorer
-affaiblirait une vérification, sa note de version donne le `codev_version`
+affaiblirait une vérification, sa note de version donne le `compagnon_version`
 minimal qu'un projet doit exiger avant de l'utiliser.
 
 ## Sécurité

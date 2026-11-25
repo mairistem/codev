@@ -1,11 +1,11 @@
-//! The `codev-evals` binary, on the committed baseline: scoring needs no
+//! The `compagnon-evals` binary, on the committed baseline: scoring needs no
 //! model, writes both reports, and gives the same bytes twice.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use codev_evals::observed::FORMAT;
+use compagnon_evals::observed::FORMAT;
 
 fn repo() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -15,22 +15,22 @@ fn repo() -> PathBuf {
 }
 
 fn score(out: &Path) -> i32 {
-    let status = Command::new(env!("CARGO_BIN_EXE_codev-evals"))
+    let status = Command::new(env!("CARGO_BIN_EXE_compagnon-evals"))
         .arg("score")
         .arg(repo().join("evals").join("baseline"))
         .arg("--out")
         .arg(out)
-        .env_remove("CODEV_EVAL_MIN_RECALL")
-        .env_remove("CODEV_EVAL_MAX_FALSE_POSITIVES")
-        .env_remove("CODEV_EVAL_MIN_EVIDENCE")
+        .env_remove("COMPAGNON_EVAL_MIN_RECALL")
+        .env_remove("COMPAGNON_EVAL_MAX_FALSE_POSITIVES")
+        .env_remove("COMPAGNON_EVAL_MIN_EVIDENCE")
         .output()
-        .expect("codev-evals runs");
+        .expect("compagnon-evals runs");
     status.status.code().expect("an exit code")
 }
 
 #[test]
 fn score_writes_identical_reports_twice() {
-    let tmp = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("codev-evals-score");
+    let tmp = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("compagnon-evals-score");
     let (first, second) = (tmp.join("first"), tmp.join("second"));
     let _ = fs::remove_dir_all(&tmp);
     let code = score(&first);
@@ -48,19 +48,19 @@ fn score_writes_identical_reports_twice() {
 
 #[test]
 fn an_invalid_threshold_exits_with_two() {
-    let output = Command::new(env!("CARGO_BIN_EXE_codev-evals"))
+    let output = Command::new(env!("CARGO_BIN_EXE_compagnon-evals"))
         .arg("score")
         .arg(repo().join("evals").join("baseline"))
-        .env("CODEV_EVAL_MIN_RECALL", "lots")
+        .env("COMPAGNON_EVAL_MIN_RECALL", "lots")
         .output()
-        .expect("codev-evals runs");
+        .expect("compagnon-evals runs");
     assert_eq!(output.status.code(), Some(2));
-    assert!(String::from_utf8_lossy(&output.stderr).contains("CODEV_EVAL_MIN_RECALL"));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("COMPAGNON_EVAL_MIN_RECALL"));
 }
 
 #[test]
 fn docs_refuses_a_newer_report_and_writes_nothing() {
-    let tmp = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("codev-evals-docs");
+    let tmp = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("compagnon-evals-docs");
     let _ = fs::remove_dir_all(&tmp);
     let baseline = tmp.join("baseline");
     fs::create_dir_all(&baseline).unwrap();
@@ -75,14 +75,14 @@ fn docs_refuses_a_newer_report_and_writes_nothing() {
     let report = serde_json::to_string(&value).unwrap();
     fs::write(baseline.join("report.json"), report).unwrap();
     fs::copy(committed.join("run.json"), baseline.join("run.json")).unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_codev-evals"))
+    let output = Command::new(env!("CARGO_BIN_EXE_compagnon-evals"))
         .arg("--repo")
         .arg(&tmp)
         .arg("docs")
         .arg("--baseline")
         .arg(baseline)
         .output()
-        .expect("codev-evals runs");
+        .expect("compagnon-evals runs");
     assert_eq!(output.status.code(), Some(2));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
@@ -102,10 +102,10 @@ fn docs_refuses_a_newer_report_and_writes_nothing() {
 }
 
 fn evals(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_codev-evals"))
+    Command::new(env!("CARGO_BIN_EXE_compagnon-evals"))
         .args(args)
         .output()
-        .expect("codev-evals runs")
+        .expect("compagnon-evals runs")
 }
 
 #[test]
@@ -116,7 +116,7 @@ fn repeat_zero_exits_with_two() {
         "--repeat",
         "0",
         "--claude",
-        "codev-evals-no-such-claude",
+        "compagnon-evals-no-such-claude",
     ]);
     assert_eq!(output.status.code(), Some(2));
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -194,7 +194,7 @@ fn compare_quality_only_of_the_baseline_with_itself_passes() {
 #[test]
 fn compare_on_a_subset_lists_the_others() {
     let cand = candidate(
-        "codev-evals-compare-subset",
+        "compagnon-evals-compare-subset",
         &["security-code-sql-injection", "security-control-docs-only"],
         |_| {},
         |_| {},
@@ -211,7 +211,7 @@ fn compare_on_a_subset_lists_the_others() {
 #[test]
 fn compare_with_another_model_exits_with_two() {
     let cand = candidate(
-        "codev-evals-compare-model",
+        "compagnon-evals-compare-model",
         &["security-code-sql-injection"],
         |_| {},
         |run| run["model"] = serde_json::json!("claude-sonnet-4-5"),
@@ -235,13 +235,13 @@ fn compare_with_another_model_used_exits_with_two() {
         }
     };
     let base = candidate(
-        "codev-evals-compare-used-a",
+        "compagnon-evals-compare-used-a",
         &["security-code-sql-injection"],
         used("claude-opus-5-5"),
         |_| {},
     );
     let cand = candidate(
-        "codev-evals-compare-used-b",
+        "compagnon-evals-compare-used-b",
         &["security-code-sql-injection"],
         used("claude-sonnet-5-5"),
         |_| {},
@@ -257,7 +257,7 @@ fn compare_with_another_model_used_exits_with_two() {
 
 #[test]
 fn compare_without_common_case_exits_with_two() {
-    let cand = candidate("codev-evals-compare-none", &[], |_| {}, |_| {});
+    let cand = candidate("compagnon-evals-compare-none", &[], |_| {}, |_| {});
     let output = evals(&["compare", &baseline_dir(), &path(&cand)]);
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("no case in common"));
@@ -268,7 +268,7 @@ fn compare_with_a_format_1_baseline_compares_costs() {
     // A cheaper candidate of format 2, same findings, against the
     // baseline as committed; its tokens are compared with `—`.
     let cand = candidate(
-        "codev-evals-compare-cheaper",
+        "compagnon-evals-compare-cheaper",
         &["security-code-sql-injection", "security-control-docs-only"],
         |o| {
             o["format"] = serde_json::json!(FORMAT);
@@ -302,7 +302,7 @@ fn an_unknown_step_exits_with_two() {
         "--step",
         "plan.writ",
         "--claude",
-        "codev-evals-no-such-claude",
+        "compagnon-evals-no-such-claude",
     ]);
     assert_eq!(output.status.code(), Some(2));
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -320,25 +320,25 @@ fn review_options_that_cannot_be_applied_exit_with_two() {
         "--review-mode",
         "sometimes",
         "--claude",
-        "codev-evals-no-such-claude",
+        "compagnon-evals-no-such-claude",
     ]);
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("`sometimes`"));
     let output = evals(&[
         "run",
         "--fixture-config",
-        "codev-evals-no-such-file.yaml",
+        "compagnon-evals-no-such-file.yaml",
         "--claude",
-        "codev-evals-no-such-claude",
+        "compagnon-evals-no-such-claude",
     ]);
     assert_eq!(output.status.code(), Some(2));
-    assert!(String::from_utf8_lossy(&output.stderr).contains("codev-evals-no-such-file.yaml"));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("compagnon-evals-no-such-file.yaml"));
 }
 
 #[test]
 fn compare_across_models_lifts_the_model_guard() {
     let cand = candidate(
-        "codev-evals-compare-across-models",
+        "compagnon-evals-compare-across-models",
         &["security-code-sql-injection"],
         |_| {},
         |run| run["model"] = serde_json::json!("claude-sonnet-4-5"),
@@ -361,7 +361,7 @@ fn compare_across_models_lifts_the_model_guard() {
 #[test]
 fn compare_across_review_modes_exits_with_two() {
     let cand = candidate(
-        "codev-evals-compare-review-mode",
+        "compagnon-evals-compare-review-mode",
         &["security-code-sql-injection"],
         |_| {},
         |run| run["reviewMode"] = serde_json::json!("isolated"),

@@ -31,7 +31,7 @@ pub fn change_yaml(created: &str, skip_specs: bool, disable: &[String]) -> Strin
     text
 }
 
-/// The roles `codev roles --at <step> --change <name> --json` returns,
+/// The roles `compagnon roles --at <step> --change <name> --json` returns,
 /// other than the evaluated one, that can be disabled.
 pub fn roles_to_disable(roles_json: &serde_json::Value, evaluated: &str) -> Vec<String> {
     let mut ids: Vec<String> = roles_json
@@ -55,9 +55,12 @@ pub fn prompt(case: &Case) -> String {
     match case.step {
         Step::PlanChallenge | Step::CodeReview => {
             let (skill, heading) = if case.step == Step::PlanChallenge {
-                ("codev-propose", "7. Challenge the plan — plan.challenge")
+                (
+                    "compagnon-propose",
+                    "7. Challenge the plan — plan.challenge",
+                )
             } else {
-                ("codev-apply", "5. Review the change — code.review")
+                ("compagnon-apply", "5. Review the change — code.review")
             };
             let material = if case.step == Step::PlanChallenge {
                 "Its planning artifacts are complete."
@@ -65,16 +68,16 @@ pub fn prompt(case: &Case) -> String {
                 "Its tasks are all done and its code is committed on the current branch; its diff is against `main`."
             };
             format!(
-                "This is a codev role evaluation, run without a user. The change `{change}` exists. {material}\n\
+                "This is a compagnon role evaluation, run without a user. The change `{change}` exists. {material}\n\
                  \n\
                  Run only step \"{heading}\" of the `{skill}` skill (.claude/skills/{skill}/SKILL.md) on the change `{change}`: \
-                 ask for the roles of the step with `codev roles --at {step} --change {change} --json`, apply every role returned, \
-                 and write every finding to the review record `_codev/changes/{change}/review.md` as the skill's review-record \
+                 ask for the roles of the step with `compagnon roles --at {step} --change {change} --json`, apply every role returned, \
+                 and write every finding to the review record `_compagnon/changes/{change}/review.md` as the skill's review-record \
                  procedure says (resume first, a section per role, each finding with its location and verbatim evidence, then \
                  check the record as the skill says).\n\
                  \n\
                  Evaluation mode: skip the author's answer and the reviewer's re-check — leave every finding `open`. \
-                 Modify no file but `_codev/changes/{change}/review.md`: do not fix, simplify or edit the code or the plan. \
+                 Modify no file but `_compagnon/changes/{change}/review.md`: do not fix, simplify or edit the code or the plan. \
                  Ask no question. When the record is written and checked, stop with a one-line summary.",
                 step = case.step.as_str(),
             )
@@ -82,15 +85,15 @@ pub fn prompt(case: &Case) -> String {
         Step::PlanWrite => {
             let request = case.plan.as_ref().map_or("", |p| p.request.as_str());
             format!(
-                "Run the `codev-propose` skill (read .claude/skills/codev-propose/SKILL.md and follow it) for this \
+                "Run the `compagnon-propose` skill (read .claude/skills/compagnon-propose/SKILL.md and follow it) for this \
                  user request:\n\
                  \n\
                  « {request} »\n\
                  \n\
-                 This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+                 This is a compagnon evaluation run, without a user: ask no question — wherever the skill says to ask, \
                  make the most reasonable assumption and state it in the proposal. Write the proposal, the delta specs \
                  and the design, then stop: skip tasks.md, the traceability check (plan.trace) and the challenge \
-                 (plan.challenge). Modify no file outside `_codev/changes/`. End with a one-line summary."
+                 (plan.challenge). Modify no file outside `_compagnon/changes/`. End with a one-line summary."
             )
         }
         Step::PlanUpdate => {
@@ -102,21 +105,21 @@ pub fn prompt(case: &Case) -> String {
             // check reads every message the agent wrote, so it measures what
             // the skill makes the agent report, not what the prompt asks.
             format!(
-                "Run the `codev-update` skill (read .claude/skills/codev-update/SKILL.md and follow it) on the \
+                "Run the `compagnon-update` skill (read .claude/skills/compagnon-update/SKILL.md and follow it) on the \
                  change `{change}`, artifact `{artifact}`, for this request of the author:\n\
                  \n\
                  « {request} »\n\
                  \n\
-                 This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+                 This is a compagnon evaluation run, without a user: ask no question — wherever the skill says to ask, \
                  make the most reasonable assumption. No one will confirm anything: report a ripple as the skill \
-                 says, without applying it. Modify no file outside `_codev/changes/{change}/`."
+                 says, without applying it. Modify no file outside `_compagnon/changes/{change}/`."
             )
         }
         Step::CodeImplement => format!(
-            "Run the `codev-apply` skill (read .claude/skills/codev-apply/SKILL.md and follow it) on the \
+            "Run the `compagnon-apply` skill (read .claude/skills/compagnon-apply/SKILL.md and follow it) on the \
              change `{change}`.\n\
              \n\
-             This is a codev evaluation run, without a user: ask no question — wherever the skill says to ask, \
+             This is a compagnon evaluation run, without a user: ask no question — wherever the skill says to ask, \
              make the most reasonable assumption. Carry the skill through to its end, its review (code.review) \
              included. Do not archive the change and do not sync it. Cargo works offline: the dependencies are \
              already fetched and built."
@@ -127,9 +130,9 @@ pub fn prompt(case: &Case) -> String {
         // take (`self-update` needs the network).
         Step::ChangeSync | Step::ChangeArchive => {
             let skill = if case.step == Step::ChangeSync {
-                "codev-sync"
+                "compagnon-sync"
             } else {
-                "codev-archive"
+                "compagnon-archive"
             };
             format!(
                 "Run the `{skill}` skill (read .claude/skills/{skill}/SKILL.md and follow it) on the change \
@@ -144,43 +147,43 @@ pub fn prompt(case: &Case) -> String {
                 _ => "yes",
             };
             format!(
-                "Run the `codev-configure` skill (read .claude/skills/codev-configure/SKILL.md and follow it) \
+                "Run the `compagnon-configure` skill (read .claude/skills/compagnon-configure/SKILL.md and follow it) \
                  on this project.\n\
                  \n\
-                 This is a codev evaluation run, without a user: ask no question but the skill's own \
+                 This is a compagnon evaluation run, without a user: ask no question but the skill's own \
                  confirmation. Ask it as the skill says, then continue as if the author had answered \
                  « {answer} ». {LATER}"
             )
         }
         Step::PlanTrace => format!(
-            "This is a codev role evaluation, run without a user. The change `{change}` exists and its planning \
+            "This is a compagnon role evaluation, run without a user. The change `{change}` exists and its planning \
              artifacts are written.\n\
              \n\
-             Run only step \"6. Check traceability — plan.trace\" of the `codev-propose` skill \
-             (.claude/skills/codev-propose/SKILL.md) on the change `{change}`: ask for the roles of the step with \
-             `codev roles --at plan.trace --change {change} --json`, re-read every artifact from disk, check it against \
+             Run only step \"6. Check traceability — plan.trace\" of the `compagnon-propose` skill \
+             (.claude/skills/compagnon-propose/SKILL.md) on the change `{change}`: ask for the roles of the step with \
+             `compagnon roles --at plan.trace --change {change} --json`, re-read every artifact from disk, check it against \
              the tracer's criteria, and fix the gaps directly in the artifacts, as the step says.\n\
              \n\
-             Evaluation mode: modify only files under `_codev/changes/{change}/`; write no review record; touch no code. \
+             Evaluation mode: modify only files under `_compagnon/changes/{change}/`; write no review record; touch no code. \
              Ask no question. When done, stop with a one-line summary."
         ),
     }
 }
 
 /// The evaluation mode of a sync or archive run: no user to answer.
-const EVALUATION_MODE: &str = "This is a codev evaluation run, without a user: ask no question — \
+const EVALUATION_MODE: &str = "This is a compagnon evaluation run, without a user: ask no question — \
      wherever the skill says to ask, make the most reasonable assumption.";
 
 /// The author's answer to the skills' update check.
-const LATER: &str = "If the skill asks whether to update codev, the author answers **Later**.";
+const LATER: &str = "If the skill asks whether to update compagnon, the author answers **Later**.";
 
 /// How Claude Code is run, from the environment.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClaudeSettings {
     pub model: Option<String>,
-    /// `CODEV_EVAL_BUDGET_USD`, overriding every step's default.
+    /// `COMPAGNON_EVAL_BUDGET_USD`, overriding every step's default.
     pub budget_usd: Option<f64>,
-    /// `CODEV_EVAL_TIMEOUT_SECS`, overriding every step's default.
+    /// `COMPAGNON_EVAL_TIMEOUT_SECS`, overriding every step's default.
     pub timeout: Option<Duration>,
 }
 
@@ -197,22 +200,24 @@ pub const IMPLEMENT_BUDGET_USD: f64 = 30.0;
 pub const IMPLEMENT_TIMEOUT_SECS: u64 = 5400;
 
 impl ClaudeSettings {
-    /// `CODEV_EVAL_MODEL`, `CODEV_EVAL_BUDGET_USD`,
-    /// `CODEV_EVAL_TIMEOUT_SECS`; a value that does not parse names its
+    /// `COMPAGNON_EVAL_MODEL`, `COMPAGNON_EVAL_BUDGET_USD`,
+    /// `COMPAGNON_EVAL_TIMEOUT_SECS`; a value that does not parse names its
     /// variable.
     pub fn from_env(env: &dyn Fn(&str) -> Option<String>) -> Result<ClaudeSettings, String> {
-        let model = env("CODEV_EVAL_MODEL").filter(|m| !m.trim().is_empty());
-        let budget_usd = match env("CODEV_EVAL_BUDGET_USD") {
+        let model = env("COMPAGNON_EVAL_MODEL").filter(|m| !m.trim().is_empty());
+        let budget_usd = match env("COMPAGNON_EVAL_BUDGET_USD") {
             None => None,
             Some(text) => text
                 .trim()
                 .parse::<f64>()
                 .ok()
                 .filter(|v| *v > 0.0)
-                .ok_or_else(|| format!("CODEV_EVAL_BUDGET_USD: `{text}` is not a positive number"))
+                .ok_or_else(|| {
+                    format!("COMPAGNON_EVAL_BUDGET_USD: `{text}` is not a positive number")
+                })
                 .map(Some)?,
         };
-        let timeout = match env("CODEV_EVAL_TIMEOUT_SECS") {
+        let timeout = match env("COMPAGNON_EVAL_TIMEOUT_SECS") {
             None => None,
             Some(text) => text
                 .trim()
@@ -220,7 +225,7 @@ impl ClaudeSettings {
                 .ok()
                 .filter(|v| *v > 0)
                 .ok_or_else(|| {
-                    format!("CODEV_EVAL_TIMEOUT_SECS: `{text}` is not a positive whole number")
+                    format!("COMPAGNON_EVAL_TIMEOUT_SECS: `{text}` is not a positive whole number")
                 })
                 .map(|secs| Some(Duration::from_secs(secs)))?,
         };
@@ -264,12 +269,12 @@ pub const DISALLOWED_TOOLS: &str = "WebFetch WebSearch";
 
 /// What the skills grant in their `allowed-tools`: the sandbox approves
 /// only the commands Claude Code knows (`ls`, `git`, `cat`…) without a
-/// prompt, and a user's session approves `codev` through the skill. The
+/// prompt, and a user's session approves `compagnon` through the skill. The
 /// evaluation's agent reads the skill file instead of invoking the skill,
 /// so the runner grants it the same.
-pub const ALLOWED_TOOLS: &str = "Bash(codev:*)";
+pub const ALLOWED_TOOLS: &str = "Bash(compagnon:*)";
 
-/// The sub-agent tool, granted besides `codev` to a review case in the
+/// The sub-agent tool, granted besides `compagnon` to a review case in the
 /// isolated mode: the skill would grant it in its `allowed-tools`, which
 /// the evaluation's agent does not invoke.
 pub const SUB_AGENT_TOOL: &str = "Agent";
@@ -342,7 +347,7 @@ pub fn review_settings(
     })
 }
 
-/// A review case's `_codev/config.yaml` with what the settings append:
+/// A review case's `_compagnon/config.yaml` with what the settings append:
 /// `review: { mode: isolated }` in the isolated mode, then the text of
 /// `--fixture-config`; `None` when there is nothing to append.
 pub fn config_with_review_settings(existing: &str, review: &ReviewSettings) -> Option<String> {
@@ -448,7 +453,7 @@ pub fn allowed_tools(step: Step, review: &ReviewSettings) -> String {
 }
 
 /// What is missing for an isolated case's role to have run alone, from
-/// `codev review --json` and the sub-agents its session started: the
+/// `compagnon review --json` and the sub-agents its session started: the
 /// step's `Mode: isolated.`, no `Fallback:` line, a sub-agent; `None`
 /// when nothing is.
 pub fn isolation_missing(
@@ -528,7 +533,7 @@ pub fn record_sub_agent_tokens(consumption: &mut Consumption) -> Result<(), Stri
 /// and the process, so that two runs started in the same second never
 /// build their fixtures in the same place.
 pub fn default_work_dir(temp: &Path, secs: u64, pid: u32) -> PathBuf {
-    temp.join(format!("codev-evals-{secs}-{pid}"))
+    temp.join(format!("compagnon-evals-{secs}-{pid}"))
 }
 
 /// The arguments of `claude` for one case.
@@ -632,7 +637,7 @@ pub fn pending<'a>(
 /// The files `git status --porcelain -z --untracked-files=all` lists that
 /// the step does not allow: `review.md` at the review steps, the change's
 /// directory at `plan.trace` and `plan.update`, anything under
-/// `_codev/changes/` at `plan.write` but a `corrections.md`: no author
+/// `_compagnon/changes/` at `plan.write` but a `corrections.md`: no author
 /// corrects the agent in an evaluation run, so a correction noted there is
 /// one it invented.
 pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
@@ -652,10 +657,10 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
         let allowed = match case.step {
             Step::PlanTrace | Step::PlanUpdate => path.starts_with(&change_dir),
             Step::PlanWrite => path.starts_with(CHANGES_DIR) && !path.ends_with("/corrections.md"),
-            // The code is the run's to change; `_codev/` only in its change,
+            // The code is the run's to change; `_compagnon/` only in its change,
             // which an author's correction never reaches in an evaluation.
             Step::CodeImplement => {
-                !path.starts_with("_codev/")
+                !path.starts_with("_compagnon/")
                     || (path.starts_with(&change_dir) && !path.ends_with("/corrections.md"))
             }
             // The merge writes the main specs; the archive also moves the
@@ -673,11 +678,11 @@ pub fn strayed(porcelain: &str, case: &Case) -> Vec<String> {
     out
 }
 
-const CHANGES_DIR: &str = "_codev/changes/";
-const SPECS_DIR: &str = "_codev/specs/";
+const CHANGES_DIR: &str = "_compagnon/changes/";
+const SPECS_DIR: &str = "_compagnon/specs/";
 
 /// The changes a planning run created: the directories of
-/// `_codev/changes/` (archive aside) that hold a file git does not track,
+/// `_compagnon/changes/` (archive aside) that hold a file git does not track,
 /// with those files, from `git status --porcelain -z --untracked-files=all`.
 pub fn created_changes(porcelain: &str) -> BTreeMap<String, Vec<String>> {
     let mut changes: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -810,12 +815,12 @@ pub fn source_of(tool: &str, input: &serde_json::Value) -> String {
         "Write" | "Edit" | "MultiEdit" | "NotebookEdit" => "edit".into(),
         "Bash" => {
             let command = without_cd(field("command"));
-            if command.contains(".claude/skills/") && !command.starts_with("codev ") {
+            if command.contains(".claude/skills/") && !command.starts_with("compagnon ") {
                 return "skill".into();
             }
             let mut words = command.split(|c: char| c.is_whitespace() || ";&|)".contains(c));
             match words.next().unwrap_or("") {
-                "codev" => format!("codev {}", words.find(|w| !w.is_empty()).unwrap_or("")),
+                "compagnon" => format!("compagnon {}", words.find(|w| !w.is_empty()).unwrap_or("")),
                 "grep" | "rg" | "find" | "fd" | "ag" => "search".into(),
                 "cat" | "sed" | "head" | "tail" | "less" | "awk" | "nl" => "file".into(),
                 _ => "shell".into(),
@@ -843,7 +848,7 @@ fn is_planning_write(tool: &str, input: &serde_json::Value) -> bool {
         && input
             .get("file_path")
             .and_then(|v| v.as_str())
-            .is_some_and(|p| p.contains("_codev/changes/"))
+            .is_some_and(|p| p.contains("_compagnon/changes/"))
 }
 
 /// Groups the assistant events by message — one call to the model may
@@ -1115,14 +1120,14 @@ pub fn civil_date(days_since_epoch: i64) -> String {
 }
 
 // ---------------------------------------------------------------------
-// Shell: files, git, codev, Claude Code.
+// Shell: files, git, compagnon, Claude Code.
 // ---------------------------------------------------------------------
 
 /// Where the tools are.
 #[derive(Debug, Clone)]
 pub struct Tools {
     pub claude: PathBuf,
-    pub codev: PathBuf,
+    pub compagnon: PathBuf,
     pub git: PathBuf,
 }
 
@@ -1130,7 +1135,7 @@ pub struct Tools {
 fn version(tool: &Path, name: &str) -> Result<String, String> {
     let output = Command::new(tool)
         .arg("--version")
-        .env("CODEV_NO_UPDATE_CHECK", "1")
+        .env("COMPAGNON_NO_UPDATE_CHECK", "1")
         .output()
         .map_err(|e| format!("cannot execute `{name}` ({}): {e}", tool.display()))?;
     if !output.status.success() {
@@ -1152,8 +1157,8 @@ fn version(tool: &Path, name: &str) -> Result<String, String> {
 pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
     let claude = version(&tools.claude, "claude")?;
     version(&tools.git, "git")?;
-    let codev = version(&tools.codev, "codev")?;
-    if let Some(problem) = codev_name_problem(&tools.codev) {
+    let compagnon = version(&tools.compagnon, "compagnon")?;
+    if let Some(problem) = compagnon_name_problem(&tools.compagnon) {
         return Err(problem);
     }
     let runs = |program: &str, arg: &str| {
@@ -1168,27 +1173,31 @@ pub fn preflight(tools: &Tools) -> Result<(String, String), String> {
     if let Some(missing) = sandbox_missing(std::env::consts::OS, &runs) {
         return Err(missing);
     }
-    Ok((claude, codev))
+    Ok((claude, compagnon))
 }
 
-/// Why the codev binary under test would not be the one the agent runs:
-/// the agent calls `codev` by name, through the search path whose first
+/// Why the compagnon binary under test would not be the one the agent runs:
+/// the agent calls `compagnon` by name, through the search path whose first
 /// folder is the binary's, so a file under another name leaves it running
-/// whatever other `codev` that path holds; `None` when the name is right.
-pub fn codev_name_problem(codev: &Path) -> Option<String> {
-    let expected = if cfg!(windows) { "codev.exe" } else { "codev" };
-    let Some(name) = codev.file_name() else {
+/// whatever other `compagnon` that path holds; `None` when the name is right.
+pub fn compagnon_name_problem(compagnon: &Path) -> Option<String> {
+    let expected = if cfg!(windows) {
+        "compagnon.exe"
+    } else {
+        "compagnon"
+    };
+    let Some(name) = compagnon.file_name() else {
         return Some(format!(
-            "--codev {}: not the path of a file named `{expected}`",
-            codev.display()
+            "--compagnon {}: not the path of a file named `{expected}`",
+            compagnon.display()
         ));
     };
     let name = name.to_string_lossy();
     (name != expected).then(|| {
         format!(
-            "--codev {}: the file must be named `{expected}`, in a folder of its own — the agent \
-             calls codev by name, and `{name}` would leave it running another installed codev",
-            codev.display()
+            "--compagnon {}: the file must be named `{expected}`, in a folder of its own — the agent \
+             calls compagnon by name, and `{name}` would leave it running another installed compagnon",
+            compagnon.display()
         )
     })
 }
@@ -1304,7 +1313,7 @@ fn write_tree(root: &Path, files: &BTreeMap<String, Vec<u8>>) -> std::io::Result
 /// the API key, nor any other variable of the operator's environment but
 /// what it needs to run, nor any git configuration but the repository's
 /// own.
-fn tool_command(tool: &Path, dir: &Path, codev_dir: &Path) -> Command {
+fn tool_command(tool: &Path, dir: &Path, compagnon_dir: &Path) -> Command {
     let mut command = Command::new(tool);
     command
         .current_dir(dir)
@@ -1312,8 +1321,8 @@ fn tool_command(tool: &Path, dir: &Path, codev_dir: &Path) -> Command {
         // to run.
         .env_clear()
         .envs(std::env::vars().filter(|(name, _)| implement_run::kept(name)))
-        .env("CODEV_NO_UPDATE_CHECK", "1")
-        .env("PATH", path_with(codev_dir))
+        .env("COMPAGNON_NO_UPDATE_CHECK", "1")
+        .env("PATH", path_with(compagnon_dir))
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", null_device())
         .env_remove("ANTHROPIC_API_KEY")
@@ -1325,8 +1334,13 @@ fn null_device() -> &'static str {
     if cfg!(windows) { "NUL" } else { "/dev/null" }
 }
 
-fn run_tool(tool: &Path, args: &[&str], dir: &Path, codev_dir: &Path) -> Result<String, String> {
-    let output = tool_command(tool, dir, codev_dir)
+fn run_tool(
+    tool: &Path,
+    args: &[&str],
+    dir: &Path,
+    compagnon_dir: &Path,
+) -> Result<String, String> {
+    let output = tool_command(tool, dir, compagnon_dir)
         .args(args)
         .output()
         .map_err(|e| format!("cannot run {}: {e}", tool.display()))?;
@@ -1341,7 +1355,7 @@ fn run_tool(tool: &Path, args: &[&str], dir: &Path, codev_dir: &Path) -> Result<
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
-/// `PATH` with the directory of the `codev` under test first, so the
+/// `PATH` with the directory of the `compagnon` under test first, so the
 /// skills call the binary built from this tree.
 fn path_with(dir: &Path) -> std::ffi::OsString {
     let mut paths = vec![dir.to_path_buf()];
@@ -1357,9 +1371,9 @@ fn path_with(dir: &Path) -> std::ffi::OsString {
 pub fn git_args<'a>(args: &[&'a str]) -> Vec<&'a str> {
     let mut all = vec![
         "-c",
-        "user.name=codev-evals",
+        "user.name=compagnon-evals",
         "-c",
-        "user.email=evals@codev.invalid",
+        "user.email=evals@compagnon.invalid",
         "-c",
         "commit.gpgsign=false",
         "-c",
@@ -1372,7 +1386,7 @@ pub fn git_args<'a>(args: &[&'a str]) -> Vec<&'a str> {
 }
 
 fn git(tools: &Tools, dir: &Path, args: &[&str]) -> Result<String, String> {
-    run_tool(&tools.git, &git_args(args), dir, codev_dir(tools))
+    run_tool(&tools.git, &git_args(args), dir, compagnon_dir(tools))
 }
 
 /// Why a run cannot be trusted when its agent changed the repository's
@@ -1385,11 +1399,11 @@ pub fn config_tampered(before: &[u8], after: Option<&[u8]>) -> Option<String> {
     })
 }
 
-fn codev_dir(tools: &Tools) -> &Path {
-    tools.codev.parent().unwrap_or(Path::new("."))
+fn compagnon_dir(tools: &Tools) -> &Path {
+    tools.compagnon.parent().unwrap_or(Path::new("."))
 }
 
-/// Builds the case's project in `dir`: `base/` on `main` with codev
+/// Builds the case's project in `dir`: `base/` on `main` with compagnon
 /// initialized — its configuration with what `review` appends, the skills
 /// rendered again for it —, `change/` on the branch `change`, the
 /// evaluated role alone.
@@ -1409,7 +1423,7 @@ pub fn setup(
     write_tree(dir, &read_tree(&case_dir.join("base")).map_err(io)?).map_err(io)?;
     git(tools, dir, &["init", "-q", "-b", "main"])?;
     run_tool(
-        &tools.codev,
+        &tools.compagnon,
         &[
             "init",
             "--yes",
@@ -1422,13 +1436,18 @@ pub fn setup(
             ".",
         ],
         dir,
-        codev_dir(tools),
+        compagnon_dir(tools),
     )?;
-    let config_path = dir.join("_codev").join("config.yaml");
+    let config_path = dir.join("_compagnon").join("config.yaml");
     let config = fs::read_to_string(&config_path).map_err(io)?;
     if let Some(text) = config_with_review_settings(&config, review) {
         fs::write(&config_path, text).map_err(io)?;
-        run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+        run_tool(
+            &tools.compagnon,
+            &["update", "--force"],
+            dir,
+            compagnon_dir(tools),
+        )?;
     }
     git(tools, dir, &["add", "-A"])?;
     git(tools, dir, &["commit", "-q", "-m", "base"])?;
@@ -1438,7 +1457,7 @@ pub fn setup(
 
     let change_dir = dir.join(case.change_dir());
     let skip_specs = !change_dir.join("specs").exists();
-    // Write a first change.yaml so `codev roles` resolves the change, then
+    // Write a first change.yaml so `compagnon roles` resolves the change, then
     // the final one with the other roles turned off.
     fs::write(
         change_dir.join("change.yaml"),
@@ -1446,7 +1465,7 @@ pub fn setup(
     )
     .map_err(io)?;
     let roles = run_tool(
-        &tools.codev,
+        &tools.compagnon,
         &[
             "roles",
             "--at",
@@ -1456,10 +1475,10 @@ pub fn setup(
             "--json",
         ],
         dir,
-        codev_dir(tools),
+        compagnon_dir(tools),
     )?;
     let roles: serde_json::Value =
-        serde_json::from_str(&roles).map_err(|e| format!("`codev roles` output: {e}"))?;
+        serde_json::from_str(&roles).map_err(|e| format!("`compagnon roles` output: {e}"))?;
     let disable = roles_to_disable(&roles, &case.role);
     fs::write(
         change_dir.join("change.yaml"),
@@ -1473,8 +1492,8 @@ pub fn setup(
 
 /// Builds a planning or update case's project in `dir`: the tree of `repo`
 /// at the case's `ref` — for an update case, with its `change/` written to
-/// `_codev/changes/<change>/`, the change as it stood while active — one
-/// commit, then the skills the codev under test renders (`codev update
+/// `_compagnon/changes/<change>/`, the change as it stood while active — one
+/// commit, then the skills the compagnon under test renders (`compagnon update
 /// --force`, over skills edited since), committed.
 /// `extra_config`, the text of `--fixture-config` for an implementation
 /// case, is appended to the fixture's configuration before the skills are
@@ -1535,12 +1554,12 @@ pub fn setup_plan(
         write_tree(&dir.join(case.change_dir()), &change).map_err(io)?;
     }
     // Laid over the tree, relative to the project root, replacing what the
-    // state at `ref` holds: a configuration that sets `codev_version`.
+    // state at `ref` holds: a configuration that sets `compagnon_version`.
     if let Some(merge) = &case.merge {
         write_tree(dir, &merge.overlay).map_err(io)?;
     }
     if let Some(extra) = extra_config {
-        let path = dir.join("_codev").join("config.yaml");
+        let path = dir.join("_compagnon").join("config.yaml");
         let existing = fs::read_to_string(&path).unwrap_or_default();
         fs::write(&path, with_appended_config(&existing, extra)).map_err(io)?;
     }
@@ -1551,7 +1570,12 @@ pub fn setup_plan(
         dir,
         &["commit", "-q", "-m", &format!("state at {git_ref}")],
     )?;
-    run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+    run_tool(
+        &tools.compagnon,
+        &["update", "--force"],
+        dir,
+        compagnon_dir(tools),
+    )?;
     git(tools, dir, &["add", "-A"])?;
     git(
         tools,
@@ -1561,17 +1585,17 @@ pub fn setup_plan(
             "-q",
             "--allow-empty",
             "-m",
-            "skills of the codev under test",
+            "skills of the compagnon under test",
         ],
     )?;
     Ok(())
 }
 
 /// Builds a configure case's project in `dir`: `base/` in a new
-/// repository, the skills of the codev under test installed without
+/// repository, the skills of the compagnon under test installed without
 /// changing the case's configuration, committed. A project without
-/// `_codev/config.yaml` gets the skills from `codev init`, then loses
-/// `_codev/`, so that the skill meets the project a user would have.
+/// `_compagnon/config.yaml` gets the skills from `compagnon init`, then loses
+/// `_compagnon/`, so that the skill meets the project a user would have.
 pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(), String> {
     let io = |e: std::io::Error| format!("setting up the fixture: {e}");
     if dir.exists() {
@@ -1583,16 +1607,22 @@ pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(),
     let config_path = dir.join(crate::case::CONFIG_PATH);
     match fs::read(&config_path) {
         Ok(before) => {
-            run_tool(&tools.codev, &["update", "--force"], dir, codev_dir(tools))?;
+            run_tool(
+                &tools.compagnon,
+                &["update", "--force"],
+                dir,
+                compagnon_dir(tools),
+            )?;
             if fs::read(&config_path).ok().as_deref() != Some(before.as_slice()) {
                 return Err(
-                    "`codev update --force` changed the case's `_codev/config.yaml`".to_string(),
+                    "`compagnon update --force` changed the case's `_compagnon/config.yaml`"
+                        .to_string(),
                 );
             }
         }
         Err(_) => {
             run_tool(
-                &tools.codev,
+                &tools.compagnon,
                 &[
                     "init",
                     "--yes",
@@ -1605,9 +1635,9 @@ pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(),
                     ".",
                 ],
                 dir,
-                codev_dir(tools),
+                compagnon_dir(tools),
             )?;
-            fs::remove_dir_all(dir.join("_codev")).map_err(io)?;
+            fs::remove_dir_all(dir.join("_compagnon")).map_err(io)?;
         }
     }
     git(tools, dir, &["add", "-A"])?;
@@ -1615,18 +1645,18 @@ pub fn setup_configure(case_dir: &Path, dir: &Path, tools: &Tools) -> Result<(),
     Ok(())
 }
 
-/// The digest of every file under `dir/_codev/`, by path from `dir`:
+/// The digest of every file under `dir/_compagnon/`, by path from `dir`:
 /// SHA-256 of its content, line endings aside, so that a checkout that
 /// converts them does not read as an edit.
-pub fn codev_digests(dir: &Path) -> BTreeMap<String, String> {
-    read_tree(&dir.join("_codev"))
+pub fn compagnon_digests(dir: &Path) -> BTreeMap<String, String> {
+    read_tree(&dir.join("_compagnon"))
         .unwrap_or_default()
         .into_iter()
         .map(|(path, bytes)| {
             let text: Vec<u8> = bytes.into_iter().filter(|b| *b != b'\r').collect();
             (
-                format!("_codev/{path}"),
-                codev_core::update::sha256_hex(&text),
+                format!("_compagnon/{path}"),
+                compagnon_core::update::sha256_hex(&text),
             )
         })
         .collect()
@@ -1676,10 +1706,10 @@ fn relative_report(text: &str, dirs: &[&Path]) -> Option<serde_json::Value> {
     serde_json::from_str(&text).ok().map(without_root)
 }
 
-/// codev's own command on a copy of the case's directory, made before the
+/// compagnon's own command on a copy of the case's directory, made before the
 /// agent runs: a clone of the fixture's commit next to `work_dir`, the
-/// command run with the environment the runner gives codev, its exit
-/// code, its report and what it left under `_codev/` against `before`,
+/// command run with the environment the runner gives compagnon, its exit
+/// code, its report and what it left under `_compagnon/` against `before`,
 /// then the copy removed. The case's own directory is left as committed.
 pub fn make_reference(
     case: &Case,
@@ -1700,10 +1730,10 @@ pub fn make_reference(
     let parent = work_dir.parent().unwrap_or(Path::new("."));
     git(tools, parent, &["clone", "-q", &source, &target])?;
     let args = reference_args(case);
-    let output = tool_command(&tools.codev, &copy, codev_dir(tools))
+    let output = tool_command(&tools.compagnon, &copy, compagnon_dir(tools))
         .args(&args)
         .output()
-        .map_err(|e| format!("cannot run `codev {}`: {e}", args.join(" ")));
+        .map_err(|e| format!("cannot run `compagnon {}`: {e}", args.join(" ")));
     let result = output.map(|output| {
         let canonical = fs::canonicalize(&copy).unwrap_or_else(|_| copy.clone());
         crate::observed::Reference {
@@ -1712,20 +1742,20 @@ pub fn make_reference(
                 &String::from_utf8_lossy(&output.stdout),
                 &[canonical.as_path(), copy.as_path()],
             ),
-            changed: digest_changes(before, &codev_digests(&copy)),
+            changed: digest_changes(before, &compagnon_digests(&copy)),
         }
     });
     let _ = fs::remove_dir_all(&copy);
     result
 }
 
-/// Why a `codev status --json` report says the project cannot be read;
+/// Why a `compagnon status --json` report says the project cannot be read;
 /// `None` when it can. A project without an active change — every
 /// configure fixture — is reported as an error with the code
 /// `no_active_change`, which says nothing of the configuration.
 pub fn status_problem(stdout: &[u8]) -> Option<String> {
     let Ok(report) = serde_json::from_slice::<serde_json::Value>(stdout) else {
-        return Some("`codev status --json` printed no JSON report".to_string());
+        return Some("`compagnon status --json` printed no JSON report".to_string());
     };
     report["status"]
         .as_array()
@@ -1741,15 +1771,15 @@ pub fn status_problem(stdout: &[u8]) -> Option<String> {
         })
 }
 
-/// Why `codev status --json` does not read the project in `dir`; `None`
+/// Why `compagnon status --json` does not read the project in `dir`; `None`
 /// when it does.
 fn status_error(tools: &Tools, dir: &Path) -> Option<String> {
-    match tool_command(&tools.codev, dir, codev_dir(tools))
+    match tool_command(&tools.compagnon, dir, compagnon_dir(tools))
         .args(["status", "--json"])
         .output()
     {
         Ok(output) => status_problem(&output.stdout),
-        Err(e) => Some(format!("cannot run `codev status --json`: {e}")),
+        Err(e) => Some(format!("cannot run `compagnon status --json`: {e}")),
     }
 }
 
@@ -1770,8 +1800,8 @@ fn run_claude(
     command
         .args(args)
         .current_dir(dir)
-        .env("CODEV_NO_UPDATE_CHECK", "1")
-        .env("PATH", path_with(codev_dir(tools)))
+        .env("COMPAGNON_NO_UPDATE_CHECK", "1")
+        .env("PATH", path_with(compagnon_dir(tools)))
         .envs(extra_env.iter().map(|(k, v)| (k, v)))
         .stdin(Stdio::null())
         .stdout(stdout)
@@ -1844,7 +1874,7 @@ pub fn without_init_event(stream: &str) -> String {
         .collect()
 }
 
-/// A `codev validate --json` report without its `root`: the absolute path
+/// A `compagnon validate --json` report without its `root`: the absolute path
 /// of the case's directory on the machine that ran it, which the scoring
 /// does not read.
 pub fn without_root(mut report: serde_json::Value) -> serde_json::Value {
@@ -1854,13 +1884,13 @@ pub fn without_root(mut report: serde_json::Value) -> serde_json::Value {
     report
 }
 
-/// The JSON document a `codev … --json` command prints in `dir`. codev
+/// The JSON document a `compagnon … --json` command prints in `dir`. compagnon
 /// exits with 1 when what it reports holds an error — an invalid plan, a
 /// review record with an error — and still prints its document, which is
 /// the observation: only output that is not JSON is an error.
-fn codev_json(tools: &Tools, dir: &Path, args: &[&str]) -> Result<serde_json::Value, String> {
-    let command = format!("codev {}", args.join(" "));
-    let out = tool_command(&tools.codev, dir, codev_dir(tools))
+fn compagnon_json(tools: &Tools, dir: &Path, args: &[&str]) -> Result<serde_json::Value, String> {
+    let command = format!("compagnon {}", args.join(" "));
+    let out = tool_command(&tools.compagnon, dir, compagnon_dir(tools))
         .args(args)
         .output()
         .map_err(|e| format!("cannot run `{command}`: {e}"))?;
@@ -1921,9 +1951,9 @@ pub fn run_case(
         return observed;
     }
     if case.step == Step::PlanUpdate {
-        // The errors the archived change already has under the codev being
+        // The errors the archived change already has under the compagnon being
         // measured: the run is judged only on those it adds.
-        match codev_json(tools, work_dir, &["validate", &case.change, "--json"]) {
+        match compagnon_json(tools, work_dir, &["validate", &case.change, "--json"]) {
             Ok(value) => observed.validate_before = Some(without_root(value)),
             Err(e) => {
                 observed.error = Some(e);
@@ -1931,11 +1961,11 @@ pub fn run_case(
             }
         }
     }
-    // The fixture under `_codev/`, and what codev's own command makes of
+    // The fixture under `_compagnon/`, and what compagnon's own command makes of
     // it, before the agent touches anything.
     let mut merge_before = None;
     if case.merge.is_some() {
-        let before = codev_digests(work_dir);
+        let before = compagnon_digests(work_dir);
         match make_reference(case, work_dir, &before, tools) {
             Ok(reference) => merge_before = Some((before, reference)),
             Err(e) => {
@@ -2003,7 +2033,7 @@ pub fn run_case(
                 let content = fs::read_to_string(work_dir.join(&path)).ok();
                 observed.files.insert(path, content);
             }
-            match codev_json(tools, work_dir, &["validate", &change, "--json"]) {
+            match compagnon_json(tools, work_dir, &["validate", &change, "--json"]) {
                 Ok(value) => {
                     observed.validate.insert(change, without_root(value));
                 }
@@ -2013,7 +2043,7 @@ pub fn run_case(
     }
     if case.step == Step::PlanUpdate {
         observed.files = change_files(case, work_dir);
-        match codev_json(tools, work_dir, &["validate", &case.change, "--json"]) {
+        match compagnon_json(tools, work_dir, &["validate", &case.change, "--json"]) {
             Ok(value) => {
                 observed
                     .validate
@@ -2024,7 +2054,7 @@ pub fn run_case(
     }
     if let Some((before, reference)) = merge_before {
         observed.merge = Some(crate::observed::MergeObserved {
-            changed: digest_changes(&before, &codev_digests(work_dir)),
+            changed: digest_changes(&before, &compagnon_digests(work_dir)),
             reference,
         });
     }
@@ -2032,12 +2062,12 @@ pub fn run_case(
         observed.configure = Some(crate::observed::ConfigureObserved {
             before: configure_before,
             after: fs::read_to_string(work_dir.join(crate::case::CONFIG_PATH)).ok(),
-            codev_root: work_dir.join("_codev").is_dir(),
+            compagnon_root: work_dir.join("_compagnon").is_dir(),
             status_error: status_error(tools, work_dir),
         });
     }
     if case.step.records_findings() {
-        match codev_json(
+        match compagnon_json(
             tools,
             work_dir,
             &["review", "--change", &case.change, "--json"],
@@ -2063,7 +2093,7 @@ pub fn run_case(
 }
 
 /// An implementation run, once its fixture is built: the build prepared,
-/// Claude Code on `/codev-apply`, what the run left, then the runner's own
+/// Claude Code on `/compagnon-apply`, what the run left, then the runner's own
 /// checks, the binary and the acceptance script. The caller removes the
 /// build outputs, error or not.
 fn run_implementation(
@@ -2077,9 +2107,9 @@ fn run_implementation(
 ) -> Observed {
     let result = (|| -> Result<(), String> {
         implement_run::prepare(work_dir, log)?;
-        // The errors the archived change already has under the codev being
+        // The errors the archived change already has under the compagnon being
         // measured: the run is judged only on those it adds.
-        let before = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+        let before = compagnon_json(tools, work_dir, &["validate", &case.change, "--json"])?;
         observed.validate_before = Some(without_root(before));
         let git_before = git_settings(work_dir);
         let reads = run_agent(case, work_dir, log, tools, settings, &mut observed)?;
@@ -2109,7 +2139,7 @@ fn run_implementation(
     observed
 }
 
-/// Claude Code on `/codev-apply`, granted what the installed skill grants a
+/// Claude Code on `/compagnon-apply`, granted what the installed skill grants a
 /// user who invokes it — the shell, to build and test, and the sub-agent
 /// tool of an isolated review —: the agent reads the skill file instead of
 /// invoking it. Returns the paths and commands its tool calls read; a run
@@ -2126,7 +2156,7 @@ fn run_agent(
         work_dir
             .join(".claude")
             .join("skills")
-            .join("codev-apply")
+            .join("compagnon-apply")
             .join("SKILL.md"),
     )
     .unwrap_or_default();
@@ -2160,7 +2190,7 @@ fn run_agent(
 }
 
 /// What the run left in the case's directory: the paths outside the step,
-/// the change's files, `codev validate` and `codev review`. Returns
+/// the change's files, `compagnon validate` and `compagnon review`. Returns
 /// `git status`, which a failure makes an error rather than a clean tree.
 fn observe_change(
     case: &Case,
@@ -2176,11 +2206,11 @@ fn observe_change(
     )?;
     observed.strayed = strayed(&status, case);
     observed.files = change_files(case, work_dir);
-    let validate = codev_json(tools, work_dir, &["validate", &case.change, "--json"])?;
+    let validate = compagnon_json(tools, work_dir, &["validate", &case.change, "--json"])?;
     observed
         .validate
         .insert(case.change.clone(), without_root(validate));
-    observed.review = Some(codev_json(
+    observed.review = Some(compagnon_json(
         tools,
         work_dir,
         &["review", "--change", &case.change, "--json"],
@@ -2343,7 +2373,7 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
             let queue = &queue;
             scope.spawn(move || {
                 while let Some(Job { case, n }) = queue.pop() {
-                    eprintln!("[codev-evals] {} #{n} — running", case.id);
+                    eprintln!("[compagnon-evals] {} #{n} — running", case.id);
                     let case_dir = options.repo.join("evals").join("cases").join(&case.id);
                     let log = options.out.join(&case.id).join(n.to_string());
                     let work = options.work.join(format!("{}-{n}", case.id));
@@ -2361,12 +2391,12 @@ pub fn run_cases(pending: &[Job], options: &RunOptions, date: &str) -> bool {
                     let text = serde_json::to_string_pretty(&observed).expect("serializes") + "\n";
                     if let Err(e) = fs::write(log.join("observed.json"), text) {
                         eprintln!(
-                            "[codev-evals] {} #{n} — cannot write observed.json: {e}",
+                            "[compagnon-evals] {} #{n} — cannot write observed.json: {e}",
                             case.id
                         );
                     }
                     eprintln!(
-                        "[codev-evals] {} #{n} — {}",
+                        "[compagnon-evals] {} #{n} — {}",
                         case.id,
                         observed.error.as_deref().unwrap_or("done")
                     );
@@ -2394,7 +2424,7 @@ pub fn check_resume(
     let name = |m: Option<&str>| m.unwrap_or("Claude Code's default").to_string();
     if recorded.model.as_deref() != model {
         return Err(format!(
-            "this output directory was recorded with the model {}, and CODEV_EVAL_MODEL asks for {}; \
+            "this output directory was recorded with the model {}, and COMPAGNON_EVAL_MODEL asks for {}; \
              use another --out directory, or the same model",
             name(recorded.model.as_deref()),
             name(model)
@@ -2488,11 +2518,11 @@ mod tests {
         case.change = "add-sessions".into();
         let text = prompt(&case);
         for needle in [
-            "`codev-propose`",
+            "`compagnon-propose`",
             "plan.challenge",
             "`add-sessions`",
             "leave every finding `open`",
-            "Modify no file but `_codev/changes/add-sessions/review.md`",
+            "Modify no file but `_compagnon/changes/add-sessions/review.md`",
         ] {
             assert!(text.contains(needle), "missing {needle} in {text}");
         }
@@ -2501,7 +2531,7 @@ mod tests {
             "the prompt leaves the record's check to the skill: {text}"
         );
         case.step = Step::CodeReview;
-        assert!(prompt(&case).contains("`codev-apply`"));
+        assert!(prompt(&case).contains("`compagnon-apply`"));
         assert!(prompt(&case).contains("code.review"));
     }
 
@@ -2517,8 +2547,8 @@ mod tests {
     #[test]
     fn the_claude_command_takes_model_and_budget_from_the_environment() {
         let env = |name: &str| match name {
-            "CODEV_EVAL_MODEL" => Some("claude-sonnet-4-5".to_string()),
-            "CODEV_EVAL_BUDGET_USD" => Some("1.5".to_string()),
+            "COMPAGNON_EVAL_MODEL" => Some("claude-sonnet-4-5".to_string()),
+            "COMPAGNON_EVAL_BUDGET_USD" => Some("1.5".to_string()),
             _ => None,
         };
         let settings = ClaudeSettings::from_env(&env).unwrap();
@@ -2542,11 +2572,11 @@ mod tests {
             Duration::from_secs(600)
         );
 
-        let bad = |name: &str| (name == "CODEV_EVAL_TIMEOUT_SECS").then(|| "soon".to_string());
+        let bad = |name: &str| (name == "COMPAGNON_EVAL_TIMEOUT_SECS").then(|| "soon".to_string());
         assert!(
             ClaudeSettings::from_env(&bad)
                 .unwrap_err()
-                .contains("CODEV_EVAL_TIMEOUT_SECS")
+                .contains("COMPAGNON_EVAL_TIMEOUT_SECS")
         );
     }
 
@@ -2581,7 +2611,7 @@ mod tests {
             envs.iter().all(|(k, v)| v.is_none()
                 || crate::implement_run::kept(k)
                 || k.starts_with("GIT_")
-                || k == "CODEV_NO_UPDATE_CHECK"),
+                || k == "COMPAGNON_NO_UPDATE_CHECK"),
             "{envs:?}"
         );
         assert!(
@@ -2628,7 +2658,7 @@ mod tests {
         };
         assert_eq!(
             after("--allowedTools").as_deref(),
-            Some("Bash(codev:*)"),
+            Some("Bash(compagnon:*)"),
             "exactly what the skills grant"
         );
         assert!(!args.iter().any(|a| a.contains("bypassPermissions")));
@@ -2725,7 +2755,7 @@ mod tests {
             model: None,
             date: "2026-10-13".into(),
             claude_version: None,
-            codev_version: None,
+            compagnon_version: None,
             repeat: None,
             jobs: None,
             review_mode: None,
@@ -2742,12 +2772,11 @@ mod tests {
     #[test]
     fn files_modified_outside_the_step_are_strayed() {
         let case = a_case("security", Kind::Seeded, &[]);
-        let status =
-            " M src/users.ts\0?? _codev/changes/add-search/review.md\0R  src/new.ts\0src/old.ts\0";
+        let status = " M src/users.ts\0?? _compagnon/changes/add-search/review.md\0R  src/new.ts\0src/old.ts\0";
         assert_eq!(strayed(status, &case), ["src/new.ts", "src/users.ts"]);
         let mut trace = case.clone();
         trace.step = Step::PlanTrace;
-        let status = " M _codev/changes/add-search/tasks.md\0";
+        let status = " M _compagnon/changes/add-search/tasks.md\0";
         assert!(strayed(status, &trace).is_empty());
     }
 
@@ -2858,8 +2887,8 @@ mod tests {
     #[test]
     fn preflight_names_a_missing_tool() {
         let tools = Tools {
-            claude: PathBuf::from("codev-evals-no-such-claude"),
-            codev: PathBuf::from("codev-evals-no-such-codev"),
+            claude: PathBuf::from("compagnon-evals-no-such-claude"),
+            compagnon: PathBuf::from("compagnon-evals-no-such-compagnon"),
             git: PathBuf::from("git"),
         };
         let err = preflight(&tools).unwrap_err();
@@ -2897,7 +2926,7 @@ mod tests {
                     tool_use(
                         "t1",
                         "Bash",
-                        json!({"command": "codev roles --at code.review --json"})
+                        json!({"command": "compagnon roles --at code.review --json"})
                     ),
                     tool_use("t2", "Read", json!({"file_path": "/p/src/users.ts"})),
                 ]),
@@ -2910,7 +2939,7 @@ mod tests {
         .join("\n");
         let c = parse_claude_stream(&stream).consumption.unwrap();
         assert_eq!(c.calls.len(), 2);
-        assert_eq!(c.calls[1].sources["codev roles"], 4500);
+        assert_eq!(c.calls[1].sources["compagnon roles"], 4500);
         assert_eq!(c.calls[1].sources["file"], 1500);
     }
 
@@ -2968,46 +2997,52 @@ mod tests {
     }
 
     #[test]
-    fn a_codev_command_is_named_by_its_subcommand() {
+    fn a_compagnon_command_is_named_by_its_subcommand() {
         assert_eq!(
-            source_of("Bash", &json!({"command": "codev review --change x"})),
-            "codev review"
-        );
-        assert_eq!(
-            source_of("Bash", &json!({"command": "codev validate; git status"})),
-            "codev validate"
+            source_of("Bash", &json!({"command": "compagnon review --change x"})),
+            "compagnon review"
         );
         assert_eq!(
             source_of(
                 "Bash",
-                &json!({"command": "cd \"$PWD\" && codev roles --json"})
+                &json!({"command": "compagnon validate; git status"})
             ),
-            "codev roles"
+            "compagnon validate"
         );
         assert_eq!(
-            source_of("Bash", &json!({"command": "grep -rn x _codev/specs"})),
+            source_of(
+                "Bash",
+                &json!({"command": "cd \"$PWD\" && compagnon roles --json"})
+            ),
+            "compagnon roles"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "grep -rn x _compagnon/specs"})),
             "search"
         );
         assert_eq!(
             source_of("Bash", &json!({"command": "cd /tmp/x; sed -n 1,80p a.md"})),
             "file"
         );
-        assert_eq!(source_of("Bash", &json!({"command": "ls _codev"})), "shell");
         assert_eq!(
-            source_of("Bash", &json!({"command": "codev --version&&ls"})),
-            "codev --version"
+            source_of("Bash", &json!({"command": "ls _compagnon"})),
+            "shell"
+        );
+        assert_eq!(
+            source_of("Bash", &json!({"command": "compagnon --version&&ls"})),
+            "compagnon --version"
         );
         assert_eq!(
             source_of(
                 "Bash",
-                &json!({"command": "cat .claude/skills/codev-apply/SKILL.md"})
+                &json!({"command": "cat .claude/skills/compagnon-apply/SKILL.md"})
             ),
             "skill"
         );
         assert_eq!(
             source_of(
                 "Read",
-                &json!({"file_path": "/p/.claude/skills/codev-apply/SKILL.md"})
+                &json!({"file_path": "/p/.claude/skills/compagnon-apply/SKILL.md"})
             ),
             "skill"
         );
@@ -3023,7 +3058,7 @@ mod tests {
         let mut lines = Vec::new();
         for i in 0..27 {
             let input = if i == 11 {
-                json!({"file_path": "/p/_codev/changes/add-search/proposal.md", "content": "x"})
+                json!({"file_path": "/p/_compagnon/changes/add-search/proposal.md", "content": "x"})
             } else {
                 json!({"file_path": "/p/src/a.rs"})
             };
@@ -3077,7 +3112,7 @@ mod tests {
             model: None,
             date: "2026-10-15".into(),
             claude_version: Some("2.1.289 (Claude Code)".into()),
-            codev_version: None,
+            compagnon_version: None,
             repeat: None,
             jobs: None,
             review_mode: None,
@@ -3133,7 +3168,7 @@ mod tests {
         let text = prompt(&planning_case(
             "Je voudrais qu'une décision naisse en brouillon",
         ));
-        assert!(text.contains("`codev-propose`"), "{text}");
+        assert!(text.contains("`compagnon-propose`"), "{text}");
         assert!(text.contains("« Je voudrais qu'une décision naisse en brouillon »"));
         assert!(text.contains("ask no question"));
         assert!(
@@ -3141,7 +3176,7 @@ mod tests {
                 && text.contains("plan.trace")
                 && text.contains("plan.challenge")
         );
-        assert!(text.contains("Modify no file outside `_codev/changes/`"));
+        assert!(text.contains("Modify no file outside `_compagnon/changes/`"));
     }
 
     #[test]
@@ -3179,8 +3214,8 @@ mod tests {
         );
 
         let env = |name: &str| match name {
-            "CODEV_EVAL_BUDGET_USD" => Some("2".to_string()),
-            "CODEV_EVAL_TIMEOUT_SECS" => Some("900".to_string()),
+            "COMPAGNON_EVAL_BUDGET_USD" => Some("2".to_string()),
+            "COMPAGNON_EVAL_TIMEOUT_SECS" => Some("900".to_string()),
             _ => None,
         };
         let set = ClaudeSettings::from_env(&env).unwrap();
@@ -3200,24 +3235,26 @@ mod tests {
     fn an_invented_correction_is_modified_outside_the_step() {
         let case = planning_case("r");
         let status =
-            "?? _codev/changes/draft/proposal.md\0?? _codev/changes/draft/corrections.md\0";
+            "?? _compagnon/changes/draft/proposal.md\0?? _compagnon/changes/draft/corrections.md\0";
         assert_eq!(
             strayed(status, &case),
-            ["_codev/changes/draft/corrections.md"]
+            ["_compagnon/changes/draft/corrections.md"]
         );
     }
 
     #[test]
     fn a_planning_run_strays_outside_the_changes() {
         let case = planning_case("r");
-        let status = "?? _codev/changes/draft/proposal.md\0?? _codev/changes/draft/specs/a/spec.md\0 M crates/codev-core/src/lib.rs\0";
-        assert_eq!(strayed(status, &case), ["crates/codev-core/src/lib.rs"]);
+        let status = "?? _compagnon/changes/draft/proposal.md\0?? _compagnon/changes/draft/specs/a/spec.md\0 M crates/compagnon-core/src/lib.rs\0";
+        assert_eq!(strayed(status, &case), ["crates/compagnon-core/src/lib.rs"]);
         let created = created_changes(status);
         assert_eq!(created.keys().collect::<Vec<_>>(), ["draft"]);
         assert_eq!(created["draft"].len(), 2);
         assert!(
-            created_changes(" M _codev/changes/old/tasks.md\0?? _codev/changes/archive/x/a.md\0")
-                .is_empty()
+            created_changes(
+                " M _compagnon/changes/old/tasks.md\0?? _compagnon/changes/archive/x/a.md\0"
+            )
+            .is_empty()
         );
     }
 
@@ -3248,14 +3285,14 @@ mod tests {
             "remplace la décision X par Y",
         ));
         for needle in [
-            "`codev-update`",
-            ".claude/skills/codev-update/SKILL.md",
+            "`compagnon-update`",
+            ".claude/skills/compagnon-update/SKILL.md",
             "change `add-auth`",
             "artifact `design`",
             "« remplace la décision X par Y »",
             "ask no question",
             "report a ripple as the skill says, without applying it",
-            "Modify no file outside `_codev/changes/add-auth/`",
+            "Modify no file outside `_compagnon/changes/add-auth/`",
         ] {
             assert!(text.contains(needle), "missing {needle} in {text}");
         }
@@ -3268,10 +3305,10 @@ mod tests {
     #[test]
     fn an_update_run_that_edits_the_code_strays() {
         let case = update_case("add-auth", crate::case::Artifact::Design, "r");
-        let status = " M _codev/changes/add-auth/design.md\0?? _codev/changes/add-auth/notes.md\0 M src/lib.rs\0?? _codev/changes/other/proposal.md\0";
+        let status = " M _compagnon/changes/add-auth/design.md\0?? _compagnon/changes/add-auth/notes.md\0 M src/lib.rs\0?? _compagnon/changes/other/proposal.md\0";
         assert_eq!(
             strayed(status, &case),
-            ["_codev/changes/other/proposal.md", "src/lib.rs"]
+            ["_compagnon/changes/other/proposal.md", "src/lib.rs"]
         );
     }
 
@@ -3423,7 +3460,7 @@ mod tests {
             model: None,
             date: "2026-10-20".into(),
             claude_version: None,
-            codev_version: None,
+            compagnon_version: None,
             repeat: Some(1),
             jobs: Some(2),
             review_mode: None,
@@ -3454,10 +3491,10 @@ mod tests {
             let at = args.iter().position(|a| a == "--allowedTools").unwrap();
             args[at + 1].clone()
         };
-        assert_eq!(tools(Step::PlanChallenge), "Bash(codev:*) Agent");
-        assert_eq!(tools(Step::PlanWrite), "Bash(codev:*)");
+        assert_eq!(tools(Step::PlanChallenge), "Bash(compagnon:*) Agent");
+        assert_eq!(tools(Step::PlanWrite), "Bash(compagnon:*)");
         assert!(review.isolated_at(Step::CodeReview) && !review.isolated_at(Step::PlanUpdate));
-        // Inline, the configuration is left as `codev init` wrote it.
+        // Inline, the configuration is left as `compagnon init` wrote it.
         assert_eq!(
             config_with_review_settings(INIT_CONFIG, &ReviewSettings::default()),
             None
@@ -3552,7 +3589,7 @@ mod tests {
     fn an_earlier_run_json_reads_as_inline() {
         let earlier = crate::observed::parse_run_info(
             r#"{"format": 2, "model": null, "date": "2026-10-15",
-            "claudeVersion": "2.1.289 (Claude Code)", "codevVersion": "0.6.1",
+            "claudeVersion": "2.1.289 (Claude Code)", "compagnonVersion": "0.6.1",
             "repeat": 5, "jobs": 4}"#,
         )
         .unwrap();
@@ -3562,7 +3599,7 @@ mod tests {
         assert!(check_resume_review(&earlier, &isolated()).is_err());
     }
 
-    /// `codev review --json` for a step: its `Mode:` line and each role's
+    /// `compagnon review --json` for a step: its `Mode:` line and each role's
     /// `Fallback:` line.
     fn review_json(mode: Option<&str>, fallback: Option<&str>) -> serde_json::Value {
         json!({"exists": true, "steps": [{"step": "plan.challenge", "recorded": true,
@@ -3705,7 +3742,7 @@ mod tests {
         let a = default_work_dir(temp, 1_792_148_804, 101);
         let b = default_work_dir(temp, 1_792_148_804, 202);
         assert_ne!(a, b);
-        assert_eq!(a, Path::new("/tmp/codev-evals-1792148804-101"));
+        assert_eq!(a, Path::new("/tmp/compagnon-evals-1792148804-101"));
     }
 
     fn implement_case(change: &str) -> Case {
@@ -3729,7 +3766,7 @@ mod tests {
     fn the_prompt_of_an_implementation_case() {
         let text = prompt(&implement_case("decision-accept-command"));
         for needle in [
-            "`codev-apply`",
+            "`compagnon-apply`",
             "`decision-accept-command`",
             "ask no question",
             "code.review",
@@ -3774,34 +3811,37 @@ mod tests {
     #[test]
     fn a_run_that_syncs_its_change() {
         let case = implement_case("decision-accept-command");
-        let status = " M _codev/specs/decisions/spec.md\0 M crates/codev-cli/src/main.rs\0";
-        assert_eq!(strayed(status, &case), ["_codev/specs/decisions/spec.md"]);
-        let archived = " D _codev/changes/decision-accept-command/tasks.md\0?? _codev/changes/archive/2026-10-20-decision-accept-command/tasks.md\0";
+        let status = " M _compagnon/specs/decisions/spec.md\0 M crates/compagnon-cli/src/main.rs\0";
+        assert_eq!(
+            strayed(status, &case),
+            ["_compagnon/specs/decisions/spec.md"]
+        );
+        let archived = " D _compagnon/changes/decision-accept-command/tasks.md\0?? _compagnon/changes/archive/2026-10-20-decision-accept-command/tasks.md\0";
         assert_eq!(
             strayed(archived, &case),
-            ["_codev/changes/archive/2026-10-20-decision-accept-command/tasks.md"]
+            ["_compagnon/changes/archive/2026-10-20-decision-accept-command/tasks.md"]
         );
     }
 
     #[test]
     fn an_implementation_run_may_change_the_code() {
         let case = implement_case("decision-accept-command");
-        let status = " M crates/codev-cli/src/main.rs\0?? docs/fr/src/cli.md\0 M _codev/changes/decision-accept-command/tasks.md\0?? _codev/changes/decision-accept-command/review.md\0";
+        let status = " M crates/compagnon-cli/src/main.rs\0?? docs/fr/src/cli.md\0 M _compagnon/changes/decision-accept-command/tasks.md\0?? _compagnon/changes/decision-accept-command/review.md\0";
         assert!(strayed(status, &case).is_empty());
-        let corrected = "?? _codev/changes/decision-accept-command/corrections.md\0";
+        let corrected = "?? _compagnon/changes/decision-accept-command/corrections.md\0";
         assert_eq!(
             strayed(corrected, &case),
-            ["_codev/changes/decision-accept-command/corrections.md"]
+            ["_compagnon/changes/decision-accept-command/corrections.md"]
         );
     }
 
     #[test]
     fn an_implementation_run_grants_what_the_apply_skill_grants() {
-        let skill = "---\nname: codev-apply\nallowed-tools: \"Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash, Agent\"\nlicense: MIT\n---\n\nallowed-tools: not this\n";
+        let skill = "---\nname: compagnon-apply\nallowed-tools: \"Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash, Agent\"\nlicense: MIT\n---\n\nallowed-tools: not this\n";
         let tools = skill_allowed_tools(skill).unwrap();
         assert_eq!(
             tools,
-            "Bash(codev:*), Read, Write, Edit, Glob, Grep, Bash, Agent"
+            "Bash(compagnon:*), Read, Write, Edit, Glob, Grep, Bash, Agent"
         );
         let settings = ClaudeSettings::from_env(&|_| None).unwrap();
         let args = with_allowed_tools(
@@ -3859,17 +3899,21 @@ mod tests {
     }
 
     #[test]
-    fn a_codev_binary_under_another_name_is_refused() {
+    fn a_compagnon_binary_under_another_name_is_refused() {
         let named = |name: &str| Path::new("frozen").join(name);
-        let err = codev_name_problem(&named("codev-candidate")).unwrap();
+        let err = compagnon_name_problem(&named("compagnon-candidate")).unwrap();
         assert!(
-            err.contains("codev-candidate") && err.contains("must be named"),
+            err.contains("compagnon-candidate") && err.contains("must be named"),
             "{err}"
         );
-        let right = if cfg!(windows) { "codev.exe" } else { "codev" };
-        assert!(codev_name_problem(&named(right)).is_none());
+        let right = if cfg!(windows) {
+            "compagnon.exe"
+        } else {
+            "compagnon"
+        };
+        assert!(compagnon_name_problem(&named(right)).is_none());
         assert!(
-            codev_name_problem(Path::new("..")).is_some(),
+            compagnon_name_problem(Path::new("..")).is_some(),
             "a path naming no file"
         );
     }
@@ -3956,8 +4000,8 @@ mod tests {
     fn the_archive_prompt_names_the_skill_and_answers_later() {
         let text = prompt(&merge_case("archive-x", Step::ChangeArchive, "add-auth"));
         for needle in [
-            "`codev-archive`",
-            ".claude/skills/codev-archive/SKILL.md",
+            "`compagnon-archive`",
+            ".claude/skills/compagnon-archive/SKILL.md",
             "`add-auth`",
             "ask no question",
             "the author answers **Later**",
@@ -3972,7 +4016,7 @@ mod tests {
             );
         }
         let sync = prompt(&merge_case("sync-x", Step::ChangeSync, "add-auth"));
-        assert!(sync.contains("`codev-sync`") && sync.contains("**Later**"));
+        assert!(sync.contains("`compagnon-sync`") && sync.contains("**Later**"));
         let defaults = ClaudeSettings::from_env(&|_| None).unwrap();
         for step in [Step::ChangeSync, Step::ChangeArchive, Step::ConfigureEnrich] {
             assert_eq!(defaults.budget_for(step), 3.0);
@@ -3984,18 +4028,22 @@ mod tests {
     fn a_sync_run_that_edits_the_code_strays() {
         let case = merge_case("sync-x", Step::ChangeSync, "add-auth");
         let status =
-            " M _codev/specs/doctor/spec.md\0?? _codev/specs/auth/spec.md\0 M src/lib.rs\0";
+            " M _compagnon/specs/doctor/spec.md\0?? _compagnon/specs/auth/spec.md\0 M src/lib.rs\0";
         assert_eq!(strayed(status, &case), ["src/lib.rs"]);
     }
 
     #[test]
     fn moving_the_change_is_within_the_archive_step() {
         let archive = merge_case("archive-x", Step::ChangeArchive, "add-auth");
-        let moved = " M _codev/specs/doctor/spec.md\0 D _codev/changes/add-auth/proposal.md\0?? _codev/changes/archive/2026-10-27-add-auth/proposal.md\0";
+        let moved = " M _compagnon/specs/doctor/spec.md\0 D _compagnon/changes/add-auth/proposal.md\0?? _compagnon/changes/archive/2026-10-27-add-auth/proposal.md\0";
         assert_eq!(strayed(moved, &archive), Vec::<String>::new());
         let sync = merge_case("sync-x", Step::ChangeSync, "add-auth");
-        let edited = " M _codev/specs/doctor/spec.md\0 M _codev/changes/add-auth/tasks.md\0";
-        assert_eq!(strayed(edited, &sync), ["_codev/changes/add-auth/tasks.md"]);
+        let edited =
+            " M _compagnon/specs/doctor/spec.md\0 M _compagnon/changes/add-auth/tasks.md\0";
+        assert_eq!(
+            strayed(edited, &sync),
+            ["_compagnon/changes/add-auth/tasks.md"]
+        );
     }
 
     #[test]
@@ -4055,8 +4103,8 @@ mod tests {
     fn the_configure_prompt_carries_the_answer() {
         let text = prompt(&configure_case(false));
         for needle in [
-            "`codev-configure`",
-            ".claude/skills/codev-configure/SKILL.md",
+            "`compagnon-configure`",
+            ".claude/skills/compagnon-configure/SKILL.md",
             "ask no question but the skill's own confirmation",
             "« no »",
             "the author answers **Later**",
@@ -4082,10 +4130,10 @@ mod tests {
     #[test]
     fn a_configure_run_that_edits_the_code_strays() {
         let case = configure_case(true);
-        let status = " M _codev/config.yaml\0 M src/index.ts\0?? _codev/specs/x/spec.md\0";
+        let status = " M _compagnon/config.yaml\0 M src/index.ts\0?? _compagnon/specs/x/spec.md\0";
         assert_eq!(
             strayed(status, &case),
-            ["_codev/specs/x/spec.md", "src/index.ts"]
+            ["_compagnon/specs/x/spec.md", "src/index.ts"]
         );
     }
 

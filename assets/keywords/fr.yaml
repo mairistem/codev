@@ -1,7 +1,7 @@
-# Mots-clés structurels des documents codev, en français.
+# Mots-clés structurels des documents compagnon, en français.
 #
 # Mêmes clés que `en.yaml` ; la première forme d'une liste est celle que
-# codev écrit.
+# compagnon écrit.
 spec.title: "# Spécification {title}"
 spec.purpose: "## Objet"
 spec.requirements: "## Exigences"

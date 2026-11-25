@@ -75,7 +75,7 @@ mod tests {
         let files = [
             (
                 "CONTRIBUTING.md",
-                "A change to assets/roles/ pastes `codev-evals -- compare`.",
+                "A change to assets/roles/ pastes `compagnon-evals -- compare`.",
             ),
             (
                 "CONTRIBUTING.fr.md",
@@ -102,13 +102,13 @@ mod tests {
         let files = [
             (
                 "CONTRIBUTING.md",
-                "paste `cargo run -p codev-evals -- compare --quality-only`",
+                "paste `cargo run -p compagnon-evals -- compare --quality-only`",
             ),
             ("CONTRIBUTING.fr.md", "collez les scores avant et après"),
         ];
         assert_eq!(
-            missing_mention(&files, "codev-evals -- compare"),
-            ["`CONTRIBUTING.fr.md` does not mention `codev-evals -- compare`"]
+            missing_mention(&files, "compagnon-evals -- compare"),
+            ["`CONTRIBUTING.fr.md` does not mention `compagnon-evals -- compare`"]
         );
     }
 

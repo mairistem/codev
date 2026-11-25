@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         For open-ended ideas, consider starting a
-        [discussion](https://github.com/mairistem/codev/discussions) first.
+        [discussion](https://github.com/mairistem/compagnon/discussions) first.
   - type: textarea
     id: problem
     attributes:

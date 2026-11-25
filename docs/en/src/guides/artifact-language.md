@@ -1,13 +1,13 @@
 # Artifact language
 
-codev itself speaks English: its commands, messages and skills are in English.
+Compagnon itself speaks English: its commands, messages and skills are in English.
 The planning artifacts your team reads and approves — proposals, specs,
 designs, tasks — can be written in any language, and entirely in French:
 prose and structure alike.
 
 ## Setting the language
 
-The `language:` key of `_codev/config.yaml` sets the language of the
+The `language:` key of `_compagnon/config.yaml` sets the language of the
 artifacts, as an ISO 639 code:
 
 ```yaml
@@ -19,9 +19,9 @@ optionally followed by one subtag such as a region or a script: `en`, `fr`,
 `de`, `pt-BR`, `zh-Hant`. Any other value makes the configuration invalid.
 When the key is absent, the language is English (`en`).
 
-## How `codev init` chooses it
+## How `compagnon init` chooses it
 
-`codev init` writes the `language:` key for you, with a comment saying where
+`compagnon init` writes the `language:` key for you, with a comment saying where
 the value came from. It uses, in order:
 
 1. the `--language <CODE>` option;
@@ -31,11 +31,11 @@ the value came from. It uses, in order:
 3. otherwise `en`.
 
 ```bash
-codev init --language pt-BR
+compagnon init --language pt-BR
 ```
 
 ```yaml
-# set with `codev init --language`
+# set with `compagnon init --language`
 language: pt-BR
 ```
 
@@ -45,7 +45,7 @@ Detection keeps only the language part of the locale — `fr_FR.UTF-8` gives
 `zh-Hans`. Pass `--language` to record any other region. `--no-detect` disables locale detection along with the rest
 of the environment probe.
 
-On a project that already has a `_codev/config.yaml`, `codev init` does not
+On a project that already has a `_compagnon/config.yaml`, `compagnon init` does not
 touch the file. To change the language later, edit the key.
 
 ## What is translated, and what is not
@@ -56,10 +56,10 @@ the team's choice.
 
 The skills write the **structure** of the files — template headings, spec and
 delta structure, the scenario lines and the normative keywords — in the
-project's **keyword language**: the language of `language:` when codev ships
+project's **keyword language**: the language of `language:` when Compagnon ships
 its keywords, matched on its first part (`fr`, `fr-CA` → French), and
-English otherwise (`pt-BR` → English keywords, Portuguese prose). codev ships
-English and French. `codev instructions` serves the template in that
+English otherwise (`pt-BR` → English keywords, Portuguese prose). Compagnon ships
+English and French. `compagnon instructions` serves the template in that
 language, and gives the text of every keyword in it (`keywordLanguage`,
 `keywords`), so the skills never translate a keyword themselves.
 
@@ -69,8 +69,8 @@ AJOUTÉES`, `### Exigence :`, `#### Scénario :`, `**QUAND**` / `**ALORS**` and
 `DOIT`. To keep English keywords with French prose, keep `language: en`:
 there is no separate setting for the keyword language.
 
-codev **reads** the structure in English or in French, whatever
-`language:` says. Each keyword has its text in every language of codev's
+Compagnon **reads** the structure in English or in French, whatever
+`language:` says. Each keyword has its text in every language of Compagnon's
 keyword catalog:
 
 | English | French |
@@ -106,7 +106,7 @@ L'application DOIT s'afficher avec le thème du système tant que l'utilisateur 
 - **ALORS** l'application s'affiche avec le thème sombre
 ```
 
-How codev reads and writes them:
+How Compagnon reads and writes them:
 
 - French keywords forgive case, accents and the space — ordinary or
   no-break — before a colon: `### Exigence: X` and `#### Scenario : Y` are
@@ -114,50 +114,50 @@ How codev reads and writes them:
 - Normative keywords count only in upper case, in both languages: `doit` in
   lower case is ordinary prose, and the requirement fails validation.
 - A document may mix both languages.
-- When `codev sync` or `codev archive` edits a spec, it writes the keywords
+- When `compagnon sync` or `compagnon archive` edits a spec, it writes the keywords
   in that spec's language; a new spec takes the language of the delta that
   creates it.
 - The changelog shows release note categories in English, whatever language
   wrote them.
 - Domain names (`security`, `migration`…), the review record and
-  `corrections.md` stay in English. codev does not read the scenario lines
+  `corrections.md` stay in English. Compagnon does not read the scenario lines
   (`**WHEN**` / `**THEN**`, `**QUAND**` / `**ALORS**`).
 
 ## Upgrading a project already in French
 
 A project with `language: fr` got English headings under French prose until
 this release; its next artifacts are written in French. Two kinds of mixing
-follow, both valid, since codev reads both languages in one document:
+follow, both valid, since Compagnon reads both languages in one document:
 
-- A change planned before the upgrade stays as it is: `/codev-update` keeps
+- A change planned before the upgrade stays as it is: `/compagnon-update` keeps
   the keyword language of the artifact it revises, and only a new artifact
   takes the project's.
 - A main spec keeps its own language. A merge writes its headings in that
   spec's language, but copies a requirement's body as written, so a French
   `DOIT` or `**QUAND**` can land under an English `### Requirement:`. To
   avoid it, keep `language: en`, or rewrite a main spec's keywords in French
-  once — codev never rewrites a spec on its own.
+  once — Compagnon never rewrites a spec on its own.
 
 > **Warning**
-> A codev release older than this catalog rejects French keywords. Before
-> your team writes them, raise `codev_version` in `_codev/config.yaml` to
+> A Compagnon release older than this catalog rejects French keywords. Before
+> your team writes them, raise `compagnon_version` in `_compagnon/config.yaml` to
 > the first release whose changelog announces them, so that every
-> contributor runs a codev that reads them. A heading in a language codev
+> contributor runs a Compagnon that reads them. A heading in a language Compagnon
 > does not know, such as `### Requisito:`, is reported in a delta section
 > (`delta_unexpected_heading`), and the sync and the archive refuse the
 > change.
 
 ## Which skills use it
 
-`codev instructions --json` exposes the language in its `language` field, the
+`compagnon instructions --json` exposes the language in its `language` field, the
 keyword language in `keywordLanguage`, and the text of each keyword in
 `keywords`; its human output says both on its `Language:` line.
-`/codev-propose` and `/codev-update` write artifacts in that language, prose
-and keywords, and `/codev-configure` writes the `context:` and `rules:` it
+`/compagnon-propose` and `/compagnon-update` write artifacts in that language, prose
+and keywords, and `/compagnon-configure` writes the `context:` and `rules:` it
 proposes in it too. A project schema may hold its templates per language,
 under `templates/<language>/`; without, `templates/<file>` serves every
 language, and the keywords follow the language that template is written
 in — a schema written in English keeps English keywords
 ([Custom schemas](custom-schemas.md)).
-The ADR template used by `codev decision` commands has English section
+The ADR template used by `compagnon decision` commands has English section
 headings; write the body in your team's language.

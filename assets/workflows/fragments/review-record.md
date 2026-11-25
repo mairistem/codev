@@ -1,12 +1,12 @@
 **The review record.** Every finding of this step goes to
-`_codev/changes/<name>/review.md`, the change's review record, before it
+`_compagnon/changes/<name>/review.md`, the change's review record, before it
 is fixed or reported.
 
-Read codev's output as it prints it: each command gives what the step
+Read Compagnon's output as it prints it: each command gives what the step
 needs, so never filter it through another program (`python3`, `jq`) — a
 command your session may not approve, which costs a turn.
 
-a. **Resume first.** Run `codev review --change "<name>"`. A finding it
+a. **Resume first.** Run `compagnon review --change "<name>"`. A finding it
    lists under a step is never raised again, and a finding it lists under
    **Waiting for an answer** with `author` or `reviewer` is answered
    before anything new. The record is the state: a session that stopped
@@ -15,12 +15,12 @@ a. **Resume first.** Run `codev review --change "<name>"`. A finding it
 {{fragment:review-isolated}}
 
 b. **Write a section per role.** Under `## <step>` (create the file with
-   `# Review record: <name>` and `<!-- codev-review: 1 -->` if it does not
+   `# Review record: <name>` and `<!-- compagnon-review: 1 -->` if it does not
    exist) — first the line `Mode: inline.` or `Mode: isolated.` and any
    `Summarized:` lines — one `### <role-id>` per role returned, holding
    its `Fallback:` line if it fell back, then its findings, or
    the line `No finding.` when it found nothing. For each role listed under
-   `disabled` by the same `codev roles --at <step> --change "<name>"
+   `disabled` by the same `compagnon roles --at <step> --change "<name>"
    --json` call that returned the active roles, write `Disabled by
    configuration.` instead. Never write
    a step or a role twice: add to the existing section.
@@ -47,7 +47,7 @@ c. **Write each finding** as a heading `#### R-<role-id>-<n> <title>` —
      Quote it: a heading often holds `: `.
    - `evidence`: re-read the cited lines and copy the text verbatim —
      whole lines or the fragment that matters, never a paraphrase.
-     `codev validate` checks it is there.
+     `compagnon validate` checks it is there.
    - `severity` and `confidence`, on these scales:
 
 {{REVIEW_SCALE}}
@@ -71,7 +71,7 @@ c. **Write each finding** as a heading `#### R-<role-id>-<n> <title>` —
 
 d. **The author answers each finding still `open`** — the role that owns
    the cited artifact at `plan.challenge` (its `role.id` in
-   `codev instructions`), the `developer` at `code.review`. Append to
+   `compagnon instructions`), the `developer` at `code.review`. Append to
    `history`, never rewrite it:
    - fix it when the fix is unambiguous and within the change's scope —
      `status: fixed`, `by: <author>`, `ref:` the commit or the file
@@ -95,11 +95,11 @@ f. **Only a person decides a risk.** Never write `accepted-risk`, nor
    `git config user.name`, else `by: human`). A `medium` or `low` finding
    may be deferred by the author, with `to:`.
 
-g. **Check the record.** Run `codev review --change "<name>"` and fix
+g. **Check the record.** Run `compagnon review --change "<name>"` and fix
    every line of its **Issues in the record** in the record itself —
    format, location, evidence — never by changing what a finding says.
 
-h. **Report from the record.** Present only the findings `codev review`
+h. **Report from the record.** Present only the findings `compagnon review`
    does not mark `(low confidence)` and that are not `rejected`. The **To
    decide** block lists every finding it shows under **Waiting for an
    answer** with `human` and every `high` finding still `open`, each with

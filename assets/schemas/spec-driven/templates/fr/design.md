@@ -15,7 +15,7 @@
 ### Décision : <le choix>
 
 <!-- Ce qui a été choisi, et pourquoi cette option plutôt que les autres.
-     Citez la ou les décisions de `_codev/decisions/` qui contraignent ce choix.
+     Citez la ou les décisions de `_compagnon/decisions/` qui contraignent ce choix.
      Si vous proposez de vous en écarter, dites-le explicitement. -->
 
 **Alternatives envisagées** :

@@ -1,6 +1,6 @@
 # Le workflow
 
-Dans un projet codev, chaque change passe par les quatre mêmes étapes. Chaque
+Dans un projet Compagnon, chaque change passe par les quatre mêmes étapes. Chaque
 étape dispose d'une skill Claude Code et — sauf l'implémentation — d'une
 commande CLI qui effectue le travail sous-jacent.
 
@@ -14,13 +14,13 @@ commande CLI qui effectue le travail sous-jacent.
 
 | Étape | Skill | CLI | Écrit |
 |---|---|---|---|
-| Propose | `/codev-propose` | `codev new change`, `codev instructions` | `_codev/changes/<name>/` |
-| Apply | `/codev-apply` | — | Code du projet, cases de `tasks.md` |
-| Sync (facultative) | `/codev-sync` | `codev sync` | `_codev/specs/` |
-| Archive | `/codev-archive` | `codev archive` | `_codev/specs/`, `_codev/changes/archive/` |
+| Propose | `/compagnon-propose` | `compagnon new change`, `compagnon instructions` | `_compagnon/changes/<name>/` |
+| Apply | `/compagnon-apply` | — | Code du projet, cases de `tasks.md` |
+| Sync (facultative) | `/compagnon-sync` | `compagnon sync` | `_compagnon/specs/` |
+| Archive | `/compagnon-archive` | `compagnon archive` | `_compagnon/specs/`, `_compagnon/changes/archive/` |
 
-Deux autres skills accompagnent le cycle : `/codev-explore`, pour mûrir une
-idée avant de proposer quoi que ce soit, et `/codev-update`, pour réviser un
+Deux autres skills accompagnent le cycle : `/compagnon-explore`, pour mûrir une
+idée avant de proposer quoi que ce soit, et `/compagnon-update`, pour réviser un
 plan déjà rédigé. Voir [Les skills Claude Code](skills.md).
 
 À chaque étape, l'agent tient un rôle défini — product owner, analyste QA,
@@ -43,25 +43,25 @@ quatre artefacts :
 
 Les dépendances forment un graphe : `specs` et `design` peuvent être rédigés
 dès que la proposal existe, et `tasks` une fois ces deux artefacts terminés.
-`codev status` présente chaque artefact comme terminé (`[x]`), prêt à être
+`compagnon status` présente chaque artefact comme terminé (`[x]`), prêt à être
 rédigé (`[ ]`), bloqué par une dépendance (`[-]`) ou ignoré (`[~]`). Cet état
-se déduit uniquement des fichiers présents : codev ne tient aucun fichier
+se déduit uniquement des fichiers présents : Compagnon ne tient aucun fichier
 d'état.
 
-Dans Claude Code, `/codev-propose` fait tout en une seule passe :
+Dans Claude Code, `/compagnon-propose` fait tout en une seule passe :
 
 1. Si votre demande mentionne un identifiant de ticket comme `PROJ-123` et
    qu'un serveur MCP Jira est configuré, la skill récupère d'abord le ticket.
    Voir [Jira et autres serveurs MCP](guides/mcp.md).
-2. Elle crée le change avec `codev new change <name>`.
+2. Elle crée le change avec `compagnon new change <name>`.
 3. Pour chaque artefact prêt, elle lance
-   `codev instructions <artifact> --change <name> --json`, étudie le code
+   `compagnon instructions <artifact> --change <name> --json`, étudie le code
    concerné et rédige le fichier en suivant le template.
 4. Elle vérifie la traçabilité entre proposal, specs et tâches, puis relit le
    plan en relecteur sceptique : elle écrit chaque constat dans le
    [compte rendu de revue](guides/review-record.md) du change, corrige ce
    qui ne fait pas de doute et liste jusqu'à cinq points à challenger. Voir
-   [Propose](skills.md#propose-codev-propose).
+   [Propose](skills.md#propose-compagnon-propose).
 5. Elle s'arrête lorsque la planification est complète et présente le plan.
    Elle ne commence jamais l'implémentation dans le même tour.
 
@@ -76,7 +76,7 @@ l'absence de deltas.
 
 ## Apply
 
-`/codev-apply <name>` implémente le plan. La skill lit `tasks.md`, traite
+`/compagnon-apply <name>` implémente le plan. La skill lit `tasks.md`, traite
 chaque tâche `- [ ]` non cochée dans l'ordre du fichier, lance la vérification
 indiquée par la tâche (un test, une commande, un comportement observable),
 et ne coche la case qu'une fois la vérification réussie. Les tests suivent
@@ -104,11 +104,11 @@ CLI : l'implémentation est le travail de l'agent.
 ## Sync
 
 ```bash
-codev sync --change <name>
+compagnon sync --change <name>
 ```
 
 La synchronisation fusionne les deltas du change dans les specs principales
-sous `_codev/specs/`, **sans** déplacer le change. Utilisez-la lorsqu'un autre
+sous `_compagnon/specs/`, **sans** déplacer le change. Utilisez-la lorsqu'un autre
 change en cours a besoin de voir une nouvelle capacité dans les specs
 principales, ou pour relire la fusion avant l'archivage.
 
@@ -118,26 +118,26 @@ synchronise pour vous.
 
 Comme l'archivage, la synchronisation valide d'abord le change et refuse de
 continuer si la validation signale une erreur : rien n'est écrit, et
-`codev validate <name>` affiche les constats.
+`compagnon validate <name>` affiche les constats.
 
 ## Archive
 
 ```bash
-codev archive --change <name>
+compagnon archive --change <name>
 ```
 
 L'archivage clôt un change :
 
 1. Il valide le change et **refuse** de continuer si la validation signale une
-   erreur, en vous renvoyant vers `codev validate <name>` pour le détail.
+   erreur, en vous renvoyant vers `compagnon validate <name>` pour le détail.
 2. Il vérifie le [compte rendu de revue](guides/review-record.md) et
    **refuse** de continuer (`review_blocked`) s'il manque pour une étape où
    des rôles de relecture étaient actifs, ou si un constat de gravité haute
-   est encore ouvert ou contesté ; `codev review --change <name>` montre ce
+   est encore ouvert ou contesté ; `compagnon review --change <name>` montre ce
    qui reste.
 3. Il fusionne les deltas dans les specs principales, exactement comme `sync`.
 4. Il déplace le dossier du change, compte rendu compris, dans
-   `_codev/changes/archive/<YYYY-MM-DD>-<name>/`.
+   `_compagnon/changes/archive/<YYYY-MM-DD>-<name>/`.
 
 La fusion complète est calculée et vérifiée avant l'écriture du premier
 fichier : un change invalide ou un delta inapplicable — par exemple une
@@ -147,14 +147,14 @@ modification sur le disque.
 Après l'archivage, les specs principales décrivent le comportement que vous
 avez livré, et le dossier archivé conserve la trace du pourquoi et du comment.
 Commitez les deux — et, si le change a une note de version, lancez
-`codev changelog --write` pour l'ajouter à `CHANGELOG.md` (voir
+`compagnon changelog --write` pour l'ajouter à `CHANGELOG.md` (voir
 [Notes de version et CHANGELOG](guides/release-notes.md)).
 
 ## Choisir le change
 
-`codev status`, `codev instructions`, `codev sync` et `codev archive`
+`compagnon status`, `compagnon instructions`, `compagnon sync` et `compagnon archive`
 acceptent `--change <name>`. Lorsque le projet compte exactement un change
-actif, vous pouvez l'omettre. S'il y en a plusieurs, codev vous demande de
+actif, vous pouvez l'omettre. S'il y en a plusieurs, Compagnon vous demande de
 choisir :
 
 ```text
@@ -168,17 +168,17 @@ tirets, par exemple `add-user-auth`.
 ## Valider
 
 ```bash
-codev validate
+compagnon validate
 ```
 
-Sans argument, `codev validate` vérifie chaque change actif, chaque spec
+Sans argument, `compagnon validate` vérifie chaque change actif, chaque spec
 principale et les sceaux des décisions. Passez le nom d'un change ou d'une
 capacité pour ne vérifier qu'un élément, ou `--changes` / `--specs` pour ne
 vérifier qu'une famille. Les erreurs font sortir la commande avec le code 1 ;
 avec `--strict`, les avertissements aussi. Utilisez cette option en CI :
 
 ```bash
-codev validate --strict
+compagnon validate --strict
 ```
 
 Les vérifications portent sur la structure des specs et des deltas (chaque

@@ -1,5 +1,5 @@
 //! Scoring a sync or archive run, without a model: whether the agent left
-//! `_codev/` as codev's own command leaves it — or as it found it, for a
+//! `_compagnon/` as compagnon's own command leaves it — or as it found it, for a
 //! refusal —, touched nothing outside the step, and said what the case
 //! expects. The reference command ran on a copy before the agent, so a
 //! merge written by hand, a partial one or a missing move is caught
@@ -12,7 +12,7 @@ use crate::case::{Case, MergeCase, MergeOutcome};
 use crate::checked::{CheckScore, Checks, holds};
 use crate::observed::{Digests, Observed};
 
-const ARCHIVE_DIR: &str = "_codev/changes/archive/";
+const ARCHIVE_DIR: &str = "_compagnon/changes/archive/";
 
 /// The length of a date as an archive folder starts with it.
 const DATE_LEN: usize = "YYYY-MM-DD".len();
@@ -49,13 +49,13 @@ fn normalized(changed: &Digests) -> BTreeMap<String, Option<&str>> {
 /// The command a case's step runs.
 fn command(case: &Case) -> &'static str {
     if case.step == crate::case::Step::ChangeSync {
-        "codev sync"
+        "compagnon sync"
     } else {
-        "codev archive"
+        "compagnon archive"
     }
 }
 
-/// Why the case no longer describes what codev does, from its reference
+/// Why the case no longer describes what compagnon does, from its reference
 /// run: a `done` case whose command failed, or a `refused` case with a
 /// `code` whose command succeeded or reported another code. `None` when
 /// the reference agrees with the case, or when the run has none.
@@ -68,7 +68,7 @@ pub fn stale(case: &Case, expect: &MergeCase, observed: &Observed) -> Option<Str
     match (expect.outcome, &expect.code) {
         (MergeOutcome::Done, _) if reference.exit_code != Some(0) => Some(format!(
             "case `{}`: `{}` exits with {exit} and the code `{reported}` on the fixture, where \
-             the case expects it done; the case no longer describes what codev does",
+             the case expects it done; the case no longer describes what compagnon does",
             case.id,
             command(case)
         )),
@@ -77,7 +77,7 @@ pub fn stale(case: &Case, expect: &MergeCase, observed: &Observed) -> Option<Str
         {
             Some(format!(
                 "case `{}`: the case expects `{}` to refuse with `{code}`, and it reports \
-                 `{reported}` (exit {exit}); the case no longer describes what codev does",
+                 `{reported}` (exit {exit}); the case no longer describes what compagnon does",
                 case.id,
                 command(case)
             ))
@@ -99,11 +99,14 @@ pub fn score_merge(case: &Case, expect: &MergeCase, observed: &Observed) -> Chec
     let mut checks = Checks::default();
     match expect.outcome {
         MergeOutcome::Done => checks.check(
-            format!("files under `_codev/` as `{}` leaves them", command(case)),
+            format!(
+                "files under `_compagnon/` as `{}` leaves them",
+                command(case)
+            ),
             seen.is_some_and(|m| normalized(&m.changed) == normalized(&m.reference.changed)),
         ),
         MergeOutcome::Refused => checks.check(
-            "files under `_codev/` as the fixture's",
+            "files under `_compagnon/` as the fixture's",
             seen.is_some_and(|m| m.changed.is_empty()),
         ),
     }
@@ -160,10 +163,10 @@ pub(crate) mod tests {
 
     fn merged() -> Digests {
         digests(&[
-            ("_codev/specs/doctor/spec.md", Some("d1")),
-            ("_codev/changes/add-auth/proposal.md", None),
+            ("_compagnon/specs/doctor/spec.md", Some("d1")),
+            ("_compagnon/changes/add-auth/proposal.md", None),
             (
-                "_codev/changes/archive/2026-10-27-add-auth/proposal.md",
+                "_compagnon/changes/archive/2026-10-27-add-auth/proposal.md",
                 Some("p"),
             ),
         ])
@@ -218,22 +221,22 @@ pub(crate) mod tests {
     fn a_merge_written_by_hand_fails() {
         let (c, expect) = case(Step::ChangeSync, MergeOutcome::Done, None);
         let reference = Reference {
-            changed: digests(&[("_codev/specs/doctor/spec.md", Some("by-codev"))]),
+            changed: digests(&[("_compagnon/specs/doctor/spec.md", Some("by-compagnon"))]),
             ..done_reference()
         };
         let by_hand = run(
-            digests(&[("_codev/specs/doctor/spec.md", Some("by-hand"))]),
+            digests(&[("_compagnon/specs/doctor/spec.md", Some("by-hand"))]),
             reference.clone(),
             &[],
         );
         let score = score_merge(&c, &expect, &by_hand);
         assert_eq!(
             failed(&score),
-            ["files under `_codev/` as `codev sync` leaves them"]
+            ["files under `_compagnon/` as `compagnon sync` leaves them"]
         );
         assert!(!score.passed);
-        let through_codev = run(reference.changed.clone(), reference, &[]);
-        assert!(score_merge(&c, &expect, &through_codev).passed);
+        let through_compagnon = run(reference.changed.clone(), reference, &[]);
+        assert!(score_merge(&c, &expect, &through_compagnon).passed);
     }
 
     #[test]
@@ -243,24 +246,24 @@ pub(crate) mod tests {
             MergeOutcome::Refused,
             Some("validation_failed"),
         );
-        expect.contains = vec!["codev validate".into()];
+        expect.contains = vec!["compagnon validate".into()];
         let o = run(
             Digests::new(),
             refused_reference("validation_failed"),
-            &["The change has errors. Run `codev validate add-auth` to see the details."],
+            &["The change has errors. Run `compagnon validate add-auth` to see the details."],
         );
         assert_eq!(stale(&c, &expect, &o), None);
         let score = score_merge(&c, &expect, &o);
         assert_eq!(failed(&score), Vec::<&str>::new());
         assert_eq!(score.checks.len(), 3);
         let fixed_by_hand = run(
-            digests(&[("_codev/changes/add-auth/proposal.md", Some("x"))]),
+            digests(&[("_compagnon/changes/add-auth/proposal.md", Some("x"))]),
             refused_reference("validation_failed"),
-            &["codev validate"],
+            &["compagnon validate"],
         );
         assert_eq!(
             failed(&score_merge(&c, &expect, &fixed_by_hand)),
-            ["files under `_codev/` as the fixture's"]
+            ["files under `_compagnon/` as the fixture's"]
         );
     }
 
@@ -268,18 +271,18 @@ pub(crate) mod tests {
     fn the_archive_date_is_left_out() {
         let (c, expect) = case(Step::ChangeArchive, MergeOutcome::Done, None);
         let next_day = digests(&[
-            ("_codev/specs/doctor/spec.md", Some("d1")),
-            ("_codev/changes/add-auth/proposal.md", None),
+            ("_compagnon/specs/doctor/spec.md", Some("d1")),
+            ("_compagnon/changes/add-auth/proposal.md", None),
             (
-                "_codev/changes/archive/2026-10-28-add-auth/proposal.md",
+                "_compagnon/changes/archive/2026-10-28-add-auth/proposal.md",
                 Some("p"),
             ),
         ]);
         assert!(score_merge(&c, &expect, &run(next_day, done_reference(), &[])).passed);
         let elsewhere = digests(&[
-            ("_codev/specs/doctor/spec.md", Some("d1")),
-            ("_codev/changes/add-auth/proposal.md", None),
-            ("_codev/changes/archive/add-auth/proposal.md", Some("p")),
+            ("_compagnon/specs/doctor/spec.md", Some("d1")),
+            ("_compagnon/changes/add-auth/proposal.md", None),
+            ("_compagnon/changes/archive/add-auth/proposal.md", Some("p")),
         ]);
         assert!(!score_merge(&c, &expect, &run(elsewhere, done_reference(), &[])).passed);
     }
@@ -350,9 +353,9 @@ pub(crate) mod tests {
         c
     }
 
-    /// A run of a `done` case that archived through codev, replying
+    /// A run of a `done` case that archived through compagnon, replying
     /// `messages`.
-    pub(crate) fn run_through_codev(id: &str, messages: &[&str]) -> Observed {
+    pub(crate) fn run_through_compagnon(id: &str, messages: &[&str]) -> Observed {
         let mut o = run(merged(), done_reference(), messages);
         o.case = id.into();
         o
@@ -361,7 +364,7 @@ pub(crate) mod tests {
     /// A run of a `done` case that wrote the merge by hand, replying
     /// `messages`.
     pub(crate) fn run_merged_by_hand(id: &str, messages: &[&str]) -> Observed {
-        let by_hand = digests(&[("_codev/specs/doctor/spec.md", Some("by-hand"))]);
+        let by_hand = digests(&[("_compagnon/specs/doctor/spec.md", Some("by-hand"))]);
         let mut o = run(by_hand, done_reference(), messages);
         o.case = id.into();
         o

@@ -1,5 +1,5 @@
 name: Bug report
-description: Report incorrect or unexpected behavior in codev.
+description: Report incorrect or unexpected behavior in compagnon.
 title: "bug: "
 labels: ["bug", "triage"]
 body:
@@ -7,9 +7,9 @@ body:
     attributes:
       value: |
         Thanks for taking the time to report a bug. Please search
-        [existing issues](https://github.com/mairistem/codev/issues) first.
+        [existing issues](https://github.com/mairistem/compagnon/issues) first.
         **Security vulnerabilities must not be reported here** — see
-        [SECURITY.md](https://github.com/mairistem/codev/blob/main/SECURITY.md).
+        [SECURITY.md](https://github.com/mairistem/compagnon/blob/main/SECURITY.md).
   - type: textarea
     id: description
     attributes:
@@ -23,9 +23,9 @@ body:
       label: Steps to reproduce
       description: The smallest sequence of commands that triggers the bug.
       placeholder: |
-        1. codev init
-        2. codev new change add-login
-        3. codev validate --strict
+        1. compagnon init
+        2. compagnon new change add-login
+        3. compagnon validate --strict
     validations:
       required: true
   - type: textarea
@@ -45,9 +45,9 @@ body:
   - type: input
     id: version
     attributes:
-      label: codev version
-      description: Output of `codev --version`.
-      placeholder: codev 0.3.2
+      label: compagnon version
+      description: Output of `compagnon --version`.
+      placeholder: compagnon 0.3.2
     validations:
       required: true
   - type: input
@@ -61,4 +61,4 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Relevant `_codev/config.yaml` excerpt, Claude Code version, logs.
+      description: Relevant `_compagnon/config.yaml` excerpt, Claude Code version, logs.

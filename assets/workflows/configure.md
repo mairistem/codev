@@ -1,4 +1,4 @@
-Enrich `_codev/config.yaml` by analyzing the project — propose a detailed
+Enrich `_compagnon/config.yaml` by analyzing the project — propose a detailed
 `context:` and per-artifact `rules:`, without ever touching the
 workflows, the MCPs or the schema.
 
@@ -6,14 +6,14 @@ workflows, the MCPs or the schema.
 
 - Reads the project at surface level, within a **budget** defined below.
 - Modifies **only** the `context` and `rules` fields of
-  `_codev/config.yaml`.
+  `_compagnon/config.yaml`.
 - **Preserves** `schema`, `language`, `workflows`, `mcp`, `inherits`,
-  `codev_version` and every existing comment — the `codev init` probe filled those fields; they
+  `compagnon_version` and every existing comment — the `compagnon init` probe filled those fields; they
   are not replayed.
 - **Writes nothing without confirmation** — show the diff, ask, write.
 
-It **refuses to act** if `_codev/config.yaml` is missing: in that case,
-point the user to `codev init` and stop.
+It **refuses to act** if `_compagnon/config.yaml` is missing: in that case,
+point the user to `compagnon init` and stop.
 
 ---
 
@@ -24,23 +24,23 @@ writing until the final confirmation.
 
 ## Steps
 
-### 1. Check that `_codev/config.yaml` exists
+### 1. Check that `_compagnon/config.yaml` exists
 
 ```bash
-codev status --json
+compagnon status --json
 ```
 
-If the command fails with `no_codev_root`, say:
+If the command fails with `no_compagnon_root`, say:
 
-> This project has no `_codev/`. Run `codev init` first, then
-> come back to `/codev-configure`.
+> This project has no `_compagnon/`. Run `compagnon init` first, then
+> come back to `/compagnon-configure`.
 
 Then stop.
 
 Otherwise, read the file:
 
 ```
-Read _codev/config.yaml
+Read _compagnon/config.yaml
 ```
 
 Note the current value of `context:` and `rules:` — it is the baseline
@@ -63,7 +63,7 @@ for comparison.
 - **At most 3 existing test files**, found with `Glob` on the language's
   test naming, plus the manifest's test scripts and dev-dependencies and the
   CI workflow — they ground the testing rules.
-- `ls _codev/` and `ls src/` (or equivalent for the stack) — **one
+- `ls _compagnon/` and `ls src/` (or equivalent for the stack) — **one
   level only**, just to grasp the structure.
 
 **Do not**:
@@ -124,7 +124,7 @@ file (`en` when absent): the team reads and maintains them.
 Expected format:
 
 ```
-Here is the proposed patch for _codev/config.yaml:
+Here is the proposed patch for _compagnon/config.yaml:
 
 --- context: (current) ---
 Rust project, 2024.
@@ -141,7 +141,7 @@ in English; they explain the why.
 specs:
   - Describe observable behavior, never an implementation.
 design:
-  - Cite a decision from _codev/decisions/ that constrains the choice.
+  - Cite a decision from _compagnon/decisions/ that constrains the choice.
 tasks:
   - Each task states how to verify that it is done.
   - "Unit tests in #[cfg(test)] mod tests next to the code, integration
@@ -152,22 +152,22 @@ tasks:
 
 Exact question:
 
-> Apply this patch to `_codev/config.yaml`? [yes/no]
+> Apply this patch to `_compagnon/config.yaml`? [yes/no]
 
 If `yes`:
 
-- **Edit** `_codev/config.yaml` — replace only the `context:` and
+- **Edit** `_compagnon/config.yaml` — replace only the `context:` and
   `rules:` sections. **Preserve** `schema`, `language`, `workflows`,
-  `mcp`, `inherits`, `codev_version`, and **every comment**.
+  `mcp`, `inherits`, `compagnon_version`, and **every comment**.
 - Add a comment above `context:`:
-  `# written by /codev-configure`. If there was already one
+  `# written by /compagnon-configure`. If there was already one
   (e.g. "detected from Cargo.toml"), replace it with the new one.
-- Confirm: "✓ `_codev/config.yaml` enriched."
+- Confirm: "✓ `_compagnon/config.yaml` enriched."
 
 If `no`:
 
 - Write nothing.
-- Say: "No changes made. Run `/codev-configure` again whenever you
+- Say: "No changes made. Run `/compagnon-configure` again whenever you
   want to retry."
 
 ## Output
@@ -180,9 +180,9 @@ answer: a write acknowledgment or a polite refusal.
 - **No writing before explicit confirmation** — not even partially, not
   even "just to test".
 - **Strictly preserved fields**: `schema`, `workflows`, `mcp`,
-  `inherits`, `codev_version`. If the patch touched anything else, that is a bug in the
+  `inherits`, `compagnon_version`. If the patch touched anything else, that is a bug in the
   skill: stop and report it to the user.
-- **Refuse if `_codev/config.yaml` is missing** — this skill never
+- **Refuse if `_compagnon/config.yaml` is missing** — this skill never
   creates it from scratch.
 - **Respect the reading budget** — at most 5 docs, 8 source files and
   3 test files, a single level of `ls`. A bigger project does not deserve more

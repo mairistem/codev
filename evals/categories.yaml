@@ -10,7 +10,7 @@
 #
 # Two categories expected in the same case must share no term (checked by
 # the tests). Changing a term changes the scores: score the baseline again
-# (`cargo run -p codev-evals -- score evals/baseline`) and say why in the
+# (`cargo run -p compagnon-evals -- score evals/baseline`) and say why in the
 # pull request.
 
 categories:

@@ -28,16 +28,16 @@ pub struct Observed {
     /// Files the run modified outside what its step allows.
     #[serde(default)]
     pub strayed: Vec<String>,
-    /// `codev review --json` as codev printed it; `null` when not run.
+    /// `compagnon review --json` as compagnon printed it; `null` when not run.
     pub review: Option<serde_json::Value>,
     /// The checked files after the run; `null` for a file that is gone.
     #[serde(default)]
     pub files: BTreeMap<String, Option<String>>,
-    /// `codev validate <change> --json` on each change a planning run
+    /// `compagnon validate <change> --json` on each change a planning run
     /// created, by change name.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub validate: BTreeMap<String, serde_json::Value>,
-    /// `codev validate <change> --json` on an update case's fixture, before
+    /// `compagnon validate <change> --json` on an update case's fixture, before
     /// the run: the errors the archived change already had.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub validate_before: Option<serde_json::Value>,
@@ -49,7 +49,7 @@ pub struct Observed {
     /// change's files; `None` for any other run.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub implement: Option<ImplementObserved>,
-    /// What a sync or archive run left under `_codev/`, and what codev's
+    /// What a sync or archive run left under `_compagnon/`, and what compagnon's
     /// own command left; `None` for any other run.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub merge: Option<MergeObserved>,
@@ -59,11 +59,11 @@ pub struct Observed {
     pub configure: Option<ConfigureObserved>,
 }
 
-/// The files under `_codev/` a run or a command left different from the
+/// The files under `_compagnon/` a run or a command left different from the
 /// fixture, by path from the project root: the digest of the content
 /// (SHA-256, line endings aside), or `None` for a file removed. Every
-/// other file under `_codev/` is the fixture's: recording only the
-/// difference keeps an observation small, where the whole of `_codev/`
+/// other file under `_compagnon/` is the fixture's: recording only the
+/// difference keeps an observation small, where the whole of `_compagnon/`
 /// holds hundreds of archived files.
 pub type Digests = BTreeMap<String, Option<String>>;
 
@@ -71,14 +71,14 @@ pub type Digests = BTreeMap<String, Option<String>>;
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MergeObserved {
-    /// What the run left under `_codev/`.
+    /// What the run left under `_compagnon/`.
     pub changed: Digests,
-    /// What `codev sync` or `codev archive` left, run by the runner on a
+    /// What `compagnon sync` or `compagnon archive` left, run by the runner on a
     /// copy of the fixture before the agent.
     pub reference: Reference,
 }
 
-/// codev's own command on a copy of the fixture.
+/// compagnon's own command on a copy of the fixture.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Reference {
@@ -87,7 +87,7 @@ pub struct Reference {
     /// Its JSON report, paths relative to the project; `None` when it
     /// printed none.
     pub report: Option<serde_json::Value>,
-    /// What it left under `_codev/`.
+    /// What it left under `_compagnon/`.
     pub changed: Digests,
 }
 
@@ -102,14 +102,14 @@ impl Reference {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigureObserved {
-    /// `_codev/config.yaml` before the run; `None` without one.
+    /// `_compagnon/config.yaml` before the run; `None` without one.
     pub before: Option<String>,
-    /// `_codev/config.yaml` after the run; `None` without one.
+    /// `_compagnon/config.yaml` after the run; `None` without one.
     pub after: Option<String>,
-    /// Whether a `_codev/` folder exists after the run.
+    /// Whether a `_compagnon/` folder exists after the run.
     #[serde(default)]
-    pub codev_root: bool,
-    /// Why `codev status --json` did not read the project after the run;
+    pub compagnon_root: bool,
+    /// Why `compagnon status --json` did not read the project after the run;
     /// `None` when it did.
     pub status_error: Option<String>,
 }
@@ -152,7 +152,7 @@ pub struct Consumption {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tool_calls: Option<u64>,
     /// The tool calls made before the first write of a file under
-    /// `_codev/changes/`; `None` when the run wrote none.
+    /// `_compagnon/changes/`; `None` when the run wrote none.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub orientation_calls: Option<u64>,
     /// Every call to the model, in order; empty without the event stream.
@@ -200,7 +200,7 @@ pub struct RunInfo {
     pub model: Option<String>,
     pub date: String,
     pub claude_version: Option<String>,
-    pub codev_version: Option<String>,
+    pub compagnon_version: Option<String>,
     /// The repetitions asked for; `None` in format 1, which ran each case
     /// once.
     #[serde(default)]
@@ -264,7 +264,7 @@ pub(crate) fn check_format(text: &str, what: &str) -> Result<serde_json::Value, 
     }
     if format > u64::from(FORMAT) {
         return Err(format!(
-            "{what}: format {format} is newer than this runner reads ({FORMAT}); update codev-evals"
+            "{what}: format {format} is newer than this runner reads ({FORMAT}); update compagnon-evals"
         ));
     }
     Ok(value)
@@ -283,7 +283,7 @@ pub fn parse_run_info(text: &str) -> Result<RunInfo, String> {
     serde_json::from_value(value).map_err(|e| format!("run.json: {e}"))
 }
 
-/// The parts of codev's `ReviewV1` the scoring reads. Lenient: the contract
+/// The parts of compagnon's `ReviewV1` the scoring reads. Lenient: the contract
 /// is additive, unknown fields are ignored.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -398,7 +398,7 @@ mod tests {
         assert_eq!(observed.consumption, None);
         let info = parse_run_info(
             r#"{"format": 1, "model": null, "date": "2026-10-13",
-            "claudeVersion": null, "codevVersion": null}"#,
+            "claudeVersion": null, "compagnonVersion": null}"#,
         )
         .unwrap();
         assert_eq!(info.repeat, None);
@@ -411,7 +411,7 @@ mod tests {
             model: None,
             date: "2026-10-13".into(),
             claude_version: Some("2.1.289".into()),
-            codev_version: Some("0.6.1".into()),
+            compagnon_version: Some("0.6.1".into()),
             repeat: Some(5),
             jobs: None,
             review_mode: Some(ReviewMode::Isolated),
