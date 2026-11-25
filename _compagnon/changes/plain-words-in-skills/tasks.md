@@ -65,6 +65,17 @@ Every task's definition of done also includes `cargo fmt --all --check`,
   and the existing frontmatter tests of `crates/compagnon-agents/src/claude.rs`
   (`the_description_is_quoted_because_it_contains_yaml_punctuation`).
 
+- [ ] 2.4 Make the French requests follow the lexicon of the French
+  documentation (change `plain-language-docs`): extend
+  `description_problems` to report a « … » request holding change(s),
+  skill(s), spec(s) or workflow as a noun, with the unit test
+  `a_french_request_holding_an_anglicism_is_caught`; rewrite the French
+  requests of the six descriptions (« réalise la modification »,
+  « archive la modification »…); add the lexicon to the `next-steps`
+  fragment for requests said in French; verified by that test,
+  `every_description_names_english_and_french_requests` and
+  `the_six_skills_include_the_next_steps_rule`.
+
 ## 3. The init hint and the documentation
 
 - [x] 3.1 In `crates/compagnon-cli/src/render.rs`, write the closing hint of

@@ -51,7 +51,10 @@ The description of the `propose`, `apply`, `update`, `sync`, `archive` and
 `configure` skills — the text Claude Code matches
 against a request to choose a skill — SHALL name, besides what the skill
 does, examples of plain requests that should start it, at least one in
-English and one in French. Each description MUST stay within 1024
+English and one in French. The French requests follow the lexicon of the
+French documentation (modification, compétence, spécification, not change,
+skill, spec), and the shared rule tells the skills to use that lexicon when
+they say a request in French. Each description MUST stay within 1024
 characters.
 
 #### Scenario: Every description names English and French requests
@@ -61,6 +64,12 @@ characters.
 - **THEN** each description holds at least one quoted English request and
   one quoted French request
 - **AND** none exceeds 1024 characters
+
+#### Scenario: A French request holding an anglicism is caught
+
+- **GIVEN** a description whose French request is « archive le change »
+- **WHEN** the check runs on it
+- **THEN** it fails naming the workflow and « change »
 
 #### Scenario: A description without a French request is caught
 

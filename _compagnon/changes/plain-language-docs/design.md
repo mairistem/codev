@@ -27,7 +27,9 @@ and stay so.
 - The "Going further", "Reference" and "Contributing" parts: their readers
   configure or change Compagnon and need the exact terms.
 - The text of the skills: their French example requests belong to the
-  active change `plain-words-in-skills`, which follows the lexicon there.
+  active change `plain-words-in-skills`, whose plan is revised to follow
+  this lexicon, with a check, because a change to a skill's text goes
+  through the evaluation that change already runs (decision 0008).
 - Renaming commands, folders or configuration keys (`/compagnon-apply`,
   `_compagnon/changes/`, `workflows:`): they are identifiers.
 - Measuring readability with a score: the review roles judge it, the
@@ -81,7 +83,11 @@ offending items and tested on synthetic chapters:
   "specs principales" is reported wherever it appears in prose.
 - `anglicisms(md)`: the words of the lexicon's English side, matched as
   whole words, case-insensitive, in prose and headings, outside inline
-  code, fenced code, `<details>` blocks and parentheses.
+  code, fenced code, `<details>` blocks and parentheses. "change" and
+  "changes" are also forms of the French verb *changer* ("ce qui change"),
+  so they count only as a noun: right after a determiner (le, la, les, un,
+  une, des, du, au, aux, ce, cet, cette, ces, chaque, votre, vos, son, sa,
+  ses, leur, leurs, quel, quelle, d', l').
 
 Tests apply them to the ten everyday chapters of each edition (glossary
 excepted for the first) and, for the anglicisms, to `README.fr.md`.
@@ -98,9 +104,9 @@ reference needs the exact terms.
 - [A French chapter loses a needed English word] → the parentheses keep
   it beside its translation, and the glossary says which English word
   each entry stands for.
-- [The anglicism check flags a legitimate French word] → the list holds
-  only words that are not French ("change" as a noun is the one risk: the
-  French "changer" never takes this form; the noun « change » of a
-  currency does not occur in this documentation).
+- [The anglicism check flags a legitimate French word] → "change" and
+  "changes" are matched only after a determiner, so the verb ("ce qui
+  change") passes, as a unit test shows; the noun « change » of a
+  currency does not occur in this documentation.
 - [The two editions drift] → each task rewrites a chapter in both
   editions; `both_languages_have_the_same_chapters` still holds.

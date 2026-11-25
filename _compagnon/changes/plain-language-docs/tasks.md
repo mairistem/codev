@@ -25,6 +25,7 @@ design, in *vouvoiement*.
   `a_term_in_code_or_under_the_hood_is_not_concerned`,
   `the_phrase_main_specs_is_caught`,
   `an_anglicism_in_prose_is_caught`,
+  `the_french_verb_changer_is_not_an_anglicism`,
   `the_english_word_in_parentheses_code_or_path_is_allowed`; verified by
   these tests passing.
 - [ ] 1.2 Add the tests on the real chapters,

@@ -80,6 +80,12 @@ requests the French edition gives to say to Claude follow the same lexicon
 - **WHEN** the check runs on it
 - **THEN** it fails naming « change »
 
+#### Scenario: The French verb « changer » is not an anglicism
+
+- **GIVEN** a French chapter saying « voici ce qui change »
+- **WHEN** the check runs on it
+- **THEN** it passes
+
 #### Scenario: The English word between parentheses, in code or in a path is allowed
 
 - **GIVEN** a French chapter saying « une compétence (skill) », and
