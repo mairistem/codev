@@ -16,12 +16,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-14
+          # `macos-latest` rather than a pinned image: GitHub retires macOS
+          # images (`macos-14` stopped being served), and a release must not
+          # wait on a label that no longer exists.
+          - runner: macos-latest
             target: aarch64-apple-darwin
             ext: tar.gz
           # Cross-compiled from Apple Silicon to Intel: rustc supports it
           # natively, and Intel macOS runners are becoming scarce.
-          - runner: macos-14
+          - runner: macos-latest
             target: x86_64-apple-darwin
             ext: tar.gz
           - runner: ubuntu-24.04
